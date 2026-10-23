@@ -9,8 +9,8 @@ public sealed class CartesianSectionPreparationBenchmarkFixture : SectionPrepara
     public CartesianSectionPreparationBenchmarkFixture(string caseName, string tokenPath, string fontPath, string boldFontPath)
         : base(caseName, tokenPath, fontPath, boldFontPath, cartesian: true) {
         _viewport = Window switch {
-            "y" => new ChartCartesianViewport(y: new ChartYViewport(12, 24)),
-            "xy" => new ChartCartesianViewport(new ChartXViewport(2, 10), new ChartYViewport(12, 24)),
+            "y" => new ChartCartesianViewport(y: new ChartAxisWindow(12, 24)),
+            "xy" => new ChartCartesianViewport(new ChartAxisWindow(2, 10), new ChartAxisWindow(12, 24)),
             _ => null
         };
     }

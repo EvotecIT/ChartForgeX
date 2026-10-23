@@ -12,10 +12,15 @@
   <ItemGroup>
     <!-- The playground samples are Mermaid atlas sources, so the atlas and the playground show the same text. -->
     <Compile Include="..\Playground\PlaygroundEngine.cs" Link="Playground\PlaygroundEngine.cs" />
+    <Compile Include="..\Playground\PlaygroundEngine.Png.cs" Link="Playground\PlaygroundEngine.Png.cs" />
+    <Compile Include="..\Playground\PlaygroundEngine.Fonts.cs" Link="Playground\PlaygroundEngine.Fonts.cs" />
     <Compile Include="..\Playground\PlaygroundJson.cs" Link="Playground\PlaygroundJson.cs" />
     <Compile Include="..\Playground\PlaygroundSamples.cs" Link="Playground\PlaygroundSamples.cs" />
     <Compile Include="..\Playground\PlaygroundFonts.cs" Link="Playground\PlaygroundFonts.cs" />
     <Compile Include="..\..\..\ChartForgeX.Examples\WebsiteRecipes\*.cs" Link="WebsiteRecipes\%(Filename)%(Extension)" />
+    <Compile Include="..\..\..\ChartForgeX.Examples\ExampleRecipeImports.cs" Link="SharedRecipes\ExampleRecipeImports.cs" />
+    <Compile Include="..\..\..\ChartForgeX.Examples\Recipes\SunburstRecipe.cs" Link="SharedRecipes\SunburstRecipe.cs" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Recipes\SunburstRecipe.cs" LogicalName="SiteVisuals.SharedRecipes.SunburstRecipe.cs" WithCulture="false" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\WebsiteRecipes\*.cs" LogicalName="SiteVisuals.WebsiteRecipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />

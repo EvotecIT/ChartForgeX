@@ -129,7 +129,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 .WithObservationId(0, new ChartObservationId("outside-left")).WithObservationId(1, new ChartObservationId("outside-right")));
         chart.Series[0].Markers.Enabled = false;
         var renderer = new HtmlInteractiveChartRenderer();
-        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(4, 6)), Configure);
+        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), Configure);
         var initial = renderer.PrepareSection(chart, configure: Configure);
         var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
@@ -191,15 +191,14 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         internal string Initial => _sections["initial"].Html;
         internal string BookmarkReplacement(string capability) {
             var chart = Chart();
-            if (capability == "xy-missing-y") chart.Series[1].UseSecondaryYAxis();
-            else if (capability is "legacy-unsupported" or "legacy-empty") {
+            if (capability is "xy-missing-projections" or "legacy-unsupported" or "legacy-empty") {
                 chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).AddSeries(new ChartSeries(new ChartSeriesId("samples"), "Measurements",
-                    capability == "legacy-empty" ? ChartSeriesKind.Line : ChartSeriesKind.Bar,
+                    capability == "legacy-empty" ? ChartSeriesKind.Line : ChartSeriesKind.Pie,
                     capability == "legacy-empty" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(0, 3), new ChartPoint(12, 8) }));
             }
             return _renderer.PrepareSection(chart, configure: ConfigureSection).Html;
         }
-        internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartCartesianViewport(x: new ChartXViewport(minimum, maximum)), ConfigureSection).Html;
+        internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartCartesianViewport(x: new ChartAxisWindow(minimum, maximum)), ConfigureSection).Html;
         internal string Page(params NativeHost[] peers) => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + Initial + string.Concat(peers.Select(peer => peer.Initial))
             + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
@@ -230,21 +229,21 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 var kind = request.GetProperty("kind").GetString();
                 var basisScene = request.TryGetProperty("drawing", out var drawing) && drawing.GetString() == "narrow"
                     ? basis.NarrowPreparedVisual! : basis.PreparedVisual;
-                ChartXViewport? x = null; ChartYViewport? y = null;
+                ChartAxisWindow? x = null; ChartAxisWindow? y = null;
                 if (kind != "reset") {
                     var projection = basisScene.XProjection!;
-                    x = projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum ? new ChartXViewport(projection.Minimum, projection.Maximum) : null;
+                    x = projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum || !projection.MaximumInclusive ? new ChartAxisWindow(projection.Minimum, projection.Maximum, projection.MaximumInclusive) : null;
                     var primary = basisScene.YProjection;
-                    if (primary != null && (primary.Minimum != primary.FullMinimum || primary.Maximum != primary.FullMaximum)) y = new ChartYViewport(primary.Minimum, primary.Maximum);
+                    if (primary != null && (primary.Minimum != primary.FullMinimum || primary.Maximum != primary.FullMaximum || !primary.MaximumInclusive)) y = new ChartAxisWindow(primary.Minimum, primary.Maximum, primary.MaximumInclusive);
                     if (request.TryGetProperty("sourceWindow", out var sourceWindow))
-                        x = projection.ConstrainViewport(new ChartXViewport(sourceWindow.GetProperty("minimum").GetDouble(), sourceWindow.GetProperty("maximum").GetDouble()));
+                        x = projection.ConstrainViewport(NativeWindowTransport.Read(sourceWindow));
                     else if (request.TryGetProperty("sourceViewport", out var sourceViewport)) {
-                        if (sourceViewport.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(new ChartXViewport(sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
-                        if (sourceViewport.TryGetProperty("y", out var sourceY)) y = primary!.ConstrainViewport(new ChartYViewport(sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                        if (sourceViewport.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(NativeWindowTransport.Read(sourceX));
+                        if (sourceViewport.TryGetProperty("y", out var sourceY)) y = primary!.ConstrainViewport(NativeWindowTransport.Read(sourceY));
                     } else {
-                        var axes = request.TryGetProperty("axes", out var configuredAxes) ? configuredAxes.GetString()! : "x";
-                        if (axes.Contains('x')) x = projection.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
-                        if (axes.Contains('y')) y = primary!.ConstrainViewport(request.GetProperty("top").GetDouble(), request.GetProperty("bottom").GetDouble());
+                        var axes = request.TryGetProperty("axes", out var configuredAxes) ? configuredAxes.EnumerateArray().Select(axis => axis.GetString()!).ToArray() : new[] { "x" };
+                        if (axes.Contains("x")) x = projection.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
+                        if (axes.Contains("y")) y = primary!.ConstrainViewport(request.GetProperty("top").GetDouble(), request.GetProperty("bottom").GetDouble());
                     }
                 }
                 var section = x == null && y == null ? _renderer.PrepareSection(Chart(), configure: ConfigureSection)

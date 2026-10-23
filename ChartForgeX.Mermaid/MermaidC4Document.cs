@@ -28,6 +28,12 @@ public sealed class MermaidC4Document : MermaidDocument {
     /// <summary>Gets parsed C4 relationships in source order.</summary>
     public List<MermaidC4Relationship> Relationships { get; } = new();
 
+    /// <summary>Gets supported element style updates in authored order.</summary>
+    public List<MermaidStyleDefinition> ElementStyles { get; } = new();
+
+    /// <summary>Gets supported relationship style updates in authored order.</summary>
+    public List<MermaidC4RelationshipStyle> RelationshipStyles { get; } = new();
+
     /// <summary>Gets retained C4 statements whose semantics are not rendered exactly yet.</summary>
     public List<MermaidRawStatement> RetainedStatements { get; } = new();
 }
@@ -58,6 +64,18 @@ public sealed class MermaidC4Boundary : MermaidAstNode {
 
     /// <summary>Gets or sets the optional C4 boundary type argument.</summary>
     public string? Type { get; set; }
+
+    /// <summary>Gets or sets an optional deployment-node description.</summary>
+    public string? Description { get; set; }
+
+    /// <summary>Gets or sets retained sprite metadata.</summary>
+    public string? Sprite { get; set; }
+
+    /// <summary>Gets or sets retained tag metadata.</summary>
+    public string? Tags { get; set; }
+
+    /// <summary>Gets or sets the native drill-down link.</summary>
+    public string? Link { get; set; }
 
     /// <summary>Gets or sets the optional parent boundary id.</summary>
     public string? ParentId { get; set; }
@@ -126,6 +144,9 @@ public sealed class MermaidC4Relationship : MermaidAstNode {
 
     /// <summary>Gets or sets the target element alias.</summary>
     public string TargetAlias { get => _targetAlias; set => _targetAlias = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Relationship target is required.", nameof(value)) : value; }
+
+    /// <summary>Gets or sets an explicitly authored RelIndex value, independently of displayed dynamic order.</summary>
+    public string? AuthoredIndex { get; set; }
 
     /// <summary>Gets or sets the normalized relationship kind.</summary>
     public string Kind { get => _kind; set => _kind = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Relationship kind is required.", nameof(value)) : value; }

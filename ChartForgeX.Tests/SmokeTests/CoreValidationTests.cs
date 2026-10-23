@@ -42,7 +42,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartSeries(new ChartSeriesId("values"), "Values", (ChartSeriesKind)999, Points(1, 2, 3)), "Series should reject unknown series kinds.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].StrokeWidth = 0, "Series stroke widths should reject non-positive values.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].StrokeWidth = double.NaN, "Series stroke widths should reject non-finite values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].YAxis = (ChartAxisSide)99, "Series y-axis side should reject unknown enum values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].ValueAxis = (ChartAxisSide)99, "Series y-axis side should reject unknown enum values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartAnnotation((ChartAnnotationKind)999, 1, null, "bad", ChartColor.Black, 1), "Annotations should reject unknown annotation kinds.");
         AssertThrows<ArgumentException>(() => new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 1, null, "bad", ChartColor.Black, 0.2), "Band annotations should require an end value.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartAnnotation(ChartAnnotationKind.VerticalBand, 1, 1, "bad", ChartColor.Black, 0.2), "Band annotations should reject empty ranges.");
@@ -59,9 +59,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartInterval(1, 2, double.NaN), "Chart intervals should reject non-finite values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartBubble(1, 2, 0), "Bubble charts should reject non-positive sizes.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartBubble(1, 2, double.NaN), "Bubble charts should reject non-finite sizes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartErrorBar(1, 5, 6, 8), "Error bars should reject lower bounds above the point estimate.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartErrorBar(1, 5, 2, 4), "Error bars should reject upper bounds below the point estimate.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartErrorBar(1, 5, 2, double.NaN), "Error bars should reject non-finite bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartErrorBar(1, 5, yBounds: new ChartErrorBounds(6, 8)), "Error bars should reject lower bounds above the point estimate.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartErrorBar(1, 5, yBounds: new ChartErrorBounds(2, 4)), "Error bars should reject upper bounds below the point estimate.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartErrorBar(1, 5, yBounds: new ChartErrorBounds(2, double.NaN)), "Error bars should reject non-finite bounds.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartCandlestick(1, 5, 4, 2, 3), "Candlestick charts should reject high values below open or close values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartCandlestick(1, 5, 8, 6, 7), "Candlestick charts should reject low values above open or close values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartCandlestick(1, 5, 8, double.NaN, 7), "Candlestick charts should reject non-finite OHLC values.");

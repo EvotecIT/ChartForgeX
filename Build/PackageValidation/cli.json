@@ -99,7 +99,7 @@
           "TimeoutSeconds": 60
         },
         {
-          "Name": "Packed Mermaid approximation warning",
+          "Name": "Packed native Mermaid Journey validation",
           "FileName": "{ToolPath}",
           "Arguments": [
             "validate",
@@ -179,6 +179,131 @@
           ],
           "NonEmptyFiles": [
             "{WorkRoot}/consumer-report.html"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native agentflow SVG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-agentflow.md",
+            "--output",
+            "{WorkRoot}/native-agentflow.svg"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/native-agentflow.svg"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native agentflow PNG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-agentflow.md",
+            "--output",
+            "{WorkRoot}/native-agentflow.png"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/native-agentflow.png"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native zenuml SVG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-zenuml.md",
+            "--output",
+            "{WorkRoot}/native-zenuml.svg"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/native-zenuml.svg"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native zenuml PNG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-zenuml.md",
+            "--output",
+            "{WorkRoot}/native-zenuml.png"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/native-zenuml.png"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native Railroad EBNF validation",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-railroad-ebnf.md"
+          ],
+          "ExpectedOutput": "Valid visual markup. Artifacts: 1",
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native Railroad ABNF validation",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-railroad-abnf.md"
+          ],
+          "ExpectedOutput": "Valid visual markup. Artifacts: 1",
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native Railroad PEG validation",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-railroad-peg.md"
+          ],
+          "ExpectedOutput": "Valid visual markup. Artifacts: 1",
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native Railroad IR validation",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-railroad-ir.md"
+          ],
+          "ExpectedOutput": "Valid visual markup. Artifacts: 1",
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native Railroad PNG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-railroad-ir.md",
+            "--output",
+            "{WorkRoot}/native-railroad.png"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/native-railroad.png"
           ],
           "TimeoutSeconds": 60
         }

@@ -87,7 +87,7 @@ public sealed class VerticalIntervalAutoBoundsTests {
         if (boxPlot) chart.AddBoxPlot("Summary", values.Select((value, point) => new ChartBoxPlot(point + 1, value, value, value, value, value)));
         else chart.AddRangeBar("Interval", values.Select((value, point) => new ChartInterval(point + 1, value, value)));
         var interval = chart.Series[secondary ? 1 : 0]; interval.WithStrokeWidth(2);
-        if (secondary) interval.UseSecondaryYAxis();
+        if (secondary) interval.UseSecondaryValueAxis();
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithScale(scale).WithReversal(reversed);
         chart.Options.XAxis.WithBounds(0, 3);
         return chart;

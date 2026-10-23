@@ -11,7 +11,7 @@ using ChartForgeX.Playground;
 using ChartForgeX.Raster;
 
 /// <summary>Exercises the same bounded native PNG request used by the actual playground download button.</summary>
-internal static class PlaygroundPngContracts {
+internal static partial class PlaygroundPngContracts {
     internal static void Check(List<string> failures, string? output) {
         if (output != null) Directory.CreateDirectory(output);
         var rendered = 0;

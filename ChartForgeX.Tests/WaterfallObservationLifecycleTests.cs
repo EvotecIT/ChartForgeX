@@ -52,13 +52,13 @@ public sealed class WaterfallObservationLifecycleTests {
         var series = Create().WithObservationId(0, new ChartObservationId("old"))
             .WithPointLabel(0, "Old label").WithPointColor(0, "#B34C89").WithPointFillPattern(0, ChartFillPattern.Crosshatch)
             .ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFFFF"))
-            .WithName("Localized movement").WithState(ChartSeriesState.Warning).UseSecondaryYAxis();
+            .WithName("Localized movement").WithState(ChartSeriesState.Warning).UseSecondaryValueAxis();
         series.Color = ChartColor.FromHex("#123456");
         var input = new[] { ChartWaterfallItem.OpeningBalance(5, 12), ChartWaterfallItem.Total(6) };
         series.ReplaceWaterfallItems(input); input[0] = ChartWaterfallItem.Delta(5, 999);
         Assert.Equal(12, series.WaterfallItems[0].Value); Assert.Equal(1, series.SourcePointCount); Assert.Equal(2, series.ObservationCount);
         Assert.Equal("movement", series.Id.Value); Assert.Equal("Localized movement", series.Name);
-        Assert.Equal(ChartSeriesState.Warning, series.StateRole); Assert.Equal(ChartAxisSide.Secondary, series.YAxis);
+        Assert.Equal(ChartSeriesState.Warning, series.StateRole); Assert.Equal(ChartAxisSide.Secondary, series.ValueAxis);
         Assert.Equal(ChartColor.FromHex("#123456"), series.Color);
         Assert.Empty(series.ObservationIds); Assert.Empty(series.PointLabels); Assert.Empty(series.PointColors);
         Assert.Empty(series.PointFillPatterns); Assert.Empty(series.PointDataLabelStyles);

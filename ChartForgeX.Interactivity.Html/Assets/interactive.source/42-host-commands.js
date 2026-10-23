@@ -1,4 +1,4 @@
-  // Identified leaves own selectable values; series wrappers do not.
+
   const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
     && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
   const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
@@ -26,7 +26,7 @@
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // Do not mix OLE dates and Unix milliseconds in one range.
+    // Separate OLE/Unix dates.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -46,7 +46,7 @@
     root.toggleAttribute('data-cfx-has-selection', selected);
     if (selected) root.dataset.cfxHasSelection = 'true';
     nodes.forEach(node => {
-      // Selection and host highlights share foreground; neither dims the other.
+
       const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
       node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
@@ -70,7 +70,7 @@
       if (candidate[key] !== undefined && !Array.isArray(candidate[key])) throw new TypeError('Chart match ' + key + ' must be an array.');
     return candidate;
   };
-  // Parse whole milliseconds consistently; engines round longer fractions differently.
+  // Whole ms first; fractions vary by engine.
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
     : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value)
       ? Date.parse(value.replace(/(\.\d{3})\d+(Z|[+-]\d\d:\d\d)$/, '$1$2')) : NaN;
@@ -78,7 +78,7 @@
     const a = intervalNumber(left), b = intervalNumber(right);
     if (a !== b) return a < b ? -1 : 1;
     if (typeof left !== 'string') return 0;
-    // Compare the remaining fractional milliseconds from the original values.
+
     const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
     const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
     const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');
@@ -153,7 +153,7 @@
     clearBrushCommand(root, options);
     return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
   };
-  // Retain durable identity for replacement and shared peers.
+
   const projectHostHighlight = (root, source, synchronize = false) => {
     const state = copyHostValue(source);
     if (!state) return state;
@@ -163,7 +163,7 @@
     const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
     let observationOwners;
     const observationReferences = (ids, seriesKey) => {
-      // The source catalog also owns omitted samples.
+
       if (!observationOwners) {
         observationOwners = new Map();
         series.forEach(owner => (owner.observationIds || []).forEach(({ id }) => {
@@ -206,7 +206,7 @@
       delete match.observationIds;
       removed = true;
     }
-    // Source ordinals expire on replacement; IDs and value filters persist.
+    // Local ordinals; persistent IDs/filters.
     if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
     else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {

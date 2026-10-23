@@ -48,6 +48,27 @@ public sealed partial class ExampleRecipeTests {
         }
     }
 
+    [Theory]
+    [InlineData("concentric", VisualThemeMode.Light)]
+    [InlineData("compact-concentric", VisualThemeMode.Dark)]
+    public void ConcentricRecipeAndDownloadRetainTwoIndependentTotals(string variant, VisualThemeMode mode) {
+        var recipe = ExampleRecipes.ForKind(ChartSeriesKind.Donut, variant);
+        var chart = Assert.IsType<Chart>(recipe.Create(variant, mode));
+        Assert.Equal(new[] { 100d, 220d }, chart.Series.Select(series => series.Points.Sum(point => point.Y)));
+        Assert.Equal(new[] { "prior", "current" }, chart.Series.Select(series => series.Id.Value));
+        Assert.All(chart.Series, series => Assert.NotNull(series.RadialBand));
+        var source = Source(recipe, variant);
+        Assert.Contains("public static class ConcentricPieRecipe", source);
+        Assert.Contains("new ChartRadialBand(.22, .52)", source);
+        Assert.Contains("new ChartRadialBand(.66, 1)", source);
+        Assert.DoesNotContain("DonutRecipe.Create", source);
+        var width = variant.StartsWith("compact-", StringComparison.Ordinal) ? 360 : 800;
+        chart.WithSize(width, 440).WithTheme(VisualTheme.Graphite(), mode);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(4, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count());
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     [Fact]
     public void DeepColorOptionsUseFocusedSourcesAndPreserveIndependentMeasurements() {
         var ordinary = ExampleRecipes.ForKind(ChartSeriesKind.Scatter);
@@ -137,7 +158,7 @@ public sealed partial class ExampleRecipeTests {
         Assert.Contains(observed.Points, point => point.X == 8.01);
         Assert.Contains(observed.Points, point => point.BreakBefore);
         var source = ExampleRecipeSource.Emit(recipe, "x-viewport", "Requests", "X 2–8", VisualThemeMode.Light, 800, 440, viewport: true);
-        Assert.Contains("model.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(2, 8)))", source);
+        Assert.Contains("model.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)))", source);
         Assert.DoesNotContain("ViewportExample", source);
     }
 

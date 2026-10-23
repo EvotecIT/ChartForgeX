@@ -10,7 +10,7 @@ public static class StepLineViewportRecipe {
             observed.WithDataLabels(false);
             var utilization = new ChartSeries(new ChartSeriesId("utilization"), "Utilization", ChartSeriesKind.StepLine,
                 Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100))
-                .UseSecondaryYAxis().ConfigureMarkers(markers => markers.Radius = 3);
+                .UseSecondaryValueAxis().ConfigureMarkers(markers => markers.Radius = 3);
             utilization.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             chart.AddSeries(utilization).WithSecondaryYAxis("Utilization (%)");
             chart.Options.SecondaryYAxis.TickCount = 4;

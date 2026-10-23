@@ -10,6 +10,7 @@ public static partial class V2Examples {
                 var variant = selection.Variant;
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "concentric" or "compact-concentric" ? "Service mix across two periods"
                     : variant is "quadrants" or "compact-quadrants" ? "Effort and impact"
                     : variant is "plot-regions" or "compact-plot-regions" ? "Capacity and delay"
                     : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap ? "Requests by state" : "Processing time and completion"
@@ -42,6 +43,7 @@ public static partial class V2Examples {
                     : variant is "step-middle" or "compact-step-middle" ? "Paired values change halfway between observations; missing sections stay open"
                     : variant is "step-end" ? "Paired values change at the following observation; missing sections stay open"
                     : "Shading compares Actual above and below Forecast"
+                    : variant is "concentric" or "compact-concentric" ? "Independent totals share categories; disjoint bands preserve each series"
                     : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"

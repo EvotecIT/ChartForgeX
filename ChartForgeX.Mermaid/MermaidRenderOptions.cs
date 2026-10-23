@@ -13,12 +13,18 @@ public sealed class MermaidRenderOptions {
     /// <summary>Gets or sets the source-resolution context used by source rendering and markup adapters.</summary>
     public MermaidParseOptions? ParseOptions { get; set; }
 
+    /// <summary>Gets or sets minimum natural dimensions and presentation for all railroad frontends.</summary>
+    public MermaidRailroadRenderOptions? Railroad { get; set; }
+
     /// <summary>Gets or sets rendering defaults for swimlane diagrams.</summary>
     public MermaidFlowchartRenderOptions? Swimlane { get; set; }
     /// <summary>Gets or sets rendering defaults for use case diagrams.</summary>
     public MermaidFlowchartRenderOptions? UseCase { get; set; }
     /// <summary>Gets or sets rendering defaults for Cynefin domain maps.</summary>
     public MermaidTopologyRenderOptions? Cynefin { get; set; }
+
+    /// <summary>Gets or sets native static Agentflow presentation defaults.</summary>
+    public MermaidTopologyRenderOptions? Agentflow { get; set; }
 
     /// <summary>
     /// Gets or sets default rendering options for Mermaid flowchart artifacts.
@@ -29,6 +35,9 @@ public sealed class MermaidRenderOptions {
     /// Gets or sets default rendering options for Mermaid sequence artifacts.
     /// </summary>
     public MermaidSequenceRenderOptions? Sequence { get; set; }
+
+    /// <summary>Gets or sets native sequence presentation for typed ZenUML occurrences.</summary>
+    public MermaidSequenceRenderOptions? ZenUml { get; set; }
 
     /// <summary>
     /// Gets or sets default rendering options for Mermaid pie artifacts.
@@ -158,11 +167,14 @@ public sealed class MermaidRenderOptions {
     public MermaidRenderOptions Clone() => new() {
         Presentation = MermaidPresentationOptions.Merge(null, Presentation), WarningPolicy = WarningPolicy,
         ParseOptions = ParseOptions?.Clone(),
+        Railroad = Railroad?.Snapshot<MermaidRailroadRenderOptions>(null),
             Swimlane = Swimlane?.Snapshot<MermaidFlowchartRenderOptions>(null),
             UseCase = UseCase?.Snapshot<MermaidFlowchartRenderOptions>(null),
             Cynefin = Cynefin?.Snapshot<MermaidTopologyRenderOptions>(null),
+            Agentflow = Agentflow?.Snapshot<MermaidTopologyRenderOptions>(null),
             Flowchart = Flowchart?.Snapshot<MermaidFlowchartRenderOptions>(null),
             Sequence = Sequence?.Snapshot<MermaidSequenceRenderOptions>(null),
+            ZenUml = ZenUml?.Snapshot<MermaidSequenceRenderOptions>(null),
             Pie = Pie?.Snapshot<MermaidPieRenderOptions>(null),
             Journey = Journey?.Snapshot<MermaidJourneyRenderOptions>(null),
             GitGraph = GitGraph?.Snapshot<MermaidGitGraphRenderOptions>(null),

@@ -27,6 +27,7 @@ public static class MermaidVennRendering {
             set.Fill = item.Fill;
             set.Stroke = item.Stroke;
             set.TextColor = item.TextColor;
+            set.StrokeWidth = item.StrokeWidth; set.FillOpacity = item.FillOpacity;
         }
 
         foreach (var item in document.Intersections) {
@@ -35,6 +36,7 @@ public static class MermaidVennRendering {
             intersection.Fill = item.Fill;
             intersection.Stroke = item.Stroke;
             intersection.TextColor = item.TextColor;
+            intersection.StrokeWidth = item.StrokeWidth; intersection.FillOpacity = item.FillOpacity;
         }
 
         foreach (var textNode in document.TextNodes) {
@@ -65,7 +67,9 @@ public static class MermaidVennRendering {
         artifact.Metadata["mermaid.intersections"] = document.Intersections.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.textNodes"] = document.TextNodes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(VennDiagramBlock);
-        artifact.Metadata["render.note"] = "Deterministic one-to-three-set Venn preview; source sizes are retained but not area-proportional.";
+        var layout = block.MeasureLayout();
+        artifact.Metadata["venn.maximumRelativeAreaError"] = layout.MaximumRelativeAreaError.ToString("R", CultureInfo.InvariantCulture);
+        artifact.Metadata["render.note"] = layout.IsAreaAccurate ? "Set areas and declared overlaps match within half a percent of the largest set." : "Three-circle overlap fit is approximate; inspect requested and actual region areas.";
         return MermaidPresentation.Apply(artifact, document);
     }
 

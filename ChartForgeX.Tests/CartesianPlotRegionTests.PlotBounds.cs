@@ -16,7 +16,7 @@ public sealed partial class CartesianPlotRegionTests {
             .AddHorizontalBar("First", values).AddHorizontalBar("Second", values.AsEnumerable().Reverse());
         else {
             chart.AddLine("Primary", values).AddLine("Secondary", new[] { new ChartPoint(1, 30), new ChartPoint(2, 70) });
-            chart.Series[1].UseSecondaryYAxis();
+            chart.Series[1].UseSecondaryValueAxis();
             chart.WithSecondaryYAxisBounds(0, 100);
         }
         var prepared = Prepare(chart);

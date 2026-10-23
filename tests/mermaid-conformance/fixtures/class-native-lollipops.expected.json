@@ -1,0 +1,62 @@
+{
+  "classFacts": {
+    "nodes": [
+      [
+        "A",
+        "A",
+        [],
+        []
+      ],
+      [
+        "B",
+        "B",
+        [],
+        []
+      ]
+    ],
+    "relationships": [
+      [
+        "A",
+        "@interface",
+        "None",
+        "Lollipop",
+        "Solid",
+        "",
+        "",
+        ""
+      ],
+      [
+        "B",
+        "@interface",
+        "None",
+        "Lollipop",
+        "Solid",
+        "",
+        "",
+        ""
+      ],
+      [
+        "@interface",
+        "A",
+        "Lollipop",
+        "None",
+        "Solid",
+        "",
+        "",
+        ""
+      ]
+    ],
+    "notes": []
+  },
+  "nativeClasses": [
+    "A",
+    "B"
+  ],
+  "nativeRetainedStatements": [],
+  "peerVisibleText": [
+    "A",
+    "B",
+    "Port",
+    "Clock"
+  ]
+}

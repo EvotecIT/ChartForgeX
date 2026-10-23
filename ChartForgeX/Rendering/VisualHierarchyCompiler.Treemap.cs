@@ -16,14 +16,16 @@ internal static partial class VisualHierarchyCompiler {
             if (!showLabels) return 0;
             var style = LabelStyle(chart, context, surface.Blend(item).Color, item);
             return builder.MeasureText("Mg", style).Height + 8;
-        });
+        }, chart.HierarchyPreparation);
         var tiles = layout.ToDictionary(tile => tile.ItemIndex);
         var paintOrder = layout.Select((tile, ordinal) => (tile.ItemIndex, ordinal)).ToDictionary(item => item.ItemIndex, item => item.ordinal);
         if (tiles.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The treemap has no positive leaf sizes."));
-        foreach (var root in Ordered(index.Roots)) Draw(root);
+        foreach (var root in Ordered(chart.HierarchyPreparation?.Roots ?? index.Roots)) Draw(root);
+        if (chart.HierarchyPreparation?.Request != null)
+            for (var item = 0; item < series.HierarchyItems.Count; item++) if (!chart.HierarchyPreparation.Contains(item)) Draw(item, false);
         DrawHierarchyScale(chart, context, builder, areas.Scale, surface, colors);
 
-        void Draw(int itemIndex) {
+        void Draw(int itemIndex, bool recurse = true) {
             var item = series.HierarchyItems[itemIndex]; var children = index.Children(itemIndex);
             var value = index.HierarchyValues[itemIndex]; var formatted = ChartNumericFormatter.FormatValue(chart.Options, value);
             var full = HierarchyCaption(series, itemIndex, item.Label);
@@ -42,7 +44,8 @@ internal static partial class VisualHierarchyCompiler {
             var id = ChartRelationshipMetadata.SourceId("node", item.Id);
             var visible = tiles.TryGetValue(itemIndex, out var tile);
             metadata["data-cfx-geometry-status"] = visible ? "visible" : value == 0 ? "zero" : "precision-collapse";
-            var role = visible ? children.Count > 0 ? "treemap-group" : "treemap-tile" : value == 0 ? "treemap-zero-value" : "treemap-unpainted-value";
+            ApplyHierarchyViewMetadata(metadata, chart.HierarchyPreparation, itemIndex);
+            var role = chart.HierarchyPreparation?.Contains(itemIndex) == false ? "hierarchy-outside-view" : visible ? children.Count > 0 ? "treemap-group" : "treemap-tile" : value == 0 ? "treemap-zero-value" : "treemap-unpainted-value";
             var bounds = visible ? tile.Rect : new ChartRect(areas.Content.X, areas.Content.Y, 0, 0);
             using (builder.PushGroup(id, role, metadata)) {
                 if (visible) {
@@ -63,7 +66,7 @@ internal static partial class VisualHierarchyCompiler {
                             tile.HeaderRect, blend.Color, itemIndex, blend.Paint, header: true);
                     }
                     if (children.Count > 0) using (builder.PushClip(tile.ContentRect)) foreach (var child in Ordered(children)) Draw(child);
-                } else foreach (var child in Ordered(children)) Draw(child);
+                } else if (recurse) foreach (var child in Ordered(children)) Draw(child);
             }
             var description = full + ": " + formatted;
             if (item.ColorValue.HasValue) description += "; " + surface.Title + ": " + surface.Presentation.Value(item.ColorValue.Value);

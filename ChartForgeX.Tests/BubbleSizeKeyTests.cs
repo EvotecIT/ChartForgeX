@@ -36,7 +36,7 @@ public sealed class BubbleSizeKeyTests {
         var chart = Bare().AddBubble("First", new[] { new ChartBubble(1, 20, 1), new ChartBubble(3, 40, 200.5) })
             .AddBubble("Second", new[] { new ChartBubble(5, 60, 200.5) })
             .AddBubble("Hidden extent", new[] { new ChartBubble(7, 80, 400) });
-        chart.Series[2].UseSecondaryYAxis().ConfigureMarkers(options => options.Enabled = false);
+        chart.Series[2].UseSecondaryValueAxis().ConfigureMarkers(options => options.Enabled = false);
         chart.Series[2].ShowInLegend = false;
         chart.Options.SecondaryYAxis.WithBounds(0, 100);
         chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("empty"), "Empty", Array.Empty<ChartBubble>()));

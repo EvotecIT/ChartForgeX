@@ -85,7 +85,9 @@ internal sealed class ChartBarCoordinateMap {
             for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var layout = series.HistogramBinLayout;
                 var isHistogramBin = layout != null && layout.Minimum != layout.Maximum && pointIndex < layout.Count;
-                yield return new CoordinateNode(seriesIndex, pointIndex, series.RenderPoints[pointIndex].X, isHistogramBin ? layout : null, pointIndex);
+                var coordinate = series.RenderPoints[pointIndex].X;
+                if (chart.Options.XAxis.PreparedTimeDomain is { Unit: true } domain) coordinate = domain.Inverse(domain.Forward(coordinate));
+                yield return new CoordinateNode(seriesIndex, pointIndex, coordinate, isHistogramBin ? layout : null, pointIndex);
             }
         }
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidRequirementParser {
+internal static partial class MermaidRequirementParser {
     private static readonly HashSet<string> RequirementTypes = new(StringComparer.OrdinalIgnoreCase) {
         "requirement",
         "functionalRequirement",
@@ -26,153 +26,83 @@ internal static class MermaidRequirementParser {
     public static void ParseStatements(MermaidRequirementDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var requirements = new Dictionary<string, MermaidRequirementNode>(StringComparer.Ordinal);
         var elements = new Dictionary<string, MermaidRequirementElement>(StringComparer.Ordinal);
-        for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+        MermaidRequirementNode? requirement = null;
+        MermaidRequirementElement? element = null;
+        foreach (var statement in ReadStatements(lines, startLine, result)) {
             MermaidResourceGuard.Checkpoint();
-            var raw = lines[line - 1];
-            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
-            if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
-            var span = new MermaidSourceSpan(line, MermaidParserUtilities.LeadingWhitespace(raw) + 1, trimmed.Length);
-            document.Statements.Add(new MermaidRawStatement(trimmed, span));
-
-            if (StartsWithKeyword(trimmed, "direction")) {
-                var direction = trimmed.Substring(9).Trim();
-                document.Direction = direction.Length == 0 ? null : direction;
+            var text = statement.Text; var span = statement.Span;
+            document.Statements.Add(statement);
+            if (text == "}") {
+                if (requirement == null && element == null) Invalid("An unmatched requirement block terminator.", span);
+                requirement = null; element = null;
                 continue;
             }
-
-            if (TryParseRequirementStart(trimmed, out var requirementType, out var requirementName, out var requirementClasses)) {
+            if (requirement != null || element != null) {
+                if (text.IndexOf('{') >= 0) { Invalid("Requirement and element blocks cannot be nested.", span); continue; }
+                if (!TryParseField(text, out var key, out var value)) { Invalid("Expected a requirement or element field.", span); continue; }
+                if (requirement != null) ReadRequirementField(requirement, key, value, span, result);
+                else ReadElementField(element!, key, value, span, result);
+                continue;
+            }
+            if (MermaidParserUtilities.TryReadDirection(text, span, result, out var direction, ignoreCase: true)) {
+                if (direction != null) document.Direction = direction;
+                continue;
+            }
+            if (TryParseRequirementStart(text, out var type, out var name, out var classes)) {
                 MermaidResourceGuard.CheckDepth(1, span);
-                if (elements.ContainsKey(requirementName)) {
-                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement name '" + requirementName + "' is already defined as an element.");
-                    var shadow = new MermaidRequirementNode(requirementName, requirementType, span);
-                    AddClasses(shadow.Classes, requirementClasses);
-                    line = ReadRequirementBlock(document, lines, line + 1, shadow, result);
-                    continue;
-                }
-
-                var requirement = EnsureRequirement(document, requirements, requirementName, requirementType, span);
-                AddClasses(requirement.Classes, requirementClasses);
-                if (requirementClasses.Count > 0) RetainedStyle(result, span);
-                line = ReadRequirementBlock(document, lines, line + 1, requirement, result);
+                if (elements.ContainsKey(name)) Invalid("Requirement name '" + name + "' is already defined as an element.", span);
+                requirement = EnsureRequirement(document, requirements, name, type, span);
+                AddClasses(requirement.Classes, classes, span);
                 continue;
             }
-
-            if (TryParseElementStart(trimmed, out var elementName, out var elementClasses)) {
+            if (TryParseElementStart(text, out name, out classes)) {
                 MermaidResourceGuard.CheckDepth(1, span);
-                if (requirements.ContainsKey(elementName)) {
-                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement element name '" + elementName + "' is already defined as a requirement.");
-                    var shadow = new MermaidRequirementElement(elementName, span);
-                    AddClasses(shadow.Classes, elementClasses);
-                    line = ReadElementBlock(document, lines, line + 1, shadow, result);
-                    continue;
-                }
-
-                var element = EnsureElement(document, elements, elementName, span);
-                AddClasses(element.Classes, elementClasses);
-                if (elementClasses.Count > 0) RetainedStyle(result, span);
-                line = ReadElementBlock(document, lines, line + 1, element, result);
+                if (requirements.ContainsKey(name)) Invalid("Element name '" + name + "' is already defined as a requirement.", span);
+                element = EnsureElement(document, elements, name, span);
+                AddClasses(element.Classes, classes, span);
                 continue;
             }
-
-            if (TryParseRelationship(trimmed, span, out var relationship)) {
-                ValidateRelationshipEndpoint(relationship.SourceName, requirements, elements, span, "source", result);
-                ValidateRelationshipEndpoint(relationship.TargetName, requirements, elements, span, "target", result);
-                document.Relationships.Add(relationship);
-                continue;
-            }
-
-            if (TryParseClassAssignment(trimmed, out var names, out var classes)) {
-                ApplyClasses(requirements, elements, names, classes);
-                document.StyleStatements.Add(new MermaidRawStatement(trimmed, span));
-                RetainedStyle(result, span);
-                continue;
-            }
-
-            if (IsStyleStatement(trimmed)) {
-                document.StyleStatements.Add(new MermaidRawStatement(trimmed, span));
-                RetainedStyle(result, span);
-                continue;
-            }
-
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized requirement diagram statement was retained but not rendered exactly: " + trimmed);
-            document.StyleStatements.Add(new MermaidRawStatement(trimmed, span));
+            if (TryParseRelationship(text, span, out var relationship)) { document.Relationships.Add(relationship); continue; }
+            if (TryReadStyle(document, statement, result)) continue;
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning,
+                "Unrecognized requirement statement is retained without native application: " + text, MermaidDiagnosticCodes.UnsupportedStatement);
+            document.RawStatements.Add(statement);
         }
-
-        if (document.Requirements.Count == 0 && document.Elements.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid requirement diagrams require at least one requirement or element.");
+        if (requirement != null || element != null) Invalid("Requirement and element blocks must close with '}'.", (requirement as MermaidAstNode ?? element!).Span);
+        foreach (var relationship in document.Relationships) {
+            ValidateRelationshipEndpoint(relationship.SourceName, requirements, elements, relationship.Span, "source", result);
+            ValidateRelationshipEndpoint(relationship.TargetName, requirements, elements, relationship.Span, "target", result);
+        }
+        ApplyStyles(document, requirements, elements, result);
+        if (document.Requirements.Count == 0 && document.Elements.Count == 0) Invalid("Mermaid requirement diagrams require at least one requirement or element.", document.HeaderSpan);
+        void Invalid(string message, MermaidSourceSpan span) => MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidStatement);
     }
 
-    private static int ReadRequirementBlock(MermaidRequirementDocument document, string[] lines, int startLine, MermaidRequirementNode requirement, MermaidParseResult<MermaidDocument> result) {
-        for (var line = startLine; line <= lines.Length; line++) {
-            MermaidResourceGuard.Checkpoint();
-            var raw = lines[line - 1];
-            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
-            if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
-            var span = new MermaidSourceSpan(line, MermaidParserUtilities.LeadingWhitespace(raw) + 1, trimmed.Length);
-            document.Statements.Add(new MermaidRawStatement(trimmed, span));
-            if (trimmed == "}") return line;
-
-            if (!TryParseField(trimmed, out var key, out var value)) {
-                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized requirement field was retained but not rendered exactly: " + trimmed);
-                continue;
-            }
-
-            switch (NormalizeKey(key)) {
-                case "id":
-                    requirement.RequirementId = value;
-                    break;
-                case "text":
-                    requirement.Text = value;
-                    break;
-                case "risk":
-                    requirement.Risk = value;
-                    if (!IsOneOf(value, "low", "medium", "high"))
-                        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement risk must be Low, Medium, or High.", MermaidDiagnosticCodes.InvalidStatement);
-                    break;
-                case "verifymethod":
-                    requirement.VerifyMethod = value;
-                    if (!IsOneOf(value, "analysis", "inspection", "test", "demonstration"))
-                        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Requirement verification method must be Analysis, Inspection, Test, or Demonstration.", MermaidDiagnosticCodes.InvalidStatement);
-                    break;
-                default:
-                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized requirement field was retained but not rendered exactly: " + key);
-                    break;
-            }
+    private static void ReadRequirementField(MermaidRequirementNode requirement, string key, string value, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        switch (NormalizeKey(key)) {
+            case "id": requirement.RequirementId = value; return;
+            case "text": requirement.Text = value; return;
+            case "risk":
+                requirement.Risk = value;
+                if (!IsOneOf(value, "low", "medium", "high")) Invalid("Requirement risk must be Low, Medium, or High.");
+                return;
+            case "verifymethod":
+                requirement.VerifyMethod = value;
+                if (!IsOneOf(value, "analysis", "inspection", "test", "demonstration")) Invalid("Requirement verification method must be Analysis, Inspection, Test, or Demonstration.");
+                return;
+            default:
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unknown requirement field: " + key, MermaidDiagnosticCodes.UnsupportedStatement);
+                return;
         }
-
-        MermaidParserUtilities.Add(result, requirement.Span, MermaidDiagnosticSeverity.Error, "Requirement block '" + requirement.Name + "' must close with '}'.");
-        return lines.Length;
+        void Invalid(string message) => MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidStatement);
     }
 
-    private static int ReadElementBlock(MermaidRequirementDocument document, string[] lines, int startLine, MermaidRequirementElement element, MermaidParseResult<MermaidDocument> result) {
-        for (var line = startLine; line <= lines.Length; line++) {
-            MermaidResourceGuard.Checkpoint();
-            var raw = lines[line - 1];
-            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
-            if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
-            var span = new MermaidSourceSpan(line, MermaidParserUtilities.LeadingWhitespace(raw) + 1, trimmed.Length);
-            document.Statements.Add(new MermaidRawStatement(trimmed, span));
-            if (trimmed == "}") return line;
-
-            if (!TryParseField(trimmed, out var key, out var value)) {
-                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized requirement element field was retained but not rendered exactly: " + trimmed);
-                continue;
-            }
-
-            switch (NormalizeKey(key)) {
-                case "type":
-                    element.ElementType = value;
-                    break;
-                case "docref":
-                    element.DocumentReference = value;
-                    break;
-                default:
-                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized requirement element field was retained but not rendered exactly: " + key);
-                    break;
-            }
+    private static void ReadElementField(MermaidRequirementElement element, string key, string value, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        switch (NormalizeKey(key)) {
+            case "type": element.ElementType = value; break;
+            case "docref": element.DocumentReference = value; break;
+            default: MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unknown element field: " + key, MermaidDiagnosticCodes.UnsupportedStatement); break;
         }
-
-        MermaidParserUtilities.Add(result, element.Span, MermaidDiagnosticSeverity.Error, "Element block '" + element.Name + "' must close with '}'.");
-        return lines.Length;
     }
 
     private static bool TryParseRequirementStart(string text, out string requirementType, out string name, out IReadOnlyList<string> classes) {
@@ -182,10 +112,9 @@ internal static class MermaidRequirementParser {
         var brace = text.IndexOf('{');
         if (brace < 0) return false;
         var prefix = text.Substring(0, brace).Trim();
-        var parts = prefix.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length != 2 || !RequirementTypes.Contains(parts[0])) return false;
-        requirementType = parts[0];
-        name = ExtractClasses(parts[1], out classes);
+        if (!MermaidStyleParser.SplitHead(prefix, out var type, out var identity) || !RequirementTypes.Contains(type)) return false;
+        requirementType = type;
+        name = ExtractClasses(identity, out classes);
         return name.Length > 0;
     }
 
@@ -195,9 +124,8 @@ internal static class MermaidRequirementParser {
         var brace = text.IndexOf('{');
         if (brace < 0) return false;
         var prefix = text.Substring(0, brace).Trim();
-        var parts = prefix.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length != 2 || !string.Equals(parts[0], "element", StringComparison.OrdinalIgnoreCase)) return false;
-        name = ExtractClasses(parts[1], out classes);
+        if (!MermaidStyleParser.SplitHead(prefix, out var type, out var identity) || !string.Equals(type, "element", StringComparison.OrdinalIgnoreCase)) return false;
+        name = ExtractClasses(identity, out classes);
         return name.Length > 0;
     }
 
@@ -226,32 +154,23 @@ internal static class MermaidRequirementParser {
         names = Array.Empty<string>();
         classes = Array.Empty<string>();
         if (text.StartsWith("class ", StringComparison.OrdinalIgnoreCase)) {
-            var parts = text.Substring(6).Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 2) return false;
-            names = SplitTokens(parts[0]);
-            classes = SplitTokens(parts[1]);
+            if (!MermaidStyleParser.SplitHead(text.Substring(6).Trim(), out var selectors, out var assigned)) return false;
+            names = MermaidStyleParser.Names(selectors);
+            classes = SplitTokens(assigned);
             return names.Count > 0 && classes.Count > 0;
         }
 
-        var shorthand = text.IndexOf(":::", StringComparison.Ordinal);
+        var shorthand = MermaidStyleParser.Suffix(text);
         if (shorthand <= 0) return false;
         names = new[] { CleanName(text.Substring(0, shorthand)) };
         classes = SplitTokens(text.Substring(shorthand + 3));
         return names.Count > 0 && classes.Count > 0;
     }
 
-    private static bool IsStyleStatement(string text) =>
-        text.StartsWith("style ", StringComparison.OrdinalIgnoreCase) ||
-        text.StartsWith("classDef ", StringComparison.OrdinalIgnoreCase);
-
     private static bool IsOneOf(string value, params string[] allowed) {
         foreach (var item in allowed) if (string.Equals(value, item, StringComparison.OrdinalIgnoreCase)) return true;
         return false;
     }
-
-    private static void RetainedStyle(MermaidParseResult<MermaidDocument> result, MermaidSourceSpan span) =>
-        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning,
-            "Requirement style or class statement is retained without native appearance changes.", MermaidDiagnosticCodes.UnsupportedStatement);
 
     private static void ValidateRelationshipEndpoint(string name, Dictionary<string, MermaidRequirementNode> requirements, Dictionary<string, MermaidRequirementElement> elements, MermaidSourceSpan span, string role, MermaidParseResult<MermaidDocument> result) {
         if (requirements.ContainsKey(name) || elements.ContainsKey(name)) return;
@@ -288,15 +207,13 @@ internal static class MermaidRequirementParser {
         return element;
     }
 
-    private static void ApplyClasses(Dictionary<string, MermaidRequirementNode> requirements, Dictionary<string, MermaidRequirementElement> elements, IReadOnlyList<string> names, IReadOnlyList<string> classes) {
-        foreach (var name in names) {
-            if (requirements.TryGetValue(name, out var requirement)) AddClasses(requirement.Classes, classes);
-            if (elements.TryGetValue(name, out var element)) AddClasses(element.Classes, classes);
-        }
-    }
-
-    private static void AddClasses(List<string> target, IReadOnlyList<string> classes) {
+    private static void AddClasses(List<string> target, IReadOnlyList<string> classes, MermaidSourceSpan span) {
+        var names = new HashSet<string>(target, StringComparer.Ordinal);
+        var originalCount = names.Count;
+        foreach (var name in classes) { MermaidResourceGuard.Checkpoint(); if (name.Length > 0) names.Add(name); }
+        MermaidResourceGuard.ReserveElements(names.Count - originalCount, span);
         foreach (var className in classes) {
+            MermaidResourceGuard.Checkpoint();
             if (className.Length > 0 && !target.Contains(className)) target.Add(className);
         }
     }
@@ -312,7 +229,7 @@ internal static class MermaidRequirementParser {
     }
 
     private static string ExtractClasses(string text, out IReadOnlyList<string> classes) {
-        var index = text.IndexOf(":::", StringComparison.Ordinal);
+        var index = MermaidStyleParser.Suffix(text);
         if (index < 0) {
             classes = Array.Empty<string>();
             return CleanName(text);
@@ -333,5 +250,5 @@ internal static class MermaidRequirementParser {
         return new string(chars.ToArray());
     }
 
-    private static string CleanName(string value) => MermaidParserUtilities.Unquote(value.Trim());
+    private static string CleanName(string value) => MermaidParserUtilities.Unquote(value.Trim().TrimEnd(';').TrimEnd());
 }

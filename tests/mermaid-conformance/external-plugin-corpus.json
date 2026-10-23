@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "corpus": "external-plugins",
+  "purpose": "Independent test-only rendering corpus for external Mermaid plugins; excluded from the built-in official parser corpus and its accepted/rejected counts.",
+  "references": {
+    "mermaid-zenuml-1.0.1": {
+      "package": "@mermaid-js/mermaid-zenuml",
+      "version": "1.0.1",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/@mermaid-js/mermaid-zenuml/-/mermaid-zenuml-1.0.1.tgz",
+      "integrity": "sha512-O5DiRODoFVNgugOVloxcDXmd+bXe/sbGlDh3onnzuE4EWtgTWwaAlWuPPOXbU9QESsztnD4Gtnu7dr+tYLFE0A==",
+      "mermaidPeerRange": "^10 || ^11 || ^12",
+      "execution": "Disposable local browser render from the published standalone dist bundle; no normal npm/project/runtime dependency.",
+      "parserBoundary": "Published parser.d.ts explicitly declares a dummy parse() wrapper. Only actual plugin-render DOM and paint can qualify reference semantics.",
+      "qualification": "See the two source-bound fixture receipts; full-plugin grammar remains unqualified."
+    }
+  },
+  "fixtures": {
+    "external-plugins/zenuml/zenuml-native-occurrences.mmd": {
+      "reference": "mermaid-zenuml-1.0.1",
+      "family": "ZenUML",
+      "sha256": "cd0a2467210be813f3c9a8f10b6b63a61e9c33128fc0e561995cf1cc1870202a",
+      "provenance": {
+        "kind": "authored-regression",
+        "description": "Original ChartForgeX source fixture derived from documented ZenUML DSL; no upstream parser or renderer code is copied.",
+        "sources": [
+          "https://github.com/mermaid-js/zenuml-core/blob/main/docs/DSL_SYNTAX.md",
+          "https://mermaid.js.org/syntax/zenuml.html",
+          "https://registry.npmjs.org/@mermaid-js/mermaid-zenuml/1.0.1"
+        ]
+      },
+      "qualification": {
+        "status": "qualified-render",
+        "method": "external-plugin-browser-render",
+        "parseIsSemanticEvidence": false,
+        "receipt": {
+          "sourceSha256": "cd0a2467210be813f3c9a8f10b6b63a61e9c33128fc0e561995cf1cc1870202a",
+          "packageVersion": "1.0.1",
+          "path": "external-plugins/zenuml/reference.json"
+        }
+      },
+      "requiredVisibleTextTokens": [
+        "User",
+        "Service",
+        "Store",
+        "Receipt",
+        "checkout",
+        "saved",
+        "accepted"
+      ],
+      "requiredObservedContracts": [
+        "participant declaration and creation order",
+        "Receipt lifetime starts at new Receipt, with nested Store call and return",
+        "if/else, loop, par, critical, opt and try/catch/finally block nesting/order",
+        "return targets, async Bus messages and final confirmed reply",
+        "comment and argument text remain inert"
+      ]
+    },
+    "external-plugins/zenuml/zenuml-native-local-context.mmd": {
+      "reference": "mermaid-zenuml-1.0.1",
+      "family": "ZenUML",
+      "sha256": "451a9e7949344564fb66d30b9b77564c91c5d3ca5568977942f0fb3c6a1abb47",
+      "provenance": {
+        "kind": "authored-regression",
+        "description": "Original ChartForgeX source fixture derived from documented ZenUML DSL; no upstream parser or renderer code is copied.",
+        "sources": [
+          "https://github.com/mermaid-js/zenuml-core/blob/main/docs/DSL_SYNTAX.md",
+          "https://mermaid.js.org/syntax/zenuml.html",
+          "https://registry.npmjs.org/@mermaid-js/mermaid-zenuml/1.0.1"
+        ]
+      },
+      "qualification": {
+        "status": "qualified-render",
+        "method": "external-plugin-browser-render",
+        "parseIsSemanticEvidence": false,
+        "receipt": {
+          "sourceSha256": "451a9e7949344564fb66d30b9b77564c91c5d3ca5568977942f0fb3c6a1abb47",
+          "packageVersion": "1.0.1",
+          "path": "external-plugins/zenuml/reference.json"
+        }
+      },
+      "requiredVisibleTextTokens": [
+        "process",
+        "validate",
+        "A",
+        "localStep",
+        "done"
+      ],
+      "requiredObservedContracts": [
+        "root-local process/validate calls keep external local context",
+        "A.run nested localStep uses participant A context",
+        "local and participant return order",
+        "no method-name participant is fabricated"
+      ]
+    }
+  }
+}

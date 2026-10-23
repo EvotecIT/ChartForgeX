@@ -6,18 +6,18 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveNativeXViewportBrowserTests {
     [BrowserTheory]
-    [InlineData("xy-missing-y")]
+    [InlineData("xy-missing-projections")]
     [InlineData("legacy-unsupported")]
     [InlineData("legacy-empty")]
     [InlineData("disconnected")]
     [InlineData("xy-to-legacy")]
     public async Task NativeBookmarksCannotPartiallyApplyWhenTheirCompleteWindowCannotStart(string capability) {
         if (!Enabled) return;
-        var xy = capability is "xy-missing-y" or "xy-to-legacy";
+        var xy = capability is "xy-missing-projections" or "xy-to-legacy";
         var host = new NativeHost(scenarios: true, group: "bookmark-atomicity");
         await using var session = await OpenAsync(host.Page(), 980, 720);
         var page = session.Page; await ConnectAsync(page, host);
-        if (xy) await ConnectCartesianAsync(page, "xy");
+        if (xy) await ConnectCartesianAsync(page, "x,y");
         await page.EvaluateAsync("xy=>xy?chartController.setViewport({x:{minimum:2,maximum:10},y:{minimum:20,maximum:80}}):chartController.setXWindow(2,10)", xy);
         await WaitForChangesAsync(page, 1);
         await page.Locator(Middle).FocusAsync(); await page.Keyboard.PressAsync("Space");
@@ -30,14 +30,14 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 window.capabilityBookmark=JSON.parse(root.dataset.cfxInteractionSnapshot);return capabilityBookmark;
             }
             """);
-        AssertWindow(bookmark.GetProperty("xWindow"), 2, 10);
-        Assert.Equal(xy, bookmark.GetProperty("yWindow").ValueKind == JsonValueKind.Object);
+        AssertWindow(bookmark.GetProperty("nativeViewport").GetProperty("x"), 2, 10);
+        Assert.Equal(xy, bookmark.GetProperty("nativeViewport").TryGetProperty("y", out _));
         Assert.Single(bookmark.GetProperty("selectedTargets").EnumerateArray());
         await page.EvaluateAsync("""
             ({capability,html})=>{
                 window.controlled=[];
                 const callback=(request,signal)=>new Promise((resolve,reject)=>controlled.push({request,signal,resolve,reject}));
-                if(capability==='xy-missing-y')chartController.connectViewport(callback,{axes:'xy'});
+                if(capability==='xy-missing-projections')chartController.connectViewport(callback,{axes:['x','y']});
                 else chartController.connectXViewport(capability==='disconnected'?null:callback);
                 chartController.update(html);
                 const root=chartController.root;

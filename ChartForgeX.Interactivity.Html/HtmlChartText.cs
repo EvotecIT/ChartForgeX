@@ -562,4 +562,56 @@ public enum HtmlChartText {
     XRangeUpdating,
     /// <summary>Live status after a native range preparation fails.</summary>
     XRangeFailed,
+    /// <summary>Annotation editor UI: Annotation editor</summary>
+    AnnotationEditor,
+    /// <summary>Annotation editor UI: Drawing</summary>
+    AnnotationChoose,
+    /// <summary>Annotation editor UI: Add note</summary>
+    AnnotationNote,
+    /// <summary>Annotation editor UI: Add line</summary>
+    AnnotationLine,
+    /// <summary>Annotation editor UI: Add channel</summary>
+    AnnotationChannel,
+    /// <summary>Annotation editor UI: Edit</summary>
+    AnnotationEdit,
+    /// <summary>Annotation editor UI: Delete</summary>
+    AnnotationDelete,
+    /// <summary>Annotation editor UI: Caption</summary>
+    AnnotationCaption,
+    /// <summary>Annotation editor UI: Apply</summary>
+    AnnotationApply,
+    /// <summary>Annotation editor UI: Cancel</summary>
+    AnnotationCancel,
+    /// <summary>Annotation editor UI: Undo</summary>
+    AnnotationUndo,
+    /// <summary>Annotation editor UI: Redo</summary>
+    AnnotationRedo,
+    /// <summary>Annotation editor UI: Close editor</summary>
+    AnnotationClose,
+    /// <summary>Annotation editor UI: Start anchor</summary>
+    AnnotationStart,
+    /// <summary>Annotation editor UI: End anchor</summary>
+    AnnotationEnd,
+    /// <summary>Annotation editor UI: Channel offset</summary>
+    AnnotationOffset,
+    /// <summary>Annotation editor UI: Updating annotation…</summary>
+    AnnotationUpdating,
+    /// <summary>Annotation editor UI: The annotation could not be updated.</summary>
+    AnnotationFailed,
+    /// <summary>Annotation editor UI: Draft: move an anchor, then apply or cancel.</summary>
+    AnnotationDraft,
+    /// <summary>Annotation editor UI: Connect native preparation to edit annotations.</summary>
+    AnnotationDisconnected,
+    /// <summary>Accessible name for native hierarchy navigation.</summary>
+    HierarchyNavigation,
+    /// <summary>Moves to the selected hierarchy item's parent.</summary>
+    HierarchyUp,
+    /// <summary>Restores the complete source hierarchy.</summary>
+    HierarchyHome,
+    /// <summary>Reports a pending native hierarchy request.</summary>
+    HierarchyUpdating,
+    /// <summary>Reports a rejected native hierarchy request.</summary>
+    HierarchyFailed,
+    /// <summary>Explains that hierarchy navigation requires the host's native preparation binding.</summary>
+    HierarchyDisconnected,
 }

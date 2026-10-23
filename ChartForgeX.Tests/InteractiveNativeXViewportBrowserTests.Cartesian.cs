@@ -10,18 +10,18 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveNativeXViewportBrowserTests {
     [BrowserTheory]
     [InlineData("y", 390, true)]
-    [InlineData("xy", 900, false)]
+    [InlineData("x,y", 900, false)]
     public async Task NativePrimaryYAndXYWindowsKeepGesturesBookmarksAndExportsOnTheCommittedScene(string axes, int width, bool reversed) {
         if (!Enabled) return;
-        var host = new NativeHost(kind: axes == "xy" ? ChartSeriesKind.Candlestick : ChartSeriesKind.Line, navigation: true, adaptive: true, dark: true, yReversed: reversed);
+        var host = new NativeHost(kind: axes == "x,y" ? ChartSeriesKind.Candlestick : ChartSeriesKind.Line, navigation: true, adaptive: true, dark: true, yReversed: reversed);
         await using var session = await OpenAsync(host.Page(), width, 1000);
         var page = session.Page; await ConnectAsync(page, host); await ConnectCartesianAsync(page, axes);
         await page.WaitForFunctionAsync("drawing=>chartController.root.dataset.cfxAdaptiveDrawing===drawing", width < 500 ? "narrow" : "wide");
         var initial = await SceneAsync(page);
-        await page.EvaluateAsync("xy=>chartController.setViewport({...(xy?{x:{minimum:2,maximum:10}}:{}),y:{minimum:20,maximum:80}})", axes == "xy");
+        await page.EvaluateAsync("xy=>chartController.setViewport({...(xy?{x:{minimum:2,maximum:10}}:{}),y:{minimum:20,maximum:80}})", axes == "x,y");
         await WaitForChangesAsync(page, 1);
         var viewport = await page.EvaluateAsync<JsonElement>("()=>chartController.getViewport()");
-        AssertWindow(viewport.GetProperty("x"), axes == "xy" ? 2 : 0, axes == "xy" ? 10 : 12);
+        AssertWindow(viewport.GetProperty("x"), axes == "x,y" ? 2 : 0, axes == "x,y" ? 10 : 12);
         AssertWindow(viewport.GetProperty("y"), 20, 80);
         Assert.NotEqual(initial.GetProperty("yLabels").GetRawText(), (await SceneAsync(page)).GetProperty("yLabels").GetRawText());
         Assert.Equal("false", await page.Locator(First).GetAttributeAsync("data-cfx-visible"));
@@ -29,7 +29,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("()=>nativeCallbackFrozen.every(Boolean)&&Object.isFrozen(nativeRequests[0].sourceViewport.y)"));
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await WaitForChangesAsync(page, 2);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()"), 26, 74);
-        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), axes == "xy" ? 2.8 : 0, axes == "xy" ? 9.2 : 12);
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), axes == "x,y" ? 2.8 : 0, axes == "x,y" ? 9.2 : 12);
         var pointer = await page.EvaluateAsync<JsonElement>("""
             ()=>{const plot=JSON.parse(chartController.root.dataset.cfxPreparedChart).yProjection.plotBounds,
                 matrix=chartController.root.querySelector('svg').getScreenCTM(),point=new DOMPoint(plot.x+plot.width*.5,plot.y+plot.height*.25).matrixTransform(matrix);
@@ -116,5 +116,5 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Empty(await page.EvaluateAsync<string[]>("()=>nativeErrors.map(error=>error.message)")); AssertNoConsoleErrors(session);
     }
 
-    private static Task ConnectCartesianAsync(IPage page, string axes) => page.EvaluateAsync("axes=>chartControllers.forEach(controller=>controller.connectViewport(nativeCallbacks.get(controller),{axes}))", axes);
+    private static Task ConnectCartesianAsync(IPage page, string axes) => page.EvaluateAsync("axes=>chartControllers.forEach(controller=>controller.connectViewport(nativeCallbacks.get(controller),{axes:axes.split(',')}))", axes);
 }

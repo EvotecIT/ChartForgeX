@@ -24,7 +24,7 @@ internal static partial class ExpressiveExamples {
             new ChartCandlestick(1, 32, 74, 19, 63), new ChartCandlestick(2, 68, 88, 31, 42)
         });
         var error = MarkSurfaceChart("Confidence · range and caps").AddErrorBar("Estimate", new[] {
-            new ChartErrorBar(1, 42, 21, 65), new ChartErrorBar(2, 64, 39, 85)
+            new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(21, 65)), new ChartErrorBar(2, 64, yBounds: new ChartErrorBounds(39, 85))
         }, color);
         var band = MarkSurfaceChart("Interval · uniform surface").AddRangeBand("Expected", new[] {
             new ChartRangeBand(1, 20, 62), new ChartRangeBand(2, 30, 74), new ChartRangeBand(3, 38, 88)

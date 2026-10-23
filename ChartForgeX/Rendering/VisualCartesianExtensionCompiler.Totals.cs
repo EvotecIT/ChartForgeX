@@ -42,7 +42,7 @@ internal static partial class VisualCartesianCompiler {
         spacing = Math.Max(2, spacing);
         var left = 0d; var right = 0d;
         foreach (var total in totals) {
-            if (BarValueDirection(chart.Options.XAxis, total.Value) > 0) right = Math.Max(right, total.Metrics.Width + spacing);
+            if (BarValueDirection(ChartCartesianOrientation.ValueAxis(chart, total.Total.Axis), total.Value) > 0) right = Math.Max(right, total.Metrics.Width + spacing);
             else left = Math.Max(left, total.Metrics.Width + spacing);
         }
         // Keep a positive data viewport even when authored captions exceed available
@@ -54,9 +54,10 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddHorizontalTotals(Chart chart, IReadOnlyList<HorizontalStackTotal> totals, VisualRenderContext context,
-        VisualSceneBuilder builder, ChartRect plot, ChartMapper map, ChartStackLayout stacks, List<LabelPlacementRequest> labels) {
+        VisualSceneBuilder builder, ChartRect plot, ChartMapper primaryMap, ChartMapper? secondaryMap, ChartStackLayout stacks, List<LabelPlacementRequest> labels) {
         foreach (var total in totals) {
-            var positive = BarValueDirection(chart.Options.XAxis, total.Value) > 0;
+            var map = total.Total.Axis == ChartAxisSide.Secondary ? secondaryMap! : primaryMap;
+            var positive = BarValueDirection(ChartCartesianOrientation.ValueAxis(chart, total.Total.Axis), total.Value) > 0;
             var layout = ResolveHorizontalBarLayout(chart, context, plot, map, stacks, total.Total.SeriesIndex);
             var point = new ChartPoint(map.X(total.Value), map.Y(total.Total.Coordinate) + layout.Offset);
             builder.AddRegion(new VisualSemanticRegion(total.Id, "stack-total", new ChartRect(point.X, point.Y, 0, 0),
@@ -64,7 +65,7 @@ internal static partial class VisualCartesianCompiler {
             using (builder.PushGroup(total.Id, "stack-total", new Dictionary<string, string> {
                 ["data-cfx-x"] = Number(total.Total.Coordinate), ["data-cfx-y"] = Number(total.Value), ["data-cfx-label"] = total.Text,
                 ["data-cfx-source-total"] = Number(total.Total.SourceValue), ["data-cfx-stack-group"] = total.Total.Group ?? string.Empty,
-                ["data-cfx-axis"] = "primary"
+                ["data-cfx-axis"] = total.Total.Axis.ToString().ToLowerInvariant()
             })) { }
             labels.Add(new LabelPlacementRequest(total.Text, point, total.Style, new[] {
                 new LabelCandidate(positive ? Math.Max(2, context.Theme.Spacing) : -Math.Max(2, context.Theme.Spacing), 0, positive ? 0 : 1, .5)

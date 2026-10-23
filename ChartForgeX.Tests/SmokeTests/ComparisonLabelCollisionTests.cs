@@ -45,7 +45,7 @@ internal static partial class SmokeTests {
         AssertUsefulSubset(bubble.ToSvg(), bubbles.Length, "Dense bubble labels should avoid collisions.");
         Assert(bubble.ToPng().Length > 64, "PNG bubble label collision avoidance should render valid output.");
 
-        var errorBars = Enumerable.Range(1, 10).Select(value => new ChartErrorBar(value, 42 + value * 0.2, 34 + value * 0.2, 50 + value * 0.2)).ToArray();
+        var errorBars = Enumerable.Range(1, 10).Select(value => new ChartErrorBar(value, 42 + value * 0.2, yBounds: new ChartErrorBounds(34 + value * 0.2, 50 + value * 0.2))).ToArray();
         var error = Chart.Create()
             .WithSize(320, 220)
             .WithDataLabels()

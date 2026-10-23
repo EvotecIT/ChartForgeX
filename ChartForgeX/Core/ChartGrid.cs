@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
@@ -326,7 +327,7 @@ public sealed partial class ChartGrid {
 
             if (UsesSecondaryCartesianYAxis(chart)) {
                 var primaryRange = ChartRange.FromChart(chart, false);
-                var secondaryRange = ChartRange.FromSecondaryYAxis(chart, primaryRange, false);
+                var secondaryRange = ChartRange.FromSecondaryValueAxis(chart, primaryRange, false);
                 if (secondaryRange.MinY < secondaryMinimum) secondaryMinimum = secondaryRange.MinY;
                 if (secondaryRange.MaxY > secondaryMaximum) secondaryMaximum = secondaryRange.MaxY;
                 secondaryCompatible.Add(chart);
@@ -357,6 +358,7 @@ public sealed partial class ChartGrid {
         var minimum = double.PositiveInfinity;
         var maximum = double.NegativeInfinity;
         var compatible = new List<Chart>();
+        var secondary = new List<Chart>(); var secondaryMinimum = double.PositiveInfinity; var secondaryMaximum = double.NegativeInfinity;
         foreach (var chart in _charts) {
             ChartGuards.RenderCompatibility(chart, preparing: true);
             if (!ChartSeriesKindTraits.UsesCartesianXAxis(chart)) continue;
@@ -364,11 +366,17 @@ public sealed partial class ChartGrid {
             if (range.MinX < minimum) minimum = range.MinX;
             if (range.MaxX > maximum) maximum = range.MaxX;
             compatible.Add(chart);
+            if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary)) {
+                var value = ChartRange.FromSecondaryValueAxis(chart, range, false);
+                secondaryMinimum = Math.Min(secondaryMinimum, value.MinX); secondaryMaximum = Math.Max(secondaryMaximum, value.MaxX);
+                secondary.Add(chart);
+            }
         }
 
         if (compatible.Count == 0) throw new InvalidOperationException("Shared x-axis bounds require at least one cartesian chart.");
         if (Math.Abs(maximum - minimum) < double.Epsilon) maximum = minimum + 1;
         foreach (var chart in compatible) chart.WithXAxisBounds(minimum, maximum);
+        foreach (var chart in secondary) chart.WithSecondaryXAxisBounds(secondaryMinimum, secondaryMaximum);
         return this;
     }
 
@@ -383,16 +391,18 @@ public sealed partial class ChartGrid {
     }
 
     private static bool UsesPrimaryCartesianYAxis(Chart chart) {
+        if (ChartCartesianOrientation.IsHorizontal(chart)) return chart.Series.Count > 0;
         foreach (var series in chart.Series) {
-            if (series.YAxis == ChartAxisSide.Primary && ChartSeriesKindTraits.UsesCartesianYAxis(series)) return true;
+            if (series.ValueAxis == ChartAxisSide.Primary && ChartSeriesKindTraits.UsesCartesianYAxis(series)) return true;
         }
 
         return false;
     }
 
     private static bool UsesSecondaryCartesianYAxis(Chart chart) {
+        if (ChartCartesianOrientation.IsHorizontal(chart)) return false;
         foreach (var series in chart.Series) {
-            if (series.YAxis == ChartAxisSide.Secondary && ChartSeriesKindTraits.UsesCartesianYAxis(series)) return true;
+            if (series.ValueAxis == ChartAxisSide.Secondary && ChartSeriesKindTraits.UsesCartesianYAxis(series)) return true;
         }
 
         return false;

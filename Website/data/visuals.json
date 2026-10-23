@@ -1,6 +1,38 @@
 {
   "docs": {
     "figures": {
+      "axis-calendar-month": {
+        "base": "/site/docs/axis-calendar-month",
+        "ext": "svg",
+        "w": 760,
+        "h": 440,
+        "kb": 6.4,
+        "png": "/site/docs/axis-calendar-month"
+      },
+      "axis-negative-log": {
+        "base": "/site/docs/axis-negative-log",
+        "ext": "svg",
+        "w": 760,
+        "h": 440,
+        "kb": 7.6,
+        "png": "/site/docs/axis-negative-log"
+      },
+      "axis-ordinal": {
+        "base": "/site/docs/axis-ordinal",
+        "ext": "svg",
+        "w": 760,
+        "h": 440,
+        "kb": 6,
+        "png": "/site/docs/axis-ordinal"
+      },
+      "axis-positive-log": {
+        "base": "/site/docs/axis-positive-log",
+        "ext": "svg",
+        "w": 760,
+        "h": 440,
+        "kb": 7.6,
+        "png": "/site/docs/axis-positive-log"
+      },
       "hierarchy": {
         "base": "/site/examples/organization-hierarchy",
         "ext": "svg",
@@ -16,6 +48,38 @@
           "helpers": "static TopologyTeamMember Reports(string id, string name, string role, string manager,\n    TopologyHealthStatus status = TopologyHealthStatus.Unknown) =\u003E\n    new(id, name, role) { ParentId = manager, Status = status };"
         },
         "source": "/site/examples/organization-hierarchy.csharp.txt"
+      },
+      "hierarchy-sunburst-engineering": {
+        "base": "/site/docs/hierarchy-sunburst-engineering",
+        "ext": "svg",
+        "w": 760,
+        "h": 480,
+        "kb": 14.5,
+        "png": "/site/docs/hierarchy-sunburst-engineering"
+      },
+      "hierarchy-sunburst-full": {
+        "base": "/site/docs/hierarchy-sunburst-full",
+        "ext": "svg",
+        "w": 760,
+        "h": 480,
+        "kb": 20.4,
+        "png": "/site/docs/hierarchy-sunburst-full"
+      },
+      "hierarchy-treemap-engineering": {
+        "base": "/site/docs/hierarchy-treemap-engineering",
+        "ext": "svg",
+        "w": 760,
+        "h": 480,
+        "kb": 9.7,
+        "png": "/site/docs/hierarchy-treemap-engineering"
+      },
+      "hierarchy-treemap-full": {
+        "base": "/site/docs/hierarchy-treemap-full",
+        "ext": "svg",
+        "w": 760,
+        "h": 480,
+        "kb": 11.5,
+        "png": "/site/docs/hierarchy-treemap-full"
       },
       "install": {
         "base": "/site/docs/install",
@@ -72,7 +136,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.7
+        "kb": 31.1
       }
     },
     "surfaces": {
@@ -140,7 +204,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.7
+        "kb": 31.1
       }
     }
   },
@@ -206,6 +270,22 @@
         "points": "static IEnumerable\u003CChartPoint\u003E Points(params double[] values) {\n    for (var index = 0; index \u003C values.Length; index\u002B\u002B) {\n        yield return new ChartPoint(index \u002B 1, values[index]);\n    }\n}"
       },
       "source": "/site/examples/static-chart.csharp.txt"
+    },
+    "native-hierarchy": {
+      "code": {
+        "views": "// Uses post-3.0.1 hierarchy-view APIs. Build current source or use a later package containing them.\n// Exact documentation typography uses Carlito regular/bold installed or registered on the host; other hosts retain normal font fallback.\nusing System;\nusing System.IO;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Typography;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nforeach (var kind in new[] { ChartSeriesKind.Treemap, ChartSeriesKind.Sunburst }) {\n    var chart = CreateChart(kind, mode);\n    foreach (var rootId in new string?[] { null, \u0022engineering\u0022 }) {\n        var id = kind.ToString().ToLowerInvariant() \u002B \u0022-\u0022 \u002B (rootId ?? \u0022full\u0022);\n        var prepared = chart.PrepareHierarchy(Context(mode), rootId == null ? null : new ChartHierarchyView(rootId));\n        File.WriteAllText(id \u002B \u0022.svg\u0022, prepared.ToSvg(id));\n        File.WriteAllBytes(id \u002B \u0022.png\u0022, prepared.ToPng());\n    }\n}",
+        "helpers": "static Chart CreateChart(ChartSeriesKind kind, VisualThemeMode mode) {\n    if (kind is not (ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) throw new ArgumentOutOfRangeException(nameof(kind));\n    // This existing recipe owns every ID, parent and value. Its null group values are valid for both families.\n    var sunburst = SunburstRecipe.Create(\u0022wide\u0022, mode).WithSize(760, 480);\n    if (kind == ChartSeriesKind.Sunburst) return sunburst.ConfigureSunburst(options =\u003E {\n        options.SectorGap = 6;\n        options.MinimumLabelFontSize = 10;\n        options.CornerRadius = 4;\n    });\n    var source = sunburst.Series[0];\n    var treemap = ChartSeries.CreateTreemap(source.Id, source.Name, source.HierarchyItems);\n    treemap.PointColors.AddRange(source.PointColors);\n    treemap.PointFillPatterns.AddRange(source.PointFillPatterns);\n    foreach (var state in source.NodeStates) treemap.WithNodeState(state.Key, state.Value);\n    return Chart.Create().WithSize(760, 480).WithDataLabels().AddSeries(treemap)\n        .WithValueFormat(sunburst.Options.ValueFormat);\n}\n\nstatic VisualRenderContext Context(VisualThemeMode mode) =\u003E new(\n    new VisualLayoutOptions(new VisualSize(760, 480)), VisualTheme.Graphite(), mode,\n    new VisualFrame(\u0022Team allocation\u0022, \u0022Same source hierarchy; full view or Engineering as the visible root\u0022, showLegend: false),\n    FontSpec.FromFamily(\u0022Carlito\u0022));"
+      },
+      "program": "// Uses post-3.0.1 hierarchy-view APIs. Build current source or use a later package containing them.\n// Exact documentation typography uses Carlito regular/bold installed or registered on the host; other hosts retain normal font fallback.\nusing System;\nusing System.IO;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Typography;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nforeach (var kind in new[] { ChartSeriesKind.Treemap, ChartSeriesKind.Sunburst }) {\n    var chart = CreateChart(kind, mode);\n    foreach (var rootId in new string?[] { null, \u0022engineering\u0022 }) {\n        var id = kind.ToString().ToLowerInvariant() \u002B \u0022-\u0022 \u002B (rootId ?? \u0022full\u0022);\n        var prepared = chart.PrepareHierarchy(Context(mode), rootId == null ? null : new ChartHierarchyView(rootId));\n        File.WriteAllText(id \u002B \u0022.svg\u0022, prepared.ToSvg(id));\n        File.WriteAllBytes(id \u002B \u0022.png\u0022, prepared.ToPng());\n    }\n}\n\nstatic Chart CreateChart(ChartSeriesKind kind, VisualThemeMode mode) {\n    if (kind is not (ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) throw new ArgumentOutOfRangeException(nameof(kind));\n    // This existing recipe owns every ID, parent and value. Its null group values are valid for both families.\n    var sunburst = SunburstRecipe.Create(\u0022wide\u0022, mode).WithSize(760, 480);\n    if (kind == ChartSeriesKind.Sunburst) return sunburst.ConfigureSunburst(options =\u003E {\n        options.SectorGap = 6;\n        options.MinimumLabelFontSize = 10;\n        options.CornerRadius = 4;\n    });\n    var source = sunburst.Series[0];\n    var treemap = ChartSeries.CreateTreemap(source.Id, source.Name, source.HierarchyItems);\n    treemap.PointColors.AddRange(source.PointColors);\n    treemap.PointFillPatterns.AddRange(source.PointFillPatterns);\n    foreach (var state in source.NodeStates) treemap.WithNodeState(state.Key, state.Value);\n    return Chart.Create().WithSize(760, 480).WithDataLabels().AddSeries(treemap)\n        .WithValueFormat(sunburst.Options.ValueFormat);\n}\n\nstatic VisualRenderContext Context(VisualThemeMode mode) =\u003E new(\n    new VisualLayoutOptions(new VisualSize(760, 480)), VisualTheme.Graphite(), mode,\n    new VisualFrame(\u0022Team allocation\u0022, \u0022Same source hierarchy; full view or Engineering as the visible root\u0022, showLegend: false),\n    FontSpec.FromFamily(\u0022Carlito\u0022));\n\n/// \u003Csummary\u003ECreates a sunburst showing allocation through a team hierarchy.\u003C/summary\u003E\npublic static class SunburstRecipe {\n    /// \u003Csummary\u003ECreates the source model for a gallery variant without choosing an export backend.\u003C/summary\u003E\n    public static Chart Create(string variant = \u0022wide\u0022, VisualThemeMode mode = VisualThemeMode.Light) {\n        if (variant is not (\u0022wide\u0022 or \u0022compact\u0022 or \u0022sparse\u0022 or \u0022options\u0022 or \u0022compact-options\u0022\n            or \u0022authored-total\u0022 or \u0022compact-authored-total\u0022))\n            throw new ArgumentOutOfRangeException(nameof(variant));\n\n        var inclusive = variant is \u0022authored-total\u0022 or \u0022compact-authored-total\u0022;\n        var configured = inclusive || variant is \u0022options\u0022 or \u0022compact-options\u0022;\n        var items = new[] {\n            new ChartHierarchyItem(\u0022all\u0022, \u0022All teams\u0022, value: configured ? 140 : null, colorValue: configured ? -10 : null),\n            new ChartHierarchyItem(\u0022engineering\u0022, \u0022Engineering\u0022, \u0022all\u0022, configured ? 80 : null, configured ? 12 : null),\n            new ChartHierarchyItem(\u0022operations\u0022, \u0022Operations\u0022, \u0022all\u0022, colorValue: configured ? 0 : null),\n            new ChartHierarchyItem(\u0022platform\u0022, \u0022Platform\u0022, \u0022engineering\u0022, 35, configured ? -4 : null),\n            new ChartHierarchyItem(\u0022engineering-support\u0022, \u0022Support\u0022, \u0022engineering\u0022, 25, configured ? 5 : null),\n            new ChartHierarchyItem(\u0022operations-support\u0022, \u0022Support\u0022, \u0022operations\u0022, 40),\n            new ChartHierarchyItem(\u0022reserve\u0022, \u0022Reserve\u0022, \u0022operations\u0022, 0)\n        };\n        var allocation = ChartSeries.CreateSunburst(new ChartSeriesId(\u0022allocation-source\u0022), \u0022Allocated work\u0022, items);\n        var chart = Chart.Create().WithDataLabels().AddSeries(allocation);\n        if (configured) {\n            var colors = VisualTheme.Graphite().Resolve(mode);\n            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);\n            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);\n            chart.ConfigureSunburst(options =\u003E {\n                options.CornerRadius = 6;\n                options.SecondaryLabelFormatter = context =\u003E context.Item.Id == \u0022all\u0022 ? \u0022Allocation\u0022 : context.Item.Id == \u0022engineering\u0022 ? \u0022Delivery teams\u0022\n                    : context.Item.Id == \u0022operations-support\u0022 ? \u0022Shared service\u0022 : null;\n                options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;\n                options.ColorDimension.Name = \u0022Change (%)\u0022;\n                options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)\n                    .WithLabels(\u0022Decrease\u0022, \u0022No change\u0022, \u0022Increase\u0022).WithNoDataColor(colors.Surface);\n            });\n            allocation.WithNodeState(\u0022engineering-support\u0022, ChartSeriesState.Warning);\n            allocation.WithPointFillPattern(4, ChartFillPattern.DiagonalForward);\n        }\n        return chart.WithValueFormat(ChartValueFormat.Number(\u00220.##\u0022, System.Globalization.CultureInfo.InvariantCulture));\n    }\n}\n",
+      "source": "/site/examples/native-hierarchy.csharp.txt"
+    },
+    "native-axis": {
+      "code": {
+        "views": "// Uses post-3.0.1 logarithmic/time-spacing APIs. Build current source or use a later package containing them.\n// Exact documentation typography uses Carlito regular/bold installed or registered on the host; other hosts retain normal font fallback.\nusing System;\nusing System.IO;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Themes;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nforeach (var variant in new[] { \u0022positive-log\u0022, \u0022negative-log\u0022, \u0022ordinal\u0022, \u0022calendar-month\u0022 }) {\n    var chart = CreateChart(variant, mode);\n    chart.SaveSvg(\u0022axis-\u0022 \u002B variant \u002B \u0022.svg\u0022);\n    chart.SavePng(\u0022axis-\u0022 \u002B variant \u002B \u0022.png\u0022);\n}",
+        "helpers": "static Chart CreateChart(string variant, VisualThemeMode mode) {\n    var chart = Chart.Create().WithSize(760, 440).WithThemeMode(mode).WithLegend(false);\n    if (variant is \u0022positive-log\u0022 or \u0022negative-log\u0022) {\n        var negative = variant == \u0022negative-log\u0022;\n        var magnitudes = new[] { 1d, 8, 64 };\n        var values = negative ? magnitudes.AsEnumerable().Reverse().Select(value =\u003E -value) : magnitudes.AsEnumerable();\n        return chart.WithTitle(negative ? \u0022Negative logarithmic domain\u0022 : \u0022Positive logarithmic domain\u0022)\n            .WithSubtitle(\u0022Base two; the authored sign remains part of the data\u0022)\n            .AddLine(negative ? \u0022Loss\u0022 : \u0022Capacity\u0022, values.Select((value, index) =\u003E new ChartPoint(index \u002B 1, value)))\n            .ConfigureYAxis(axis =\u003E axis.WithLogarithmicScale(2, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)\n                .WithBounds(negative ? -64 : 1, negative ? -1 : 64));\n    }\n    if (variant is not (\u0022ordinal\u0022 or \u0022calendar-month\u0022)) throw new ArgumentOutOfRangeException(nameof(variant));\n    return chart.WithTitle(variant == \u0022ordinal\u0022 ? \u0022Ordinal observations\u0022 : \u0022Calendar-month bands\u0022)\n        .WithSubtitle(variant == \u0022ordinal\u0022 ? \u0022January and March are adjacent supplied observations\u0022 : \u0022An empty February band remains visible\u0022)\n        .AddBar(\u0022Orders\u0022, new[] {\n            new ChartPoint(new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc), 18),\n            new ChartPoint(new DateTime(2026, 3, 30, 0, 0, 0, DateTimeKind.Utc), 27)\n        })\n        .ConfigureXAxis(axis =\u003E axis.WithTimeScale(TimeZoneInfo.Utc).WithTimeSpacing(variant == \u0022ordinal\u0022\n            ? ChartTimeSpacing.Ordinal : ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))));\n}"
+      },
+      "program": "// Uses post-3.0.1 logarithmic/time-spacing APIs. Build current source or use a later package containing them.\n// Exact documentation typography uses Carlito regular/bold installed or registered on the host; other hosts retain normal font fallback.\nusing System;\nusing System.IO;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Themes;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nforeach (var variant in new[] { \u0022positive-log\u0022, \u0022negative-log\u0022, \u0022ordinal\u0022, \u0022calendar-month\u0022 }) {\n    var chart = CreateChart(variant, mode);\n    chart.SaveSvg(\u0022axis-\u0022 \u002B variant \u002B \u0022.svg\u0022);\n    chart.SavePng(\u0022axis-\u0022 \u002B variant \u002B \u0022.png\u0022);\n}\n\nstatic Chart CreateChart(string variant, VisualThemeMode mode) {\n    var chart = Chart.Create().WithSize(760, 440).WithThemeMode(mode).WithLegend(false);\n    if (variant is \u0022positive-log\u0022 or \u0022negative-log\u0022) {\n        var negative = variant == \u0022negative-log\u0022;\n        var magnitudes = new[] { 1d, 8, 64 };\n        var values = negative ? magnitudes.AsEnumerable().Reverse().Select(value =\u003E -value) : magnitudes.AsEnumerable();\n        return chart.WithTitle(negative ? \u0022Negative logarithmic domain\u0022 : \u0022Positive logarithmic domain\u0022)\n            .WithSubtitle(\u0022Base two; the authored sign remains part of the data\u0022)\n            .AddLine(negative ? \u0022Loss\u0022 : \u0022Capacity\u0022, values.Select((value, index) =\u003E new ChartPoint(index \u002B 1, value)))\n            .ConfigureYAxis(axis =\u003E axis.WithLogarithmicScale(2, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)\n                .WithBounds(negative ? -64 : 1, negative ? -1 : 64));\n    }\n    if (variant is not (\u0022ordinal\u0022 or \u0022calendar-month\u0022)) throw new ArgumentOutOfRangeException(nameof(variant));\n    return chart.WithTitle(variant == \u0022ordinal\u0022 ? \u0022Ordinal observations\u0022 : \u0022Calendar-month bands\u0022)\n        .WithSubtitle(variant == \u0022ordinal\u0022 ? \u0022January and March are adjacent supplied observations\u0022 : \u0022An empty February band remains visible\u0022)\n        .AddBar(\u0022Orders\u0022, new[] {\n            new ChartPoint(new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc), 18),\n            new ChartPoint(new DateTime(2026, 3, 30, 0, 0, 0, DateTimeKind.Utc), 27)\n        })\n        .ConfigureXAxis(axis =\u003E axis.WithTimeScale(TimeZoneInfo.Utc).WithTimeSpacing(variant == \u0022ordinal\u0022\n            ? ChartTimeSpacing.Ordinal : ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))));\n}\n",
+      "source": "/site/examples/native-axis.csharp.txt"
     }
   },
   "gallery": {
@@ -213,12 +293,22 @@
     "ext": "svg",
     "w": 560,
     "h": 300,
-    "kb": 25.9,
+    "kb": 29.5,
     "total": 60
   },
   "generatedBy": "Website/tools/SiteVisuals",
   "mermaid": {
     "families": {
+      "agentflow": {
+        "base": "/site/atlas/agentflow",
+        "ext": "svg",
+        "w": 951,
+        "h": 690,
+        "kb": 19.2,
+        "source": "---\ntitle: Review workflow\n---\nagentflow-beta LR\nconnector store[\u0022Object store\u0022]\nstore@{ endpoint: \u0022https://example.invalid/data\u0022, protocol: http }\nglobal\n  shared[\u0022Policy guide\u0022]@{ shape: refdoc }\nend\nflow team[\u0022Review team\u0022]\n  brief[\u0022Request\u0022]@{ shape: input }\n  flow worker[\u0022Worker\u0022]\n    read[\u0022Read input\u0022]@{\n      shape: tool\n      connectorRef: store.read\n      policy:\n        retries: 2\n        enabled: true\n        tags: [safe, deterministic]\n        constructor: ignored\n      instruction: \u0022Display data, never execute it.\u0022\n    }\n    gate[\u0022Ready?\u0022]@{ shape: decision }\n    read edge1@--\u003E gate\n    gate -- no --\u003E read\n    read -.- shared\n  end\n  worker@{ view: collapsed }\n  publish[\u0022Publish\u0022]@{ shape: action }\n  brief --\u003E read\n  gate --x publish\nend\nedge1@{ instruction: \u0022Only after validation\u0022 }",
+        "lines": 33,
+        "warnings": 0
+      },
       "architecture": {
         "base": "/site/atlas/architecture",
         "ext": "svg",
@@ -242,11 +332,11 @@
       "c4": {
         "base": "/site/atlas/c4",
         "ext": "svg",
-        "w": 775,
-        "h": 581,
-        "kb": 18.9,
-        "source": "C4Context\ntitle System Context\nPerson(customer, \u0022Banking Customer\u0022, \u0022A customer of the bank\u0022)\nSystem(system, \u0022Internet Banking System\u0022, \u0022Allows customers to view balances\u0022)\nSystem_Ext(mail, \u0022E-mail System\u0022, \u0022Sends notifications\u0022)\nRel(customer, system, \u0022Uses\u0022, \u0022HTTPS\u0022)\nRel(system, mail, \u0022Sends e-mails\u0022, \u0022SMTP\u0022)",
-        "lines": 7,
+        "w": 857,
+        "h": 643,
+        "kb": 22.8,
+        "source": "C4Dynamic\ntitle Checkout\nEnterprise_Boundary(company, \u0022Company\u0022) {\nSystem_Boundary(shop, \u0022Store\u0022) {\nContainer(web, \u0022Web app\u0022, \u0022Browser\u0022, \u0022Checkout interface\u0022)\nContainerDb(db, \u0022Orders\u0022, \u0022SQL\u0022, \u0022Stores orders\u0022)\n}\n}\nPerson(customer, \u0022Customer\u0022)\nRelIndex(99, customer, web, \u0022Checkout\u0022)\nRel_D(web, db, \u0022Writes\u0022)\nUpdateElementStyle(web, $bgColor=\u0022#123456\u0022, $fontColor=\u0022#ffffff\u0022, $borderColor=\u0022#ef6543\u0022)\nUpdateRelStyle(web, db, $lineColor=\u0022#aabbcc\u0022, $textColor=\u0022#ccbb99\u0022, $offsetX=\u00226\u0022, $offsetY=\u0022-4\u0022)",
+        "lines": 13,
         "warnings": 1
       },
       "class": {
@@ -332,12 +422,12 @@
       "journey": {
         "base": "/site/atlas/journey",
         "ext": "svg",
-        "w": 736,
-        "h": 552,
-        "kb": 12.8,
-        "source": "journey\n  title Report delivery\n  section Build\n    Collect data: 5: Collector\n    Render charts: 4: ChartForgeX\n  section Deliver\n    Send email: 3: Mailer\n    Read on phone: 5: Reader",
+        "w": 760,
+        "h": 570,
+        "kb": 9.1,
+        "source": "journey\ntitle Support journey\nsection Contact\nOpen ticket: 2: Customer, Agent\nsection Resolve\nDiagnose: 4: Agent\nsection Contact\nConfirm recovery: 5: Customer, Agent",
         "lines": 8,
-        "warnings": 1
+        "warnings": 0
       },
       "kanban": {
         "base": "/site/atlas/kanban",
@@ -399,12 +489,22 @@
         "lines": 7,
         "warnings": 0
       },
+      "railroad": {
+        "base": "/site/atlas/railroad",
+        "ext": "svg",
+        "w": 871,
+        "h": 653,
+        "kb": 17.8,
+        "source": "railroad-beta\ntitle \u0022Expression grammar\u0022\nexpression = sequence(nonterminal(\u0022term\u0022), zeroOrMore(sequence(choice(terminal(\u0022\u002B\u0022), terminal(\u0022-\u0022)), nonterminal(\u0022term\u0022)))) ;\nterm = sequence(optional(terminal(\u0022-\u0022)), oneOrMore(nonterminal(\u0022digit\u0022))) ;\ndigit = choice(terminal(\u00220\u0022), terminal(\u00221\u0022), special(\u0022another decimal digit\u0022)) ;",
+        "lines": 5,
+        "warnings": 0
+      },
       "requirement": {
         "base": "/site/atlas/requirement",
         "ext": "svg",
         "w": 903,
         "h": 677,
-        "kb": 26.3,
+        "kb": 30.8,
         "source": "---\ntitle: Sign-in requirements\n---\nrequirementDiagram\ndirection LR\nfunctionalRequirement mfa_req {\n  id: \u0022SEC-1\u0022\n  text: Every account signs in with a strong method.\n  risk: High\n  verifymethod: Test\n}\nperformanceRequirement report_req {\n  id: \u0022OPS-4\u0022\n  text: The weekly report renders in under a second.\n  risk: Low\n  verifymethod: Analysis\n}\nelement auth_service {\n  type: service\n  docref: \u0022Identity provider\u0022\n}\nelement report_job {\n  type: job\n  docref: \u0022ChartForgeX report\u0022\n}\nauth_service - satisfies -\u003E mfa_req\nreport_job - verifies -\u003E mfa_req\nreport_job - satisfies -\u003E report_req",
         "lines": 28,
         "warnings": 0
@@ -432,11 +532,11 @@
       "state": {
         "base": "/site/atlas/state",
         "ext": "svg",
-        "w": 760,
-        "h": 765,
-        "kb": 27.7,
-        "source": "---\ntitle: Document review\n---\nstateDiagram-v2\n  [*] --\u003E Draft\n  Draft --\u003E Review : submit\n  Review --\u003E Draft : request changes\n  Review --\u003E Approved : approve\n  Approved --\u003E Published : release\n  Published --\u003E [*]",
-        "lines": 10,
+        "w": 1313,
+        "h": 570,
+        "kb": 24.5,
+        "source": "---\ntitle: Document review\n---\nstateDiagram-v2\ndirection LR\nclassDef marked fill:#fef9c3,stroke:#92400e,color:#78350f\nReady --\u003E Review:::marked: submit\nclass Ready marked\nstyle Review fill:#dbeafe,color:#1e3a8a\nstate Processing {\n  direction TB\n  InnerReady --\u003E InnerDone: finish\n}\nReview --\u003E Processing: accept\nProcessing --\u003E Done: complete",
+        "lines": 15,
         "warnings": 0
       },
       "swimlane": {
@@ -452,12 +552,12 @@
       "timeline": {
         "base": "/site/atlas/timeline",
         "ext": "svg",
-        "w": 739,
-        "h": 554,
-        "kb": 14.6,
-        "source": "timeline\n  title Rendering history\n  2024 : Fluent chart API : SVG and PNG output\n  2025 : Topology diagrams : Markdown fences\n  2026 : Mermaid families : Native WebAssembly playground",
-        "lines": 5,
-        "warnings": 1
+        "w": 758,
+        "h": 569,
+        "kb": 8.8,
+        "source": "timeline\ntitle Delivery history\nsection Discovery\nBefore launch: Interview users\n : Review findings\nsection Delivery\nLaunch: Ship product\u003Cbr\u003Eand docs : Invite users\nsection Discovery\nAfter launch: Learn and improve",
+        "lines": 9,
+        "warnings": 0
       },
       "treemap": {
         "base": "/site/atlas/treemap",
@@ -492,12 +592,12 @@
       "venn": {
         "base": "/site/atlas/venn",
         "ext": "svg",
-        "w": 727,
-        "h": 545,
-        "kb": 5.4,
-        "source": "venn-beta\ntitle Capability overlap\nset API [\u0022API\u0022] : 60\nset UI [\u0022UI\u0022] : 55\nset Ops [\u0022Operations\u0022] : 45\nunion API,UI [\u0022Shared UX\u0022] : 18\nunion API,Ops [\u0022Automation\u0022] : 12\nunion UI,Ops [\u0022Runbooks\u0022] : 8\nunion API,UI,Ops [\u0022Platform\u0022] : 5\ntext API,UI note [\u0022Reviewed\u0022]",
-        "lines": 10,
-        "warnings": 1
+        "w": 725,
+        "h": 544,
+        "kb": 3.7,
+        "source": "venn-beta\nset A[First]: 100\nset B[Second]: 60\nunion A,B[Shared]: 25\nstyle A fill:#ee4455,fill-opacity:0.25,stroke-width:3\nstyle A,B fill:#2233ff,fill-opacity:1,stroke:#112233,stroke-width:2",
+        "lines": 6,
+        "warnings": 0
       },
       "wardley": {
         "base": "/site/atlas/wardley",
@@ -518,13 +618,19 @@
         "source": "xychart-beta\n  title \u0022Tickets closed per sprint\u0022\n  x-axis [S1, S2, S3, S4, S5, S6, S7, S8]\n  y-axis \u0022Tickets\u0022 0 --\u003E 120\n  bar [48, 61, 57, 72, 80, 77, 94, 103]\n  line [48, 61, 57, 72, 80, 77, 94, 103]",
         "lines": 6,
         "warnings": 0
+      },
+      "zenuml": {
+        "base": "/site/atlas/zenuml",
+        "ext": "svg",
+        "w": 920,
+        "h": 1356,
+        "kb": 31.6,
+        "source": "zenuml\ntitle Checkout occurrences\ngroup \u0022Application\u0022 {\n  @Actor User\n  @Control Service\n}\n@Database Store\n@Queue Bus\n@Starter(User)\n// Accept the request\nService.checkout(order) {\n  if (valid \u0026\u0026 !cancelled) {\n    String receipt = new Receipt(order) {\n      Store.save(order)\n      return saved\n    }\n  } else {\n    return declined\n  }\n  loop (retries \u003C 3) {\n    Store.retry(order)\n  }\n  par {\n    Bus: ready(order)\n  }\n  critical (commitLock) {\n    Store.commit()\n  }\n  opt (notify) {\n    Bus: notify(order)\n  }\n  try {\n    Store.flush()\n  } catch (StorageError error) {\n    Store.recover(error)\n  } finally {\n    Store.close()\n  }\n  return accepted\n}\nService --\u003E User: confirmed",
+        "lines": 41,
+        "warnings": 0
       }
     },
-    "recognised": {
-      "agentflow": "Mermaid diagram kind \u0027agentflow-beta\u0027 is recognized but not implemented yet.",
-      "railroad": "Mermaid diagram kind \u0027railroad-beta\u0027 is recognized but not implemented yet.",
-      "zenuml": "Mermaid diagram kind \u0027zenuml\u0027 is recognized but not implemented yet."
-    }
+    "recognised": {}
   },
   "nav": {
     "thumbs": {
@@ -540,7 +646,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.7
+        "kb": 31.1
       },
       "examples": {
         "base": "/site/nav/examples",
@@ -568,7 +674,7 @@
         "ext": "svg",
         "w": 820,
         "h": 460,
-        "kb": 11
+        "kb": 10.4
       },
       "powerbginfo": {
         "base": "/site/nav/powerbginfo",

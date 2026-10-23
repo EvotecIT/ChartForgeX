@@ -80,7 +80,7 @@ internal static partial class MermaidFlowchartParser {
     private static string ReadPropertyScalar(string value) => value.StartsWith("'", StringComparison.Ordinal)
         ? MermaidYamlScalar.ReadSingleQuoted(value) : Unquote(value);
 
-    private static bool TryResolveShape(string value, out MermaidFlowchartNodeShape shape) {
+    internal static bool TryResolveShape(string value, out MermaidFlowchartNodeShape shape) {
         shape = MermaidFlowchartNodeShape.Rectangle;
         switch (value) {
             case "rect": case "rectangle": case "proc": case "process": break;
@@ -98,6 +98,7 @@ internal static partial class MermaidFlowchartParser {
             case "trap-t": case "inv-trapezoid": case "trapezoid-top": case "manual": shape = MermaidFlowchartNodeShape.TrapezoidAlt; break;
             case "odd": shape = MermaidFlowchartNodeShape.Asymmetric; break;
             case "cloud": shape = MermaidFlowchartNodeShape.Cloud; break;
+            case "lin-doc": case "lined-document": shape = MermaidFlowchartNodeShape.LinedDocument; break;
             default: return false;
         }
         return true;

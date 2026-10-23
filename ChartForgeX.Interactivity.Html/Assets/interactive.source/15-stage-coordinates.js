@@ -1,5 +1,5 @@
-  // Absolute overlays and SVG pan translations use stage CSS pixels, including its scroll origin.
-  // Browser hit geometry stays in screen pixels; account for axis-aligned host scaling and the stage border.
+  // Overlay: CSS/scroll; hit: screen; axis-aligned only.
+
   const stageProjection = stage => {
     const rect = stage.getBoundingClientRect();
     return { rect, scaleX: rect.width / stage.offsetWidth || 1, scaleY: rect.height / stage.offsetHeight || 1 };
@@ -14,13 +14,13 @@
     } : { x, y };
   };
   const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
-  // The core owns layout. Project its captured plot through the live SVG transform, including pan/zoom.
-  // Intersect with the visible scroller so the overlay cannot create new scrollable content.
+
+  // Clip overlays against resize scroll.
   const visibleCartesianPlot = (root, stage, plot = root._cfxCartesianPlot) => {
     const svg = stage.querySelector('svg');
     if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
     const matrix = svgScreenMatrix(svg);
-    // stagePoint supports positive axis-aligned host scaling, not rotated/skewed/perspective hosts.
+
     if (!matrix || matrix.is2D === false || matrix.b !== 0 || matrix.c !== 0 || matrix.a <= 0 || matrix.d <= 0) return null;
     const corners = [[plot.x, plot.y], [plot.x + plot.width, plot.y],
       [plot.x, plot.y + plot.height], [plot.x + plot.width, plot.y + plot.height]]
@@ -34,15 +34,15 @@
     return right > left && bottom > top ? { left, top, width: right - left, height: bottom - top,
       precisionX: precision.x / scaleX, precisionY: precision.y / scaleY } : null;
   };
-  // A guide belongs to the current viewport. Discard stale dimensions before they can enlarge a resized scroller.
-  // Share the existing resize lifecycle with keyboard availability, including initially hidden fragment hosts.
+
+
   const bindStageLayout = (root, stage, crosshair) => {
     if (!stage || !hasFeature(root, 'Crosshair') && !hasFeature(root, 'KeyboardNavigation')) return;
     let width = stage.clientWidth, height = stage.clientHeight;
     let frame = 0;
     let observer;
     const hideGuide = () => hideCrosshair(root, crosshair);
-    // A pointer can acquire a guide during a CSS pan/zoom transition; discard that intermediate projection.
+
     const finishViewport = event => {
       if (event.target === stage.querySelector('svg') && event.propertyName === 'transform') hideGuide();
     };

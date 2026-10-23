@@ -32,7 +32,7 @@ var sized = Chart.Create().WithSize(420, 280).WithXAxisScale(ChartScaleKind.Time
         new ChartBubble(origin, 2, 4), new ChartBubble(origin + 5, 4, 9), new ChartBubble(origin + 10, 8, 16)
     }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Star))
     .ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
-var window = sized.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartCartesianViewport(x: new ChartXViewport(origin + 2, origin + 8)));
+var window = sized.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartCartesianViewport(x: new ChartAxisWindow(origin + 2, origin + 8)));
 if (window.XProjection?.Scale != ChartScaleKind.Time) throw new InvalidOperationException("AOT native time projection missing.");
 AssertContains(window.ToSvg(), "data-cfx-size=\"9\"", "AOT native window lost Bubble source facts.");
 AssertPng(window.ToPng(), "AOT area-sized marker failed.");

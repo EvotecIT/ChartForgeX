@@ -8,7 +8,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>
 /// Provides ChartForgeX rendering adapters for parsed Mermaid C4 diagrams.
 /// </summary>
-public static class MermaidC4Rendering {
+public static partial class MermaidC4Rendering {
     /// <summary>
     /// Converts a Mermaid C4 document into a renderer-independent ChartForgeX topology chart.
     /// </summary>
@@ -20,12 +20,13 @@ public static class MermaidC4Rendering {
             .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid C4 diagram"))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, ToLayoutDirection(document.Direction));
+            .WithLayout(TopologyLayoutMode.Layered, ToLayoutDirection(document.Direction));
 
         foreach (var boundary in document.Boundaries) {
             chart.AddAutoGroup(boundary.Id, boundary.Label, TopologyHealthStatus.Unknown, subtitle: BoundarySubtitle(boundary), cssClass: "cfx-mermaid-c4-boundary", symbol: BoundarySymbol(boundary), iconId: "mermaid:c4-boundary");
             var group = chart.Groups[chart.Groups.Count - 1];
-            group.LayoutPolicy = TopologyGroupLayoutPolicy.Grid;
+            group.ParentGroupId = boundary.ParentId;
+            group.Href = boundary.Link;
             group.Metadata["mermaid.kind"] = boundary.Kind;
             if (!string.IsNullOrWhiteSpace(boundary.Type)) group.Metadata["mermaid.type"] = boundary.Type!;
             if (!string.IsNullOrWhiteSpace(boundary.ParentId)) group.Metadata["mermaid.parent"] = boundary.ParentId!;
@@ -34,6 +35,7 @@ public static class MermaidC4Rendering {
         foreach (var element in document.Elements) {
             chart.AddAutoNode(element.Alias, element.Label, NodeKind(element), TopologyHealthStatus.Unknown, groupId: element.BoundaryId, subtitle: ElementSubtitle(element), width: NodeWidth(element), height: 76, symbol: NodeSymbol(element), cssClass: "cfx-mermaid-c4-element", iconId: IconId(element));
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.Href = element.Link;
             node.Metadata["mermaid.kind"] = element.Kind;
             if (!string.IsNullOrWhiteSpace(element.Description)) node.Metadata["mermaid.description"] = element.Description!;
             if (!string.IsNullOrWhiteSpace(element.Technology)) node.Metadata["mermaid.technology"] = element.Technology!;
@@ -45,13 +47,15 @@ public static class MermaidC4Rendering {
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var relationship = document.Relationships[index];
-            chart.AddEdge("mermaid-c4-edge-" + index.ToString(CultureInfo.InvariantCulture), relationship.SourceAlias, relationship.TargetAlias, relationship.Label, TopologyEdgeKind.DataFlow, TopologyHealthStatus.Unknown, Direction(relationship), TopologyEdgeRouting.Orthogonal, secondaryLabel: relationship.Technology, href: relationship.Link, cssClass: "cfx-mermaid-c4-rel");
+            chart.AddEdge("mermaid-c4-edge-" + index.ToString(CultureInfo.InvariantCulture), relationship.SourceAlias, relationship.TargetAlias, RelationshipLabel(document, relationship, index), TopologyEdgeKind.DataFlow, TopologyHealthStatus.Unknown, Direction(relationship), TopologyEdgeRouting.Orthogonal, secondaryLabel: relationship.Technology, href: relationship.Link, cssClass: "cfx-mermaid-c4-rel");
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.Metadata["mermaid.kind"] = relationship.Kind;
             if (!string.IsNullOrWhiteSpace(relationship.Tags)) edge.Metadata["mermaid.tags"] = relationship.Tags!;
+            if (relationship.AuthoredIndex != null) edge.Metadata["mermaid.authoredIndex"] = relationship.AuthoredIndex;
             ApplyPortHints(edge, relationship.Kind);
         }
 
+        ApplyC4Styles(chart, document);
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
@@ -84,6 +88,8 @@ public static class MermaidC4Rendering {
 
 
     private static string? BoundarySubtitle(MermaidC4Boundary boundary) {
+        if (!string.IsNullOrWhiteSpace(boundary.Type) && !string.IsNullOrWhiteSpace(boundary.Description)) return boundary.Type + " - " + boundary.Description;
+        if (!string.IsNullOrWhiteSpace(boundary.Description)) return boundary.Description;
         if (!string.IsNullOrWhiteSpace(boundary.Type)) return boundary.Type!;
         return string.IsNullOrWhiteSpace(boundary.ParentId) ? boundary.Kind : "in " + boundary.ParentId;
     }
@@ -144,10 +150,10 @@ public static class MermaidC4Rendering {
     }
 
     private static void ApplyPortHints(TopologyEdge edge, string kind) {
-        if (kind == "relu" || kind == "relup") edge.TargetPort = TopologyEdgePort.Top;
-        if (kind == "reld" || kind == "reldown") edge.TargetPort = TopologyEdgePort.Bottom;
-        if (kind == "rell" || kind == "relleft") edge.TargetPort = TopologyEdgePort.Left;
-        if (kind == "relr" || kind == "relright") edge.TargetPort = TopologyEdgePort.Right;
+        if (kind == "relu" || kind == "relup") { edge.SourcePort = TopologyEdgePort.Top; edge.TargetPort = TopologyEdgePort.Bottom; }
+        if (kind == "reld" || kind == "reldown") { edge.SourcePort = TopologyEdgePort.Bottom; edge.TargetPort = TopologyEdgePort.Top; }
+        if (kind == "rell" || kind == "relleft") { edge.SourcePort = TopologyEdgePort.Left; edge.TargetPort = TopologyEdgePort.Right; }
+        if (kind == "relr" || kind == "relright") { edge.SourcePort = TopologyEdgePort.Right; edge.TargetPort = TopologyEdgePort.Left; }
     }
 
     private static bool Has(string value, string token) => value.IndexOf(token, StringComparison.Ordinal) >= 0;

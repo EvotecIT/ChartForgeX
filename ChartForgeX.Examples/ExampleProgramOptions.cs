@@ -51,6 +51,12 @@ internal static class ExampleProgramOptions {
             Console.WriteLine("Generated story playback examples in: " + output);
             return true;
         }
+        if (HasArg(args, "--hierarchy-view-only")) {
+            HierarchyViewExamples.Write(output);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated native hierarchy view examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--sunburst-highlight-only")) {
             SunburstBranchHighlightExamples.Write(output);
             Console.WriteLine("Generated Sunburst highlight examples in: " + output);

@@ -313,7 +313,7 @@
       "id": "mermaid",
       "name": "Mermaid",
       "color": "series-3",
-      "description": "Thirty Mermaid diagram families rendered without a browser.",
+      "description": "Mermaid diagrams rendered without a browser, with explicit syntax and layout limits.",
       "action": "See Mermaid support",
       "url": "/mermaid/"
     },

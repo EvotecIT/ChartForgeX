@@ -1,5 +1,5 @@
-  // Alternate drawings are native preparations of the same source, not scaled desktop geometry.
-  // Keep them inert: one root and controller own the active scene and every browser resource.
+  // Root owns inert alternates.
+
   const adaptiveTemplate = (root, name) => Array.from(root.children)
     .find(node => node instanceof HTMLTemplateElement && node.hasAttribute('data-cfx-adaptive-' + name));
   const adaptiveSectionCopy = section => {

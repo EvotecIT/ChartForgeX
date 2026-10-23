@@ -123,7 +123,8 @@ internal sealed partial class VisualTopologyCompiler {
             var b = Bounds(layout.Bounds.X, layout.Bounds.Y, layout.Bounds.Width, layout.Bounds.Height);
             var fill = EdgeLabelColor(_colors.Surface, edge);
             if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: new VisualScenePaintBinding(CardPaint(fill, EdgeLabelOpacity(edge))));
-            Text(text!, b, size, EdgeLabelColor(_colors.Foreground, edge), 600, "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge));
+            var ink = EdgeLabelColor(Color(edge.LabelColor, _colors.Foreground), edge);
+            Text(text!, b, size, ink, 600, "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge), paint: EdgeTextPaint(edge, ink));
         }
     }
 
@@ -170,10 +171,12 @@ internal sealed partial class VisualTopologyCompiler {
                 var hasGroupSurface = containingGroup != null && _options.IncludeGroups;
                 var groupAccent = containingGroup == null ? _colors.Accent : Color(containingGroup.Color ?? ResolveGroupIcon(containingGroup, _options)?.Color, Status(containingGroup.Status));
                 var tintAmount = IsMonitoringDashboardStyle(_options) ? .055 : .10;
-                var baseFill = !hasGroupSurface ? _colors.Background : UseNeutralGroupSurface(_options) ? _colors.Surface
-                    : ChartColorMath.BlendPremultiplied(_colors.Background, groupAccent, tintAmount);
+                var explicitGroupFill = hasGroupSurface && !string.IsNullOrWhiteSpace(containingGroup!.BackgroundColor);
+                var baseFill = !hasGroupSurface ? _colors.Background : explicitGroupFill ? Color(containingGroup!.BackgroundColor, _colors.Surface)
+                    : UseNeutralGroupSurface(_options) ? _colors.Surface : ChartColorMath.BlendPremultiplied(_colors.Background, groupAccent, tintAmount);
                 var fill = ChartColorMath.WithOpacity(baseFill, EdgeLabelClearanceOpacity(containingGroup));
                 var fillPaint = !hasGroupSurface ? BackgroundPaint(baseFill)
+                    : explicitGroupFill ? GroupFillPaint(containingGroup!, baseFill, true, true)
                     : UseNeutralGroupSurface(_options) ? CardPaint(baseFill)
                     : SvgPaint.Mix(baseFill, BackgroundPaint(_colors.Background), GroupAccentPaint(containingGroup!, groupAccent, true), tintAmount);
                 using var clearance = _builder.PushGroup(null, null, new Dictionary<string, string> {
@@ -189,8 +192,8 @@ internal sealed partial class VisualTopologyCompiler {
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var textBounds = Text(labels[i], new ChartRect(bounds.X + 4 * _scale, bounds.Y + i * height, Math.Max(0, bounds.Width - 8 * _scale), height),
-                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true, verticallyCentered: true,
-                    paint: i == 0 ? ForegroundPaint(LabelColor(_colors.Foreground), EdgeLabelOpacity(edge)) : MutedPaint(LabelColor(_colors.MutedForeground), EdgeLabelOpacity(edge)), opacity: EdgeLabelOpacity(edge));
+                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true, verticallyCentered: true,
+                    paint: EdgeTextPaint(edge, LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i > 0), opacity: EdgeLabelOpacity(edge));
                 if (!textBounds.HasValue) continue;
                 if (!measured.HasValue) measured = textBounds;
                 else {

@@ -85,7 +85,7 @@ public sealed class TimeProjectionFeedbackTests {
         var plot = new ChartRect(20, 30, 400, 200);
         var axis = new ChartAxis { Scale = scale, Reversed = reversed };
         var captured = Assert.IsType<ChartDataProjection>(ChartDataProjection.TryCreate(plot, 1, 11, axis, linearOnly: true));
-        var inverse = new ChartXProjection(1, 11, captured.X.Minimum, captured.X.Maximum, captured.Plot, captured.X.Reversed);
+        var inverse = new ChartAxisProjection(1, 11, captured.X.Minimum, captured.X.Maximum, captured.Plot, new ChartAxis { Reversed = captured.X.Reversed }, ChartAxisDimension.X);
         var nativeAxis = new ChartAxis { Reversed = reversed };
         foreach (var value in new[] { 2d, 7d, 10d }) {
             var pixel = plot.Left + ChartScaleTransform.Normalize(value, 1, 11, nativeAxis) * plot.Width;

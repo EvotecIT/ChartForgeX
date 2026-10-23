@@ -59,18 +59,19 @@
       return {group,text,center:box.x+box.width/2,sourceWidth:box.width};
     });
     const centers=[...new Set(spec.bars.map(slot=>slot.categoryAnchor))].sort((a,b)=>a-b);
-    const pitch=centers.slice(1).reduce((p,c,i)=>Math.min(p,c-centers[i]),plot[2]);
+    const pitch=Math.min(spec.barPitch ?? plot[2],centers.slice(1).reduce((p,c,i)=>Math.min(p,c-centers[i]),plot[2]));
     return {recipes,labels,pitch,plot};
   }
   function project(state, spec, width, plot) {
     const [left,top,pw,ph]=spec.plot, [nl,nt,nw,nh]=plot;
     const map=(v,low,size,newLow,newSize,totalDelta)=>v<low? v : v>low+size ? v+totalDelta : newLow+(v-low)*newSize/size;
     const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width) : v+(width-spec.width)/2, y=v=>map(v,top,ph,nt,nh,0);
+    const maximumBarWidth=spec.barWidthUnbounded ? Infinity : spec.maximumBarWidth;
     for(const recipe of state.recipes){
       const {node,attributes:a,bar}=recipe;
       // Match the native category-slot contract: 68% occupied pitch, bounded gaps, independently capped bodies.
       const occupied=state.pitch*nw/pw*.68, gap=bar && bar.count>1 ? Math.min(spec.spacing/2,occupied/(bar.count*4)):0;
-      const thickness=bar?Math.max(Math.min(.1,spec.maximumBarWidth),Math.min(spec.maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
+      const thickness=bar?Math.max(Math.min(.1,maximumBarWidth),Math.min(maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
       const center=bar?x(bar.categoryCenter)+(bar.position-(bar.count-1)/2)*(thickness+gap):0;
       const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):x;
       const baseX=Number(a.x||0),baseY=Number(a.y||0);

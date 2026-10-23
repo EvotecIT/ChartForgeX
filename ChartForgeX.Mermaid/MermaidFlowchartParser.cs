@@ -142,7 +142,9 @@ internal static partial class MermaidFlowchartParser {
         if (split <= 0) return false;
         var nodeIds = SplitCsv(body.Substring(0, split));
         var classNames = SplitCsv(body.Substring(split + 1));
+        MermaidResourceGuard.ReserveElements(checked((long)nodeIds.Count * classNames.Count), span);
         foreach (var nodeId in nodeIds) {
+            MermaidResourceGuard.Checkpoint();
             var node = GetOrAddNode(document, nodes, nodeId, span);
             foreach (var className in classNames) node.Classes.Add(className);
         }

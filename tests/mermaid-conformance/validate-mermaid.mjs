@@ -7,6 +7,9 @@ import { isReferenceRejection } from './reference-errors.mjs';
 import { gitGraphFacts, flowchartStyleFacts } from './reference-facts.mjs';
 import { useReferenceClock } from './reference-clock.mjs';
 import { classFacts, stateFacts, erFacts, sequenceLifetimeFacts } from './reference-notation.mjs';
+import { nodeStyleFacts } from './reference-node-styles.mjs';
+import { classNamespaceFacts, entityGroupFacts } from './reference-class-entity-groups.mjs';
+import { assertExternalPluginCorpus } from './external-plugin-corpus.mjs';
 import { timeFormat } from 'd3-time-format';
 import * as calendar from 'd3-time';
 
@@ -38,6 +41,7 @@ for (const folder of corpusFolders) {
   inventory.push(...(await readdir(join(root, folder))).filter(file => file.endsWith('.mmd')).map(file => `${folder}/${file}`));
 }
 assert.deepEqual(Object.keys(manifest.fixtures).sort(), inventory.sort(), 'Every fixture needs version metadata; remove stale entries.');
+await assertExternalPluginCorpus(root);
 for (const [path, fixture] of Object.entries(manifest.fixtures)) {
   assert.deepEqual(Object.keys(fixture.syntax).sort(), references, `${path}: incomplete reference outcomes.`);
   for (const outcome of Object.values(fixture.syntax)) assert.ok(['accepted', 'rejected'].includes(outcome), `${path}: invalid syntax outcome.`);
@@ -52,7 +56,7 @@ for (const [path, fixture] of Object.entries(manifest.fixtures)) {
   }
 }
 if (!referenceId) {
-  const contracts = spawnSync(process.execPath, ['--test', fileURLToPath(new URL('reference-errors.test.mjs', import.meta.url)), fileURLToPath(new URL('reference-clock.test.mjs', import.meta.url))], {encoding: 'utf8'});
+  const contracts = spawnSync(process.execPath, ['--test', fileURLToPath(new URL('reference-errors.test.mjs', import.meta.url)), fileURLToPath(new URL('reference-clock.test.mjs', import.meta.url)), fileURLToPath(new URL('external-plugin-corpus.test.mjs', import.meta.url))], {encoding: 'utf8'});
   if (contracts.error) throw contracts.error;
   if (contracts.status !== 0) throw new Error(contracts.stderr || contracts.stdout || 'Reference-error contract tests failed.');
   for (const id of references) {
@@ -158,6 +162,9 @@ for (const { folder, file, hasExpected } of files) {
       if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);
       if (expected.states) assert.deepEqual(keys(diagram.db.getStates()), expected.states);
       if (expected.classFacts) assert.deepEqual(classFacts(diagram.db), expected.classFacts);
+      if (expected.nodeStyleFacts) assert.deepEqual(nodeStyleFacts(diagram.db, /^classDiagram/m.test(source) ? 'class' : 'er'), expected.nodeStyleFacts);
+      if (expected.classNamespaceFacts) assert.deepEqual(classNamespaceFacts(diagram.db), expected.classNamespaceFacts);
+      if (expected.entityGroupFacts) assert.deepEqual(entityGroupFacts(diagram.db), expected.entityGroupFacts);
       if (expected.stateFacts) assert.deepEqual(stateFacts(diagram.db), expected.stateFacts);
       if (expected.erFacts) assert.deepEqual(erFacts(diagram.db), expected.erFacts);
       if (expected.sequenceLifetimes) assert.deepEqual(sequenceLifetimeFacts(diagram.db), expected.sequenceLifetimes);

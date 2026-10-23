@@ -28,7 +28,7 @@ internal static partial class VisualCartesianCompiler {
             : Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth));
         var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
             horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index), requireMinimumFootprint: true,
-            maximumThickness: 46, footprintPadding: padding);
+            maximumThickness: 46, footprintPadding: padding, maximumPitch: map.CalendarBandPitch(horizontal));
         for (var item = 0; item < series.AuthoredObservationCount; item++) {
             var raw = item * 5; var x = series.RenderPoints[raw].X;
             var minimum = series.RenderPoints[raw].Y; var q1 = series.RenderPoints[raw + 1].Y; var median = series.RenderPoints[raw + 2].Y;

@@ -48,6 +48,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Subtitle = source.Subtitle,
             Status = source.Status,
             Color = source.Color,
+            BackgroundColor = source.BackgroundColor, BorderColor = source.BorderColor, LabelColor = source.LabelColor,
             Href = source.Href,
             Tooltip = source.Tooltip,
             X = source.X,
@@ -113,7 +114,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Value = source.Value,
             IconId = source.IconId,
             Status = source.Status,
-            Color = source.Color,
+            Color = source.Color, TextStyle = source.TextStyle?.Clone(),
         };
         foreach (var item in source.Extensions) copy.Extensions.Add(item.Key, item.Value);
         return copy;
@@ -136,7 +137,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Status = source.Status,
             SourcePortId = source.SourcePortId,
             TargetPortId = source.TargetPortId,
-            Color = source.Color,
+            Color = source.Color, LabelColor = source.LabelColor,
             Href = source.Href,
             Tooltip = source.Tooltip,
             Order = source.Order,
@@ -303,6 +304,7 @@ internal static class VisualArtifactInterchangeSnapshot {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyGroup {
             ParentGroupId = source.ParentGroupId,
+            Presentation = source.Presentation,
             LayoutDirection = source.LayoutDirection,
             Status = source.Status,
             LayoutPolicy = source.LayoutPolicy,

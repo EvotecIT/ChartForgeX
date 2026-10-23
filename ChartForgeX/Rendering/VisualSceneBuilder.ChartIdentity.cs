@@ -8,16 +8,20 @@ namespace ChartForgeX.Rendering;
 
 internal sealed partial class VisualSceneBuilder {
     /// <summary>Captures stable authored identities once, independently of each family's ordinal geometry IDs.</summary>
-    internal void CaptureChartIdentity(Chart chart) {
+    internal void CaptureChartIdentity(Chart chart, ChartCartesianProjection? axes = null) {
         var categoryProjection = DataProjection?.Horizontal == true ? DataProjection.Y : DataProjection?.X;
         var numericTimeDomain = categoryProjection?.Scale == ChartScaleKind.Time && categoryProjection.Minimum < 0;
         var valueProjection = DataProjection?.Horizontal == true ? DataProjection.X : DataProjection?.Y;
-        var preciseValueTimeDomain = valueProjection?.Scale == ChartScaleKind.Time && valueProjection.Minimum >= 0;
         for (var index = 0; index < _nodes.Count; index++) {
             if (_nodes[index] is not VisualSceneGroup group || !group.Metadata.TryGetValue("data-cfx-series", out var ordinal)
                 || !int.TryParse(ordinal, NumberStyles.None, CultureInfo.InvariantCulture, out var seriesIndex)
                 || seriesIndex < 0 || seriesIndex >= chart.Series.Count) continue;
             var series = chart.Series[seriesIndex];
+            var selectedValue = axes == null ? null : axes.Horizontal
+                ? series.ValueAxis == ChartAxisSide.Secondary ? axes.SecondaryX : axes.X
+                : series.ValueAxis == ChartAxisSide.Secondary ? axes.SecondaryY : axes.Y;
+            var preciseValueTimeDomain = selectedValue != null ? selectedValue.Scale == ChartScaleKind.Time && selectedValue.Minimum >= 0
+                : valueProjection?.Scale == ChartScaleKind.Time && valueProjection.Minimum >= 0;
             var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
             metadata["data-cfx-series-key"] = series.Id.Value;

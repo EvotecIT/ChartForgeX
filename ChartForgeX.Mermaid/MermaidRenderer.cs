@@ -59,6 +59,9 @@ public static class MermaidRenderer {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidRenderOptions();
         return document switch {
+            MermaidZenUmlDocument item => item.ToVisualArtifact(options.Resolve(options.ZenUml)),
+            MermaidRailroadDocument item => item.ToVisualArtifact(options.Resolve(options.Railroad)),
+            MermaidAgentflowDocument item => item.ToVisualArtifact(options.Resolve(options.Agentflow)),
             MermaidClassDocument item => item.ToVisualArtifact(options.Resolve(options.Class)),
             MermaidStateDocument item => item.ToVisualArtifact(options.Resolve(options.State)),
             MermaidEntityRelationshipDocument item => item.ToVisualArtifact(options.Resolve(options.EntityRelationship)),

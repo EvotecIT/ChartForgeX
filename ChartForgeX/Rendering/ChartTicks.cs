@@ -11,7 +11,7 @@ internal static class ChartTicks {
 
     /// <summary>Uses authored tick positions when present, otherwise the canonical bounded scale ticks.</summary>
     internal static IReadOnlyList<double> ForAxis(ChartAxis axis, double minimum, double maximum) =>
-        axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray()
+        axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => InDomain(axis, value, minimum, maximum)).Distinct().OrderBy(value => value).ToArray()
             : GenerateInside(axis, minimum, maximum);
 
     /// <summary>Keeps generated numeric value ticks alongside authored label positions within the visible domain.</summary>
@@ -19,14 +19,19 @@ internal static class ChartTicks {
         var generated = GenerateInside(axis, minimum, maximum);
         if (axis.Labels.Count == 0) return generated;
         return PreserveFormatting(generated, generated.Concat(axis.Labels.Select(label => label.Value))
-            .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray());
+            .Where(value => InDomain(axis, value, minimum, maximum)).Distinct().OrderBy(value => value).ToArray());
     }
+
+    private static bool InDomain(ChartAxis axis, double value, double minimum, double maximum) => axis.PreparedTimeDomain?.Unit == true
+        ? ChartScaleTransform.Forward(value, axis) >= ChartScaleTransform.Bound(minimum, axis, false)
+            && ChartScaleTransform.Forward(value, axis) < ChartScaleTransform.Bound(maximum, axis, true)
+        : value >= minimum && value <= maximum;
 
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (axis.Scale == ChartScaleKind.Linear && axis.IntegerTicks) return GenerateInteger(min, max, axis.TickCount, axis.Minimum.HasValue || axis.Maximum.HasValue);
         if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, false) ?? new NumericTimeTicks(Generate(min, max, axis.TickCount));
-        if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, false);
+        if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(axis, min, max, axis.TickCount, false);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return axis.Minimum.HasValue || axis.Maximum.HasValue ? GenerateInside(min, max, axis.TickCount) : Generate(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, false);
     }
@@ -35,7 +40,7 @@ internal static class ChartTicks {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (axis.Scale == ChartScaleKind.Linear && axis.IntegerTicks) return GenerateInteger(min, max, axis.TickCount, true);
         if (axis.Scale == ChartScaleKind.Time) return GenerateTimeInside(axis, min, max);
-        if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, true);
+        if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(axis, min, max, axis.TickCount, true);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return GenerateInside(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, true);
     }
@@ -155,26 +160,41 @@ internal static class ChartTicks {
         return ticks;
     }
 
-    private static IReadOnlyList<double> GenerateLogarithmic(double min, double max, int desiredCount, bool inside) {
-        desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
-        if (!IsPositiveFinite(min) || !IsPositiveFinite(max)) throw new InvalidOperationException("Logarithmic axes require positive data and bounds.");
+    private static IReadOnlyList<double> GenerateLogarithmic(ChartAxis axis, double min, double max, int desiredCount, bool inside) {
+        if (!axis.IsInLogarithmicDomain(min) || !axis.IsInLogarithmicDomain(max))
+            throw new InvalidOperationException("Logarithmic axes require " + axis.LogarithmicDomainName + " data and bounds.");
         if (min > max) (min, max) = (max, min);
-        var firstExponent = (int)Math.Ceiling(Math.Log10(min));
-        var lastExponent = (int)Math.Floor(Math.Log10(max));
+        if (axis.LogarithmicDomain != ChartLogarithmicDomain.Negative) return GeneratePositiveLogarithmic(axis, min, max, desiredCount, inside);
+        var magnitudes = GeneratePositiveLogarithmic(axis, -max, -min, desiredCount, inside);
+        return magnitudes.Reverse().Select(value => -value).ToArray();
+    }
+
+    private static IReadOnlyList<double> GeneratePositiveLogarithmic(ChartAxis axis, double min, double max, int desiredCount, bool inside) {
+        desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
+        var firstExponent = Math.Ceiling(ChartScaleTransform.Logarithm(min, axis));
+        var lastExponent = Math.Floor(ChartScaleTransform.Logarithm(max, axis));
         var ticks = new List<double>();
         var exponentCount = Math.Max(0, lastExponent - firstExponent + 1);
-        var outerCount = inside ? 0 : (exponentCount == 0 || Math.Pow(10, firstExponent) > min ? 1 : 0)
-            + (exponentCount == 0 || Math.Pow(10, lastExponent) < max ? 1 : 0);
+        var outerCount = inside ? 0 : (exponentCount == 0 || Math.Pow(axis.LogarithmBase, firstExponent) > min ? 1 : 0)
+            + (exponentCount == 0 || Math.Pow(axis.LogarithmBase, lastExponent) < max ? 1 : 0);
         if ((!inside && desiredCount == 2) || desiredCount <= outerCount) return DistinctEndpoints(min, max);
-        var stride = Math.Max(1, (int)Math.Ceiling(exponentCount / (double)(desiredCount - outerCount)));
+        var stride = Math.Max(1, Math.Ceiling(exponentCount / (desiredCount - outerCount)));
         do {
             ticks.Clear();
-            for (var exponent = firstExponent; exponent <= lastExponent; exponent += stride) AddFiniteDistinct(ticks, Math.Pow(10, exponent));
+            // A base very close to one can have exponents beyond integer precision.
+            // Bound work by the requested tick count instead of incrementing such an exponent.
+            for (var index = 0; index < desiredCount; index++) {
+                var exponent = firstExponent + index * stride;
+                if (exponent > lastExponent) break;
+                var value = Math.Pow(axis.LogarithmBase, exponent);
+                if (axis.LogarithmBase == 10 || value >= min && value <= max) AddFiniteDistinct(ticks, value);
+            }
             if (!inside && (ticks.Count == 0 || ticks[0] > min)) ticks.Insert(0, min);
             if (!inside && (ticks.Count == 0 || ticks[ticks.Count - 1] < max)) ticks.Add(max);
             // A stride may skip an exact upper power that was already counted as
             // an endpoint. Budget the actual completed envelope before returning.
-            stride++;
+            var nextStride = stride + 1;
+            stride = nextStride > stride ? nextStride : Math.Ceiling(stride * 1.01);
         } while (ticks.Count > desiredCount);
         return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
     }

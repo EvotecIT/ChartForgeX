@@ -13,7 +13,7 @@
       {"slug": "markup", "title": "Markup authoring", "summary": "Native fences, host parsers, diagnostics and artifact conversion.", "source": "markup.md"},
       {"slug": "markup-v1-reference", "title": "Markup v1 reference", "summary": "The supported fence grammar, models and static preview contract.", "source": "markup-v1-reference.md"},
       {"slug": "visual-artifacts", "title": "Visual artifacts", "summary": "Typed models, metadata and reusable export capabilities.", "source": "visual-artifacts.md"},
-      {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "Rendered subsets, retained syntax, diagnostics and pinned reference evidence.", "source": "mermaid-support-matrix.md"}
+      {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "Native families, safe styles, bounded grammar, diagnostics and pinned reference limits.", "source": "mermaid-support-matrix.md"}
     ] },
     { "title": "Compose output", "summary": "Choose a composition surface for exact facts or deliberately placed artwork.", "guides": [
       {"slug": "visual-blocks", "title": "Visual blocks", "summary": "Tables, lists, metric cards, timelines and mixed visual grids.", "source": "visual-blocks.md"},
@@ -27,15 +27,78 @@
       {"slug": "graph-explorer", "title": "Graph explorer", "summary": "Host-neutral scenes, hierarchy, patches and native browser backends.", "source": "graph-explorer.md"}
     ] },
     { "title": "API contracts and migration", "summary": "Select compatible combinations and follow the public ownership and editing contracts.", "guides": [
-      {"slug": "api-conventions", "source": "v2/api-conventions.md", "title": "Public API conventions", "summary": "Preparation, transactions, presentation and identity across chart families."},
-      {"slug": "chart-combinations", "source": "v2/chart-combinations.md", "title": "Chart combinations and axes", "summary": "Supported family mixtures, orientation, shared axes and native limits."},
+      {"slug": "api-conventions", "source": "v2/api-conventions.md", "title": "Public API conventions", "summary": "Preparation, transactions, identity, ordinal/calendar-unit spacing and explicit concentric bands."},
+      {"slug": "chart-combinations", "source": "v2/chart-combinations.md", "title": "Chart combinations and axes", "summary": "Vertical and horizontal mixtures, independent physical value axes and native limits."},
       {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."}
     ] },
     { "title": "Design notes", "summary": "Proposals are kept separate from the implemented API guides.", "guides": [
       {"slug": "visual-effects", "title": "Visual effects design", "summary": "A proposed shared effects system. It is not an implemented capability.", "source": "visual-effects.md"}
     ] }
   ],
+  "nativeExamples": [
+    {
+      "url": "/docs/topology-and-hierarchy/",
+      "id": "native-area-hierarchy-examples",
+      "title": "Native full and subtree views",
+      "summary": "These four views reuse the same source item IDs, parent links and leaf sizes. The complete program prepares each full hierarchy and the Engineering subtree without replacing source data.",
+      "recipe": "native-hierarchy",
+      "figures": [
+        {
+          "id": "hierarchy-treemap-full",
+          "title": "Full Treemap",
+          "caption": "The complete Treemap uses the shared allocation facts."
+        },
+        {
+          "id": "hierarchy-treemap-engineering",
+          "title": "Engineering Treemap",
+          "caption": "Engineering becomes the visible Treemap root; original leaf identities and sizes remain."
+        },
+        {
+          "id": "hierarchy-sunburst-full",
+          "title": "Full Sunburst",
+          "caption": "The complete Sunburst uses explicit sector spacing and a primary-caption fitting floor."
+        },
+        {
+          "id": "hierarchy-sunburst-engineering",
+          "title": "Engineering Sunburst",
+          "caption": "The same Engineering subtree rebases its native rings without changing the original parent links."
+        }
+      ]
+    },
+    {
+      "url": "/docs/api-conventions/",
+      "id": "native-axis-examples",
+      "title": "Native axis examples",
+      "summary": "The complete program produces these SVG and native PNG files from explicit signed logarithmic and time-spacing policies.",
+      "recipe": "native-axis",
+      "figures": [
+        {
+          "id": "axis-positive-log",
+          "title": "Positive logarithmic domain",
+          "caption": "Positive source values use base-two logarithmic spacing."
+        },
+        {
+          "id": "axis-negative-log",
+          "title": "Negative logarithmic domain",
+          "caption": "Negative source values retain their signs on an explicit negative logarithmic domain."
+        },
+        {
+          "id": "axis-ordinal",
+          "title": "Ordinal observations",
+          "caption": "The supplied January and March observations occupy adjacent ordinal slots."
+        },
+        {
+          "id": "axis-calendar-month",
+          "title": "Calendar-month bands",
+          "caption": "The same raw UTC instants retain an empty February calendar band."
+        }
+      ]
+    }
+  ],
   "guideLinkTargets": [
+    {"from": "../../ChartForgeX.Examples/WebsiteRecipes/NativeAxisWebsiteRecipe.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/WebsiteRecipes/NativeAxisWebsiteRecipe.cs"},
+    {"from": "../../ChartForgeX.Examples/WebsiteRecipes/NativeHierarchyWebsiteRecipe.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/WebsiteRecipes/NativeHierarchyWebsiteRecipe.cs"},
+
     {"from": "../../ChartForgeX.Examples/CartesianCategoryExamples.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/CartesianCategoryExamples.cs"},
     {"from": "../../ChartForgeX.Examples/Recipes/ComparisonRecipe.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Recipes/ComparisonRecipe.cs"},
     {"from": "../../ChartForgeX.Examples/Recipes/GeographicDatasetsRecipe.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Recipes/GeographicDatasetsRecipe.cs"},
@@ -57,7 +120,9 @@
     {"from": "../TODO.md#mermaid", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/TODO.md#mermaid"},
     {"from": "../TODO.md#visual-effects", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/TODO.md#visual-effects"},
     {"from": "../chord.md", "to": "/docs/chord/"},
+    {"from": "../hierarchy-views.md#sunburst-caption-size-and-sector-spacing", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/hierarchy-views.md#sunburst-caption-size-and-sector-spacing"},
     {"from": "../interactivity.md#connected-native-x-windows", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md#connected-native-x-windows"},
+    {"from": "../interactivity.md#native-y-and-xy-windows", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md#native-y-and-xy-windows"},
     {"from": "../interactivity.md#semantic-series-identity", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md#semantic-series-identity"},
     {"from": "../interactivity.md#updating-embedded-charts", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md#updating-embedded-charts"},
     {"from": "../mermaid.md#shared-host-presentation-and-resource-policy", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid.md#shared-host-presentation-and-resource-policy"},
@@ -72,6 +137,8 @@
     {"from": "api-conventions.md#bubble-size-scale", "to": "/docs/api-conventions/#bubble-size-scale"},
     {"from": "api-conventions.md#cartesian-viewports", "to": "/docs/api-conventions/#cartesian-viewports"},
     {"from": "api-conventions.md#configuration-callback-ownership", "to": "/docs/api-conventions/#configuration-callback-ownership"},
+    {"from": "api-conventions.md#explicit-pie-and-donut-bands", "to": "../api-conventions/#explicit-pie-and-donut-bands"},
+    {"from": "api-conventions.md#explicit-time-spacing", "to": "../api-conventions/#explicit-time-spacing"},
     {"from": "api-conventions.md#financial-marks", "to": "/docs/api-conventions/#financial-marks"},
     {"from": "api-conventions.md#gauge-readings-and-scales", "to": "/docs/api-conventions/#gauge-readings-and-scales"},
     {"from": "api-conventions.md#grouped-box-plots-and-orientation", "to": "/docs/api-conventions/#grouped-box-plots-and-orientation"},

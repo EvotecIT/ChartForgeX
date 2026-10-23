@@ -39,12 +39,34 @@ internal static class SiteRecipeSource {
     /// <summary>Writes the complete download and exposes its exact steps to the example-page shortcode.</summary>
     internal static void Attach(VisualOutput output, Dictionary<string, object> entry, string slug, string recipeName,
         bool includeThemeMode, params string[] sections) {
+        AttachProgram(output, entry, slug, recipeName, includeThemeMode, string.Empty, false, sections);
+    }
+
+    /// <summary>Exposes the complete generated program for a documentation code block and its identical download.</summary>
+    internal static void AttachComplete(VisualOutput output, Dictionary<string, object> entry, string slug, string recipeName,
+        bool includeThemeMode, params string[] sections) =>
+        AttachProgram(output, entry, slug, recipeName, includeThemeMode, string.Empty, true, sections);
+
+    /// <summary>Appends an exact compiled shared recipe class so the complete download is standalone.</summary>
+    internal static void AttachShared(VisualOutput output, Dictionary<string, object> entry, string slug, string recipeName,
+        string sharedRecipeName, bool includeThemeMode, params string[] sections) {
+        using var stream = typeof(SiteRecipeSource).Assembly.GetManifestResourceStream("SiteVisuals.SharedRecipes." + sharedRecipeName + ".cs")
+            ?? throw new InvalidOperationException("Compiled shared recipe source is missing: " + sharedRecipeName);
+        using var reader = new StreamReader(stream);
+        AttachProgram(output, entry, slug, recipeName, includeThemeMode, reader.ReadToEnd(), true, sections);
+    }
+
+    private static void AttachProgram(VisualOutput output, Dictionary<string, object> entry, string slug, string recipeName,
+        bool includeThemeMode, string sharedSource, bool includeCompleteProgram, string[] sections) {
         var regions = Read(recipeName);
         var code = sections.ToDictionary(section => section, section => Required(regions, section), StringComparer.Ordinal);
         code[sections[0]] = string.Join("\n\n", new[] { Required(regions, "imports"), includeThemeMode ? ThemeMode : string.Empty, code[sections[0]] }.Where(value => value.Length > 0));
+        var program = CompleteProgram(regions, includeThemeMode, sections);
+        if (!string.IsNullOrWhiteSpace(sharedSource)) program += "\n" + sharedSource.Replace("\r\n", "\n").TrimEnd() + "\n";
         entry["code"] = code;
+        if (includeCompleteProgram) entry["program"] = program;
         entry["source"] = "/site/examples/" + slug + ".csharp.txt";
-        output.Text("examples/" + slug + ".csharp.txt", CompleteProgram(regions, includeThemeMode, sections));
+        output.Text("examples/" + slug + ".csharp.txt", program);
     }
 
     private static string Required(IReadOnlyDictionary<string, string> regions, string name) =>

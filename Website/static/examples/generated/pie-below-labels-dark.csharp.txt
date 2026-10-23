@@ -1,0 +1,38 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = EqualPieRecipe.Create("below-labels", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
+    new VisualFrame("Four equal shares", "Labels below", showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Four equal pie shares with labels above or below their measured anchors.</summary>
+public static class EqualPieRecipe {
+    /// <summary>Creates the symmetric label example using above-labels or below-labels.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "above-labels" or "below-labels")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var shares = new ChartSeries(new ChartSeriesId("equal-shares"), "Equal shares", ChartSeriesKind.Pie,
+            Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 1)));
+        return Chart.Create().WithXLabels("A", "B", "C", "D").WithDataLabels()
+            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDonutCenterLabel(false)
+            .WithDataLabelPlacement(variant == "below-labels" ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Above)
+            .AddSeries(shares);
+    }
+}

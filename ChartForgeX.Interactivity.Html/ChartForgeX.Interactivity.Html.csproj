@@ -53,6 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\interactive.annotations.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.annotations.css" />
     <EmbeddedResource Include="Assets\interactive.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.css" />
     <EmbeddedResource Include="Assets\interactive.chrome.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.chrome.css" />
     <EmbeddedResource Include="Assets\interactive.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.js" />

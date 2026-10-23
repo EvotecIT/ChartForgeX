@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
-internal sealed class ChartPath {
+internal sealed partial class ChartPath {
     public ChartPath(IReadOnlyList<ChartPathCommand> commands) {
         Commands = commands ?? throw new ArgumentNullException(nameof(commands));
     }

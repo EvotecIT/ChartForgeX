@@ -18,6 +18,10 @@ internal static class ChartCartesianOrientation {
         (series.Kind == ChartSeriesKind.Line || series.Kind == ChartSeriesKind.StepLine)
         && chart.Options.LineOrientation == ChartOrientation.Horizontal;
 
+    internal static ChartAxis ValueAxis(Chart chart, ChartAxisSide side) => IsHorizontal(chart)
+        ? side == ChartAxisSide.Secondary ? chart.Options.SecondaryXAxis : chart.Options.XAxis
+        : side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+
     internal static ChartAxis CategoryAxis(Chart chart) => IsHorizontal(chart) ? chart.Options.YAxis : chart.Options.XAxis;
 
     internal static bool UsesLegacyCategoryLabels(Chart chart) {

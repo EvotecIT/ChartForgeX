@@ -7,8 +7,8 @@ internal static partial class SmokeTests {
     private static void SharedYAxisHandlesSecondaryOnlyCharts() {
         var secondaryOnlyA = Chart.Create().WithSize(300, 200).WithSecondaryYAxis("Rate").AddLine("Rate A", Points(82, 88, 94));
         var secondaryOnlyB = Chart.Create().WithSize(300, 200).WithSecondaryYAxis("Rate").AddLine("Rate B", Points(70, 76, 81));
-        secondaryOnlyA.Series[0].UseSecondaryYAxis();
-        secondaryOnlyB.Series[0].UseSecondaryYAxis();
+        secondaryOnlyA.Series[0].UseSecondaryValueAxis();
+        secondaryOnlyB.Series[0].UseSecondaryValueAxis();
 
         ChartGrid.Create().Add(secondaryOnlyA).Add(secondaryOnlyB).WithSharedYAxis();
 

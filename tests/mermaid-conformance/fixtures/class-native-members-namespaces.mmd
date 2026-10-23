@@ -1,0 +1,13 @@
+classDiagram
+namespace Domain.Core["Domain core"] {
+  class Store~Item~ {
+    +List~List~int~~ values
+    +lookup(int id, string key) Item*
+    +create()* Item
+    +int count$
+    +reset()$
+  }
+  class Customer["Customer, account"]
+}
+Store --> Customer
+link Store "https://example.invalid/store" "Open store"

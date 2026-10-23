@@ -37,5 +37,7 @@ public enum TopologyNodeShape {
     /// <summary>A stick actor with a caption below it.</summary>
     Actor,
     /// <summary>A filled rectangular synchronization bar, using the node accent for its entire surface.</summary>
-    SynchronizationBar
+    SynchronizationBar,
+    /// <summary>A document surface with a wavy lower edge and an inset reference rail.</summary>
+    LinedDocument
 }

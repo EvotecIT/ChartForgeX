@@ -1,0 +1,41 @@
+zenuml
+title Checkout occurrences
+group "Application" {
+  @Actor User
+  @Control Service
+}
+@Database Store
+@Queue Bus
+@Starter(User)
+// Accept the request
+Service.checkout(order) {
+  if (valid && !cancelled) {
+    String receipt = new Receipt(order) {
+      Store.save(order)
+      return saved
+    }
+  } else {
+    return declined
+  }
+  loop (retries < 3) {
+    Store.retry(order)
+  }
+  par {
+    Bus: ready(order)
+  }
+  critical (commitLock) {
+    Store.commit()
+  }
+  opt (notify) {
+    Bus: notify(order)
+  }
+  try {
+    Store.flush()
+  } catch (StorageError error) {
+    Store.recover(error)
+  } finally {
+    Store.close()
+  }
+  return accepted
+}
+Service --> User: confirmed

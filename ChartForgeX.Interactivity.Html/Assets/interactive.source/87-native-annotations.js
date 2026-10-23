@@ -1,6 +1,18 @@
-  // Commands carry exact source geometry to the host; the native model owns drawing and export.
+  // Native drawing/export geometry.
   const nativeAnnotationNode = (root, id) => Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
     .find(node => node.dataset.cfxAnnotationId === id);
+  const sourceAnnotationProjection = (root, yAxis) => {
+    let metadata;
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return null; }
+    const x = metadata.xProjection, y = yAxis === 'Secondary' ? metadata.secondaryYProjection : metadata.yProjection;
+    const valid = axis => axis && [axis.minimum, axis.maximum, axis.transformedMinimum, axis.transformedMaximum].every(Number.isFinite)
+      && axis.maximum > axis.minimum && axis.transformedMaximum > axis.transformedMinimum;
+    const plot = x?.plotBounds;
+    if (!valid(x) || !valid(y) || !plot || ![plot.x, plot.y, plot.width, plot.height].every(Number.isFinite)
+      || plot.width <= 0 || plot.height <= 0 || metadata.orientation === 'horizontal'
+      || ['x', 'y', 'width', 'height'].some(key => y.plotBounds?.[key] !== plot[key])) return null;
+    return { x, y, plot };
+  };
   const sourceAnnotationDrawing = value => {
     const point = source => {
       if (!source || !Number.isFinite(source.x) || !Number.isFinite(source.y))
@@ -21,7 +33,7 @@
     return Object.freeze({ kind: value.kind, start, ...(end ? { end } : {}),
       ...(value.kind === 'ParallelChannel' ? { yOffset } : {}), label: value.label ?? '', yAxis: value.yAxis ?? 'Primary' });
   };
-  const requestAnnotationChange = (root, change) => {
+  const requestAnnotationChange = (root, change, editorReplay = null) => {
     if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Connect a native annotation preparation callback first.');
     if (!change || !['add', 'replace', 'remove'].includes(change.operation)
       || typeof change.id !== 'string' || !change.id.trim()) throw new TypeError('An annotation change requires an operation and a nonempty authored ID.');
@@ -29,10 +41,11 @@
     if (change.operation === 'add' ? !!existing : !existing)
       throw new TypeError('Add requires an unused annotation ID; replace and remove require an existing authored annotation.');
     const drawing = change.operation === 'remove' ? undefined : sourceAnnotationDrawing(change.drawing);
-    if (drawing && (!root._cfxDataProjection || root._cfxDataProjection.horizontal))
+    if (drawing && !sourceAnnotationProjection(root, drawing.yAxis))
       throw new TypeError('Source drawings require a vertical Cartesian data projection.');
     return requestNativePreparation(root, 'annotation', { kind: change.operation, annotationId, ...(drawing ? { sourceDrawing: drawing } : {}) }, {
       eventPrefix: 'cfxannotation', preserveViewport: true,
+      ...annotationEditorChangeHooks(root, annotationId, drawing, editorReplay),
       validate: (next, request) => {
         const node = nativeAnnotationNode(next, request.annotationId), source = request.sourceDrawing;
         if (request.kind === 'remove') {

@@ -2,7 +2,7 @@
     && ['area', 'steparea', 'stackedarea', 'differencearea', 'rangearea', 'rangeband'].includes((subject.dataset.cfxKind || '').toLowerCase())
     && /^(area|difference-(positive|negative)|range-(area|band))(-pattern)?$/.test(node.dataset.cfxRole || '');
   const cartesianFillOwnsObservation = (node, subject) => {
-    // Fill and hatch share non-paint ownership by observation index, independently of their coordinates.
+    // Fill/hatch use indices.
     const segment = node.closest('[data-cfx-role="fill-segment"]');
     if (!segment) return false;
     const first = Number(segment.dataset.cfxFillPointStart), count = Number(segment.dataset.cfxFillPointCount);
@@ -14,7 +14,7 @@
     if (!cartesianFillOwnsObservation(node, subject)) return false;
     if (pairedExtentObservation(subject)) return pairedBoundaryInk(node, subject, paint);
     const region = subject._cfxNativeRegion;
-    // Reuse the source-bounded stroke/clip query with this scalar's captured centre as both endpoints.
+
     return region && pairedBoundaryInk(node, subject, paint, {
       x: region.x + region.width / 2, y: region.y + region.height / 2, width: 0, height: 0
     });
@@ -24,8 +24,8 @@
     const role = node.dataset.cfxRole || '';
     if (!role.endsWith('-pattern')) return typeof node.isPointInFill === 'function'
       ? { key: node, matrix: node.getScreenCTM(), contains: point => node.isPointInFill(point) } : null;
-    // Native hatches are open strokes clipped by an envelope. The browser's native path parser
-    // queries that clip with its clip-rule, independently of the base fill's visibility or fill-rule.
+    // Separate hatch clip-rule.
+
     for (let parent = node.parentElement; parent && parent.ownerSVGElement; parent = parent.parentElement) {
       const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
       const clip = reference && parent.ownerSVGElement.getElementById(reference[1]);
@@ -55,19 +55,19 @@
     const surface = nativeFillEnvelope(node, styles), region = subject._cfxNativeRegion;
     const sourceMatrix = subject.getScreenCTM(), shapeMatrix = surface && surface.matrix, clips = nativePaintClips(node);
     if (!surface || !region || !sourceMatrix || !shapeMatrix || !clips) return false;
-    // This cache lives only as long as the current paint/style probe. Hatches share one native envelope.
+
     const cache = styles._cfxFillInk ||= new WeakMap();
     let subjects = cache.get(surface.key);
     if (!subjects) { subjects = new WeakMap(); cache.set(surface.key, subjects); }
     if (subjects.has(subject)) return subjects.get(subject);
     const sourceInverse = sourceMatrix.inverse(), shapeInverse = shapeMatrix.inverse();
     const paired = pairedExtentObservation(subject), x = region.x + region.width / 2;
-    // Scalar sources retain their source-location clip contract, even when their footprint overlaps paint.
+    // Clip source scalars.
     if (!paired && !paintWithinNativeClips(node, subject, styles)) return false;
     const low = paired ? region.y + region.width / 2 : region.y + region.height / 2;
     const high = paired ? region.y + region.height - region.width / 2 : low;
-    // Native SVG uses three decimals. Interior probes below that quantum distinguish a real held
-    // surface from a zero-width endpoint stem, which isPointInFill alone considers inside the path.
+    // Sub-.001 probes reject isPointInFill zero-width stems.
+
     const inset = .00025;
     const contains = (px, py) => {
       const screen = new DOMPoint(px, py).matrixTransform(sourceMatrix);
@@ -89,8 +89,8 @@
         && py - radius >= region.y && py + radius <= region.y + region.height
         && contains(px, py) && [-1, 1].every(dx => [-1, 1].every(dy => contains(px + dx * radius, py + dy * radius))));
     } else if (high > low) {
-      // Most observations contain their own middle. A shifted Step hold can overlap only a different
-      // part of the paired extent, so partition it using captured neighboring boundaries and clips.
+      // Clip Step holds by neighbors.
+
       visible = atY(low / 2 + high / 2, Math.min(inset, (high - low) / 4));
       if (!visible) {
         const knots = new Set([low, high]);

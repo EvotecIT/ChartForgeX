@@ -49,8 +49,6 @@ public sealed class MermaidThemeLayoutTests {
 
     private static VisualArtifact Render(string source, bool unsupported = false) {
         var rendered = MermaidRenderer.Render(source);
-        if (rendered.Document is MermaidTimelineDocument)
-            Assert.Single(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ApproximateMapping);
         var appearanceDiagnostics = rendered.Diagnostics.Where(item => item.Code != MermaidDiagnosticCodes.ApproximateMapping).ToArray();
         if (unsupported) {
             var diagnostic = Assert.Single(appearanceDiagnostics);
@@ -67,8 +65,8 @@ public sealed class MermaidThemeLayoutTests {
             var block = Assert.IsType<PacketLayoutBlock>(artifact.Model);
             return (block.Options.Theme, block.Options.ThemeMode);
         }
-        var chart = Assert.IsType<Chart>(artifact.Model);
-        return (chart.Options.Theme, chart.Options.ThemeMode);
+        var timeline = Assert.IsType<TimelineDiagramBlock>(artifact.Model);
+        return (timeline.Options.Theme, timeline.Options.ThemeMode);
     }
 
     private static string[] Geometry(XDocument svg) => svg.Root!.DescendantsAndSelf().Select(element =>

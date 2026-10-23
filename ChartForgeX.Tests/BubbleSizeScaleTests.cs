@@ -33,7 +33,7 @@ public sealed class BubbleSizeScaleTests {
             .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 400); bubble.MinimumRadius = 2; bubble.MaximumRadius = 30; });
         var before = Marks(Prepare(chart));
         chart.AddBubble("Second", new[] { new ChartBubble(5, 40, 100), new ChartBubble(7, 50, 1000) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.SecondaryYAxis.WithBounds(0, 100);
         chart.WithSize(340, 240);
         var prepared = Prepare(chart); var after = Marks(prepared);
@@ -48,7 +48,7 @@ public sealed class BubbleSizeScaleTests {
     public void AutomaticDomainIncludesHiddenAndSecondarySeriesButNotEmptyTuples() {
         var chart = Bare().AddBubble("First", new[] { new ChartBubble(1, 20, 1), new ChartBubble(3, 30, 100) })
             .AddBubble("Hidden", new[] { new ChartBubble(5, 40, 400) });
-        chart.Series[1].UseSecondaryYAxis().ConfigureMarkers(marker => marker.Enabled = false);
+        chart.Series[1].UseSecondaryValueAxis().ConfigureMarkers(marker => marker.Enabled = false);
         chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("empty"), "Empty", Array.Empty<ChartBubble>()));
         chart.ConfigureBubble(bubble => { bubble.MinimumRadius = 2; bubble.MaximumRadius = 30; });
         var automatic = Marks(Prepare(chart));

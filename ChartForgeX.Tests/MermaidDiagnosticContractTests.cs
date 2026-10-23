@@ -28,9 +28,6 @@ public sealed class MermaidDiagnosticContractTests {
     }
 
     [Theory]
-    [InlineData("journey\nsection Work\nTask: 4: User", "bars")]
-    [InlineData("timeline\n2026 : Delivered", "ordinal")]
-    [InlineData("venn-beta\nset A [\"A\"] : 10\nset B [\"B\"] : 8\nunion A,B [\"Shared\"] : 2", "proportional")]
     [InlineData("C4Context\nPerson(user, \"User\")\nSystem(app, \"Application\")\nRel(user, app, \"Uses\")", "topology")]
     public void DeliberateMappingsRemainRenderableAndExposeTheSameLocatedLimitThroughMarkdown(string source, string limitation) {
         var parsed = new MermaidParser().Parse(source);

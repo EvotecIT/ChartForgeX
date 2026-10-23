@@ -1,4 +1,4 @@
-  // Screen placement uses the canonical acquired node.
+
   const tooltipPositions = new WeakMap();
   const activeTooltipPositions = new Set();
   const tooltipPositionTrees = new Set();
@@ -24,7 +24,7 @@
     if (activeTooltipPositions.size) {
       if (tooltipPositionObserver && Array.from(tooltipPositionTrees).some(tree =>
         !Array.from(activeTooltipPositions).some(current => current.trees.includes(tree)))) {
-        // Drain surviving hosts' removals before rebuilding registrations to release unused shadow trees.
+        // Drain detaches before rebind.
         checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
         if (!tooltipPositionObserver) return;
         tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
@@ -44,12 +44,12 @@
     const source = nativeRegionScreenBox(node);
     if (source) return source;
     const rect = node.getBoundingClientRect();
-    // Unlocated keyboard facts use their visible SVG bounds.
+
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
   const tooltipShadowContainingBlock = (node, position, source) => {
     if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
-    // Inspect the flat tree: offsetParent can hide slotted containing blocks.
+    // Containing blocks bypass clips; inline never clips.
     const style = getComputedStyle(node);
     return position === 'absolute' && style.position !== 'static'
       || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
@@ -65,13 +65,13 @@
         positioned = getComputedStyle(child).position; containingBlock = child.offsetParent;
       }
       if (positioned) {
-        // Native offsetParent includes transformed/paint-contained blocks. Overflow below it is bypassed.
+
         if (node !== containingBlock && !tooltipShadowContainingBlock(node, positioned, source)) continue;
         positioned = null;
       }
       if (!(node instanceof HTMLElement) || !node.getClientRects().length) continue;
       const style = getComputedStyle(node);
-      // Overflow does not clip a non-replaced inline box. A real zero-sized block still clips.
+
       if (style.display === 'inline' || style.display === 'contents') continue;
       const paint = /\b(paint|content|strict)\b/.test(style.contain);
       const x = paint || style.overflowX !== 'visible', y = paint || style.overflowY !== 'visible';
@@ -96,7 +96,7 @@
       state.clippingAncestors = tooltipClippingAncestors(state.node);
       state.placementClippingAncestors = tooltipClippingAncestors(state.tip);
     }
-    // Cache overflow axes until paint invalidation; keep bounds live.
+
     const { left, top, right, bottom } = tooltipClippingBounds(state.clippingAncestors);
     const source = tooltipSourceRect(state.node);
     return state.nativeIntersecting !== false && source && right > left && bottom > top
@@ -107,7 +107,7 @@
     && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
     && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent)) && tooltipSourceInView(state);
   const queueTooltipPositionRefresh = (invalidation) => {
-    // Native geometry can change without a DOM mutation.
+
     if (invalidation) for (const state of activeTooltipPositions) state.paintChanged = true;
     if (tooltipPositionFrame || !activeTooltipPositions.size) return;
     tooltipPositionFrame = requestAnimationFrame(() => {
@@ -116,7 +116,7 @@
         ({ state, ancestry: composedAncestry(state.root) })).filter(({ state, ancestry }) =>
         state.nodes.length !== ancestry.nodes.length || state.nodes.some((node, index) => node !== ancestry.nodes[index]));
       if (changes.length && tooltipPositionObserver) {
-        // Preserve queued detach records before rebinding a moved slot's containing block and trees.
+
         checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
         if (tooltipPositionObserver) {
           for (const { state, ancestry } of changes) if (activeTooltipPositions.has(state)) Object.assign(state, ancestry);
@@ -133,7 +133,7 @@
     });
   };
   const checkTooltipPositionMutations = (records) => {
-    // Our placement styles cannot change target paint; host styles can.
+
     records = records.filter(record => {
       const placed = tooltipPositions.get(record.target);
       return !(placed && record.type === 'attributes' && record.attributeName === 'style'
@@ -141,13 +141,13 @@
     });
     if (!records.length) return;
     for (const current of Array.from(activeTooltipPositions)) {
-      // A new delayed target can hide a shown readout. Release geometry without cancelling its new request.
+      // Release geometry, not requests.
       if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)
           || current.nodes.some(boundary => node.contains(boundary))));
       if (removed) { hideTip(current.root, current.tip, true); continue; }
-      // Other dashboard content may move this chart, but only the chart or its ancestors invalidate paint.
+
       if (records.some(record => !current.tip.contains(record.target) && (current.root.contains(record.target)
         || record.type === 'attributes' && current.nodes.includes(record.target)))) current.paintChanged = true;
     }
@@ -158,7 +158,7 @@
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
         attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
-      // Native geometry events do not cross a shadow boundary. Own them alongside the tree's observer.
+      // Keep shadow-local events.
       tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
       tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tree.addEventListener('slotchange', queueTooltipPositionRefresh, true);
@@ -170,8 +170,8 @@
       state.intersectionObserver?.disconnect(); state.nativeIntersecting = undefined; state.intersectionNode = state.node;
       const box = state.node.getBoundingClientRect();
       if (box.width > 0 && box.height > 0 && !retainedGeometryFact(state.node)) {
-        // Native intersection sees opaque closed slots. It supplements the precise source footprint above;
-        // an inflated paired hit box still cannot establish exact partial clipping inside an opaque host.
+        // Intersect opaque slots with ink, not hit boxes.
+
         const observer = new IntersectionObserver(entries => {
           const entry = entries.find(item => item.target === state.node);
           if (!entry || state.intersectionObserver !== observer || !activeTooltipPositions.has(state)) return;
@@ -184,7 +184,7 @@
     if (activeTooltipPositions.has(state)) return;
     activeTooltipPositions.add(state);
     if (!tooltipPositionObserver) {
-      // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
+
       window.addEventListener('resize', queueTooltipPositionRefresh);
       window.visualViewport?.addEventListener('scroll', queueTooltipPositionRefresh);
       window.visualViewport?.addEventListener('resize', queueTooltipPositionRefresh);
@@ -223,14 +223,14 @@
     }
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
-    // Hold measured width to prevent fixed-position shrink-to-fit near host edges.
+    // Fix measured shrink-to-fit width.
     tip.style.left = '0px'; tip.style.top = '0px';
     tip.style.width = '';
     tip.style.width = getComputedStyle(tip).width;
     const origin = tip.getBoundingClientRect();
     tip.style.left = '1px'; tip.style.top = '1px';
     const unit = tip.getBoundingClientRect();
-    // One-pixel probes convert screen coordinates through transformed hosts.
+
     const scaleX = unit.left - origin.left || 1, scaleY = unit.top - origin.top || 1;
     const gap = Number(root.dataset.cfxTooltipGap ?? 14);
     const offsetX = Number(root.dataset.cfxTooltipOffsetX || 0), offsetY = Number(root.dataset.cfxTooltipOffsetY || 0);
@@ -258,7 +258,7 @@
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
     if (!state) { state = { root, tip, stage, ...composedAncestry(root) }; tooltipPositions.set(tip, state); }
-    // Pinned pointer motion must retain keyboard-only fact acquisition.
+
     if (!pinned) {
       if (state.node !== node) state.nativeIntersecting = undefined;
       state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event;

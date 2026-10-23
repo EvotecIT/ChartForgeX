@@ -26,7 +26,7 @@ public sealed class SupportedCombinationLifecycleTests {
         Assert.Equal(0, observed.Points[^1].Y);
         Assert.Equal(3, observed.SourcePointCount);
         Assert.Equal(4, reference.SourcePointCount);
-        Assert.Equal(layout == "vertical-secondary" ? ChartAxisSide.Secondary : ChartAxisSide.Primary, reference.YAxis);
+        Assert.Equal(layout == "vertical-secondary" ? ChartAxisSide.Secondary : ChartAxisSide.Primary, reference.ValueAxis);
         var points = Targets(before);
         Assert.DoesNotContain(points, point => Fact(point, "series-key") == "observed" && Fact(point, "observation-id") == "north-remote");
         Assert.Contains(points, point => Fact(point, "series-key") == "observed" && Fact(point, "observation-id") == "south-remote");

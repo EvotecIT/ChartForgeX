@@ -1,0 +1,72 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = GeographicDatasetsRecipe.Create("compact-mercator", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 600)), theme, mode,
+    new VisualFrame("Coverage and delivery routes", "Independent coverage, delay and traffic dimensions", showLegend: true, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Combines geographic service zones, independently colored weighted depots and retained route facts.</summary>
+public static class GeographicDatasetsRecipe {
+    /// <summary>Creates a compact or wide geographic chart using an ordinary or Mercator source projection.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "mercator" or "compact-mercator")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var projection = variant.EndsWith("mercator", StringComparison.Ordinal)
+            ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular;
+        var definition = ChartMapGeoJson.ToMapDefinition("service-zones", "Service zones", GeoJson,
+            new ChartMapGeoJsonOptions { Projection = projection });
+        var coverage = ChartSeries.CreateRegionMap(new ChartSeriesId("coverage"), "Service coverage", definition, new[] {
+            new ChartRegionMapItem("west", 92), new ChartRegionMapItem("central", 74), new ChartRegionMapItem("north", 88)
+        }).WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
+        coverage.ConfigureColorDimension(options => {
+            options.Name = "Coverage"; options.ValueFormat = ChartValueFormat.Number("0 '%'", CultureInfo.InvariantCulture);
+        });
+        var depots = ChartSeries.CreateDottedMap(new ChartSeriesId("depots"), "Depot delays", ChartMapGeoJson.ToMapPoints(GeoJson,
+            new ChartMapGeoJsonOptions { WeightPropertyName = "traffic", ColorValuePropertyName = "delay" }))
+            .WithObservationIds(new[] { new ChartObservationId("madrid"), new ChartObservationId("warsaw"), new ChartObservationId("oslo") })
+            .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-10, 30))
+            .ReplaceMapConnectors(ChartMapGeoJson.ToMapConnectors(GeoJson));
+        depots.ConfigureColorDimension(options => {
+            options.Name = "Delay"; options.ValueFormat = ChartValueFormat.Number("0 'min'", CultureInfo.InvariantCulture);
+        });
+        depots.ConfigureMapPointSize(options => {
+            options.WithSizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
+            options.SizeDimension.Name = "Traffic"; options.SizeDimension.ShowLegend = true;
+            options.SizeDimension.ValueFormat = ChartValueFormat.Number("0 'routes'", CultureInfo.InvariantCulture);
+        });
+        return Chart.Create().WithSize(variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800, 600)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Coverage and delivery routes")
+            .WithSubtitle("Regions show coverage; depot color shows delay and size shows traffic")
+            .WithLegend().WithMapLabels(false).WithDataLabels().AddSeries(coverage).AddSeries(depots);
+    }
+
+    // The rectangles are authored service zones rather than administrative borders. Every importer reads the same source facts.
+    private const string GeoJson = """
+        {"type":"FeatureCollection","features":[
+          {"type":"Feature","properties":{"code":"west","name":"West zone"},"geometry":{"type":"Polygon","coordinates":[[[-10,35],[5,35],[5,48],[-10,48],[-10,35]]]}},
+          {"type":"Feature","properties":{"code":"central","name":"Central zone"},"geometry":{"type":"Polygon","coordinates":[[[5,45],[25,45],[25,56],[5,56],[5,45]]]}},
+          {"type":"Feature","properties":{"code":"north","name":"North zone"},"geometry":{"type":"Polygon","coordinates":[[[5,56],[25,56],[25,66],[5,66],[5,56]]]}},
+          {"type":"Feature","properties":{"name":"Madrid","traffic":18,"delay":-5},"geometry":{"type":"Point","coordinates":[-3.7,40.4]}},
+          {"type":"Feature","properties":{"name":"Warsaw","traffic":74,"delay":20},"geometry":{"type":"Point","coordinates":[21,52.2]}},
+          {"type":"Feature","properties":{"name":"Oslo","traffic":42,"delay":7},"geometry":{"type":"Point","coordinates":[10.8,59.9]}},
+          {"type":"Feature","properties":{"name":"Depot route"},"geometry":{"type":"LineString","coordinates":[[-3.7,40.4],[10,45],[21,52.2],[17,56],[10.8,59.9]]}}
+        ]}
+        """;
+}

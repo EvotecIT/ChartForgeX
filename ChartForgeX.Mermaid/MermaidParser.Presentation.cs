@@ -8,8 +8,10 @@ public sealed partial class MermaidParser {
     private static MermaidDocument ReadPresentation(string[] lines, int firstBodyLine, MermaidDiagramKind kind, MermaidParseResult<MermaidDocument> result) {
         var presentation = new MermaidDocument();
         var insideStateNote = false;
+        var opaque = kind == MermaidDiagramKind.Agentflow ? AgentflowMetadataLines(lines, Math.Max(0, firstBodyLine - 2)) : null;
         for (var i = firstBodyLine - 1; i < lines.Length; i++) {
             MermaidResourceGuard.Checkpoint();
+            if (opaque?.Contains(i) == true) continue;
             var text = lines[i].Trim();
             var statement = MermaidParserUtilities.StripInlineComment(text);
             if (insideStateNote) {

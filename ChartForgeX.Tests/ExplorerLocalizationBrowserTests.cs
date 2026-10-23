@@ -49,8 +49,9 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         ui[HtmlChartText.ReportOverviewStatus] = "نظرة عامة";
     }
 
-    // Compare only the native scene, not translated chrome. Canvas bitmap hashes catch inherited
-    // bidi changes that raw labels or SVG attributes alone cannot observe.
+    // Compare the native scene, not translated chrome. Canvas2D drawing facts protect authored
+    // text, transforms and bidi state; full PNGs remain evidence. Untouched/WebGL surfaces keep
+    // exact bitmap comparison, and SVG glyph extents below retain physical geometry coverage.
     private static async Task<JsonElement> NativeSnapshotAsync(IPage page, string selector) {
         await page.EvaluateAsync("()=>document.fonts.ready.then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))");
         var snapshot = await page.Locator(selector).EvaluateAsync<JsonElement>("""
@@ -58,6 +59,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
                 painted=node=>{for(let owner=node;owner;owner=owner.parentElement){const style=getComputedStyle(owner);if(style.display==='none'||style.visibility!=='visible'||Number(style.opacity)===0)return false}return true},
                 textFacts=node=>({text:node.textContent,direction:getComputedStyle(node).direction});
                 return{pixelRatio:devicePixelRatio,surfaces:surfaces.map(node=>({tag:node.localName,role:node.dataset.cfxRole,direction:getComputedStyle(node).direction,
+                    drawing:node.localName==='canvas'?window.__cfxLocalizationPaint?.get(node)??null:null,
                     bitmap:node.localName==='canvas'?node.toDataURL():null})),
                 nativeText:surfaces.filter(node=>node.localName==='svg').flatMap(svg=>[...svg.querySelectorAll('text')]).map(textFacts),
                 texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>{
@@ -92,7 +94,20 @@ public sealed partial class ExplorerLocalizationBrowserTests {
     }
 
     private static void AssertNativeSnapshotEqual(JsonElement expected, JsonElement actual) {
-        Assert.Equal(expected.GetProperty("surfaces").GetRawText(), actual.GetProperty("surfaces").GetRawText());
+        var expectedSurfaces = expected.GetProperty("surfaces").EnumerateArray().ToArray();
+        var actualSurfaces = actual.GetProperty("surfaces").EnumerateArray().ToArray();
+        Assert.Equal(expectedSurfaces.Length, actualSurfaces.Length);
+        for (var index = 0; index < expectedSurfaces.Length; index++) {
+            var before = expectedSurfaces[index]; var after = actualSurfaces[index];
+            foreach (var property in new[] { "tag", "role", "direction" })
+                Assert.Equal(before.GetProperty(property).GetRawText(), after.GetProperty(property).GetRawText());
+            var drawing = before.GetProperty("drawing"); var nextDrawing = after.GetProperty("drawing");
+            Assert.Equal(drawing.ValueKind, nextDrawing.ValueKind);
+            if (drawing.ValueKind != JsonValueKind.Null)
+                Assert.Equal(drawing.GetRawText(), nextDrawing.GetRawText());
+            else
+                Assert.Equal(before.GetProperty("bitmap").GetString(), after.GetProperty("bitmap").GetString());
+        }
         Assert.Equal(expected.GetProperty("nativeText").GetRawText(), actual.GetProperty("nativeText").GetRawText());
         Assert.Equal(expected.GetProperty("pixelRatio").GetDouble(), actual.GetProperty("pixelRatio").GetDouble());
         var expectedTexts = expected.GetProperty("texts").EnumerateArray().ToArray();

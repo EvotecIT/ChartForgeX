@@ -1,9 +1,16 @@
-  // Navigation chrome reuses the captured axis math and requests a fresh native scene.
+
   const fullXNavigationAxis = root => {
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     return projection && axis ? { ...axis, minimum: projection.fullMinimum, maximum: projection.fullMaximum,
       transformedMinimum: projection.transformedFullMinimum, transformedMaximum: projection.transformedFullMaximum,
-      timeSessions: projection.timeSessions, reversed: false } : null;
+      timeSessions: projection.timeSessions, maximumInclusive: true, reversed: false } : null;
+  };
+  const xNavigationWindow = (root, axis, minimum, maximum, maximumInclusive) => {
+    // Include full canonical calendar edges, uncentered.
+
+    const inclusive = maximumInclusive ?? (axis.timeSpacing?.kind === 'unit'
+      ? !validSourceAxisMaximum({ maximum, maximumInclusive: false }, axis) : chartXProjection(root)?.maximumInclusive !== false);
+    return { minimum, maximum, ...(inclusive ? {} : { maximumInclusive: false }) };
   };
   const xNavigationCaption = (root, value) => {
     const axis = root._cfxDataProjection?.x;
@@ -15,7 +22,7 @@
     if (!panel || !projection || !axis) return;
     const start = panel.querySelector('[data-cfx-x-range="start"]'), end = panel.querySelector('[data-cfx-x-range="end"]');
     start.value = String(first); end.value = String(last);
-    const lower = rawWindow?.minimum ?? projectedAxisValue(axis, first), upper = rawWindow?.maximum ?? projectedAxisValue(axis, last);
+    const lower = rawWindow?.minimum ?? projectedAxisValue(axis, first, false), upper = rawWindow?.maximum ?? projectedAxisValue(axis, last, true);
     const captions = [xNavigationCaption(root, lower), xNavigationCaption(root, upper)];
     [start, end].forEach((input, index) => { input.setAttribute('aria-valuetext', captions[index]); });
     panel.querySelector('[data-cfx-x-value="start"]').textContent = captions[0];
@@ -42,7 +49,7 @@
     panel.hidden = !enabled;
     panel.querySelectorAll('button,input').forEach(control => { control.disabled = !enabled; });
     if (!enabled) return;
-    const first = projectedAxisRatio(axis, projection.minimum), last = projectedAxisRatio(axis, projection.maximum);
+    const first = projectedAxisRatio(axis, projection.minimum, false), last = projectedAxisRatio(axis, projection.maximum, true, projection.maximumInclusive !== false);
     paintXNavigationRange(root, first, last, { minimum: projection.minimum, maximum: projection.maximum });
     const pending = chartLifetimes.get(root)?.preparationPending?.channel === 'viewport';
     panel.setAttribute('aria-busy', String(pending));
@@ -52,7 +59,7 @@
     panel.querySelectorAll('[data-cfx-x-preset]').forEach(button => {
       const maximum = projection.fullMaximum, minimum = Math.max(projection.fullMinimum, maximum - Number(button.dataset.cfxXPreset));
       button.disabled = !(minimum < maximum);
-      button.setAttribute('aria-pressed', String(projection.minimum === minimum && projection.maximum === maximum));
+      button.setAttribute('aria-pressed', String(projection.minimum === minimum && projection.maximum === maximum && projection.maximumInclusive !== false));
     });
   };
   const bindXNavigation = root => {
@@ -60,12 +67,12 @@
     if (!panel) return;
     const commit = (first, last, rawWindow) => {
       const axis = fullXNavigationAxis(root);
-      if (!axis || !requestNativeXWindow(root, rawWindow || { minimum: projectedAxisValue(axis, first), maximum: projectedAxisValue(axis, last) }))
+      if (!axis || !requestNativeXWindow(root, rawWindow || xNavigationWindow(root, axis, projectedAxisValue(axis, first, false), projectedAxisValue(axis, last, true))))
         syncXNavigation(root);
     };
     const ratios = () => {
       const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
-      return projection && axis ? [projectedAxisRatio(axis, projection.minimum), projectedAxisRatio(axis, projection.maximum)] : null;
+      return projection && axis ? [projectedAxisRatio(axis, projection.minimum, false), projectedAxisRatio(axis, projection.maximum, true, projection.maximumInclusive !== false)] : null;
     };
     const overview = panel.querySelector('.cfx-x-navigation__overview');
     if (overview) {
@@ -112,8 +119,10 @@
           if (kind === 'start') draft[0] = Math.min(value, draft[1] - Number.EPSILON);
           else draft[1] = Math.max(value, draft[0] + Number.EPSILON);
           const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
-          draft.push({ minimum: kind === 'start' ? projectedAxisValue(axis, draft[0]) : projection.minimum,
-            maximum: kind === 'end' ? projectedAxisValue(axis, draft[1]) : projection.maximum });
+          draft.push(xNavigationWindow(root, axis,
+            kind === 'start' ? projectedAxisValue(axis, draft[0], false) : projection.minimum,
+            kind === 'end' ? projectedAxisValue(axis, draft[1], true) : projection.maximum,
+            kind === 'start' ? projection.maximumInclusive !== false : undefined));
         }
         paintXNavigationRange(root, draft[0], draft[1], draft[2]);
       };

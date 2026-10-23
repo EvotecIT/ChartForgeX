@@ -15,7 +15,7 @@ internal static partial class VisualPolarCompiler {
             var series = chart.Series[seriesIndex];
             var tension = series.Radar.CurveTension ?? 0;
             if (tension == 0 || series.RenderPoints.Count == 0) continue;
-            var scale = scales[series.YAxis];
+            var scale = scales[series.ValueAxis];
             var sources = coordinates.SourcesFor(seriesIndex, categories);
             var points = categories.Select((category, index) => {
                 var source = sources[index];

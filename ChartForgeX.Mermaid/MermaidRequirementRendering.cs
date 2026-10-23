@@ -24,6 +24,7 @@ public static class MermaidRequirementRendering {
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.Layered, direction);
 
+        var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         foreach (var requirement in document.Requirements) {
             chart.AddAutoNode(requirement.Name, RequirementLabel(requirement), TopologyNodeKind.Certificate, RiskStatus(requirement.Risk), subtitle: RequirementSubtitle(requirement), width: 170, height: 82, symbol: "R", cssClass: CssClass("cfx-mermaid-requirement", requirement.Classes));
             var node = chart.Nodes[chart.Nodes.Count - 1];
@@ -32,7 +33,8 @@ public static class MermaidRequirementRendering {
             if (!string.IsNullOrWhiteSpace(requirement.RequirementId)) node.Metadata["mermaid.requirementId"] = requirement.RequirementId!;
             if (!string.IsNullOrWhiteSpace(requirement.Risk)) node.Metadata["mermaid.risk"] = requirement.Risk!;
             if (!string.IsNullOrWhiteSpace(requirement.VerifyMethod)) node.Metadata["mermaid.verifyMethod"] = requirement.VerifyMethod!;
-            if (requirement.Classes.Count > 0) node.Metadata["mermaid.classes"] = string.Join(",", requirement.Classes);
+            AddRequirementDetails(node, requirement);
+            MermaidTopologyRendering.ApplyNodeStyle(node, requirement.Classes, MermaidStyleParser.Resolve(definitions, requirement.Classes, requirement.Styles, requirement.Span));
         }
 
         foreach (var element in document.Elements) {
@@ -41,7 +43,9 @@ public static class MermaidRequirementRendering {
             node.Metadata["mermaid.kind"] = "element";
             if (!string.IsNullOrWhiteSpace(element.ElementType)) node.Metadata["mermaid.elementType"] = element.ElementType!;
             if (!string.IsNullOrWhiteSpace(element.DocumentReference)) node.Metadata["mermaid.docref"] = element.DocumentReference!;
-            if (element.Classes.Count > 0) node.Metadata["mermaid.classes"] = string.Join(",", element.Classes);
+            if (element.ElementType != null) node.Details.Add(new TopologyNodeDetail { Label = "type", Value = element.ElementType });
+            if (element.DocumentReference != null) node.Details.Add(new TopologyNodeDetail { Label = "docref", Value = element.DocumentReference });
+            MermaidTopologyRendering.ApplyNodeStyle(node, element.Classes, MermaidStyleParser.Resolve(definitions, element.Classes, element.Styles, element.Span));
         }
 
         for (var index = 0; index < document.Relationships.Count; index++) {
@@ -77,18 +81,18 @@ public static class MermaidRequirementRendering {
     /// <summary>Renders a Mermaid requirement document to static PNG.</summary>
     public static byte[] ToPng(this MermaidRequirementDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
-    private static string RequirementLabel(MermaidRequirementNode requirement) => string.IsNullOrWhiteSpace(requirement.RequirementId) ? requirement.Name : requirement.RequirementId!;
+    private static string RequirementLabel(MermaidRequirementNode requirement) => requirement.Name;
 
-    private static string? RequirementSubtitle(MermaidRequirementNode requirement) {
-        if (!string.IsNullOrWhiteSpace(requirement.Text)) return requirement.Text!;
-        if (!string.IsNullOrWhiteSpace(requirement.VerifyMethod)) return requirement.VerifyMethod!;
-        return requirement.RequirementType;
+    private static string? RequirementSubtitle(MermaidRequirementNode requirement) => "«" + requirement.RequirementType + "»";
+
+    private static void AddRequirementDetails(TopologyNode node, MermaidRequirementNode requirement) {
+        if (requirement.RequirementId != null) node.Details.Add(new TopologyNodeDetail { Label = "id", Value = requirement.RequirementId });
+        if (requirement.Text != null) node.Details.Add(new TopologyNodeDetail { Label = "text", Value = requirement.Text });
+        if (requirement.Risk != null) node.Details.Add(new TopologyNodeDetail { Label = "risk", Value = requirement.Risk });
+        if (requirement.VerifyMethod != null) node.Details.Add(new TopologyNodeDetail { Label = "verifymethod", Value = requirement.VerifyMethod });
     }
 
-    private static string? ElementSubtitle(MermaidRequirementElement element) {
-        if (!string.IsNullOrWhiteSpace(element.DocumentReference)) return element.DocumentReference!;
-        return string.IsNullOrWhiteSpace(element.ElementType) ? null : element.ElementType;
-    }
+    private static string? ElementSubtitle(MermaidRequirementElement element) => "«element»";
 
     private static TopologyLayoutDirection ToLayoutDirection(string? direction) {
         if (string.Equals(direction, "LR", StringComparison.OrdinalIgnoreCase)) return TopologyLayoutDirection.LeftToRight;

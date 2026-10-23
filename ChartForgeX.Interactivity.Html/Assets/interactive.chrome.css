@@ -331,3 +331,10 @@
 .cfx-interactive-chart [data-cfx-state-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: var(--cfx-state-halo-width); }
 .cfx-interactive-chart [data-cfx-state-ink] { stroke: var(--cfx-state-color); stroke-width: var(--cfx-state-ink-width); }
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-highlighted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1 !important; }
+
+.cfx-hierarchy-navigation { display:flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:100%; margin:8px 0; background:var(--cfx-tooltip-surface); color:var(--cfx-tooltip-text); }
+.cfx-hierarchy-navigation__path { flex:1 1 160px; min-width:0; overflow-wrap:anywhere; }
+.cfx-hierarchy-navigation [data-cfx-hierarchy-status] { flex-basis:100%; font-size:.85em; color:var(--cfx-tooltip-muted); }
+.cfx-hierarchy-navigation button:disabled { opacity:.5; cursor:default; }
+
+@media print { .cfx-hierarchy-navigation { display:none !important; } }

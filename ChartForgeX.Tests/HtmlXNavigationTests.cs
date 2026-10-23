@@ -22,7 +22,7 @@ public sealed class HtmlXNavigationTests {
         var renderer = new HtmlInteractiveChartRenderer();
         Assert.DoesNotContain("data-cfx-x-navigation", renderer.PrepareSection(chart).Html);
         var full = renderer.PrepareSection(chart, configure: Configure);
-        var detail = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(4, 6)), Configure);
+        var detail = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), Configure);
         Assert.Contains("data-cfx-x-navigation=\"true\"", detail.Html);
         Assert.Contains("data-cfx-x-range=\"start\"", detail.Html);
         Assert.Contains("data-cfx-x-range=\"end\"", detail.Html);
@@ -32,7 +32,7 @@ public sealed class HtmlXNavigationTests {
         Assert.Contains("data-cfx-x=\"0\"", native); Assert.Contains("data-cfx-x=\"10\"", native);
         Assert.DoesNotContain("data-cfx-visible=\"false\"", native);
         Assert.Equal(4, detail.PreparedVisual.XProjection!.Minimum); Assert.Equal(6, detail.PreparedVisual.XProjection.Maximum);
-        var controlsOnly = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(4, 6)), options => {
+        var controlsOnly = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), options => {
             Configure(options); options.XNavigation.IncludeNavigator = false; options.XNavigation.IncludeScrollbar = false;
         }).Html;
         Assert.DoesNotContain("data:image/svg+xml", controlsOnly);
@@ -41,9 +41,11 @@ public sealed class HtmlXNavigationTests {
 
     [Fact]
     public void UnsupportedChartsOmitNativeNavigationAndControlMessagesAreLocalizable() {
-        var chart = Chart.Create().AddBar("Categories", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) });
+        var chart = Chart.Create().AddPie("Categories", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) });
         var renderer = new HtmlInteractiveChartRenderer();
-        Assert.DoesNotContain("data-cfx-x-navigation", renderer.PrepareSection(chart, configure: Configure).Html);
+        var unsupported = renderer.PrepareSection(chart, configure: Configure);
+        Assert.Null(unsupported.PreparedVisual.XProjection);
+        Assert.DoesNotContain("data-cfx-x-navigation", unsupported.Html);
         var supported = Chart.Create().AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) });
         var html = renderer.PrepareSection(supported, configure: options => {
             Configure(options); options.Localization[HtmlChartText.XNavigation] = "Zakres danych";

@@ -20,7 +20,7 @@ internal sealed partial class ChartStackLayout {
             var active = new List<CoordinateGroup>(); var ordinal = 0;
             var observations = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].Kind == kind)
                 .SelectMany(series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)
-                    .Select(point => (Series: series, Point: point, Coordinate: chart.Series[series].RenderPoints[point].X)))
+                    .Select(point => (Series: series, Point: point, Coordinate: CategoryCoordinate(chart, chart.Series[series].RenderPoints[point].X))))
                 .OrderBy(point => point.Coordinate).ThenBy(point => point.Series).ThenBy(point => point.Point);
             foreach (var observation in observations) {
                 active.RemoveAll(group => !ChartMath.SameCoordinate(group.Last, observation.Coordinate));
@@ -35,6 +35,11 @@ internal sealed partial class ChartStackLayout {
         }
         horizontalCategories = horizontal.ToArray();
         return ids;
+    }
+
+    private static double CategoryCoordinate(Chart chart, double source) {
+        var domain = ChartCartesianOrientation.CategoryAxis(chart).PreparedTimeDomain;
+        return domain?.Unit == true ? domain.Inverse(domain.Forward(source)) : source;
     }
 
     private sealed class CoordinateGroup {

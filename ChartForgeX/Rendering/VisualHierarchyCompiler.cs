@@ -18,7 +18,7 @@ internal static partial class VisualHierarchyCompiler {
             var surface = (colorScales ??= new ChartColorPresentationSet(chart)).HierarchySurface(colors);
             if (surface.Scale != null && surface.ShowLegend) return Array.Empty<VisualLegendEntry>();
             if (series.Kind == ChartSeriesKind.Treemap && chart.Options.ShowPointLegend) return series.HierarchyItems.Select((item, index) => (item, index))
-                .Where(entry => series.Relationships!.Children(entry.index).Count == 0)
+                .Where(entry => series.Relationships!.Children(entry.index).Count == 0 && (chart.HierarchyPreparation?.Contains(entry.index) ?? true))
                 .Select(entry => {
                     var blend = surface.Blend(entry.index);
                     return new VisualLegendEntry(entry.item.Label, blend.Color,

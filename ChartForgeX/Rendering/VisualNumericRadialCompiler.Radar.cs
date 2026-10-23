@@ -16,13 +16,13 @@ internal static partial class VisualNumericRadialCompiler {
         List<RadialSeriesLabel> labels, List<LabelObstacle>? obstacles) {
         var series = chart.Series[seriesIndex];
         if (series.RenderPoints.Count == 0) return;
-        var scale = scales[series.YAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
+        var scale = scales[series.ValueAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
         var (mapped, raw) = RadarPoints(chart, geometry, seriesIndex, coordinates, categories, scale);
         var paths = ChartRadarGeometry.Paths(series.Radar, mapped, raw);
         ChartRadarGeometry.DiagnoseOpenArea(builder, series, paths);
         using (builder.PushGroup(SeriesId(seriesIndex), "radar-series", new Dictionary<string, string> {
             ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
-            ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
             ["data-cfx-form"] = series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line", ["data-cfx-missing-policy"] = ChartRadarGeometry.MissingPolicy(series.Radar),
             ["data-cfx-min-value"] = N(scale.Minimum), ["data-cfx-max-value"] = N(scale.Maximum)
         })) {
@@ -48,7 +48,7 @@ internal static partial class VisualNumericRadialCompiler {
                         ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
                         ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(categories[category].Value), ["data-cfx-angle"] = N(angle),
                         ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = text, ["data-cfx-missing"] = source < 0 ? "true" : "false",
-                        ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+                        ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
                         ["data-cfx-clipped"] = value < scale.Minimum || value > scale.Maximum ? "true" : "false"
                     };
                     VisualPolarSeriesScene.DescribePoint(facts, series, source, categoryLabels[category], text);

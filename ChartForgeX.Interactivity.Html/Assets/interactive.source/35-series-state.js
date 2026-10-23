@@ -86,7 +86,7 @@
         return;
       }
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
-      // Preserve ancestor containers for a referenced item or an isolated point.
+
       const context = item && (node.contains(item) || item.contains(node));
       const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
         && role === 'series' && data.cfxPoint === undefined;

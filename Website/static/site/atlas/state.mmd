@@ -2,9 +2,14 @@
 title: Document review
 ---
 stateDiagram-v2
-  [*] --> Draft
-  Draft --> Review : submit
-  Review --> Draft : request changes
-  Review --> Approved : approve
-  Approved --> Published : release
-  Published --> [*]
+direction LR
+classDef marked fill:#fef9c3,stroke:#92400e,color:#78350f
+Ready --> Review:::marked: submit
+class Ready marked
+style Review fill:#dbeafe,color:#1e3a8a
+state Processing {
+  direction TB
+  InnerReady --> InnerDone: finish
+}
+Review --> Processing: accept
+Processing --> Done: complete

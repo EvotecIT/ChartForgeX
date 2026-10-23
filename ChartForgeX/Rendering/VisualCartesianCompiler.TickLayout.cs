@@ -72,8 +72,10 @@ internal static partial class VisualCartesianCompiler {
         if (horizontal) {
             var axes = HorizontalAxes(chart, labels);
             if (chart.Options.XAxis.Visible) FitGeneratedAxisTicks(builder, axes.Value, range.MinX, range.MaxX, plot.Width, true, style, spacing, chart.Options.ValueFormatter, labels);
+            if (secondaryRange != null && chart.Options.SecondaryXAxis.Visible)
+                FitGeneratedAxisTicks(builder, chart.Options.SecondaryXAxis, secondaryRange.MinX, secondaryRange.MaxX, plot.Width, true, style, spacing, chart.Options.ValueFormatter, labels);
             // Horizontal line categories may themselves be a continuous time/numeric scale.
-            if (chart.Options.YAxis.Visible && chart.Series.All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series)))
+            if (chart.Options.YAxis.Visible && UsesGeneratedHorizontalCategoryTicks(chart, axes.Category))
                 FitGeneratedAxisTicks(builder, axes.Category, range.MinY, range.MaxY, plot.Height, false, style, spacing, null, labels);
             return;
         }

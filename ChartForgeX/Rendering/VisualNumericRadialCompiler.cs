@@ -63,10 +63,10 @@ internal static partial class VisualNumericRadialCompiler {
                 var slot = stacks.Slot(participants, seriesIndex);
                 var seriesMetadata = new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
-                    ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+                    ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
                     ["data-cfx-radial-kind"] = bars ? "bar" : "column"
                 };
-                if (scales.TryGetValue(series.YAxis, out var scale)) {
+                if (scales.TryGetValue(series.ValueAxis, out var scale)) {
                     seriesMetadata["data-cfx-min-value"] = N(scale.Minimum); seriesMetadata["data-cfx-max-value"] = N(scale.Maximum);
                 }
                 using (builder.PushGroup(SeriesId(seriesIndex), "series", seriesMetadata)) {
@@ -91,11 +91,12 @@ internal static partial class VisualNumericRadialCompiler {
         if (chart.Options.XAxis.Scale is ChartScaleKind.Logarithmic or ChartScaleKind.SymmetricLogarithmic)
             throw new NotSupportedException("Numeric radial categories use ordinal spacing; logarithmic category scales are not supported.");
         foreach (var series in chart.Series) {
-            var axis = Axis(chart, series.YAxis);
+            var axis = Axis(chart, series.ValueAxis);
             if (axis.Scale == ChartScaleKind.Time) throw new NotSupportedException("Numeric radial value axes support linear, logarithmic and symmetric logarithmic scales.");
             foreach (var point in series.RenderPoints) {
                 if (!ChartMath.IsFinite(point.X) || !ChartMath.IsFinite(point.Y)) throw new InvalidOperationException("Numeric radial observations must be finite.");
-                if (axis.Scale == ChartScaleKind.Logarithmic && point.Y <= 0) throw new InvalidOperationException("Logarithmic numeric radial values must be positive.");
+                if (axis.Scale == ChartScaleKind.Logarithmic && !axis.IsInLogarithmicDomain(point.Y))
+                    throw new InvalidOperationException("Logarithmic numeric radial values must belong to the selected " + axis.LogarithmicDomainName + " domain.");
             }
         }
     }
@@ -118,7 +119,7 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-point"] = N(pointIndex), ["data-cfx-source-point"] = N(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = N(point.X), ["data-cfx-y"] = N(point.Y), ["data-cfx-value"] = N(point.Y),
             ["data-cfx-label"] = text, ["data-cfx-category"] = category, ["data-cfx-full-label"] = description,
-            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty, ["aria-label"] = description,
             ["data-cfx-start-angle"] = N(mark.Start), ["data-cfx-sweep-angle"] = N(mark.Sweep),
             ["data-cfx-inner-radius"] = N(mark.Inner), ["data-cfx-outer-radius"] = N(mark.Outer),

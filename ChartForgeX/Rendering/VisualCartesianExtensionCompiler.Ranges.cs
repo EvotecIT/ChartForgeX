@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawRangeEnvelope(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
-        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
+        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
         var series = chart.Series[index]; var count = series.RenderPoints.Count / 2;
         var paired = new ChartPairedBoundaryGeometry(series, map);
         var lower = paired.First; var upper = paired.Second; var middle = new List<ChartPoint>();
@@ -54,7 +54,7 @@ internal static partial class VisualCartesianCompiler {
             var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("lower", low.Y) + "–" + format("upper", high.Y));
             var values = new[] { ("x", low.X), ("lower", low.Y), ("upper", high.Y) };
-            var visible = ViewportObservationVisible(xViewport, yViewport, low.X, low.Y, high.Y);
+            var visible = ViewportObservationVisible(xViewport, yViewport, low.X, low.Y, high.Y, map);
             // Adapters use the captured native midpoint; averaging mapped boundaries is wrong on nonlinear axes.
             using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, visible,
                 area ? new Dictionary<string, string> { ["data-cfx-midline-y"] = Number(middle[item].Y) } : null, values)) {

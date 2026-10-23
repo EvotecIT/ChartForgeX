@@ -128,7 +128,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartErrorBar ValidateErrorBar(ChartErrorBar value) => new ChartErrorBar(value.X, value.Y, value.Lower, value.Upper);
+    private static ChartErrorBar ValidateErrorBar(ChartErrorBar value) => new ChartErrorBar(value.X, value.Y, value.XBounds, value.YBounds);
 
     private IReadOnlyList<ChartBoxPlot> _boxPlots = Array.Empty<ChartBoxPlot>();
     /// <summary>Gets immutable authored box plots, one item per observation in input order.</summary>

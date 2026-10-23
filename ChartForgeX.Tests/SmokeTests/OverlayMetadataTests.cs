@@ -28,7 +28,7 @@ internal static partial class SmokeTests {
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithSecondaryYAxisBounds(0, 100)
             .AddLine("Rate", Points(88, 93, 91));
-        secondary.Series[0].UseSecondaryYAxis();
+        secondary.Series[0].UseSecondaryValueAxis();
         var secondarySvg = secondary.ToSvg();
         var secondaryPrepared = secondary.Prepare(VisualExportRequest.ForChart(secondary).Context);
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label == "100% (100)"), "Secondary axis ticks should retain displayed text and raw values.");

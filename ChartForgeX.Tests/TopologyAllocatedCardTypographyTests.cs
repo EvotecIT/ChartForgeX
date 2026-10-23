@@ -52,17 +52,26 @@ public sealed class TopologyAllocatedCardTypographyTests {
     [InlineData(false, 256)]
     [InlineData(true, 32)]
     [InlineData(true, 256)]
-    public async Task SourceCardsRetainSubtitleWithoutDetailRows(bool requirement, int size) {
+    public async Task SourceCardsRetainNativeSubtitlesAndDeclaredRequirementFacts(bool requirement, int size) {
         var source = requirement ? "requirementDiagram\nrequirement API {\n text: HTTP\n}" : "C4Container\nContainer(api, \"API\", \"HTTP\", \"Service\")";
         var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\n" + source);
         Assert.False(result.HasErrors);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var node = Assert.Single(chart.Nodes);
-        Assert.Empty(node.Details); Assert.Contains("HTTP", node.Subtitle);
+        if (requirement) {
+            var detail = Assert.Single(node.Details);
+            Assert.Equal("text", detail.Label);
+            Assert.Equal("HTTP", detail.Value);
+            Assert.Equal("«requirement»", node.Subtitle);
+        } else {
+            Assert.Empty(node.Details);
+            Assert.Contains("HTTP", node.Subtitle);
+        }
         var svg = chart.ToSvg();
         var xml = XDocument.Parse(svg);
         Assert.Contains(RoleText(xml, "topology-node-label"), element => element.Value.Contains("API"));
-        Assert.Contains(RoleText(xml, "topology-node-subtitle"), element => element.Value.Contains("HTTP"));
+        Assert.Contains(RoleText(xml, "topology-node-subtitle"), element => element.Value.Contains(requirement ? "«requirement»" : "HTTP"));
+        if (requirement) Assert.Contains(RoleText(xml, "topology-node-detail"), element => element.Value.Contains("HTTP"));
         await Capture(svg, chart.ToPng(), "subtitle-card-" + requirement + "-" + size);
     }
 

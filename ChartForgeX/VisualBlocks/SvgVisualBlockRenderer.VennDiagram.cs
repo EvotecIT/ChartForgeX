@@ -15,10 +15,13 @@ public sealed partial class SvgVisualBlockRenderer {
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
         var body = new ChartRect(content.X, y, content.Width, Math.Max(1, options.Size.Height - options.Padding.Bottom - y));
         var placements = VisualBlockRendering.VennSetPlacements(block, body);
+        var layout = VisualBlockRendering.VennLayout(block, body);
+        writer.StartElement("g").Attribute("data-cfx-role", "venn-layout").Attribute("data-max-relative-area-error", layout.MaximumRelativeAreaError.ToString("R", System.Globalization.CultureInfo.InvariantCulture)).Attribute("data-area-accurate", layout.IsAreaAccurate ? "true" : "false").EndStartElement();
 
         foreach (var placement in placements) {
             var accent = placement.Set.Stroke ?? VisualBlockRendering.PaletteAt(theme, placement.Index);
-            var fill = (placement.Set.Fill ?? accent).WithAlpha(70);
+            var fill = placement.Set.Fill ?? accent.WithAlpha(70);
+            if (placement.Set.FillOpacity.HasValue) fill = fill.WithAlpha((byte)Math.Round(255 * placement.Set.FillOpacity.Value));
             writer.StartElement("circle")
                 .Attribute("data-cfx-role", "venn-set")
                 .Attribute("data-set-id", placement.Set.Id)
@@ -27,31 +30,28 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("r", F(placement.Radius))
                 .Attribute("fill", fill.ToCss())
                 .Attribute("stroke", accent.ToCss())
-                .Attribute("stroke-width", 2)
+                .Attribute("stroke-width", placement.Set.StrokeWidth)
                 .EndEmptyElement()
                 .Line();
         }
 
-        foreach (var intersection in block.Intersections) WriteVennIntersectionStyle(writer, placements, intersection);
+        for (var index = 0; index < block.Intersections.Count; index++) WriteVennIntersectionStyle(writer, block.Intersections[index], layout.Regions[index]);
         foreach (var caption in VisualBlockRendering.VennCaptions(block, placements, body))
             WriteText(writer, caption.Text, caption.Bounds.Left, caption.Baseline, caption.Bounds.Width, TextAlignment.Left, caption.Color, theme.FontFamily, caption.Style.FontSize, caption.Style.Font.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        writer.EndElement().Line();
     }
 
-    private static void WriteVennIntersectionStyle(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
-        if (!intersection.Fill.HasValue && !intersection.Stroke.HasValue) return;
-        var center = VisualBlockRendering.VennRegionCenter(placements, intersection.SetIds);
-        var radius = Math.Max(18, placements[0].Radius * (intersection.SetIds.Count == 2 ? 0.34 : 0.24));
-        writer.StartElement("circle")
-            .Attribute("data-cfx-role", "venn-intersection-style")
+    private static void WriteVennIntersectionStyle(SvgMarkupWriter writer, VennIntersection intersection, VennRegionPlacement region) {
+        if (region.Path.Length == 0) return;
+        writer.StartElement("path")
+            .Attribute("data-cfx-role", "venn-intersection")
             .Attribute("data-set-ids", string.Join(",", intersection.SetIds))
-            .Attribute("cx", F(center.X))
-            .Attribute("cy", F(center.Y))
-            .Attribute("r", F(radius))
-            .Attribute("fill", (intersection.Fill ?? ChartColor.Transparent).WithAlpha(intersection.Fill.HasValue ? (byte)88 : (byte)0).ToCss())
-            .Attribute("stroke", (intersection.Stroke ?? intersection.Fill ?? ChartColor.Transparent).ToCss())
-            .Attribute("stroke-width", intersection.Stroke.HasValue ? 2 : 0)
-            .EndEmptyElement()
-            .Line();
+            .Attribute("data-requested-area", region.RequestedArea.ToString("R", System.Globalization.CultureInfo.InvariantCulture))
+            .Attribute("data-actual-area", region.ActualArea.ToString("R", System.Globalization.CultureInfo.InvariantCulture))
+            .Attribute("d", region.Path)
+            .Attribute("fill", (intersection.FillOpacity.HasValue ? (intersection.Fill ?? ChartColor.Transparent).WithAlpha((byte)Math.Round(255 * intersection.FillOpacity.Value)) : intersection.Fill ?? ChartColor.Transparent).ToCss())
+            .Attribute("stroke", (intersection.Stroke ?? ChartColor.Transparent).ToCss())
+            .Attribute("stroke-width", intersection.Stroke.HasValue ? intersection.StrokeWidth : 0)
+            .EndEmptyElement().Line();
     }
-
 }

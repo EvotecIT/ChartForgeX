@@ -32,7 +32,7 @@ internal sealed partial class ChartStackLayout {
         while (leftIndex < left.Count && rightIndex < right.Count) {
             var lower = Math.Max(left.GetLowerBound(leftIndex), right.GetLowerBound(rightIndex));
             var upper = Math.Min(left.GetUpperBound(leftIndex), right.GetUpperBound(rightIndex));
-            if (lower < upper && (!other.IsHistogramDensity || density.YAxis != other.YAxis ||
+            if (lower < upper && (!other.IsHistogramDensity || density.ValueAxis != other.ValueAxis ||
                 left.GetLowerBound(leftIndex) != right.GetLowerBound(rightIndex) ||
                 left.GetUpperBound(leftIndex) != right.GetUpperBound(rightIndex)))
                 throw new InvalidOperationException("Overlapping histogram density intervals must use identical bounds and a compatible density stack on the same axis.");

@@ -1,0 +1,88 @@
+// Uses post-3.0.1 hierarchy-view APIs. Build current source or use a later package containing them.
+// Exact documentation typography uses Carlito regular/bold installed or registered on the host; other hosts retain normal font fallback.
+using System;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+
+var mode = args.Contains("--dark")
+    ? VisualThemeMode.Dark : VisualThemeMode.Light;
+
+foreach (var kind in new[] { ChartSeriesKind.Treemap, ChartSeriesKind.Sunburst }) {
+    var chart = CreateChart(kind, mode);
+    foreach (var rootId in new string?[] { null, "engineering" }) {
+        var id = kind.ToString().ToLowerInvariant() + "-" + (rootId ?? "full");
+        var prepared = chart.PrepareHierarchy(Context(mode), rootId == null ? null : new ChartHierarchyView(rootId));
+        File.WriteAllText(id + ".svg", prepared.ToSvg(id));
+        File.WriteAllBytes(id + ".png", prepared.ToPng());
+    }
+}
+
+static Chart CreateChart(ChartSeriesKind kind, VisualThemeMode mode) {
+    if (kind is not (ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) throw new ArgumentOutOfRangeException(nameof(kind));
+    // This existing recipe owns every ID, parent and value. Its null group values are valid for both families.
+    var sunburst = SunburstRecipe.Create("wide", mode).WithSize(760, 480);
+    if (kind == ChartSeriesKind.Sunburst) return sunburst.ConfigureSunburst(options => {
+        options.SectorGap = 6;
+        options.MinimumLabelFontSize = 10;
+        options.CornerRadius = 4;
+    });
+    var source = sunburst.Series[0];
+    var treemap = ChartSeries.CreateTreemap(source.Id, source.Name, source.HierarchyItems);
+    treemap.PointColors.AddRange(source.PointColors);
+    treemap.PointFillPatterns.AddRange(source.PointFillPatterns);
+    foreach (var state in source.NodeStates) treemap.WithNodeState(state.Key, state.Value);
+    return Chart.Create().WithSize(760, 480).WithDataLabels().AddSeries(treemap)
+        .WithValueFormat(sunburst.Options.ValueFormat);
+}
+
+static VisualRenderContext Context(VisualThemeMode mode) => new(
+    new VisualLayoutOptions(new VisualSize(760, 480)), VisualTheme.Graphite(), mode,
+    new VisualFrame("Team allocation", "Same source hierarchy; full view or Engineering as the visible root", showLegend: false),
+    FontSpec.FromFamily("Carlito"));
+
+/// <summary>Creates a sunburst showing allocation through a team hierarchy.</summary>
+public static class SunburstRecipe {
+    /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"
+            or "authored-total" or "compact-authored-total"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+
+        var inclusive = variant is "authored-total" or "compact-authored-total";
+        var configured = inclusive || variant is "options" or "compact-options";
+        var items = new[] {
+            new ChartHierarchyItem("all", "All teams", value: configured ? 140 : null, colorValue: configured ? -10 : null),
+            new ChartHierarchyItem("engineering", "Engineering", "all", configured ? 80 : null, configured ? 12 : null),
+            new ChartHierarchyItem("operations", "Operations", "all", colorValue: configured ? 0 : null),
+            new ChartHierarchyItem("platform", "Platform", "engineering", 35, configured ? -4 : null),
+            new ChartHierarchyItem("engineering-support", "Support", "engineering", 25, configured ? 5 : null),
+            new ChartHierarchyItem("operations-support", "Support", "operations", 40),
+            new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
+        };
+        var allocation = ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocated work", items);
+        var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
+        if (configured) {
+            var colors = VisualTheme.Graphite().Resolve(mode);
+            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            chart.ConfigureSunburst(options => {
+                options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
+                    : context.Item.Id == "operations-support" ? "Shared service" : null;
+                options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
+                options.ColorDimension.Name = "Change (%)";
+                options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
+                    .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
+            });
+            allocation.WithNodeState("engineering-support", ChartSeriesState.Warning);
+            allocation.WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

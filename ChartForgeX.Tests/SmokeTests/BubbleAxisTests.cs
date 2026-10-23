@@ -14,9 +14,9 @@ internal static partial class SmokeTests {
                 new ChartBubble(1, 18, 800),
                 new ChartBubble(2, 34, 1200)
             });
-        chart.Series[0].UseSecondaryYAxis();
+        chart.Series[0].UseSecondaryValueAxis();
 
-        var range = ChartRange.FromSecondaryYAxis(chart, ChartRange.FromChart(chart));
+        var range = ChartRange.FromSecondaryValueAxis(chart, ChartRange.FromChart(chart));
         Assert(range.MaxY >= 34 && range.MaxY < 100, "Secondary-axis bounds must reflect observed Y, independently of bubble sizes.");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var ticks = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-secondary-y-label").ToArray();

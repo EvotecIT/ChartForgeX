@@ -85,16 +85,16 @@ internal static partial class VisualCartesianCompiler {
                 + " has a zero " + (total.Positive ? "positive" : "negative") + " total and remains at the baseline with its source observations retained."));
         var range = ChartRange.FromChart(chart, coordinates, stacks);
         ChartTimeSessionValidation.ValidateWindow(chart.Options.XAxis, range.MinX, range.MaxX, "X axis");
-        var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
-        var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
+        var hasSecondary = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary);
+        var secondaryRange = hasSecondary ? ChartRange.FromSecondaryValueAxis(chart, range, stacks) : null;
         fullDomain?.Apply(chart, range, secondaryRange);
         var labels = new CartesianLabels();
         var categoryGroups = CategoryGroupSource.Create(chart, range);
         var completedDomain = sourceViewport != null && fullDomain != null;
-        // An aligned primary-only envelope already includes both drawings' full marker fit. Re-solving that fit
+        // An aligned envelope already includes every physical axis's full painted fit. Re-solving that fit
         // here both duplicates layout work and can move a completed endpoint by one floating-point step.
         CartesianAxisLayout? layout = null;
-        if (!completedDomain || fullDomain!.Y == null) {
+        if (!completedDomain) {
             layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
                 stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true);
             if (layout == null) {
@@ -102,28 +102,13 @@ internal static partial class VisualCartesianCompiler {
                 return null;
             }
         }
-        if (completedDomain) {
-            // Secondary-axis charts still require their ordinary Y fit; their completed shared X bound remains authoritative.
-            range.SetXBounds(fullDomain!.X.Minimum, fullDomain.X.Maximum);
-            secondaryRange?.SetXBounds(fullDomain.X.Minimum, fullDomain.X.Maximum);
-        }
-        var fullMinimum = range.MinX; var fullMaximum = range.MaxX;
-        var fullYMinimum = range.MinY; var fullYMaximum = range.MaxY;
+        var fullRange = range.Copy(); var fullSecondaryRange = secondaryRange?.Copy();
         var hasProjection = SupportsXViewport(chart) && chart.Series.Any(series => series.HasSourceData)
-            && ChartMath.IsFinite(fullMinimum) && ChartMath.IsFinite(fullMaximum) && fullMaximum > fullMinimum;
+            && ChartMath.IsFinite(range.MinX) && ChartMath.IsFinite(range.MaxX) && range.MaxX > range.MinX;
         if (sourceViewport != null) {
-            if (!hasProjection) throw new InvalidOperationException("A Cartesian viewport requires a finite increasing full X domain.");
-            if (xViewport != null) {
-                ChartTimeSessionValidation.ValidateWindow(chart.Options.XAxis, xViewport.Minimum, xViewport.Maximum, "viewport");
-                if (xViewport.Minimum < fullMinimum || xViewport.Maximum > fullMaximum)
-                    throw new ArgumentOutOfRangeException("viewport", "The X viewport must be contained in the resolved full X domain.");
-            }
-            if (yViewport != null && (yViewport.Minimum < fullYMinimum || yViewport.Maximum > fullYMaximum))
-                throw new ArgumentOutOfRangeException("viewport", "The Y viewport must be contained in the resolved full primary Y domain.");
-            // Copy resolved numbers only. Authored axes, full-data stacks/color domains and source facts remain untouched.
+            if (!hasProjection) throw new InvalidOperationException("A Cartesian viewport requires finite increasing full domains.");
             range = range.Copy(); secondaryRange = secondaryRange?.Copy();
-            if (xViewport != null) { range.SetXBounds(xViewport.Minimum, xViewport.Maximum); secondaryRange?.SetXBounds(xViewport.Minimum, xViewport.Maximum); }
-            if (yViewport != null) range.SetYBounds(yViewport.Minimum, yViewport.Maximum);
+            ApplyViewport(chart, sourceViewport, range, secondaryRange, stacks, coordinates);
             layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
                 stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: false)
                 ?? throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
@@ -139,27 +124,28 @@ internal static partial class VisualCartesianCompiler {
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
-        var hasPrimaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Primary && series.HasSourceData)
+        var hasPrimaryDomain = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Primary && series.HasSourceData)
             || chart.Annotations.Any(annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontal) is ChartAnnotationKind.HorizontalLine or ChartAnnotationKind.HorizontalBand)
             || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Primary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
-        var hasSecondaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.HasSourceData)
+        var hasSecondaryDomain = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary && series.HasSourceData)
             || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Secondary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
         var secondaryOnly = hasSecondaryDomain && !hasPrimaryDomain;
         // A screen coordinate has no single value-domain meaning when both Y axes contain observations.
         builder.DataProjection = ChartDataProjection.TryCreate(plot, secondaryOnly ? secondaryRange! : range,
-            chart.Options.XAxis, secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
-            includeY: !(hasPrimaryDomain && hasSecondaryDomain));
-        var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
-        if (xViewport != null && chart.Series.Any(series => series.RenderPoints.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
-            throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
-        if (yViewport != null) ValidateFiniteYProjection(chart, map);
+            horizontal && secondaryOnly ? chart.Options.SecondaryXAxis : chart.Options.XAxis,
+            !horizontal && secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
+            includeY: horizontal || !(hasPrimaryDomain && hasSecondaryDomain), includeX: !horizontal || !(hasPrimaryDomain && hasSecondaryDomain));
+        var secondaryMap = secondaryRange == null ? null : horizontal
+            ? ChartMapper.ForHorizontalBars(plot, secondaryRange, chart.Options.SecondaryXAxis, chart.Options.YAxis)
+            : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
+        if (sourceViewport != null) ValidateFiniteViewportProjection(chart, map, secondaryMap);
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
         DrawPlotRegionFills(builder, plotRegions, colors);
         var axisBuilder = !SameAxisFrame(plot, labelBounds)
             || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)
             ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
         using (axisBuilder.PushClip(viewport)) {
-            if (horizontal) DrawHorizontalAxes(chart, context, axisBuilder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
+            if (horizontal) DrawHorizontalAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels, labelBounds);
         }
         var obstacles = new List<LabelObstacle>();
@@ -179,11 +165,11 @@ internal static partial class VisualCartesianCompiler {
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
-                    xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
+                    xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
             }
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
-                var seriesMap = series.YAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
+                var seriesMap = series.ValueAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
                 var pointSeries = IsPointSeries(series.Kind);
                 using (clipMarks && (!pointSeries || sourceViewport != null) ? seriesBuilder.PushClip(plot) : null)
                 using (seriesBuilder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
@@ -198,42 +184,36 @@ internal static partial class VisualCartesianCompiler {
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
-                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks, xViewport, yViewport);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index], xViewport, yViewport);
+                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks,
+                            horizontal ? series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryX : xViewport : xViewport,
+                            horizontal ? yViewport : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index],
+                        horizontal ? null : xViewport, horizontal ? null : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
-                    xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
+                    xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
                 builder.Append(seriesBuilder.Build());
             }
             DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null,
-                xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
+                xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
         }
         if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
-            if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);
+            if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, secondaryMap, stacks, labels);
             else AddStackTotals(chart, context, builder, plot, coordinates, stacks, map, secondaryMap, labels, verticalTotals!);
         }
         DrawPlotRegionLabels(context, builder, plotRegions, colors, obstacles);
         using (sourceViewport != null ? builder.PushClip(plot) : null)
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
+        if (sourceViewport != null) builder.CaptureViewportVisibility(plot);
         CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly);
-        return hasProjection ? new ChartCartesianProjection(
-            new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed,
-                chart.Options.XAxis.Scale, chart.Options.XAxis.TimeSessions),
-            SupportsYViewport(chart) ? new ChartYProjection(fullYMinimum, fullYMaximum, range.MinY, range.MaxY, plot, chart.Options.YAxis) : null) : null;
+        return hasProjection ? CaptureAxisProjections(chart, plot, fullRange, range, fullSecondaryRange, secondaryRange) : null;
     }
 
     private static void Validate(Chart chart) {
-        if (chart.Series.Any(series => series.Kind == ChartSeriesKind.BoxPlot && ChartCartesianOrientation.IsHorizontal(chart, series))
-            && chart.Series.Any(series => series.Kind != ChartSeriesKind.BoxPlot || series.YAxis != ChartAxisSide.Primary))
-            throw new NotSupportedException("Horizontal box plots require only box plot series on the primary X value axis.");
-        if (chart.Series.Any(series => series.Kind == ChartSeriesKind.RangeBar && ChartCartesianOrientation.IsHorizontal(chart, series))
-            && chart.Series.Any(series => series.Kind != ChartSeriesKind.RangeBar || series.YAxis != ChartAxisSide.Primary))
-            throw new NotSupportedException("Horizontal range-bar charts require only range-bar series on the primary X value axis.");
-        if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => !ChartCartesianOrientation.IsHorizontal(chart, series)
-            || series.YAxis != ChartAxisSide.Primary))
-            throw new NotSupportedException("Horizontal Cartesian charts require homogeneous series on the primary horizontal value axis.");
+        if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => !ChartCartesianOrientation.IsHorizontal(chart, series)))
+            throw new NotSupportedException("Horizontal Cartesian mixtures require every series to use horizontal orientation.");
         if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
             && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
             throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
@@ -247,9 +227,9 @@ internal static partial class VisualCartesianCompiler {
                 throw new InvalidOperationException(series.Kind + " requires exactly two endpoints.");
             if (series.Kind == ChartSeriesKind.Waterfall && chart.Series.Count != 1)
                 throw new NotSupportedException("A waterfall requires a single cumulative series.");
-            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            if (series.Kind == ChartSeriesKind.StackedArea && axis.Scale == ChartScaleKind.Logarithmic && series.RenderPoints.Any(point => point.Y <= 0))
-                throw new InvalidOperationException("Logarithmic stacked areas require positive values.");
+            var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
+            if (series.Kind == ChartSeriesKind.StackedArea && axis.Scale == ChartScaleKind.Logarithmic && series.RenderPoints.Any(point => !axis.IsInLogarithmicDomain(point.Y)))
+                throw new InvalidOperationException("Logarithmic stacked areas require " + axis.LogarithmicDomainName + " values.");
         }
     }
 
@@ -278,7 +258,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
-            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
             ["data-cfx-fill-pattern"] = (pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                 ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern).ToString(),
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,

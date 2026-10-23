@@ -145,9 +145,9 @@ internal sealed partial class VisualTopologyCompiler {
                     subtitle = new ChartRect(subtitle.X + Math.Min(6, subtitle.Width / 2), subtitle.Y + Math.Min(2, subtitle.Height / 2),
                         Math.Max(0, subtitle.Width - 12), Math.Max(0, subtitle.Height - 4));
                 }
-                Text(node.Subtitle!, Project(subtitle), size * .85, Highlight(_colors.MutedForeground, active), chip ? 700 : 400,
+                Text(node.Subtitle!, Project(subtitle), size * .85, NodeSubtitleColor(node, active), chip ? 700 : 400,
                     chip ? "topology-subtitle-chip-text" : "topology-node-subtitle", layout.SubtitleRows, centered: true,
-                    paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)));
+                    paint: NodeSubtitlePaint(node, active));
             }
             if (node.Details.Count > 0) y = Math.Min(text.Bottom, y + 6);
             foreach (var detail in node.Details) {
@@ -171,11 +171,8 @@ internal sealed partial class VisualTopologyCompiler {
                                 color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
                     }
                 }
-                var textColor = Highlight(Color(detail.Color, _colors.Foreground), active);
-                Text(detail.Text ?? detail.Label + " " + detail.Value, Project(new ChartRect(row.X + reserve, row.Y,
-                    Math.Max(0, row.Width - reserve), row.Height)), size * .8, textColor, 400, "topology-node-detail",
-                    paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, textColor,
-                        string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
+                BuildDetailText(detail, Project(new ChartRect(row.X + reserve, row.Y,
+                    Math.Max(0, row.Width - reserve), row.Height)), size * .8, active);
             }
         }
         var footer = new ChartRect(area.X, area.Bottom - layout.FooterHeight, area.Width, layout.FooterHeight);

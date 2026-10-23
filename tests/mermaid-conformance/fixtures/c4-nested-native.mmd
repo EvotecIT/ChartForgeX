@@ -1,0 +1,13 @@
+C4Dynamic
+title Checkout
+Enterprise_Boundary(company, "Company") {
+System_Boundary(shop, "Store") {
+Container(web, "Web app", "Browser", "Checkout interface")
+ContainerDb(db, "Orders", "SQL", "Stores orders")
+}
+}
+Person(customer, "Customer")
+RelIndex(99, customer, web, "Checkout")
+Rel_D(web, db, "Writes")
+UpdateElementStyle(web, $bgColor="#123456", $fontColor="#ffffff", $borderColor="#ef6543")
+UpdateRelStyle(web, db, $lineColor="#aabbcc", $textColor="#ccbb99", $offsetX="6", $offsetY="-4")

@@ -26,8 +26,10 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         using var installed = JsonDocument.Parse(File.ReadAllText(Path.Combine(bundleRoot, "package.json")));
         Assert.Equal(version, installed.RootElement.GetProperty("version").GetString());
         var projection = File.ReadAllText(Path.Combine(corpus, "reference-notation.mjs")).Replace("export function ", "function ", StringComparison.Ordinal);
-        foreach (var fixture in new[] { "class-native-notes-generics", "class-two-way", "state-controls-notes", "state-nested-directions",
+        foreach (var fixture in new[] { "class-native-notes-generics", "class-two-way", "state-controls-notes", "state-nested-directions", "state-native-safe-styles",
             "er-alias-attributes", "sequence-lifetimes-boxes", "flowchart-nested-directions" }) {
+            // This new direct-style fixture has current12-only structural/paint qualification. Legacy lanes remain parser-only.
+            if (fixture == "state-native-safe-styles" && id != "12") continue;
             var contract = manifest.RootElement.GetProperty("fixtures").GetProperty("fixtures/" + fixture + ".mmd");
             Assert.Equal("accepted", contract.GetProperty("syntax").GetProperty(id).GetString());
             var expectedName = contract.TryGetProperty("expectedByReference", out var variants) && variants.TryGetProperty(id, out var variant)
@@ -92,6 +94,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         "class-two-way" or "er-alias-attributes" => new() { ["topology-node"] = 2, ["topology-edge"] = 1 },
         "state-controls-notes" => new() { ["topology-node"] = 7, ["topology-edge"] = 7, ["topology-annotation"] = 1 },
         "state-nested-directions" => new() { ["topology-node"] = 3, ["topology-group"] = 2, ["topology-edge"] = 2, ["topology-annotation"] = 1 },
+        "state-native-safe-styles" => new() { ["topology-node"] = 5, ["topology-group"] = 1, ["topology-edge"] = 4 },
         "sequence-lifetimes-boxes" => new() { ["sequence-participant"] = 4, ["sequence-message"] = 6, ["sequence-participant-group"] = 2, ["sequence-destruction"] = 1 },
         _ => new() { ["topology-node"] = 6, ["topology-group"] = 3, ["topology-edge"] = 5 }
     };

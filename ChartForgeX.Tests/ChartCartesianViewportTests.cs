@@ -18,8 +18,8 @@ public sealed class ChartCartesianViewportTests {
         chart.Options.YAxis.Reversed = reversed;
         var context = VisualExportRequest.ForChart(chart).Context;
         var full = chart.Prepare(context);
-        var prepared = chart.Prepare(context, new ChartCartesianViewport(y: new ChartYViewport(minimum, maximum)));
-        var y = Assert.IsType<ChartYProjection>(prepared.YProjection); var plot = y.PlotBounds;
+        var prepared = chart.Prepare(context, new ChartCartesianViewport(y: new ChartAxisWindow(minimum, maximum)));
+        var y = Assert.IsType<ChartAxisProjection>(prepared.YProjection); var plot = y.PlotBounds;
         Assert.Equal(fullMinimum, y.FullMinimum); Assert.Equal(fullMaximum, y.FullMaximum);
         Assert.Equal(reversed ? plot.Top : plot.Bottom, y.Project(minimum), 8);
         Assert.Equal(reversed ? plot.Bottom : plot.Top, y.Project(maximum), 8);
@@ -40,7 +40,7 @@ public sealed class ChartCartesianViewportTests {
         chart.AddNote(new ChartPoint(5, 50), "Review", id: new ChartAnnotationId("review"))
             .AddLineSegment(new ChartPoint(0, 0), new ChartPoint(10, 100), "Target");
         var context = VisualExportRequest.ForChart(chart).Context;
-        var prepared = chart.Prepare(context, new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(30, 60)));
+        var prepared = chart.Prepare(context, new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(30, 60)));
         var anchor = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "annotation-anchor");
         Assert.Equal(prepared.YProjection!.Project(50), anchor.Cy, 8);
         Assert.Equal(prepared.XProjection!.Project(5), anchor.Cx, 8);
@@ -49,10 +49,12 @@ public sealed class ChartCartesianViewportTests {
         Assert.Equal(3, groups.Length); Assert.Equal(new[] { "false", null, "false" }, groups.Select(group => (string?)group.Attribute("data-cfx-visible")));
         Assert.NotEmpty(groups[1].Elements()); Assert.Equal("80", (string?)groups[1].Attribute("data-cfx-open"));
         Assert.Equal(0, chart.Options.XAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum); Assert.NotEmpty(prepared.ToPng());
-        chart.ClearAnnotations(); chart.Series[0].UseSecondaryYAxis();
-        Assert.NotNull(chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(2, 8))).XProjection);
-        Assert.Null(chart.Prepare(context).YProjection);
-        Assert.Throws<NotSupportedException>(() => chart.Prepare(context, new ChartCartesianViewport(y: new ChartYViewport(30, 60))));
+        chart.ClearAnnotations(); chart.Series[0].UseSecondaryValueAxis();
+        Assert.NotNull(chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))).XProjection);
+        Assert.NotNull(chart.Prepare(context).YProjection);
+        var secondary = chart.Prepare(context, new ChartCartesianViewport(secondaryY: new ChartAxisWindow(30, 60)));
+        Assert.Equal(30, secondary.SecondaryYProjection!.Minimum); Assert.Equal(60, secondary.SecondaryYProjection.Maximum);
+        Assert.Equal(0, secondary.YProjection!.Minimum); Assert.Equal(100, secondary.YProjection.Maximum);
         Assert.Throws<ArgumentException>(() => new ChartCartesianViewport());
     }
 
@@ -61,9 +63,9 @@ public sealed class ChartCartesianViewportTests {
         var chart = Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(1, 1000).WithYAxisScale(ChartScaleKind.Logarithmic)
             .AddLine("Positive", new[] { new ChartPoint(0, 1), new ChartPoint(10, 1000) });
         var projection = chart.Prepare(VisualExportRequest.ForChart(chart).Context).YProjection!;
-        var confined = projection.ConstrainViewport(new ChartYViewport(100, 10000))!;
+        var confined = projection.ConstrainViewport(new ChartAxisWindow(100, 10000))!;
         Assert.Equal(10, confined.Minimum, 8); Assert.Equal(1000, confined.Maximum, 8);
-        Assert.Null(projection.ConstrainViewport(new ChartYViewport(1, 1000)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => projection.ConstrainViewport(new ChartYViewport(-1, 10)));
+        Assert.Null(projection.ConstrainViewport(new ChartAxisWindow(1, 1000)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => projection.ConstrainViewport(new ChartAxisWindow(-1, 10)));
     }
 }

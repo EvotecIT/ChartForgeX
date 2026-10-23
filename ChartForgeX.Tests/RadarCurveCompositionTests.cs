@@ -15,7 +15,7 @@ public sealed class RadarCurveCompositionTests {
             .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10).AddRadarLine("Target", Values(100));
         chart.Series[0].Radar.CurveTension = 1;
         var primary = Prepare(chart);
-        chart.Series[0].UseSecondaryYAxis();
+        chart.Series[0].UseSecondaryValueAxis();
         for (var index = 0; index < chart.Series[0].Points.Count; index++) chart.Series[0].Points[index] = new ChartPoint(index + 1, 10);
         var secondary = Prepare(chart);
         Assert.Equal(primary.Regions.Select(region => region.Bounds), secondary.Regions.Select(region => region.Bounds));
@@ -86,7 +86,7 @@ public sealed class RadarCurveCompositionTests {
         var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
             .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10).WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: innerRatio))
             .AddRadialColumn("Counts", Values(100)).AddRadar("Target", Values(10));
-        chart.Series[1].UseSecondaryYAxis(); chart.Series[1].Radar.Form = form;
+        chart.Series[1].UseSecondaryValueAxis(); chart.Series[1].Radar.Form = form;
         chart.Options.TransparentBackground = true; chart.Options.ShowPlotBackground = false; chart.Options.ShowCard = false;
         return chart;
     }

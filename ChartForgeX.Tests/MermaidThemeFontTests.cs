@@ -1,6 +1,7 @@
 using ChartForgeX.Core;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
@@ -93,13 +94,16 @@ public sealed class MermaidThemeFontTests {
     }
 
     [Fact]
-    public void OtherVariablesAndUnsupportedFamiliesKeepTheirDiagnostics() {
+    public void SupportedThemeVariablesAndNativeWorkflowKeepTheirTypography() {
         var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontFamily':'Georgia','fontSize':'18px','primaryColor':'#123456'}}}%%\nflowchart LR\nA --> B");
-        Assert.False(result.HasErrors);
-        Assert.Single(result.Diagnostics);
-        Assert.All(result.Diagnostics, item => Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, item.Code));
-        var unsupported = new MermaidParser().Parse("%%{init: {'themeVariables':{'fontFamily':'Georgia'}}}%%\nagentflow-beta\nflow A");
-        Assert.Contains(unsupported.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
+        Assert.Empty(result.Diagnostics);
+        var flowchart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        Assert.Equal("Georgia", flowchart.Theme.Typography.Family);
+        Assert.Equal(18, flowchart.Theme.Typography.DataLabelSize);
+        Assert.Equal(ChartColor.FromHex("#123456"), flowchart.Theme.Resolve(flowchart.ThemeMode).Surface);
+        var workflow = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontFamily':'Georgia'}}}%%\nagentflow-beta\na --> b");
+        Assert.Empty(workflow.Diagnostics);
+        Assert.Equal("Georgia", Assert.IsType<TopologyChart>(workflow.Artifact!.Model).Theme.Typography.Family);
     }
 
     [Fact]

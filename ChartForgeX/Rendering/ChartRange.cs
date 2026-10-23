@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
-internal sealed class ChartRange {
+internal sealed partial class ChartRange {
     public double MinX { get; private set; } = double.PositiveInfinity;
     public double MaxX { get; private set; } = double.NegativeInfinity;
     public double MinY { get; private set; } = double.PositiveInfinity;
@@ -37,7 +37,14 @@ internal sealed class ChartRange {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             var contributesBaseline = series.RenderPoints.Count > 0 || !hasObservations;
-            if (contributesBaseline && ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) usesHorizontalBaseline = true;
+            if (contributesBaseline && series.ValueAxis == ChartAxisSide.Primary && ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) usesHorizontalBaseline = true;
+            if (hasHorizontalSeries && series.ValueAxis == ChartAxisSide.Secondary) {
+                foreach (var category in ChartCartesianOrientation.Categories(series)) {
+                    range.IncludeY(category);
+                    if (series.Kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) horizontalBarYValues.Add(category);
+                }
+                continue;
+            }
             if (series.Kind == ChartSeriesKind.Waterfall) {
                 var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
                 if (horizontal && contributesBaseline) usesHorizontalBaseline = true;
@@ -50,7 +57,7 @@ internal sealed class ChartRange {
                         continue;
                     }
                     range.IncludeX(step.X); barXValues.Add(step.X);
-                    if (series.YAxis != ChartAxisSide.Secondary) {
+                    if (series.ValueAxis != ChartAxisSide.Secondary) {
                         if (step.Start != 0 || UsesZeroBaseline(valueAxis)) range.IncludeY(step.Start);
                         if (step.End != 0 || UsesZeroBaseline(valueAxis)) range.IncludeY(step.End);
                     }
@@ -68,7 +75,7 @@ internal sealed class ChartRange {
                 }
                 continue;
             }
-            if (series.YAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
+            if (series.ValueAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                 IncludeSeriesX(range, series);
                 if (RequiresMarkWidth(series.Kind) && series.HistogramBinLayout == null) {
                     var categories = series.Kind == ChartSeriesKind.Bar ? scalarBarXValues : barXValues;
@@ -192,12 +199,16 @@ internal sealed class ChartRange {
                 else range.IncludeX(leaf.Value);
             }
         }
+        ValidateLogarithmicObservations(range.MinX, range.MaxX, chart.Options.XAxis);
+        if (!hasHorizontalSeries) ValidateLogarithmicObservations(range.MinY, range.MaxY, chart.Options.YAxis);
         range.InitializeEmptyX(chart.Options.XAxis);
         range.InitializeEmptyY(chart.Options.YAxis);
         // Category padding supplies a centered nonzero interval for a single category.
         // Expanding first would shift that category and make a full-slot bar exceed the plot.
-        if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon && barXValues.Count == 0 && scalarBarXValues.Count == 0) range.MaxX = range.MinX + 1;
-        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0 && horizontalScalarCategories.Count == 0) range.MaxY = range.MinY + 1;
+        if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon && barXValues.Count == 0 && scalarBarXValues.Count == 0)
+            (range.MinX, range.MaxX) = ExpandedSingleton(range.MinX, chart.Options.XAxis);
+        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0 && horizontalScalarCategories.Count == 0)
+            (range.MinY, range.MaxY) = ExpandedSingleton(range.MinY, hasHorizontalSeries ? new ChartAxis() : chart.Options.YAxis);
         range.ApplyBarPadding(barXValues, chart.Options.XAxis, scalarBarXValues);
         range.ApplyHorizontalBarPadding(horizontalBarYValues, horizontalScalarCategories);
         if (!hasHorizontalSeries) {
@@ -214,19 +225,22 @@ internal sealed class ChartRange {
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
         if (applyOptionBounds) range.ApplyXAxisOptions(chart);
+        range.ApplyTimeSpacingBounds(chart.Options.XAxis, horizontal: true, applyOptionBounds);
+        range.ApplyTimeSpacingBounds(chart.Options.YAxis, horizontal: false, applyOptionBounds);
         return range;
     }
 
-    public static ChartRange FromSecondaryYAxis(Chart chart, ChartRange primaryRange, bool applyOptionBounds = true) =>
-        FromSecondaryYAxis(chart, primaryRange, ChartStackLayout.Create(chart, ChartBarCoordinateMap.Create(chart)), applyOptionBounds);
+    public static ChartRange FromSecondaryValueAxis(Chart chart, ChartRange primaryRange, bool applyOptionBounds = true) =>
+        FromSecondaryValueAxis(chart, primaryRange, ChartStackLayout.Create(chart, ChartBarCoordinateMap.Create(chart)), applyOptionBounds);
 
-    internal static ChartRange FromSecondaryYAxis(Chart chart, ChartRange primaryRange, ChartStackLayout stacks, bool applyOptionBounds = true) {
+    internal static ChartRange FromSecondaryValueAxis(Chart chart, ChartRange primaryRange, ChartStackLayout stacks, bool applyOptionBounds = true) {
+        if (ChartCartesianOrientation.IsHorizontal(chart)) return FromSecondaryHorizontalAxis(chart, primaryRange, stacks, applyOptionBounds);
         var range = new ChartRange();
-        var hasObservations = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.RenderPoints.Count > 0);
+        var hasObservations = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary && series.RenderPoints.Count > 0);
         var usesVerticalBaseline = false;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (series.YAxis != ChartAxisSide.Secondary) continue;
+            if (series.ValueAxis != ChartAxisSide.Secondary) continue;
             if (series.RenderPoints.Count == 0 && hasObservations) continue;
             if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.StackedArea) {
                 for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) range.IncludeY(stacks.Point(index, pointIndex).End);
@@ -236,13 +250,26 @@ internal sealed class ChartRange {
         }
         range.MinX = primaryRange.MinX;
         range.MaxX = primaryRange.MaxX;
+        ValidateLogarithmicObservations(range.MinY, range.MaxY, chart.Options.SecondaryYAxis);
         range.InitializeEmptyY(chart.Options.SecondaryYAxis);
 
-        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
+        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) (range.MinY, range.MaxY) = ExpandedSingleton(range.MinY, chart.Options.SecondaryYAxis);
         if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.SecondaryYAxis);
         range.ApplyVerticalPadding(chart.Options.SecondaryYAxis);
         if (applyOptionBounds) range.ApplySecondaryYAxisOptions(chart);
+        range.ApplyTimeSpacingBounds(chart.Options.SecondaryYAxis, horizontal: false, applyOptionBounds);
         return range;
+    }
+
+    /// <summary>Uses the captured discrete domain rather than elapsed-value padding; authored bounds remain authoritative.</summary>
+    private void ApplyTimeSpacingBounds(ChartAxis axis, bool horizontal, bool applyAuthored) {
+        if (axis.PreparedTimeDomain is not { } domain) return;
+        var min = domain.FullMinimum; var max = domain.FullMaximum;
+        if (!domain.Unit && max == min) { min = Math.Max(0, min - .5); max = min + 1; }
+        if (applyAuthored) { min = axis.Minimum ?? min; max = axis.Maximum ?? max; }
+        if (max <= min || ChartScaleTransform.Bound(max, axis, true) <= ChartScaleTransform.Bound(min, axis, false))
+            throw new InvalidOperationException("Discrete time bounds must enclose at least one representable band or ordinal span.");
+        if (horizontal) SetXBounds(min, max); else SetYBounds(min, max);
     }
 
     public void SetXBounds(double min, double max) {
@@ -284,32 +311,30 @@ internal sealed class ChartRange {
 
     private void InitializeEmptyX(ChartAxis axis) {
         if (!double.IsInfinity(MinX)) return;
-        MinX = axis.Scale == ChartScaleKind.Logarithmic ? 1 : 0;
-        MaxX = axis.Scale == ChartScaleKind.Logarithmic ? 10 : 1;
+        (MinX, MaxX) = EmptyBounds(axis);
     }
 
     private void InitializeEmptyY(ChartAxis axis) {
         if (!double.IsInfinity(MinY)) return;
-        MinY = axis.Scale == ChartScaleKind.Logarithmic ? 1 : 0;
-        MaxY = axis.Scale == ChartScaleKind.Logarithmic ? 10 : 1;
+        (MinY, MaxY) = EmptyBounds(axis);
     }
 
     private void ApplyXAxisOptions(Chart chart) {
         if (chart.Options.XAxisMinimum.HasValue) MinX = chart.Options.XAxisMinimum.Value;
         if (chart.Options.XAxisMaximum.HasValue) MaxX = chart.Options.XAxisMaximum.Value;
-        if (MaxX <= MinX) MaxX = MinX + 1;
+        if (MaxX <= MinX) (MinX, MaxX) = ResolveClippedBounds(MinX, MaxX, chart.Options.XAxis);
     }
 
     private void ApplyYAxisOptions(Chart chart) {
         if (chart.Options.YAxisMinimum.HasValue) MinY = chart.Options.YAxisMinimum.Value;
         if (chart.Options.YAxisMaximum.HasValue) MaxY = chart.Options.YAxisMaximum.Value;
-        if (MaxY <= MinY) MaxY = MinY + 1;
+        if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, chart.Options.YAxis);
     }
 
     private void ApplySecondaryYAxisOptions(Chart chart) {
         if (chart.Options.SecondaryYAxisMinimum.HasValue) MinY = chart.Options.SecondaryYAxisMinimum.Value;
         if (chart.Options.SecondaryYAxisMaximum.HasValue) MaxY = chart.Options.SecondaryYAxisMaximum.Value;
-        if (MaxY <= MinY) MaxY = MinY + 1;
+        if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, chart.Options.SecondaryYAxis);
     }
 
     private static void IncludeSeriesX(ChartRange range, ChartSeries series) {
@@ -377,17 +402,52 @@ internal sealed class ChartRange {
     private static bool UsesZeroBaseline(ChartAxis axis) => axis.Scale != ChartScaleKind.Logarithmic && axis.Scale != ChartScaleKind.Time;
 
     private void ApplyLogarithmicXBaseline(ChartAxis axis) {
-        if (axis.Scale == ChartScaleKind.Logarithmic) MinX = PositiveBaselineBelow(MinX);
+        if (axis.Scale != ChartScaleKind.Logarithmic) return;
+        if (axis.LogarithmicDomain == ChartLogarithmicDomain.Negative) MaxX = LogarithmicBaseline(MaxX, axis);
+        else MinX = LogarithmicBaseline(MinX, axis);
     }
 
     private void ApplyLogarithmicYBaseline(ChartAxis axis) {
-        if (axis.Scale == ChartScaleKind.Logarithmic) MinY = PositiveBaselineBelow(MinY);
+        if (axis.Scale != ChartScaleKind.Logarithmic) return;
+        if (axis.LogarithmicDomain == ChartLogarithmicDomain.Negative) MaxY = LogarithmicBaseline(MaxY, axis);
+        else MinY = LogarithmicBaseline(MinY, axis);
     }
 
-    private static double PositiveBaselineBelow(double minimum) {
-        if (!ChartMath.IsFinite(minimum) || minimum <= 0) return minimum;
-        var baseline = minimum / 10;
-        return baseline > 0 && ChartMath.IsFinite(baseline) ? baseline : minimum;
+    internal static double LogarithmicBaseline(double nearestZero, ChartAxis axis) {
+        var baseline = nearestZero / axis.LogarithmBase;
+        return axis.IsInLogarithmicDomain(baseline) ? baseline : nearestZero;
+    }
+
+    private static (double Minimum, double Maximum) EmptyBounds(ChartAxis axis) => axis.Scale != ChartScaleKind.Logarithmic ? (0, 1)
+        : axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? (-axis.LogarithmBase, -1) : (1, axis.LogarithmBase);
+
+    private static void ValidateLogarithmicObservations(double minimum, double maximum, ChartAxis axis) {
+        if (axis.Scale == ChartScaleKind.Logarithmic && !double.IsInfinity(minimum)
+            && (!axis.IsInLogarithmicDomain(minimum) || !axis.IsInLogarithmicDomain(maximum)))
+            throw new InvalidOperationException("Logarithmic axes require " + axis.LogarithmicDomainName + " source values, including values outside authored bounds.");
+    }
+
+    private static (double Minimum, double Maximum) ExpandedSingleton(double value, ChartAxis axis) {
+        if (axis.Scale != ChartScaleKind.Logarithmic || axis.LogarithmicDomain == ChartLogarithmicDomain.Positive && axis.LogarithmBase == 10)
+            return (value, value + 1); // Preserve the established default positive-axis layout.
+        var nearer = LogarithmicBaseline(value, axis);
+        if (nearer != value) return axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? (value, nearer) : (nearer, value);
+        var farther = value * axis.LogarithmBase;
+        if (axis.IsInLogarithmicDomain(farther) && farther != value)
+            return axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? (farther, value) : (value, farther);
+        throw new InvalidOperationException("A logarithmic singleton cannot form a finite nonzero axis domain.");
+    }
+
+    private static (double Minimum, double Maximum) ResolveClippedBounds(double minimum, double maximum, ChartAxis axis) {
+        if (axis.Scale != ChartScaleKind.Logarithmic || axis.LogarithmicDomain != ChartLogarithmicDomain.Negative) return (minimum, minimum + 1);
+        if (axis.Maximum.HasValue && !axis.Minimum.HasValue) {
+            var lower = maximum * axis.LogarithmBase;
+            if (axis.IsInLogarithmicDomain(lower) && lower < maximum) return (lower, maximum);
+        } else {
+            var upper = LogarithmicBaseline(minimum, axis);
+            if (upper > minimum) return (minimum, upper);
+        }
+        throw new InvalidOperationException("The authored logarithmic bound leaves no representable finite domain.");
     }
 
     private static double CategoryPadding(List<double> values) {
@@ -418,6 +478,12 @@ internal sealed class ChartRange {
         if (padding == 0) return;
         if (axis.Scale == ChartScaleKind.Logarithmic) {
             IEnumerable<double> categories = scalarCategories == null ? xValues : xValues.Concat(scalarCategories);
+            if (axis.LogarithmicDomain == ChartLogarithmicDomain.Negative) {
+                var largestNegative = categories.Where(value => value < 0).DefaultIfEmpty().Max();
+                if (largestNegative < 0) MaxX = Math.Max(MaxX, Math.Min(largestNegative * .5, MaxX + padding));
+                MinX -= padding;
+                return;
+            }
             var smallestPositive = categories.Where(value => value > 0).DefaultIfEmpty().Min();
             if (smallestPositive > 0) MinX = Math.Min(MinX, Math.Max(smallestPositive * 0.5, MinX - padding));
         } else {

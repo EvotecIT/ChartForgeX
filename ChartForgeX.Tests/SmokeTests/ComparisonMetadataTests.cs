@@ -7,11 +7,11 @@ internal static partial class SmokeTests {
     private static void ComparisonAndIntervalSvgExposeDataMetadata() {
         var error = Chart.Create()
             .AddErrorBar("Confidence", new[] {
-                new ChartErrorBar(1, 42, 35, 51),
-                new ChartErrorBar(2, 58, 49, 66)
+                new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
+                new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66))
             })
             .ToSvg();
-        CartesianMetadata(CartesianPoint(error, 0, 1), ("x", "2"), ("value", "58"), ("lower", "49"), ("upper", "66"));
+        CartesianMetadata(CartesianPoint(error, 0, 1), ("x", "2"), ("value", "58"), ("y-lower", "49"), ("y-upper", "66"));
 
         var bubble = Chart.Create()
             .AddBubble("Reach", new[] {

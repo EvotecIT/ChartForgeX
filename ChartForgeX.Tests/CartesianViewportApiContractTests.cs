@@ -22,7 +22,7 @@ public sealed class CartesianViewportApiContractTests {
             options.IncludeContextMenu = true;
         }
         var initial = renderer.PrepareSection(chart, null, Configure);
-        var window = new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80));
+        var window = new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(20, 80));
         Assert.Equal(2, chart.Prepare(context, window).XProjection!.Minimum);
         Assert.Equal(20, renderer.PrepareSection(chart, window, Configure).PreparedVisual.YProjection!.Minimum);
 
@@ -49,8 +49,8 @@ public sealed class CartesianViewportApiContractTests {
         var chart = Model();
         var context = VisualExportRequest.ForChart(chart).Context;
         var viewport = new ChartCartesianViewport(
-            axes.Contains('x') ? new ChartXViewport(2, 8) : null,
-            axes.Contains('y') ? new ChartYViewport(20, 80) : null);
+            axes.Contains('x') ? new ChartAxisWindow(2, 8) : null,
+            axes.Contains('y') ? new ChartAxisWindow(20, 80) : null);
         var native = chart.Prepare(context, viewport);
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport);
         Assert.Equal(native.ToSvg(), section.PreparedVisual.ToSvg());
@@ -77,7 +77,7 @@ public sealed class CartesianViewportApiContractTests {
     [Fact]
     public void PreparedWindowsRemainDetachedAfterTheAuthoringModelChanges() {
         var chart = Model();
-        var viewport = new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80));
+        var viewport = new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(20, 80));
         var native = chart.Prepare(VisualExportRequest.ForChart(chart).Context, viewport);
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport);
         var svg = native.ToSvg();
@@ -102,33 +102,37 @@ public sealed class CartesianViewportApiContractTests {
     [Fact]
     public void FullDomainNullDoesNotImposeCartesianEligibilityOnOtherChartFamilies() {
         var chart = Chart.Create().WithHeader(false).WithLegend(false)
-            .AddBar("Categories", new[] { new ChartPoint(1, 2), new ChartPoint(3, 4) });
+            .AddPie("Categories", new[] { new ChartPoint(1, 2), new ChartPoint(3, 4) });
         var context = VisualExportRequest.ForChart(chart).Context;
         var renderer = new HtmlInteractiveChartRenderer();
         Assert.Equal(chart.Prepare(context).ToSvg(), chart.Prepare(context, null).ToSvg());
         Assert.Equal(renderer.PrepareSection(chart).Html, renderer.PrepareSection(chart, null).Html);
         Assert.Null(chart.Prepare(context, null).XProjection);
-        var explicitWindow = new ChartCartesianViewport(x: new ChartXViewport(1, 2));
+        var explicitWindow = new ChartCartesianViewport(x: new ChartAxisWindow(1, 2));
         Assert.Throws<NotSupportedException>(() => chart.Prepare(context, explicitWindow));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareSection(chart, explicitWindow));
     }
 
     [Fact]
-    public void SecondaryAxisChartsKeepXWindowsButRejectExplicitPrimaryYWindows() {
+    public void SecondaryAxisChartsKeepIndependentPrimaryAndSecondaryPhysicalWindows() {
         var chart = Model().AddLine("Secondary", new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         var context = VisualExportRequest.ForChart(chart).Context;
         var renderer = new HtmlInteractiveChartRenderer();
-        var x = new ChartCartesianViewport(x: new ChartXViewport(2, 8));
+        var x = new ChartCartesianViewport(x: new ChartAxisWindow(2, 8));
         foreach (var prepared in new[] { chart.Prepare(context, x), renderer.PrepareSection(chart, x).PreparedVisual }) {
             Assert.Equal(2, prepared.XProjection!.Minimum);
             Assert.Equal(8, prepared.XProjection.Maximum);
-            Assert.Null(prepared.YProjection);
+            Assert.NotNull(prepared.YProjection); Assert.NotNull(prepared.SecondaryYProjection);
         }
-        foreach (var viewport in new[] { new ChartCartesianViewport(y: new ChartYViewport(20, 80)),
-            new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80)) }) {
-            Assert.Throws<NotSupportedException>(() => chart.Prepare(context, viewport));
-            Assert.Throws<NotSupportedException>(() => renderer.PrepareSection(chart, viewport));
+        foreach (var viewport in new[] { new ChartCartesianViewport(y: new ChartAxisWindow(20, 80)),
+            new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(20, 80)) }) {
+            var native = chart.Prepare(context, viewport);
+            var html = renderer.PrepareSection(chart, viewport).PreparedVisual;
+            Assert.Equal(20, native.YProjection!.Minimum); Assert.Equal(80, native.YProjection.Maximum);
+            Assert.Equal(native.ToSvg(), html.ToSvg());
+            Assert.Equal(native.SecondaryYProjection!.FullMinimum, native.SecondaryYProjection.Minimum);
+            Assert.Equal(native.SecondaryYProjection.FullMaximum, native.SecondaryYProjection.Maximum);
         }
         Assert.Equal(chart.Prepare(context).ToSvg(), chart.Prepare(context, null).ToSvg());
     }
@@ -139,8 +143,8 @@ public sealed class CartesianViewportApiContractTests {
     public void ExplicitOutOfDomainWindowsKeepTheNativeValidationFailure(string axis) {
         var chart = Model();
         var context = VisualExportRequest.ForChart(chart).Context;
-        var viewport = axis == "x" ? new ChartCartesianViewport(x: new ChartXViewport(-1, 8))
-            : new ChartCartesianViewport(y: new ChartYViewport(20, 101));
+        var viewport = axis == "x" ? new ChartCartesianViewport(x: new ChartAxisWindow(-1, 8))
+            : new ChartCartesianViewport(y: new ChartAxisWindow(20, 101));
         var native = Assert.Throws<ArgumentOutOfRangeException>(() => chart.Prepare(context, viewport));
         var html = Assert.Throws<ArgumentOutOfRangeException>(() => new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport));
         Assert.Equal(native.ParamName, html.ParamName);

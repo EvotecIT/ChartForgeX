@@ -61,7 +61,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 window.bookmarkNotifications=0;
                 chartController.root.addEventListener('cfxstateapplied',()=>bookmarkNotifications++);
                 window.replayBookmark=()=>chartController.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{sync:false,snapshot:{
-                    xWindow:{minimum:2,maximum:10,scale:'linear'},mode:'pan',
+                    nativeViewport:{x:{minimum:2,maximum:10,scale:'linear'}},mode:'pan',
                     scenario:{id:'review',stepIndex:'0',playback:'paused'},selectedTargets:[]}}}));
                 replayBookmark();
             }

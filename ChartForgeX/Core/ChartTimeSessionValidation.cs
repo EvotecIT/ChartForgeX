@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
@@ -7,14 +8,15 @@ namespace ChartForgeX.Core;
 /// <summary>Validates compressed-time source facts before any native chart layout is emitted.</summary>
 internal static class ChartTimeSessionValidation {
     internal static void Validate(Chart chart) {
-        if (chart.Options.YAxis.TimeSessions != null || chart.Options.SecondaryYAxis.TimeSessions != null)
+        if (chart.Options.YAxis.TimeSessions != null || chart.Options.SecondaryYAxis.TimeSessions != null || chart.Options.SecondaryXAxis.TimeSessions != null)
             throw new NotSupportedException("Time session compression is supported on the shared vertical Cartesian X axis only.");
         var axis = chart.Options.XAxis;
         var domain = axis.TimeSessions;
         if (domain == null) return;
         if (axis.Scale != ChartScaleKind.Time)
             throw new InvalidOperationException("Time session compression requires a time X axis.");
-        if (!VisualCartesianCompiler.SupportsXViewport(chart))
+        if (!VisualCartesianCompiler.SupportsXViewport(chart) || ChartCartesianOrientation.IsHorizontal(chart)
+            || chart.Series.Any(series => series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Waterfall))
             throw new NotSupportedException("Time session compression requires supported vertical point, financial or paired-boundary series.");
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];

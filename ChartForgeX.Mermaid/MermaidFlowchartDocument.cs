@@ -40,7 +40,7 @@ public class MermaidFlowchartDocument : MermaidDocument {
     public List<MermaidFlowchartSubgraph> Subgraphs { get; } = new();
 
     /// <summary>Gets parsed flowchart class definitions.</summary>
-    public List<MermaidFlowchartClassDefinition> ClassDefinitions { get; } = new();
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
 
     /// <summary>Gets parsed flowchart link style declarations.</summary>
     public List<MermaidFlowchartLinkStyle> LinkStyles { get; } = new();
@@ -85,7 +85,9 @@ public enum MermaidFlowchartNodeShape {
     /// <summary>A use case ellipse.</summary>
     Ellipse,
     /// <summary>A UML actor.</summary>
-    Actor
+    Actor,
+    /// <summary>A document contour with horizontal content rules.</summary>
+    LinedDocument
 }
 
 /// <summary>
@@ -189,24 +191,6 @@ public sealed class MermaidFlowchartSubgraph : MermaidAstNode {
 
     /// <summary>Gets node ids declared inside the subgraph.</summary>
     public List<string> NodeIds { get; } = new();
-}
-
-/// <summary>
-/// Describes a Mermaid flowchart class definition.
-/// </summary>
-public sealed class MermaidFlowchartClassDefinition : MermaidAstNode {
-    private string _name;
-
-    /// <summary>Initializes a parsed class definition.</summary>
-    public MermaidFlowchartClassDefinition(string name, MermaidSourceSpan span) : base(span) {
-        _name = string.IsNullOrWhiteSpace(name) ? throw new System.ArgumentException("Class name is required.", nameof(name)) : name;
-    }
-
-    /// <summary>Gets or sets the Mermaid class name.</summary>
-    public string Name { get => _name; set => _name = string.IsNullOrWhiteSpace(value) ? throw new System.ArgumentException("Class name is required.", nameof(value)) : value; }
-
-    /// <summary>Gets style declarations for the class.</summary>
-    public Dictionary<string, string> Styles { get; } = new();
 }
 
 /// <summary>

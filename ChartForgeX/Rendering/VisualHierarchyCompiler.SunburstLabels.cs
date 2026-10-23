@@ -12,21 +12,22 @@ internal static partial class VisualHierarchyCompiler {
 
     /// <summary>Fits measured horizontal or upright tangential captions within the actual annular segment.</summary>
     private static void SunburstLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        ChartSunburstModel model, ChartSunburstNode node, ChartColor fill, SvgPaint fillPaint, string? secondary) {
+        ChartSunburstModel model, ChartSunburstNode node, SunburstSectorPaintGeometry geometry, ChartColor fill, SvgPaint fillPaint, string? secondary) {
         var style = LabelStyle(chart, context, fill, node.Index);
         var series = chart.Series[0];
         var original = HierarchyCaption(series, node.Index, node.Label);
         var metrics = builder.MeasureText(original, style);
-        var sweep = node.EndAngle - node.StartAngle;
-        var mid = node.StartAngle + sweep / 2;
-        var radius = node.Depth == 0 ? 0 : (node.InnerRadius + node.OuterRadius) / 2;
+        var sweep = geometry.Sweep;
+        var mid = geometry.StartAngle + sweep / 2;
+        var radius = node.ViewDepth == 0 ? 0 : (geometry.InnerRadius + geometry.OuterRadius) / 2;
         var x = model.CenterX + Math.Cos(mid) * radius;
         var y = model.CenterY + Math.Sin(mid) * radius;
         var tangent = mid * 180 / Math.PI + 90;
         var contours = chart.Options.Sunburst.CornerRadius > 0
-            ? ChartSlicePathGeometry.Contours(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, chart.Options.Sunburst.CornerRadius, 8) : null;
+            ? ChartSlicePathGeometry.Contours(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, sweep, chart.Options.Sunburst.CornerRadius, 8) : null;
         while (tangent > 90) tangent -= 180;
         while (tangent < -90) tangent += 180;
+        var probing = false;
         var horizontalShape = RoundedShape(0);
         var tangentShape = Math.Abs(tangent) < .001 ? horizontalShape : RoundedShape(tangent);
         if (TryRadialPositions(original, metrics)) return;
@@ -36,13 +37,14 @@ internal static partial class VisualHierarchyCompiler {
             (value, _) => builder.MeasureText(value, style).Width);
         var twoLines = string.Join("\n", wrapped);
         if (wrapped.Length > 1 && TryRadialPositions(twoLines, builder.MeasureText(twoLines, style))) return;
+        if (TrySmallerPrimary()) return;
         builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst label was omitted to fit its segment; complete text remains in source semantics."));
 
         bool TryRadialPositions(string text, TextMetrics measured) {
-            var thickness = node.OuterRadius - node.InnerRadius;
-            var positions = node.Depth == 0 ? new[] { 0d }
-                : new[] { radius, node.InnerRadius + thickness * .35, node.InnerRadius + thickness * .65,
-                    SunburstTangentialCaptionRadius(node, measured) ?? radius };
+            var thickness = geometry.OuterRadius - geometry.InnerRadius;
+            var positions = node.ViewDepth == 0 ? new[] { 0d }
+                : new[] { radius, geometry.InnerRadius + thickness * .35, geometry.InnerRadius + thickness * .65,
+                    SunburstTangentialCaptionRadius(geometry, measured) ?? radius };
             foreach (var position in positions) {
                 x = model.CenterX + Math.Cos(mid) * position;
                 y = model.CenterY + Math.Sin(mid) * position;
@@ -54,7 +56,8 @@ internal static partial class VisualHierarchyCompiler {
         }
 
         bool TryCaption(string text, TextMetrics measured) {
-            var orientations = node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent };
+            var orientations = node.ViewDepth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent };
+            if (probing) return orientations.Any(degrees => Fits(measured, degrees));
             if (secondary != null && SunburstSecondaryLabel(chart, builder, node, fill, fillPaint, style, text, measured, secondary, x, y, orientations, Fits)) return true;
             foreach (var degrees in orientations) {
                 if (!Fits(measured, degrees)) continue;
@@ -70,8 +73,30 @@ internal static partial class VisualHierarchyCompiler {
             return false;
         }
 
+        bool TrySmallerPrimary() {
+            var minimum = chart.Options.Sunburst.MinimumLabelFontSize;
+            var preferred = style.FontSize;
+            if (!minimum.HasValue || minimum.Value >= preferred) return false;
+            probing = true;
+            if (!AtSize(minimum.Value)) { probing = false; style.FontSize = preferred; return false; }
+            var fitted = Math.Max(minimum.Value, ChartTextFitting.FitFontSize(minimum.Value, preferred, AtSize));
+            // Search probes never paint, add diagnostics or resolve secondary captions.
+            // Validate the rounded final result before invoking the normal paint path once.
+            if (!AtSize(fitted)) fitted = minimum.Value;
+            probing = false;
+            return AtSize(fitted);
+        }
+
+        bool AtSize(double fontSize) {
+            style.FontSize = fontSize;
+            if (TryRadialPositions(original, builder.MeasureText(original, style))) return true;
+            var lines = ChartLabelWrapping.BalancedTwoLine(original, style.EffectiveFontSize,
+                builder.MeasureText(original, style).Width * .6, (value, _) => builder.MeasureText(value, style).Width);
+            return lines.Length > 1 && TryRadialPositions(string.Join("\n", lines), builder.MeasureText(string.Join("\n", lines), style));
+        }
+
         bool Fits(TextMetrics measured, double degrees) {
-            if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) return false;
+            if (!SunburstCaptionFits(geometry, x - model.CenterX, y - model.CenterY, measured, degrees)) return false;
             var roundedShape = degrees == 0 ? horizontalShape : tangentShape;
             return roundedShape == null || roundedShape.Contains(new ChartRect(-measured.Width / 2 - SunburstCaptionClearance,
                 -measured.Height / 2 - SunburstCaptionClearance, measured.Width + 2 * SunburstCaptionClearance, measured.Height + 2 * SunburstCaptionClearance));
@@ -86,32 +111,32 @@ internal static partial class VisualHierarchyCompiler {
     }
 
     /// <summary>Finds a tangential lane between the inner hole, outer arc and angular edges.</summary>
-    private static double? SunburstTangentialCaptionRadius(ChartSunburstNode node, TextMetrics metrics) {
+    private static double? SunburstTangentialCaptionRadius(SunburstSectorPaintGeometry geometry, TextMetrics metrics) {
         var halfWidth = metrics.Width / 2 + SunburstCaptionClearance;
         var halfHeight = metrics.Height / 2 + SunburstCaptionClearance;
-        var outer = node.OuterRadius - SunburstCaptionClearance;
+        var outer = geometry.OuterRadius - SunburstCaptionClearance;
         if (outer <= halfWidth) return null;
-        var minimum = node.InnerRadius + SunburstCaptionClearance + halfHeight;
+        var minimum = geometry.InnerRadius + SunburstCaptionClearance + halfHeight;
         var maximum = Math.Sqrt(outer * outer - halfWidth * halfWidth) - halfHeight;
-        var halfSweep = (node.EndAngle - node.StartAngle) / 2;
+        var halfSweep = geometry.Sweep / 2;
         if (halfSweep < Math.PI / 2)
             minimum = Math.Max(minimum, halfHeight + halfWidth / Math.Tan(halfSweep));
         return minimum <= maximum ? (minimum + maximum) / 2 : null;
     }
 
-    /// <summary>Checks outer corners, the inner-hole clearance, and angular bounds without reducing type size.</summary>
-    private static bool SunburstCaptionFits(ChartSunburstNode node, double x, double y, TextMetrics metrics, double degrees) {
+    /// <summary>Checks outer corners, inner-hole clearance and angular bounds at the caller-selected measured type size.</summary>
+    private static bool SunburstCaptionFits(SunburstSectorPaintGeometry geometry, double x, double y, TextMetrics metrics, double degrees) {
         const double clearance = SunburstCaptionClearance;
         var halfWidth = metrics.Width / 2 + clearance;
         var halfHeight = metrics.Height / 2 + clearance;
         var angle = degrees * Math.PI / 180; var cosine = Math.Cos(angle); var sine = Math.Sin(angle);
-        var outer = Math.Max(0, node.OuterRadius - clearance);
+        var outer = Math.Max(0, geometry.OuterRadius - clearance);
         var localX = -x * cosine - y * sine;
         var localY = x * sine - y * cosine;
         var closestX = Math.Max(0, Math.Abs(localX) - halfWidth);
         var closestY = Math.Max(0, Math.Abs(localY) - halfHeight);
-        if (node.InnerRadius > 0 && closestX * closestX + closestY * closestY < Math.Pow(node.InnerRadius + clearance, 2)) return false;
-        var sweep = node.EndAngle - node.StartAngle; var mid = node.StartAngle + sweep / 2;
+        if (geometry.InnerRadius > 0 && closestX * closestX + closestY * closestY < Math.Pow(geometry.InnerRadius + clearance, 2)) return false;
+        var sweep = geometry.Sweep; var mid = geometry.StartAngle + sweep / 2;
         foreach (var horizontal in new[] { -halfWidth, halfWidth }) foreach (var vertical in new[] { -halfHeight, halfHeight }) {
             var cornerX = x + horizontal * cosine - vertical * sine;
             var cornerY = y + horizontal * sine + vertical * cosine;

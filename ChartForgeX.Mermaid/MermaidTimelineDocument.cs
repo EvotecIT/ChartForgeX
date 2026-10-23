@@ -55,7 +55,7 @@ public sealed class MermaidTimelinePeriod : MermaidAstNode {
     private string _text;
 
     /// <summary>Initializes a timeline period.</summary>
-    public MermaidTimelinePeriod(string text, string? section, MermaidSourceSpan span) : base(span) {
+    public MermaidTimelinePeriod(string text, MermaidTimelineSection? section, MermaidSourceSpan span) : base(span) {
         _text = text ?? throw new ArgumentNullException(nameof(text));
         Section = section;
     }
@@ -63,8 +63,8 @@ public sealed class MermaidTimelinePeriod : MermaidAstNode {
     /// <summary>Gets or sets the period text.</summary>
     public string Text { get => _text; set => _text = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets the containing section name.</summary>
-    public string? Section { get; set; }
+    /// <summary>Gets or sets the containing section object, preserving repeated labels as distinct phases.</summary>
+    public MermaidTimelineSection? Section { get; set; }
 
     /// <summary>Gets events declared for the period.</summary>
     public List<MermaidTimelineEvent> Events { get; } = new();

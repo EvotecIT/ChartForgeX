@@ -20,8 +20,9 @@
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
     refreshTooltipPosition(root);
   };
-  // Reset is visible only for a changed view.
+
   const viewChanged = (root) => {
+    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
@@ -33,7 +34,7 @@
     if (!reset) return;
     const changed = viewChanged(root);
     if (!changed && document.activeElement === reset) {
-      // Move focus before hiding its control.
+
       if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
       try { root.focus({ preventScroll: true }); } catch { root.focus(); }
     }
@@ -45,7 +46,7 @@
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
-    // Automatic IDs never match peer charts.
+
     const sharedTarget = target => target && target.seriesScope !== 'local';
     if (payload.target?.seriesScope === 'local') {
       if (['hover', 'crosshair', 'navigate'].includes(payload.action) && root._cfxSharedHover) emitSync(root, { action: 'hover-clear' });
@@ -60,7 +61,7 @@
       payload[field] = shared;
     }
     if (['compare', 'lasso'].includes(payload.action) && Array.isArray(payload.targets)) {
-      // A local selection retires shared IDs without publishing local targets.
+
       if (Array.isArray(payload.previousTargets) && !payload.previousTargets.length && !payload.targets.length) return;
       payload.count = payload.targets.length;
     }
@@ -87,7 +88,7 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  // Cancel provisional ranges before pointerup can recommit.
+  // Cancel before pointerup.
   const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
     const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
@@ -117,12 +118,13 @@
   };
   const captureInteractionState = (root, source) => {
     const snapshot = {
-      version: 1,
+      version: 2,
       chartId: root.dataset.cfxChartId || '',
       source: source || '',
       viewport: getState(root),
-      xWindow: connectedXViewport(root) ? nativeXWindow(root) : null,
-      yWindow: cartesianViewportConnected(root) ? nativeYWindow(root) : null,
+      nativeViewport: cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
+        : connectedXViewport(root) ? { x: nativeXWindow(root) } : null,
+      nativeHierarchy: hierarchyConnected(root) ? hierarchySnapshot(root) : null,
       mode: root.dataset.cfxMode || '',
       brush: root.dataset.cfxBrush || '',
       selectedTargets: selectedTargets(root),
@@ -145,15 +147,23 @@
     return snapshot;
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
-    if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
-    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow)) {
+    if (!snapshot || !hasFeature(root, 'StateBookmarks') || snapshot.xWindow || snapshot.yWindow) return;
+    if (snapshot.nativeHierarchy && snapshot.nativeViewport) return;
+    if (!nativeAccepted && snapshot.nativeHierarchy) {
+      const captured = copyHostValue(snapshot), requested = captured.nativeHierarchy, current = capturedHierarchy(root);
+      if (!current || requested.kind !== current.kind || requested.seriesKey !== current.seriesKey) return;
+      requestNativeHierarchy(root, requested.rootId === null ? null : { rootId: requested.rootId }, false,
+        () => applyInteractionState(root, captured, emit, sync, true));
+      return;
+    }
+    if (!nativeAccepted && snapshot.nativeViewport) {
       const captured = copyHostValue(snapshot);
       const accepted = () => applyInteractionState(root, captured, emit, sync, true);
       if (cartesianViewportConnected(root))
-        requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false, accepted);
-      else if (!captured.yWindow && captured.xWindow && connectedXViewport(root))
-        requestNativeXWindow(root, captured.xWindow, false, accepted);
-      // Native bounds are one transaction. Unsupported or disconnected replays leave reader state unchanged.
+        requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
+      else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
+        requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
+      // Atomic replay; preserve rejected state.
       return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');

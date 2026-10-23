@@ -36,6 +36,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         }
         json.Append(']');
         AppendPreparedAnnotations(json, prepared);
+        AppendPreparedHierarchy(json, prepared);
         json.Append(",\"xLabels\":[");
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         for (var index = 0; index < categoryLabels.Count; index++) {
@@ -90,10 +91,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 json.Append(']');
             }
             var plot = dataProjection.Plot;
-            json.Append(",\"dataProjection\":{\"x\":");
-            AppendDataAxis(json, dataProjection.X);
+            json.Append(",\"dataProjection\":{");
+            if (dataProjection.HasX) { json.Append("\"x\":"); AppendDataAxis(json, dataProjection.X); }
             if (dataProjection.Y != null) {
-                json.Append(",\"y\":");
+                json.Append(dataProjection.HasX ? ",\"y\":" : "\"y\":");
                 AppendDataAxis(json, dataProjection.Y);
             }
             json.Append(",\"horizontal\":").Append(dataProjection.Horizontal ? "true" : "false")
@@ -102,24 +103,28 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"height\":").Append(plot.Height.ToString("R", CultureInfo.InvariantCulture)).Append("}}");
         }
-        if (prepared.XProjection is ChartXProjection xProjection) {
-            json.Append(",\"xProjection\":");
-            AppendViewportAxis(json, xProjection.FullMinimum, xProjection.FullMaximum, xProjection.Minimum, xProjection.Maximum,
-                xProjection.TransformedFullMinimum, xProjection.TransformedFullMaximum, xProjection.TransformedMinimum, xProjection.TransformedMaximum,
-                xProjection.Scale, 1, xProjection.Reversed, xProjection.PlotBounds, xProjection.TimeSessions);
-        }
-        if (prepared.YProjection is ChartYProjection yProjection) {
-            json.Append(",\"yProjection\":");
-            AppendViewportAxis(json, yProjection.FullMinimum, yProjection.FullMaximum, yProjection.Minimum, yProjection.Maximum,
-                yProjection.TransformedFullMinimum, yProjection.TransformedFullMaximum, yProjection.TransformedMinimum, yProjection.TransformedMaximum,
-                yProjection.Scale, yProjection.Threshold, yProjection.Reversed, yProjection.PlotBounds, null);
-        }
+        if (prepared.CartesianOrientation == ChartOrientation.Horizontal) json.Append(",\"orientation\":\"horizontal\"");
+        if (prepared.CartesianViewport?.ValueDomain == ChartValueDomain.VisibleCategories)
+            json.Append(",\"valueDomain\":\"visibleCategories\"");
+        AppendCapturedAxis(json, "xProjection", prepared.XProjection);
+        AppendCapturedAxis(json, "yProjection", prepared.YProjection);
+        AppendCapturedAxis(json, "secondaryXProjection", prepared.SecondaryXProjection);
+        AppendCapturedAxis(json, "secondaryYProjection", prepared.SecondaryYProjection);
         return json.Append('}').ToString();
+    }
+
+    private static void AppendCapturedAxis(StringBuilder json, string name, ChartAxisProjection? axis) {
+        if (axis == null) return;
+        json.Append(',').Append(HtmlJsonString.Encode(name)).Append(':');
+        AppendViewportAxis(json, axis.FullMinimum, axis.FullMaximum, axis.Minimum, axis.Maximum,
+            axis.TransformedFullMinimum, axis.TransformedFullMaximum, axis.TransformedMinimum, axis.TransformedMaximum,
+            axis.Scale, axis.Threshold, axis.Reversed, axis.PlotBounds, axis.TimeSessions, axis.LogarithmBase, axis.LogarithmicDomain, axis.TimeDomain, axis.MaximumInclusive);
     }
 
     private static void AppendViewportAxis(StringBuilder json, double fullMinimum, double fullMaximum, double minimum, double maximum,
         double transformedFullMinimum, double transformedFullMaximum, double transformedMinimum, double transformedMaximum,
-        ChartScaleKind scale, double threshold, bool reversed, ChartForgeX.Primitives.ChartRect plot, ChartTimeSessionDomain? sessions) {
+        ChartScaleKind scale, double threshold, bool reversed, ChartForgeX.Primitives.ChartRect plot, ChartTimeSessionDomain? sessions,
+        double logarithmBase = 10, ChartLogarithmicDomain logarithmicDomain = ChartLogarithmicDomain.Positive, ChartTimeSpacingDomain? timeDomain = null, bool maximumInclusive = true) {
         json.Append("{\"fullMinimum\":").Append(fullMinimum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"fullMaximum\":").Append(fullMaximum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"minimum\":").Append(minimum.ToString("R", CultureInfo.InvariantCulture))
@@ -131,7 +136,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Append(",\"scale\":").Append(HtmlJsonString.Encode(scale.ToString().ToLowerInvariant()))
             .Append(",\"threshold\":").Append(threshold.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"reversed\":").Append(reversed ? "true" : "false");
+        if (!maximumInclusive) json.Append(",\"maximumInclusive\":false");
+        AppendLogarithmicPolicy(json, logarithmBase, logarithmicDomain);
         AppendTimeSessions(json, sessions);
+        AppendTimeSpacing(json, timeDomain);
         json.Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
@@ -147,7 +155,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
         .Append(",\"scale\":").Append(HtmlJsonString.Encode(axis.Scale.ToString().ToLowerInvariant()))
         .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false");
+        if (!axis.MaximumInclusive) json.Append(",\"maximumInclusive\":false");
+        AppendLogarithmicPolicy(json, axis.LogarithmBase, axis.LogarithmicDomain);
         AppendTimeSessions(json, axis.TimeSessions);
+        AppendTimeSpacing(json, axis.TimeDomain);
         json.Append(",\"displayTicks\":[");
         for (var index = 0; index < axis.DisplayTicks.Count; index++) {
             if (index > 0) json.Append(',');
@@ -165,6 +176,23 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Append(",\"text\":").Append(HtmlJsonString.Encode(bound.Text));
             if (bound.Instant != null) json.Append(",\"instant\":").Append(HtmlJsonString.Encode(bound.Instant));
             json.Append('}');
+        }
+        json.Append("]}");
+    }
+
+    private static void AppendLogarithmicPolicy(StringBuilder json, double logarithmBase, ChartLogarithmicDomain logarithmicDomain) {
+        // The ordinary base-ten positive representation remains byte-identical.
+        if (logarithmBase != 10) json.Append(",\"logarithmBase\":").Append(logarithmBase.ToString("R", CultureInfo.InvariantCulture));
+        if (logarithmicDomain != ChartLogarithmicDomain.Positive)
+            json.Append(",\"logarithmicDomain\":").Append(HtmlJsonString.Encode(logarithmicDomain.ToString().ToLowerInvariant()));
+    }
+
+    private static void AppendTimeSpacing(StringBuilder json, ChartTimeSpacingDomain? domain) {
+        if (domain == null) return;
+        json.Append(",\"timeSpacing\":{\"kind\":").Append(HtmlJsonString.Encode(domain.Unit ? "unit" : "ordinal")).Append(",\"instants\":[");
+        for (var index = 0; index < domain.Instants.Count; index++) {
+            if (index > 0) json.Append(',');
+            json.Append(domain.Instants[index].ToString("R", CultureInfo.InvariantCulture));
         }
         json.Append("]}");
     }

@@ -14,7 +14,7 @@ internal static partial class VisualCartesianCompiler {
         var series = chart.Series[index]; var steps = ChartWaterfallSteps.Create(series);
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
         var coordinates = steps.Select(step => horizontal ? map.Y(step.X) : map.X(step.X)).OrderBy(value => value).ToArray();
-        var spacing = horizontal ? plot.Height : plot.Width;
+        var spacing = Math.Min(horizontal ? plot.Height : plot.Width, map.CalendarBandPitch(horizontal));
         for (var item = 1; item < coordinates.Length; item++) if (coordinates[item] > coordinates[item - 1]) spacing = Math.Min(spacing, coordinates[item] - coordinates[item - 1]);
         var width = Math.Min(spacing * .8, ChartMarkSurface.WaterfallBarWidth(spacing));
         ChartRect? previous = null;
@@ -28,7 +28,7 @@ internal static partial class VisualCartesianCompiler {
             var label = ResolveObservationLabel(chart, context, series, item, colors,
                 format => (step.Kind != ChartWaterfallItemKind.Delta || step.Value < 0 ? string.Empty : "+") + format("value", step.Value));
             var id = WaterfallId(index, step);
-            var axis = horizontal ? chart.Options.XAxis : series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var direction = MappedBarDirection(axis, step.Value, start, end, horizontal);
             if (horizontal) bounds = VisibleSegmentBounds(chart, bounds, direction, horizontal: true);
             var fillRole = SemanticMarkPaintRole(series, item);

@@ -28,7 +28,7 @@ public sealed partial class Chart {
         AddBar(barName, barPoints, barColor);
         if (smoothLine) AddSmoothLine(lineName, linePoints, lineColor);
         else AddLine(lineName, linePoints, lineColor);
-        Series[Series.Count - 1].YAxis = lineAxis;
+        Series[Series.Count - 1].ValueAxis = lineAxis;
         return this;
     }
 
@@ -79,7 +79,7 @@ public sealed partial class Chart {
         AddBar(barName, barPoints, barColor);
         if (smoothArea) AddSmoothArea(areaName, areaPoints, areaColor);
         else AddArea(areaName, areaPoints, areaColor);
-        Series[Series.Count - 1].YAxis = areaAxis;
+        Series[Series.Count - 1].ValueAxis = areaAxis;
         return this;
     }
 
@@ -130,7 +130,7 @@ public sealed partial class Chart {
         AddScatter(scatterName, scatterPoints, scatterColor);
         if (smoothLine) AddSmoothLine(lineName, linePoints, lineColor);
         else AddLine(lineName, linePoints, lineColor);
-        Series[Series.Count - 1].YAxis = lineAxis;
+        Series[Series.Count - 1].ValueAxis = lineAxis;
         return this;
     }
 }

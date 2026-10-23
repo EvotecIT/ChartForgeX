@@ -1,0 +1,7 @@
+/// <summary>Exercises native journey, categorical timeline, C4 hierarchy and quantitative Venn output.</summary>
+internal static class MermaidMappedFamilyExamples {
+    internal const string Journey = "journey\ntitle Support journey\nsection Contact\nOpen ticket: 2: Customer, Agent\nsection Resolve\nDiagnose: 4: Agent\nsection Contact\nConfirm recovery: 5: Customer, Agent\n";
+    internal const string Timeline = "timeline\ntitle Delivery history\nsection Discovery\nBefore launch: Interview users\n : Review findings\nsection Delivery\nLaunch: Ship product<br>and docs : Invite users\nsection Discovery\nAfter launch: Learn and improve\n";
+    internal const string C4 = "C4Dynamic\ntitle Checkout\nEnterprise_Boundary(company, \"Company\") {\nSystem_Boundary(shop, \"Store\") {\nContainer(web, \"Web app\", \"Browser\", \"Checkout interface\")\nContainerDb(db, \"Orders\", \"SQL\", \"Stores orders\")\n}\n}\nPerson(customer, \"Customer\")\nRelIndex(99, customer, web, \"Checkout\")\nRel_D(web, db, \"Writes\")\nUpdateElementStyle(web, $bgColor=\"#123456\", $fontColor=\"#ffffff\", $borderColor=\"#ef6543\")\nUpdateRelStyle(web, db, $lineColor=\"#aabbcc\", $textColor=\"#ccbb99\", $offsetX=\"6\", $offsetY=\"-4\")\n";
+    internal const string Venn = "venn-beta\nset A[First]: 100\nset B[Second]: 60\nunion A,B[Shared]: 25\nstyle A fill:#ee4455,fill-opacity:0.25,stroke-width:3\nstyle A,B fill:#2233ff,fill-opacity:1,stroke:#112233,stroke-width:2\n";
+}

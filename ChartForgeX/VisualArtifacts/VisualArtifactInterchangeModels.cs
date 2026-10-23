@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Topology;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -151,6 +152,12 @@ public sealed class VisualArtifactInterchangeGroup {
     public string? Status { get; set; }
     /// <summary>Gets or sets the optional accent color.</summary>
     public string? Color { get; set; }
+    /// <summary>Gets or sets the authored container background paint.</summary>
+    public string? BackgroundColor { get; set; }
+    /// <summary>Gets or sets the authored container border paint.</summary>
+    public string? BorderColor { get; set; }
+    /// <summary>Gets or sets the authored container caption paint.</summary>
+    public string? LabelColor { get; set; }
     /// <summary>Gets or sets an optional navigation target.</summary>
     public string? Href { get; set; }
     /// <summary>Gets or sets optional tooltip text.</summary>
@@ -254,6 +261,8 @@ public sealed class VisualArtifactInterchangeDetail {
     public string? Status { get; set; }
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
+    /// <summary>Gets or sets optional native text overrides, detached in artifact snapshots.</summary>
+    public TextStyleOverride? TextStyle { get; set; }
     /// <summary>Gets opaque caller-defined extension data.</summary>
     public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }
@@ -292,6 +301,8 @@ public sealed class VisualArtifactInterchangeEdge {
     public string? TargetPortId { get; set; }
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
+    /// <summary>Gets or sets an authored edge caption paint independent from its line.</summary>
+    public string? LabelColor { get; set; }
     /// <summary>Gets or sets an optional navigation target.</summary>
     public string? Href { get; set; }
     /// <summary>Gets or sets optional tooltip text.</summary>

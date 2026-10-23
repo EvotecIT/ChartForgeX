@@ -18,7 +18,7 @@ var model = LineViewportRecipe.Create("x-viewport", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Requests, X 2\u20138", "Utilization labels within X 2\u20138; full-data Y scales; gap at sample 6", showLegend: true, showSurface: false));
-var prepared = model.Prepare(context, new ChartXViewport(2, 8));
+var prepared = model.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)));
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
 File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
@@ -35,7 +35,7 @@ public static class LineViewportRecipe {
             observed.WithDataLabels(false);
             var utilization = new ChartSeries(new ChartSeriesId("utilization"), "Utilization", ChartSeriesKind.Line,
                 Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100))
-                .UseSecondaryYAxis().ConfigureMarkers(markers => markers.Radius = 3);
+                .UseSecondaryValueAxis().ConfigureMarkers(markers => markers.Radius = 3);
 
             chart.AddSeries(utilization).WithSecondaryYAxis("Utilization (%)");
             chart.Options.SecondaryYAxis.TickCount = 4;

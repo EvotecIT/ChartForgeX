@@ -5,13 +5,13 @@ namespace ChartForgeX.Mermaid;
 
 internal static class MermaidTimelineParser {
     public static void ParseStatements(MermaidTimelineDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
-        string? currentSection = null;
+        MermaidTimelineSection? currentSection = null;
         MermaidTimelinePeriod? currentPeriod = null;
 
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
             MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
-            var trimmed = raw.Trim();
+            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (trimmed.Length == 0 || trimmed.StartsWith("%%", StringComparison.Ordinal)) continue;
 
             var span = new MermaidSourceSpan(index + 1, LeadingWhitespace(raw) + 1, trimmed.Length);
@@ -24,8 +24,12 @@ internal static class MermaidTimelineParser {
             }
 
             if (StartsWithKeyword(trimmed, "section")) {
-                currentSection = trimmed.Substring(7).Trim();
-                document.Sections.Add(new MermaidTimelineSection(currentSection, span));
+                if (trimmed.Substring(7).Trim().Length == 0) {
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Timeline sections require a label.");
+                    continue;
+                }
+                currentSection = new MermaidTimelineSection(trimmed.Substring(7).Trim(), span);
+                document.Sections.Add(currentSection);
                 currentPeriod = null;
                 continue;
             }

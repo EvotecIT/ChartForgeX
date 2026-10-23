@@ -29,7 +29,7 @@ public sealed class CanonicalBarAutomaticBoundsTests {
         var second = new[] { new ChartPoint(upper ? lower : peer, 4), new ChartPoint(upper ? peer : higher, 5) };
         if (horizontal) chart.AddHorizontalBar("First", first).AddHorizontalBar("Second", second);
         else chart.AddBar("First", first).AddBar("Second", second);
-        if (secondary) chart.Series[1].UseSecondaryYAxis();
+        if (secondary) chart.Series[1].UseSecondaryValueAxis();
         var colors = new[] { ChartColor.FromHex("#235AD7"), ChartColor.FromHex("#D73582") };
         for (var i = 0; i < colors.Length; i++) chart.Series[i].Color = colors[i];
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));

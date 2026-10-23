@@ -4,37 +4,9 @@ using ChartForgeX.Topology;
 namespace ChartForgeX.Mermaid;
 
 public static partial class MermaidTopologyRendering {
-    private static TopologyLayoutDirection StateDirection(MermaidStateDocument document, MermaidStateNode node, TopologyLayoutDirection fallback) {
-        var visited = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
-        var parentId = node.ParentId;
-        while (parentId != null && visited.Add(parentId)) {
-            var parent = document.States.Find(state => state.Id == parentId);
-            if (parent == null) break;
-            if (parent.Direction != null) return DiagramDirection(parent.Direction, fallback);
-            parentId = parent.ParentId;
-        }
-        return fallback;
-    }
-
-    private static void AddClassNamespaces(TopologyChart chart, MermaidClassDocument document) {
-        var namespaces = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in document.Classes) {
-            if (item.Namespace == null) continue;
-            string? parent = null;
-            foreach (var part in item.Namespace.Split('.')) {
-                var id = parent == null ? part : parent + "." + part;
-                if (namespaces.Add(id)) {
-                    chart.AddAutoGroup(id, part);
-                    chart.Groups[chart.Groups.Count - 1].ParentGroupId = parent;
-                }
-                parent = id;
-            }
-        }
-    }
-
     private static double MemberWidth(MermaidClassNode item) {
         var length = (item.Label ?? item.Id).Length;
-        foreach (var member in item.Members) length = Math.Max(length, MermaidNotationText.Generics(member.Text).Length);
+        foreach (var member in item.Members) length = Math.Max(length, member.DisplayText.Length);
         return Math.Max(180, Math.Min(600, 28 + length * 6.5));
     }
 

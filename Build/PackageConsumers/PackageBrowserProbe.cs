@@ -140,7 +140,7 @@ internal static class PackageBrowserProbe {
                         if(request.channel==='viewport'&&request.kind==='reset'&&request.basis==='edited')
                             return {html:reset,basis:'reset'};
                         throw new Error('Unexpected packed managed preparation channel, operation or committed basis');
-                    },{basis:'initial',axes:'xy'});
+                    },{basis:'initial',axes:['x','y']});
                     depth.select({targets:[depth.resolveTargets().find(target=>target.annotationId==='review')]});
                     depth.setViewport({x:{minimum:2,maximum:8},y:{minimum:20,maximum:80}});
                 }

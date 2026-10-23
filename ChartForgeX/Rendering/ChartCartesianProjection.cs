@@ -1,8 +1,14 @@
 namespace ChartForgeX.Rendering;
 
-/// <summary>Captures the native axes emitted together by a Cartesian layout.</summary>
+/// <summary>Captures the physical native axes emitted together by one Cartesian layout.</summary>
 internal sealed class ChartCartesianProjection {
-    internal ChartCartesianProjection(ChartXProjection x, ChartYProjection? y) { X = x; Y = y; }
-    internal ChartXProjection X { get; }
-    internal ChartYProjection? Y { get; }
+    internal ChartCartesianProjection(ChartAxisProjection x, ChartAxisProjection y,
+        ChartAxisProjection? secondaryX = null, ChartAxisProjection? secondaryY = null, bool horizontal = false) {
+        X = x; Y = y; SecondaryX = secondaryX; SecondaryY = secondaryY; Horizontal = horizontal;
+    }
+    internal bool Horizontal { get; }
+    internal ChartAxisProjection X { get; }
+    internal ChartAxisProjection Y { get; }
+    internal ChartAxisProjection? SecondaryX { get; }
+    internal ChartAxisProjection? SecondaryY { get; }
 }

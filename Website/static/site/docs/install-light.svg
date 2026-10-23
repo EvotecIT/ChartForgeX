@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-17dca8ee" width="760" height="300" viewBox="0 0 760 300" role="img" aria-labelledby="cfx-visual-17dca8ee-title cfx-visual-17dca8ee-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-17dca8ee-title">Packages</title>
-<desc id="cfx-visual-17dca8ee-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-90c41306" width="760" height="300" viewBox="0 0 760 300" role="img" aria-labelledby="cfx-visual-90c41306-title cfx-visual-90c41306-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-90c41306-title">Packages</title>
+<desc id="cfx-visual-90c41306-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-17dca8ee .cfx-guide-stroke,#cfx-visual-17dca8ee .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-17dca8ee text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-17dca8ee-visualCardClip"><rect x="0" y="0" width="760" height="300" rx="3"/></clipPath>
+<style>#cfx-visual-90c41306 .cfx-guide-stroke,#cfx-visual-90c41306 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-90c41306 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-90c41306-visualCardClip"><rect x="0" y="0" width="760" height="300" rx="3"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-background" width="100%" height="100%" fill="#F2F3F4"/>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="299" rx="2.5" fill="#FFFFFF" stroke="#E2E4E7"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="299" rx="3" fill="#FFFFFF" stroke="#E2E4E7"/>
 <text data-cfx-role="visual-title" x="18" y="32.187" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700">Packages</text>
 <rect data-cfx-role="table-header" class="cfx-guide-stroke" x="18" y="51.752" width="724" height="32" rx="3" fill="#F8F9FA" stroke="#E2E4E7"/>
 <text data-cfx-role="visual-text" x="27" y="72.872" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Package</text>

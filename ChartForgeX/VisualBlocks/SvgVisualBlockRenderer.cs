@@ -21,7 +21,7 @@ public sealed partial class SvgVisualBlockRenderer {
         VisualBlockRendering.Validate(block);
         return RenderOwned(block, idScope, RenderCore);
     }
-    internal static bool IsNativeBlock(IVisualBlock block) => block is PacketLayoutBlock || block is BlockLayoutBlock || block is GitGraphBlock || block is VennDiagramBlock || block is FishboneDiagramBlock || block is WardleyMapBlock;
+    internal static bool IsNativeBlock(IVisualBlock block) => block is RailroadDiagramBlock || block is JourneyDiagramBlock || block is TimelineDiagramBlock || block is PacketLayoutBlock || block is BlockLayoutBlock || block is GitGraphBlock || block is VennDiagramBlock || block is FishboneDiagramBlock || block is WardleyMapBlock;
 
     /// <summary>Renders a visual block to SVG markup with a caller-provided ID scope.</summary>
     internal static string RenderOwned(IVisualBlock block, string idScope, Func<IVisualBlock, string, string> render, bool layoutLabels = true) {
@@ -80,7 +80,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (!options.HostOwnsFrame && !options.TransparentBackground && surfaceBackground.A > 0) writer.StartElement("rect").Attribute("data-cfx-role", "visual-background").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", surfaceBackground.ToCss()).EndEmptyElement().Line();
         if (options.ShowCard && !options.HostOwnsFrame) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "visual-card").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", 0.5).Attribute("y", 0.5).Attribute("width", Math.Max(0, options.Size.Width - 1)).Attribute("height", Math.Max(0, options.Size.Height - 1)).Attribute("rx", Math.Max(0, theme.CornerRadius - 0.5)).Attribute("fill", theme.CardBackground.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("data-cfx-role", "visual-card").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", 0.5).Attribute("y", 0.5).Attribute("width", Math.Max(0, options.Size.Width - 1)).Attribute("height", Math.Max(0, options.Size.Height - 1)).Attribute("rx", Math.Max(0, theme.CornerRadius)).Attribute("fill", theme.CardBackground.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
         }
 
         renderContent(writer);
@@ -90,7 +90,10 @@ public sealed partial class SvgVisualBlockRenderer {
         return markup.Replace("font-weight=\"850\"", "font-weight=\"700\"").Replace("font-weight=\"800\"", "font-weight=\"700\"").Replace("font-weight=\"750\"", "font-weight=\"700\"");
     }
     private static string RenderCore(IVisualBlock block, string id) => RenderSurface(block, id, writer => {
-        if (block is PacketLayoutBlock packet) RenderPacketLayout(writer, packet);
+        if (block is RailroadDiagramBlock railroad) RenderRailroadDiagram(writer, railroad, id);
+        else if (block is JourneyDiagramBlock journey) RenderJourneyDiagram(writer, journey);
+        else if (block is TimelineDiagramBlock timeline) RenderTimelineDiagram(writer, timeline);
+        else if (block is PacketLayoutBlock packet) RenderPacketLayout(writer, packet);
         else if (block is BlockLayoutBlock blockLayout) RenderBlockLayout(writer, blockLayout);
         else if (block is GitGraphBlock gitGraph) RenderGitGraph(writer, gitGraph);
         else if (block is VennDiagramBlock venn) RenderVennDiagram(writer, venn);

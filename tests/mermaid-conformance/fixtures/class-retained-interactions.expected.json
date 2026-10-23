@@ -1,5 +1,8 @@
 {
-  "classes": ["A", "B"],
+  "classes": [
+    "A",
+    "B"
+  ],
   "direction": "RL",
-  "nativeRetainedStatements": ["click A href \"https://example.invalid\" \"Open\""]
+  "nativeRetainedStatements": []
 }

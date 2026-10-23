@@ -68,7 +68,7 @@ public static class SupportedCombinationRecipe {
                 .WithYAxis("Orders");
             chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 70; });
             if (!radial) {
-                reference.UseSecondaryYAxis();
+                reference.UseSecondaryValueAxis();
                 reference.ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
                 chart.WithSecondaryYAxis("On-time share", value => value.ToString("0%", CultureInfo.InvariantCulture));
                 chart.ConfigureSecondaryYAxis(axis => { axis.Minimum = 0; axis.Maximum = 1; });

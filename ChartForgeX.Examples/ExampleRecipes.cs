@@ -115,6 +115,7 @@ public static partial class ExampleRecipes {
             var recipe = new ExampleRecipe(factory, create);
             foreach (var variant in variants) recipes.Add((kind, variant), recipe);
         }
+        Add(ChartSeriesKind.Donut, nameof(ConcentricPieRecipe), ConcentricPieRecipe.Create, "concentric");
         Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options");
         Add(ChartSeriesKind.Chord, nameof(ChordRecipe), ChordRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Scatter, nameof(ScatterMarkerShapesRecipe), ScatterMarkerShapesRecipe.Create, "options");

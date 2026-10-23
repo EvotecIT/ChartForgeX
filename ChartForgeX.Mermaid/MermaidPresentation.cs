@@ -29,7 +29,7 @@ internal static class MermaidPresentation {
             sequence.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) sequence.ThemeMode = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
             if (host?.ThemeMode != null) sequence.ThemeMode = host.ThemeMode.Value;
-            sequence.Theme = (host?.Theme ?? sequence.Theme).WithTypography(Typography((host?.Theme ?? sequence.Theme).Typography, document.Configuration, host));
+            sequence.Theme = Theme(sequence.Theme, document.Configuration, host);
         } else if (model is TopologyChart topology) {
             topology.Accessibility.Name = document.Accessibility.Name;
             topology.Accessibility.Description = document.Accessibility.Description;
@@ -38,12 +38,14 @@ internal static class MermaidPresentation {
             var sizing = host?.TopologySizing ?? MermaidTopologySizing.Natural;
             topology.DefaultRenderOptions ??= new TopologyRenderOptions();
             topology.DefaultRenderOptions.FitContentToViewport = sizing == MermaidTopologySizing.FixedViewport;
-            topology.Theme = (host?.Theme ?? topology.Theme).WithTypography(Typography((host?.Theme ?? topology.Theme).Typography, document.Configuration, host));
+            topology.Theme = Theme(topology.Theme, document.Configuration, host);
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
-            chart.WithTheme((host?.Theme ?? chart.Options.Theme).WithTypography(Typography((host?.Theme ?? chart.Options.Theme).Typography, document.Configuration, host)));
+            chart.WithTheme(Theme(chart.Options.Theme, document.Configuration, host));
+            // Native charts are transparent by default. An authored canvas color also requests its paint.
+            if (document.Configuration.ThemeColors?.HasBackground == true) chart.WithTransparentBackground(false);
             document.Configuration.ChartColors?.Apply(chart);
             document.Configuration.RadarTheme?.Apply(chart);
             if (host?.Theme != null) chart.WithTheme(host.Theme.WithTypography(Typography(host.Theme.Typography, document.Configuration, host)));
@@ -53,9 +55,18 @@ internal static class MermaidPresentation {
             block.Options.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) block.Options.ThemeMode = Mode(document.Theme);
             if (host?.ThemeMode != null) block.Options.ThemeMode = host.ThemeMode.Value;
-            block.Options.Theme = (host?.Theme ?? block.Options.Theme).WithTypography(Typography((host?.Theme ?? block.Options.Theme).Typography, document.Configuration, host));
+            block.Options.Theme = Theme(block.Options.Theme, document.Configuration, host);
+            // Journey and timeline retain the transparent canvas of their previous chart adapters.
+            if (block is JourneyDiagramBlock || block is TimelineDiagramBlock)
+                block.Options.TransparentBackground = document.Configuration.ThemeColors?.HasBackground != true
+                    || block.Options.Theme.Resolve(block.Options.ThemeMode).Background.A == 0;
         }
         return model;
+    }
+
+    private static VisualTheme Theme(VisualTheme source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host) {
+        var theme = host?.Theme ?? configuration.ThemeColors?.Apply(source) ?? source;
+        return theme.WithTypography(Typography(theme.Typography, configuration, host));
     }
 
     private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host) {

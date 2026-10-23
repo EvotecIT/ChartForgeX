@@ -70,7 +70,7 @@ public sealed class MixedNumericRadialTests {
         var chart = Bare().WithYAxisBounds(minimum, maximum).WithSecondaryYAxisBounds(secondaryMinimum, secondaryMaximum)
             .AddRadialColumn("Counts", Values(primary)).AddRadarLine("Count reference", Values(primary)).AddRadarLine("Rate", Values(secondary));
         chart.Options.YAxis.Scale = kind; chart.Options.SecondaryYAxis.WithScale(kind).WithReversal(reversed);
-        chart.Series[2].UseSecondaryYAxis();
+        chart.Series[2].UseSecondaryValueAxis();
         var prepared = Prepare(chart);
         var first = prepared.Regions.Single(region => region.Id == "series-1-point-0").Bounds;
         var second = prepared.Regions.Single(region => region.Id == "series-2-point-0").Bounds;
@@ -152,7 +152,7 @@ public sealed class MixedNumericRadialTests {
         var after = Prepare(chart).Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-column");
         Assert.Equal(before.Inner, after.Inner); Assert.Equal(before.Outer, after.Outer);
         Assert.Equal(before.Start, after.Start); Assert.Equal(before.Sweep, after.Sweep);
-        chart.Series[0].UseSecondaryYAxis(); chart.Series[1].UseSecondaryYAxis();
+        chart.Series[0].UseSecondaryValueAxis(); chart.Series[1].UseSecondaryValueAxis();
         chart.Options.ShowGrid = true;
         Assert.Contains(Prepare(chart).Scene.Nodes, node => node.Role == "radial-value-grid");
     }

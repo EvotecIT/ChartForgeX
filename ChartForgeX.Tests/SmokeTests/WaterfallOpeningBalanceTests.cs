@@ -89,7 +89,7 @@ public sealed class WaterfallOpeningBalanceTests {
         var chart = Chart.Create().WithSize(700, 420).WithPointLegend().WithDataLabels().WithBarStyle(ChartBarStyle.Flat)
             .AddWaterfall("Movement", new[] { ChartWaterfallItem.OpeningBalance(1, value), ChartWaterfallItem.Delta(2, -value / 2), ChartWaterfallItem.Total(3) });
         chart.ConfigureLabels(labels => labels.OpeningBalance = "Initial balance");
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithReversal(); chart.Options.XAxis.WithReversal();
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);

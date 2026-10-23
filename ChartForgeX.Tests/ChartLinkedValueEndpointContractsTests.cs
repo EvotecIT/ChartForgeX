@@ -91,7 +91,7 @@ public sealed class ChartLinkedValueEndpointContractsTests {
             .ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         else if (family == "dumbbell") chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(0, 10.25, 24.75), new ChartDumbbell(1, 12.5, 30.25) });
         else throw new ArgumentOutOfRangeException(nameof(family));
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         chart.Series[0].WithObservationIds(new[] { new ChartObservationId("value-first"), new ChartObservationId("value-second") });
         var category = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         category.LabelFormatter = value => {

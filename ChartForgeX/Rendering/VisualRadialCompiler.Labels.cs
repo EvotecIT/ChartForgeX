@@ -18,7 +18,7 @@ internal static partial class VisualRadialCompiler {
         var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
         var composed = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(slice.Color.R, slice.Color.G, slice.Color.B), slice.Color.A / 255d);
         var color = outside || vertical ? colors.Foreground : ChartColorMath.AccessibleTextOnBackground(composed);
-        var style = Style(chart, context, slice.PointIndex, color, context.Theme.Typography.DataLabelSize);
+        var style = Style(chart, context, slice.SeriesIndex, slice.PointIndex, color, context.Theme.Typography.DataLabelSize);
         if (outside) {
             var left = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(angle) < 0);
             var labelX = cx + (left ? -1 : 1) * radius * chart.Options.PieOutsideLabelDistanceRatio;
@@ -54,14 +54,18 @@ internal static partial class VisualRadialCompiler {
         style = FitLabelStyle(builder, text, style, Math.Min(maxWidth, angularWidth),
             Math.Min(radius * .5, Math.Max(0, Math.Min(y - plot.Top, plot.Bottom - y) * 2)), FitsSlice);
         var fitted = Fit(text, style, maxWidth, builder);
-        if (oversized && !FitsSlice(builder.MeasureText(fitted, style))) return;
+        if ((oversized || chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null) && !FitsSlice(builder.MeasureText(fitted, style))) {
+            if (chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null)
+                builder.AddDiagnostic(new VisualDiagnostic("radial.band-label-omitted", "A radial label cannot fit completely within its explicit band; its full text remains in semantic metadata."));
+            return;
+        }
         if (builder.MeasureText(fitted, style).Width > angularWidth) return;
         if (fitted.Length == 0) return;
         style.Alignment = TextAlignment.Center;
         using (builder.PushGroup(SliceId(slice) + "-label-source", "radial-data-label-source", VisualMarkLabel.Metadata(text, SliceId(slice))))
             builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label",
-                paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex) ? VisualChartPaint.Text(style)
-                    : slice.Color.A == 255 ? SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[0], slice.PointIndex)) : SvgPaint.Literal(style.Color));
+                paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex, seriesIndex: slice.SeriesIndex) ? VisualChartPaint.Text(style)
+                    : slice.Color.A == 255 ? SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[slice.SeriesIndex], slice.PointIndex)) : SvgPaint.Literal(style.Color));
     }
 
     private static void DrawVerticalLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -225,22 +229,22 @@ internal static partial class VisualRadialCompiler {
 
     private static VisualScenePaintBinding ConnectorPaint(Chart chart, RadialSlice slice, ChartColor actual) {
         var source = chart.Options.DataLabelConnectorColor.HasValue ? SvgPaint.Of(chart.Options.DataLabelConnectorColor.Value, SvgColorRole.Series)
-            : VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex);
+            : VisualChartPaint.Series(chart.Series[slice.SeriesIndex], slice.Color, slice.PointIndex);
         return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabelConnectorOpacity));
     }
 
-    private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double? total) {
+    private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double? total, int seriesIndex) {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var value = chart.Options.DonutCenterValue ?? (total.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.Value) : OverflowValueText);
         var overflowCaption = chart.Options.DonutCenterValue == null && !total.HasValue;
         var displayValue = overflowCaption ? "> 1.79E308" : value;
-        var label = chart.Options.DonutCenterLabel ?? chart.Series[0].Name;
+        var label = chart.Options.DonutCenterLabel ?? chart.Series[seriesIndex].Name;
         // These describe the hole's content, rather than claiming exact hit boxes for fitted text.
         var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
-        builder.AddRegion(new VisualSemanticRegion("series-0-center-value", "donut-total-label", bounds, value));
-        builder.AddRegion(new VisualSemanticRegion("series-0-center-caption", "donut-title", bounds, label));
-        var valueStyle = Style(chart, context, -1, colors.Foreground, Math.Min(context.Theme.Typography.CenterValueSize, inner * 0.44), 700);
-        var labelStyle = Style(chart, context, -1, colors.MutedForeground, Math.Min(context.Theme.Typography.DataLabelSize, inner * 0.25));
+        builder.AddRegion(new VisualSemanticRegion("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center-value", "donut-total-label", bounds, value));
+        builder.AddRegion(new VisualSemanticRegion("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center-caption", "donut-title", bounds, label));
+        var valueStyle = Style(chart, context, seriesIndex, -1, colors.Foreground, Math.Min(context.Theme.Typography.CenterValueSize, inner * 0.44), 700);
+        var labelStyle = Style(chart, context, seriesIndex, -1, colors.MutedForeground, Math.Min(context.Theme.Typography.DataLabelSize, inner * 0.25));
         valueStyle.FontSize = Math.Min(valueStyle.FontSize, inner * 0.44);
         labelStyle.FontSize = Math.Min(labelStyle.FontSize, inner * 0.25);
         valueStyle.Alignment = labelStyle.Alignment = TextAlignment.Center;
@@ -264,7 +268,7 @@ internal static partial class VisualRadialCompiler {
         var labelHeight = builder.MeasureText(fittedLabel, labelStyle).Height;
         var gap = Math.Min(context.Theme.Spacing, inner * 0.1);
         var top = cy - (valueHeight + gap + labelHeight) / 2;
-        using (builder.PushGroup("series-0-center", "donut-center", new Dictionary<string, string> {
+        using (builder.PushGroup("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center", "donut-center", new Dictionary<string, string> {
             ["data-cfx-center-value"] = value, ["data-cfx-center-caption"] = label, ["aria-label"] = value + "\n" + label
         })) {
             builder.Text(fittedValue, cx, top + builder.TextAscent(valueStyle), valueStyle, "donut-total-label", paint: VisualChartPaint.Text(valueStyle));

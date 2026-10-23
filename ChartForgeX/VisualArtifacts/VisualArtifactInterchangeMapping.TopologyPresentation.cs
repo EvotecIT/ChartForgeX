@@ -8,6 +8,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTopologyGroup MapGroupPresentation(TopologyGroup group) {
         return new VisualArtifactInterchangeTopologyGroup {
             Status = group.Status,
+            Presentation = group.Presentation,
             LayoutDirection = group.LayoutDirection,
             IconId = group.IconId,
             Symbol = group.Symbol,

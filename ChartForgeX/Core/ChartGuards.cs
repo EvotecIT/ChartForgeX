@@ -82,11 +82,15 @@ internal static partial class ChartGuards {
             throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
         if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
+        if ((chart.Options.Sunburst.SectorGap > 0 || chart.Options.Sunburst.MinimumLabelFontSize.HasValue)
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst sector spacing and caption fitting require a Sunburst chart.");
         if (chart.Options.Sunburst.SecondaryLabelFormatter != null && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst secondary labels require a Sunburst chart.");
         if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
             || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
-            || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
+            || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.SecondaryXAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
             && !ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart))
             throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
         if (ChartSeriesKindTraits.IsMixedNumericRadial(chart)) {
@@ -94,6 +98,7 @@ internal static partial class ChartGuards {
             return;
         }
         if (ChartMapComposition.ValidateMultiple(chart)) return;
+        if (ValidateRadialBands(chart, preparing)) return;
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -119,7 +124,7 @@ internal static partial class ChartGuards {
 
         if (exclusiveKinds[0] == ChartSeriesKind.Polar) {
             if (chart.Series.Any(series => {
-                var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                var axis = series.ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
                 return axis.Minimum.HasValue && axis.Minimum.Value < 0;
             })) {
                 throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
@@ -161,7 +166,7 @@ internal static partial class ChartGuards {
             if (preparing && chart.Series[i].Kind == ChartSeriesKind.Sunburst && chart.Series[i].Relationships != null)
                 _ = chart.Series[i].Relationships!.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
             if (chart.Series[i].IsHistogramDensity) {
-                var valueAxis = chart.Series[i].YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                var valueAxis = chart.Series[i].ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
                 if ((chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time) || valueAxis.Scale != ChartScaleKind.Linear)
                     throw new InvalidOperationException("Histogram density requires a linear measurement and value scale; a time measurement scale is also supported.");
                 if (chart.Series[i].NormalizedTo.HasValue)
@@ -172,6 +177,7 @@ internal static partial class ChartGuards {
         ValidateAxisLabels(chart.Options.XAxis, "X-axis");
         ValidateAxisLabels(chart.Options.YAxis, "Y-axis");
         ValidateAxisLabels(chart.Options.SecondaryYAxis, "Secondary y-axis");
+        ValidateAxisLabels(chart.Options.SecondaryXAxis, "Secondary x-axis");
     }
 
     private static void ValidateAxisLabels(ChartAxis axis, string axisName) {
@@ -203,8 +209,8 @@ internal static partial class ChartGuards {
         } else if (series.Kind == ChartSeriesKind.ErrorBar) {
             ValidateTupleSeries(series, 3, "Error-bar");
             for (var i = 0; i + 2 < series.RenderPoints.Count; i += 3) {
-                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 1], "Error-bar point and lower bound must share the same x value.");
-                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 2], "Error-bar point and upper bound must share the same x value.");
+                if (series.RenderPoints[i + 1].X > series.RenderPoints[i].X) throw new InvalidOperationException("Error-bar horizontal lower bounds must not exceed the estimate.");
+                if (series.RenderPoints[i + 2].X < series.RenderPoints[i].X) throw new InvalidOperationException("Error-bar horizontal upper bounds must not precede the estimate.");
                 if (series.RenderPoints[i + 1].Y > series.RenderPoints[i].Y) throw new InvalidOperationException("Error-bar lower bounds must be less than or equal to the point estimate.");
                 if (series.RenderPoints[i + 2].Y < series.RenderPoints[i].Y) throw new InvalidOperationException("Error-bar upper bounds must be greater than or equal to the point estimate.");
             }

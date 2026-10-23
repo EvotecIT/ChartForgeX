@@ -19,7 +19,7 @@ public sealed partial class ChartSeries {
             if (DifferenceArea.IsConfigured) throw new InvalidOperationException("Series '" + Name + "' requires DifferenceArea for difference options.");
             return;
         }
-        var axis = YAxis == ChartAxisSide.Secondary ? options.SecondaryYAxis : options.YAxis;
+        var axis = ValueAxis == ChartAxisSide.Secondary ? options.SecondaryYAxis : options.YAxis;
         if ((options.XAxis.Scale != ChartScaleKind.Linear && options.XAxis.Scale != ChartScaleKind.Time) || axis.Scale != ChartScaleKind.Linear)
             throw new NotSupportedException("Difference areas require numeric/time X and a linear value axis.");
         if (RenderPoints.Count % 2 != 0) throw new InvalidOperationException("Difference areas require complete First/Second pairs.");

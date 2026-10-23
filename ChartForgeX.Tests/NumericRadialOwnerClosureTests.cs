@@ -129,7 +129,7 @@ public sealed class NumericRadialOwnerClosureTests {
         var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithDataLabels(false).WithLegend()
             .WithRadialGeometry(new(-75, 195)), bars, "Observed", new ChartPoint(1, 100));
         NumericRadialSeriesTests.Add(chart, bars, "Pending");
-        chart.Series[emptyPrimary ? 0 : 1].UseSecondaryYAxis();
+        chart.Series[emptyPrimary ? 0 : 1].UseSecondaryValueAxis();
         var axis = emptyPrimary ? chart.Options.YAxis : chart.Options.SecondaryYAxis;
         axis.WithLabelFormatter(_ => longText ? "empty-caption-that-must-not-reserve-a-radius-lane" : "empty-x");
         return chart;

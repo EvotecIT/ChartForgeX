@@ -76,6 +76,8 @@ public sealed partial class HtmlChartLocalization {
         [HtmlChartText.LegendIsolate] = "Isolate {label}",
         [HtmlChartText.LegendIsolateButton] = "Isolate",
         };
+        foreach (var pair in HierarchyDefaults()) chart[pair.Key] = pair.Value;
+        foreach (var pair in AnnotationDefaults()) chart[pair.Key] = pair.Value;
         ChartKeys = chart.Keys.ToArray();
         var graph = GraphDefaults();
         var report = ReportDefaults();

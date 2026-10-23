@@ -1,12 +1,12 @@
-  // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
+
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
-  // Both readout lifetime and keyboard availability follow the same native paint inputs.
-  // Adapter state and paint-probe attributes are excluded so observing paint cannot observe itself.
+  // Ignore adapter/probe mutations.
+
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
     'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
     'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule', 'slot', 'name'];
-  // Paint, clipping and focus share the browser's accessible flattened ancestry.
+
   const composedParent = (node) => node.assignedSlot || node.parentElement || node.getRootNode().host;
   const composedAncestry = (root) => {
     const nodes = [], trees = new Set();
@@ -15,7 +15,7 @@
     }
     return { nodes, trees: Array.from(trees) };
   };
-  // Cache only for this render: host CSS can change between successive focus and pointer events.
+  // Per-probe CSS cache.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
@@ -26,12 +26,12 @@
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
-    // aria-hidden changes accessibility exposure, not whether SVG marks are painted.
+    // aria-hidden is not paint; child visibility can override.
     return true;
   };
   const paintNodeVisible = (node, styles) => {
     if (!paintAncestorsVisible(node, styles)) return false;
-    // Visibility is inherited, and a painted descendant can explicitly restore it.
+
     const style = paintStyle(node, styles);
     return style.visibility !== 'hidden' && style.visibility !== 'collapse';
   };
@@ -44,14 +44,14 @@
     if (Number(opacity) <= 0) return null;
     const reference = /^url\(\s*["']?([^"')]+)["']?\s*\)$/i.exec(value || '');
     if (!reference || !node.ownerSVGElement) return null;
-    // Read only paint servers in this SVG. One visible stop represents a gradient; never follow linked servers.
+    // Local paint servers only.
     let server;
     try {
       const url = new URL(reference[1], node.ownerDocument.baseURI);
       if (url.href.split('#')[0] !== node.ownerDocument.URL.split('#')[0]) return null;
       server = node.ownerSVGElement.getElementById(decodeURIComponent(url.hash.slice(1)));
     } catch (_) { return null; }
-    // A pattern is a painted surface even though it has no single representative swatch colour.
+
     if (server && server.matches('pattern')) return { colour: '' };
     if (!server || !server.matches('linearGradient,radialGradient')) return null;
     const stops = server.querySelectorAll('stop');
@@ -62,7 +62,7 @@
     }
     return null;
   };
-  // These Cartesian observations describe both boundaries, rather than one source Y location.
+
   const pairedExtentObservation = (node) => node.hasAttribute('data-cfx-point')
     && ['differencearea', 'rangearea', 'rangeband'].includes((node.dataset.cfxKind || '').toLowerCase());
   const pairedConnectedSpan = (node, owner) => {
@@ -71,12 +71,12 @@
       && point.getAttribute('data-cfx-break-before') !== 'true';
     const previous = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index - 1) + '"]');
     const next = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + 1) + '"]');
-    // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
+
     return !!(previous && followsPrevious(node) || followsPrevious(next));
   };
-  // Use the captured native extent, excluding the minimum-size transparent browser hit area.
+  // Native, not hit extent.
   const pairedExtentScreenBox = (node) => nativeRegionScreenBox(node, node._cfxPairedRegion);
-  // Native producers use rectangular user-space clips, in the live transform of their owning group.
+  // User-space clips follow owner.
   const nativePaintClips = (node) => {
     const clips = [];
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
@@ -85,7 +85,7 @@
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      // SVG lengths resolve clip geometry even when a non-rendered clipPath has an empty box.
+
       const shape = clip.firstElementChild, matrix = parent.getScreenCTM();
       const rect = { x: shape.x.baseVal.value, y: shape.y.baseVal.value,
         width: shape.width.baseVal.value, height: shape.height.baseVal.value };
@@ -94,7 +94,7 @@
     }
     return clips;
   };
-  // A retained fact or a path's box can lie outside the native clips.
+
   const paintWithinNativeClips = (node, subject = node, styles) => {
     const paired = subject !== node && pairedExtentObservation(subject);
     const clips = nativePaintClips(node);
@@ -107,13 +107,13 @@
         .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
-      // Prepared facts can exceed the native coordinate precision.
+
       const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
       box ||= paired ? nativeRegionScreenBox(subject, subject._cfxPairedRegion, projection)
         : subject !== node ? nativeRegionScreenBox(subject, subject._cfxNativeRegion, projection) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
       if (!box) return false;
       if (subject !== node) {
-        // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.
+
         const x = (box.left + box.right) / 2, y = (box.top + box.bottom) / 2;
         if (x < left - precision || x > right + precision
           || (paired ? box.bottom < top - precision || box.top > bottom + precision : y < top - precision || y > bottom + precision)) return false;
@@ -126,17 +126,17 @@
     const sourceMatrix = subject.getScreenCTM(), shapeMatrix = node.getScreenCTM();
     const clips = nativePaintClips(node);
     if (!region || !sourceMatrix || !shapeMatrix || !clips || typeof node.isPointInStroke !== 'function') return false;
-    // Captured paired extents include equal marker inflation on each side. Remove it to locate the actual boundaries.
+
     const x = region.x + region.width / 2;
     const ys = node.dataset.cfxRole === 'range-midline' ? [Number(subject.dataset.cfxMidlineY)]
       : [region.y + region.width / 2, region.y + region.height - region.width / 2];
     for (const y of ys) {
       if (!Number.isFinite(y)) continue;
-      // Query the exported three-decimal geometry as well as the full-precision captured location.
+
       for (const [px, py] of [[x, y], [Number(x.toFixed(3)), Number(y.toFixed(3))]]) {
         let point = new DOMPoint(px, py).matrixTransform(sourceMatrix);
         const source = point.matrixTransform(shapeMatrix.inverse());
-        // The nearest point inside the clip can still be real cap ink when its source centre lies just outside.
+
         for (const { rect, matrix } of clips) {
           const local = point.matrixTransform(matrix.inverse());
           point = new DOMPoint(Math.max(rect.x, Math.min(rect.x + rect.width, local.x)),
@@ -144,13 +144,13 @@
         }
         if (clips.some(({ rect, matrix }) => {
           const local = point.matrixTransform(matrix.inverse());
-          // Use the same native three-decimal coordinate precision as the clip availability check.
+
           return local.x < rect.x - .001 || local.x > rect.x + rect.width + .001
             || local.y < rect.y - .001 || local.y > rect.y + rect.height + .001;
         })) continue;
         const sample = point.matrixTransform(shapeMatrix.inverse());
         const radius = parseFloat(paint.strokeWidth) / 2 * (paint.strokeLinecap === 'square' ? Math.SQRT2 : 1);
-        // Clamping must stay within this source endpoint's stroke footprint, not follow a remote connected span.
+        // Clamp to endpoint stroke.
         if (Math.hypot(sample.x - source.x, sample.y - source.y) <= radius + .001 && node.isPointInStroke(sample)) return true;
       }
     }
@@ -161,7 +161,7 @@
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
-    // SVG disables zero-sized basic shapes, including their otherwise visible stroke paint.
+    // Zero size suppresses stroke.
     let box;
     if (node.matches('rect,circle,ellipse')) {
       box = node.getBBox();
@@ -169,12 +169,12 @@
     }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
-    // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
+    // Bounds != ink; open: stroke only; collapsed: stroke.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
-    // Open line marks never paint their inherited default black fill.
+
     let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
       : paintValue(node, paint.fill, paint.fillOpacity, styles);
-    // A collapsed filled path has no interior ink. A real horizontal/vertical stroke or round cap still paints.
+
     if (fill) {
       box ||= node.getBBox();
       if (!(box.width > 0 && box.height > 0)) fill = null;
@@ -189,7 +189,7 @@
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
-    // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
+
     if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
     for (const text of node.querySelectorAll('text')) {
       if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
@@ -215,7 +215,7 @@
     }
     const text = primaryTextPaint(node, decoration, styles);
     if (text) return text;
-    // Authored hatches can be the only mark ink; captions and ordinary surfaces keep their paint precedence.
+
     for (const shape of patterns) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
       const paint = shapePaint(shape, styles, subject || shape);
@@ -250,7 +250,7 @@
     return null;
   };
   const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
-    // A probe suspends adapter opacity only; use fresh live style values after the suspension.
+    // Suspend opacity; refresh CSS.
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
@@ -259,8 +259,8 @@
     return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
       || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
   };
-  // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
-  // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
+  // Reject box ink; keep muted legends/keyboard facts.
+
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
@@ -270,7 +270,7 @@
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
     if (pointerTargetPaint(node, styles)) return true;
-    // Authored facts without painted geometry remain a keyboard readout, without becoming pointer targets.
+
     const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
     return !pointer && retainedGeometryFact(node)
       && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);

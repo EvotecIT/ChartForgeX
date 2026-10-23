@@ -103,9 +103,9 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .WithDataLabels()
             .AddErrorBar("Confidence", new[] {
-                new ChartErrorBar(1, 42, 35, 51),
-                new ChartErrorBar(2, 58, 49, 66),
-                new ChartErrorBar(3, 63, 54, 78)
+                new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
+                new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66)),
+                new ChartErrorBar(3, 63, yBounds: new ChartErrorBounds(54, 78))
             }, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"point\"") == 3, "Error-bar charts should render one group per point estimate.");
@@ -288,7 +288,7 @@ internal static partial class SmokeTests {
         Assert(chart.Series.Count == 2, "Bar-line combos should add exactly two series.");
         Assert(chart.Series[0].Kind == ChartSeriesKind.Bar, "Bar-line combos should add bars first so lines render on top.");
         Assert(chart.Series[1].Kind == ChartSeriesKind.Line && chart.Series[1].Smooth, "Bar-line combos should add the requested smooth line series.");
-        Assert(chart.Series[1].YAxis == ChartAxisSide.Secondary, "Bar-line combos should allow the overlaid line to use the secondary y-axis.");
+        Assert(chart.Series[1].ValueAxis == ChartAxisSide.Secondary, "Bar-line combos should allow the overlaid line to use the secondary y-axis.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 3, "Bar-line combos should render one bar per bar point.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"line\"") == 1, "Bar-line combos should render one visible line path.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"marker\"") == 3, "Bar-line combos should render one marker per line point.");
@@ -300,7 +300,7 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng().Length > 64, "Bar-line combos should render PNG output.");
 
         var secondaryOnly = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
-        secondaryOnly.Series[0].UseSecondaryYAxis();
+        secondaryOnly.Series[0].UseSecondaryValueAxis();
         Assert(!secondaryOnly.ToSvg().Contains("Infinity", StringComparison.Ordinal), "Secondary-axis-only charts should still render finite SVG geometry.");
     }
 

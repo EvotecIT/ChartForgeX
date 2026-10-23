@@ -73,6 +73,33 @@ test('comparison tooltip rows use captured value-axis bounds and preserve their 
   assert.equal(range.dataset.cfxStart,'10.25'); assert.equal(waterfall.dataset.cfxEnd,'24.75');
 });
 
+for (const axes of ['x','y','xy']) {
+  test(`uncertainty readouts retain independently captured X/Y intervals without inventing omitted bounds (${axes})`, () => {
+    const runtime=readouts(),data={cfxKind:'errorbar',cfxX:'46032',cfxY:'5',cfxValue:'5',cfxSeriesName:'Measurements',
+      cfxFormattedX:'10 January',cfxFormattedValue:'5 kg'};
+    if (axes.includes('x')) Object.assign(data,{cfxXLower:'46030',cfxXUpper:'46035',cfxFormattedXLower:'8 January',cfxFormattedXUpper:'13 January'});
+    if (axes.includes('y')) Object.assign(data,{cfxYLower:'2',cfxYUpper:'8',cfxFormattedYLower:'2 kg',cfxFormattedYUpper:'8 kg'});
+    const node=mark(data),rows=runtime.tooltipRows(node),legend=runtime.comparisonLegendRows(node);
+    const expected=[{name:'Series',value:'Measurements'},{name:'X',value:'10 January'},{name:'Value',value:'5 kg'}];
+    const expectedLegend=[{name:'Category',value:'10 January'},{name:'Value',value:'5 kg'}];
+    if (axes.includes('x')) {
+      expected.push({name:'X range',value:'8 January - 13 January'});
+      expectedLegend.push({name:'X lower',value:'8 January'},{name:'X upper',value:'13 January'});
+    }
+    if (axes.includes('y')) {
+      expected.push({name:'Y range',value:'2 kg - 8 kg'});
+      expectedLegend.push({name:'Y lower',value:'2 kg'},{name:'Y upper',value:'8 kg'});
+    }
+    assert.deepEqual(rows,expected);assert.deepEqual(legend,expectedLegend);
+    if (axes.includes('x')) {
+      data.cfxFormattedXLower='';data.cfxFormattedXUpper='';
+      assert.equal(runtime.tooltipRows(node).find(row=>row.name==='X range').value,'');
+      assert.equal(runtime.comparisonLegendRows(node).find(row=>row.name==='X lower').value,'');
+      assert.equal(data.cfxXLower,'46030');
+    }
+  });
+}
+
 function brushes() {
   return new Function('DOMPoint','getComputedStyle','dataValue','clamp', source('00-svg-coordinate-precision') + '\n' + source('43-brush-projection') + '\nreturn {projectBrushSelection,validDataProjection};')(
     Point, getComputedStyle, (value,time) => time ? new Date((value-25569)*86400000).toISOString() : value,

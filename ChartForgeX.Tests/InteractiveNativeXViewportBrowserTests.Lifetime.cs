@@ -119,8 +119,9 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         if (!Enabled) return;
         var host = new NativeHost();
         var unsupported = empty ? Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>())
-            : Chart.Create().AddBar("Bars", new[] { new ChartPoint(0, 3), new ChartPoint(12, 8) });
+            : Chart.Create().AddPie("Slices", new[] { new ChartPoint(0, 3), new ChartPoint(12, 8) });
         var section = new HtmlInteractiveChartRenderer().PrepareSection(unsupported, configure: Configure);
+        Assert.Null(section.PreparedVisual.XProjection);
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         await page.EvaluateAsync("html=>chartController.update(html)", section.Html);

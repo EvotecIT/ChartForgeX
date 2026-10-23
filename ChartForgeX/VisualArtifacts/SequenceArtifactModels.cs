@@ -79,7 +79,9 @@ public enum SequenceArtifactBlockKind {
     /// <summary>A background highlight block.</summary>
     Rect,
     /// <summary>A break or exception-flow block.</summary>
-    Break
+    Break,
+    /// <summary>An exception-handling fragment with source-ordered catch and finally branches.</summary>
+    Try
 }
 
 /// <summary>

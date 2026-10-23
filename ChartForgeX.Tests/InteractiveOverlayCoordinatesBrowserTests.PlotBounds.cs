@@ -25,7 +25,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         if (horizontal) chart.AddSeries(new ChartSeries(new ChartSeriesId("reading-source"), name, ChartSeriesKind.HorizontalBar, values));
         else {
             chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), name, values)).AddLine("Secondary", new[] { new ChartPoint(1, 2000), new ChartPoint(9, 8000) });
-            chart.Series[1].UseSecondaryYAxis();
+            chart.Series[1].UseSecondaryValueAxis();
             chart.WithSecondaryYAxisBounds(0, 10000);
         }
         await using var session = await OpenAsync(Host(false, layout, 340, 1, false, ChartInteractionFeatures.Crosshair, chart), 950, 760);

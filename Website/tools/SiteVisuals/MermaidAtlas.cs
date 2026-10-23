@@ -3,6 +3,7 @@
 //   playground:<id>  a sample from Website/tools/Playground/PlaygroundSamples.cs
 //   fixture:<name>   tests/mermaid-conformance/fixtures/<name>.mmd
 //   site:<name>      Website/tools/SiteVisuals/Mermaid/<name>.mmd
+//   plugin-fixture:<path> source text from the isolated test corpus; no plugin is loaded or executed
 using System.Text.Json;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Playground;
@@ -61,6 +62,7 @@ internal static class MermaidAtlas {
             "playground" => PlaygroundSamples.All.Single(sample => sample.Id == name).Source,
             "fixture" => File.ReadAllText(Path.Combine(website, "..", "tests", "mermaid-conformance", "fixtures", name + ".mmd")),
             "site" => File.ReadAllText(Path.Combine(website, "tools", "SiteVisuals", "Mermaid", name + ".mmd")),
+            "plugin-fixture" => File.ReadAllText(Path.Combine(website, "..", "tests", "mermaid-conformance", "external-plugins", name + ".mmd")),
             _ => throw new InvalidOperationException("Unknown Mermaid source kind: " + reference)
         };
     }
@@ -76,11 +78,12 @@ internal static class MermaidAtlas {
         ["kanban"] = "Kanban", ["gitgraph"] = "GitGraph", ["swimlane"] = "Swimlane", ["usecase"] = "UseCase",
         ["eventmodeling"] = "EventModeling", ["pie"] = "Pie", ["xychart"] = "XYChart", ["sankey"] = "Sankey",
         ["radar"] = "Radar", ["treemap"] = "Treemap", ["quadrant"] = "Quadrant", ["mindmap"] = "MindMap",
-        ["treeview"] = "TreeView", ["venn"] = "Venn", ["ishikawa"] = "Ishikawa", ["wardley"] = "Wardley", ["cynefin"] = "Cynefin"
+        ["treeview"] = "TreeView", ["venn"] = "Venn", ["ishikawa"] = "Ishikawa", ["wardley"] = "Wardley", ["cynefin"] = "Cynefin",
+        ["agentflow"] = "Agentflow", ["railroad"] = "Railroad", ["zenuml"] = "ZenUml"
     };
 
     // Families whose node cards need more room for their labels lay out on a larger 4:3 canvas.
-    private static readonly HashSet<string> RoomyFamilies = new(StringComparer.Ordinal) { "c4", "architecture", "requirement", "eventmodeling" };
+    private static readonly HashSet<string> RoomyFamilies = new(StringComparer.Ordinal) { "c4", "architecture", "requirement", "eventmodeling", "agentflow", "zenuml", "railroad" };
 
     private static MermaidRenderOptions CardOptions(string id, string? title, string name) {
         var options = new MermaidRenderOptions();

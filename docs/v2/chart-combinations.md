@@ -13,10 +13,10 @@ Combine series when they share a coordinate system. Each series keeps its own st
 | --- | --- | --- |
 | Vertical Cartesian | Line/StepLine, Area/StepArea/StackedArea, Bar, Scatter/Bubble, ErrorBar, Candlestick/OHLC, RangeBand/RangeArea/RangeBar, DifferenceArea, Lollipop, Dumbbell, BoxPlot, Slope and TrendLine | Share one X projection. Each series chooses primary or secondary Y. Typed ranges and financial values contribute their complete bounds. Family-specific interpolation, stacking and value constraints still apply. |
 | Vertical stacks | Bars or stacked areas, optionally alongside other Cartesian series | Stack membership is separate for each kind, value axis and named group. Positive and negative normalization is independent. Interpolation and normalization targets must agree within a stack. Histogram bars retain their authored bin bounds. |
-| Horizontal bars and lines | HorizontalBar with horizontal Line/StepLine | Authored X is the category on physical Y; authored Y is the value on physical X. Use the primary physical X value axis. A line does not consume a bar slot. Other companions and secondary value axes reject. |
-| Horizontal ranges | Homogeneous RangeBar series | Primary physical X only. Other series kinds and secondary axes reject. Vertical RangeBar can join ordinary Cartesian mixtures. |
-| Horizontal box plots | Homogeneous BoxPlot series | Primary physical X only. Other series kinds and secondary axes reject. Vertical BoxPlot can join ordinary Cartesian mixtures. |
-| Waterfall | Exactly one Waterfall series, vertical or horizontal | Its cumulative layout is exclusive. Vertical secondary Y is supported; horizontal secondary assignment rejects. |
+| Horizontal bars and lines | HorizontalBar with horizontal Line/StepLine | Authored X is the category on physical Y; authored Y is the value on physical X. Each series chooses primary or secondary physical X through ValueAxis. A line does not consume a bar slot. RangeBar and BoxPlot companions also require horizontal orientation. |
+| Horizontal ranges | RangeBar with other horizontal Cartesian series | Primary or secondary physical X. Each companion must use horizontal orientation. Vertical RangeBar can join ordinary Cartesian mixtures. |
+| Horizontal box plots | BoxPlot with other horizontal Cartesian series | Primary or secondary physical X. Each companion must use horizontal orientation. Vertical BoxPlot can join ordinary Cartesian mixtures. |
+| Waterfall | Exactly one Waterfall series, vertical or horizontal | Its cumulative layout is exclusive. ValueAxis selects primary or secondary Y when vertical and primary or secondary X when horizontal. |
 
 For example, bars and a line can share categories while retaining separate value scales:
 
@@ -29,7 +29,7 @@ var orders = ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders",
     ChartPoints.FromValues(28, 34, 41));
 var latency = ChartSeries.CreateLine(new ChartSeriesId("latency"), "Latency",
     ChartPoints.FromValues(120, 95, 110));
-latency.UseSecondaryYAxis();
+latency.UseSecondaryValueAxis();
 
 var chart = Chart.Create()
     .WithTheme(VisualTheme.Graphite())
@@ -45,6 +45,26 @@ chart.SaveSvg("orders-and-latency.svg");
 chart.SavePng("orders-and-latency.png");
 ```
 
+A horizontal mixture uses the same `ValueAxis` assignment and configures its two physical X axes:
+
+```csharp
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+
+var chart = Chart.Create().WithSize(800, 440)
+    .AddHorizontalBar("Orders", new[] { new ChartPoint(1, 28), new ChartPoint(2, 34), new ChartPoint(3, 41) })
+    .AddLine("Latency", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 110) })
+    .WithXAxis("Orders").WithSecondaryXAxis("Latency (ms)")
+    .WithXAxisBounds(0, 50).WithSecondaryXAxisBounds(0, 150)
+    .WithXLabels("Monday", "Tuesday", "Wednesday");
+chart.Options.LineOrientation = ChartOrientation.Horizontal;
+chart.Series[1].UseSecondaryValueAxis();
+var svg = chart.ToSvg();
+var png = chart.ToPng();
+```
+
+Here `WithXLabels` supplies the existing fallback category catalog on physical Y. Explicit Y labels take precedence. A horizontal source point still stores category in `ChartPoint.X` and value in `Y`; orientation changes their physical projection, not their source meaning. Native viewport requests use physical names, so this chart's category window is `y` and secondary value window is `secondaryX`.
+
 Category alignment follows source X coordinates rather than series positions. The shared category owner groups corresponding bar and radial coordinates within four floating-point ULPs while retaining the original observations. Missing observations stay absent unless the selected family explicitly defines derived values. A line gap requires an authored segment break; an omitted point alone does not promise a gap in a connected line. An authored zero remains an observation.
 
 ## Radial layouts
@@ -57,8 +77,9 @@ Category alignment follows source X coordinates rather than series positions. Th
 | Radar | Homogeneous Radar line and/or area series | Category angles align across series; each series selects a primary/secondary radius scale. Require at least three combined categories and unique categories within each series. Zero preserves derived zeros without authored observation IDs; Gap leaves open observed runs and Connect joins existing vertices. Incomplete Gap area forms omit fill. |
 | Polar | Homogeneous Polar series | X is an authored angle in radians; Y is radius. Source order determines the path. Primary and secondary radius scales are independent. Missing categories are not synthesized. Radii and the selected minimum must be nonnegative. |
 | PolarArea | Exactly one PolarArea series | Equal angular sectors encode area from nonnegative values. Authored zeros retain their slots. This layout has its own area contract rather than an ordinary numeric-radius axis. |
+| Pie/Donut bands | One ordinary Pie or Donut, or multiple Pie/Donut series with explicit disjoint `ChartRadialBand` values | Each series retains its total, slice shares, IDs and aggregation. Only the innermost hole owns center text. Inner active external labels and positive multi-band slice offsets reject. This composition does not share the numeric RadialBar/RadialColumn axes. |
 
-RadialBar and RadialColumn support signed linear, positive logarithmic and symmetric logarithmic value scales. Time value axes, explicit category bounds and logarithmic category spacing reject. RadialBar cannot mix with RadialColumn; Radar cannot mix with Polar. The implemented cross-kind radial layout is RadialColumn with Radar.
+RadialBar and RadialColumn support signed linear, explicit positive or negative logarithmic and symmetric logarithmic value scales. Time value axes, explicit category bounds and logarithmic category spacing reject. RadialBar cannot mix with RadialColumn; Radar cannot mix with Polar. The numeric cross-kind radial layout is RadialColumn with Radar; explicit Pie/Donut bands form a separate part-to-whole composition. See [band configuration](api-conventions.md#explicit-pie-and-donut-bands).
 
 Category-axis reversal is supported for numeric radial charts, Radar and Polar, including mixed columns/radar. Numeric radius reversal uses the selected value axis. Polar-area radius reversal and schedule reversal reject. Equivalent coordinates within one radar or mixed-radial series are ambiguous and reject before preparation or export; cross-series equivalents align through the shared category owner.
 
@@ -78,6 +99,6 @@ Prepare a new scene after source changes and reuse the immutable paired theme wi
 
 ## Independent layouts and qualification
 
-Matrix, schedule, map, relationship, part-to-whole and scalar families use their own layouts. They cannot share a chart with unrelated Cartesian or radial series. Heatmap/HexbinHeatmap rows, Bullet, Timeline, StateTimeline, GanttLane and Gantt support their documented homogeneous multi-series layouts. Numeric and categorical heatmap rows cannot mix. Other exclusive layouts require one series. Use a chart grid when independent coordinate systems belong together in a report.
+Matrix, schedule, map, relationship, part-to-whole and scalar families use their own layouts. They cannot share a chart with unrelated Cartesian or radial series. Heatmap/HexbinHeatmap rows, Bullet, Timeline, StateTimeline, GanttLane and Gantt support their documented homogeneous multi-series layouts. Numeric and categorical heatmap rows cannot mix. Pie/Donut allow their explicit disjoint-band composition; other exclusive layouts require one series. Use a chart grid when independent coordinate systems belong together in a report.
 
 Preparation, SVG and native PNG use the same compatibility checks. Existing regression tests cover representative shared domains, missing values, secondary scales, horizontal constraints, stacks, radial mixtures and rejection paths. This is a supported-layout contract rather than a claim that every pair of family options has been exhaustively tested. The [roadmap](../../TODO.md) retains deeper visual, lifecycle and platform qualification work.

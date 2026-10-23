@@ -50,7 +50,9 @@ internal static partial class VisualCartesianCompiler {
         }
         if (categoryCaptions != null) {
             var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;
-            if (horizontal || chart.Series.All(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Waterfall))
+            // Implicit interval captions must not replace an opted-in discrete time domain's missing calendar units.
+            // Explicit axis labels and grouped catalogs retain their existing authored-tick authority.
+            if (categoryAxis.PreparedTimeDomain == null && (horizontal || chart.Series.All(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Waterfall)))
                 axisLabels.SetTicks(categoryAxis, categoryCaptions.Keys.OrderBy(value => value).ToArray());
             foreach (var category in categoryCaptions) axisLabels.Set(categoryAxis, category.Key, category.Value);
         }
@@ -60,7 +62,7 @@ internal static partial class VisualCartesianCompiler {
             foreach (var category in categoryGroups.Plan.Catalog) axisLabels.Set(categoryAxis, category.Value, category.Text);
         }
         RefreshCategoryDisplay(chart, context, builder, viewport, viewport, range, colors, axisLabels);
-        if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
+        if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         if (expandMarkers && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
             if (!horizontal) {
@@ -68,7 +70,7 @@ internal static partial class VisualCartesianCompiler {
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             }
             RefreshCategoryDisplay(chart, context, builder, plot, viewport, range, colors, axisLabels);
-            if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
+            if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels)
                 : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         }
         if (plot.Width <= 0 || plot.Height <= 0) {
@@ -106,7 +108,7 @@ internal static partial class VisualCartesianCompiler {
             RefreshCategoryDisplay(chart, context, builder, plot, viewport, range, colors, axisLabels);
             FitCartesianTicks(chart, context, builder, plot, range, secondaryRange, colors, axisLabels, horizontal);
             if (!measureAxes || pass == maximumAxisPasses) break;
-            var measured = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
+            var measured = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels)
                 : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
             var nextBounds = InsetAxisFrame(labelBounds, measured);
             if (SameAxisFrame(labelBounds, nextBounds)) break;
@@ -132,24 +134,21 @@ internal static partial class VisualCartesianCompiler {
         && Math.Abs(left.Top - right.Top) < .0001 && Math.Abs(left.Right - right.Right) < .0001 && Math.Abs(left.Bottom - right.Bottom) < .0001;
 
     internal static bool SupportsXViewport(Chart chart) => chart.Series.Count > 0 && !chart.Options.IsSparkline
-        && !ChartCartesianOrientation.IsHorizontal(chart)
-        && (chart.Options.XAxis.Scale is ChartScaleKind.Linear or ChartScaleKind.Time)
-        && chart.Series.All(series => IsPointSeries(series.Kind) || series.Kind is ChartSeriesKind.Bubble
-            or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc or ChartSeriesKind.RangeBand
-            or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea or ChartSeriesKind.ErrorBar
-            or ChartSeriesKind.Lollipop or ChartSeriesKind.Dumbbell or ChartSeriesKind.Slope or ChartSeriesKind.TrendLine);
+        && chart.Series.All(series => !ChartSeriesKindTraits.IsExclusive(series.Kind) || series.Kind == ChartSeriesKind.Waterfall);
 
-    internal static bool SupportsYViewport(Chart chart) => SupportsXViewport(chart)
-        && chart.Series.All(series => series.YAxis == ChartAxisSide.Primary);
+    internal static bool SupportsYViewport(Chart chart) => SupportsXViewport(chart);
 
     internal static void ValidateViewport(Chart chart, ChartCartesianViewport viewport) {
         ValidateXViewport(chart);
-        if (viewport.Y != null && !SupportsYViewport(chart))
-            throw new NotSupportedException("A primary Y or XY viewport requires supported vertical series without a secondary Y axis.");
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
+        if (viewport.SecondaryX != null && (!horizontal || !chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary)))
+            throw new NotSupportedException("A secondary X viewport requires a horizontal series using the secondary value axis.");
+        if (viewport.SecondaryY != null && (horizontal || !chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary)))
+            throw new NotSupportedException("A secondary Y viewport requires a vertical series using the secondary value axis.");
     }
 
     internal static void ValidateXViewport(Chart chart) {
-        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires supported vertical line, area, scatter, bubble, financial or paired-boundary series with a linear or time X axis.");
-        if (!chart.Series.Any(series => series.HasSourceData)) throw new InvalidOperationException("An X viewport requires source observations.");
+        if (!SupportsXViewport(chart)) throw new NotSupportedException("A Cartesian viewport requires supported non-sparkline Cartesian series.");
+        if (!chart.Series.Any(series => series.HasSourceData)) throw new InvalidOperationException("A Cartesian viewport requires source observations.");
     }
 }

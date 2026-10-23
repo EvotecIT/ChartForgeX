@@ -16,7 +16,7 @@ internal static partial class VisualNumericRadialCompiler {
             var series = chart.Series[index];
             var tension = series.Radar.CurveTension ?? 0;
             if (series.Kind != ChartSeriesKind.Radar || tension == 0 || series.RenderPoints.Count == 0) continue;
-            var (points, sources) = RadarPoints(chart, unit, index, coordinates, categories, scales[series.YAxis]);
+            var (points, sources) = RadarPoints(chart, unit, index, coordinates, categories, scales[series.ValueAxis]);
             foreach (var path in ChartRadarGeometry.Paths(series.Radar, points, sources)) {
                 var bounds = path.Path.Bounds();
                 extent = Math.Max(extent, Math.Max(Math.Max(Math.Abs(bounds.Left), Math.Abs(bounds.Right)),

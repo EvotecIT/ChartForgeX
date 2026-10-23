@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "reference": "mermaid-zenuml-1.0.1",
+  "method": "external-plugin-browser-render",
+  "observedUtc": "2026-10-23T10:06:58.773474+00:00",
+  "package": {
+    "name": "@mermaid-js/mermaid-zenuml",
+    "version": "1.0.1",
+    "license": "MIT",
+    "integrity": "sha512-O5DiRODoFVNgugOVloxcDXmd+bXe/sbGlDh3onnzuE4EWtgTWwaAlWuPPOXbU9QESsztnD4Gtnu7dr+tYLFE0A==",
+    "archiveSha256": "ba11f6923af6cbb73d0048d18d4ce30ff748057e43c9e8641b7b5e051f26fe3a",
+    "standaloneEntrySha256": "1ff708cc8e31658d528903621f045f0983975d11a118cc5bc04956ab126e5450"
+  },
+  "runtime": {
+    "mermaid": "12.2.0",
+    "mermaidPackageMetadataSha256": "8ae9f399a7a99cff12baf654216db25523987a49cfcdc5b8413a98308de1fb24",
+    "browser": "Chromium 153.0.8010.12",
+    "testOnly": true,
+    "parseIsSemanticEvidence": false
+  },
+  "sourceBoundary": {
+    "head": "c5a1461a4cff2f5db32c7aa3547be901ed7eef31",
+    "trackedInputs": 17566,
+    "sourceCheckpointSha256": "23ae1c551347c7614450a2637f457a5a48f59949e19c012a378b5c894a8c66ed",
+    "normalBodyCount": 99,
+    "normalBodySnapshotSha256": "14294ebd90d8f7f1abc6931e718d696d23088a43467e90f71427290b245c3e63",
+    "sourceStable": true,
+    "normalBodiesStable": true,
+    "laterHeadOrRebuiltBodyEqualityClaimed": false
+  },
+  "result": {
+    "actualRenders": 4,
+    "fixtures": 2,
+    "requiredVisibleTokenChecks": 24,
+    "runtimeReceipts": [
+      {
+        "width": 640,
+        "browser": "153.0.8010.12",
+        "pageErrors": [],
+        "consoleErrors": [],
+        "failedRequests": [],
+        "foreignRequests": []
+      },
+      {
+        "width": 1100,
+        "browser": "153.0.8010.12",
+        "pageErrors": [],
+        "consoleErrors": [],
+        "failedRequests": [],
+        "foreignRequests": []
+      }
+    ],
+    "buildAndRenderExitCodes": [
+      0,
+      0
+    ],
+    "rootPhysicalReview": {
+      "selectedCaptureCount": 5,
+      "facts": [
+        "Created Receipt lifeline starts at creation",
+        "Store nested call and saved/receipt returns",
+        "Alt/else Loop Par Critical Opt Try-catch-finally blocks",
+        "Final accepted and confirmed return",
+        "External actor self process/validate and A.run/localStep/done context retained"
+      ],
+      "whiteExternalDiagramInDarkHostIsObservedUpstreamPaint": true,
+      "acceptanceRecordSha256": "476acd895d3a6edd10c16de6a7b691c10149022cd82da600069db0c45004bcaa"
+    },
+    "domAuditSha256": "92787fbf0cdbd98faef8aa5bcaefc5223fb9c8664aa19982273f47fe2532aba6",
+    "executionReceiptSha256": "23ed44e4c61c72d266b49a5bed5d4f872f06cdc6ad957c2bca54d223e3f8ece7"
+  },
+  "fixtures": [
+    {
+      "source": "external-plugins/zenuml/zenuml-native-occurrences.mmd",
+      "sourceSha256": "cd0a2467210be813f3c9a8f10b6b63a61e9c33128fc0e561995cf1cc1870202a",
+      "requiredContractsObserved": [
+        "participant declaration and creation order",
+        "Receipt lifetime starts at new Receipt, with nested Store call and return",
+        "if/else, loop, par, critical, opt and try/catch/finally block nesting/order",
+        "return targets, async Bus messages and final confirmed reply",
+        "comment and argument text remain inert"
+      ],
+      "observedFacts": {
+        "participantOrder": [
+          "User",
+          "Service",
+          "Store",
+          "Bus",
+          "receipt:Receipt"
+        ],
+        "activationCount": 8,
+        "createdParticipant": "receipt:Receipt",
+        "creationCount": 1,
+        "initialParticipantBoxY": 29.0,
+        "createdParticipantBoxY": 187.0,
+        "creationMessageY": 206.0,
+        "createdParticipantActivation": {
+          "y": 225.0,
+          "height": 100.0
+        },
+        "nestedStoreCallY": 257.0,
+        "messageGroups": 9,
+        "creationMessageSeparate": true,
+        "returnLabelsInTimeOrder": [
+          "saved",
+          "receipt",
+          "declined",
+          "accepted",
+          "confirmed"
+        ],
+        "asynchronousBusMessages": [
+          "ready(order)",
+          "notify(order)"
+        ],
+        "controlFramesInSourceOrder": [
+          "fragment-alt",
+          "fragment-loop",
+          "fragment-par",
+          "fragment-critical",
+          "fragment-opt",
+          "fragment-tcf"
+        ],
+        "visibleBranchAndConditionText": [
+          "valid && !cancelled",
+          "[else]",
+          "retries < 3",
+          "commitLock",
+          "notify",
+          "catch",
+          "StorageError error",
+          "finally"
+        ],
+        "inertVisibleComment": [],
+        "observedReturnEndpointFacts": "The retained SVG has saved/receipt directed from the created receipt column toward Service; declined/accepted/confirmed return to the User column. Store.save is nested within the created receipt activation."
+      },
+      "observations": [
+        {
+          "key": "zenuml-native-occurrences-640-light",
+          "viewport": {
+            "width": 640,
+            "theme": "light"
+          },
+          "rendered": true,
+          "visibleTextNodes": 68,
+          "observedDomElements": 220,
+          "pageOverflow": false,
+          "observation": {
+            "file": "zenuml-native-occurrences-640-light.json",
+            "sha256": "74cb135ee87814b902a375aebedac5e62eb865c3fbb638ddb19866ad00038903"
+          },
+          "renderedSvg": {
+            "file": "zenuml-native-occurrences-640-light.reference.svg",
+            "sha256": "b77ed1625afdafc2d714fe342cb6a238e4abc447a5e4393825781df64d7d5b1e"
+          },
+          "renderedHtml": {
+            "file": "zenuml-native-occurrences-640-light.reference.html",
+            "sha256": "b77ed1625afdafc2d714fe342cb6a238e4abc447a5e4393825781df64d7d5b1e"
+          },
+          "paintCaptures": [
+            {
+              "file": "zenuml-native-occurrences-640-light-scroll-0.png",
+              "sha256": "7cd062ebb2508a9a5932d64e3e6b4f72afda3aa83ddde04981abff4cd6f9b4e8",
+              "scrollFraction": "0",
+              "dimensions": [
+                640,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-occurrences-640-light-scroll-0.5.png",
+              "sha256": "31a19001cf9f5049022ebf68006e42449cf4e14be335b9c8a98748e0c3576602",
+              "scrollFraction": "0.5",
+              "dimensions": [
+                640,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-occurrences-640-light-scroll-1.png",
+              "sha256": "41c623292d362f5e318d82f166102adf303f24985015f455e97ec1ab4a8f26f8",
+              "scrollFraction": "1",
+              "dimensions": [
+                640,
+                980
+              ]
+            }
+          ]
+        },
+        {
+          "key": "zenuml-native-occurrences-1100-dark",
+          "viewport": {
+            "width": 1100,
+            "theme": "dark"
+          },
+          "rendered": true,
+          "visibleTextNodes": 68,
+          "observedDomElements": 220,
+          "pageOverflow": false,
+          "observation": {
+            "file": "zenuml-native-occurrences-1100-dark.json",
+            "sha256": "3c034f90aa17c0dec657fd35bec9adc9c7a5d12708d5d874b3bd05a689d1d676"
+          },
+          "renderedSvg": {
+            "file": "zenuml-native-occurrences-1100-dark.reference.svg",
+            "sha256": "b77ed1625afdafc2d714fe342cb6a238e4abc447a5e4393825781df64d7d5b1e"
+          },
+          "renderedHtml": {
+            "file": "zenuml-native-occurrences-1100-dark.reference.html",
+            "sha256": "b77ed1625afdafc2d714fe342cb6a238e4abc447a5e4393825781df64d7d5b1e"
+          },
+          "paintCaptures": [
+            {
+              "file": "zenuml-native-occurrences-1100-dark-scroll-0.png",
+              "sha256": "3ad3704194b27079fc2f0a7264de3e64a8a4f3bf6cc91da891b366baad5f4366",
+              "scrollFraction": "0",
+              "dimensions": [
+                1100,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-occurrences-1100-dark-scroll-0.5.png",
+              "sha256": "70690c0b2ed887e6569cc3a8fd773ed0a25b28c7768270b665377e027f51392d",
+              "scrollFraction": "0.5",
+              "dimensions": [
+                1100,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-occurrences-1100-dark-scroll-1.png",
+              "sha256": "537edaaaef1c0366977a3e094b4d83544dc8a5e27f1693b16f22b1807f01d305",
+              "scrollFraction": "1",
+              "dimensions": [
+                1100,
+                980
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "external-plugins/zenuml/zenuml-native-local-context.mmd",
+      "sourceSha256": "451a9e7949344564fb66d30b9b77564c91c5d3ca5568977942f0fb3c6a1abb47",
+      "requiredContractsObserved": [
+        "root-local process/validate calls keep external local context",
+        "A.run nested localStep uses participant A context",
+        "local and participant return order",
+        "no method-name participant is fabricated"
+      ],
+      "observedFacts": {
+        "participantIdsIncludingImplicitStarter": [
+          "_STARTER_",
+          "A"
+        ],
+        "displayedParticipantLabels": [
+          "A"
+        ],
+        "rootLocalSelfCalls": [
+          "process(item)",
+          "validate(item)"
+        ],
+        "participantLocalSelfCall": "A.localStep()",
+        "activationParticipants": [
+          "_STARTER_",
+          "_STARTER_",
+          "A",
+          "A"
+        ],
+        "runCall": "implicit starter to A",
+        "returnsInTimeOrder": [
+          "processed (local self return)",
+          "done (A to implicit starter)"
+        ],
+        "controlFrames": [
+          "Loop: work remains"
+        ],
+        "noMethodNameParticipant": true
+      },
+      "observations": [
+        {
+          "key": "zenuml-native-local-context-640-light",
+          "viewport": {
+            "width": 640,
+            "theme": "light"
+          },
+          "rendered": true,
+          "visibleTextNodes": 17,
+          "observedDomElements": 77,
+          "pageOverflow": false,
+          "observation": {
+            "file": "zenuml-native-local-context-640-light.json",
+            "sha256": "e4f265c96f1275a83678eb4ff637c211c23ce67a8eee82f6830845f56b981f06"
+          },
+          "renderedSvg": {
+            "file": "zenuml-native-local-context-640-light.reference.svg",
+            "sha256": "8d0247adbbc64d0474c939659050bc03fe57745e503c08ebc72e8bf0379476ed"
+          },
+          "renderedHtml": {
+            "file": "zenuml-native-local-context-640-light.reference.html",
+            "sha256": "8d0247adbbc64d0474c939659050bc03fe57745e503c08ebc72e8bf0379476ed"
+          },
+          "paintCaptures": [
+            {
+              "file": "zenuml-native-local-context-640-light-scroll-0.png",
+              "sha256": "376245dc7bf9579af5aaa6c60d9e5e60d14ee573cab469ee0e24cbdd2a0eaf45",
+              "scrollFraction": "0",
+              "dimensions": [
+                640,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-local-context-640-light-scroll-0.5.png",
+              "sha256": "af9b65475c7318ba8677b0ba7fd06f5b2bfb7d790e7f236b4445fb1d6d717e5f",
+              "scrollFraction": "0.5",
+              "dimensions": [
+                640,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-local-context-640-light-scroll-1.png",
+              "sha256": "69ba68bfabd03e4df61ca97661c05dd8ff0fb1c514b724316381b08f0ea1aba5",
+              "scrollFraction": "1",
+              "dimensions": [
+                640,
+                980
+              ]
+            }
+          ]
+        },
+        {
+          "key": "zenuml-native-local-context-1100-dark",
+          "viewport": {
+            "width": 1100,
+            "theme": "dark"
+          },
+          "rendered": true,
+          "visibleTextNodes": 17,
+          "observedDomElements": 77,
+          "pageOverflow": false,
+          "observation": {
+            "file": "zenuml-native-local-context-1100-dark.json",
+            "sha256": "81295fa93ef7a774e7da313be98587e1b63d22e27d269a27c3d4dca89811c958"
+          },
+          "renderedSvg": {
+            "file": "zenuml-native-local-context-1100-dark.reference.svg",
+            "sha256": "8d0247adbbc64d0474c939659050bc03fe57745e503c08ebc72e8bf0379476ed"
+          },
+          "renderedHtml": {
+            "file": "zenuml-native-local-context-1100-dark.reference.html",
+            "sha256": "8d0247adbbc64d0474c939659050bc03fe57745e503c08ebc72e8bf0379476ed"
+          },
+          "paintCaptures": [
+            {
+              "file": "zenuml-native-local-context-1100-dark-scroll-0.png",
+              "sha256": "ca42d91a42b3c455d59c0916fd966460e574bfde36566b9c7ff5a6d93edce869",
+              "scrollFraction": "0",
+              "dimensions": [
+                1100,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-local-context-1100-dark-scroll-0.5.png",
+              "sha256": "79fc23ef93ddfc673f71948e01336fe0fdceb6a7178f05c45f28c44d2306013e",
+              "scrollFraction": "0.5",
+              "dimensions": [
+                1100,
+                980
+              ]
+            },
+            {
+              "file": "zenuml-native-local-context-1100-dark-scroll-1.png",
+              "sha256": "ab9b0f955f84ab9cb94b5bcfb3b634b7953ae956351bc1ace69f1b04906e32b1",
+              "scrollFraction": "1",
+              "dimensions": [
+                1100,
+                980
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "priorFailedAttempt": {
+    "preserved": true,
+    "renderedRows": 3,
+    "failedKey": "zenuml-native-local-context-640-light",
+    "failure": "Local ESM import failed with ERR_CONNECTION_RESET before rendering the fourth fixture/pose.",
+    "failedRequestCount": 14,
+    "productAssertionFailureEstablished": false,
+    "sourceAndBodyGuardFailures": [],
+    "correctedHarnessChange": "Disposable loopback server accept backlog increased from 5 to 64; one bound input changed. Fixture sources, upstream modules, CFX rendering code and assertions were unchanged.",
+    "exactKernelCauseProven": false,
+    "failedRuntimeReceiptSha256": "373ae5e9931ff84f43b21f24154cd891cbf225b052ddf3cf34523e1eb8ff7e84",
+    "failedExecutionReceiptSha256": "f4c7ab3c1d89ce39b9506659dd1dec827055b03442008b8cdc6b2b8888a338c4",
+    "failedCoordinatorReceiptSha256": "2d69728757fac462c23abae581b684e52a5f3da6f0f45267bf6135094ee37edf"
+  },
+  "limits": [
+    "Qualification is only these two exact sources in compact/light and wide/dark Chromium contexts. It is not full ZenUML grammar, arbitrary-source, font, theme or layout qualification.",
+    "This is observed external-plugin DOM and paint evidence, not dummy parse acceptance, native/reference pixel equality, whole-family parity or a production fallback.",
+    "The upstream white diagram inside a dark host and scrollable fixed-height observation area are retained behavior, not a fit-to-viewport claim.",
+    "Four observations have retained DOM/SVG/HTML plus three captures each. Root physically inspected five selected current images; this does not claim every capture was individually reviewed.",
+    "CFX source and normal-body stability is bound to the observed C5 candidate. This receipt does not relabel those observations as a later head, new package, deployment or rebuilt-WASM proof.",
+    "The original failed transport attempt remains retained. A successful backlog-corrected run does not prove the earlier kernel-level cause.",
+    "External plugin and Mermaid modules remain isolated test-only comparison inputs; no production dependency or shipped fallback is introduced."
+  ],
+  "retention": "Raw failed and qualified observations are retained in the task evidence store. This curated receipt records stable source/package bindings, observed facts and artifact hashes without checking generated binaries or machine-local logs into Git."
+}

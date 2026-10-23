@@ -48,7 +48,7 @@ public class SectionPreparationBenchmarkFixture {
         if (parts[1] == "explicit") SourceChart.WithXAxisBounds(0, 12).WithYAxisBounds(0, 40);
         _authoredXMinimum = SourceChart.Options.XAxis.Minimum; _authoredXMaximum = SourceChart.Options.XAxis.Maximum;
         _authoredYMinimum = SourceChart.Options.YAxis.Minimum; _authoredYMaximum = SourceChart.Options.YAxis.Maximum;
-        _xViewport = Window == "x" ? new ChartCartesianViewport(x: new ChartXViewport(2, 10)) : null;
+        _xViewport = Window == "x" ? new ChartCartesianViewport(x: new ChartAxisWindow(2, 10)) : null;
         var source = new StringBuilder("section-preparation-v1|800x440|390x440|640|24|light|samples|")
             .Append(caseName).Append('|').Append(radius).Append('|').Append(Hash(tokens)).Append('|')
             .Append(Hash(File.ReadAllBytes(fontPath))).Append('|').Append(Hash(File.ReadAllBytes(boldFontPath))).Append('|')

@@ -169,7 +169,7 @@ public sealed class CartesianStackTotalLayoutTests {
             .WithStackedBars().WithStackTotals().WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat);
         chart.AddBar("Primary first", new[] { new ChartPoint(1, 10) }).AddBar("Primary second", new[] { new ChartPoint(1, 20) });
         chart.AddBar("Secondary first", new[] { new ChartPoint(1, 10) }).AddBar("Secondary second", new[] { new ChartPoint(1, 20) });
-        chart.Series[2].YAxis = ChartAxisSide.Secondary; chart.Series[3].YAxis = ChartAxisSide.Secondary;
+        chart.Series[2].ValueAxis = ChartAxisSide.Secondary; chart.Series[3].ValueAxis = ChartAxisSide.Secondary;
         chart.Options.YAxis.WithBounds(0, 30);
         chart.Options.SecondaryYAxis.WithBounds(0, 30).WithReversal();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

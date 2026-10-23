@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawDifferenceArea(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
-        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
+        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
         var series = chart.Series[index]; var geometry = new ChartPairedBoundaryGeometry(series, map);
         var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
@@ -41,7 +41,7 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-formatted-first"] = firstText, ["data-cfx-formatted-second"] = secondText,
                 ["data-cfx-formatted-y"] = firstText
             };
-            var visible = ViewportObservationVisible(xViewport, yViewport, first.X, Math.Min(first.Y, second.Y), Math.Max(first.Y, second.Y));
+            var visible = ViewportObservationVisible(xViewport, yViewport, first.X, Math.Min(first.Y, second.Y), Math.Max(first.Y, second.Y), map);
             using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, visible, facts,
                 ("x", first.X), ("first", first.Y), ("second", second.Y))) {
                 if (visible && showMarkers) {

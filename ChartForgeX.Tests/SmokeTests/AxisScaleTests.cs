@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
             .WithYAxisScale(ChartScaleKind.Logarithmic)
             .WithSecondaryYAxis("Rate")
             .AddLine("Rate", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
-        secondaryOnly.Series[0].UseSecondaryYAxis();
+        secondaryOnly.Series[0].UseSecondaryValueAxis();
         Assert(secondaryOnly.ToSvg().Contains(">Rate</text>", StringComparison.Ordinal), "Secondary-only charts should seed an empty logarithmic primary domain with valid positive bounds.");
         Assert(secondaryOnly.ToPng().Length > 200, "Empty primary logarithmic domains should preserve SVG and PNG rendering parity.");
 
@@ -148,7 +148,7 @@ internal static partial class SmokeTests {
             .WithSecondaryYAxisBounds(0, 100)
             .AddLine("Primary", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10) })
             .AddLine("Secondary", new[] { new ChartPoint(0, 0), new ChartPoint(1, 100) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(0, "Primary low"));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(10, "Primary high"));
         chart.Options.SecondaryYAxis.Labels.Add(new ChartAxisLabel(0, "Secondary low"));
@@ -212,7 +212,7 @@ internal static partial class SmokeTests {
                 new ChartPoint(0, new DateTime(2026, 8, 1).ToOADate()),
                 new ChartPoint(1, new DateTime(2026, 8, 15).ToOADate())
             });
-        secondary.Series[1].UseSecondaryYAxis();
+        secondary.Series[1].UseSecondaryValueAxis();
         secondary.Options.SecondaryYAxis.Scale = ChartScaleKind.Time;
         AssertInvariantDateCaptions(secondary, "axis-secondary-y-label", 8);
         var secondaryPng = secondary.ToPng();

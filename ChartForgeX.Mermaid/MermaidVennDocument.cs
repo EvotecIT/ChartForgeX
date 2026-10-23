@@ -60,6 +60,12 @@ public sealed class MermaidVennSet {
     /// <summary>Gets or sets the optional stroke color.</summary>
     public ChartColor? Stroke { get; set; }
 
+    /// <summary>Gets or sets the explicit fill opacity, from zero through one. Null retains the default set translucency.</summary>
+    public double? FillOpacity { get; set; }
+
+    /// <summary>Gets or sets the outline width, in logical pixels.</summary>
+    public double StrokeWidth { get; set; } = 2;
+
     /// <summary>Gets or sets the optional text color.</summary>
     public ChartColor? TextColor { get; set; }
 }
@@ -97,6 +103,12 @@ public sealed class MermaidVennIntersection {
 
     /// <summary>Gets or sets the optional stroke color.</summary>
     public ChartColor? Stroke { get; set; }
+
+    /// <summary>Gets or sets the explicit fill opacity, from zero through one. Null retains the default set translucency.</summary>
+    public double? FillOpacity { get; set; }
+
+    /// <summary>Gets or sets the outline width, in logical pixels.</summary>
+    public double StrokeWidth { get; set; } = 2;
 
     /// <summary>Gets or sets the optional text color.</summary>
     public ChartColor? TextColor { get; set; }

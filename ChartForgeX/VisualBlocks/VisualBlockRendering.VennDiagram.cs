@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualBlocks;
@@ -21,13 +22,18 @@ internal static partial class VisualBlockRendering {
             if (set.Id.Length == 0) throw new InvalidOperationException("Venn sets must define ids.");
             if (set.Label.Length == 0) throw new InvalidOperationException("Venn sets must define labels.");
             if (!IsFinite(set.Size) || set.Size < 0) throw new InvalidOperationException("Venn set sizes must be finite and zero or greater.");
+            ValidateVennPaint(set.StrokeWidth, set.FillOpacity);
             if (!ids.Add(set.Id)) throw new InvalidOperationException("Venn set ids must be unique: " + set.Id + ".");
         }
 
         foreach (var intersection in block.Intersections) {
+            if (intersection.SetIds.Count < 2) throw new VennDiagramValidationException("Venn intersections require at least two distinct sets.", intersection.SetIds);
             ValidateVennRegionIds(ids, intersection.SetIds, "Venn intersection");
+            ValidateVennPaint(intersection.StrokeWidth, intersection.FillOpacity);
             if (!IsFinite(intersection.Size) || intersection.Size < 0) throw new InvalidOperationException("Venn intersection sizes must be finite and zero or greater.");
         }
+
+        ValidateVennMemberships(block);
 
         foreach (var textNode in block.TextNodes) {
             if (textNode.Id.Length == 0) throw new InvalidOperationException("Venn text nodes must define ids.");
@@ -37,53 +43,20 @@ internal static partial class VisualBlockRendering {
     }
 
     public static IReadOnlyList<VennSetPlacement> VennSetPlacements(VennDiagramBlock block, ChartRect rect) {
-        var count = block.Sets.Count;
-        var placements = new List<VennSetPlacement>(count);
-        var width = Math.Max(1, rect.Width);
-        var height = Math.Max(1, rect.Height);
-        var radius = count == 1
-            ? Math.Min(width, height) * 0.30
-            : Math.Min(width / (count == 2 ? 2.45 : 2.55), height / 2.15);
-        radius = Math.Max(24, radius);
-        // The third set sits lower than the first two; its painted circle must
-        // still fit the same body rectangle, including the one-pixel stroke radius.
-        var edgeFraction = count >= 3 ? 0.38 : 0.48;
-        radius = Math.Max(0.5, Math.Min(radius, Math.Min(width * 0.42, height * edgeFraction) - 1));
-
-        if (count == 1) {
-            placements.Add(CreateVennPlacement(block, 0, rect.X + width / 2, rect.Y + height * 0.52, radius));
-        } else if (count == 2) {
-            placements.Add(CreateVennPlacement(block, 0, rect.X + width * 0.42, rect.Y + height * 0.52, radius));
-            placements.Add(CreateVennPlacement(block, 1, rect.X + width * 0.58, rect.Y + height * 0.52, radius));
-        } else {
-            placements.Add(CreateVennPlacement(block, 0, rect.X + width * 0.42, rect.Y + height * 0.46, radius));
-            placements.Add(CreateVennPlacement(block, 1, rect.X + width * 0.58, rect.Y + height * 0.46, radius));
-            placements.Add(CreateVennPlacement(block, 2, rect.X + width * 0.50, rect.Y + height * 0.62, radius));
-        }
-
-        return placements;
+        var layout = VennLayout(block, rect);
+        return layout.Circles.Select((circle, index) => new VennSetPlacement(block.Sets[index], index, circle.Center.X, circle.Center.Y, circle.Radius)).ToArray();
     }
 
     public static ChartPoint VennRegionCenter(IReadOnlyList<VennSetPlacement> placements, IReadOnlyList<string> setIds) {
-        var x = 0.0;
-        var y = 0.0;
-        var count = 0;
-        for (var idIndex = 0; idIndex < setIds.Count; idIndex++) {
-            for (var placementIndex = 0; placementIndex < placements.Count; placementIndex++) {
-                if (!string.Equals(placements[placementIndex].Set.Id, setIds[idIndex], StringComparison.Ordinal)) continue;
-                x += placements[placementIndex].X;
-                y += placements[placementIndex].Y;
-                count++;
-                break;
-            }
-        }
-
-        if (count == 0) return new ChartPoint(0, 0);
-        return new ChartPoint(x / count, y / count);
+        var circles = placements.Select(item => new VennCircle(item.X, item.Y, item.Radius)).ToArray();
+        var indices = setIds.Select(id => { for (var i = 0; i < placements.Count; i++) if (placements[i].Set.Id == id) return i; throw new InvalidOperationException("Unknown Venn set."); }).ToArray();
+        return VennIntersection(circles, indices).Anchor;
     }
 
-    private static VennSetPlacement CreateVennPlacement(VennDiagramBlock block, int index, double x, double y, double radius) =>
-        new(block.Sets[index], index, x, y, radius);
+    private static void ValidateVennPaint(double strokeWidth, double? opacity) {
+        if (!IsFinite(strokeWidth) || strokeWidth < 0) throw new InvalidOperationException("Venn stroke widths must be finite and non-negative.");
+        if (opacity.HasValue && (!IsFinite(opacity.Value) || opacity < 0 || opacity > 1)) throw new InvalidOperationException("Venn fill opacity must be finite and between zero and one.");
+    }
 
     private static void ValidateVennRegionIds(HashSet<string> ids, IReadOnlyList<string> setIds, string label) {
         if (setIds.Count == 0) throw new InvalidOperationException(label + " must reference at least one set.");

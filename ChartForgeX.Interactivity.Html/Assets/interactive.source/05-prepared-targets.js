@@ -1,11 +1,11 @@
-  // Separately painted captions are pointer surfaces of their declared native target, never new observations.
+
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
     const point = label && label._cfxLabelTarget;
     return point && root.contains(label) && root.contains(point) ? point : null;
   };
   const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));
-  // Core exports describe immutable source identity and layout. Browser-only focus and hit areas belong here.
+
   const prepareChartTargets = (root) => {
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg || !root.dataset.cfxPreparedChart) return;
@@ -23,7 +23,7 @@
     if (grouped.length) root._cfxCategoryPaths = new Map(grouped.map(item => [item.value, Object.freeze([...item.groups, item.text])]));
     else delete root._cfxCategoryPaths;
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
-    // Only the renderer's unambiguous final Cartesian map can bound a guide.
+
     const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
     const plot = plots.length === 1 ? plots[0] : null;
     root._cfxCartesianPlot = plot && [plot.x, plot.y, plot.width, plot.height, plot.x + plot.width, plot.y + plot.height].every(Number.isFinite)
@@ -89,8 +89,8 @@
       if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      // A zero-imputed category has no authored observation. Category identity remains stable
-      // when a peer has another category or orders its authored observations differently.
+      // Imputed zero: no ID; retain peer category IDs.
+
       if (data.cfxDerived === 'missing-category-zero') {
         data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);
         delete data.cfxPoint;
@@ -110,7 +110,7 @@
       }
       if (data.cfxRole === 'legend-item' || data.cfxRole === 'legend-entry-omitted') return;
       const region = regions.get(data.cfxSourceId || '');
-      // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
+
       if (region && data.cfxPoint === undefined && data.cfxValue !== undefined && data.cfxPercent !== undefined
         && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
         node.setAttribute('aria-label', region.label || item.name);
@@ -130,11 +130,11 @@
         marker.setAttribute('fill', line ? getComputedStyle(line).stroke : 'currentColor');
         node.appendChild(marker);
       }
-      // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
-      // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
-      // Retained numeric facts have keyboard semantics without a pointer surface.
+
+
+
       if (retainedGeometryFact(node)) return;
-      // A hollow candle's unpainted interior still belongs to its observation's browser target.
+
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
       if (box.width > 0 && box.height > 0 && !hollowCandle) return;

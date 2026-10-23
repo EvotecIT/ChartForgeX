@@ -1,0 +1,14 @@
+{
+  "configuration": {
+    "themeVariables.background": "#112233",
+    "themeVariables.textColor": "#EEDDCC",
+    "themeVariables.primaryColor": "#334455",
+    "themeVariables.primaryTextColor": "#FFEEDD",
+    "themeVariables.primaryBorderColor": "#778899",
+    "themeVariables.secondaryColor": "#223344",
+    "themeVariables.tertiaryColor": "#445566",
+    "themeVariables.lineColor": "#CCDDEE"
+  },
+  "nodes": ["A", "B"],
+  "edges": [["A", "B"]]
+}

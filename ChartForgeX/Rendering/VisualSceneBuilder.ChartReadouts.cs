@@ -6,8 +6,9 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal sealed partial class VisualSceneBuilder {
+    private static readonly string[] CoordinateReadoutMembers = { "x-lower", "x-upper" };
     private static readonly string[] ValueReadoutMembers = {
-        "lower", "upper", "first", "second", "delta",
+        "lower", "upper", "y-lower", "y-upper", "first", "second", "delta",
         "minimum", "q1", "median", "q3", "maximum",
         "source-minimum", "source-maximum", "inlier-minimum", "inlier-maximum",
         "open", "high", "low", "close"
@@ -39,6 +40,8 @@ internal sealed partial class VisualSceneBuilder {
                 metadata["data-cfx-display-label"] = metadata.TryGetValue("data-cfx-category-label", out var label) ? label
                     : displayCategory?.Invoke(series, x) ?? formatted;
             }
+            foreach (var member in CoordinateReadoutMembers)
+                if (Number("data-cfx-" + member, out var bound)) metadata["data-cfx-formatted-" + member] = category(series, bound);
             var valueKey = series.Kind == ChartSeriesKind.BoxPlot && metadata.ContainsKey("data-cfx-median") ? "data-cfx-median"
                 : metadata.ContainsKey("data-cfx-value") ? "data-cfx-value" : "data-cfx-y";
             if (Number(valueKey, out var y)) metadata["data-cfx-formatted-value"] = Value(valueKey, y);

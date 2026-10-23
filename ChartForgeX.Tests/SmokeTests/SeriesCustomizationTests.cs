@@ -307,8 +307,8 @@ internal static partial class SmokeTests {
         var errorBar = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(540, 320)
             .AddErrorBar("Confidence", new[] {
-                new ChartErrorBar(1, 42, 35, 51),
-                new ChartErrorBar(2, 58, 49, 66)
+                new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
+                new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66))
             }, ChartColor.FromHex("#14B8A6"));
         errorBar.Series[0].WithPointColor(1, "#DC2626");
         Assert(errorBar.ToSvg().Contains("stroke=\"#DC2626\"", StringComparison.Ordinal) && errorBar.ToSvg().Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Error-bar marks should honor point-specific colors in SVG.");
@@ -523,8 +523,8 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
             .AddErrorBar("Confidence", new[] {
-                new ChartErrorBar(1, 42, 35, 51),
-                new ChartErrorBar(2, 58, 49, 66)
+                new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
+                new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66))
             });
         Assert(errorBar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Error-bar labels should render when side placement is configured.");
         Assert(errorBar.ToPng().Length > 64, "Error-bar side label placement should render PNG output.");

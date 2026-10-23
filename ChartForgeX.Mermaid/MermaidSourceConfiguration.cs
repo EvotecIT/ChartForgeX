@@ -10,6 +10,7 @@ public sealed class MermaidSourceConfiguration {
     internal MermaidRadarSettings? Radar { get; set; }
     internal MermaidRadarThemeSettings? RadarTheme { get; set; }
     internal MermaidChartColorSettings? ChartColors { get; set; }
+    internal MermaidThemeColorSettings? ThemeColors { get; set; }
     internal MermaidSankeySettings? Sankey { get; set; }
     internal MermaidTreemapSettings? Treemap { get; set; }
     internal MermaidMindMapSettings? MindMap { get; set; }

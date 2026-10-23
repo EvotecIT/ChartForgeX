@@ -407,7 +407,7 @@
                 "Title": "Mermaid",
                 "Url": "/mermaid/",
                 "Meta": { "key": 4 },
-                "Description": "Thirty Mermaid families, rendered without a browser."
+                "Description": "Native Mermaid diagrams with documented syntax and layout limits."
               },
               {
                 "Id": "playground",

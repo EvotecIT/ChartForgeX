@@ -95,11 +95,11 @@ internal static class StatisticalExamples {
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithXLabels("Baseline", "Tuning", "Canary", "Rollout", "Steady")
             .AddErrorBar("Confidence", new[] {
-                new ChartErrorBar(1, 42, 35, 51),
-                new ChartErrorBar(2, 58, 49, 66),
-                new ChartErrorBar(3, 63, 54, 78),
-                new ChartErrorBar(4, 72, 63, 83),
-                new ChartErrorBar(5, 81, 74, 88)
+                new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
+                new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66)),
+                new ChartErrorBar(3, 63, yBounds: new ChartErrorBounds(54, 78)),
+                new ChartErrorBar(4, 72, yBounds: new ChartErrorBounds(63, 83)),
+                new ChartErrorBar(5, 81, yBounds: new ChartErrorBounds(74, 88))
             }, ChartColor.FromRgb(96, 165, 250));
 
         SaveChart(confidenceIntervals, "detection-confidence-errorbar-dark");

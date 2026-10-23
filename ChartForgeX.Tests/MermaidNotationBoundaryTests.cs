@@ -51,11 +51,7 @@ public sealed class MermaidNotationBoundaryTests {
     }
 
     [Theory]
-    [InlineData("classDiagram\nA --> B", "click A href \"https://example.invalid\" \"Open\"")]
     [InlineData("classDiagram\nA --> B", "callback A \"callbackName\"")]
-    [InlineData("erDiagram\nA ||--o{ B : contains", "style A fill:#ffeeaa")]
-    [InlineData("erDiagram\nA ||--o{ B : contains", "class A marked")]
-    [InlineData("erDiagram\nA ||--o{ B : contains", "classDef marked fill:#ffeeaa")]
     public void RetainedNotationReportsItsLimitWithoutInventingGraphFacts(string body, string statement) {
         var rendered = MermaidRenderer.Render(body + "\n  " + statement);
         Assert.False(rendered.HasErrors);
@@ -89,7 +85,7 @@ public sealed class MermaidNotationBoundaryTests {
     }
 
     [Fact]
-    public void ErGroupsAndLocalDirectionsRemainExplicitApproximationWithOnlyRealEntities() {
+    public void ErGroupsAndLocalDirectionsUseNativeContainersWithOnlyRealEntities() {
         const string source = "erDiagram\ndirection LR\nsubgraph Domain\ndirection BT\nA ||--o{ B : contains\nend\nB ||--o{ C : follows";
         var rendered = MermaidRenderer.Render(source);
         Assert.False(rendered.HasErrors);
@@ -97,8 +93,12 @@ public sealed class MermaidNotationBoundaryTests {
         Assert.Equal(TopologyLayoutDirection.LeftToRight, chart.LayoutDirection);
         Assert.Equal(new[] { "A", "B", "C" }, chart.Nodes.Select(node => node.Id));
         Assert.Equal(2, chart.Edges.Count);
-        Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement && item.Span.Line == 3);
-        Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement && item.Span.Line == 4);
+        Assert.Empty(rendered.Diagnostics);
+        var group = Assert.Single(chart.Groups);
+        Assert.Equal(("Domain", TopologyLayoutDirection.BottomToTop), (group.Id, group.LayoutDirection));
+        Assert.Equal("Domain", chart.Nodes.Single(node => node.Id == "A").GroupId);
+        Assert.Equal("Domain", chart.Nodes.Single(node => node.Id == "B").GroupId);
+        Assert.Null(chart.Nodes.Single(node => node.Id == "C").GroupId);
     }
 
     [Theory]

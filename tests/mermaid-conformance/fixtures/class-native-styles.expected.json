@@ -1,0 +1,9 @@
+{
+  "nodeStyleFacts": {
+    "nodeClasses": { "Box": ["marked", "marked"], "Other": ["marked"] },
+    "nodeStyles": {
+      "Box": { "fill": "#fef9c3", "stroke": "#1e3a8a", "color": "#7c2d12" },
+      "Other": { "fill": "#fed7aa", "stroke": "#c2410c", "color": "#7c2d12" }
+    }
+  }
+}

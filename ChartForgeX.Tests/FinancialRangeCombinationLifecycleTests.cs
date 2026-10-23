@@ -21,7 +21,7 @@ public sealed class FinancialRangeCombinationLifecycleTests {
             : ChartSeries.CreateOhlc(new ChartSeriesId("prices"), "Prices", prices);
         var range = ChartSeries.CreateRangeBand(new ChartSeriesId("forecast"), "Forecast", new[] {
             new ChartRangeBand(1, -200, -100), new ChartRangeBand(4, 100, 300)
-        }).UseSecondaryYAxis();
+        }).UseSecondaryValueAxis();
         financial.WithObservationIds(new[] { new ChartObservationId("opening"), new ChartObservationId("closing") });
         range.WithObservationIds(new[] { new ChartObservationId("low"), new ChartObservationId("high") });
         financial.ConfigureFinancialValues((value, _, style) => {
@@ -52,7 +52,7 @@ public sealed class FinancialRangeCombinationLifecycleTests {
     }
 
     private static void AssertDomains(Chart chart, double low, double high, double secondaryLow, double secondaryHigh) {
-        var primary = ChartRange.FromChart(chart); var secondary = ChartRange.FromSecondaryYAxis(chart, primary);
+        var primary = ChartRange.FromChart(chart); var secondary = ChartRange.FromSecondaryValueAxis(chart, primary);
         Assert.True(primary.MinY <= low && primary.MaxY >= high);
         Assert.True(primary.MinY > secondaryLow && primary.MaxY < secondaryHigh);
         Assert.True(secondary.MinY <= secondaryLow && secondary.MaxY >= secondaryHigh);

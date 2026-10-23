@@ -13,12 +13,15 @@ namespace ChartForgeX.Markup.Mermaid;
 /// </summary>
 public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockParser {
     private readonly MermaidRenderOptions _defaults;
+    private readonly MermaidRailroadRenderOptions _railroadRenderOptions;
     private readonly MermaidParseOptions? _parseOptions;
     private readonly MermaidFlowchartRenderOptions _renderOptions;
     private readonly MermaidFlowchartRenderOptions _swimlaneRenderOptions;
     private readonly MermaidFlowchartRenderOptions _useCaseRenderOptions;
     private readonly MermaidTopologyRenderOptions _cynefinRenderOptions;
+    private readonly MermaidTopologyRenderOptions _agentflowRenderOptions;
     private readonly MermaidSequenceRenderOptions _sequenceRenderOptions;
+    private readonly MermaidSequenceRenderOptions _zenUmlRenderOptions;
     private readonly MermaidPieRenderOptions _pieRenderOptions;
     private readonly MermaidJourneyRenderOptions _journeyRenderOptions;
     private readonly MermaidGitGraphRenderOptions _gitGraphRenderOptions;
@@ -60,12 +63,15 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
 
         _defaults = renderOptions.Clone();
         _parseOptions = _defaults.ParseOptions;
+        _railroadRenderOptions = (MermaidRailroadRenderOptions)(_defaults.Railroad ?? new MermaidRailroadRenderOptions()).Clone();
 
         _renderOptions = renderOptions.Flowchart == null ? new MermaidFlowchartRenderOptions() : Clone(renderOptions.Flowchart);
         _swimlaneRenderOptions = Clone(renderOptions.Swimlane ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
         _useCaseRenderOptions = Clone(renderOptions.UseCase ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
         _cynefinRenderOptions = Clone(renderOptions.Cynefin ?? new MermaidTopologyRenderOptions());
+        _agentflowRenderOptions = Clone(renderOptions.Agentflow ?? new MermaidTopologyRenderOptions());
         _sequenceRenderOptions = renderOptions.Sequence == null ? new MermaidSequenceRenderOptions() : Clone(renderOptions.Sequence);
+        _zenUmlRenderOptions = Clone(renderOptions.ZenUml ?? new MermaidSequenceRenderOptions());
         _pieRenderOptions = renderOptions.Pie == null ? new MermaidPieRenderOptions() : Clone(renderOptions.Pie);
         _journeyRenderOptions = renderOptions.Journey == null ? new MermaidJourneyRenderOptions() : Clone(renderOptions.Journey);
         _gitGraphRenderOptions = renderOptions.GitGraph == null ? new MermaidGitGraphRenderOptions() : Clone(renderOptions.GitGraph);
@@ -132,6 +138,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     }
 
     private MermaidRenderOptions BuildRenderOptions(VisualMarkupBlock block, MermaidDiagramKind kind) => kind switch {
+        MermaidDiagramKind.Railroad => new MermaidRenderOptions { Railroad = BuildRailroadOptions(block) },
+        MermaidDiagramKind.Agentflow => new MermaidRenderOptions { Agentflow = BuildTopologyOptions(block, _agentflowRenderOptions) },
         MermaidDiagramKind.Swimlane => new MermaidRenderOptions { Swimlane = BuildOptions(block, _swimlaneRenderOptions) },
         MermaidDiagramKind.UseCase => new MermaidRenderOptions { UseCase = BuildOptions(block, _useCaseRenderOptions) },
         MermaidDiagramKind.Cynefin => new MermaidRenderOptions { Cynefin = BuildTopologyOptions(block, _cynefinRenderOptions) },
@@ -147,6 +155,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         MermaidDiagramKind.Kanban => new MermaidRenderOptions { Kanban = BuildTopologyOptions(block, _kanbanRenderOptions) },
         MermaidDiagramKind.Flowchart => new MermaidRenderOptions { Flowchart = BuildOptions(block) },
         MermaidDiagramKind.Sequence => new MermaidRenderOptions { Sequence = BuildSequenceOptions(block) },
+        MermaidDiagramKind.ZenUml => new MermaidRenderOptions { ZenUml = BuildSequenceOptions(block, _zenUmlRenderOptions) },
         MermaidDiagramKind.Pie => new MermaidRenderOptions { Pie = BuildPieOptions(block) },
         MermaidDiagramKind.Journey => new MermaidRenderOptions { Journey = BuildJourneyOptions(block) },
         MermaidDiagramKind.GitGraph => new MermaidRenderOptions { GitGraph = BuildGitGraphOptions(block) },
@@ -178,8 +187,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         return options;
     }
 
-    private MermaidSequenceRenderOptions BuildSequenceOptions(VisualMarkupBlock block) {
-        var options = Clone(_sequenceRenderOptions);
+    private MermaidSequenceRenderOptions BuildSequenceOptions(VisualMarkupBlock block, MermaidSequenceRenderOptions? defaults = null) {
+        var options = Clone(defaults ?? _sequenceRenderOptions);
         if (TryGetAttribute(block, "id", out var id) && !string.IsNullOrWhiteSpace(id)) options.Id = id;
         if (TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) options.Title = title;
         if (TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) options.Subtitle = subtitle;
@@ -215,7 +224,6 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (TryGetAttribute(block, "id", out var id) && !string.IsNullOrWhiteSpace(id)) options.Id = id;
         if (TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) options.Title = title;
         if (TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) options.Subtitle = subtitle;
-        if (TryGetAttribute(block, "series", out var series) && !string.IsNullOrWhiteSpace(series)) options.SeriesName = series;
         if (TryReadIntAttribute(block, "width", out var parsedWidth)) options.Width = parsedWidth;
         if (TryReadIntAttribute(block, "height", out var parsedHeight)) options.Height = parsedHeight;
         return options;

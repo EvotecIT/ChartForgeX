@@ -266,11 +266,13 @@ public sealed class HorizontalWaterfallTests {
     }
 
     [Fact]
-    public void OrientationMutationRejectsSecondaryWaterfallWhileVerticalStillSupportsIt() {
-        var chart = Sample(); chart.Series[0].UseSecondaryYAxis();
+    public void OrientationMutationRoutesSecondaryWaterfallToThePhysicalValueAxis() {
+        var chart = Sample(); chart.Series[0].UseSecondaryValueAxis();
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
         chart.Options.Waterfall.Orientation = ChartOrientation.Horizontal;
-        Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext()));
+        var horizontal = chart.Prepare(new VisualRenderContext());
+        Assert.NotNull(horizontal.SecondaryXProjection); Assert.Null(horizontal.SecondaryYProjection);
+        Assert.NotEmpty(horizontal.ToPng());
     }
 
     [Theory]

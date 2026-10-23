@@ -1,5 +1,9 @@
 {
-  "entities": ["A", "B", "C"],
+  "entities": [
+    "A",
+    "B",
+    "C"
+  ],
   "direction": "LR",
-  "nativeRetainedStatements": ["subgraph Domain", "direction BT", "end"]
+  "nativeRetainedStatements": []
 }

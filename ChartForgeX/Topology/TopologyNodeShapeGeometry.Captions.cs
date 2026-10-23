@@ -13,6 +13,14 @@ internal static partial class TopologyNodeShapeGeometry {
         var inset = Math.Min(width * .18, height * .3);
         var availableWidth = Math.Max(0, width - 20);
         switch (node.Shape) {
+            case TopologyNodeShape.LinedDocument:
+                var wave = LinedDocumentWave(node);
+                availableWidth = Math.Max(0, width - 36);
+                var documentTop = node.Y + 8; var documentBottom = node.Y + height - 2 * wave - 4;
+                blockHeight = Math.Min(blockHeight, Math.Max(0, documentBottom - documentTop));
+                centerY = (documentTop + documentBottom) / 2;
+                centerX += 5;
+                break;
             case TopologyNodeShape.Diamond:
                 availableWidth = Math.Max(0, width * (1 - (blockHeight + 8) / height) - 8);
                 break;

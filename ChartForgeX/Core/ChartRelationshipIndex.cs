@@ -59,6 +59,7 @@ internal sealed partial class ChartRelationshipIndex {
     internal int Source(int linkIndex) => _sources[linkIndex];
     internal int Target(int linkIndex) => _targets[linkIndex];
     internal int IncomingLink(int nodeIndex) => _incomingLinks[nodeIndex];
+    internal bool TryNodeIndex(string id, out int index) => _nodeIndexes.TryGetValue(id, out index);
     internal bool ContainsNode(string id) => _nodeIndexes.ContainsKey(id);
     internal bool ContainsFlow(string id) => _flowIds.Contains(id);
     internal int Parent(int nodeIndex) => _parents[nodeIndex];

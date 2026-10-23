@@ -85,7 +85,7 @@
     if (!route) return matches;
     const steps = stepIndex === undefined || stepIndex === null ? route.steps : route.steps.filter((_, index) => index === Number(stepIndex));
     const candidates = scenarioTargetCandidates(root, route);
-    // An exact annotation identity wins over a different annotation's ID-looking caption.
+
     const exactAnnotations = steps.map(step => step.targetKind === 'annotation' ? candidates.filter(node =>
       renderedTargetKind(node) === 'annotation' && renderedTargetId(node, 'annotation') === step.targetId) : []);
     candidates.forEach((node) => {
@@ -96,9 +96,9 @@
   };
   const scenarioRevealTargets = (route, stepIndex, targets) => {
     const step = route && route.steps ? route.steps[Number(stepIndex)] : null;
-    // A series step already highlights its complete visual family. Revealing every
-    // matching mark adds duplicate badges that obscure the chart instead of
-    // clarifying the route; precise point/annotation steps still reveal labels.
+
+
+
     if (step && (step.targetKind || '') === 'series') return [];
     return Array.from(targets);
   };

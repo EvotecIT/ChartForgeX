@@ -91,7 +91,7 @@ public class MermaidDocument {
     public MermaidDiagramKind Kind { get; set; }
 
     /// <summary>Gets whether the recognized family retains source without a semantic parser or native renderer.</summary>
-    public bool IsDiagnosticOnly => Kind == MermaidDiagramKind.ZenUml || Kind == MermaidDiagramKind.Agentflow || Kind == MermaidDiagramKind.Railroad;
+    public bool IsDiagnosticOnly => Kind == MermaidDiagramKind.ZenUml && this is not MermaidZenUmlDocument || Kind == MermaidDiagramKind.Agentflow && this is not MermaidAgentflowDocument || Kind == MermaidDiagramKind.Railroad && this is not MermaidRailroadDocument;
 
     /// <summary>Gets or sets the full Mermaid source text.</summary>
     public string SourceText { get => _sourceText; set => _sourceText = value ?? throw new ArgumentNullException(nameof(value)); }

@@ -5,7 +5,7 @@ namespace ChartForgeX.Mermaid;
 
 internal static class MermaidJourneyParser {
     public static void ParseStatements(MermaidJourneyDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
-        string? currentSection = null;
+        MermaidJourneySection? currentSection = null;
 
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
             MermaidResourceGuard.Checkpoint();
@@ -22,20 +22,24 @@ internal static class MermaidJourneyParser {
             }
 
             if (StartsWithKeyword(trimmed, "section")) {
-                currentSection = trimmed.Substring(7).Trim();
-                document.Sections.Add(new MermaidJourneySection(currentSection, span));
+                if (trimmed.Substring(7).Trim().Length == 0) {
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Journey sections require a label.");
+                    continue;
+                }
+                currentSection = new MermaidJourneySection(trimmed.Substring(7).Trim(), span);
+                document.Sections.Add(currentSection);
                 continue;
             }
 
             ParseTask(document, trimmed, currentSection, span, result);
         }
 
-        if (document.Tasks.Count == 0) {
+        if (document.Tasks.Count == 0 && !result.HasErrors) {
             MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid journey diagrams require at least one scored task.");
         }
     }
 
-    private static void ParseTask(MermaidJourneyDocument document, string text, string? section, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseTask(MermaidJourneyDocument document, string text, MermaidJourneySection? section, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         var colonParts = text.Split(':');
         if (colonParts.Length < 2) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Journey tasks must use Mermaid syntax 'task: score: actor, actor'.");
@@ -49,12 +53,16 @@ internal static class MermaidJourneyParser {
             return;
         }
 
+        if (score < 1 || score > 5) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Journey scores must be between one and five, inclusive.");
+            return;
+        }
         var task = new MermaidJourneyTask(taskText, section, score, span);
         if (colonParts.Length > 2) {
             var actorsText = string.Join(":", colonParts, 2, colonParts.Length - 2);
             foreach (var actor in MermaidParserUtilities.SplitCsvLike(actorsText)) {
                 var value = MermaidParserUtilities.Unquote(actor);
-                if (value.Length > 0) task.Actors.Add(value);
+                if (value.Length > 0 && !task.Actors.Contains(value)) task.Actors.Add(value);
             }
         }
 

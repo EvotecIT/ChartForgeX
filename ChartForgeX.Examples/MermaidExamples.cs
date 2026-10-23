@@ -6,7 +6,35 @@ internal static class MermaidExamples {
     internal static void Write(string output) {
         ExampleTypography.Register();
         const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
+        var agentflow = MermaidFixtureSources.Read("agentflow-native-workflow");
+        var zenuml = MermaidFixtureSources.Read("zenuml-native-occurrences");
+        var stateStyles = MermaidFixtureSources.Read("state-native-safe-styles");
+        var stateRegions = MermaidFixtureSources.Read("state-concurrent-regions");
         var examples = new Dictionary<string, string> {
+            ["mermaid-agentflow-native-light"] = agentflow,
+            ["mermaid-agentflow-native-dark"] = "%%{init: {'theme':'dark'}}%%\n" + agentflow,
+            ["mermaid-zenuml-native-light"] = zenuml,
+            ["mermaid-zenuml-native-dark"] = "%%{init: {'theme':'dark'}}%%\n" + zenuml,
+            ["mermaid-state-styles-light"] = stateStyles,
+            ["mermaid-state-styles-dark"] = "%%{init: {'theme':'dark'}}%%\n" + stateStyles,
+            ["mermaid-state-regions-light"] = stateRegions,
+            ["mermaid-state-regions-dark"] = "%%{init: {'theme':'dark'}}%%\n" + stateRegions,
+            ["mermaid-railroad-ebnf-light"] = MermaidRailroadExamples.Ebnf,
+            ["mermaid-railroad-ebnf-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidRailroadExamples.Ebnf,
+            ["mermaid-railroad-abnf-light"] = MermaidRailroadExamples.Abnf,
+            ["mermaid-railroad-abnf-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidRailroadExamples.Abnf,
+            ["mermaid-railroad-peg-light"] = MermaidRailroadExamples.Peg,
+            ["mermaid-railroad-peg-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidRailroadExamples.Peg,
+            ["mermaid-railroad-ir-light"] = MermaidRailroadExamples.IntermediateRepresentation,
+            ["mermaid-railroad-ir-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidRailroadExamples.IntermediateRepresentation,
+            ["mermaid-native-journey-light"] = MermaidMappedFamilyExamples.Journey,
+            ["mermaid-native-journey-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidMappedFamilyExamples.Journey,
+            ["mermaid-native-timeline-light"] = MermaidMappedFamilyExamples.Timeline,
+            ["mermaid-native-timeline-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidMappedFamilyExamples.Timeline,
+            ["mermaid-native-c4-light"] = MermaidMappedFamilyExamples.C4,
+            ["mermaid-native-c4-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidMappedFamilyExamples.C4,
+            ["mermaid-native-venn-light"] = MermaidMappedFamilyExamples.Venn,
+            ["mermaid-native-venn-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidMappedFamilyExamples.Venn,
             ["mermaid-sequence-lifetimes-light"] = MermaidSequenceExamples.Lifecycle,
             ["mermaid-sequence-lifetimes-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidSequenceExamples.Lifecycle,
             ["mermaid-flowchart-nested-directions-light"] = MermaidCompoundExamples.Flowchart,
@@ -130,7 +158,8 @@ internal static class MermaidExamples {
             }
             var result = MermaidRenderer.RenderParsed(parsed, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
-            if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
+            if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block
+                && block is not ChartForgeX.VisualBlocks.JourneyDiagramBlock && block is not ChartForgeX.VisualBlocks.TimelineDiagramBlock)
                 block.Options.ShowCard = false;
             if (item.Key == "mermaid-source-font-size-wardley-boundaries" && result.Artifact.Model is ChartForgeX.VisualBlocks.WardleyMapBlock wardley) {
                 wardley.WithSize(420, 320);

@@ -8,6 +8,32 @@ public sealed class ChartSunburstOptions {
     private ChartHierarchyValuePolicy _parentValuePolicy;
     private double _cornerRadius;
     private double _secondaryLabelSpacing = 2;
+    private double? _minimumLabelFontSize;
+    private double _sectorGap;
+
+    /// <summary>Gets or sets the optional finite positive primary caption font-size floor in logical pixels. Default: null, retaining fixed-size captions.</summary>
+    /// <remarks>Only a complete primary caption that cannot fit at its resolved size may shrink. A larger minimum never enlarges it. Secondary typography inherits the final size before its explicit overrides; complete source text and numeric facts remain unchanged.</remarks>
+    public double? MinimumLabelFontSize {
+        get => _minimumLabelFontSize;
+        set {
+            if (value.HasValue) {
+                ChartGuards.Finite(value.Value, nameof(value));
+                if (value.Value <= 0) throw new ArgumentOutOfRangeException(nameof(value));
+            }
+            _minimumLabelFontSize = value;
+        }
+    }
+
+    /// <summary>Gets or sets the finite nonnegative minimum gap between painted Sunburst sector fills in logical pixels. Default: zero.</summary>
+    /// <remarks>Each sector reserves half the gap at radial boundaries and angular edges measured at its inner painted arc. Angular gaps widen toward the outer arc; separator strokes occupy part of that spacing. Full turns have no angular seam. A gap may consume a thin sector, retaining its source facts without an interactive painted mark.</remarks>
+    public double SectorGap {
+        get => _sectorGap;
+        set {
+            ChartGuards.Finite(value, nameof(value));
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _sectorGap = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional secondary caption formatter. Default: null.</summary>
     /// <remarks>Evaluated once per item during preparation, including hidden and zero-size items. Null, empty or whitespace output suppresses the secondary caption. Complete text remains in source semantics when it cannot fit. Exceptions propagate to the caller.</remarks>

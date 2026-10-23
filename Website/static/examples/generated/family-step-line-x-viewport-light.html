@@ -100,7 +100,7 @@ var model = StepLineViewportRecipe.Create(&quot;x-viewport&quot;, mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame(&quot;Reversed steps, X 2\u20138&quot;, &quot;Utilization labels within X 2\u20138; full-data Y scales; gap at sample 6&quot;, showLegend: true, showSurface: false));
-var prepared = model.Prepare(context, new ChartXViewport(2, 8));
+var prepared = model.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)));
 File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
 File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
@@ -117,7 +117,7 @@ public static class StepLineViewportRecipe {
             observed.WithDataLabels(false);
             var utilization = new ChartSeries(new ChartSeriesId(&quot;utilization&quot;), &quot;Utilization&quot;, ChartSeriesKind.StepLine,
                 Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100))
-                .UseSecondaryYAxis().ConfigureMarkers(markers =&gt; markers.Radius = 3);
+                .UseSecondaryValueAxis().ConfigureMarkers(markers =&gt; markers.Radius = 3);
             utilization.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             chart.AddSeries(utilization).WithSecondaryYAxis(&quot;Utilization (%)&quot;);
             chart.Options.SecondaryYAxis.TickCount = 4;
@@ -150,7 +150,7 @@ var model = StepLineViewportRecipe.Create(&quot;x-viewport&quot;, mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame(&quot;Reversed steps, X 2\u20138&quot;, &quot;Utilization labels within X 2\u20138; full-data Y scales; gap at sample 6&quot;, showLegend: true, showSurface: false));
-var prepared = model.Prepare(context, new ChartXViewport(2, 8));
+var prepared = model.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)));
 File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
 File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
@@ -167,7 +167,7 @@ public static class StepLineViewportRecipe {
             observed.WithDataLabels(false);
             var utilization = new ChartSeries(new ChartSeriesId(&quot;utilization&quot;), &quot;Utilization&quot;, ChartSeriesKind.StepLine,
                 Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100))
-                .UseSecondaryYAxis().ConfigureMarkers(markers =&gt; markers.Radius = 3);
+                .UseSecondaryValueAxis().ConfigureMarkers(markers =&gt; markers.Radius = 3);
             utilization.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             chart.AddSeries(utilization).WithSecondaryYAxis(&quot;Utilization (%)&quot;);
             chart.Options.SecondaryYAxis.TickCount = 4;

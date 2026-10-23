@@ -6,7 +6,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-public sealed class ChartXViewportPointFamilyTests {
+public sealed class ChartAxisWindowPointFamilyTests {
     [Theory]
     [InlineData(ChartSeriesKind.ErrorBar)]
     [InlineData(ChartSeriesKind.Lollipop)]
@@ -17,7 +17,7 @@ public sealed class ChartXViewportPointFamilyTests {
         var points = new[] { new ChartPoint(0, 20), new ChartPoint(5, 50), new ChartPoint(10, 30) };
         var id = new ChartSeriesId("source");
         var series = kind switch {
-            ChartSeriesKind.ErrorBar => ChartSeries.CreateErrorBar(id, "Source", points.Select(point => new ChartErrorBar(point.X, point.Y, point.Y - 4, point.Y + 8))),
+            ChartSeriesKind.ErrorBar => ChartSeries.CreateErrorBar(id, "Source", points.Select(point => new ChartErrorBar(point.X, point.Y, yBounds: new ChartErrorBounds(point.Y - 4, point.Y + 8)))),
             ChartSeriesKind.Dumbbell => ChartSeries.CreateDumbbell(id, "Source", points.Select(point => new ChartDumbbell(point.X, point.Y, point.Y + 8))),
             ChartSeriesKind.TrendLine => ChartSeries.CreateTrendLine(id, "Source", points),
             ChartSeriesKind.Slope => new ChartSeries(id, "Source", kind, new[] { points[0], points[2] }),
@@ -25,7 +25,7 @@ public sealed class ChartXViewportPointFamilyTests {
         };
         var chart = Chart.Create().WithLegend(false).WithXAxisBounds(0, 10).AddSeries(series);
         var context = VisualExportRequest.ForChart(chart).Context;
-        var full = chart.Prepare(context); var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(4, 6)));
+        var full = chart.Prepare(context); var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)));
         Assert.NotNull(window.XProjection);
         Assert.Equal(full.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label), window.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label));
         var groups = XDocument.Parse(window.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();

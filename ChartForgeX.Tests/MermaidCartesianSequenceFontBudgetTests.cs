@@ -5,6 +5,7 @@ using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -23,10 +24,21 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
         var body = kind == "quadrant" ? "quadrantChart\nx-axis Low --> High\ny-axis Low --> High\nAlpha: [0.25, 0.25]\nBeta: [0.75, 0.75]"
             : "journey\nsection Work\nAlpha: 5: Sam\nBeta: 3: Sam";
         var result = MermaidRenderer.Render(Source(size, body));
-        if (kind == "journey") Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(result.Diagnostics).Code);
-        else Assert.Empty(result.Diagnostics);
+        Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!; var svg = artifact.ToSvg(); var png = artifact.ToPng();
         await Capture(svg, png, kind + "-" + size, 960, 720);
+        if (kind == "journey") {
+            var journey = Assert.IsType<JourneyDiagramBlock>(artifact.Model);
+            Assert.Equal(size, journey.Options.Theme.Typography.DataLabelSize);
+            var xml = XDocument.Parse(svg);
+            var captions = xml.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "journey-task-label").ToArray();
+            Assert.Equal(new[] { "Alpha", "Beta" }, captions.Select(item => item.Descendants().Single(child => child.Name.LocalName == "text").Value));
+            Assert.Equal(2, xml.Descendants().Count(item => (string?)item.Attribute("data-cfx-role") == "journey-actor-membership"));
+            Assert.Single(xml.Descendants(), item => (string?)item.Attribute("data-cfx-role") == "journey-actor-label" && item.Value.Contains("Sam", StringComparison.Ordinal));
+            foreach (var caption in captions) foreach (var text in caption.Descendants().Where(item => item.Name.LocalName == "text"))
+                Assert.InRange(double.Parse(text.Attribute("font-size")!.Value, CultureInfo.InvariantCulture), .001, size);
+            return;
+        }
         var labels = XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "data-label")
             .SelectMany(element => element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text")).Select(element => element.Value).ToArray();
         Assert.Contains(kind == "quadrant" ? "Alpha" : "Alpha [Sam]", labels);

@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -60,18 +61,18 @@ public sealed class MermaidValidationFidelityTests {
         Assert.Empty(new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```").Artifacts);
     }
 
-    [Theory]
-    [InlineData("style req fill:#ff0000,stroke:#000000")]
-    [InlineData("classDef urgent fill:#ff0000")]
-    public void RetainedRequirementStylesDiscloseTheirUnchangedNativeAppearance(string style) {
-        const string source = "requirementDiagram\nrequirement req {\n  id: 1\n  risk: low\n  verifymethod: test\n}";
-        var plain = MermaidRenderer.Render(source);
-        var styled = MermaidRenderer.Render(source + "\n" + style);
-        Assert.False(styled.HasErrors);
-        Assert.Contains(styled.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedStatement);
-        Assert.Equal(plain.Artifact!.ToSvg(), styled.Artifact!.ToSvg());
-        Assert.Equal(plain.Artifact!.ToPng(), styled.Artifact!.ToPng());
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n" + style + "\n```");
-        Assert.Contains(fenced.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedStatement);
+    [Fact]
+    public void UnsupportedRequirementStyleValuesRemainLocatedWithoutReachingNativePaint() {
+        const string source = "requirementDiagram\nrequirement req { risk: low }\n  style req fill:javascript:alert(1)";
+        var output = MermaidRenderer.Render(source);
+        Assert.False(output.HasErrors);
+        var warning = Assert.Single(output.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, warning.Code);
+        Assert.Equal((3, 3), (warning.Span.Line, warning.Span.Column));
+        var node = Assert.Single(Assert.IsType<ChartForgeX.Topology.TopologyChart>(output.Artifact!.Model).Nodes);
+        Assert.Null(node.BackgroundColor);
+        Assert.DoesNotContain(System.Xml.Linq.XDocument.Parse(output.Artifact.ToSvg()).Descendants().Attributes("fill"),
+            attribute => attribute.Value.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase));
+        Assert.NotEmpty(output.Artifact.ToPng());
     }
 }

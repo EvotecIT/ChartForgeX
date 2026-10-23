@@ -32,13 +32,13 @@ The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regres
 
 ## Current Scope
 
-Flowchart, sequence, class, state, entity relationship, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case, and Cynefin diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, mindmaps, tree views, event modeling diagrams, kanban boards, swimlanes, use cases, and Cynefin diagrams render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; git graph diagrams render through `GitGraphBlock`; block diagrams render through `BlockLayoutBlock`; packet diagrams render through `PacketLayoutBlock`; Venn diagrams render through `VennDiagramBlock`; Ishikawa diagrams render through `FishboneDiagramBlock`; Wardley maps render through `WardleyMapBlock`; pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
+The families in the [support matrix](mermaid-support-matrix.md) have typed semantic models and native rendering for their documented subsets. Graph-shaped families use `TopologyChart`, including C4 nested boundaries and Agentflow containers. Sequence and ZenUML documents use `SequenceArtifact`, with a separate parser for each grammar. Journey, Timeline and Railroad use `JourneyDiagramBlock`, `TimelineDiagramBlock` and `RailroadDiagramBlock`; git graph, block, packet, Venn, Ishikawa and Wardley use their corresponding native visual blocks. Pie, quadrant, Gantt, XY chart, Sankey, radar and treemap use native `Chart` models.
 
-ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta`) produce an inspectable `MermaidDocument` with retained raw body statements and `IsDiagnosticOnly` set to `true`. They return warning `CFXM002` and no visual artifact while their semantic parser and native renderer are unavailable. Recognition does not validate the retained body grammar.
+`zenuml`, `agentflow-beta` and the four Railroad headers produce typed documents through the shared renderer and Markdown fence bridge. Their expressions, connector descriptions and workflow instructions remain inert diagram data. None of these paths executes a JavaScript plugin, an authored expression or a referenced grammar rule. Unsupported constructs still have explicit diagnostics; a native path does not promise complete upstream grammar or reference layout.
 
 Library-produced diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement or styling without native application, `CFXM008` for malformed or invalid notation, `CFXM009` for a deliberately approximate native mapping, `CFXM010` for a resource limit, and `CFXM011` when host policy rejects warnings. The Markdown bridge preserves the codes and maps source lines and columns into the host document. Use codes and severity for host policy; messages explain the specific source statement or rendering limit.
 
-Journey scores render as bars, timeline periods as ordinal event ranges, Venn regions without value-proportional areas, and C4 through generic topology. These families produce `CFXM009` while retaining their source models and renderable artifacts. They do not provide Mermaid's reference layout or browser runtime. This warning describes a semantic projection, independently of source theme or unsupported statements. An artifact means that native output is available; inspect warnings before accepting it for a workflow that requires exact notation. Errors prevent the shared renderer and Markdown bridge from producing an artifact.
+Journey and timeline documents render through native diagrams with visible sections, actors, scores, categorical periods and ordered events. Venn circles preserve set-area ratios; two-set overlaps are exact within numeric precision, while a three-circle fit exposes requested and actual region areas. A Venn fit beyond half a percent of the largest set reports `CFXM009`. C4 preserves native nested boundaries and supported paint updates, while its specialized layout still reports `CFXM009`. These diagnostics describe source semantics rather than theme differences. Inspect warnings before accepting output for a workflow that requires exact notation. Errors prevent the shared renderer and Markdown bridge from producing an artifact.
 
 Unknown diagram families produce a parser error.
 
@@ -109,11 +109,26 @@ Cancellation throws `OperationCanceledException`, rather than misreporting malfo
 
 `MermaidDocument.Configuration` exposes the effective `Theme`, `Layout`, `Look`, `FontFamily` and `FontSize`, plus retained `Settings` with dotted paths, scalar values and original locations. `Theme` on the document addresses the same effective theme for callers that convert a model directly.
 
-Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A recognized theme or look scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. Only diagram scopes defined by the supported Mermaid configuration schema participate in this precedence; treemap uses the global appearance settings. Recognized themes include `neo`, `neo-dark`, `redux`, `redux-dark`, `redux-color` and `redux-dark-color`; their names are retained with the native light-palette approximation warning. An unrecognized scoped theme or look retains a warning and allows the global value to apply. The latest global and active-family theme, layout and look values must each be non-empty strings, even when one overrides the other. Settings for inactive families remain retained with diagnostics. Layout names retain scoped precedence because the upstream layout registry is extensible. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
+Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A recognized theme or look scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. Only diagram scopes defined by the supported Mermaid configuration schema participate in this precedence; treemap uses the global appearance settings. Recognized themes include `neo`, `neo-dark`, `redux`, `redux-dark`, `redux-color` and `redux-dark-color`; their names are retained with the native-presentation approximation warning. An unrecognized scoped theme or look retains a warning and allows the global value to apply. The latest global and active-family theme, layout and look values must each be non-empty strings, even when one overrides the other. Settings for inactive families remain retained with diagnostics. Layout names retain scoped precedence because the upstream layout registry is extensible. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
 
 `themeVariables.fontFamily` selects the native default font stack for chart, topology, sequence and visual-block output. It overrides root `fontFamily`, including when a later directive changes only the root setting. Unsupported family keys such as `flowchart.fontFamily` retain a diagnostic and do not change that selection. The original declarations remain in `Settings`, and `Configuration.FontFamily` reports the effective native stack. This sets the shared native typography default; it does not reproduce every Mermaid family-specific font role or fetch remote fonts.
 
-`themeVariables.fontSize` sets the native base data-label size in logical pixels, with other native text roles scaled proportionally. Native block body roles use `VisualTheme.Typography.DataLabelSize`; headings use their own scaled roles. In a fixed chart or block viewport, oversized headings fit within a bounded share of the content height. Block cells, Venn captions, Wardley labels and fishbone effect/cause labels fit measured width and height limits. Wardley plot margins reserve scaled annotation circles, including their strokes at domain boundaries, while connector captions retain a separate placement role. Fitting measures the actual font size, including fallback fonts, discrete bitmap advances on fontless hosts and synthetic emphasis. Native caption placement and shortening use those same raster metrics. Oversized Cartesian tick labels fit their complete rotated footprints within measured strips and tick spacing, and axis titles share the reserved strip with ticks. The authored font size remains in the model. Oversized chart legends fit their frame budget and retain the normal overflow summary for dense entries. Long headings shorten using measured font widths. Packet field captions and bit numbers fit the remaining row space and their individual field widths. Git branch, commit and tag captions fit their measured lane and badge bounds. Native block captions render as single text runs, with line breaks and XML whitespace normalized before heading measurement and fitting; source and model strings remain intact. Topology group headers, actor and tile captions, and subtitle chips fit their reserved cells. Compact actor figures shrink within their node bounds, with routing and caption placement following the same geometry. Git endpoint reserves include scaled cherry-pick markers and marker strokes.
+Shared source color variables configure the existing immutable paired theme. Explicit host `Presentation.Theme` takes precedence over these defaults; explicit node, edge and family paint still uses its native owner. The mapping is the same for direct and fenced SVG/PNG output:
+
+| `themeVariables` key | Native presentation role |
+| --- | --- |
+| `background` | Canvas background; explicitly draws the canvas on native chart families that otherwise remain transparent |
+| `primaryColor` | Primary and weakest neutral surfaces |
+| `secondaryColor` | Elevated surface and secondary accent |
+| `tertiaryColor` | Middle neutral surface |
+| `textColor` | Primary and secondary text |
+| `primaryTextColor` | Primary text, overriding `textColor` for that role |
+| `primaryBorderColor` | Default borders |
+| `lineColor` | Axis/grid rules and default topology relationships |
+
+Colors use the existing native color parser. Invalid supported color values produce located errors, and unknown color keys retain diagnostics. These roles configure CFX presentation rather than reproducing a named upstream browser theme; native geometry and family-specific paint remain deliberate. Source colors apply to both paired modes, so switching the host mode preserves authored colors. An explicit native preparation context can supply a different complete theme.
+
+`themeVariables.fontSize` sets the native base data-label size in logical pixels, with other native text roles scaled proportionally. Native block body roles use `VisualTheme.Typography.DataLabelSize`; headings use their own scaled roles. In a fixed chart or block viewport, oversized headings fit within a bounded share of the content height. Block cells, Venn captions, Wardley labels and fishbone effect/cause labels fit measured width and height limits. Wardley plot margins reserve scaled annotation circles, including their strokes at domain boundaries, while connector captions retain a separate placement role. Fitting measures the actual font size, including fallback fonts, discrete bitmap advances on fontless hosts and synthetic emphasis. Native caption placement and shortening use those same raster metrics. Oversized Cartesian tick labels fit their complete rotated footprints within measured strips and tick spacing, and axis titles share the reserved strip with ticks. The authored font size remains in the model. Oversized chart legends fit their frame budget and retain the normal overflow summary for dense entries. Long headings shorten using measured font widths. Packet field captions and bit numbers fit the remaining row space and their individual field widths. Git branch, commit and tag captions fit their measured lane and badge bounds. Block headings normalize line breaks and XML whitespace before measurement; source and model strings remain intact. Journey and Timeline body captions retain explicit multiline content through their measured native text owner. Topology group headers, actor and tile captions, and subtitle chips fit their reserved cells. Compact actor figures shrink within their node bounds, with routing and caption placement following the same geometry. Git endpoint reserves include scaled cherry-pick markers and marker strokes.
 
 The setting accepts a number or CSS pixel string such as `18.5px`, `18PX`, `1e2px` or `+1.8e1px`, from 1 through 256. Pixel units are case-insensitive. `Configuration.FontSize` reports the applied size. Relative units, physical units, CSS size keywords such as `math`, and CSS expressions remain in the source with an unsupported-configuration warning. Sizing functions require one balanced enclosing call, including nested parentheses, quoted text and comments; their expressions are not evaluated. Escaped line breaks are accepted only inside quoted CSS strings; unquoted escapes before CR, LF or form feed report an invalid configuration. Malformed delimiters and invalid pixel sizes produce one located configuration error. Global and family-specific `fontSize` settings retain their diagnostics.
 
@@ -143,7 +158,7 @@ JSON configuration numbers must use JSON number syntax and fit the native reader
 
 Configuration is limited to 65,536 characters across the YAML `config` declarations and legacy declarations, 256 retained settings, eight JSON/mapping levels and 4,096 characters for each latest global or active-family theme/layout/look value and effective font string. Effective presentation strings contain complete Unicode characters; font names also use XML-compatible characters so native artifacts can export to SVG. Unsupported sequence bodies, including indentless items, count toward the configuration budget. Unrelated frontmatter metadata, whole YAML comment lines and blank lines outside scalar content do not consume it. Physical block-scalar and quoted flow-scalar bodies count, including lines beginning with `#` and whitespace-only lines. Comments do not end the active mapping; following indented settings remain subject to its limits. Over-budget declarations are omitted from the bounded directive collection; the original source remains available. YAML has an additional 256-key limit. Duplicate keys within one supported mapping, inconsistent sibling indentation, invalid supported values and over-limit input report `CFXM006` and prevent the shared renderer from producing an artifact. Repeated legacy declarations remain valid and merge in order.
 
-Unmapped `layout`, `look`, `defaultRenderer`, theme variables and family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. Supported radar paint and typography settings are documented under [Radar Diagrams](#radar-diagrams). A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
+Unmapped `layout`, `look`, `defaultRenderer`, theme variables and family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. Supported radar paint and typography settings are documented under [Radar Diagrams](#radar-diagrams). A theme such as `forest` retains its name and reports the native-presentation approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
 
 ## Process diagrams
 
@@ -187,7 +202,7 @@ Flowchart node styles apply `classDef default` and `classDef node` first, then a
 
 Native node paint maps `fill`, `stroke` and text `color`; links map `stroke` and line style. Nonzero numeric `stroke-dasharray` patterns select the shared native dashed pattern and report `CFXM007` because authored dash lengths are retained without exact application. `none` and all-zero patterns select a solid line. The last `linkStyle default` declaration supplies the base, and the last declaration for an edge index overrides it, even when the default appears later. Unsupported properties or paint values remain inspectable with `CFXM007`. Numeric link selectors must refer to edges already declared at that statement; `default` can appear before edges. Invalid edge selectors and empty or repeated inline suffixes report `CFXM008`; the shared renderer and Markdown bridge produce no artifact for those errors.
 
-The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixtures compare task dates. Renderable fixtures in `fixtures/` also exercise static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET. The `recognition/` corpus instead proves preserved source, diagnostic-only outcomes and upstream syntax acceptance.
+The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixtures compare task dates. Renderable fixtures in `fixtures/` also exercise static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET. The `recognition/` folder retains header-discovery fixtures. Its typed families also have dedicated native model, artifact and rejection contracts; header recognition alone does not validate body grammar or rendering fidelity.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -248,7 +263,7 @@ Supported class parsing includes:
 - Annotations such as `<<interface>> ClassName`.
 - Common relationship connectors such as inheritance, dependency, aggregation, composition, solid links, dotted links, and labels after `:`.
 - Attached and floating class notes use typed `Notes` with source spans and visible native note surfaces. Generics keep a base stable identity and a display label such as `Store<Item>`; nested namespaces form real group shells. Two-way relationships preserve both endpoint markers.
-- Style assignments, links, lollipop notation and callback declarations remain retained with `CFXM007`; callbacks are never executed.
+- Shared safe class/direct paints, abstract/static member typography, labeled namespaces and typed lollipop occurrences reach native topology. Safe link data remains inert; unsupported presentation and callback declarations are diagnosed, and callbacks never execute.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -274,7 +289,7 @@ The conversion target for class diagrams is `TopologyChart`. Classes become topo
 
 ## State Diagrams
 
-State diagrams are parsed into `MermaidStateDocument` and converted to topology previews.
+State diagrams are parsed into `MermaidStateDocument` and rendered through the native topology model.
 
 Supported state parsing includes:
 
@@ -286,7 +301,8 @@ Supported state parsing includes:
 - Start and end markers using `[*]`.
 - Attached notes use typed `Notes` and visible native surfaces. Multiline bodies preserve literal content through `end note`, including arrows, colons and accessibility keywords. Floating (`note "text" as ID`) state notes remain raw statements with `CFXM007` and are not painted.
 - Composite groups preserve nesting and local directions; transitions can target their boundaries. Choice nodes omit captions, and fork/join nodes use native synchronization bars.
-- Classes, styles and concurrent-region separators remain retained with `CFXM007`.
+- `--` inside a composite starts the next concurrent region. `Regions` retains ordered `MermaidStateRegion` identities; child states refer to their region through `RegionId`, and `[*]` start/end markers are scoped separately to each region.
+- Shared safe class/direct paints apply to declared states and explicit composites. Floating notes remain retained with `CFXM007`.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -299,6 +315,9 @@ Idle --> Processing : submit
 state Processing {
   [*] --> Validating
   Validating --> Done
+  --
+  [*] --> Auditing
+  Auditing --> Recorded
 }
 Processing --> [*]
 """;
@@ -308,7 +327,13 @@ var document = result.Document;
 var svg = document!.ToSvg();
 ```
 
-The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges. Attached notes occupy measured gutters with leaders, and composite-local direction controls its nested layout. Concurrent-region separators remain raw statements with `CFXM007`. Unclosed notes or composites and stray terminators report `CFXM008` and prevent shared rendering.
+The conversion target for state diagrams is `TopologyChart`. Composite states become nested groups, states become nodes, and transitions become directed edges. Concurrent regions use the generic native compartment presentation with dashed separators. For TB/BT flow, regions form source-ordered columns with vertical separators; for LR/RL flow they form rows with horizontal separators. Reversing state ranks does not reverse the authored region order. Attached notes occupy measured gutters, local directions control their region or composite, and transitions to a composite retain its outer shell as the endpoint.
+
+Empty leading, adjacent and trailing regions keep their typed identity and positive layout space without invented states or captions. This is the native empty-region policy; exact reference orientation and empty-region appearance remain qualification limits. A separator outside a composite, unclosed notes/composites and stray terminators report `CFXM008` and prevent shared rendering.
+
+State diagrams use the shared safe `classDef`, `class`, inline `:::` and direct `style` paint declarations. Direct `fill`, `stroke` and `color` values override named classes; named classes override the default class for ordinary states. Composite groups accept explicit paints while synthetic concurrency regions, notes and pseudo-state controls retain their native presentation. Unknown targets and unsupported CSS remain diagnosed. These declarations do not inject CSS or execute source callbacks.
+
+Explicit composite paints are a CFX extension: upstream Mermaid documents limitations on styling composite states. The current pinned State reference fixture checks top-level paints and an unstyled composite; it does not establish matching composite-style behavior across upstream versions.
 
 ## Entity Relationship Diagrams
 
@@ -323,7 +348,7 @@ Supported ER parsing includes:
 - Attribute rows with type, name, optional key markers, and optional comments.
 - Crow's-foot connectors such as `||--o{`, `}|..||`, and related solid/dotted combinations.
 - Relationship labels after `:`.
-- `classDef`, `class` and `style` statements retained with `CFXM007`; presentation statements do not become entity identifiers.
+- Shared safe `classDef`, `class` and `style` paints; presentation statements do not become entity identifiers. Unsupported CSS remains diagnosed.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -344,7 +369,7 @@ var artifact = document!.ToVisualArtifact();
 
 The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships use identifying or dashed non-identifying lines with visible crow's-foot endpoint cardinality. Entity attributes, keys, and comments appear inside the entity boxes.
 
-ER `subgraph` boundaries and local directions are retained with `CFXM007`. Entities and their relationships remain in the global layout; nested group geometry and group endpoints are not implemented. Unclosed entity/subgraph blocks and stray closing statements report `CFXM008`. The pinned Mermaid 10 reference interprets ER direction and subgraph words as entity names, while the 11/12 references recognize their newer notation. Shared expectations record that semantic difference; ChartForgeX follows the documented current notation.
+ER `subgraph` boundaries retain source-ordered membership and local directions in nested native groups. Relationships can target declared group boundaries. Dense container routing remains a separate visual qualification boundary. Unclosed entity/subgraph blocks and stray closing statements report `CFXM008`. The pinned Mermaid 10 reference interprets ER direction and subgraph words as entity names, while the 11/12 references recognize their newer notation. Shared expectations record that semantic difference; ChartForgeX follows the documented current notation.
 
 ER direction values are case-insensitive and retained in canonical uppercase form. A bare `direction` identifier remains an entity or state. ChartForgeX also preserves its existing bare style/note keyword identifiers; some upstream grammars reserve those words, depending on family and source ending. Class source direction values use the documented uppercase forms.
 
@@ -360,7 +385,7 @@ Supported requirement parsing includes:
 - Requirement fields for `id`, `text`, `risk`, and `verifymethod`.
 - Element blocks with `type` and `docref`.
 - Relationship rows such as `element - satisfies -> requirement` and reverse-arrow variants.
-- `classDef`, `class`, `style`, and inline `:::class` statements retained for future richer style mapping.
+- Shared safe `classDef`, `class`, direct `style` and inline `:::class` paints, with native requirement fact rows and located unsupported-CSS diagnostics.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -431,7 +456,7 @@ The conversion target for architecture diagrams is `TopologyChart`. Services and
 
 ## C4 Diagrams
 
-C4 diagrams are parsed into `MermaidC4Document` and converted to topology previews.
+C4 diagrams are parsed into `MermaidC4Document` and rendered as a native topology hierarchy.
 
 Supported C4 parsing includes:
 
@@ -440,7 +465,9 @@ Supported C4 parsing includes:
 - People, systems, containers, components, database variants, queue variants, and external variants.
 - Enterprise, system, container, generic boundary, and deployment-node boundary calls with nested block membership.
 - Relationship calls including `Rel`, `BiRel`, directional `Rel_U`/`Rel_D`/`Rel_L`/`Rel_R` aliases, and `Rel_Back`.
-- Source spans, raw statements, and explicit retained warnings for update/layout/style calls that are not rendered exactly yet.
+- Nested boundary/deployment membership becomes actual native group hierarchy; dynamic relationships retain source order and visible sequence numbers.
+- `UpdateElementStyle` applies supported background, font and border colors; `UpdateRelStyle` applies line/text colors and finite label offsets to existing targets. Safe links remain data for the native artifact.
+- Source spans and retained warnings identify unsupported layout, shape, sprite, tag and legend presentation.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -464,7 +491,7 @@ var artifact = document!.ToVisualArtifact(new MermaidTopologyRenderOptions {
 });
 ```
 
-The conversion target for C4 diagrams is `TopologyChart`. Boundaries become topology groups, C4 elements become topology nodes, and relationships become topology edges. C4 kinds, descriptions, technology labels, tags, links, boundary membership, direction hints, and source spans are retained in the AST or topology metadata. Mermaid update/style/layout calls currently produce warnings and retained statements rather than silent visual degradation.
+The conversion target for C4 diagrams is `TopologyChart`. Boundaries and deployment nodes become nested groups, elements become nodes, and relationships become edges with supported native port hints, paint and label offsets. Kinds, descriptions, technology labels, tags, authored relationship indices and source spans remain inspectable. C4 reports `CFXM009` because native layout does not reproduce its specialized reference layout; unsupported sprite/tag/legend and layout-config settings retain specific diagnostics.
 
 ## Mindmaps
 
@@ -625,7 +652,7 @@ The conversion target for kanban boards is `TopologyChart`. Columns become topol
 
 ## Journey Diagrams
 
-Journey diagrams are parsed into `MermaidJourneyDocument` and converted to native ChartForgeX score charts.
+Journey diagrams are parsed into `MermaidJourneyDocument` and converted to the reusable native `JourneyDiagramBlock`.
 
 Supported journey parsing includes:
 
@@ -655,7 +682,7 @@ var artifact = document!.ToVisualArtifact(new MermaidJourneyRenderOptions {
 });
 ```
 
-The conversion target for journey diagrams is `Chart`. Sections, task scores, actors, task counts, actor counts, and source spans are retained in the AST or artifact metadata. Static rendering maps journey scores to deterministic ChartForgeX bars.
+`ToJourneyDiagramBlock()` retains ordered tasks and distinct section identities, including repeated display labels. Scores from one through five form a visible score path; actor rows show actual task membership. Non-finite or out-of-range task scores produce a located error, rather than an empty or misleading score chart. SVG and PNG use the same measured native scene. A task's `Section` references its typed `MermaidJourneySection`, rather than a section-name string. The former `ToChart()` score-bar projection and `SeriesName` option have been removed.
 
 ## Quadrant Charts
 
@@ -807,7 +834,7 @@ The conversion target for pie diagrams is `Chart`. Slice order, labels, values, 
 
 ## Timelines
 
-Timeline diagrams are parsed into `MermaidTimelineDocument` and converted to native ChartForgeX timeline charts.
+Timeline diagrams are parsed into `MermaidTimelineDocument` and converted to the reusable native `TimelineDiagramBlock`.
 
 Supported timeline parsing includes:
 
@@ -843,7 +870,7 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for timelines is `Chart`. Mermaid sections, period labels, event counts, direction, title, and source spans are retained in the AST and artifact metadata. Static rendering maps Mermaid text periods onto ordered ChartForgeX timeline positions.
+`ToTimelineDiagramBlock()` preserves categorical period labels, ordered event cards, multiline continuations, distinct sections and the requested reading direction. Labels such as `Before launch`, `2026` and `2026-10-22` remain categorical text; the renderer does not parse them into dates or invent numeric/calendar durations. Use Gantt when tasks need actual dated intervals. `<br>` line breaks are measured and wrapped by the shared native text owner. A period's `Section` references its typed `MermaidTimelineSection`. Whole words fit the measured section/period/event cells where possible. A single token that cannot fit the authored frame shortens with an ellipsis and retains its complete SVG title; the frame does not grow implicitly. The former `ToChart()` interval projection and `ShowEventDurations` option have been removed.
 
 ## Gantt Diagrams
 
@@ -988,9 +1015,9 @@ var png = document.ToPng();
 
 The conversion target for XY charts is `Chart`. Category labels, axis ranges, series kind counts, orientation, title, and source spans are retained in the AST or artifact metadata. Static rendering maps vertical Mermaid bars to ChartForgeX bar series and horizontal Mermaid bars to horizontal bar series. Lines share the source orientation, including mixed horizontal bar/line charts. In horizontal charts, the source x-axis supplies categories, captions and bounds on the physical Y axis; the source y-axis supplies values and bounds on the physical X axis. Authored point coordinates remain intact for metadata, pointer tooltips and keyboard selection.
 
-Native callers can set `chart.Options.LineOrientation = ChartOrientation.Horizontal` for line and step-line series. The primary physical X axis owns values, and the physical Y axis owns linear or time categories. Horizontal lines can share a chart with horizontal bars; vertical series and secondary-axis series require a separate chart. Interpolation, step placement, breaks and marker bounds use the same prepared geometry for SVG and PNG.
+Native callers can set `chart.Options.LineOrientation = ChartOrientation.Horizontal` for line and step-line series. The selected primary or secondary physical X axis owns values, and the physical Y axis owns linear or time categories. Horizontal lines can share categories with horizontal bars, ranges and box plots. Each series chooses its primary or secondary physical X value axis; vertical companions require a separate chart. The [combination contract](v2/chart-combinations.md) records the supported mixtures. Interpolation, step placement, breaks and marker bounds use the same prepared geometry for SVG and PNG.
 
-For horizontal line charts, configure value formatting and explicit value labels on `XAxis`, and category formatting and labels on `YAxis`. The mean, median and standard-deviation helpers follow the current value axis during preparation, including orientation changes made after adding them. Explicit `AddHorizontalLine` and `AddHorizontalBand` annotations retain their physical Y coordinates.
+For horizontal line charts, configure value formatting and explicit value labels on the selected `XAxis` or `SecondaryXAxis`, and category formatting and labels on `YAxis`. The mean, median and standard-deviation helpers follow the current value axis during preparation, including orientation changes made after adding them. Explicit `AddHorizontalLine` and `AddHorizontalBand` annotations retain their physical Y coordinates.
 
 ## Sankey Diagrams
 
@@ -1404,7 +1431,99 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for Venn diagrams is `VennDiagramBlock`. Sets render as deterministic overlapping circles with set and intersection labels. Set and region captions share measured placement in SVG and PNG, keeping adjacent labels separate within the body. Captions that cannot fit the available lanes are omitted from visible output; authored labels remain in the model. Mermaid size values are retained in the AST and artifact metadata, but current static rendering is not area-proportional Euler layout and is intentionally limited to one, two, or three sets.
+The conversion target is `VennDiagramBlock`, limited to one, two or three sets. Circle areas preserve the set-size ratios. Two-set overlaps match the requested area within numeric precision; painted intersections use actual circular arcs and retain their authored fill, outline, text color and opacity. Invalid memberships, including intersections larger than a participating set or algebraically impossible exclusive regions, produce located errors.
+
+Arbitrary three-set cardinalities do not always admit an exact circular layout. `ToVennDiagramBlock().MeasureLayout()` exposes `Circles`, `Regions` with `RequestedArea` and `ActualArea`, `MaximumRelativeAreaError` and `IsAreaAccurate`. The parser reports `CFXM009` when a three-circle residual exceeds 0.5% of the largest source set; hosts can reject it through the shared warning policy. This is a bounded circular fit, not a promise of arbitrary Euler geometry. Captions use the same measured placement in SVG and PNG; labels that cannot fit remain in the model even when omitted from the visible lanes.
+
+## Agent Workflows
+
+`agentflow-beta` produces a `MermaidAgentflowDocument`. Nodes, nested flows, global declarations, connectors and sequence/reference/failure edges remain typed source facts. Native conversion uses `TopologyChart`: expanded flows become compound groups, collapsed flows become one visible node, and external relationships resolve to the visible container. Relationships entirely inside a collapsed container are retained in the document rather than painted as artificial self-loops.
+
+```mermaid
+agentflow-beta LR
+global
+  policy["Review policy"]@{ shape: refdoc }
+end
+flow review["Request review"]
+  input["Request"]@{ shape: input }
+  check["Check policy"]@{
+    shape: tool
+    instruction: "Show the policy to the reviewer."
+    labels: [manual, bounded]
+  }
+  approve["Approved?"]@{ shape: decision }
+  input --> check
+  check --> approve
+  check -.- policy
+end
+```
+
+Use `new MermaidParser().ParseAgentflow(source)` for the typed document, then `document.ToTopologyChart()` or `document.ToVisualArtifact()`. The generic `MermaidRenderer.Render` and Markdown fences use the same parser and native converter. Metadata mappings, arrays and scalars are bounded immutable values inside the typed metadata tree; reserved prototype-shaped mapping keys are removed recursively. This is a diagram-data subset, not a YAML execution environment. Instructions, expressions, connector references and URLs never run or fetch content. Unsupported presentation, shape and animation settings retain located diagnostics.
+
+## ZenUML Occurrences
+
+`zenuml` has its own parser and typed `MermaidZenUmlDocument`. It is not translated into Mermaid `sequenceDiagram` text. Calls with bodies retain caller context and activations; creation retains the created participant's position; assignments, returns, asynchronous messages, comments and control fragments lower directly to `SequenceArtifact` facts.
+
+```mermaid
+zenuml
+title Review request
+@Actor Reviewer
+@Control Service
+@Database Store
+@Starter(Reviewer)
+Service.review(request) {
+  if (valid) {
+    Store.save(request)
+    return accepted
+  } else {
+    return declined
+  }
+}
+```
+
+`new MermaidParser().ParseZenUml(source)` exposes the separate occurrence tree. Use `document.ToSequenceArtifact()` to configure a native sequence, or the shared artifact/direct/fence exports to retain captured source policy. Participant groups must be contiguous and non-overlapping. A call without an authored caller uses an explicit external context instead of inventing a method-named participant. Conditions and arguments are inert strings, not executable expressions.
+
+The supported control fragments include conditional branches, loops, optional, parallel, critical and try/catch/finally blocks. Exception handling uses native `SequenceArtifactBlockKind.Try`, preserving catch/finally order. Upstream ZenUML can label that fragment `break`; CFX keeps the native exception-handling name. Unsupported reference frames, divider lines and participant stereotype/emoji/color/width presentation retain `CFXM007` rather than being silently painted as other notation.
+
+The official Mermaid ZenUML plugin manages actual grammar parsing during rendering; its Mermaid-facing parser is a no-op. The external-plugin fixture corpus therefore separates real reference rendering and visible-semantic observation from ordinary pinned parser acceptance. Neither a recognized header nor a successful no-op parse qualifies the occurrence mapping.
+
+## Railroad Grammars
+
+All four Railroad headers produce a `MermaidRailroadDocument`: `railroad-beta` for explicit IR constructors, `railroad-ebnf-beta` for EBNF, `railroad-abnf-beta` for ABNF, and `railroad-peg-beta` for PEG. They lower to the same immutable `RailroadExpression`/`RailroadRule` model and native `RailroadDiagramBlock` scene. Rule IDs, declaration order, literal/reference distinctions and original source spans remain inspectable.
+
+| Frontend | Supported expression contracts | Explicit limits |
+| --- | --- | --- |
+| IR | `terminal`, `nonterminal`, `special`, `sequence`, `choice`, `optional`, `zeroOrMore`, `oneOrMore` | Only these constructors are accepted; constructor arguments are diagram data. |
+| EBNF | `=`/`::=`, quoted literals, references, sequences, `\|` choices, groups, `[]`, `{}`, postfix `?`/`*`/`+`, `-` exceptions and `? special sequence ?` | This is the documented native subset, not every EBNF dialect. |
+| ABNF | Case-insensitive rule IDs and double-quoted literals, `/` alternatives, optional/groups, ordered non-negative repetition bounds, `%x`/`%d`/`%b` scalar/range/sequence forms | Rules require a terminating semicolon; its trailing text is a comment. `%i`/`%s` literal prefixes and single-quoted strings are rejected. This is Mermaid's bounded frontend, not full RFC ABNF. |
+| PEG | `<-` rules, ordered `/` choice, sequences/groups, one postfix `?`/`*`/`+`, `&`/`!` predicates and `.` | Character classes and unsupported operators produce located errors. Predicates are depicted, never executed. |
+
+All rules end with `;`. Duplicate identities, reversed repeat bounds, invalid numeric ranges, malformed strings and unsupported constructors report located errors and prevent direct/fenced rendering. ABNF rule comparison ignores case; the other frontends preserve case-sensitive identity. Quoted ABNF literals ignore case, while EBNF/PEG/IR literals retain case-sensitive semantics. Rule references and repetition counts stay symbolic, including recursion; rendering neither expands them nor creates an executable recognizer.
+
+```csharp
+using ChartForgeX.Mermaid;
+
+const string source = """
+railroad-ebnf-beta
+list = item { "," item } ;
+item = "value" | "other" ;
+""";
+
+var parsed = new MermaidParser().ParseRailroad(source);
+if (!parsed.HasErrors && parsed.Document != null) {
+    var artifact = parsed.Document.ToVisualArtifact(new MermaidRailroadRenderOptions {
+        Id = "list-grammar",
+        Width = 720,
+        Height = 320
+    });
+    artifact.SaveSvg("grammar.svg");
+    artifact.SavePng("grammar.png");
+}
+```
+
+`Width` and `Height` are minimum natural dimensions. Native grammar measurement reserves the complete rule geometry before export; an explicitly undersized native frame is rejected rather than clipped. The shared Mermaid source/model/depth/output/pixel limits and cooperative cancellation still apply. A plain `RailroadDiagramBlock` additionally bounds native layout to 512 rules, 32,768 expression occurrences and 128 nesting levels. SVG and PNG use the same scene and font owner; there is no separate PNG layout or browser runtime.
+
+Journey, Timeline and Railroad portable artifact JSON preserves the common envelope and SVG fallback. It does not reconstruct their typed native model. Keep the typed document/block when a consumer needs grammar traversal or semantic editing. Pinned-reference runtime comparisons and dense grammar geometry remain qualification work; supported parsing does not establish reference pixel equality.
 
 ## Ishikawa Diagrams
 
@@ -1552,7 +1671,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 113 native fixture sources, five recognition-only sources and 16 invalid sources, with 72 shared semantic expectation files. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. A separate opt-in browser lane renders selected upstream fixtures through HtmlTinkerX and records native SVG/PNG beside them.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 151 sources: 130 fixture sources, five sources in the historical `recognition/` folder, and 16 invalid sources. The recognition-folder examples now use the native Agentflow and Railroad paths. Shared semantic expectation files record the checked native facts. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. A separate opt-in browser lane renders selected upstream fixtures through HtmlTinkerX and records native SVG/PNG beside them.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
@@ -1562,7 +1681,7 @@ npm run validate
 
 `Build.ps1` runs the same three-reference validation before the solution build and .NET test suite. The default command validates `fixtures/`, `recognition/` and `invalid/`; use `node validate-mermaid.mjs fixtures --reference 10` for a focused folder/version run. New fixtures require version metadata. Documented syntax and semantic rejections are checked independently of accepted-source facts, so a failed semantic comparison cannot be counted as an expected source rejection.
 
-The 12.2.0 reference accepts all 118 positive sources and rejects all 16 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
+The 12.2.0 reference accepts 135 sources and rejects all 16 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
 
 Run the observed reference-render lane with an absolute task output directory (`$outputDirectory` below):
 
@@ -1682,3 +1801,9 @@ For IX and other consuming hosts, the preferred integration is to accept Mermaid
 Oversized source typography fits Sankey captions and rectangular hierarchy labels within their native mark and column bounds. Ordinary legend text still follows the configured row and height budget; oversized legend text can shrink to fit. CSS font-size functions containing whitespace or line breaks are retained with a warning because native rendering does not evaluate CSS sizing expressions.
 
 The optional peer reference lane runs `node validate-mermaid.mjs --peer --output $outputDirectory`. It uses an isolated, locked, test-only .NET 10 project and the pinned MIT Mermaider 0.15.1 package; it is outside the normal solution and shipped package graph. Its report distinguishes rendered output, unsupported semantics and engine failures. The official Mermaid references remain the language authority. Neither reference lane requires equal geometry or pixels.
+
+### Native Venn area qualification
+
+`VennDiagramBlock.MeasureLayout()` returns placed circles and each declared intersection's `RequestedArea`, `ActualArea`, real circular-arc `Path` and interior label anchor. `MaximumRelativeAreaError` divides the largest absolute overlap error by the largest source set size; `IsAreaAccurate` uses a 0.005 limit. One-to-three set-circle areas preserve source ratios, and two-set overlap is solved directly. Arbitrary three-set cardinalities cannot always be represented exactly by circles: the bounded deterministic fit reports its residual rather than claiming exact geometry. Algebraically impossible overlaps and duplicate memberships are errors at the authored union. Zero-area regions remain empty. Explicit fill, outline width, fill opacity and text paint are preserved.
+
+C4 boundaries and deployment nodes use actual native parent groups. Dynamic relationships are numbered in source order while the authored `RelIndex` value remains in the AST and metadata. `UpdateElementStyle` maps supported background, label and border colors; `UpdateRelStyle` maps line and text colors plus existing native label offsets. Links map to native drill-down fields. Sprites, tags, legends and unsupported shape/layout updates remain documented limitations; a parsed metadata field is not a claim that those reference features are painted.

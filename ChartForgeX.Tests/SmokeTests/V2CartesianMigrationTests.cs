@@ -116,7 +116,7 @@ public sealed class V2CartesianMigrationTests {
     public void SecondaryBarStacks_KeepSeparateRangesBaselinesAndFormattedTotals() {
         var chart = Chart.Create().AddBar("Primary A", Points(4, -3)).AddBar("Secondary A", Points(20, -15))
             .AddBar("Primary B", Points(6, -7)).AddBar("Secondary B", Points(30, -35)).WithAxes(false);
-        chart.Series[1].UseSecondaryYAxis(); chart.Series[3].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis(); chart.Series[3].UseSecondaryValueAxis();
         chart.Options.ShowGrid = false;
         chart.Options.BarMode = ChartBarMode.Stacked;
         chart.Options.ShowStackTotals = true;
@@ -128,7 +128,7 @@ public sealed class V2CartesianMigrationTests {
         Assert.Equal(-3, stacks.Point(2, 1).Base);
         Assert.Equal(-15, stacks.Point(3, 1).Base);
         var range = ChartRange.FromChart(chart, coordinates);
-        var secondary = ChartRange.FromSecondaryYAxis(chart, range);
+        var secondary = ChartRange.FromSecondaryValueAxis(chart, range);
         Assert.Equal(-10, range.MinY); Assert.Equal(-50, secondary.MinY);
         Assert.InRange(range.MaxY, 10, 12); Assert.InRange(secondary.MaxY, 50, 60);
         var scene = Compile(chart);
@@ -147,10 +147,10 @@ public sealed class V2CartesianMigrationTests {
     public void SecondaryStackedAreas_StackOnlyTheirOwnAxis_AndPreserveDisconnectedSegments() {
         var chart = Chart.Create().AddStackedArea("Primary", Points(100, 200)).AddStackedArea("Secondary A", Points(2, -3))
             .AddStackedArea("Secondary B", new[] { new ChartPoint(1, 4), new ChartPoint(2, -5, true), new ChartPoint(3, -2) }).WithAxes(false);
-        chart.Series[1].UseSecondaryYAxis(); chart.Series[2].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis(); chart.Series[2].UseSecondaryValueAxis();
         chart.Options.ShowGrid = false;
         var primary = ChartRange.FromChart(chart);
-        var secondary = ChartRange.FromSecondaryYAxis(chart, primary);
+        var secondary = ChartRange.FromSecondaryValueAxis(chart, primary);
         Assert.Equal(-8, secondary.MinY);
         Assert.InRange(secondary.MaxY, 6, 8);
         var plot = new ChartRect(70, 40, 490, 290);

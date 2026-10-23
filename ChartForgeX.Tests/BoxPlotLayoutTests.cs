@@ -119,20 +119,21 @@ public sealed class BoxPlotLayoutTests {
     }
 
     [Fact]
-    public void VerticalSecondaryProjectionAndMixturesRemainSupportedWhileHorizontalConstraintsAreClear() {
+    public void VerticalAndHorizontalSecondaryProjectionsKeepMixedOrientationConstraints() {
         var chart = Chart.Create().WithAxes(false).WithLegend(false)
             .AddBoxPlot("Primary", new[] { new ChartBoxPlot(1, 1, 2, 5, 8, 9) })
             .AddBoxPlot("Secondary", new[] { new ChartBoxPlot(1, 100, 200, 300, 400, 500) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.YAxis.WithBounds(0, 10); chart.Options.SecondaryYAxis.WithBounds(100, 500);
         var bodies = Scene(chart).Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "boxplot-body").ToArray();
         Assert.Equal(80, bodies[0].Bounds.Top, 8); Assert.Equal(240, bodies[0].Bounds.Height, 8);
         Assert.Equal(100, bodies[1].Bounds.Top, 8); Assert.Equal(200, bodies[1].Bounds.Height, 8);
         Assert.True(bodies[0].Bounds.Right < bodies[1].Bounds.Left);
         chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
-        Assert.Contains("primary X", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
-        chart.Series[1].YAxis = ChartAxisSide.Primary; chart.AddRangeBar("Interval", new[] { new ChartInterval(1, 2, 8) });
-        Assert.Contains("only box plot", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
+        var horizontal = chart.Prepare(new VisualRenderContext());
+        Assert.NotNull(horizontal.SecondaryXProjection); Assert.NotEmpty(horizontal.ToPng());
+        chart.Series[1].ValueAxis = ChartAxisSide.Primary; chart.AddRangeBar("Interval", new[] { new ChartInterval(1, 2, 8) });
+        Assert.Contains("horizontal orientation", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
         chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Vertical);
         chart.AddLine("Target", new[] { new ChartPoint(1, 5), new ChartPoint(2, 6) });
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);

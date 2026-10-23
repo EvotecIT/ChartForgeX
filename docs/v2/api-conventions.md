@@ -229,6 +229,23 @@ Public option callbacks use one transaction: clone current options, invoke the c
 
 Direct option setters remain supported. Assigning a value expresses intent even when it equals the default; nullable overrides can return to inheritance through null where documented. Text-style boolean assignments also preserve explicit false when overriding inherited italic, underline or strikethrough. Callback ownership applies to installed configuration; one-time data selector and formatter functions have their own documented execution lifetime.
 
+## Independent uncertainty bounds
+
+`ChartErrorBar(x, y, xBounds: ..., yBounds: ...)` requires at least one immutable `ChartErrorBounds(lower, upper)`. Supply X, Y or both independently; each finite interval must contain its estimate. Zero-width intervals are valid. The DateTime overload uses the existing UTC-to-OLE-Automation conversion for X. Typed intake and updates snapshot the bounds, validate the whole replacement before mutation, and retain source identity. The renderer fits both endpoint and cap geometry, including when estimate markers are disabled. Native SVG/PNG, tooltips, keyboard readouts and point legends preserve distinct X and Y bounds and their own axis formatters.
+
+```csharp
+using ChartForgeX.Core;
+
+var chart = Chart.Create().WithSize(640, 420)
+    .AddErrorBar("Estimate", new[] {
+        new ChartErrorBar(4, 20,
+            xBounds: new ChartErrorBounds(3, 5),
+            yBounds: new ChartErrorBounds(16, 25))
+    });
+var svg = chart.ToSvg();
+var png = chart.ToPng();
+```
+
 ## Grouped category axes
 
 `ChartAxisLabel.Groups` describes a category's parents, from the outermost group to the nearest parent. Supply the original numeric coordinate and leaf caption as usual:
@@ -476,7 +493,7 @@ waterfall.Options.XAxis.WithBounds(-50, 150);
 waterfall.Options.YAxis.WithReversal();
 ```
 
-The physical X axis owns horizontal values, bounds, scale, reversal and tick formatting. The physical Y axis owns categories, bounds, reversal and category captions. Each item's `X` remains its category coordinate; orientation never sorts items or changes accumulation. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Resolved category captions agree across the native axis, marks, point legends and HTML readouts, including custom formatters and time categories. Horizontal waterfalls require one series on the primary axis. Vertical secondary-axis behavior is unchanged.
+The physical X axis owns horizontal values, bounds, scale, reversal and tick formatting. The physical Y axis owns categories, bounds, reversal and category captions. Each item's `X` remains its category coordinate; orientation never sorts items or changes accumulation. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Resolved category captions agree across the native axis, marks, point legends and HTML readouts, including custom formatters and time categories. Horizontal waterfalls require one series and use its primary or secondary X value-axis slot.
 
 Native marks and point legends preserve the distinction between item positions and numeric source ordinals. An opening balance or delta retains its raw value and `data-cfx-source-point`; only deltas expose `data-cfx-delta`. A checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Total contributors include the opening observation; subtotal contributors contain only changes since the anchor. `data-cfx-category-label` carries the resolved caption and `data-cfx-orientation` records the layout. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange remains a separate capability.
 
@@ -540,7 +557,7 @@ var distributions = Chart.Create().WithXLabels("Standard", "Express")
     .WithXAxis("Delivery time (minutes)").WithYAxis("Service");
 ```
 
-`ChartOptions.BoxPlot.Orientation` defaults to `Vertical` and may be configured before or after adding series. `ChartBoxPlot.X` always denotes the category coordinate. Horizontal box plots use the primary physical X value axis and Y category axis, including bounds and reversal. Move value scales and tick formatting to `XAxis` and category formatting to `YAxis`; explicit Y labels win, with `WithXLabels` as a fallback when Y has no explicit labels. Positive logarithmic values use the existing value-axis scale without an invented zero baseline. Horizontal charts require only box plot series on the primary axis. Existing vertical Cartesian mixtures and secondary Y axes remain supported. Box plots do not participate in scalar bar stacking or normalization.
+`ChartOptions.BoxPlot.Orientation` defaults to `Vertical` and may be configured before or after adding series. `ChartBoxPlot.X` always denotes the category coordinate. Horizontal box plots use the primary physical X value axis and Y category axis, including bounds and reversal. Move value scales and tick formatting to `XAxis` and category formatting to `YAxis`; explicit Y labels win, with `WithXLabels` as a fallback when Y has no explicit labels. Positive logarithmic values use the existing value-axis scale without an invented zero baseline. Horizontal box plots accept other horizontally oriented Cartesian series and either X value-axis slot. Existing vertical Cartesian mixtures and secondary Y axes remain supported. Box plots do not participate in scalar bar stacking or normalization.
 
 Raw samples are sorted for calculation. For probability `p`, the quantile interpolates between adjacent sorted samples at zero-based position `(n - 1) * p`, with `p` equal to 0.25, 0.5 and 0.75. Thus samples `[30, 0, 20, 10]` produce minimum `0`, Q1 `7.5`, median `15`, Q3 `22.5` and maximum `30`. A single sample supplies all five values. The default `MinMax` policy reaches the sample minimum and maximum. `ConfigureBoxPlotStatistics` can select `Iqr` with a finite positive `IqrMultiplier` (default 1.5). Samples strictly outside the inclusive Q1/Q3 fences appear as outlier markers; automatic bounds still include their original extrema. Authored summaries retain their supplied five values exactly and must satisfy `Minimum <= Q1 <= Median <= Q3 <= Maximum`.
 
@@ -660,6 +677,33 @@ Migration: use these typed source collections and `HistogramSourcePoints` in pla
 
 Filter `prepared.Regions.Where(region => region.Role == "point")` when counting or selecting Cartesian observations. Layout regions also affect the unfiltered collection's count and order. A usable Cartesian chart exposes a `cartesian-plot` region for its final mapping rectangle; composed panels translate its bounds and prefix its ID. This region supplies host guide bounds independently of mark clipping and has no observation label.
 
+## Explicit Pie and Donut bands
+
+`ChartSeries.RadialBand` accepts immutable `ChartRadialBand(innerRatio, outerRatio)` values within `0 <= inner < outer <= 1`. The ratios use one shared available radius. An explicit band controls both radii for Pie or Donut; null retains that family's ordinary single-series geometry. `WithRadialBand(null)` restores it.
+
+Multiple Pie/Donut series require an explicit, disjoint band on every series. Series order controls paint order and retains identity; it does not select the innermost or outermost band. Each series keeps its own total, percentages, aggregation budget, point formatting, observation IDs and legend entries. Categories may share labels without sharing totals. This composition does not add a second per-observation radius measure.
+
+```csharp
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+
+var prior = new ChartSeries(new ChartSeriesId("prior"), "Prior", ChartSeriesKind.Donut,
+    new[] { new ChartPoint(1, 75), new ChartPoint(2, 25) })
+    .WithRadialBand(new ChartRadialBand(.2, .5));
+var current = new ChartSeries(new ChartSeriesId("current"), "Current", ChartSeriesKind.Pie,
+    new[] { new ChartPoint(1, 132), new ChartPoint(2, 88) })
+    .WithRadialBand(new ChartRadialBand(.65, 1));
+var chart = Chart.Create().WithSize(800, 500).WithXLabels("Subscriptions", "Consulting")
+    .WithDonutCenterText("100", "Prior")
+    .AddSeries(prior).AddSeries(current);
+var svg = chart.ToSvg();
+var png = chart.ToPng();
+```
+
+Only the innermost hole owns the center caption. A disk at the center, an empty innermost series or a band without usable space does not transfer that caption to another ring. Inner bands allow in-band labels or explicitly hidden labels; active `Outside`, `Left`, `Right`, `Above` or `Below` placement rejects. Only the outermost band may request external labels. Positive slice offsets reject in a multi-band chart because an exploded slice can cross another ring. Ordinary single-series slice offsets retain their existing contract.
+
+Labels must fit inside an explicit band; unavailable space omits paint with a diagnostic and retains complete semantic text. Bands thinner than one logical unit retain source and legend facts with `radial.band-insufficient-space`. `MaximumPieSlices` applies independently to each series, including retained `Other` contributors and overflow facts. Native SVG and PNG use the same prepared geometry; raster/output budgets apply to the complete chart. Common artifact metadata records explicit ratios, but it does not create typed chart-model interchange semantics.
+
 ## Point markers and radial forms
 
 `ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `ConfigureMarkers` configures one of nine built-in shapes, visibility, fill and outline. Ordinary point glyphs also accept a logical radius override. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Bubble series require a null marker radius and use `ChartOptions.Bubble` for size mapping. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
@@ -685,7 +729,7 @@ Scatter and Bubble series with a numeric color scale use the theme foreground fo
 `WithPolarGridShape(ChartPolarGridShape.Circle)` selects circular guides for radar or polar line charts. `Polygon` joins the spokes; `Automatic` preserves native radar polygons and polar circles. `Options.PolarGridRingCount` optionally requests zero through one hundred equally spaced guides in the configured linear, logarithmic or symmetric-logarithmic scale. Zero hides concentric guides while retaining spokes and observations. Null preserves generated axis ticks. Guide settings preserve source values and series forms and use the same prepared geometry for SVG and PNG. Fractional guide counts can extend beyond the data-axis radius, so fitting the outer guide can resize the plot and change rendered observation coordinates. Observation coordinates remain unchanged when the plot layout is unchanged.
 `ConfigureRadar(radar => radar.CurveTension = 0.25)` selects closed cubic curves through the observations. Null or zero keeps straight edges. Each radar uses its selected value-axis domain during curve fitting. Standalone charts and column overlays reserve complete curve bounds with one scale factor shared by their marks, axes and guides; overlays retain the configured inner-radius proportion and transparent hole. Source values and column stack totals remain unchanged.
 
-These radar forms also combine with `AddRadialColumn` through the existing series calls. The native numeric radial owner aligns every series to the union of category X identifiers and places radar vertices at whole-category centers, regardless of grouped column slots. Each value axis builds its domain from column segment endpoints and the raw values of its radar series; radar contributes neither stack slots nor normalized totals. `UseSecondaryYAxis()` selects an independent numeric domain and reversal for radar in both standalone and mixed charts. Standalone radar starts its first category at the top; mixed charts use the column viewport's category centers. `ConfigureXAxis(axis => axis.WithReversal())` reverses those category positions together with their spokes and captions. Standalone radar then starts its last category at the top. Source observations, category labels, point colors and missing-category identities keep their original associations.
+These radar forms also combine with `AddRadialColumn` through the existing series calls. The native numeric radial owner aligns every series to the union of category X identifiers and places radar vertices at whole-category centers, regardless of grouped column slots. Each value axis builds its domain from column segment endpoints and the raw values of its radar series; radar contributes neither stack slots nor normalized totals. `UseSecondaryValueAxis()` selects an independent numeric domain and reversal for radar in both standalone and mixed charts. Standalone radar starts its first category at the top; mixed charts use the column viewport's category centers. `ConfigureXAxis(axis => axis.WithReversal())` reverses those category positions together with their spokes and captions. Standalone radar then starts its last category at the top. Source observations, category labels, point colors and missing-category identities keep their original associations.
 
 Mixed column/radar charts require a full-turn `ChartRadialGeometryOptions` viewport. Each series must have unique category identifiers; a populated radar needs at least three categories across the composition. Missing column observations remain absent. Radar uses its configured missing-category policy in both standalone and mixed layouts. The inner radius clips radar fills, patterns, lines and glyphs in both native exporters. `RadialBar`, continuous `Polar`, `PolarArea` and Cartesian series cannot join this composition.
 
@@ -699,7 +743,7 @@ Numeric radial `Inside` and `Center` captions fit entirely within their painted 
 
 Numeric radial axis text uses the existing chart options. `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` place horizontal titles in measured strips inside the shared frame. Primary and secondary value titles share the top strip; the category title uses the bottom strip. A value title participates when that axis has observations or a complete authored domain. `AxisTitleStyle` controls all title text; shortened or omitted titles report `numeric-radial.axis-title-overflow` and retain their full descriptive text. An entirely empty chart keeps its no-data surface.
 
-`ConfigureXAxis`, `ConfigureYAxis` and `ConfigureSecondaryYAxis` set each axis's independent `LabelOrientation` and `LabelAngle`. `Fixed`, the default orientation, uses screen degrees: zero is horizontal, and equivalent full turns normalize before layout and paint. `Parallel` follows the local axis track; `Perpendicular` uses the direction across it. An angular axis follows its local tangent, while a radius axis follows its spoke. For radial bars the category axis is radial and the value axes are angular; radial columns use the opposite arrangement. Relative modes add `LabelAngle` as an offset, then keep the baseline upright. Reversal uses the projected position, and primary and secondary value axes keep independent settings. Other chart families reject a nonfixed orientation during preparation.
+`ConfigureXAxis`, `ConfigureYAxis`, `ConfigureSecondaryXAxis` and `ConfigureSecondaryYAxis` set each axis's independent `LabelOrientation` and `LabelAngle`. `Fixed`, the default orientation, uses screen degrees: zero is horizontal, and equivalent full turns normalize before layout and paint. `Parallel` follows the local axis track; `Perpendicular` uses the direction across it. An angular axis follows its local tangent, while a radius axis follows its spoke. For radial bars the category axis is radial and the value axes are angular; radial columns use the opposite arrangement. Relative modes add `LabelAngle` as an offset, then keep the baseline upright. Reversal uses the projected position, and primary and secondary value axes keep independent settings. Other chart families reject a nonfixed orientation during preparation.
 
 Numeric radial `LabelDensity` controls caption spacing independently on each axis. `Auto` keeps the balanced spacing; `Dense` accepts touching captions; `Relaxed` reserves more separation. `All` accepts caption overlaps without collision thinning, while each label still fits the viewport and avoids painted marks. Text may therefore be shortened or omitted when no safe footprint fits. The coincident first/last tick of a full turn retains one seam caption. Every fitted axis caption remains an obstacle for later ordinary captions, stack totals and data labels. Complete text remains in descriptive regions. Orientation and density do not rotate titles or data labels. `ShowAxes = false` or an axis's `Visible = false` excludes its text and spacing; `ShowLine = false` controls only the axis rule.
 
@@ -813,41 +857,69 @@ var chart = Chart.Create().WithDataLabels()
 
 The formatter runs once for each compiled node, including nodes with hidden captions, zero sizes or collapsed geometry. Null, empty or whitespace output suppresses secondary text and preserves the primary-only SVG and PNG. Preparation snapshots text and resolved styles; later changes to a callback, its captured data or styling do not change a prepared export. Formatter exceptions propagate.
 
-Secondary typography inherits chart, series and ordinal node data-label styling at 80% of the primary font size, with a ten-pixel minimum no larger than the primary caption, then applies `SecondaryLabelStyle`. Explicit secondary font sizes and colors override these defaults. `SecondaryLabelSpacing` defaults to two logical pixels and accepts finite, nonnegative values. Both runs share horizontal or upright tangential placement and fit inside the actual sector, including rounded corners. Primary content takes priority: secondary text wraps, shortens at text-element boundaries or is omitted before the primary caption loses content. Font sizes stay fixed; automatic shrinking and configurable sector padding are separate policies.
+Secondary typography inherits chart, series and ordinal node data-label styling at 80% of the primary font size, with a ten-pixel minimum no larger than the primary caption, then applies `SecondaryLabelStyle`. Explicit secondary font sizes and colors override these defaults. `SecondaryLabelSpacing` defaults to two logical pixels and accepts finite, nonnegative values. Both runs share horizontal or upright tangential placement and fit inside the actual sector, including rounded corners. Primary content takes priority: secondary text wraps, shortens at text-element boundaries or is omitted before the primary caption loses content. Font sizes stay fixed by default. Optional `MinimumLabelFontSize` permits complete primary captions to shrink to an explicit positive floor; `SectorGap` adds native logical-pixel spacing without changing source allocation. See [hierarchy views and Sunburst fitting](../hierarchy-views.md#sunburst-caption-size-and-sector-spacing).
 
 Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
 
+## Logarithmic scales
+
+`ChartAxis.LogarithmBase` accepts a finite value greater than one for both `Logarithmic` and `SymmetricLogarithmic`. Base ten remains the default. A logarithmic axis explicitly selects `ChartLogarithmicDomain.Positive` or `Negative`; it never guesses a sign or discards opposite-sign observations. Zero, opposite-sign values and bounds outside the selected domain reject before authored clipping can hide them. Bounds remain increasing source coordinates, so a negative domain can use `-64` through `-1`; `Reversed` independently changes its screen direction.
+
+The [compiled native axis recipe](../../ChartForgeX.Examples/WebsiteRecipes/NativeAxisWebsiteRecipe.cs) shows positive and negative base-two domains in one ordinary console program. The website presents its exact SVG and native PNG output beside the complete downloadable source.
+
+`WithLogarithmicScale(base, domain)` selects scale, base and sign in one validated operation. Clear contradictory existing bounds before changing their sign, or use the chart's transactional `Configure*Axis` callback to install a coherent candidate. Symmetric logarithmic axes retain their existing linear threshold, accept either sign and ignore `LogarithmicDomain`; set their `LogarithmBase` when a base other than ten is needed. Other mathematical scales retain the configured base without applying it. Axis formatting, raw values and source identity remain independent of the transform.
+
 ## Cartesian viewports
 
-`Chart.Prepare(context, viewport)` accepts one optional `ChartCartesianViewport` for X, primary Y or XY windows. Its `X` and `Y` values are immutable `ChartXViewport` and `ChartYViewport` inputs; an omitted axis keeps its full-data domain. Pass null, or use `Prepare(context)`, for the full view. A `ChartCartesianViewport` must contain at least one window, so `new ChartCartesianViewport()` is not a reset request.
-
-Explicit windows support vertical Line, StepLine, Area, StepArea, StackedArea, Scatter, Bubble, Candlestick, OHLC, RangeBand, RangeArea, DifferenceArea, ErrorBar, Lollipop, Dumbbell, Slope and TrendLine series on linear or time X axes. Authored interpolation and full-data stack calculations remain in effect. An explicit Y or XY window requires every series to use primary Y; X-only windows preserve secondary-axis domains. Other families, horizontal layouts, sparklines, unsupported X scales, empty observations and unusable plots reject explicit windows. Full-domain preparation remains available for every supported family.
+`ChartCartesianViewport` is the single request accepted by native and HTML preparation. Its optional `x`, `y`, `secondaryX` and `secondaryY` properties use the same immutable `ChartAxisWindow(minimum, maximum, maximumInclusive: true)`. At least one finite increasing window is required; pass null to `Prepare` or `PrepareSection` for full-domain reset. These are physical coordinates: a horizontal chart's categories occupy Y and its value axes occupy X/SecondaryX. A vertical chart's categories occupy X and its values occupy Y/SecondaryY. A secondary window requires a series assigned to that physical value-axis slot. Non-Cartesian, empty and sparkline charts do not expose native viewport projections.
 
 ```csharp
-var chart = Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 100)
-    .AddLine("Load", new[] {
-        new ChartPoint(0, 20), new ChartPoint(5, 80), new ChartPoint(10, 40)
-    });
-var context = VisualExportRequest.ForChart(chart).Context;
-var overview = chart.Prepare(context);
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+
+var counts = ChartSeries.CreateLine(new ChartSeriesId("counts"), "Counts",
+    new[] { new ChartPoint(0, 20), new ChartPoint(5, 40), new ChartPoint(10, 30) });
+var latency = ChartSeries.CreateLine(new ChartSeriesId("latency"), "Latency",
+    new[] { new ChartPoint(0, 300), new ChartPoint(5, 900), new ChartPoint(10, 1500) })
+    .UseSecondaryValueAxis();
+var chart = Chart.Create().WithSize(800, 440).WithXAxisBounds(0, 10)
+    .WithSecondaryYAxisBounds(0, 2000).AddSeries(counts).AddSeries(latency);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)));
 var viewport = new ChartCartesianViewport(
-    x: new ChartXViewport(2, 8), y: new ChartYViewport(20, 80));
-var detail = chart.Prepare(context, viewport);
-var projection = detail.XProjection!;
-double logicalX = projection.Project(5);
-double sourceX = projection.Unproject(logicalX);
-string svg = detail.ToSvg("detail");
-byte[] png = detail.ToPng();
-var reset = chart.Prepare(context, null);
+    x: new ChartAxisWindow(2, 8),
+    secondaryY: new ChartAxisWindow(200, 800),
+    valueDomain: ChartValueDomain.VisibleCategories);
+var prepared = chart.Prepare(context, viewport);
+var svg = prepared.ToSvg();
+var png = prepared.ToPng();
 ```
 
-Bounds must be finite, increasing, contained in their resolved full domains and representable in the requested layout. Time coordinates use the same OLE Automation date units as source points. Included-time sessions retain their authored raw bounds and source identities. An X-only window keeps full-data Y domains; it does not autoscale Y to visible X observations.
+`ChartSeries.ValueAxis` selects `ChartAxisSide.Primary` or `Secondary` independently of orientation. `UsePrimaryValueAxis()` and `UseSecondaryValueAxis()` select that slot. Configure physical `XAxis`, `YAxis`, `SecondaryXAxis` or `SecondaryYAxis` on `ChartOptions`; the matching `Configure*Axis`, `With*Axis`, `With*AxisBounds` and `With*AxisScale` methods retain transactional validation. Source drawing `SourceYAxis` and plot-region `YAxis` remain physical Y policies; they do not become orientation-dependent series assignments.
 
-The viewport does not change authored axis bounds, series, source indices or decimation settings. Marks, annotations and labels clip to the visible plot even when ordinary mark clipping is disabled. Crossing segments remain visible when both source endpoints lie outside the window, while authored gaps stay disconnected. Plot regions intersect the visible domain and retain their authored bounds. Off-window reference annotations retain their source facts without guide or caption paint; partially visible bands use their visible intersection.
+The default `ChartValueDomain.FullData` retains each unrequested axis's resolved full-data range. Set `valueDomain: ChartValueDomain.VisibleCategories` to fit unrequested value axes to geometry intersecting the current category window. Each primary/secondary value axis fits independently. Explicit value windows override fitting only on their own axis, and authored axis bounds remain authoritative. Continuous line, step, smooth and paired-boundary geometry contributes its clipped values, including crossings between observations, without bridging authored gaps. Financial and discrete interval observations contribute their whole value extent when their source/category slot intersects; error bars use their independent X interval. Histograms use actual bin bounds. An empty category window retains that axis's full domain. Full-data stacks, normalized totals, color domains, source facts and observation identities remain unchanged.
 
-`ChartXProjection` and the eligible primary `ChartYProjection` capture `FullMinimum`, `FullMaximum`, `Minimum`, `Maximum`, `PlotBounds`, `Scale` and `Reversed` as detached values. Supported preparation exposes them through `PreparedVisual.XProjection` and `YProjection`; unsupported charts and unusable plots return null. Source or axis mutations after preparation cannot change these projections or the prepared SVG/PNG exports. The available detail is the retained source model, including any earlier decimation.
+All available physical projections capture the selected [logarithmic policy](#logarithmic-scales) and [time spacing](#explicit-time-spacing). Browser inversion uses those captured transforms rather than a second scale configuration.
 
-The HTML adapter uses the same nullable Cartesian input through `HtmlInteractiveChartRenderer.PrepareSection(chart, viewport: null, configure: ...)`. Omitting the viewport and explicitly passing null both prepare the full view; passing a Cartesian window prepares matching native geometry and section metadata. Browser requests require a host connection that prepares and commits the next section. See [connected native X windows](../interactivity.md#connected-native-x-windows) for that lifecycle and its limits.
+`ChartAxisWindow.MaximumInclusive` defaults to true. Set it to false to exclude the upper source endpoint while retaining its exact value. The lower endpoint remains inclusive. Interval/line geometry approaching or crossing an excluded endpoint remains clipped at the same physical edge; excluding an endpoint does not move the plot or subtract a floating-point epsilon. Calendar gestures return exact canonical boundaries with an exclusive upper edge, so preparing or transporting that window repeatedly cannot add the next band. Unit spacing accepts an exclusive maximum only at an exact captured calendar boundary; an interior exclusive maximum is rejected. Default inclusive raw Unit windows still select complete bands. A gesture confined against an authored inclusive full maximum inside a band retains that exact raw maximum and its inclusive policy; it does not invent an interior exclusive edge. Continuous, logarithmic and ordinal windows accept exclusive finite maxima normally. Preserve the property when copying a window or translating native JSON.
+
+`PreparedVisual.XProjection`, `YProjection`, `SecondaryXProjection` and `SecondaryYProjection` expose detached `ChartAxisProjection` snapshots where supported. Each records physical `Dimension`, `Side`, full/window domains, `MaximumInclusive`, plot bounds, scale and reversal. `Project` and `Unproject` map exact captured source coordinates. `ConstrainViewport` returns a `ChartAxisWindow`, or null for the complete domain, and shifts an edge-crossing transformed span intact instead of shortening it. Explicit authored requests remain strictly contained in the full resolved domain. The prepared `CartesianViewport` records the immutable request; it does not retain mutable axes or formatters.
+
+Alternate native drawings enclose every captured physical axis in one common full-domain envelope while preserving authored ends exactly. Windows reuse that envelope and clip paint to the plot. Native SVG and PNG consume the same detached scene; changing the model afterward cannot change projection, readout or export results. Complete source observations remain available even when their marks are outside the viewport. See [native viewport interaction](../interactivity.md#native-y-and-xy-windows) for the existing managed callback and lifetime.
+
+## Explicit time spacing
+
+A time axis retains elapsed spacing by default. `axis.WithTimeSpacing(ChartTimeSpacing.Ordinal)` spaces its distinct supplied UTC instants equally; omitted observations occupy no slots. Source observations, source IDs, callback values and exports retain their original instants. Coordinates between supplied instants use piecewise interpolation, so ordinal spacing differs from `TimeSessions`, which preserves elapsed distances inside explicitly included sessions.
+
+For example, these two observations occupy January and March, with an empty February band:
+
+The same [compiled native axis recipe](../../ChartForgeX.Examples/WebsiteRecipes/NativeAxisWebsiteRecipe.cs) renders its two UTC observations with both ordinal and calendar-month policies. Both views retain the original January and March instants and values; only their native spacing policy changes.
+
+Use `axis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)))` for equally wide calendar bands, including months without observations. The axis display zone aligns the existing calendar boundary schedule; days across DST and months of different lengths retain equal band widths. Unit spacing does not aggregate: each series may supply at most one observation per band. Multiple series can share a band while retaining distinct raw source instants. The existing interval units, including `Year`, are supported; no automatic unit inference occurs.
+
+Unit time is discrete: observations paint at their containing band's center. Its inverse projection selects the canonical lower calendar boundary instead of pretending that different instants inside a band have different positions. Source viewport endpoints remain raw instants and enclose their complete calendar bands; logical gestures select enclosing calendar boundaries. Ordinal inverse projection interpolates actual supplied instant coordinates. Both policies are captured independently in every available physical-axis projection, including secondary value axes. The authored model is unchanged.
+
+Discrete spacing accepts UTC instants represented by OLE dates on or after 1899-12-30, and cannot combine with `TimeSessions` or authored time-bucket intervals. Captured ordinal domains allow at most 100,000 distinct supplied instants; calendar domains allow at most 100,000 bands. A larger domain fails explicitly before layout instead of allocating an unbounded calendar or silently aggregating data. Tick selection remains bounded and measures real captions. Null `TimeSpacing` restores elapsed spacing.
 
 ## Enforcement boundary
 

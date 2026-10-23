@@ -22,7 +22,7 @@ public sealed class BoxPlotReadoutCaptureTests {
             chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
             axis = chart.Options.XAxis;
         } else if (axisKind == "secondary") {
-            series.YAxis = ChartAxisSide.Secondary;
+            series.ValueAxis = ChartAxisSide.Secondary;
             chart.AddLine("Primary", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) });
             chart.Options.YAxis.LabelFormatter = _ => "Primary units must not leak";
             axis = chart.Options.SecondaryYAxis;

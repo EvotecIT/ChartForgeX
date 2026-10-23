@@ -103,7 +103,7 @@ internal sealed partial class ChartStackLayout {
 
     private sealed class StackGroup {
         internal StackGroup(int id, int seriesIndex, ChartSeries series, bool stacked) {
-            Id = id; SeriesIndex = seriesIndex; Kind = series.Kind; Axis = series.YAxis;
+            Id = id; SeriesIndex = seriesIndex; Kind = series.Kind; Axis = series.ValueAxis;
             Key = series.StackGroup; NormalizedTo = series.NormalizedTo; Stacked = stacked;
             Interpolation = series.Interpolation; StepPosition = series.StepPosition;
             HistogramEncoding = series.HistogramEncoding; HistogramAggregation = series.HistogramAggregation;
@@ -119,7 +119,7 @@ internal sealed partial class ChartStackLayout {
         private ChartStepPosition StepPosition { get; }
         private ChartHistogramEncoding? HistogramEncoding { get; }
         private ChartHistogramAggregation? HistogramAggregation { get; }
-        internal bool Matches(ChartSeries series, bool stacked) => Stacked && stacked && Kind == series.Kind && Axis == series.YAxis
+        internal bool Matches(ChartSeries series, bool stacked) => Stacked && stacked && Kind == series.Kind && Axis == series.ValueAxis
             && string.Equals(Key, series.StackGroup, StringComparison.Ordinal);
         internal void Validate(ChartSeries series) {
             if (NormalizedTo != series.NormalizedTo)

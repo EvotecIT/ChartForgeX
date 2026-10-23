@@ -59,7 +59,7 @@ internal static partial class VisualPolarCompiler {
             foreach (var seriesIndex in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[seriesIndex];
                 if (series.RenderPoints.Count == 0) continue;
-                var scale = scales[series.YAxis];
+                var scale = scales[series.ValueAxis];
                 var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
                 var raw = radar ? coordinates!.SourcesFor(seriesIndex, categoryKeys!) : Enumerable.Range(0, series.RenderPoints.Count).ToArray();
                 var mapped = new ChartPoint[raw.Length];
@@ -94,7 +94,7 @@ internal static partial class VisualPolarCompiler {
                             ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = formatted, ["data-cfx-missing"] = source < 0 ? "true" : "false"
                         };
                         VisualPolarSeriesScene.DescribePoint(pointMetadata, series, source, CategoryText(category), formatted);
-                        if (series.YAxis == ChartAxisSide.Secondary) pointMetadata["data-cfx-axis"] = "secondary";
+                        if (series.ValueAxis == ChartAxisSide.Secondary) pointMetadata["data-cfx-axis"] = "secondary";
                         if (source < 0) {
                             pointMetadata["data-cfx-derived"] = "missing-category-zero";
                             pointMetadata["data-cfx-source-count"] = "0";

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Rendering;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
 
@@ -8,7 +10,7 @@ public enum ChartScaleKind {
     /// <summary>Use an unmodified continuous numeric scale.</summary>
     Linear,
 
-    /// <summary>Use a base-10 logarithmic scale containing positive values only.</summary>
+    /// <summary>Use the configured logarithm base and explicitly selected positive or negative domain.</summary>
     Logarithmic,
 
     /// <summary>Use a symmetric logarithmic scale that remains linear around zero.</summary>
@@ -30,6 +32,8 @@ public sealed class ChartAxis {
     private ChartScaleKind _scale;
     private bool _hasExplicitScale;
     private double _symmetricLogarithmThreshold = 1;
+    private double _logarithmBase = 10;
+    private ChartLogarithmicDomain _logarithmicDomain;
     private int _tickCount = 6;
     private bool _hasExplicitTickCount;
     private ChartLabelDensity _labelDensity = ChartLabelDensity.Auto;
@@ -44,6 +48,7 @@ public sealed class ChartAxis {
             ValidateFinite(value, nameof(value));
             ValidateBounds(value, _maximum, nameof(value));
             ValidateLogarithmicBound(value, nameof(value));
+            ValidateTimeSpacingBound(value, nameof(value));
             _minimum = value;
         }
     }
@@ -55,6 +60,7 @@ public sealed class ChartAxis {
             ValidateFinite(value, nameof(value));
             ValidateBounds(_minimum, value, nameof(value));
             ValidateLogarithmicBound(value, nameof(value));
+            ValidateTimeSpacingBound(value, nameof(value));
             _maximum = value;
         }
     }
@@ -64,12 +70,33 @@ public sealed class ChartAxis {
         get => _scale;
         set {
             if (!Enum.IsDefined(typeof(ChartScaleKind), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown chart scale.");
-            if (value == ChartScaleKind.Logarithmic && ((_minimum.HasValue && _minimum.Value <= 0) || (_maximum.HasValue && _maximum.Value <= 0))) {
-                throw new InvalidOperationException("Logarithmic axes require positive explicit bounds.");
+            if (_timeSpacing != null && value != ChartScaleKind.Time) throw new InvalidOperationException("Remove discrete time spacing before selecting another scale.");
+            if (value == ChartScaleKind.Logarithmic && ((_minimum.HasValue && !IsInLogarithmicDomain(_minimum.Value)) || (_maximum.HasValue && !IsInLogarithmicDomain(_maximum.Value)))) {
+                throw new InvalidOperationException("Logarithmic explicit bounds must belong to the selected " + LogarithmicDomainName + " domain.");
             }
 
             _scale = value;
             _hasExplicitScale = true;
+        }
+    }
+
+    /// <summary>Gets or sets the finite base greater than one used by logarithmic and symmetric logarithmic scales. Default: ten.</summary>
+    /// <remarks>Axis reversal controls direction independently of the base. Other scale kinds retain this configuration without applying it.</remarks>
+    public double LogarithmBase {
+        get => _logarithmBase;
+        set { ValidateLogarithmBase(value); _logarithmBase = value; }
+    }
+
+    /// <summary>Gets or sets the explicitly accepted sign domain for a logarithmic scale. Default: positive.</summary>
+    /// <remarks>Zero and values of the other sign reject; no observations are silently omitted. Symmetric logarithmic axes accept both signs and ignore this policy.</remarks>
+    public ChartLogarithmicDomain LogarithmicDomain {
+        get => _logarithmicDomain;
+        set {
+            ValidateLogarithmicDomain(value);
+            if (Scale == ChartScaleKind.Logarithmic && ((_minimum.HasValue && !InLogarithmicDomain(_minimum.Value, value))
+                || (_maximum.HasValue && !InLogarithmicDomain(_maximum.Value, value))))
+                throw new InvalidOperationException("Existing logarithmic bounds must belong to the selected sign domain.");
+            _logarithmicDomain = value;
         }
     }
 
@@ -186,7 +213,32 @@ public sealed class ChartAxis {
     /// <remarks>Supported vertical Cartesian series share this immutable domain. Closed gaps have no width;
     /// observations and source annotation anchors must belong to included sessions. Raw viewport bounds may lie
     /// in closures when the window still contains included time. Y/XY compression and market-calendar inference are not provided.</remarks>
-    public ChartTimeSessionDomain? TimeSessions { get; set; }
+    public ChartTimeSessionDomain? TimeSessions {
+        get => _timeSessions;
+        set {
+            if (value != null && _timeSpacing != null) throw new InvalidOperationException("Time sessions and discrete time spacing cannot be combined.");
+            _timeSessions = value;
+        }
+    }
+    private ChartTimeSessionDomain? _timeSessions;
+
+    /// <summary>Gets or sets ordinal or calendar-band spacing, or null for continuous elapsed time.</summary>
+    /// <remarks>Requires a time scale and cannot be combined with TimeSessions. Captured domains contain at most 100,000 entries.
+    /// Unit spacing preserves missing bands and rejects multiple observations from one series in the same band.</remarks>
+    public ChartTimeSpacing? TimeSpacing {
+        get => _timeSpacing;
+        set {
+            if (value != null && _timeSessions != null) throw new InvalidOperationException("Discrete time spacing and time sessions cannot be combined.");
+            if (value != null && _hasExplicitScale && Scale != ChartScaleKind.Time) throw new InvalidOperationException("Discrete time spacing requires a time scale.");
+            if (value != null) { ValidateOrderedTimeBound(_minimum, nameof(Minimum)); ValidateOrderedTimeBound(_maximum, nameof(Maximum)); }
+            _timeSpacing = value;
+        }
+    }
+    private ChartTimeSpacing? _timeSpacing;
+    internal ChartTimeSpacingDomain? PreparedTimeDomain { get; set; }
+    // Derived only from the immutable public request in the private presentation view.
+    // Every layout/paint/tick owner therefore resolves the same explicit source edge policy.
+    internal ChartAxisWindow? PreparedViewportWindow { get; set; }
 
     /// <summary>
     /// Gets or sets the time-zone designator shown when <see cref="ShowTimeZone"/> is enabled.
@@ -216,7 +268,9 @@ public sealed class ChartAxis {
         if (!IsFinite(minimum)) throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "Axis minimum must be finite.");
         if (!IsFinite(maximum)) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Axis maximum must be finite.");
         if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Axis maximum must be greater than minimum.");
-        if (Scale == ChartScaleKind.Logarithmic && minimum <= 0) throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "Logarithmic axes require positive bounds.");
+        ValidateTimeSpacingBound(minimum, nameof(minimum)); ValidateTimeSpacingBound(maximum, nameof(maximum));
+        if (Scale == ChartScaleKind.Logarithmic && (!IsInLogarithmicDomain(minimum) || !IsInLogarithmicDomain(maximum)))
+            throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "Logarithmic bounds must belong to the selected " + LogarithmicDomainName + " domain.");
         _minimum = minimum;
         _maximum = maximum;
         return this;
@@ -227,6 +281,19 @@ public sealed class ChartAxis {
 
     /// <summary>Sets the mathematical scale.</summary>
     public ChartAxis WithScale(ChartScaleKind scale) { Scale = scale; return this; }
+
+    /// <summary>Selects a logarithmic scale, base and sign domain as one validated configuration.</summary>
+    /// <param name="logarithmBase">A finite base greater than one.</param>
+    /// <param name="domain">The positive or negative source domain.</param>
+    /// <returns>The current axis. Existing bounds must belong to the selected domain; clear them before changing their sign.</returns>
+    public ChartAxis WithLogarithmicScale(double logarithmBase = 10, ChartLogarithmicDomain domain = ChartLogarithmicDomain.Positive) {
+        ValidateLogarithmBase(logarithmBase); ValidateLogarithmicDomain(domain);
+        if (TimeSpacing != null) throw new InvalidOperationException("Remove discrete time spacing before selecting a logarithmic scale.");
+        if ((_minimum.HasValue && !InLogarithmicDomain(_minimum.Value, domain)) || (_maximum.HasValue && !InLogarithmicDomain(_maximum.Value, domain)))
+            throw new InvalidOperationException("Existing logarithmic bounds must belong to the selected sign domain.");
+        _logarithmBase = logarithmBase; _logarithmicDomain = domain; _scale = ChartScaleKind.Logarithmic; _hasExplicitScale = true;
+        return this;
+    }
 
     /// <summary>Sets axis visibility.</summary>
     public ChartAxis WithVisibility(bool visible = true) { Visible = visible; return this; }
@@ -252,7 +319,18 @@ public sealed class ChartAxis {
     /// <summary>Selects a time scale with an explicit shared session domain; null restores continuous elapsed time.</summary>
     /// <param name="domain">The immutable included intervals, or null to remove compression.</param>
     /// <returns>The current axis. Existing display zone and formatting policies are retained.</returns>
-    public ChartAxis WithTimeSessions(ChartTimeSessionDomain? domain) { Scale = ChartScaleKind.Time; TimeSessions = domain; return this; }
+    public ChartAxis WithTimeSessions(ChartTimeSessionDomain? domain) {
+        if (domain != null && TimeSpacing != null) throw new InvalidOperationException("Time sessions and discrete time spacing cannot be combined.");
+        Scale = ChartScaleKind.Time; TimeSessions = domain; return this;
+    }
+
+    /// <summary>Selects a time scale and an explicit spacing policy; null restores elapsed-time spacing.</summary>
+    /// <remarks>Existing formatting and display-zone settings are retained. Remove sessions before selecting discrete spacing.</remarks>
+    public ChartAxis WithTimeSpacing(ChartTimeSpacing? spacing) {
+        if (spacing != null && TimeSessions != null) throw new InvalidOperationException("Discrete time spacing and time sessions cannot be combined.");
+        if (spacing != null) { ValidateOrderedTimeBound(_minimum, nameof(Minimum)); ValidateOrderedTimeBound(_maximum, nameof(Maximum)); }
+        Scale = ChartScaleKind.Time; TimeSpacing = spacing; return this;
+    }
 
     /// <summary>Sets the label formatter.</summary>
     public ChartAxis WithLabelFormatter(Func<double, string>? formatter) { LabelFormatter = formatter; return this; }
@@ -260,8 +338,26 @@ public sealed class ChartAxis {
     /// <summary>Sets the numeric display policy; null restores scale-aware automatic formatting.</summary>
     public ChartAxis WithValueFormat(ChartValueFormat? format) { ValueFormat = format; return this; }
 
+    private void ValidateTimeSpacingBound(double? value, string parameterName) { if (_timeSpacing != null) ValidateOrderedTimeBound(value, parameterName); }
+    private static void ValidateOrderedTimeBound(double? value, string parameterName) {
+        if (value.HasValue && !ChartDateTime.TryFromOrderedOaDate(value.Value, out _))
+            throw new ArgumentOutOfRangeException(parameterName, value, "Discrete time bounds require ordered UTC instants on or after 1899-12-30.");
+    }
+
     private void ValidateLogarithmicBound(double? value, string parameterName) {
-        if (Scale == ChartScaleKind.Logarithmic && value.HasValue && value.Value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Logarithmic axes require positive bounds.");
+        if (Scale == ChartScaleKind.Logarithmic && value.HasValue && !IsInLogarithmicDomain(value.Value))
+            throw new ArgumentOutOfRangeException(parameterName, value, "Logarithmic bounds must belong to the selected " + LogarithmicDomainName + " domain.");
+    }
+
+    internal bool IsInLogarithmicDomain(double value) => InLogarithmicDomain(value, LogarithmicDomain);
+    internal string LogarithmicDomainName => LogarithmicDomain == ChartLogarithmicDomain.Negative ? "negative" : "positive";
+    private static bool InLogarithmicDomain(double value, ChartLogarithmicDomain domain) => IsFinite(value)
+        && (domain == ChartLogarithmicDomain.Negative ? value < 0 : value > 0);
+    private static void ValidateLogarithmicDomain(ChartLogarithmicDomain domain) {
+        if (!Enum.IsDefined(typeof(ChartLogarithmicDomain), domain)) throw new ArgumentOutOfRangeException(nameof(domain), domain, "Unknown logarithmic domain.");
+    }
+    private static void ValidateLogarithmBase(double value) {
+        if (!IsFinite(value) || value <= 1) throw new ArgumentOutOfRangeException(nameof(value), value, "The logarithm base must be finite and greater than one.");
     }
 
     private static void ValidateBounds(double? minimum, double? maximum, string parameterName) {

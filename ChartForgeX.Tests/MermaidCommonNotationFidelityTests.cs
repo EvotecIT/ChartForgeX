@@ -160,11 +160,17 @@ public sealed partial class MermaidCommonNotationFidelityTests {
     [Theory]
     [InlineData("Interface ()-- A")]
     [InlineData("A --() Interface")]
-    public void UnsupportedLollipopsAreDiagnosedWithoutCreatingCounterfeitEndpoints(string relationship) {
+    public void LollipopsUseDistinctNativeInterfacesWithoutCreatingCounterfeitClasses(string relationship) {
         var result = MermaidRenderer.Render("classDiagram\nclass A\n" + relationship);
         Assert.False(result.HasErrors);
-        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, Assert.Single(result.Diagnostics).Code);
-        Assert.Equal(new[] { "A" }, Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes.Select(node => node.Id));
-        Assert.Equal(relationship, Assert.Single(result.Document!.RawStatements).Text);
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal("A", Assert.Single(Assert.IsType<MermaidClassDocument>(result.Document).Classes).Id);
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        var endpoint = Assert.Single(chart.Nodes, node => node.Metadata.TryGetValue("mermaid.kind", out var kind) && kind == "interface");
+        Assert.Equal(TopologyNodeShape.Circle, endpoint.Shape);
+        Assert.False(endpoint.ShowLabel);
+        Assert.Contains(endpoint.Id, new[] { chart.Edges[0].SourceNodeId, chart.Edges[0].TargetNodeId });
+        Assert.Empty(result.Document!.RawStatements);
+        Assert.NotEmpty(result.Artifact.ToPng());
     }
 }

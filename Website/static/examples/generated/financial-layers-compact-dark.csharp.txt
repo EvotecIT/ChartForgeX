@@ -1,0 +1,71 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = FinancialLayersRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 460)), theme, mode,
+    new VisualFrame("Prices across trading sessions", "Candles, reference close and expected range", showLegend: true, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Combines retained price observations, a reference line and a range across explicit trading sessions.</summary>
+public static class FinancialLayersRecipe {
+    /// <summary>Creates a compact or wide chart after a keyed price update, preserving the surviving quote's datum style.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var friday = new DateTime(2026, 10, 16, 9, 0, 0, DateTimeKind.Utc);
+        var monday = friday.AddDays(3);
+        var times = new[] { friday.AddHours(1), friday.AddHours(3), friday.AddHours(5), monday.AddHours(1), monday.AddHours(3), monday.AddHours(5) };
+        var prices = ChartSeries.CreateCandlestick(new ChartSeriesId("101"), "Prices", new[] {
+            new ChartCandlestick(times[0], 102, 106, 100, 105), new ChartCandlestick(times[1], 105, 108, 102, 104),
+            new ChartCandlestick(times[2], 104, 109, 103, 108), new ChartCandlestick(times[3], 108, 112, 106, 110),
+            new ChartCandlestick(times[4], 110, 113, 107, 109), new ChartCandlestick(times[5], 109, 115, 108, 114)
+        }).WithObservationIds(Enumerable.Range(1001, times.Length).Select(value => new ChartObservationId(value.ToString(CultureInfo.InvariantCulture))));
+        prices.ConfigureFinancial(options => {
+            options.Rising.Stroke = ChartColor.FromHex("#218C74"); options.Rising.FillOpacity = .25;
+            options.Falling.Stroke = ChartColor.FromHex("#CF6D45"); options.Falling.FillOpacity = .25;
+        });
+        prices.ConfigureFinancialValue(1, options => {
+            options.Stroke = ChartColor.FromHex("#3987E5"); options.StrokeWidth = 2.5;
+            options.Wick.Stroke = ChartColor.FromHex("#3987E5");
+        });
+        prices.ApplyFinancialChanges(new[] {
+            ChartObservationChange<ChartCandlestick>.Remove(new ChartObservationId("1001")),
+            ChartObservationChange<ChartCandlestick>.Replace(new ChartObservationId("1002"), new ChartCandlestick(times[1], 105, 109, 102, 107)),
+            ChartObservationChange<ChartCandlestick>.Append(new ChartObservationId("1007"), new ChartCandlestick(monday.AddHours(7), 114, 118, 112, 116))
+        }, maximumObservations: 6);
+
+        var expected = ChartSeries.CreateRangeArea(new ChartSeriesId("102"), "Expected range",
+            prices.FinancialValues.Select((value, index) => new ChartRangeBand(value.X, 101 + index * 1.5, 110 + index * 1.5)))
+            .WithColor(ChartColor.FromHex("#729BB7"));
+        var reference = ChartSeries.CreateLine(new ChartSeriesId("103"), "Reference close",
+            prices.FinancialValues.Select((value, index) => new ChartPoint(value.X, 104 + index * 1.8)))
+            .WithColor(ChartColor.FromHex("#E2A336"));
+        reference.ConfigureMarkers(options => { options.Enabled = true; options.Radius = 2.5; });
+        return Chart.Create().WithSize(variant == "compact" ? 390 : 800, 460).WithTheme(VisualTheme.Graphite(), mode)
+            .WithTitle("Prices across trading sessions").WithSubtitle("Candles, reference close and expected range")
+            .WithLegend().WithDataLabels(false).WithYAxis("Price").WithYAxisBounds(98, 120)
+            .WithValueFormat(ChartValueFormat.Number("0.0", CultureInfo.InvariantCulture))
+            .WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true)
+            .WithXAxisBounds(friday.ToOADate(), monday.AddHours(8).ToOADate())
+            .ConfigureXAxis(axis => axis.WithTimeSessions(new ChartTimeSessionDomain(new[] {
+                new ChartTimeSession(friday, friday.AddHours(8)), new ChartTimeSession(monday, monday.AddHours(8))
+            })))
+            .AddSeries(expected).AddSeries(prices).AddSeries(reference);
+    }
+}

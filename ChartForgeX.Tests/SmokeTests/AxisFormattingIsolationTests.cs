@@ -28,7 +28,7 @@ internal static partial class SmokeTests {
             .ConfigureTickLabelStyle(style => style.WithWeight("650").WithItalic())
             .WithSecondaryYAxis("Rate")
             .AddLine("Rate", Points(20, 40, 60));
-        secondary.Series[0].UseSecondaryYAxis();
+        secondary.Series[0].UseSecondaryValueAxis();
         var secondaryPrepared = PreparedFamily(secondary);
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label!.StartsWith("generic-secondary (", StringComparison.Ordinal)),
             "Secondary tick regions should retain the complete fallback-formatted value.");

@@ -69,6 +69,8 @@ public sealed partial class MermaidParser {
                 Add(result, header.Value.Line, header.Value.Column, descriptor.HeaderKind.Length, MermaidDiagnosticSeverity.Warning,
                     "The flowchart-elk header uses ChartForgeX static layout; ELK layout is not applied.", MermaidDiagnosticCodes.UnsupportedLayout);
             }
+        } else if (descriptor.Kind == MermaidDiagramKind.Agentflow) {
+            document = ParseAgentflow(source, lines, frontMatter, header.Value, descriptor, result);
         } else if (descriptor.Kind == MermaidDiagramKind.UseCase) {
             document = ParseUseCase(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Cynefin) {
@@ -123,6 +125,10 @@ public sealed partial class MermaidParser {
             document = ParseWardley(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.TreeView) {
             document = ParseTreeView(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.ZenUml) {
+            document = ParseZenUml(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Railroad) {
+            document = ParseRailroad(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.EventModeling) {
             document = ParseEventModeling(source, lines, frontMatter, header.Value, result);
         } else {

@@ -86,7 +86,7 @@ public sealed class GroupedCategoryAxisBrowserTests {
         var chart = Model(horizontal: false, line: true);
         var renderer = new HtmlInteractiveChartRenderer();
         var full = renderer.PrepareSection(chart, configure: ConfigureWindow);
-        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3.5, 5.5)), ConfigureWindow);
+        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3.5, 5.5)), ConfigureWindow);
         var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + window.Html + "<script>"
             + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";

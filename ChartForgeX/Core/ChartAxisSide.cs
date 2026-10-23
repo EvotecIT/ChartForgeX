@@ -1,16 +1,16 @@
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Defines which vertical axis a cartesian series should use.
+/// Selects the primary or secondary value-axis slot independently of chart orientation.
 /// </summary>
 public enum ChartAxisSide {
     /// <summary>
-    /// Uses the primary left y-axis.
+    /// Uses the primary value axis.
     /// </summary>
     Primary,
 
     /// <summary>
-    /// Uses the secondary right y-axis.
+    /// Uses the secondary value axis.
     /// </summary>
     Secondary
 }

@@ -262,7 +262,7 @@ internal static partial class VisualCartesianCompiler {
         var visible = labels.PlannedCategoryTicks(axis) is { } planned ? new HashSet<double>(planned)
             : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
         var requests = new List<LabelPlacementRequest>();
-        var role = horizontal ? "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
+        var role = horizontal ? secondary ? "axis-secondary-x-label" : "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
         var index = 0;
         foreach (var tick in labels.SemanticTicks(axis, ticks)) {
             var text = labels.Format(axis, tick, fallback, ticks);
@@ -275,7 +275,7 @@ internal static partial class VisualCartesianCompiler {
             if (text.Length == 0) continue;
             if (!visible.Contains(tick)) continue;
             var tickStyle = style;
-            if (horizontal && options.TryGetXAxisLabelHighlight(tick, out var highlight)) { tickStyle = style.Clone(); tickStyle.Color = highlight; }
+            if (horizontal && !secondary && options.TryGetXAxisLabelHighlight(tick, out var highlight)) { tickStyle = style.Clone(); tickStyle.Color = highlight; }
             requests.Add(new LabelPlacementRequest(Display(tick), anchor, tickStyle, horizontal
                 ? new[] { new LabelCandidate(0, 0, .5, 0) }
                 : new[] { new LabelCandidate(0, 0, secondary ? 0 : 1, .5) }) { Fallback = LabelFallbackRule.Drop });

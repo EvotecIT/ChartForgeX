@@ -32,9 +32,9 @@ internal sealed class RadialValueScale {
     internal static Dictionary<ChartAxisSide, RadialValueScale> ForAxes(Chart chart, Func<int, IEnumerable<double>> observations,
         string chartName, bool includeZero = false) {
         var result = new Dictionary<ChartAxisSide, RadialValueScale>();
-        foreach (var side in chart.Series.Select(series => series.YAxis).Distinct()) {
+        foreach (var side in chart.Series.Select(series => series.ValueAxis).Distinct()) {
             var axis = Axis(chart, side);
-            var values = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].YAxis == side)
+            var values = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].ValueAxis == side)
                 .SelectMany(observations).Where(value => !includeZero || axis.Scale != ChartScaleKind.Logarithmic || value != 0).ToArray();
             // Empty series retain identity without inventing another axis's domain.
             if (values.Length == 0) {
@@ -57,19 +57,22 @@ internal sealed class RadialValueScale {
         var observed = values.ToArray();
         if (observed.Length == 0) throw new InvalidOperationException(chartName + " charts require at least one value.");
         if (observed.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException(chartName + " values must be finite.");
-        if (axis.Scale == ChartScaleKind.Logarithmic && observed.Any(value => value <= 0)) {
-            throw new InvalidOperationException(chartName + " charts with logarithmic value axes require positive values only.");
+        if (axis.Scale == ChartScaleKind.Logarithmic && observed.Any(value => !axis.IsInLogarithmicDomain(value))) {
+            throw new InvalidOperationException(chartName + " charts with logarithmic value axes require " + axis.LogarithmicDomainName + " values only.");
         }
 
         var signed = includeZero && axis.Scale != ChartScaleKind.Logarithmic;
         var minimum = axis.Minimum ?? (signed ? Math.Min(0, observed.Min()) : AutomaticMinimum(axis, observed));
-        var maximum = axis.Maximum ?? (signed ? Math.Max(0, observed.Max()) : observed.Max());
+        var maximum = axis.Maximum ?? (signed ? Math.Max(0, observed.Max()) : axis.Scale == ChartScaleKind.Logarithmic
+            && axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? ChartRange.LogarithmicBaseline(observed.Max(), axis) : observed.Max());
         if (maximum <= minimum) {
             if (signed) {
                 var expanded = ChartTicks.Generate(axis, minimum, minimum);
                 if (!axis.Minimum.HasValue) minimum = expanded[0];
                 if (!axis.Maximum.HasValue) maximum = expanded[expanded.Count - 1];
-            } else maximum = axis.Scale == ChartScaleKind.Logarithmic ? minimum * 10 : minimum + 1;
+            } else if (axis.Scale == ChartScaleKind.Logarithmic && axis.LogarithmicDomain == ChartLogarithmicDomain.Negative) {
+                minimum = maximum * axis.LogarithmBase;
+            } else maximum = axis.Scale == ChartScaleKind.Logarithmic ? minimum * axis.LogarithmBase : minimum + 1;
         }
         if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum)
             throw new InvalidOperationException(chartName + " axis bounds cannot form a finite visible domain.");
@@ -107,8 +110,7 @@ internal sealed class RadialValueScale {
     private static double AutomaticMinimum(ChartAxis axis, IReadOnlyList<double> values) {
         if (axis.Scale == ChartScaleKind.Logarithmic) {
             var smallest = values.Min();
-            var baseline = smallest / 10;
-            return baseline > 0 && !double.IsInfinity(baseline) ? baseline : smallest;
+            return axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? smallest : ChartRange.LogarithmicBaseline(smallest, axis);
         }
 
         return axis.Maximum.HasValue && axis.Maximum.Value <= 0 ? axis.Maximum.Value - 1 : 0;

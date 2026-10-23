@@ -1,4 +1,4 @@
-  // Native legend density remains bounded. Optional HTML chrome exposes retained omitted facts and commands.
+
   const legendOverflowPageSize = 6;
   const legendOverflowIdentity = source => {
     const target = seriesTarget(source);

@@ -1,0 +1,12 @@
+classDiagram
+direction LR
+classDef default fill:#dbeafe,stroke:#1e3a8a,color:#172554
+classDef marked fill:#fef9c3,color:#7c2d12
+class Box~Item~:::marked {
+  +Item value
+  +get() Item
+}
+class Other
+Box "1" <|-- "many" Other : converts
+cssClass "Box,Other" marked
+style Other fill:#fed7aa,stroke:#c2410c

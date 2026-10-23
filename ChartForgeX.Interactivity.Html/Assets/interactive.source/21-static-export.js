@@ -1,5 +1,5 @@
-  // Exports retain the committed native scene and persistent reader state. The standalone
-  // geometric camera, hover, focus outlines and focus trails are browser presentation only.
+  // Export committed state only.
+
   const withPersistentExportPaint = (root, svg, read) => {
     const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
     const classes = Array.from(svg.querySelectorAll('[class]')).map(node => [node, node.getAttribute('class')]);
@@ -30,6 +30,7 @@
     'word-spacing', 'text-anchor', 'dominant-baseline', 'text-decoration-line', 'text-decoration-color',
     'text-decoration-style', 'text-decoration-thickness'];
   const serializeSvg = (root) => {
+    settleChartUpdateMotion(root);
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg) return null;
     return withPersistentExportPaint(root, svg, () => {
@@ -38,7 +39,7 @@
       sources.forEach((source, index) => {
         const target = copies[index], style = getComputedStyle(source);
         for (const property of exportPaintProperties) {
-          // Browser computed URLs are absolute; retain local resources inside this standalone SVG.
+          // Localize computed SVG URLs.
           const value = style.getPropertyValue(property).replace(/url\(["']?[^)"']*#([^)"']+)["']?\)/g,
             (match, id) => ids.has(id) ? 'url(#' + id + ')' : match);
           if (value) target.style.setProperty(property, value);
@@ -47,7 +48,7 @@
           target.removeAttribute(attribute);
       });
       copy.style.removeProperty('transform'); copy.style.removeProperty('transition');
-      copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline]').forEach(node => node.remove());
+      copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-annotation-editor]').forEach(node => node.remove());
       return { svg: copy, data: new XMLSerializer().serializeToString(copy) };
     });
   };

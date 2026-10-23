@@ -110,7 +110,7 @@ public sealed class OwnedChartAnnotationsTests {
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
         chart.ReplaceAnnotation(ChartAnnotation.Note(new ChartPoint(4, 5), "After replacement", Ink, id, ChartAxisSide.Secondary));
         chart.AddLine("Secondary", new[] { new ChartPoint(0, 1), new ChartPoint(10, 8) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         var prepared = chart.Prepare(new VisualRenderContext());
         Assert.Equal(id.Value, Assert.Single(prepared.Scene.Annotations).AnnotationId);
         Assert.Contains("After replacement", prepared.ToSvg());

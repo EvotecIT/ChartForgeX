@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
         ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
-        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
+        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
         var series = chart.Series[index];
         var horizontal = ChartCartesianOrientation.IsHorizontalLine(chart, series);
         var points = new List<ChartPoint>(series.RenderPoints.Count);
@@ -70,7 +70,8 @@ internal static partial class VisualCartesianCompiler {
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
             var sourceX = series.RenderPoints[pointIndex].X;
-            var insideSourceX = ViewportObservationVisible(xViewport, yViewport, sourceX, stacks.Point(index, pointIndex).End, stacks.Point(index, pointIndex).End);
+            var sourceY = horizontal ? sourceX : stacks.Point(index, pointIndex).End;
+            var insideSourceX = ViewportObservationVisible(xViewport, yViewport, horizontal ? series.RenderPoints[pointIndex].Y : sourceX, sourceY, sourceY, map);
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && insideSourceX && (!clipMarks || inside)
@@ -96,7 +97,7 @@ internal static partial class VisualCartesianCompiler {
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
-                barDirection: horizontal ? BarValueDirection(chart.Options.XAxis, series.RenderPoints[pointIndex].Y) : (double?)null,
+                barDirection: horizontal ? BarValueDirection(ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis), series.RenderPoints[pointIndex].Y) : (double?)null,
                 horizontal: horizontal, markFill: fill?.Color, markFillPaint: fill?.Paint);
         }
     }
@@ -119,7 +120,7 @@ internal static partial class VisualCartesianCompiler {
                 left = histogramLeft;
                 barWidth = histogramWidth;
             }
-            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var direction = MappedBarDirection(axis, stack.Value, baseY, y);
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
             if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, direction);
@@ -143,7 +144,8 @@ internal static partial class VisualCartesianCompiler {
         var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].RenderPoints.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
             plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
             maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth,
-            minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth), sampleSlots: sampleSlots);
+            minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
+            sampleSlots: sampleSlots, maximumPitch: map.CalendarBandPitch(horizontal: false));
         return (layout.Thickness, layout.Offset);
     }
 

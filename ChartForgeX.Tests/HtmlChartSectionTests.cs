@@ -20,7 +20,7 @@ public sealed class HtmlChartSectionTests {
         };
         HtmlChartInteractionOptions? retained = null;
         var configureCalls = 0;
-        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(2, 6)), options => {
+        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(2, 6)), options => {
             configureCalls++; retained = options; options.IdScope = "captured-section";
         });
         Assert.Equal(1, configureCalls);
@@ -45,7 +45,7 @@ public sealed class HtmlChartSectionTests {
         var chart = Line(); chart.Options.XAxis.Reversed = reversed;
         var renderer = new HtmlInteractiveChartRenderer();
         var full = renderer.PrepareSection(chart);
-        var narrowed = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
+        var narrowed = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7)));
         var reset = renderer.PrepareSection(chart, viewport: null);
         Assert.Equal(AxisLabels(full.PreparedVisual, "axis-y-label"), AxisLabels(narrowed.PreparedVisual, "axis-y-label"));
         Assert.NotEqual(AxisLabels(full.PreparedVisual, "axis-x-label"), AxisLabels(narrowed.PreparedVisual, "axis-x-label"));
@@ -72,7 +72,7 @@ public sealed class HtmlChartSectionTests {
         chart.Series[0].WithObservationId(0, new ChartObservationId("before-window"))
             .WithObservationId(1, new ChartObservationId("inside-window"))
             .WithObservationId(2, new ChartObservationId("after-window"));
-        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
+        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7)));
         var points = EmbeddedSvg(section.Html).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(new[] { "before-window", "inside-window", "after-window" }, points.Select(node => (string?)node.Attribute("data-cfx-observation-id")));
         Assert.Equal(new[] { "0", "1", "2" }, points.Select(node => (string?)node.Attribute("data-cfx-source-point")));
@@ -87,7 +87,7 @@ public sealed class HtmlChartSectionTests {
         Assert.Equal("observations", series.GetProperty("key").GetString());
         Assert.Equal(chart.Series[0].SourcePointIndices, series.GetProperty("indices").EnumerateArray().Select(value => value.GetInt32()));
         chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
-        var markerFree = EmbeddedSvg(new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 7))).Html)
+        var markerFree = EmbeddedSvg(new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))).Html)
             .Descendants().Single(node => (string?)node.Attribute("data-cfx-observation-id") == "inside-window");
         Assert.Empty(markerFree.Elements());
         Assert.Null(markerFree.Attribute("data-cfx-visible"));
@@ -96,19 +96,21 @@ public sealed class HtmlChartSectionTests {
     [Fact]
     public void UnsupportedAndEmptySectionsRemainRenderableWithoutAdvertisingANativeProjection() {
         var empty = Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>());
-        var bar = Chart.Create().AddBar("Bars", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
+        var nonCartesian = Chart.Create().AddPie("Slices", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
         var horizontal = Line(); horizontal.Options.LineOrientation = ChartOrientation.Horizontal;
         var sparkline = Line(); sparkline.Options.IsSparkline = true;
         var renderer = new HtmlInteractiveChartRenderer();
-        foreach (var chart in new[] { empty, bar, horizontal, sparkline }) {
+        foreach (var chart in new[] { empty, nonCartesian, sparkline }) {
             var section = renderer.PrepareSection(chart);
             Assert.Null(section.PreparedVisual.XProjection);
             using var metadata = Metadata(section.Html);
             Assert.False(metadata.RootElement.TryGetProperty("xProjection", out _));
             Assert.NotNull(EmbeddedSvg(section.Html));
         }
-        Assert.Throws<InvalidOperationException>(() => renderer.PrepareSection(empty, new ChartCartesianViewport(x: new ChartXViewport(3, 7))));
-        Assert.Throws<NotSupportedException>(() => renderer.PrepareSection(bar, new ChartCartesianViewport(x: new ChartXViewport(3, 7))));
+        Assert.Throws<InvalidOperationException>(() => renderer.PrepareSection(empty, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))));
+        Assert.Throws<NotSupportedException>(() => renderer.PrepareSection(nonCartesian, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))));
+        Assert.NotNull(renderer.PrepareSection(horizontal).PreparedVisual.XProjection);
+        Assert.NotNull(renderer.PrepareSection(horizontal, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))).PreparedVisual.YProjection);
         Assert.Throws<ArgumentNullException>(() => renderer.PrepareSection(null!));
     }
 

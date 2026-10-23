@@ -1,4 +1,4 @@
-  // Adapter emphasis preserves roving membership; host/native classes still invalidate availability.
+
   const keyboardPaintClasses = new Set(['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series',
     'cfx-selected', 'cfx-highlighted', 'cfx-linked-dim', 'cfx-selection-dim', 'cfx-linked-series-active',
     'cfx-linked-series-dim', 'cfx-trail']);
@@ -10,7 +10,7 @@
     if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline]')) return false;
     if (record.type === 'attributes' && record.attributeName === 'style' && record.target.matches('[data-cfx-highlight-paint]')
       && keyboardNativeStyle(record.oldValue) === keyboardNativeStyle(record.target.getAttribute('style'))) return false;
-    // Only SVG marks affect navigation; ResizeObserver handles chrome layout.
+
     const svg = stage.querySelector('svg');
     if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
     const changes = [...record.addedNodes, ...record.removedNodes];
@@ -19,21 +19,21 @@
     return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
       || ancestry.nodes.some(boundary => node.contains(boundary)));
   };
-  // Data and legend rove separately on rendered marks.
+
   const keyboardTargetAvailable = (node) => {
     if (node.dataset.cfxVisible === 'false') return false;
     if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
-    // Muted data leaves navigation; its legend remains reachable.
+
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     if (pointerTargetPaint(node)) return true;
-    // Retained facts can have no filled geometry.
+
     const data = node.dataset;
     if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
     const svg = node.ownerSVGElement;
     if (!svg) return false;
-    // Check CSS-hidden ancestors as well as viewport visibility.
+
     for (let parent = node.parentElement; parent && parent !== svg; parent = parent.parentElement) {
       if (getComputedStyle(parent).display === 'none') return false;
     }
@@ -41,6 +41,7 @@
     return viewport.width > 0 && viewport.height > 0;
   };
   const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
+    const hierarchy = hasFeature(root, 'HierarchyNavigation') ? capturedHierarchy(root) : null;
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -51,8 +52,15 @@
     });
     const seen = new Set();
     return candidates.filter((node) => {
-      // A containing series is useful to pointer hover, but it is not an extra keyboard datum.
-      if (containers.has(node)) return false;
+      if (containers.has(node)) {
+
+        const data = node.dataset;
+        const hierarchyBranch = hierarchy && ['treemap', 'sunburst'].includes(hierarchy.kind)
+          && data.cfxTargetKind === 'node' && data.cfxNode === data.cfxTargetId && data.cfxTargetId
+          && (data.cfxKind || '').toLowerCase() === hierarchy.kind && seriesKey(node) === hierarchy.seriesKey
+          && data.cfxLeaf === 'false' && data.cfxTargetId !== hierarchy.rootId;
+        if (!hierarchyBranch) return false;
+      }
       const focusNode = targetFocusNode(node);
       if (seen.has(focusNode)) return false;
       seen.add(focusNode);
@@ -62,7 +70,7 @@
   const keyboardDataGroups = (nodes) => {
     const groups = new Map();
     nodes.forEach((node) => {
-      // Cartesian observations and matrix rows share the declared series contract. Other families use target order.
+
       const owner = node.closest('[data-cfx-role="series"][data-cfx-series]');
       const series = owner ? owner.dataset.cfxSeries : null;
       const key = series === null ? 'targets' : 'series:' + series;
@@ -83,7 +91,7 @@
     legends.forEach((node) => {
       let branch = node;
       while (branch.parentElement && branch.parentElement !== svg) branch = branch.parentElement;
-      // Move the intact legend clip/group, retaining transforms and labels. Never move a branch containing data.
+      // Move whole legends only.
       if (branch.parentElement === svg && !branches.has(branch) && !data.some((mark) => branch.contains(mark))) branches.add(branch);
     });
     branches.forEach((branch) => svg.appendChild(branch));
@@ -99,7 +107,7 @@
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
     state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
     state.data = state.groups.flatMap((group) => group.nodes);
-    // Keep component positions while the host is hidden.
+
     if (state.data.length && !state.data.includes(state.activeData)) state.activeData = state.data[0];
     if (state.legends.length && !state.legends.includes(state.activeLegend)) state.activeLegend = state.legends[0];
     if (state.data.includes(focused)) state.activeData = focused;
@@ -116,11 +124,11 @@
       focusNode.setAttribute('tabindex', node === state.activeData || node === state.activeLegend ? '0' : '-1');
     });
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
-      // Local and synchronized state changes must not strand focus on a datum that just left the component.
+      // Focus cannot revive readouts.
       const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
       if (replacement) {
-        // Host paint changes recover a usable focus position without opening a new
-        // readout in the same update that dismisses the unavailable source or pin.
+
+
         if (passive) { clearHover(root, true, true); hideTip(root, root.querySelector('.cfx-tooltip'), true); }
         focusKeyboardTarget(root, replacement, passive);
       }
@@ -164,11 +172,11 @@
     };
     listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
-      // Tabs and other initially hidden hosts acquire layout without a window resize.
+
       resizeObserver = new ResizeObserver(queueRefresh);
       resizeObserver.observe(stage);
     }
-    // Share paint/style availability between Tab and arrow navigation.
+
     paintObserver = new MutationObserver(records => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
@@ -188,12 +196,12 @@
     }
     root._cfxKeyboardNavigation = { owned: new Set() };
     const stage = root.querySelector('.cfx-stage');
-    // Keep native scroll stages outside the roving tab order.
+
     if (stage && !stage.hasAttribute('tabindex')) {
       stage.setAttribute('tabindex', '-1');
       ownChartWork(root, () => { if (stage.getAttribute('tabindex') === '-1') stage.removeAttribute('tabindex'); });
     }
-    // Only roving leaves, including SVG groups, enter the tab order.
+
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
     refreshKeyboardNavigation(root);
     bindKeyboardNavigationAvailability(root);
@@ -207,7 +215,7 @@
       if (!['auto', 'scroll', 'hidden'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
       if (itemEnd - itemStart > end - start) {
-        // Keep the visible portion of a wide mark: pointer focus must not move it between down and up.
+        // No focus moves mid-press.
         if (itemEnd > start && itemStart < end) return offset;
         return offset + center - (start + end) / 2;
       }
@@ -217,7 +225,7 @@
     };
     let preserveVisiblePortion = false;
     const inset = 16; // Keep focused paint clear of native overlay scrollbars.
-    // Reveal inner clips before outer clips, including shadow hosts.
+
     const revealClips = () => {
       for (const { node: clip, x, y } of tooltipClippingAncestors(node)) {
         const style = getComputedStyle(clip), box = node.getBoundingClientRect();
@@ -233,10 +241,10 @@
     };
     revealClips();
     const box = node.getBoundingClientRect(), viewport = owner.getBoundingClientRect();
-    // Native reveal reaches opaque slots; preserve partly visible wide marks.
+
     if (!preserveVisiblePortion && box.width <= viewport.width - inset * 2 && box.height <= viewport.height - inset * 2) {
-      // Native SVG scrolling can leave an offscreen mark hidden through an opaque slot.
-      // A transient HTML footprint lets the browser traverse that host without inspecting it.
+      // Transient HTML lets scrolling cross opaque slots.
+
       let nativeTarget = node;
       if (node instanceof SVGElement) {
         const start = stagePoint(owner, { x: box.left, y: box.top });
@@ -249,13 +257,13 @@
       }
       try { nativeTarget.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' }); }
       finally { if (nativeTarget !== node) nativeTarget.remove(); }
-      // Native reveal may reset known clips; remeasure after opaque hosts move.
+
       revealClips();
     }
   };
   const focusKeyboardTarget = (root, node, passive = false) => {
     const focusNode = targetFocusNode(node);
-    // Native links also recover focus when adapter keyboard navigation is disabled.
+
     const recovering = root._cfxRecoveringFocus === true;
     if (passive) root._cfxRecoveringFocus = true;
     try {
@@ -279,7 +287,7 @@
     if (key === 'Home') next = targets[0];
     else if (key === 'End') next = targets[targets.length - 1];
     else if (!legend && (group.series !== null || state.groups.length > 1) && (key === 'ArrowUp' || key === 'ArrowDown')) {
-      // Ungrouped annotations are part of the same data component as the Cartesian series.
+
       const groups = state.groups;
       const nextGroup = groups[clamp(groups.indexOf(group) + (key === 'ArrowUp' ? -1 : 1), 0, groups.length - 1)];
       if (nextGroup !== group) {
@@ -294,7 +302,7 @@
       next = targets[clamp(current + direction, 0, targets.length - 1)];
     }
     if (next === node) {
-      // An explicit boundary arrow still resumes the readout after passive recovery.
+
       const tip = root.querySelector('.cfx-tooltip');
       if (tip?.hidden && tooltipReadoutAvailable(node)) { setHover(root, node, true, true); showTip(root, tip, node); }
       return true;

@@ -56,7 +56,7 @@ internal static partial class SmokeTests {
         foreach (var reversed in new[] { false, true })
         foreach (var sign in new[] { 1, -1 }) {
             var chart = WaterfallLabelSample(640, false).AddWaterfall("Delta", Points(40 * sign, -20 * sign), ChartColor.FromHex("#172554"));
-            if (secondary) chart.Series[0].UseSecondaryYAxis();
+            if (secondary) chart.Series[0].UseSecondaryValueAxis();
             (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithBounds(-100, 100).WithReversal(reversed);
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
             var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();

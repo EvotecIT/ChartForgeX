@@ -96,7 +96,7 @@ internal static partial class SmokeTests {
             .WithSecondaryYAxis("Rate")
             .WithSecondaryYAxisBounds(0, 100)
             .AddLine("Rate", Points(10, 50, 90));
-        secondary.Series[0].UseSecondaryYAxis();
+        secondary.Series[0].UseSecondaryValueAxis();
         secondary.Options.YAxis.LabelDensity = ChartLabelDensity.Relaxed;
         secondary.Options.SecondaryYAxis.TickCount = 11;
         secondary.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.All;

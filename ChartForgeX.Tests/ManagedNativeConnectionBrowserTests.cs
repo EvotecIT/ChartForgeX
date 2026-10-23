@@ -12,9 +12,9 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 /// <summary>Uses real native preparation replies to qualify the managed host's committed-basis and lifetime contract.</summary>
-[Trait("BrowserSuite", "Compatibility")]
-public sealed class ManagedNativeConnectionBrowserTests {
+public sealed partial class ManagedNativeConnectionBrowserTests {
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(390, VisualThemeMode.Dark)]
     [InlineData(900, VisualThemeMode.Light)]
     public async Task ManagedConnectionCarriesOnlyCommittedBasisAcrossDeferredViewportAndAnnotationCommands(int width, VisualThemeMode mode) {
@@ -74,13 +74,14 @@ public sealed class ManagedNativeConnectionBrowserTests {
     }
 
     [BrowserFact]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task ManagedConnectionRejectsUncommittedRepliesAndOwnsCrossChannelUpdateReconnectAndDisposal() {
         if (!Enabled) return;
         var host = new NativeHost(900, VisualThemeMode.Light);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, 924, 800);
         var page = session.Page;
         var pageErrors = new List<string>(); page.PageError += (_, error) => pageErrors.Add(error);
-        await ConnectAsync(page, host, "xy");
+        await ConnectAsync(page, host, "x,y");
         var initial = await SceneAsync(page);
         await page.EvaluateAsync("() => managed.setViewport({x:{minimum:2,maximum:8},y:{minimum:20,maximum:80}})");
         await PendingAsync(page, 1); await PrepareReplyAsync(page, 0);
@@ -169,12 +170,12 @@ public sealed class ManagedNativeConnectionBrowserTests {
                     if(chainAnnotation){chainAnnotation=false;managed.applyAnnotationChange({operation:'replace',id:'note',
                         drawing:{kind:'Note',start:{x:6.25,y:40.5},label:'Reviewed'}});}
                 });
-                managed.connectNative(controlledNative,{basis:'initial',...(axes?{axes}:{})});
+                managed.connectNative(controlledNative,{basis:'initial',...(axes?{axes:axes.split(',')}:{})});
             }
             """, axes);
     }
 
-    private static Task ReconnectAsync(IPage page) => page.EvaluateAsync("() => managed.connectNative(controlledNative,{basis:externalReply.basis,axes:'x'})");
+    private static Task ReconnectAsync(IPage page) => page.EvaluateAsync("() => managed.connectNative(controlledNative,{basis:externalReply.basis,axes:['x']})");
     private static Task PendingAsync(IPage page, int count) => page.WaitForFunctionAsync("count => pending.length===count", count);
     private static Task ChangesAsync(IPage page, int count) => page.WaitForFunctionAsync("count => managedChanges.length===count", count);
     private static Task ErrorsAsync(IPage page, int count) => page.WaitForFunctionAsync("count => managedErrors.length===count", count);
@@ -215,7 +216,7 @@ public sealed class ManagedNativeConnectionBrowserTests {
         internal object External() {
             lock (_snapshots) {
                 var chart = Model().ReplaceAnnotation(ChartAnnotation.Note(new ChartPoint(5, 45), "External base", Ink, new ChartAnnotationId("note")));
-                return Store(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 9)));
+                return Store(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3, 9)));
             }
         }
         internal object Prepare(JsonElement request) {
@@ -225,19 +226,17 @@ public sealed class ManagedNativeConnectionBrowserTests {
                 foreach (var annotation in previous.Annotations) chart.AddAnnotation(annotation);
                 var xProjection = previous.Section.PreparedVisual.XProjection!;
                 var yProjection = previous.Section.PreparedVisual.YProjection!;
-                ChartXViewport? x = xProjection.Minimum != xProjection.FullMinimum || xProjection.Maximum != xProjection.FullMaximum
-                    ? new ChartXViewport(xProjection.Minimum, xProjection.Maximum) : null;
-                ChartYViewport? y = yProjection.Minimum != yProjection.FullMinimum || yProjection.Maximum != yProjection.FullMaximum
-                    ? new ChartYViewport(yProjection.Minimum, yProjection.Maximum) : null;
+                ChartAxisWindow? x = xProjection.Minimum != xProjection.FullMinimum || xProjection.Maximum != xProjection.FullMaximum || !xProjection.MaximumInclusive
+                    ? new ChartAxisWindow(xProjection.Minimum, xProjection.Maximum, xProjection.MaximumInclusive) : null;
+                ChartAxisWindow? y = yProjection.Minimum != yProjection.FullMinimum || yProjection.Maximum != yProjection.FullMaximum || !yProjection.MaximumInclusive
+                    ? new ChartAxisWindow(yProjection.Minimum, yProjection.Maximum, yProjection.MaximumInclusive) : null;
                 var operation = request.GetProperty("kind").GetString();
                 if (request.GetProperty("channel").GetString() == "viewport") {
                     if (operation == "reset") { x = null; y = null; }
                     else {
                         var viewport = request.GetProperty("sourceViewport");
-                        if (viewport.TryGetProperty("x", out var sourceX)) x = xProjection.ConstrainViewport(new ChartXViewport(
-                            sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
-                        if (viewport.TryGetProperty("y", out var sourceY)) y = yProjection.ConstrainViewport(new ChartYViewport(
-                            sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                        if (viewport.TryGetProperty("x", out var sourceX)) x = xProjection.ConstrainViewport(NativeWindowTransport.Read(sourceX));
+                        if (viewport.TryGetProperty("y", out var sourceY)) y = yProjection.ConstrainViewport(NativeWindowTransport.Read(sourceY));
                     }
                 } else {
                     var id = new ChartAnnotationId(request.GetProperty("annotationId").GetString()!);

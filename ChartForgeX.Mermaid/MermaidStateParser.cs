@@ -4,12 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidStateParser {
+internal static partial class MermaidStateParser {
     private static readonly Regex Note = new(@"^note\s+(?<side>left|right)\s+of\s+(?<id>[^\s:]+)\s*(?::\s*(?<text>.*))?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     public static void ParseStatements(MermaidStateDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var states = new Dictionary<string, MermaidStateNode>(StringComparer.Ordinal);
-        var composites = new Stack<(string Id, MermaidSourceSpan Span)>();
+        var composites = new Stack<StateScope>();
+        var pseudoStates = new Dictionary<string, string>(StringComparer.Ordinal);
         var specialIndex = 0;
+        var assignments = new List<StateStyleAssignment>();
         var originalLineStarts = MermaidParserUtilities.OriginalLineStarts(document.SourceText);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             MermaidResourceGuard.Checkpoint();
@@ -25,7 +27,11 @@ internal static class MermaidStateParser {
 
             if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction, ignoreCase: true)) {
                 if (composites.Count == 0) document.Direction = direction;
-                else states[composites.Peek().Id].Direction = direction;
+                else {
+                    var scope = composites.Peek();
+                    scope.Region.Direction = direction;
+                    if (scope.Region.Index == 0) states[scope.Id].Direction = direction;
+                }
                 continue;
             }
 
@@ -47,41 +53,55 @@ internal static class MermaidStateParser {
                 continue;
             }
 
-            if (MermaidParserUtilities.StartsStatement(trimmed, "classDef") || MermaidParserUtilities.StartsStatement(trimmed, "class") ||
-                MermaidParserUtilities.StartsStatement(trimmed, "style") || trimmed == "--") {
-                document.Statements.Add(new MermaidStateStatement(trimmed, span));
-                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "state style or concurrency boundary");
+            if (trimmed == "--") {
+                if (composites.Count == 0) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                    "Concurrent regions require a containing composite state.", MermaidDiagnosticCodes.InvalidStatement);
+                else {
+                    var scope = composites.Peek();
+                    scope.Region = CreateRegion(document, scope.Id, scope.Region.Index + 1, span);
+                }
+                continue;
+            }
+            if (trimmed.Length > 2 && trimmed.Trim('-').Length == 0) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                    "Concurrent regions use exactly two hyphens.", MermaidDiagnosticCodes.InvalidStatement);
                 continue;
             }
 
-            if (TryParseTransition(trimmed, span, ref specialIndex, out var transition)) {
-                document.Transitions.Add(transition);
-                EnsureState(document, states, transition.SourceId, span, composites.Count == 0 ? null : composites.Peek().Id);
-                EnsureState(document, states, transition.TargetId, span, composites.Count == 0 ? null : composites.Peek().Id);
+            if (TryReadStyle(document, trimmed, span, assignments, result)) continue;
+
+            if (TryParseTransition(trimmed, span, composites.Count == 0 ? "root" : composites.Peek().Region.Id, pseudoStates,
+                ref specialIndex, assignments, result, out var transition)) {
+                if (transition != null) {
+                    document.Transitions.Add(transition);
+                    EnsureState(document, states, transition.SourceId, span, composites.Count == 0 ? null : composites.Peek().Id, composites.Count == 0 ? null : composites.Peek().Region.Id);
+                    EnsureState(document, states, transition.TargetId, span, composites.Count == 0 ? null : composites.Peek().Id, composites.Count == 0 ? null : composites.Peek().Region.Id);
+                }
                 continue;
             }
 
             if (trimmed.StartsWith("state ", StringComparison.Ordinal)) {
-                ParseStateDeclaration(document, states, trimmed, span, composites, result);
+                ParseStateDeclaration(document, states, trimmed, span, composites, assignments, result);
                 continue;
             }
 
-            var colon = trimmed.IndexOf(':');
-            if (colon > 0) {
-                var id = trimmed.Substring(0, colon).Trim();
-                var label = MermaidParserUtilities.Unquote(trimmed.Substring(colon + 1).Trim());
-                EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek().Id).Label = label;
+            var label = SplitLabel(ref trimmed);
+            if (!ReadInlineClasses(ref trimmed, span, result, out var classes)) continue;
+            if (trimmed.Length == 0) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "State declarations require an identity.", MermaidDiagnosticCodes.InvalidStatement);
                 continue;
             }
-
-            EnsureState(document, states, trimmed, span, composites.Count == 0 ? null : composites.Peek().Id);
+            var state = EnsureState(document, states, trimmed, span, composites.Count == 0 ? null : composites.Peek().Id, composites.Count == 0 ? null : composites.Peek().Region.Id);
+            if (label != null) state.Label = MermaidParserUtilities.Unquote(label);
+            AddInlineAssignment(assignments, state.Id, classes, span);
         }
 
+        ApplyStyles(document, states, assignments, result);
         foreach (var composite in composites) MermaidParserUtilities.Add(result, composite.Span, MermaidDiagnosticSeverity.Error,
             "Composite state definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
         foreach (var note in document.Notes) if (note.NodeId != null && !states.ContainsKey(note.NodeId))
             MermaidParserUtilities.Add(result, note.Span, MermaidDiagnosticSeverity.Error, "State notes must reference a declared state or transition endpoint.", MermaidDiagnosticCodes.InvalidStatement);
-        if (document.States.Count == 0 && document.Transitions.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state or transition.");
+        if (document.States.Count == 0 && document.Transitions.Count == 0 && !result.HasErrors) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state or transition.");
     }
 
     private static int ReadNote(MermaidStateDocument document, string[] lines, int line, MermaidSourceSpan firstSpan,
@@ -121,10 +141,11 @@ internal static class MermaidStateParser {
         document.Notes.Add(new MermaidDiagramNote(MermaidNotationText.Note(text), MermaidParserUtilities.Unquote(note.Groups["id"].Value),
             string.Equals(note.Groups["side"].Value, "left", StringComparison.OrdinalIgnoreCase), span));
 
-    private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<(string Id, MermaidSourceSpan Span)> composites, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<StateScope> composites, List<StateStyleAssignment> assignments, MermaidParseResult<MermaidDocument> result) {
         var body = text.Substring(6).Trim();
         var opensComposite = body.EndsWith("{", StringComparison.Ordinal);
         if (opensComposite) body = body.Substring(0, body.Length - 1).Trim();
+        if (!ReadInlineClasses(ref body, span, result, out var classes)) return;
         string id;
         string? label = null;
         string? kind = null;
@@ -152,51 +173,81 @@ internal static class MermaidStateParser {
             id = body;
         }
 
-        var state = EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek().Id);
+        if (string.IsNullOrWhiteSpace(id)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "State declarations require an identity.", MermaidDiagnosticCodes.InvalidStatement);
+            return;
+        }
+        var state = EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek().Id, composites.Count == 0 ? null : composites.Peek().Region.Id);
+        AddInlineAssignment(assignments, state.Id, classes, span);
         if (!string.IsNullOrWhiteSpace(label)) state.Label = label;
         if (!string.IsNullOrWhiteSpace(kind)) state.Kind = kind;
         if (opensComposite) {
             MermaidResourceGuard.CheckDepth(composites.Count + 1, span);
             state.IsComposite = true;
-            composites.Push((state.Id, span));
+            composites.Push(new StateScope(state.Id, span, OpenRegion(document, state.Id, span)));
         }
     }
 
-    private static bool TryParseTransition(string text, MermaidSourceSpan span, ref int specialIndex, out MermaidStateTransition transition) {
-        transition = null!;
+    private static bool TryParseTransition(string text, MermaidSourceSpan span, string scopeId, Dictionary<string, string> pseudoStates,
+        ref int specialIndex, List<StateStyleAssignment> assignments, MermaidParseResult<MermaidDocument> result, out MermaidStateTransition? transition) {
+        transition = null;
         var index = text.IndexOf("-->", StringComparison.Ordinal);
         if (index <= 0) return false;
-        var left = NormalizeSpecial(text.Substring(0, index).Trim(), true, ref specialIndex);
+        var left = text.Substring(0, index).Trim();
         var right = text.Substring(index + 3).Trim();
         var label = SplitLabel(ref right);
-        var target = NormalizeSpecial(right, false, ref specialIndex);
-        transition = new MermaidStateTransition(left, target, label, span);
+        if (!ReadInlineClasses(ref left, span, result, out var leftClasses)
+            || !ReadInlineClasses(ref right, span, result, out var rightClasses)) return true;
+        if (left.Length == 0 || right.Length == 0) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "State transitions require two state identities.", MermaidDiagnosticCodes.InvalidStatement);
+            return true;
+        }
+        var source = NormalizeSpecial(left, true, scopeId, pseudoStates, ref specialIndex);
+        var target = NormalizeSpecial(right, false, scopeId, pseudoStates, ref specialIndex);
+        transition = new MermaidStateTransition(source, target, label, span);
+        AddInlineAssignment(assignments, source, leftClasses, span);
+        AddInlineAssignment(assignments, target, rightClasses, span);
         return true;
     }
 
-    private static string NormalizeSpecial(string value, bool source, ref int specialIndex) {
+    private static string NormalizeSpecial(string value, bool source, string scopeId, Dictionary<string, string> pseudoStates, ref int specialIndex) {
         value = MermaidParserUtilities.Unquote(value);
-        if (value == "[*]") return (source ? "mermaid-start-" : "mermaid-end-") + (++specialIndex).ToString(System.Globalization.CultureInfo.InvariantCulture);
-        var styleIndex = value.IndexOf(":::", StringComparison.Ordinal);
-        return styleIndex > 0 ? value.Substring(0, styleIndex).Trim() : value;
+        if (value == "[*]") {
+            var key = scopeId + (source ? ":start" : ":end");
+            if (!pseudoStates.TryGetValue(key, out var id)) {
+                id = (source ? "mermaid-start-" : "mermaid-end-") + (++specialIndex).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                pseudoStates.Add(key, id);
+            }
+            return id;
+        }
+        return value;
     }
 
     private static string? SplitLabel(ref string text) {
-        var colon = text.IndexOf(':');
+        var colon = -1;
+        var quote = '\0';
+        for (var index = 0; index < text.Length; index++) {
+            var character = text[index];
+            if (quote != '\0') { if (character == quote) quote = '\0'; continue; }
+            if (character == '"' || character == '`') { quote = character; continue; }
+            if (character != ':') continue;
+            if (index + 2 < text.Length && text[index + 1] == ':' && text[index + 2] == ':') { index += 2; continue; }
+            colon = index; break;
+        }
         if (colon < 0) return null;
         var label = text.Substring(colon + 1).Trim();
         text = text.Substring(0, colon).Trim();
         return label.Length == 0 ? null : label;
     }
 
-    private static MermaidStateNode EnsureState(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string id, MermaidSourceSpan span, string? parentId) {
+    private static MermaidStateNode EnsureState(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string id, MermaidSourceSpan span, string? parentId, string? regionId) {
         id = MermaidParserUtilities.Unquote(id);
         if (states.TryGetValue(id, out var existing)) {
-            if (existing.ParentId == null) existing.ParentId = parentId;
+            if (existing.ParentId == null) { existing.ParentId = parentId; existing.RegionId = regionId; }
             return existing;
         }
 
-        var node = new MermaidStateNode(id, span) { ParentId = parentId };
+        var node = new MermaidStateNode(id, span) { ParentId = parentId, RegionId = regionId };
         if (id.StartsWith("mermaid-start", StringComparison.Ordinal)) node.Kind = "start";
         if (id.StartsWith("mermaid-end", StringComparison.Ordinal)) node.Kind = "end";
         states.Add(id, node);

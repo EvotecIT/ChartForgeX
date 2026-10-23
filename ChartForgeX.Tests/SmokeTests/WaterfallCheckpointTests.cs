@@ -66,7 +66,7 @@ public sealed class WaterfallCheckpointTests {
         series.WithPointColor(3, accent).WithPointFillPattern(3, ChartFillPattern.Crosshatch).WithPointLabel(3, "Cost checkpoint")
             .ConfigurePointDataLabelStyle(3, style => style.WithColor("#FFFFFF"));
         Assert.Throws<ArgumentOutOfRangeException>(() => series.WithPointColor(8, accent));
-        if (secondary) series.UseSecondaryYAxis();
+        if (secondary) series.UseSecondaryValueAxis();
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
         axis.WithReversal(); chart.Options.XAxis.WithReversal();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

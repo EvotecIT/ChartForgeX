@@ -14,7 +14,7 @@ public sealed class MermaidResourceLimits {
     public int MaximumSourceLines { get => _sourceLines; set => _sourceLines = Positive(value, nameof(MaximumSourceLines)); }
     /// <summary>Gets or sets the maximum UTF-16 length of one source line, excluding its line ending.</summary>
     public int MaximumLineCharacters { get => _lineCharacters; set => _lineCharacters = Positive(value, nameof(MaximumLineCharacters)); }
-    /// <summary>Gets or sets the maximum parsed semantic items, including groups, notes, members and data values.</summary>
+    /// <summary>Gets or sets the maximum semantic items, including groups, notes, members, data values, style declarations and expanded style properties.</summary>
     public int MaximumElements { get => _elements; set => _elements = Positive(value, nameof(MaximumElements)); }
     /// <summary>Gets or sets the maximum parsed relationships, after flowchart endpoint groups expand.</summary>
     public int MaximumEdges { get => _edges; set => _edges = Positive(value, nameof(MaximumEdges)); }

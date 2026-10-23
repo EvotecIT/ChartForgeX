@@ -25,10 +25,12 @@
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },
       update: (section, options = {}) => {
         requireMounted();
+        const motion = captureChartUpdateMotion(options.motion);
         const nativeState = lifetime.preparationSession
           ? { session: lifetime.preparationSession, basis: nativePreparationBasis(options.basis) } : null;
         const next = readChartSection(section, true).cloneNode(true);
-        replaceChartSection(root, lifetime, next, '', '', false, nativeState);
+        resetAnnotationEditor(root);
+        replaceChartSection(root, lifetime, next, '', '', false, nativeState, motion);
         emitHostEvent(root, 'cfxupdated', {});
         return controller;
       },
@@ -47,23 +49,29 @@
         if (!requestAnnotationChange(root, change)) throw new TypeError('The native annotation request cannot start on this scene.');
         return controller;
       },
+      editAnnotations: options => { requireMounted(); return createAnnotationEditor(root, requireMounted, options); },
       connectXViewport: connection => {
         requireMounted();
         if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
-        setNativePreparationConnection(root, 'viewport', connection, { axes: 'x', legacy: true });
+        setNativePreparationConnection(root, 'viewport', connection, { axes: Object.freeze(['x']), legacy: true });
         if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
         syncXViewportControls(root);
         return controller;
       },
       connectViewport: (connection, options = {}) => {
         requireMounted();
-        const axes = options.axes || 'xy';
-        if (!['x', 'y', 'xy'].includes(axes)) throw new TypeError('Native viewport axes must be x, y or xy.');
-        if (connection !== null && (!chartXProjection(root) || axes.includes('y') && !chartYProjection(root)))
-          throw new TypeError('This chart has no unambiguous native projection for the requested axes.');
+        const axes = nativeViewportAxes(options.axes, ['x', 'y']);
+        if (connection !== null && axes.some(name => !chartAxisProjection(root, name)))
+          throw new TypeError('This chart has no native projection for every requested physical axis.');
         setNativePreparationConnection(root, 'viewport', connection, { axes, legacy: false });
         if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
         syncXViewportControls(root); return controller;
+      },
+      getHierarchyView: () => { requireMounted(); return copyHostValue(hierarchySnapshot(root)); },
+      setHierarchyView: view => {
+        requireMounted();
+        if (!requestNativeHierarchy(root, view)) throw new TypeError('A hierarchy view requires a connected supported hierarchy and an existing source root, or null to reset.');
+        return controller;
       },
       getViewport: () => { requireMounted(); return copyHostValue(nativeViewportWindows(root)); },
       setViewport: viewport => {
@@ -74,7 +82,7 @@
       getYWindow: () => { requireMounted(); return copyHostValue(nativeYWindow(root)); },
       setYWindow: (minimum, maximum) => {
         requireMounted();
-        if (!requestNativeCartesianWindow(root, { y: { minimum, maximum } })) throw new TypeError('A native Y window requires a connected unambiguous primary axis and finite increasing source bounds.');
+        if (!requestNativeCartesianWindow(root, { y: { minimum, maximum } })) throw new TypeError('A native Y window requires a connected primary vertical axis and finite increasing source bounds.');
         return controller;
       },
       getXWindow: () => { requireMounted(); return copyHostValue(nativeXWindow(root)); },
@@ -85,7 +93,7 @@
         return controller;
       },
       resize: () => {
-        requireMounted(); hideCrosshair(root, root.querySelector('.cfx-crosshair'));
+        requireMounted(); settleChartUpdateMotion(root); hideCrosshair(root, root.querySelector('.cfx-crosshair'));
         refreshKeyboardNavigation(root); refreshTooltipPosition(root); syncResetControl(root);
         return controller;
       },
@@ -95,7 +103,7 @@
     try { prepareAdaptiveRoot(root, lifetime); bindChart(root); bindAdaptiveLayout(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
     return controller;
   };
-  // Shared assets may be registered by more than one fragment. One installed runtime owns all controllers.
+  // One runtime/controller.
   window.ChartForgeXCharts = Object.freeze({ mount: mountChart,
     get: target => { const root = chartRoot(target), lifetime = root?.isConnected && chartLifetimes.get(root); return lifetime && !lifetime.disposed ? lifetime.controller : null; } });
   document.querySelectorAll('.cfx-interactive-chart').forEach(root => mountChart(root));

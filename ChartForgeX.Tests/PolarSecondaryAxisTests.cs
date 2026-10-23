@@ -8,7 +8,7 @@ public sealed class PolarSecondaryAxisTests {
     [Fact]
     public void PolarRejectsANegativeMinimumOnTheSelectedSecondaryRadiusAxis() {
         var chart = Chart.Create().AddPolar("Rate", new[] { new ChartPoint(0, 5), new ChartPoint(1, 8) });
-        chart.Series[0].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithBounds(-10, 10);
+        chart.Series[0].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithBounds(-10, 10);
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(VisualExportRequest.ForChart(chart).Context));
     }
 
@@ -23,7 +23,7 @@ public sealed class PolarSecondaryAxisTests {
         var points = new[] { new ChartPoint(0, 50), new ChartPoint(1, 50), new ChartPoint(2, 50) };
         if (kind == ChartSeriesKind.Radar) chart.AddRadarLine("Counts", points).AddRadarLine("Rate", points);
         else chart.AddPolar("Counts", points).AddPolar("Rate", points);
-        chart.Series[1].UseSecondaryYAxis(); chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
+        chart.Series[1].UseSecondaryValueAxis(); chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
         chart.Options.YAxis.LabelFormatter = value => "Count " + value;
         chart.Options.SecondaryYAxis.LabelFormatter = value => "Rate " + value;
         chart.Options.PolarGridRingCount = intervals;
@@ -48,7 +48,7 @@ public sealed class PolarSecondaryAxisTests {
         var second = new[] { new ChartPoint(0, reversed ? 2.5 : 7.5), new ChartPoint(1, 5), new ChartPoint(2, 5) };
         if (kind == ChartSeriesKind.Radar) chart.AddRadarLine("Counts", first).AddRadarLine("Rate", second);
         else chart.AddPolar("Counts", first).AddPolar("Rate", second);
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.SecondaryYAxis.WithReversal(reversed);
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
