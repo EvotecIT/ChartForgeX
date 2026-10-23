@@ -14,7 +14,7 @@ jobs:
   build-test-pack:
     name: Build, test, examples, pack (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.name == 'Windows' && 40 || 30 }}
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
