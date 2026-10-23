@@ -199,7 +199,7 @@ public sealed class MermaidJourneyTimelineNativeTests {
                 Assert.Equal(new byte[] { color.R, color.G, color.B, color.A }, image.Pixels.Take(4));
             }
             Assert.Equal(255, image.Pixels[(image.Height / 2 * image.Width + image.Width / 2) * 4 + 3]);
-            var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics);
+            var fence = new MermaidVisualMarkupParser(options ?? new MermaidRenderOptions()).Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics);
             var fenced = Assert.Single(fence.Artifacts); Assert.Equal(svg, fenced.ToSvg()); Assert.Equal(png, fenced.ToPng());
         }
     }
