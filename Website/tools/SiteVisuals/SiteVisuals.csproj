@@ -12,6 +12,8 @@
   <ItemGroup>
     <!-- The playground samples are Mermaid atlas sources, so the atlas and the playground show the same text. -->
     <Compile Include="..\Playground\PlaygroundEngine.cs" Link="Playground\PlaygroundEngine.cs" />
+    <Compile Include="..\Playground\PlaygroundEngine.Png.cs" Link="Playground\PlaygroundEngine.Png.cs" />
+    <Compile Include="..\Playground\PlaygroundEngine.Fonts.cs" Link="Playground\PlaygroundEngine.Fonts.cs" />
     <Compile Include="..\Playground\PlaygroundJson.cs" Link="Playground\PlaygroundJson.cs" />
     <Compile Include="..\Playground\PlaygroundSamples.cs" Link="Playground\PlaygroundSamples.cs" />
     <Compile Include="..\Playground\PlaygroundFonts.cs" Link="Playground\PlaygroundFonts.cs" />

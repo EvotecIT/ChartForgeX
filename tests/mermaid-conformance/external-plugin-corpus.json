@@ -12,7 +12,7 @@
       "mermaidPeerRange": "^10 || ^11 || ^12",
       "execution": "Disposable local browser render from the published standalone dist bundle; no normal npm/project/runtime dependency.",
       "parserBoundary": "Published parser.d.ts explicitly declares a dummy parse() wrapper. Only actual plugin-render DOM and paint can qualify reference semantics.",
-      "qualification": "pending-render"
+      "qualification": "See the two source-bound fixture receipts; full-plugin grammar remains unqualified."
     }
   },
   "fixtures": {
@@ -30,10 +30,14 @@
         ]
       },
       "qualification": {
-        "status": "pending-render",
+        "status": "qualified-render",
         "method": "external-plugin-browser-render",
         "parseIsSemanticEvidence": false,
-        "receipt": null
+        "receipt": {
+          "sourceSha256": "cd0a2467210be813f3c9a8f10b6b63a61e9c33128fc0e561995cf1cc1870202a",
+          "packageVersion": "1.0.1",
+          "path": "external-plugins/zenuml/reference.json"
+        }
       },
       "requiredVisibleTextTokens": [
         "User",
@@ -66,10 +70,14 @@
         ]
       },
       "qualification": {
-        "status": "pending-render",
+        "status": "qualified-render",
         "method": "external-plugin-browser-render",
         "parseIsSemanticEvidence": false,
-        "receipt": null
+        "receipt": {
+          "sourceSha256": "451a9e7949344564fb66d30b9b77564c91c5d3ca5568977942f0fb3c6a1abb47",
+          "packageVersion": "1.0.1",
+          "path": "external-plugins/zenuml/reference.json"
+        }
       },
       "requiredVisibleTextTokens": [
         "process",
