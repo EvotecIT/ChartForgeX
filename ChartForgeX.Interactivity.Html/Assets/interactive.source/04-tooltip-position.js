@@ -24,7 +24,7 @@
     if (activeTooltipPositions.size) {
       if (tooltipPositionObserver && Array.from(tooltipPositionTrees).some(tree =>
         !Array.from(activeTooltipPositions).some(current => current.trees.includes(tree)))) {
-        // Drain detaches before tree/slot rebinding.
+        // Drain detaches before rebind.
         checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
         if (!tooltipPositionObserver) return;
         tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
@@ -49,7 +49,7 @@
   };
   const tooltipShadowContainingBlock = (node, position, source) => {
     if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
-    // Containing blocks bypass inner clips; inline boxes never clip.
+    // Containing blocks bypass clips; inline never clips.
     const style = getComputedStyle(node);
     return position === 'absolute' && style.position !== 'static'
       || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
@@ -141,7 +141,7 @@
     });
     if (!records.length) return;
     for (const current of Array.from(activeTooltipPositions)) {
-      // Release geometry, keeping replacement requests.
+      // Release geometry, not requests.
       if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)
@@ -158,7 +158,7 @@
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
         attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
-      // Geometry events stay in their shadow tree.
+      // Keep shadow-local events.
       tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
       tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tree.addEventListener('slotchange', queueTooltipPositionRefresh, true);
@@ -170,7 +170,7 @@
       state.intersectionObserver?.disconnect(); state.nativeIntersecting = undefined; state.intersectionNode = state.node;
       const box = state.node.getBoundingClientRect();
       if (box.width > 0 && box.height > 0 && !retainedGeometryFact(state.node)) {
-        // Opaque-slot intersection supplements footprint, never inflated hit boxes.
+        // Intersect opaque slots with ink, not hit boxes.
 
         const observer = new IntersectionObserver(entries => {
           const entry = entries.find(item => item.target === state.node);
@@ -223,7 +223,7 @@
     }
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
-    // Fix measured width against shrink-to-fit.
+    // Fix measured shrink-to-fit width.
     tip.style.left = '0px'; tip.style.top = '0px';
     tip.style.width = '';
     tip.style.width = getComputedStyle(tip).width;

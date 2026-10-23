@@ -6,7 +6,7 @@
       timeSessions: projection.timeSessions, maximumInclusive: true, reversed: false } : null;
   };
   const xNavigationWindow = (root, axis, minimum, maximum, maximumInclusive) => {
-    // Keep full-edge inclusion; emit canonical, uncentered calendar edges.
+    // Include full canonical calendar edges, uncentered.
 
     const inclusive = maximumInclusive ?? (axis.timeSpacing?.kind === 'unit'
       ? !validSourceAxisMaximum({ maximum, maximumInclusive: false }, axis) : chartXProjection(root)?.maximumInclusive !== false);

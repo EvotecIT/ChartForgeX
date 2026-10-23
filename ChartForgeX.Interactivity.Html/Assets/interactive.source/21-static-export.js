@@ -1,4 +1,4 @@
-  // Export committed state, never camera/hover/focus.
+  // Export committed state only.
 
   const withPersistentExportPaint = (root, svg, read) => {
     const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
@@ -39,7 +39,7 @@
       sources.forEach((source, index) => {
         const target = copies[index], style = getComputedStyle(source);
         for (const property of exportPaintProperties) {
-          // Rebind computed URLs to local SVG.
+          // Localize computed SVG URLs.
           const value = style.getPropertyValue(property).replace(/url\(["']?[^)"']*#([^)"']+)["']?\)/g,
             (match, id) => ids.has(id) ? 'url(#' + id + ')' : match);
           if (value) target.style.setProperty(property, value);

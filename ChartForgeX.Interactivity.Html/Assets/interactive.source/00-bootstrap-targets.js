@@ -113,7 +113,7 @@
     const data = node.dataset || {};
     if (data.cfxDerivedIdentity !== undefined) return data.cfxDerivedIdentity;
     const derived = data.cfxDerived || 'aggregate';
-    // Summary ordinals are partition-local.
+    // Partition-local ordinals.
     if (derived === 'histogram-bin' && data.cfxBinLower !== undefined && data.cfxBinUpper !== undefined)
       return [derived, String(Number(data.cfxBinLower)), String(Number(data.cfxBinUpper)), data.cfxBinUpperInclusive || 'false',
         data.cfxHistogramAggregation || 'count', data.cfxHistogramEncoding || 'value'].join(':');

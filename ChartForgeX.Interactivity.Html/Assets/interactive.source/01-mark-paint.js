@@ -1,6 +1,6 @@
 
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
-  // Exclude adapter/probe state from paint observers.
+  // Ignore adapter/probe mutations.
 
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
@@ -15,7 +15,7 @@
     }
     return { nodes, trees: Array.from(trees) };
   };
-  // Per-probe styles/cache; CSS changes between events.
+  // Per-probe CSS cache.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
@@ -44,7 +44,7 @@
     if (Number(opacity) <= 0) return null;
     const reference = /^url\(\s*["']?([^"')]+)["']?\s*\)$/i.exec(value || '');
     if (!reference || !node.ownerSVGElement) return null;
-    // Local SVG paint servers; no linked servers.
+    // Local paint servers only.
     let server;
     try {
       const url = new URL(reference[1], node.ownerDocument.baseURI);
@@ -74,9 +74,9 @@
 
     return !!(previous && followsPrevious(node) || followsPrevious(next));
   };
-  // Native extent, not inflated targets.
+  // Native, not hit extent.
   const pairedExtentScreenBox = (node) => nativeRegionScreenBox(node, node._cfxPairedRegion);
-  // User-space rect clips use owner transforms.
+  // User-space clips follow owner.
   const nativePaintClips = (node) => {
     const clips = [];
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
@@ -150,7 +150,7 @@
         })) continue;
         const sample = point.matrixTransform(shapeMatrix.inverse());
         const radius = parseFloat(paint.strokeWidth) / 2 * (paint.strokeLinecap === 'square' ? Math.SQRT2 : 1);
-        // Clamp within this endpoint's stroke.
+        // Clamp to endpoint stroke.
         if (Math.hypot(sample.x - source.x, sample.y - source.y) <= radius + .001 && node.isPointInStroke(sample)) return true;
       }
     }
@@ -161,7 +161,7 @@
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
-    // Zero-size SVG shapes suppress strokes.
+    // Zero size suppresses stroke.
     let box;
     if (node.matches('rect,circle,ellipse')) {
       box = node.getBBox();
@@ -169,7 +169,7 @@
     }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
-    // Bounds are not ink; open lines lack fill; collapsed fill can stroke.
+    // Bounds != ink; open: stroke only; collapsed: stroke.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
 
     let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
@@ -250,7 +250,7 @@
     return null;
   };
   const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
-    // Suspend adapter opacity, then refresh styles.
+    // Suspend opacity; refresh CSS.
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
@@ -259,7 +259,7 @@
     return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
       || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
   };
-  // Boxes are not ink; keep muted legends; unpainted facts are keyboard-only.
+  // Reject box ink; keep muted legends/keyboard facts.
 
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;

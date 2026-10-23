@@ -21,7 +21,7 @@
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
         value: Number(sharedXValue(candidate)), rawValue: sharedXValue(candidate), colour: paint.colour || paintColour(point, styles) });
     };
-    // Keep the acquired duplicate-X observation.
+    // Keep duplicate-X identity.
     addObservation(node);
     svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]').forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };

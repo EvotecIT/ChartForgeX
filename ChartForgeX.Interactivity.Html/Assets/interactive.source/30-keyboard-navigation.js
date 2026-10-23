@@ -91,7 +91,7 @@
     legends.forEach((node) => {
       let branch = node;
       while (branch.parentElement && branch.parentElement !== svg) branch = branch.parentElement;
-      // Move intact legends, not data branches.
+      // Move whole legends only.
       if (branch.parentElement === svg && !branches.has(branch) && !data.some((mark) => branch.contains(mark))) branches.add(branch);
     });
     branches.forEach((branch) => svg.appendChild(branch));
@@ -124,7 +124,7 @@
       focusNode.setAttribute('tabindex', node === state.activeData || node === state.activeLegend ? '0' : '-1');
     });
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
-      // Focus recovery cannot reopen dismissed readouts.
+      // Focus cannot revive readouts.
       const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
       if (replacement) {
 
@@ -215,7 +215,7 @@
       if (!['auto', 'scroll', 'hidden'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
       if (itemEnd - itemStart > end - start) {
-        // No pointer focus movement mid-press.
+        // No focus moves mid-press.
         if (itemEnd > start && itemStart < end) return offset;
         return offset + center - (start + end) / 2;
       }

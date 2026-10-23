@@ -1,4 +1,4 @@
-  // One root owns resources of inert native alternates.
+  // Root owns inert alternates.
 
   const adaptiveTemplate = (root, name) => Array.from(root.children)
     .find(node => node instanceof HTMLTemplateElement && node.hasAttribute('data-cfx-adaptive-' + name));

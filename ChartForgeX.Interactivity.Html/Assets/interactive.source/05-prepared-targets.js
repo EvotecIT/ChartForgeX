@@ -89,7 +89,7 @@
       if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      // Imputed zero lacks authored ID; peer category IDs persist.
+      // Imputed zero: no ID; retain peer category IDs.
 
       if (data.cfxDerived === 'missing-category-zero') {
         data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);

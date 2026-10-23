@@ -126,7 +126,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const data = node.dataset || {};
     if (data.cfxDerivedIdentity !== undefined) return data.cfxDerivedIdentity;
     const derived = data.cfxDerived || 'aggregate';
-    // Summary ordinals are partition-local.
+    // Partition-local ordinals.
     if (derived === 'histogram-bin' && data.cfxBinLower !== undefined && data.cfxBinUpper !== undefined)
       return [derived, String(Number(data.cfxBinLower)), String(Number(data.cfxBinUpper)), data.cfxBinUpperInclusive || 'false',
         data.cfxHistogramAggregation || 'count', data.cfxHistogramEncoding || 'value'].join(':');
@@ -197,7 +197,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       node.setAttribute('data-cfx-target-id', id);
     });
   };
-  // Only absent captions fall back.
+  // Fallback only if absent.
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
 
@@ -243,7 +243,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      // Share validated IDs, never ordinals/hints.
+      // Share validated IDs only.
       seriesScope: targetKind === 'annotation' ? node._cfxAnnotationId === undefined ? 'local' : 'shared' : data.cfxSeriesScope,
       annotationId: node._cfxAnnotationId,
       observationId: data.cfxObservationId,
@@ -601,7 +601,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const matrix = node?.getScreenCTM();
     return matrix && projection ? projection.multiply(matrix) : matrix;
   };
-  // Allow native .001/screen rounding.
+  // Allow .001/screen rounding.
   const svgCoordinatePrecision = matrix => ({
     x: .001 * (Math.abs(matrix.a) + Math.abs(matrix.c)) + .0001,
     y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001
@@ -616,7 +616,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return { left: Math.min(...corners.map(point => point.x)), right: Math.max(...corners.map(point => point.x)),
       top: Math.min(...corners.map(point => point.y)), bottom: Math.max(...corners.map(point => point.y)) };
   };
-  // Only exact catalog IDs persist; hints stay local.
+  // Persist catalog IDs, not hints.
   const annotationCatalog = (svg, metadata) => {
     const entries = metadata.annotations ?? [], ids = new Set(), sources = new Set(), bindings = new Map();
     const nodes = Array.from(svg.querySelectorAll('[data-cfx-role^="annotation"],[data-cfx-target-kind="annotation"]'));
@@ -644,7 +644,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     && ['area', 'steparea', 'stackedarea', 'differencearea', 'rangearea', 'rangeband'].includes((subject.dataset.cfxKind || '').toLowerCase())
     && /^(area|difference-(positive|negative)|range-(area|band))(-pattern)?$/.test(node.dataset.cfxRole || '');
   const cartesianFillOwnsObservation = (node, subject) => {
-    // Fill/hatch owners use indices, not coordinates.
+    // Fill/hatch use indices.
     const segment = node.closest('[data-cfx-role="fill-segment"]');
     if (!segment) return false;
     const first = Number(segment.dataset.cfxFillPointStart), count = Number(segment.dataset.cfxFillPointCount);
@@ -666,7 +666,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const role = node.dataset.cfxRole || '';
     if (!role.endsWith('-pattern')) return typeof node.isPointInFill === 'function'
       ? { key: node, matrix: node.getScreenCTM(), contains: point => node.isPointInFill(point) } : null;
-    // Query hatch clip-rule independently.
+    // Separate hatch clip-rule.
 
     for (let parent = node.parentElement; parent && parent.ownerSVGElement; parent = parent.parentElement) {
       const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
@@ -704,7 +704,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (subjects.has(subject)) return subjects.get(subject);
     const sourceInverse = sourceMatrix.inverse(), shapeInverse = shapeMatrix.inverse();
     const paired = pairedExtentObservation(subject), x = region.x + region.width / 2;
-    // Clip scalars at their source.
+    // Clip source scalars.
     if (!paired && !paintWithinNativeClips(node, subject, styles)) return false;
     const low = paired ? region.y + region.width / 2 : region.y + region.height / 2;
     const high = paired ? region.y + region.height - region.width / 2 : low;
@@ -731,7 +731,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         && py - radius >= region.y && py + radius <= region.y + region.height
         && contains(px, py) && [-1, 1].every(dx => [-1, 1].every(dy => contains(px + dx * radius, py + dy * radius))));
     } else if (high > low) {
-      // Partition Step holds by neighbor clips/bounds.
+      // Clip Step holds by neighbors.
 
       visible = atY(low / 2 + high / 2, Math.min(inset, (high - low) / 4));
       if (!visible) {
@@ -766,7 +766,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
 
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
-  // Exclude adapter/probe state from paint observers.
+  // Ignore adapter/probe mutations.
 
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
@@ -781,7 +781,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
     return { nodes, trees: Array.from(trees) };
   };
-  // Per-probe styles/cache; CSS changes between events.
+  // Per-probe CSS cache.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
@@ -810,7 +810,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (Number(opacity) <= 0) return null;
     const reference = /^url\(\s*["']?([^"')]+)["']?\s*\)$/i.exec(value || '');
     if (!reference || !node.ownerSVGElement) return null;
-    // Local SVG paint servers; no linked servers.
+    // Local paint servers only.
     let server;
     try {
       const url = new URL(reference[1], node.ownerDocument.baseURI);
@@ -840,9 +840,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
 
     return !!(previous && followsPrevious(node) || followsPrevious(next));
   };
-  // Native extent, not inflated targets.
+  // Native, not hit extent.
   const pairedExtentScreenBox = (node) => nativeRegionScreenBox(node, node._cfxPairedRegion);
-  // User-space rect clips use owner transforms.
+  // User-space clips follow owner.
   const nativePaintClips = (node) => {
     const clips = [];
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
@@ -916,7 +916,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         })) continue;
         const sample = point.matrixTransform(shapeMatrix.inverse());
         const radius = parseFloat(paint.strokeWidth) / 2 * (paint.strokeLinecap === 'square' ? Math.SQRT2 : 1);
-        // Clamp within this endpoint's stroke.
+        // Clamp to endpoint stroke.
         if (Math.hypot(sample.x - source.x, sample.y - source.y) <= radius + .001 && node.isPointInStroke(sample)) return true;
       }
     }
@@ -927,7 +927,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
-    // Zero-size SVG shapes suppress strokes.
+    // Zero size suppresses stroke.
     let box;
     if (node.matches('rect,circle,ellipse')) {
       box = node.getBBox();
@@ -935,7 +935,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
-    // Bounds are not ink; open lines lack fill; collapsed fill can stroke.
+    // Bounds != ink; open: stroke only; collapsed: stroke.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
 
     let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
@@ -1016,7 +1016,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return null;
   };
   const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
-    // Suspend adapter opacity, then refresh styles.
+    // Suspend opacity; refresh CSS.
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
@@ -1025,7 +1025,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
       || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
   };
-  // Boxes are not ink; keep muted legends; unpainted facts are keyboard-only.
+  // Reject box ink; keep muted legends/keyboard facts.
 
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;
@@ -1163,7 +1163,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
         value: Number(sharedXValue(candidate)), rawValue: sharedXValue(candidate), colour: paint.colour || paintColour(point, styles) });
     };
-    // Keep the acquired duplicate-X observation.
+    // Keep duplicate-X identity.
     addObservation(node);
     svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]').forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
@@ -1219,7 +1219,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     resumePointerReadout(root);
   };
   const suspendPointerReadout = root => {
-    // Reset resumes on fresh input only.
+    // Reset awaits fresh input.
     root._cfxPointerReadoutSuspended = true;
     hideTip(root, root.querySelector('.cfx-tooltip'), true);
   };
@@ -1251,7 +1251,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
   };
   const cancelTooltipRequest = (root) => {
-    // Restored paint never restarts canceled timers.
+    // Restore keeps timers canceled.
     root._cfxCancelPointerHover?.();
     const request = tooltipRequests.get(root);
     if (!request) return;
@@ -1280,7 +1280,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return point && point.node;
   };
   const checkPendingTooltipMutations = (records) => {
-    // Ignore probes to avoid observer loops.
+    // Ignore observer probes.
     records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
     if (!records.length) return;
     for (const pending of Array.from(pendingTooltips)) {
@@ -1377,7 +1377,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (activeTooltipPositions.size) {
       if (tooltipPositionObserver && Array.from(tooltipPositionTrees).some(tree =>
         !Array.from(activeTooltipPositions).some(current => current.trees.includes(tree)))) {
-        // Drain detaches before tree/slot rebinding.
+        // Drain detaches before rebind.
         checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
         if (!tooltipPositionObserver) return;
         tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
@@ -1402,7 +1402,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const tooltipShadowContainingBlock = (node, position, source) => {
     if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
-    // Containing blocks bypass inner clips; inline boxes never clip.
+    // Containing blocks bypass clips; inline never clips.
     const style = getComputedStyle(node);
     return position === 'absolute' && style.position !== 'static'
       || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
@@ -1494,7 +1494,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     });
     if (!records.length) return;
     for (const current of Array.from(activeTooltipPositions)) {
-      // Release geometry, keeping replacement requests.
+      // Release geometry, not requests.
       if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)
@@ -1511,7 +1511,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
         attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
-      // Geometry events stay in their shadow tree.
+      // Keep shadow-local events.
       tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
       tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tree.addEventListener('slotchange', queueTooltipPositionRefresh, true);
@@ -1523,7 +1523,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       state.intersectionObserver?.disconnect(); state.nativeIntersecting = undefined; state.intersectionNode = state.node;
       const box = state.node.getBoundingClientRect();
       if (box.width > 0 && box.height > 0 && !retainedGeometryFact(state.node)) {
-        // Opaque-slot intersection supplements footprint, never inflated hit boxes.
+        // Intersect opaque slots with ink, not hit boxes.
 
         const observer = new IntersectionObserver(entries => {
           const entry = entries.find(item => item.target === state.node);
@@ -1576,7 +1576,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
-    // Fix measured width against shrink-to-fit.
+    // Fix measured shrink-to-fit width.
     tip.style.left = '0px'; tip.style.top = '0px';
     tip.style.width = '';
     tip.style.width = getComputedStyle(tip).width;
@@ -1714,7 +1714,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      // Imputed zero lacks authored ID; peer category IDs persist.
+      // Imputed zero: no ID; retain peer category IDs.
 
       if (data.cfxDerived === 'missing-category-zero') {
         data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);
@@ -1912,7 +1912,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
 
       if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
     }));
-    // Local paint loss keeps peer hover.
+    // Retain peer hover on paint loss.
     if (hiddenActive) clearHover(root, true, false);
   };
   const applyRootBranchHighlight = (root, active) => {
@@ -2324,7 +2324,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const control = focusedIndex >= 0 && state.controls.find(item => legendOverflowIdentity(item.source) === identity);
     (control && state.details.open ? control[captured.focused.action] : state.summary).focus({ preventScroll: true });
   };
-  // Overlays: CSS/scroll; hits: screen; axis-aligned scale only.
+  // Overlay: CSS/scroll; hit: screen; axis-aligned only.
 
   const stageProjection = stage => {
     const rect = stage.getBoundingClientRect();
@@ -2341,7 +2341,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
 
-  // Clip overlays; stale guides must not add scroll on resize.
+  // Clip overlays against resize scroll.
   const visibleCartesianPlot = (root, stage, plot = root._cfxCartesianPlot) => {
     const svg = stage.querySelector('svg');
     if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
@@ -2491,7 +2491,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  // Cancel draft before pointerup recommits.
+  // Cancel before pointerup.
   const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
     const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
@@ -2566,7 +2566,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
       else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
         requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
-      // Atomic replay; rejected reader state stays intact.
+      // Atomic replay; preserve rejected state.
       return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');
@@ -2609,7 +2609,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     emitHostEvent(root, 'cfxviewport', { state: getState(root) });
     emitSync(root, { action: 'viewport', state: getState(root) });
   };
-  // Export committed state, never camera/hover/focus.
+  // Export committed state only.
 
   const withPersistentExportPaint = (root, svg, read) => {
     const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
@@ -2650,7 +2650,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       sources.forEach((source, index) => {
         const target = copies[index], style = getComputedStyle(source);
         for (const property of exportPaintProperties) {
-          // Rebind computed URLs to local SVG.
+          // Localize computed SVG URLs.
           const value = style.getPropertyValue(property).replace(/url\(["']?[^)"']*#([^)"']+)["']?\)/g,
             (match, id) => ids.has(id) ? 'url(#' + id + ')' : match);
           if (value) target.style.setProperty(property, value);
@@ -2815,7 +2815,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     legends.forEach((node) => {
       let branch = node;
       while (branch.parentElement && branch.parentElement !== svg) branch = branch.parentElement;
-      // Move intact legends, not data branches.
+      // Move whole legends only.
       if (branch.parentElement === svg && !branches.has(branch) && !data.some((mark) => branch.contains(mark))) branches.add(branch);
     });
     branches.forEach((branch) => svg.appendChild(branch));
@@ -2848,7 +2848,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       focusNode.setAttribute('tabindex', node === state.activeData || node === state.activeLegend ? '0' : '-1');
     });
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
-      // Focus recovery cannot reopen dismissed readouts.
+      // Focus cannot revive readouts.
       const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
       if (replacement) {
 
@@ -2939,7 +2939,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (!['auto', 'scroll', 'hidden'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
       if (itemEnd - itemStart > end - start) {
-        // No pointer focus movement mid-press.
+        // No focus moves mid-press.
         if (itemEnd > start && itemStart < end) return offset;
         return offset + center - (start + end) / 2;
       }
@@ -3039,7 +3039,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     emitSync(root, { action: 'navigate', label: text(next), target, index: component.indexOf(next), count: component.length, key });
     return true;
   };
-  // WebKit needs SVG focus; keep hit geometry.
+  // WebKit SVG focus; retain hit geometry.
   const clearKeyboardFocusPaint = (root) => {
     root._cfxKeyboardFocusPaint?.remove();
     delete root._cfxKeyboardFocusPaint;
@@ -3424,7 +3424,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return count;
   };
   const reconcileSourceSelection = (root, previous, targets) => {
-    // Reconcile gesture IDs, not unrelated peer state.
+    // Reconcile gesture IDs only.
 
     const batch = selectionTargetBatch(root), before = new Set(), after = new Set();
     for (const target of previous) batch.resolve(target).forEach(node => before.add(node));
@@ -3494,7 +3494,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       return;
     }
     if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
-      // Keep primary/secondary physical axes distinct.
+      // Distinct physical axes.
       const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
       const binding = nativePreparationBinding(root, 'viewport');
       const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
@@ -3529,7 +3529,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (applyHoverByTarget(root, detail.target)) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') {
-      // Retire accepted hover only; local input takes over.
+      // Retire accepted hover; local input wins.
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
     }
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {
@@ -3583,7 +3583,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // Never mix OLE dates and Unix milliseconds.
+    // Separate OLE/Unix dates.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -3627,7 +3627,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (candidate[key] !== undefined && !Array.isArray(candidate[key])) throw new TypeError('Chart match ' + key + ' must be an array.');
     return candidate;
   };
-  // Parse whole ms first; engines round fractions differently.
+  // Whole ms first; fractions vary by engine.
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
     : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value)
       ? Date.parse(value.replace(/(\.\d{3})\d+(Z|[+-]\d\d:\d\d)$/, '$1$2')) : NaN;
@@ -3763,7 +3763,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       delete match.observationIds;
       removed = true;
     }
-    // Ordinals are scene-local; IDs/filters persist.
+    // Local ordinals; persistent IDs/filters.
     if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
     else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {
@@ -4142,7 +4142,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
     let hit = pointLabelTarget(root, nativeTarget) || (nativeTarget instanceof Element ? nativeTarget.closest(targetSelector) : null);
-    // Stop at caption owner/independent ID; never skip hidden targets.
+    // Stop at caption owner/ID; retain hidden targets.
 
     while (hit && root.contains(hit) && !isInteractiveTarget(hit)) {
       if (hit.dataset.cfxRole === 'legend-entry-omitted') { hit = null; break; }
@@ -4181,7 +4181,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const pointerActivationTarget = (root, node, event) => {
     if (isDataTarget(node) || renderedTargetKind(node) !== 'series' || !usesCartesianCoordinates(node)
       || !(event instanceof MouseEvent) || event.detail <= 0) return node;
-    // Topmost fill owns hit/nearest source observation.
+    // Top fill owns hit/nearest.
 
     const series = seriesTarget(node), candidates = pointerCandidates(root, event, true, event.target, series);
     const fill = event.target instanceof Element ? event.target.closest('[data-cfx-role]') : null;
@@ -4681,7 +4681,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
 
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
         let pointerFocus = false;
-        // Touch mouse follows pointerup; mid-press reveal retargets.
+        // Touch mouse follows pointerup; reveal retargets.
         ['pointerdown', 'mousedown'].forEach(type => listenChart(root, focusNode, type, (event) => { pointerFocus = event.button === 0; }));
         ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => listenChart(root, focusNode, type, () => { pointerFocus = false; }));
         listenChart(root, focusNode, 'focus', (event) => {
@@ -4741,11 +4741,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
-        // Enter follows links; Space selects without navigation.
+        // Enter follows links; Space selects.
         if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
         event.stopPropagation();
-        // Keep key events; synthetic (0,0) loses focus.
+        // Keep keys; (0,0) loses focus.
         activateTarget(event);
       });
     });
@@ -4846,7 +4846,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         if (pointerFrame) cancelAnimationFrame(pointerFrame);
         pointerFrame = 0; pendingPointerMove = null;
       };
-      // Cancel hover, not gestures; pointerup commits final sample.
+      // Cancel hover only; pointerup commits final.
 
       root._cfxCancelPointerHover = () => { if (!drag) cancelPointerMove(); };
       const applyPointerMove = (event, nativeTarget = event.target) => {
@@ -4914,7 +4914,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       listenChart(root, stage, 'pointermove', (event) => {
         resumePointerHover(root);
         if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
-        // Capture native target/timing before shadow retargeting.
+        // Capture before shadow retargeting.
 
         const nativeTarget = event.composedPath().find(node => node instanceof Element && stage.contains(node)) || event.target;
         pendingPointerMove = { event, nativeTarget };
@@ -4962,7 +4962,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       listenChart(root, stage, 'pointercancel', (event) => {
         if (drag?.id === event.pointerId || !drag && ownsTooltipPointer(root, event)) cancelPointerMove();
         if (drag && drag.id === event.pointerId) {
-          // Cancel draft gesture only; keep selection/box.
+          // Cancel draft, not selection/box.
           if (drag.mode === 'brush' && brush) {
             brush.hidden = drag.previousBrush.hidden;
             for (const name of ['left', 'top', 'width', 'height']) brush.style[name] = drag.previousBrush[name];
@@ -5086,7 +5086,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     };
   };
   const installChartSection = (root, next) => {
-    // Preserve host attrs/CSS/accent.
+    // Retain host attrs/CSS/accent.
     for (const attribute of Array.from(root.attributes)) if (attribute.name.startsWith('data-cfx-')) root.removeAttribute(attribute.name);
     for (const property of Array.from(root.style)) if (property.startsWith('--cfx-') && property !== '--cfx-host-accent') root.style.removeProperty(property);
     for (const attribute of Array.from(next.attributes)) {
@@ -5098,7 +5098,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     root.replaceChildren(...Array.from(next.childNodes).map(node => node.cloneNode(true)));
   };
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
-    // IDs persist; ordinals are scene-local.
+    // Persistent IDs; local ordinals.
     applySelectionSetByTargets(root, state.selected, true);
     root._cfxComparePage = state.comparePage;
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
@@ -5111,7 +5111,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     restoreLegendOverflow(root, state.legendOverflow);
-    // Focus recovery cannot revive old pins/readouts.
+    // Focus cannot revive pins/readouts.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };
   // One scene/revision/cancel/commit owner.
@@ -5167,10 +5167,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     syncXViewportControls(root); syncHierarchyNavigation(root);
   };
   const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null, preparedAdaptive) => {
-    // Validate alternates before scene release.
+    // Validate before release.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : preparedAdaptive === undefined ? readAdaptiveLayout(next) : preparedAdaptive;
-    // Commit drawing before host events.
-    // Replies keep layout; updates use live width; hidden keeps scene.
+    // Commit before host events.
+    // Reply: keep layout; update: live width; hidden: keep scene.
 
     if (adaptive && !adaptiveDrawing) {
       if (nativeKind && lifetime.adaptive) adaptive.current = lifetime.adaptive.current;
@@ -5186,19 +5186,19 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const navigationFocus = active && root.contains(active) ? active.dataset?.cfxXControl : null;
     const hierarchyFocus = active && root.contains(active) ? active.dataset?.cfxHierarchyControl : null;
     const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
-    // Keep pending until validation reports errors.
+    // Keep pending through validation.
     if (nativeKind) lifetime.preparationPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
-    // Keep root/connections; replace scene work.
+    // Retain root/connections.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
-    // Publish accepted basis before restore/host events.
+    // Publish basis before restore/events.
     if (nativeState && lifetime.preparationSession === nativeState.session) nativeState.session.basis = nativeState.basis;
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    // Keep reset dismissal before rebinding.
+    // Retain reset dismissal.
     if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind && !preserveViewport);
@@ -5232,7 +5232,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
-      // Validate all drawings before advancing basis.
+      // Validate all before basis.
       const adaptive = readAdaptiveLayout(next);
       for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) hooks.validate(drawing, request);
       const before = hooks.beforeCommit?.();
@@ -5247,7 +5247,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     });
     return true;
   };
-  // Commit native state before motion.
+  // Native commit before motion.
   const captureChartUpdateMotion = value => {
     if (value === undefined || value === null) return Object.freeze({ duration: 0 });
     if (typeof value !== 'object' || !Number.isFinite(value.duration) || value.duration < 0 || value.duration > 1000)
@@ -5459,7 +5459,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     requestXViewport(root, 'window', Math.min(first, last), Math.max(first, last), sync, accepted, window);
     return true;
   };
-  // One root owns resources of inert native alternates.
+  // Root owns inert alternates.
 
   const adaptiveTemplate = (root, name) => Array.from(root.children)
     .find(node => node instanceof HTMLTemplateElement && node.hasAttribute('data-cfx-adaptive-' + name));
@@ -5537,7 +5537,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const state = annotationEditorState(root);
     if (!state) return {};
     const before = annotationDrawingAt(root, id), after = drawing ?? null;
-    // Editor history cannot restore native lines/bands.
+    // History cannot restore native bands/lines.
     const representable = before !== null || !nativeAnnotationNode(root, id);
     if (!state.enabled) return representable ? {} : { committed: () => { state.undo = []; state.redo = []; } };
 
@@ -5547,7 +5547,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       cancelled: release,
       failed: () => { release(); state.error = uiText(root, 'AnnotationFailed', 'The annotation could not be updated.'); refreshAnnotationEditor(root); },
       committed: () => {
-        // Only validated native commits enter history.
+        // History needs native validation.
         if (!representable) {
           state.undo = []; state.redo = [];
         } else if (replay) {
@@ -5732,7 +5732,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       root.querySelector('[data-cfx-annotation-editor]')?.remove(); });
     bindAnnotationEditorGestures(root); refreshAnnotationEditor(root);
   };
-  // Browser: drafts/bounded history; native: model/transport.
+  // Browser drafts/history; native model/transport.
   const annotationEditorState = root => chartLifetimes.get(root)?.annotationEditor;
   const annotationDrawingAt = (root, id) => {
     const data = nativeAnnotationNode(root, id)?.dataset;
@@ -5798,7 +5798,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     });
     state.api = api; lifetime.annotationEditor = state; bindAnnotationEditor(root); return api;
   };
-  // Exact geometry; native owns drawing/export.
+  // Native drawing/export geometry.
   const nativeAnnotationNode = (root, id) => Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
     .find(node => node.dataset.cfxAnnotationId === id);
   const sourceAnnotationProjection = (root, yAxis) => {
@@ -5924,7 +5924,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       timeSessions: projection.timeSessions, maximumInclusive: true, reversed: false } : null;
   };
   const xNavigationWindow = (root, axis, minimum, maximum, maximumInclusive) => {
-    // Keep full-edge inclusion; emit canonical, uncentered calendar edges.
+    // Include full canonical calendar edges, uncentered.
 
     const inclusive = maximumInclusive ?? (axis.timeSpacing?.kind === 'unit'
       ? !validSourceAxisMaximum({ maximum, maximumInclusive: false }, axis) : chartXProjection(root)?.maximumInclusive !== false);
@@ -6106,7 +6106,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       close();
       const tree = root.getRootNode(), style = view.getComputedStyle(root);
       returnFocus = tree.activeElement || root;
-      // Portals keep chart ownership/source focus.
+      // Portals retain owner/focus.
 
       root._cfxContextMenuSourceFocus = root.contains(returnFocus) ? returnFocus : stage;
       menu = root.ownerDocument.createElement('div');
@@ -6270,7 +6270,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     try { prepareAdaptiveRoot(root, lifetime); bindChart(root); bindAdaptiveLayout(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
     return controller;
   };
-  // Fragments share one runtime/controller.
+  // One runtime/controller.
   window.ChartForgeXCharts = Object.freeze({ mount: mountChart,
     get: target => { const root = chartRoot(target), lifetime = root?.isConnected && chartLifetimes.get(root); return lifetime && !lifetime.disposed ? lifetime.controller : null; } });
   document.querySelectorAll('.cfx-interactive-chart').forEach(root => mountChart(root));
