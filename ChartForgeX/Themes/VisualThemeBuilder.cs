@@ -17,6 +17,7 @@ public sealed class VisualThemeBuilder {
         GridStrokeWidth = theme.GridStrokeWidth; AxisStrokeWidth = theme.AxisStrokeWidth; CardRadius = theme.CardRadius;
         PlotRadius = theme.PlotRadius; CardShadowOpacity = theme.CardShadowOpacity; CardShadowColor = theme.CardShadowColor;
         GaugeStrokeWidth = theme.GaugeStrokeWidth; GaugeBandWidth = theme.GaugeBandWidth;
+        MaximumBarWidth = theme.MaximumBarWidth;
     }
 
     /// <summary>Gets the independently editable light color palette.</summary>
@@ -35,6 +36,8 @@ public sealed class VisualThemeBuilder {
     public double AreaOpacity { get; set; }
     /// <summary>Gets or sets the bar corner radius.</summary>
     public double BarRadius { get; set; }
+    /// <summary>Gets or sets the maximum regular bar thickness in drawing pixels, default 64.</summary>
+    public double MaximumBarWidth { get; set; }
     /// <summary>Gets or sets the plot-guide width.</summary>
     public double GridStrokeWidth { get; set; }
     /// <summary>Gets or sets the axis width.</summary>
@@ -61,5 +64,5 @@ public sealed class VisualThemeBuilder {
     /// <summary>Validates and snapshots all colors, typography, geometry and effects.</summary>
     public VisualTheme Build() => new(Light, Dark, Typography ?? throw new ArgumentNullException(nameof(Typography)),
         Spacing, SeriesStrokeWidth, MarkerRadius, AreaOpacity, BarRadius, GridStrokeWidth, AxisStrokeWidth,
-        CardRadius, CardShadowOpacity, CardShadowColor, GaugeStrokeWidth, GaugeBandWidth, PlotRadius);
+        CardRadius, CardShadowOpacity, CardShadowColor, GaugeStrokeWidth, GaugeBandWidth, PlotRadius, MaximumBarWidth);
 }

@@ -17,7 +17,14 @@ public sealed partial class VisualTheme {
         double spacing = 12, double seriesStrokeWidth = 2, double markerRadius = 3,
         double areaOpacity = 0.18, double barRadius = 3, double gridStrokeWidth = 1, double axisStrokeWidth = 1,
         double cardRadius = DefaultCardRadius, double cardShadowOpacity = 0, ChartColor? cardShadowColor = null,
-        double gaugeStrokeWidth = 14, double gaugeBandWidth = 4, double plotRadius = 3) {
+        double gaugeStrokeWidth = 14, double gaugeBandWidth = 4, double plotRadius = 3)
+        : this(light, dark, typography, spacing, seriesStrokeWidth, markerRadius, areaOpacity, barRadius, gridStrokeWidth,
+            axisStrokeWidth, cardRadius, cardShadowOpacity, cardShadowColor, gaugeStrokeWidth, gaugeBandWidth, plotRadius, 64) { }
+
+    internal VisualTheme(VisualDesignTokens light, VisualDesignTokens dark, VisualTypography? typography,
+        double spacing, double seriesStrokeWidth, double markerRadius, double areaOpacity, double barRadius,
+        double gridStrokeWidth, double axisStrokeWidth, double cardRadius, double cardShadowOpacity,
+        ChartColor? cardShadowColor, double gaugeStrokeWidth, double gaugeBandWidth, double plotRadius, double maximumBarWidth) {
         _light = new VisualThemeColors(light ?? throw new ArgumentNullException(nameof(light)));
         _dark = new VisualThemeColors(dark ?? throw new ArgumentNullException(nameof(dark)));
         Typography = typography ?? new VisualTypography();
@@ -28,6 +35,8 @@ public sealed partial class VisualTheme {
         GaugeStrokeWidth = NonNegative(gaugeStrokeWidth, nameof(gaugeStrokeWidth));
         GaugeBandWidth = NonNegative(gaugeBandWidth, nameof(gaugeBandWidth));
         PlotRadius = NonNegative(plotRadius, nameof(plotRadius));
+        MaximumBarWidth = NonNegative(maximumBarWidth, nameof(maximumBarWidth));
+        if (MaximumBarWidth == 0) throw new ArgumentOutOfRangeException(nameof(maximumBarWidth));
         if (double.IsNaN(cardShadowOpacity) || cardShadowOpacity < 0 || cardShadowOpacity > 1) throw new ArgumentOutOfRangeException(nameof(cardShadowOpacity));
         CardShadowOpacity = cardShadowOpacity;
         CardShadowColor = cardShadowColor ?? ChartColor.FromRgb(15, 23, 42);
@@ -46,6 +55,8 @@ public sealed partial class VisualTheme {
     public double AreaOpacity { get; }
     /// <summary>Gets the bar corner radius.</summary>
     public double BarRadius { get; }
+    /// <summary>Gets the maximum regular bar thickness in drawing pixels (64 by default).</summary>
+    public double MaximumBarWidth { get; }
     /// <summary>Gets the shared outer card corner radius, independent of plot and data mark radii.</summary>
     public double CardRadius { get; }
     /// <summary>Gets the plot surface corner radius, independent of card and mark radii.</summary>
@@ -74,7 +85,7 @@ public sealed partial class VisualTheme {
     public VisualTheme WithTypography(VisualTypography typography) => new(_light.ToTokens(), _dark.ToTokens(),
         typography ?? throw new ArgumentNullException(nameof(typography)), Spacing, SeriesStrokeWidth, MarkerRadius,
         AreaOpacity, BarRadius, GridStrokeWidth, AxisStrokeWidth, CardRadius, CardShadowOpacity, CardShadowColor,
-        GaugeStrokeWidth, GaugeBandWidth, PlotRadius);
+        GaugeStrokeWidth, GaugeBandWidth, PlotRadius, MaximumBarWidth);
     /// <summary>Creates a new immutable theme by configuring an independent builder.</summary>
     /// <remarks>The callback cannot mutate this theme. Invalid or throwing callbacks leave the original snapshot intact.</remarks>
     public VisualTheme Configure(Action<VisualThemeBuilder> configure) {

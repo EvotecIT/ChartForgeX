@@ -97,13 +97,22 @@ internal static partial class VisualCartesianCompiler {
         return values;
     }
 
-    /// <summary>Keeps authored/category captions on a regular stride without appending a crowded final caption.</summary>
+    /// <summary>Keeps captions on a regular stride; short named categories retain both endpoints without crowding.</summary>
     private static HashSet<double> SelectAxisLabelStride(VisualSceneBuilder builder, ChartAxis axis, IReadOnlyList<double> ticks,
         Func<double, double> coordinate, bool horizontal, TextStyle style, double gap, Func<double, string>? fallback, AxisLabelCache labels,
         Func<double, string>? display = null) {
         if (axis.LabelDensity == ChartLabelDensity.All) return new HashSet<double>(ticks);
+        var keepEndpoints = labels.HasAuthoredTicks(axis) && axis.Labels.Count > 0 && axis.Scale != ChartScaleKind.Time
+            && ticks.All(tick => new System.Globalization.StringInfo(labels.Format(axis, tick, fallback, ticks)).LengthInTextElements <= 3);
         for (var stride = 1; stride <= ticks.Count; stride++) {
-            var selected = ticks.Where((_, index) => index % stride == 0).ToArray();
+            var selected = ticks.Where((_, index) => index % stride == 0).ToList();
+            if (keepEndpoints && ticks.Count > 1 && !selected.Contains(ticks[ticks.Count - 1])) {
+                selected.Add(ticks[ticks.Count - 1]);
+                // A final partial stride may crowd its neighbour. Keep the endpoint and
+                // remove only that neighbour rather than shortening a month to "A…".
+                while (selected.Count > 2 && !AxisLabelSequenceFits(builder, axis, selected.Skip(selected.Count - 2).ToArray(),
+                    coordinate, horizontal, style, gap, fallback, labels, display)) selected.RemoveAt(selected.Count - 2);
+            }
             if (AxisLabelSequenceFits(builder, axis, selected, coordinate, horizontal, style, gap, fallback, labels, display)) return new HashSet<double>(selected);
         }
         return new HashSet<double>();

@@ -1389,7 +1389,7 @@
         "outputScale": 2,
         "minVisiblePixels": 846400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1177,
+        "minDistinctColors": 545,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1413,7 +1413,7 @@
         "outputScale": 2,
         "minVisiblePixels": 404800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 844,
+        "minDistinctColors": 313,
         "maxEdgeInkPixels": 0
       }
     },

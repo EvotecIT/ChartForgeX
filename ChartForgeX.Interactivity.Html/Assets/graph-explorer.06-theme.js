@@ -100,9 +100,11 @@
     if (!value) return fallback;
     return graphColorContrast(value, graphThemePalette(root).paper) >= 4.5 ? value : fallback;
   };
+  const graphNodeBackground = (node, palette) => attr(node, 'data-node-background-color') ||
+    (attr(node, 'data-node-card') === 'true' || metadataDetail(node)['topology.backgroundSource'] === 'theme' ? palette.card : '');
   const graphNodeIconColor = (root, node, palette, fill) => {
     const card = attr(node, 'data-node-card') === 'true';
-    const surface = fill || attr(node, 'data-node-background-color') || (card ? palette.card : '#2563eb');
+    const surface = fill || graphNodeBackground(node, palette) || '#2563eb';
     const background = graphCompositeColor(surface, palette.paper);
     const preferred = card ? attr(node, 'data-node-border-color') || palette.text : '#ffffff';
     if (graphColorContrast(preferred, background) >= 4.5) return preferred;
@@ -110,7 +112,7 @@
   };
   const graphReadableNodeColors = (root, node, palette) => {
     const card = attr(node, 'data-node-card') === 'true';
-    const requestedBackground = attr(node, card ? 'data-node-background-color' : 'data-node-label-background-color');
+    const requestedBackground = card ? graphNodeBackground(node, palette) : attr(node, 'data-node-label-background-color');
     const surface = graphColorRgba(requestedBackground) ? requestedBackground : card ? palette.card : palette.paper;
     const background = graphCompositeColor(surface, palette.paper);
     const preferred = attr(node, 'data-node-label-color');
@@ -128,12 +130,20 @@
       halo: background
     };
   };
+  const graphTopologyStatusAccent = (root, node) => {
+    const color = metadataDetail(node)['topology.accentSource'] === 'status'
+      ? metadataDetail(root)['topology.statusAccent.' + attr(node, 'data-cfx-status').toLowerCase() + '.' + (graphThemePalette(root).dark ? 'dark' : 'light')] : null;
+    if (color) node.style?.setProperty('--cfx-topology-status-accent', color);
+    else node.style?.removeProperty('--cfx-topology-status-accent');
+    return color;
+  };
   const syncSvgThemeColors = (root) => {
     const palette = graphThemePalette(root);
     const physical = (selector) => Array.from(root.querySelectorAll(selector));
     const nodeDetails = new Map(physical('[data-cfx-role="graph-node-details"]').map(details => [attr(details, 'data-node-details-for'), details]));
     physical('[data-cfx-role="graph-node"]').forEach(node => {
-      const fill = attr(node, 'data-node-background-color') || (attr(node, 'data-node-card') === 'true' ? palette.card : '');
+      graphTopologyStatusAccent(root, node);
+      const fill = graphNodeBackground(node, palette);
       if (fill) {
         node.style.setProperty('--cfx-node-fill', fill);
         node.firstElementChild?.style.setProperty('--cfx-node-fill', fill);
@@ -173,7 +183,9 @@
     state.nodes.forEach(node => {
       // Authored attributes remain canonical for patches, history and exports.
       // Theme-derived paint lives only in the render state and SVG custom property.
-      node.backgroundColor = attr(node.el, 'data-node-background-color') || (node.card ? palette.card : '');
+      const statusAccent = graphTopologyStatusAccent(root, node.el);
+      if (statusAccent) node.borderColor = statusAccent;
+      node.backgroundColor = graphNodeBackground(node.el, palette);
     });
     // Retain live positions and physics ownership; only the theme-derived paint changes.
     root.__cfxGraphEdgeMesh = null;

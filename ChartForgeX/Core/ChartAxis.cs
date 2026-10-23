@@ -126,6 +126,14 @@ public sealed class ChartAxis {
 
     internal bool HasExplicitTickCount => _hasExplicitTickCount;
 
+    /// <summary>Gets or sets whether generated linear ticks use whole-number positions and steps of at least one. Explicit labels and other scales retain their own tick policy.</summary>
+    public bool IntegerTicks { get; set; }
+
+    /// <summary>Uses whole-number positions for generated linear ticks without rounding data values or explicit bounds.</summary>
+    /// <param name="enabled">Whether to restrict generated linear ticks to integers.</param>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithIntegerTicks(bool enabled = true) { IntegerTicks = enabled; return this; }
+
     /// <summary>Restores automatic tick density, including measured horizontal numeric and time-axis spacing.</summary>
     /// <returns>The current axis.</returns>
     public ChartAxis WithAutomaticTickCount() { _tickCount = 6; _hasExplicitTickCount = false; return this; }

@@ -22,8 +22,8 @@ internal sealed partial class VisualTopologyCompiler {
         var active = _highlight.IsNodeHighlighted(node);
         var icon = ResolveNodeIcon(node, _options);
         if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
-        var authoredAccent = node.Color ?? icon?.Color;
-        var accentRole = node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authoredAccent) ? SvgColorRole.Series : AccentRole(authoredAccent);
+        var authoredAccent = NodeAccentSource(node);
+        var accentRole = NodeUsesPalette(node) && string.IsNullOrWhiteSpace(authoredAccent) ? SvgColorRole.Series : AccentRole(authoredAccent);
         var baseAccent = NodeAccent(node);
         var accent = Highlight(baseAccent, active);
         var baseFill = string.IsNullOrWhiteSpace(node.BackgroundColor) && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
@@ -238,11 +238,12 @@ internal sealed partial class VisualTopologyCompiler {
         var kind = icon?.NodeKind ?? node.Kind;
         var resolved = new TopologyNode { Kind = kind, IconId = node.IconId };
         var shape = EffectiveIconShape(resolved, _options);
-        var authored = node.Color ?? icon?.Color;
+        var source = GlyphAccentSource(node);
+        var authored = TopologyNodeAccent.Authored(node, icon, source);
         var opacity = artworkOpacity ?? HighlightFactor(_highlight.IsNodeHighlighted(node));
         var fallback = sourceFallback ?? Status(node.Status);
-        var glyphPaint = node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authored)
-            ? PalettePaint(node.PaletteIndex.Value, color, opacity)
+        var glyphPaint = TopologyNodeAccent.UsesPalette(node, source) && string.IsNullOrWhiteSpace(authored)
+            ? PalettePaint(node.PaletteIndex.GetValueOrDefault(), color, opacity)
             : SourcePaint(authored ?? (glyphRole == SvgColorRole.Text ? _svgTheme?.Foreground : glyphRole == SvgColorRole.Series ? _svgTheme?.Accent : _svgTheme?.StatusColor(node.Status)), color, glyphRole, opacity, fallback);
         var baseColor = SvgPaint.TryCssVariable(authored, fallback, out var variableFallback, out _) ? variableFallback : Color(authored, color);
         BuildGlyphSurface(node, shape, x, y, color, glyphScale, glyphRole, glyphPaint, baseColor,
