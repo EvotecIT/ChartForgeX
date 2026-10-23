@@ -1,3 +1,4 @@
 WebsiteArtifacts/apidocs/dotnet/*.xml text eol=lf
 ChartForgeX.Interactivity.Html/Assets/*.js text eol=lf
 ChartForgeX.Interactivity.Html/Assets/*.css text eol=lf
+tests/mermaid-conformance/external-plugins/**/*.mmd text eol=lf
