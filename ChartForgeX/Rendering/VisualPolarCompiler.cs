@@ -86,7 +86,7 @@ internal static partial class VisualPolarCompiler {
                             ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                         var pointId = source >= 0 ? Id(seriesIndex, source) : Id(seriesIndex) + "-missing-category-" + index;
                         var marker = VisualMarkerScene.Radius(series, context);
-                        var bounds = VisualMarkerScene.Bounds(mapped[index].X, mapped[index].Y, Math.Max(marker, VisualMarkerScene.Extent(series, marker)));
+                        var bounds = VisualMarkerScene.Bounds(series, mapped[index].X, mapped[index].Y, marker);
                         builder.AddRegion(new VisualSemanticRegion(pointId, radar ? "radar-point" : "polar-point", bounds, CategoryText(category) + ": " + formatted));
                         var pointMetadata = new Dictionary<string, string> {
                             ["data-cfx-series"] = N(seriesIndex),

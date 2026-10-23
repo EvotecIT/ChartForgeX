@@ -14,13 +14,23 @@ public sealed partial class Chart {
     /// <param name="binCount">The number of histogram bins.</param>
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHistogram(string name, IEnumerable<double> values, int binCount = 10, ChartColor? color = null) {
+    public Chart AddHistogram(string name, IEnumerable<double> values, int binCount = 10, ChartColor? color = null) =>
+        AddHistogram(name, values, binCount, ChartHistogramEncoding.Value, color);
+
+    /// <summary>Adds observation counts with automatically aligned bins and explicit value, density or probability encoding.</summary>
+    /// <param name="name">The series name.</param>
+    /// <param name="values">The finite measurements to bin. Automatic layouts require at least one measurement.</param>
+    /// <param name="binCount">The requested bin count; constant measurements use one bin.</param>
+    /// <param name="encoding">The bar-height encoding; probability normalization uses all observations in this series.</param>
+    /// <param name="color">An optional series color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddHistogram(string name, IEnumerable<double> values, int binCount, ChartHistogramEncoding encoding, ChartColor? color = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         if (binCount < 1) throw new ArgumentOutOfRangeException(nameof(binCount), binCount, "Histogram bin count must be at least one.");
 
         var materialized = values.ToArray();
         if (materialized.Length == 0) throw new ArgumentException("Automatic histogram layouts require at least one observation; supply an explicit layout for empty input.", nameof(values));
-        return AddHistogram(name, materialized, ChartHistogramBinLayout.FromCount(materialized.Min(), materialized.Max(), binCount), color);
+        return AddHistogram(name, materialized, ChartHistogramBinLayout.FromCount(materialized.Min(), materialized.Max(), binCount), encoding, color);
     }
 
     /// <summary>
@@ -50,11 +60,25 @@ public sealed partial class Chart {
     /// <param name="name">The series name.</param>
     /// <param name="observations">Finite measurement/quantity observations. Sum and Mean use Y; Count counts rows.</param>
     /// <param name="layout">The shared measurement intervals; outside observations and gaps are rejected.</param>
-    /// <param name="aggregation">Count, signed Sum, or arithmetic Mean. Empty means are undefined.</param>
+    /// <param name="aggregation">Count, signed Sum, arithmetic Mean, or WeightedMean with implicit unit weights. Empty means are undefined.</param>
     /// <param name="encoding">Value heights or quantity per actual measurement width.</param>
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHistogram(string name, IEnumerable<ChartPoint> observations, ChartHistogramBinLayout layout,
+        ChartHistogramAggregation aggregation, ChartHistogramEncoding encoding = ChartHistogramEncoding.Value, ChartColor? color = null) {
+        AppendSeries(ChartSeries.CreateHistogram(name, observations, layout, aggregation, encoding, color));
+        return this;
+    }
+
+    /// <summary>Adds histogram aggregates with independent nonnegative averaging weights.</summary>
+    /// <param name="name">The series name.</param>
+    /// <param name="observations">Finite measurement/quantity/weight observations. Only WeightedMean consumes Weight.</param>
+    /// <param name="layout">The shared measurement intervals; outside observations and gaps are rejected.</param>
+    /// <param name="aggregation">Count, Sum, Mean or WeightedMean. Zero-weight means remain undefined.</param>
+    /// <param name="encoding">Raw height, quantity density, probability or probability density. Probability uses Count or nonnegative Sum.</param>
+    /// <param name="color">An optional series color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddHistogram(string name, IEnumerable<ChartHistogramObservation> observations, ChartHistogramBinLayout layout,
         ChartHistogramAggregation aggregation, ChartHistogramEncoding encoding = ChartHistogramEncoding.Value, ChartColor? color = null) {
         AppendSeries(ChartSeries.CreateHistogram(name, observations, layout, aggregation, encoding, color));
         return this;

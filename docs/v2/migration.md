@@ -14,6 +14,8 @@ Treemaps display their group and leaf captions by default. An explicit `WithData
 
 ## Unified authoring contracts
 
+`ChartFlowStyle` adds optional outline dash and phase parameters to its constructor. Existing source calls retain their defaults when recompiled; rebuild precompiled consumers because the constructor's CLR signature changed. Sankey and Chord share the same immutable style snapshot.
+
 Numeric and typed transactions use the same `ChartObservationChange<T>` payload and `ChartObservationChangeKind`. Replace `ChartPointChange` with `ChartObservationChange<ChartPoint>` in factories, arrays, enumerables and helper signatures. Read its nullable `Value` instead of the former `Point` property. `Append`, `Replace` and `Remove` keep their names; removal has no value. Replace the former `ChartPointChangeKind` with `ChartObservationChangeKind` in switches and comparisons. Its operation values remain `Append = 0`, `Replace = 1` and `Remove = 2`.
 
 `ApplyPointChanges` retains its bounded enumeration, cancellation, atomic validation, rolling source order, identity and presentation rules. It accepts the generic point payload directly; typed families keep their existing `ApplyBubbleChanges`, `ApplyFinancialChanges`, `ApplyRangeChanges` and `ApplyDifferenceChanges` methods. Rebuild compiled consumers after changing the public payload type.

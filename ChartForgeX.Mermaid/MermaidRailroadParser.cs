@@ -81,7 +81,7 @@ internal sealed partial class MermaidRailroadParser {
         internal RailroadSyntaxException(string message, MermaidSourceSpan span) : base(message) { Span = span; }
         internal MermaidSourceSpan Span { get; }
     }
-    private enum TokenKind { End, Identifier, String, Number, NumericValue, Special, Symbol }
+    private enum TokenKind { End, Identifier, String, CaseSensitiveString, CharacterClass, Number, NumericValue, Special, Symbol }
     private readonly struct Token {
         internal Token(TokenKind kind, string text, int start, int end, int line, int column) { Kind = kind; Text = text; Start = start; End = end; Span = new MermaidSourceSpan(line, column, end - start); }
         internal TokenKind Kind { get; } internal string Text { get; } internal int Start { get; } internal int End { get; } internal MermaidSourceSpan Span { get; }

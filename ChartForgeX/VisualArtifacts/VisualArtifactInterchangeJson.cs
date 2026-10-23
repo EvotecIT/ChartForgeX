@@ -11,6 +11,9 @@ internal static partial class VisualArtifactInterchangeJson {
             VisualArtifactInterchangeValidation.MaximumJsonValues,
             VisualArtifactInterchangeValidation.MaximumEdges,
             VisualArtifactInterchangeValidation.MaximumExtensionEntries)
+        .LimitArray("railroadRules", ChartForgeX.VisualBlocks.RailroadDiagramLimits.MaximumRules)
+        .LimitArray("railroadExpressions", ChartForgeX.VisualBlocks.RailroadDiagramLimits.MaximumExpressionOccurrences)
+        .LimitArray("railroadArguments", ChartForgeX.VisualBlocks.RailroadDiagramLimits.MaximumExpressionOccurrences)
         .LimitArray("groups", VisualArtifactInterchangeValidation.MaximumGroups)
         .LimitArray("nodes", VisualArtifactInterchangeValidation.MaximumNodes)
         .LimitArray("edges", VisualArtifactInterchangeValidation.MaximumEdges)
@@ -96,6 +99,7 @@ internal static partial class VisualArtifactInterchangeJson {
         envelope.Topology = ReadTopologyArtifact(root);
         envelope.Flow = ReadFlowArtifact(root);
         envelope.Sequence = ReadSequenceArtifact(root);
+        envelope.Railroad = ReadRailroad(root);
         envelope.Presentation = ReadPresentation(root);
         ReadExtensions(root, envelope.Extensions);
         ReadGroups(root, envelope.Groups);

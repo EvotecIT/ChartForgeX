@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Text;
 
 namespace ChartForgeX.Mermaid;
@@ -20,7 +19,13 @@ internal sealed partial class MermaidRailroadParser {
             }
             if (char.IsDigit(character)) { while (_offset < Source.Length && char.IsDigit(Source[_offset])) Move(); return Create(TokenKind.Number, Source.Substring(start, _offset - start)); }
             if (character is '\'' or '"') return Create(TokenKind.String, Quoted(character, start, line, column));
+            if (character == '[' && _dialect == MermaidRailroadDialect.Peg) return Create(TokenKind.CharacterClass, CharacterClass(start, line, column));
             if (character == '%') {
+                if (_dialect == MermaidRailroadDialect.Abnf && _offset + 1 < Source.Length
+                    && (Source[_offset] is 'i' or 'I' or 's' or 'S') && Source[_offset + 1] == '"') {
+                    var sensitive = Source[_offset] is 's' or 'S'; Move(); Move();
+                    return Create(sensitive ? TokenKind.CaseSensitiveString : TokenKind.String, Quoted('"', start, line, column));
+                }
                 while (_offset < Source.Length && (char.IsLetterOrDigit(Source[_offset]) || Source[_offset] is '.' or '-')) Move();
                 return Create(TokenKind.NumericValue, Source.Substring(start, _offset - start));
             }
@@ -40,23 +45,27 @@ internal sealed partial class MermaidRailroadParser {
             if (_dialect == MermaidRailroadDialect.Abnf && quote != '"') throw new RailroadSyntaxException("The pinned ABNF frontend accepts double-quoted literals only.", new MermaidSourceSpan(line, column, 1));
             var text = new StringBuilder();
             while (_offset < Source.Length) {
-                MermaidResourceGuard.Checkpoint(); var character = Source[_offset]; Move();
+                MermaidResourceGuard.Checkpoint(); var character = Source[_offset];
+                var characterLine = _line; var characterColumn = _column; Move();
                 if (character == quote) return text.ToString();
+                if (_dialect == MermaidRailroadDialect.Abnf && (character < ' ' || character > '~'))
+                    throw new RailroadSyntaxException("ABNF quoted strings contain printable US-ASCII characters only.", new MermaidSourceSpan(characterLine, characterColumn, 1));
                 if (character != '\\' || _dialect == MermaidRailroadDialect.Abnf) { text.Append(character); continue; }
                 if (_offset == Source.Length) break;
-                var escaped = Source[_offset]; Move();
-                switch (escaped) {
-                    case 'n': text.Append('\n'); break; case 'r': text.Append('\r'); break; case 't': text.Append('\t'); break;
-                    case 'b': text.Append('\b'); break; case 'f': text.Append('\f'); break;
-                    case '\\': text.Append('\\'); break; case '\'': text.Append('\''); break; case '"': text.Append('"'); break;
-                    case 'u':
-                        if (_offset + 4 > Source.Length || !ushort.TryParse(Source.Substring(_offset, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var code))
-                            throw new RailroadSyntaxException("A Unicode literal escape requires four hexadecimal digits.", new MermaidSourceSpan(_line, _column, Math.Min(4, Source.Length - _offset)));
-                        text.Append((char)code); for (var index = 0; index < 4; index++) Move(); break;
-                    default: throw new RailroadSyntaxException("Unsupported literal escape '\\" + escaped + "'.", new MermaidSourceSpan(_line, Math.Max(1, _column - 2), 2));
-                }
+                var end = _offset; text.Append(ReadLiteralEscape(Source, ref end, _dialect == MermaidRailroadDialect.Peg, new MermaidSourceSpan(_line, Math.Max(1, _column - 1), 2)));
+                while (_offset < end) Move();
             }
             throw new RailroadSyntaxException("Unclosed railroad literal.", new MermaidSourceSpan(line, column, Math.Max(1, _offset - start)));
+        }
+        private string CharacterClass(int start, int line, int column) {
+            var content = _offset;
+            while (_offset < Source.Length) {
+                var character = Source[_offset]; Move();
+                if (character == ']') return Source.Substring(content, _offset - content - 1);
+                // Preserve class spelling for located semantic lowering; escaped ] is not a delimiter.
+                if (character == '\\' && _offset < Source.Length) Move();
+            }
+            throw new RailroadSyntaxException("Unclosed PEG character class.", new MermaidSourceSpan(line, column, Math.Max(1, _offset - start)));
         }
         private void SkipTrivia() {
             while (_offset < Source.Length) {

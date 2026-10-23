@@ -54,6 +54,7 @@ public sealed partial class MarkupChartParser {
             case "smoothstackedarea":
             case "scatter":
             case "lollipop":
+            case "dumbbell":
             case "radar":
             case "funnel":
             case "pyramid":

@@ -9,6 +9,7 @@ var visited = new HashSet<string>(StringComparer.Ordinal);
 foreach (var selection in ExampleRecipes.StandaloneFamilySelections()) RunFamily(selection.Kind, selection.Variant);
 foreach (var entry in ExampleRecipes.OtherRecipes) RunNamed(entry.Key, "wide");
 RunNamed("histogram", "compact", "density", "compact-density", "sum", "compact-sum", "mean", "compact-mean");
+RunNamed("histogram", "probability", "compact-probability", "probability-density", "compact-probability-density", "weighted-mean", "compact-weighted-mean");
 RunNamed("chart-grid", "compact");
 RunNamed("topology", "expanded", "compact", "shapes");
 RunNamed("flow", "expanded");

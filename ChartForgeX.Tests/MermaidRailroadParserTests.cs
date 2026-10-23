@@ -82,8 +82,6 @@ public sealed class MermaidRailroadParserTests {
     [InlineData("railroad-abnf-beta\na = %b2 ;")]
     [InlineData("railroad-abnf-beta\na = %x110000 ;")]
     [InlineData("railroad-abnf-beta\na = %x41-40 ;")]
-    [InlineData("railroad-abnf-beta\na = %s\"x\" ;")]
-    [InlineData("railroad-abnf-beta\na = %i\"x\" ;")]
     [InlineData("railroad-abnf-beta\na = 'x' ;")]
     [InlineData("railroad-abnf-beta\nA = \"x\" ;\na = \"y\" ;")]
     [InlineData("railroad-peg-beta\na <- !!b ;")]

@@ -531,7 +531,19 @@ The optional formatter receives a readonly `ChartRangeBarEndpointLabelContext`: 
 
 Preparation evaluates the endpoint formatter once for Start then End per authored observation, including hidden or subsequently omitted captions. Complete text remains in observation metadata. Exceptions propagate from preparation; detached SVG, PNG and HTML exports reuse captured strings without invoking callbacks again. Stateful callbacks remain responsible for their own captured state. Combined mode retains its existing lazy numeric formatting and does not invoke the endpoint formatter.
 
-Endpoint captions inherit chart, series and point label typography and visibility. They use the shared measured placement and overflow diagnostics. Auto/Outside begins at the actual endpoint in its outward direction; Inside/Center uses that endpoint's half of the interval. Short, coincident or clipped intervals may omit or shorten captions while preserving complete text and raw facts. Both captions remain associated with one original observation for browser hover, selection and muting.
+Endpoint captions inherit chart, series and point label typography and visibility. In Endpoints mode, `StartLabel` and `EndLabel` independently override `Visible`, `Placement` and `Style`; null placement inherits the ordinary series or chart preference. Component typography resolves after the point style. Both still require data labels to be enabled on the series or chart. These options are copied by `ConfigureRangeBar` and preparation, so a retained callback candidate or later model mutation cannot alter a prepared export.
+
+```csharp
+chart.ConfigureRangeBar(options => {
+    options.LabelContent = ChartRangeBarLabelContent.Endpoints;
+    options.StartLabel.Placement = ChartDataLabelPlacement.Left;
+    options.StartLabel.Style.WithColor("#235b9f").WithFontSize(10);
+    options.EndLabel.Placement = ChartDataLabelPlacement.Right;
+    options.EndLabel.Style.WithColor("#975000").WithWeight("700");
+});
+```
+
+Captions use the shared measured placement and overflow diagnostics. Auto/Outside begins at the actual endpoint in its outward direction; Inside/Center uses that endpoint's half of the interval. Preferred Above/Below/Left/Right positions are physical directions, including horizontal or reversed axes. Short, coincident or clipped intervals may omit or shorten custom captions while preserving complete text and raw facts; generated numeric captions omit whole rather than displaying shortened numbers. Both captions remain associated with one original observation for browser hover, selection and muting. Hiding a caption does not suppress its captured formatter call or raw source facts.
 
 ## Gauge readings and scales
 
@@ -574,7 +586,23 @@ var chart = Chart.Create().WithXLabels("Service A", "Service B").AddSeries(laten
 
 `WithBoxPlotGroupId(s)` identifies a derived distribution independently of original sample IDs assigned with `WithObservationId(s)`. A statistics change preserves both namespaces. `UpdateBoxPlotSampleGroup` preserves the group's ID and presentation, clears its replaced sample IDs and shifts later sample ID indices. Complete raw replacement clears IDs and per-group presentation while retaining policy. Editing or replacing supplied summaries clears all raw provenance and IDs; supplied values stay authoritative. Prepared exports remain detached from every later change.
 
-HTML readouts add sample count, calculation policy, source extrema and outlier count. IQR captions use `ChartLabels.LowerWhisker` and `UpperWhisker`; source/inlier extrema, policy, estimator, multiplier, absent inliers and individual outlier captions have corresponding `ChartLabels` properties. A keyed group preserves summary selection across prepared updates; a keyed sample preserves outlier selection only while that rendered outlier target remains. Point legends emphasize, mute and isolate the complete group's summary and outliers. Separate per-statistic data labels are not supported.
+HTML readouts add sample count, calculation policy, source extrema and outlier count. IQR captions use `ChartLabels.LowerWhisker` and `UpperWhisker`; source/inlier extrema, policy, estimator, multiplier, absent inliers and individual outlier captions have corresponding `ChartLabels` properties. A keyed group preserves summary selection across prepared updates; a keyed sample preserves outlier selection only while that rendered outlier target remains. Point legends emphasize, mute and isolate the complete group's summary and outliers.
+
+Set `ChartOptions.BoxPlot.LabelContent` to `Statistics` to caption the five rendered summary values separately. `MinimumLabel`, `Q1Label`, `MedianLabel`, `Q3Label` and `MaximumLabel` each expose `Visible`, nullable physical `Placement` and inherited `Style`. The default `Median` mode retains its current median/custom-point-label output and ignores these statistic controls. In Statistics mode a custom point label stays the observation heading; it does not replace a summary value.
+
+```csharp
+chart.WithDataLabels().ConfigureBoxPlot(options => {
+    options.LabelContent = ChartBoxPlotLabelContent.Statistics;
+    options.MinimumLabel.Visible = false;
+    options.MedianLabel.Placement = ChartDataLabelPlacement.Right;
+    options.MedianLabel.Style.WithWeight("700");
+    options.StatisticLabelFormatter = value => value.Statistic + ": " + value.FormattedValue;
+});
+```
+
+`StatisticLabelFormatter` receives a captured `ChartBoxPlotStatisticLabelContext` in Minimum, Q1, Median, Q3, Maximum order, once per summary and member even when data labels or an individual caption are hidden. It includes the complete category caption, summary/group index, rendered `Summary`, selected `Statistic`, raw `Value` and chart-numeric `FormattedValue`. Minimum and Maximum mean the rendered whiskers under IQR policy, not the separate raw source extrema. Null or whitespace output suppresses only that caption. Exceptions propagate from preparation; detached SVG/PNG and browser exports never invoke the formatter again.
+
+The existing measured placement owner rejects collisions and out-of-frame captions. Inside/Center uses each statistic's interval between adjacent projected midpoints; equal or tightly packed values may leave no usable lane. Numeric captions remain complete or omit whole with the existing overflow diagnostic; custom prose may shorten. Full raw facts and custom captions remain in metadata even when ink is omitted. Every painted statistic caption points to the same summary identity for browser readout, selection and muting. Broader density, font and mixed-family qualification remains separate from this supported label policy.
 
 ## Sankey layout
 

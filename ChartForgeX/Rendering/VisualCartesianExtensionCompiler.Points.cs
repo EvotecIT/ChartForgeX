@@ -12,6 +12,14 @@ internal static partial class VisualCartesianCompiler {
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         ChartBubbleSizeScale? bubbleScale, ChartSeriesColorSurface? colorSurface, ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
         var series = chart.Series[index];
+        if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop) {
+            DrawComparisons(chart, context, builder, plot, map, index, colors, labels, obstacles, xViewport, yViewport);
+            return;
+        }
+        if (series.Kind == ChartSeriesKind.TrendLine && series.HasAdvancedTrendLine) {
+            DrawTrendLineFit(chart, context, builder, plot, map, index, colors, labels, obstacles, xViewport, yViewport);
+            return;
+        }
         if (series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) {
             DrawEndpointLine(chart, context, builder, plot, map, index, colors, labels, obstacles, xViewport, yViewport);
             return;
@@ -34,8 +42,8 @@ internal static partial class VisualCartesianCompiler {
             var radius = ResolveMarkerRadius(series, context);
             if (series.Kind == ChartSeriesKind.Bubble) {
                 var size = series.RenderPoints[raw + 1].Y;
-                radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot, series.Markers.Shape) : 0;
-                var bounds = Extents(x, y, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
+                radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot, series.Markers) : 0;
+                var bounds = VisualMarkerScene.Bounds(series, x, y, radius);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, _ => bubbleScale!.Presentation.Value(size));
                 var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
                 var fillPaint = sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity);
@@ -50,43 +58,10 @@ internal static partial class VisualCartesianCompiler {
                 if (!insideSourceX) continue;
                 var actualFill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, item, fill, fillPaint)
                     : ((ChartColor Color, SvgPaint Paint)?)null;
-                ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y - radius), bounds, size, label, labels, obstacles,
+                ObservationLabel(chart, context, series, index, item, new ChartPoint(x, series.Markers.CustomPath == null ? y - radius : bounds.Top), bounds, size, label, labels, obstacles,
                     markFill: actualFill?.Color, markFillPaint: actualFill?.Paint);
             } else if (series.Kind == ChartSeriesKind.ErrorBar) {
                 DrawErrorBar(chart, context, builder, plot, map, series, index, item, color, sourcePaint, radius, colors, labels, obstacles, xViewport, yViewport);
-            } else if (series.Kind == ChartSeriesKind.Dumbbell) {
-                var end = series.RenderPoints[raw + 1].Y; var endY = map.Y(end);
-                var bounds = Extents(x, y, x, endY, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("start", point.Y) + "–" + format("end", end));
-                using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, visible, null, ("x", point.X), ("start", point.Y), ("end", end), ("delta", end - point.Y))) {
-                    if (visible) {
-                        builder.Line(x, y, x, endY, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity),
-                            series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth, role: "dumbbell-connector",
-                            paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity), ChartVisualPrimitives.DumbbellConnectorOpacity)));
-                        VisualMarkerScene.Draw(builder, series, item, x, y, radius, colors.MutedForeground, SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text), "dumbbell-start");
-                        VisualMarkerScene.Draw(builder, series, item, x, endY, radius, color, sourcePaint, "dumbbell-end",
-                            pattern: ObservationPattern(series, item), backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "dumbbell-pattern");
-                    }
-                }
-                if (visible) ObservationLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, end, label, labels, obstacles);
-            } else if (series.Kind == ChartSeriesKind.Lollipop) {
-                var baseline = map.YBaseline();
-                visible = ViewportObservationVisible(xViewport, null, point.X, point.Y, point.Y, map) && ViewportLogicalYVisible(yViewport, plot, baseline, y);
-                var bounds = Extents(x, baseline, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("value", point.Y));
-                using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, visible, null, ("x", point.X), ("value", point.Y))) {
-                    if (visible) {
-                        builder.Line(x, baseline, x, y, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.LollipopStemOpacity),
-                            Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, SeriesStroke(series, context) * .62), role: "lollipop-stem",
-                            paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.LollipopStemOpacity), ChartVisualPrimitives.LollipopStemOpacity)));
-                        VisualMarkerScene.Draw(builder, series, item, x, y, radius, color, sourcePaint, "lollipop-marker",
-                            colors.Surface, VisualMarkerScene.FamilyStrokeWidth(series), SvgPaint.Of(colors.Surface, SvgColorRole.Surface),
-                            ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "lollipop-pattern");
-                    }
-                }
-                var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
-                if (visible) ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles,
-                    MappedBarDirection(axis, point.Y, baseline, y));
             }
         }
     }
@@ -114,7 +89,7 @@ internal static partial class VisualCartesianCompiler {
         var radius = ResolveMarkerRadius(series, context);
         for (var endpoint = 0; endpoint < 2; endpoint++) {
             var raw = endpoint == 0 ? 0 : series.RenderPoints.Count - 1; var source = series.RenderPoints[raw]; var point = points[endpoint];
-            var bounds = Extents(point.X, point.Y, point.X, point.Y, trend ? 0 : Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
+            var bounds = trend ? Extents(point.X, point.Y, point.X, point.Y) : VisualMarkerScene.Bounds(series, point.X, point.Y, radius);
             var label = ResolveObservationLabel(chart, context, series, endpoint, colors, format => format("value", source.Y));
             var visible = ViewportObservationVisible(xViewport, yViewport, source.X, source.Y, source.Y, map);
             using (ObservationGroup(builder, series, index, endpoint, raw, 1, bounds, label, visible, null, ("x", source.X), ("value", source.Y))) {

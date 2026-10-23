@@ -170,6 +170,9 @@ public sealed partial class MarkupChartParser {
             case "lollipop":
                 chart.AddLollipop(name, points, ParseColor(color));
                 break;
+            case "dumbbell":
+                AddDumbbellMarkupSeries(chart, name, points, color);
+                break;
             case "radar":
                 chart.AddRadar(name, points, ParseColor(color));
                 break;
@@ -513,7 +516,7 @@ public sealed partial class MarkupChartParser {
                     state.OverlayShowHeader = VisualMarkupFenceOptions.ParseBoolean(value, key);
                     break;
                 default:
-                    Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown chart option '" + key + "'.");
+                    if (!TryParseComparisonOption(state, key, value)) Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown chart option '" + key + "'.");
                     break;
             }
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
@@ -597,6 +600,7 @@ public sealed partial class MarkupChartParser {
     private static double ParseDouble(string value) => double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
 
     private static void ApplyChartOptions(Chart chart, ChartState state) {
+        ApplyComparisonOptions(chart, state);
         if (!string.IsNullOrWhiteSpace(state.XAxisTitle)) chart.WithXAxis(state.XAxisTitle!);
         if (!string.IsNullOrWhiteSpace(state.YAxisTitle)) chart.WithYAxis(state.YAxisTitle!);
         if (state.ShowAxes.HasValue) chart.WithAxes(state.ShowAxes.Value);
@@ -760,6 +764,8 @@ public sealed partial class MarkupChartParser {
         public bool? Overlay { get; set; }
         public bool OverlayShowHeader { get; set; }
         public ChartLegendPosition? LegendPosition { get; set; }
+        public ChartOrientation? LollipopOrientation { get; set; }
+        public ChartOrientation? DumbbellOrientation { get; set; }
         public int? TickCount { get; set; }
         public double? XAxisMinimum { get; set; }
         public double? XAxisMaximum { get; set; }

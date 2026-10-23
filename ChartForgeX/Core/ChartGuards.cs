@@ -66,6 +66,16 @@ internal static partial class ChartGuards {
         if (chart.Series.Count > 0 && chart.Series[0].Kind == ChartSeriesKind.Chord)
             chart.Options.Chord.ColorDimension.ValidateLegend(chart.Options.Chord.ColorScale,
                 chart.Series[0].FlowLinks.Any(link => link.ColorValue.HasValue));
+        var sankey = chart.Options.Sankey;
+        if ((sankey.FlowColorMode != ChartSankeyFlowColorMode.Source || sankey.ColorScale != null
+            || sankey.ColorDimension.HasOverrides || sankey.RibbonVisibilityThreshold > 0)
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sankey))
+            throw new InvalidOperationException("Sankey flow paint policies require a Sankey chart.");
+        if (chart.Series.Count > 0 && chart.Series[0].Kind == ChartSeriesKind.Sankey) {
+            if (sankey.FlowColorMode != ChartSankeyFlowColorMode.Quantitative && (sankey.ColorScale != null || sankey.ColorDimension.HasOverrides))
+                throw new InvalidOperationException("Sankey numeric color options require Quantitative flow color mode.");
+            sankey.ColorDimension.ValidateLegend(sankey.ColorScale, sankey.FlowColorMode == ChartSankeyFlowColorMode.Quantitative);
+        }
         chart.Options.MapColorDimension.ValidateLegend(chart.Options.MapColorScale);
         chart.Options.HeatmapColorDimension.ValidateLegend(chart.Options.HeatmapColorScale);
         if (chart.Series.Count > 0 && chart.Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
@@ -165,6 +175,8 @@ internal static partial class ChartGuards {
             chart.Series[i].ValidateDifferenceArea(chart.Options);
             if (preparing && chart.Series[i].Kind == ChartSeriesKind.Sunburst && chart.Series[i].Relationships != null)
                 _ = chart.Series[i].Relationships!.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
+            if (chart.Series[i].IsHistogramProbability && chart.Series[i].NormalizedTo.HasValue)
+                throw new InvalidOperationException("Histogram probability is already normalized per series and cannot use stack normalization.");
             if (chart.Series[i].IsHistogramDensity) {
                 var valueAxis = chart.Series[i].ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
                 if ((chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time) || valueAxis.Scale != ChartScaleKind.Linear)

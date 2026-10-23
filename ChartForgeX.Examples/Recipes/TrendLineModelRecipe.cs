@@ -1,0 +1,34 @@
+/// <summary>Fits the selected native model to retained measurements with a pointwise interval.</summary>
+public static class TrendLineModelRecipe {
+    /// <summary>Creates observed values and a fitted curve; logarithmic-response intervals describe the conditional median.</summary>
+    public static Chart Create(string variant = "polynomial", VisualThemeMode mode = VisualThemeMode.Light) {
+        var selection = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
+        var model = selection switch {
+            "polynomial" => ChartTrendLineModel.Polynomial,
+            "logarithmic" => ChartTrendLineModel.Logarithmic,
+            "exponential" => ChartTrendLineModel.Exponential,
+            "power" => ChartTrendLineModel.Power,
+            "confidence" or "prediction" => ChartTrendLineModel.Linear,
+            _ => throw new ArgumentOutOfRangeException(nameof(variant))
+        };
+        var source = Enumerable.Range(1, 12).Select(index => {
+            double x = index, residual = index % 3 - 1;
+            var value = model switch {
+                ChartTrendLineModel.Polynomial => 8 + .4 * x * x - .9 * x + .4 * residual,
+                ChartTrendLineModel.Logarithmic => 4 + 5 * Math.Log(x) + .2 * residual,
+                ChartTrendLineModel.Exponential => 5 * Math.Exp(.13 * x) * (1 + .04 * residual),
+                ChartTrendLineModel.Power => 2 * Math.Pow(x, 1.4) * (1 + .04 * residual),
+                _ => 12 + 1.8 * x + .8 * residual
+            };
+            return new ChartPoint(x, value);
+        }).ToArray();
+        var observations = ChartSeries.CreateScatter(new ChartSeriesId("measurements"), "Measured observations", source);
+        var fit = ChartSeries.CreateTrendLine(new ChartSeriesId("native-fit"), model + " fit", source, null, options => {
+            options.Model = model; options.PolynomialDegree = 2;
+            options.Interval = selection == "prediction" ? ChartTrendLineIntervalKind.Prediction : ChartTrendLineIntervalKind.Confidence;
+            options.ConfidenceLevel = .95;
+        });
+        return Chart.Create().WithXAxis("Source X").WithYAxis("Observed response").WithLegend(true).WithDataLabels(false)
+            .AddSeries(observations).AddSeries(fit).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

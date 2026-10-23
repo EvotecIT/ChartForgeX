@@ -188,7 +188,8 @@ internal static partial class VisualCartesianCompiler {
                             horizontal ? series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryX : xViewport : xViewport,
                             horizontal ? yViewport : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                     else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index],
-                        horizontal ? null : xViewport, horizontal ? null : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
+                        horizontal ? series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryX : xViewport : xViewport,
+                        horizontal ? yViewport : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -217,6 +218,9 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
             && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
             throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
+        if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalComparison(chart, series))
+            && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
+            throw new NotSupportedException("Horizontal comparison charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
             if (series.TimeBucketInterval != null && chart.Options.XAxis.Scale != ChartScaleKind.Time)
                 throw new InvalidOperationException("Time buckets require a time X axis.");

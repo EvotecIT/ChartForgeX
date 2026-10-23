@@ -46,7 +46,7 @@ internal static partial class VisualChordCompiler {
     }
 
     private static void Link(Chart chart, VisualSceneBuilder builder, ChartChordModel model, ChartChordLink link,
-        VisualThemeColors colors, ChartChordColorSurface colorSurface) {
+        VisualThemeColors colors, ChartFlowColorSurface colorSurface) {
         var series = chart.Series[0]; var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target];
         var flow = ChartRelationshipPaint.Flow(series, link.Fact.Id, source.Index, colors, chart.Options.Chord.RibbonOpacity,
             colorBlend: colorSurface.Blend(link.Index, colors));
@@ -67,7 +67,8 @@ internal static partial class VisualChordCompiler {
             if (visible) {
                 var path = ChartChordLayout.Ribbon(model, link);
                 bounds = ChartChordLayout.Bounds(path.Flatten(1));
-                builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "chord-ribbon", close: true, paint: flow.Binding);
+                builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "chord-ribbon", close: true,
+                    dash: flow.Dash, paint: flow.Binding, dashOffset: flow.DashOffset);
                 if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "chord-ribbon-pattern", paint: flow.PatternPaint);
                 if (chart.Options.Chord.DirectionCue == ChartChordDirectionCue.TargetChevron)
                     builder.Path(ChartChordLayout.DirectionCue(model, link), flow.Color, role: "chord-target-cue", close: true,

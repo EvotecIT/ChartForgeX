@@ -14,10 +14,13 @@ internal static partial class VisualSankeyCompiler {
         ? new[] { new VisualLegendEntry(chart.Series[0].Name, ChartSeriesColours.Resolve(chart.Series[0], 0, colors), "series-0", ChartSeriesKind.Sankey,
             chart.Series[0].FillPattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey) } : Array.Empty<VisualLegendEntry>();
 
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        ChartColorPresentationSet? colorScales = null) {
         if (chart.Series.Count != 1 || chart.Series[0].Kind != ChartSeriesKind.Sankey) throw new InvalidOperationException("Prepared Sankey charts require one weighted-flow series.");
         var series = chart.Series[0]; var options = chart.Options.Sankey; var model = ChartSankeyLayout.Build(chart); var colors = context.Theme.Resolve(context.ThemeMode);
         if (model.Nodes.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("sankey.no-data", "The Sankey chart has no flows.")); return; }
+        var colorSurface = (colorScales ?? new ChartColorPresentationSet(chart)).SankeySurface(colors);
+        plot = ColorScale(context, builder, plot, colorSurface, colors);
         bool showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true);
         var styles = model.Nodes.Select(node => ChartRelationshipPaint.LabelStyle(chart, context, node.Index, colors.Foreground)).ToArray();
         var formatted = model.Nodes.Select(node => ChartNumericFormatter.FormatValue(chart.Options, node.Value)).ToArray();
@@ -37,18 +40,29 @@ internal static partial class VisualSankeyCompiler {
         })) {
             foreach (var link in model.Links) {
                 var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target];
-                var flow = ChartRelationshipPaint.Flow(series, link.Id, source.Index, colors, options.RibbonOpacity, options.RibbonFill, patternOpacity: .6);
+                int paintNode = options.FlowColorMode == ChartSankeyFlowColorMode.Target ? target.Index : source.Index;
+                var flow = ChartRelationshipPaint.Flow(series, link.Id, paintNode, colors, options.RibbonOpacity, options.RibbonFill,
+                    patternOpacity: .6, colorBlend: colorSurface.Blend(link.Index, colors));
                 string full = source.Label + " to " + target.Label + ": " + ChartNumericFormatter.FormatValue(chart.Options, link.Value);
                 var path = ChartSankeyLayout.Ribbon(model, link);
                 double y = Math.Min(link.SourceY, link.TargetY) - link.Width / 2;
                 var bounds = new ChartRect(source.X + model.NodeWidth, y, target.X - source.X - model.NodeWidth, Math.Abs(link.TargetY - link.SourceY) + link.Width);
                 var metadata = ChartRelationshipMetadata.Link(series, link.Id, source.Id, target.Id, source.Label, target.Label, link.Index, link.Value);
-                metadata["data-cfx-full-label"] = full; metadata["data-cfx-width"] = N(link.Width);
+                metadata["data-cfx-width"] = N(link.Width);
+                metadata["data-cfx-full-label"] = full = colorSurface.AddFacts(metadata, link.Index, full);
                 metadata["data-cfx-state"] = flow.State.ToString();
+                bool distinct = link.Width > 0 && link.SourceY - link.Width / 2 < link.SourceY + link.Width / 2
+                    && link.TargetY - link.Width / 2 < link.TargetY + link.Width / 2;
+                bool visible = distinct && link.Width >= options.RibbonVisibilityThreshold;
+                if (!visible) metadata["data-cfx-geometry-status"] = distinct ? "below-paint-threshold" : "precision-collapse";
                 using (builder.PushGroup(ChartRelationshipMetadata.SourceId("link", link.Id), "sankey-link", metadata)) {
-                    builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "sankey-ribbon", close: true, paint: flow.Binding);
-                    if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "sankey-ribbon-pattern", paint: flow.PatternPaint);
+                    if (visible) {
+                        builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "sankey-ribbon", close: true,
+                            dash: flow.Dash, paint: flow.Binding, dashOffset: flow.DashOffset);
+                        if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "sankey-ribbon-pattern", paint: flow.PatternPaint);
+                    }
                 }
+                if (!distinct) builder.AddDiagnostic(new VisualDiagnostic("sankey.precision-collapse", "A positive Sankey flow cannot form distinct ribbon edges at this scale; its raw value and endpoint allocation remain in semantics."));
                 builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("link", link.Id), "sankey-link", bounds, full));
             }
             foreach (var node in model.Nodes) {

@@ -19,8 +19,9 @@ internal static partial class VisualCartesianCompiler {
         var segmented = style.Kind == ChartBarStyle.SegmentedCapsule;
         var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out var padding);
         var thickness = layout.Thickness;
-        var endpoints = chart.Options.RangeBar.LabelContent == ChartRangeBarLabelContent.Endpoints;
-        var endpointFormatter = chart.Options.RangeBar.EndpointLabelFormatter;
+        var labelOptions = chart.Options.RangeBar.Clone();
+        var endpoints = labelOptions.LabelContent == ChartRangeBarLabelContent.Endpoints;
+        var endpointFormatter = labelOptions.EndpointLabelFormatter;
         for (var item = 0; item < count; item++) {
             var first = series.RenderPoints[item * 2]; var second = series.RenderPoints[item * 2 + 1];
             var category = (horizontal ? map.Y(first.X) : map.X(first.X)) + layout.Offset;
@@ -53,7 +54,7 @@ internal static partial class VisualCartesianCompiler {
             obstacles.Add(new LabelObstacle(PointId(index, item), obstacle));
             if (endpoints) {
                 AddRangeBarEndpointLabels(chart, context, series, index, item, bounds, category, start, end,
-                    horizontal, endpointFormatter != null, label, captions.Start, captions.End, labels);
+                    horizontal, endpointFormatter != null, label, captions.Start, captions.End, labelOptions, labels);
                 continue;
             }
             var high = horizontal ? map.X(Math.Max(first.Y, second.Y)) : map.Y(Math.Max(first.Y, second.Y));

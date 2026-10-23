@@ -5,6 +5,7 @@ namespace ChartForgeX.VisualArtifacts;
 
 internal static partial class VisualArtifactInterchangeJson {
     private static void ArtifactSemantics(VisualArtifactInterchangeJsonWriter writer, VisualArtifactInterchangeEnvelope envelope) {
+        Railroad(writer, envelope.Railroad);
         if (envelope.Topology != null) {
             writer.Property("topology");
             writer.StartObject();

@@ -126,9 +126,10 @@ internal sealed partial class ChartStackLayout {
                 throw new InvalidOperationException("Every series in the same stack must use the same NormalizedTo target, including null for source units.");
             if (Kind == ChartSeriesKind.StackedArea && (Interpolation != series.Interpolation || StepPosition != series.StepPosition))
                 throw new InvalidOperationException("Every series in the same stacked-area group and axis must use the same Interpolation and StepPosition so shared boundaries align.");
-            if ((HistogramEncoding == ChartHistogramEncoding.Density || series.IsHistogramDensity) &&
+            if ((HistogramEncoding == ChartHistogramEncoding.Density || HistogramEncoding == ChartHistogramEncoding.ProbabilityDensity
+                || HistogramEncoding == ChartHistogramEncoding.Probability || series.IsHistogramDensity || series.IsHistogramProbability) &&
                 (HistogramEncoding != series.HistogramEncoding || HistogramAggregation != series.HistogramAggregation))
-                throw new InvalidOperationException("A density histogram stack must contain only density histograms with the same aggregation.");
+                throw new InvalidOperationException("Histogram probability and density stacks require matching encodings and aggregations.");
         }
     }
 

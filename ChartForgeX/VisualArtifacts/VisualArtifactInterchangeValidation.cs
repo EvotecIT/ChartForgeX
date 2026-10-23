@@ -232,7 +232,7 @@ internal static partial class VisualArtifactInterchangeValidation {
     }
 
     private static void ValidateArtifactSemantics(VisualArtifactInterchangeEnvelope envelope) {
-        int roots = (envelope.Topology == null ? 0 : 1) + (envelope.Flow == null ? 0 : 1) + (envelope.Sequence == null ? 0 : 1);
+        int roots = (envelope.Topology == null ? 0 : 1) + (envelope.Flow == null ? 0 : 1) + (envelope.Sequence == null ? 0 : 1) + (envelope.Railroad == null ? 0 : 1);
         switch (envelope.Family) {
             case VisualArtifactInterchangeFamily.None:
                 if (roots != 0) throw new ArgumentException("An unstructured envelope cannot carry a typed artifact-family root.", nameof(envelope));
@@ -246,6 +246,10 @@ internal static partial class VisualArtifactInterchangeValidation {
                 if (roots != 1 || envelope.Flow == null) throw new ArgumentException("A flow family requires only flow artifact semantics.", nameof(envelope));
                 Defined(envelope.Flow.LayoutMode, "flow layout mode", envelope);
                 Defined(envelope.Flow.LayoutDirection, "flow layout direction", envelope);
+                break;
+            case VisualArtifactInterchangeFamily.Railroad:
+                if (roots != 1 || envelope.Railroad == null) throw new ArgumentException("A railroad family requires only railroad artifact semantics.", nameof(envelope));
+                ValidateRailroad(envelope);
                 break;
             case VisualArtifactInterchangeFamily.Sequence:
                 if (roots != 1 || envelope.Sequence == null) throw new ArgumentException("A sequence family requires only sequence artifact semantics.", nameof(envelope));

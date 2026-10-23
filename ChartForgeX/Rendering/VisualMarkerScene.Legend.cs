@@ -10,6 +10,7 @@ internal static partial class VisualMarkerScene {
     internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Legend(Chart chart, ChartSeries series,
         ChartColor color, SvgPaint paint, int point = -1, ChartFillPattern pattern = ChartFillPattern.None, ChartBubbleSizeScale? bubbleScale = null) {
         if (!ChartSeriesKindTraits.SupportsMarkers(series.Kind)) return null;
+        if (series.Kind == ChartSeriesKind.Dumbbell && series.Dumbbell.IsConfigured) return DumbbellLegend(chart, series, color, paint, point, pattern);
         if (series.Kind == ChartSeriesKind.DifferenceArea) return (builder, bounds, context) => {
             var colors = context.Theme.Resolve(context.ThemeMode);
             foreach (var positive in new[] { true, false }) {
@@ -78,4 +79,27 @@ internal static partial class VisualMarkerScene {
                 quantitativeOutline: QuantitativeOutline(series, colors));
         };
     }
+
+    /// <summary>Uses the same endpoint overrides as native comparisons while retaining the existing bounded legend swatch.</summary>
+    private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DumbbellLegend(Chart chart, ChartSeries series,
+        ChartColor color, SvgPaint paint, int point, ChartFillPattern pattern) {
+        var start = series.ResolveDumbbellMarker(start: true); var end = series.ResolveDumbbellMarker(start: false);
+        return (builder, bounds, context) => {
+            var colors = context.Theme.Resolve(context.ThemeMode);
+            var firstRadius = Radius(series, context, start); var lastRadius = Radius(series, context, end);
+            var maximum = Math.Max(firstRadius, lastRadius);
+            var scale = maximum > 0 ? Math.Min(bounds.Width * .2, bounds.Height * .4) / maximum : 0;
+            var firstX = bounds.Left + bounds.Width * .2; var lastX = bounds.Right - bounds.Width * .2;
+            var y = bounds.Top + bounds.Height / 2;
+            var connector = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity);
+            var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth;
+            builder.Line(firstX, y, lastX, y, connector, Math.Min(width, bounds.Height / 3), role: "legend-dumbbell-connector",
+                paint: VisualChartPaint.Stroke(paint.WithOpacity(connector, ChartVisualPrimitives.DumbbellConnectorOpacity)));
+            Draw(builder, series, point, firstX, y, firstRadius * scale, colors.MutedForeground,
+                SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text), "legend-dumbbell-start", markerOptions: start);
+            Draw(builder, series, point, lastX, y, lastRadius * scale, color, paint, "legend-dumbbell-end",
+                pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), markerOptions: end);
+        };
+    }
+
 }

@@ -33,6 +33,19 @@ internal sealed partial class ChartRange {
                 }
                 continue;
             }
+            if (series.HasAdvancedTrendLine) {
+                var middle = new List<ChartPoint>(); var lower = new List<ChartPoint>(); var upper = new List<ChartPoint>();
+                foreach (var sample in series.TrendLineSamples) {
+                    middle.Add(Project(sample.X, sample.Value, false));
+                    if (sample.Lower.HasValue) {
+                        lower.Add(Project(sample.X, sample.Lower.Value, false));
+                        upper.Add(Project(sample.X, sample.Upper!.Value, false));
+                    }
+                }
+                IncludePath(middle, series);
+                if (lower.Count > 0) { IncludePath(lower, series); IncludePath(upper, series); }
+                continue;
+            }
             if (IsContinuous(series.Kind)) {
                 var anyVisible = false;
                 var stride = series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea ? 2 : 1;

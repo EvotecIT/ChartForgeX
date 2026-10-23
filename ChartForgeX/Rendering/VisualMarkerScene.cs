@@ -6,10 +6,11 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Resolves marker paint once and emits the shared native geometry consumed by both static exporters.</summary>
 internal static partial class VisualMarkerScene {
-    internal static bool Enabled(ChartSeries series, bool familyDefault = true) => series.Markers.Enabled ?? familyDefault;
+    internal static bool Enabled(ChartSeries series, bool familyDefault = true, ChartMarkerOptions? markerOptions = null) => (markerOptions ?? series.Markers).Enabled ?? familyDefault;
 
-    internal static double Radius(ChartSeries series, VisualRenderContext context) {
-        if (series.MarkerRadius.HasValue) return series.MarkerRadius.Value;
+    internal static double Radius(ChartSeries series, VisualRenderContext context, ChartMarkerOptions? markerOptions = null) {
+        var markers = markerOptions ?? series.Markers;
+        if (markers.Radius.HasValue) return markers.Radius.Value;
         var radius = context.Theme.MarkerRadius;
         return series.Kind switch {
             ChartSeriesKind.ErrorBar => System.Math.Max(ChartVisualPrimitives.ErrorBarMarkerMinRadius, radius + ChartVisualPrimitives.ErrorBarMarkerRadiusExtra),
@@ -36,50 +37,61 @@ internal static partial class VisualMarkerScene {
         UsesQuantitativeOutline(series)
             ? (colors.Foreground, SvgPaint.ThemeToken(colors.Foreground, VisualThemeColorToken.Foreground, SvgColorRole.Text)) : null;
 
-    internal static double StrokeWidth(ChartSeries series, bool familyOutline, double familyWidth = 1) {
-        if (!familyOutline && !series.Markers.Stroke.HasValue && !series.Markers.StrokeWidth.HasValue) return 0;
-        return series.Markers.StrokeWidth ?? familyWidth;
+    internal static double StrokeWidth(ChartSeries series, bool familyOutline, double familyWidth = 1, ChartMarkerOptions? markerOptions = null) {
+        var markers = markerOptions ?? series.Markers;
+        if (!familyOutline && !markers.Stroke.HasValue && !markers.StrokeWidth.HasValue && markers.OutlineStroke == null) return 0;
+        return markers.OutlineStroke?.Width ?? markers.StrokeWidth ?? familyWidth;
     }
 
-    internal static double Extent(ChartSeries series, double radius) {
-        if (radius <= 0 || series.Markers.Enabled == false) return 0;
-        var familyWidth = FamilyStrokeWidth(series);
-        return radius + StrokeWidth(series, familyWidth > 0, familyWidth > 0 ? familyWidth : 1) / 2;
+    internal static double Extent(ChartSeries series, double radius, ChartMarkerOptions? markerOptions = null) {
+        var markers = markerOptions ?? series.Markers;
+        if (radius <= 0 || markers.Enabled == false) return 0;
+        return ChartMarkerGeometry.Extent(markers, radius) + OutlineExtent(series, markers);
     }
 
     internal static ChartRect Bounds(double x, double y, double extent) => new(x - extent, y - extent, extent * 2, extent * 2);
 
     /// <summary>Resolves the actual fill for native marks and their contained text using the same override precedence.</summary>
-    internal static (ChartColor Color, SvgPaint Paint) ResolveFill(ChartSeries series, int point, ChartColor fill, SvgPaint paint) {
+    internal static (ChartColor Color, SvgPaint Paint) ResolveFill(ChartSeries series, int point, ChartColor fill, SvgPaint paint, ChartMarkerOptions? markerOptions = null) {
+        var markers = markerOptions ?? series.Markers;
         var authoredPoint = point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue;
-        return series.Markers.Fill.HasValue && !authoredPoint
-            ? (series.Markers.Fill.Value, VisualChartPaint.Series(series, series.Markers.Fill.Value, explicitOverride: true)) : (fill, paint);
+        return markers.Fill.HasValue && !authoredPoint
+            ? (markers.Fill.Value, VisualChartPaint.Series(series, markers.Fill.Value, explicitOverride: true)) : (fill, paint);
     }
 
     internal static void Draw(VisualSceneBuilder builder, ChartSeries series, int point, double x, double y, double radius,
         ChartColor fill, SvgPaint fillPaint, string role, ChartColor? stroke = null, double strokeWidth = 1,
         SvgPaint? strokePaint = null, ChartFillPattern pattern = ChartFillPattern.None, ChartColor? backdrop = null,
-        string? patternRole = null, (ChartColor Color, SvgPaint Paint)? quantitativeOutline = null) {
-        if (radius <= 0 || !Enabled(series)) return;
-        (fill, fillPaint) = ResolveFill(series, point, fill, fillPaint);
+        string? patternRole = null, (ChartColor Color, SvgPaint Paint)? quantitativeOutline = null, ChartMarkerOptions? markerOptions = null) {
+        var markers = markerOptions ?? series.Markers;
+        if (radius <= 0 || !Enabled(series, markerOptions: markers)) return;
+        (fill, fillPaint) = ResolveFill(series, point, fill, fillPaint, markers);
         if (UsesQuantitativeOutline(series) && quantitativeOutline.HasValue) {
             stroke = quantitativeOutline.Value.Color;
             strokePaint = quantitativeOutline.Value.Paint;
             strokeWidth = FamilyStrokeWidth(series);
         }
-        var width = StrokeWidth(series, stroke.HasValue, strokeWidth);
-        if (series.Markers.Stroke.HasValue) {
-            stroke = series.Markers.Stroke.Value;
+        var width = StrokeWidth(series, stroke.HasValue, strokeWidth, markers);
+        var outline = markers.OutlineStroke;
+        var authoredStroke = outline?.Color ?? markers.Stroke;
+        if (authoredStroke.HasValue) {
+            stroke = authoredStroke.Value;
             strokePaint = VisualChartPaint.Series(series, stroke.Value, explicitOverride: true);
         } else if (width > 0 && !stroke.HasValue) {
             stroke = fill; strokePaint = fillPaint;
         }
+        if (stroke.HasValue && outline != null) {
+            var actual = ChartColorMath.WithOpacity(stroke.Value, outline.Opacity);
+            strokePaint = (strokePaint ?? SvgPaint.Literal(stroke.Value)).WithOpacity(actual, outline.Opacity);
+            stroke = actual;
+        }
         if (width <= 0) { stroke = null; strokePaint = null; }
+        var dash = outline?.ResolveDash(System.Array.Empty<double>());
         var paint = new VisualScenePaintBinding(fillPaint, strokePaint);
-        var contour = ChartMarkerGeometry.Path(series.Markers.Shape, x, y, radius);
-        if (series.Markers.Shape == ChartMarkerShape.Circle)
+        var contour = ChartMarkerGeometry.Path(markers, x, y, radius);
+        if (markers.CustomPath == null && markers.Shape == ChartMarkerShape.Circle && (dash == null || dash.Length == 0))
             builder.Ellipse(x, y, radius, radius, fill, stroke, width, role, paint: paint);
-        else builder.Path(contour, fill, stroke, width, role, close: true, paint: paint);
+        else builder.Path(contour, fill, stroke, width, role, close: true, dash: dash, paint: paint, dashOffset: markers.StrokeDashOffset);
         if (pattern == ChartFillPattern.None) return;
         var background = ChartColorMath.Blend(backdrop ?? ChartColor.White, ChartColor.FromRgb(fill.R, fill.G, fill.B), fill.A / 255d);
         var ink = ChartColorMath.AccessibleTextOnBackground(background).WithOpacity(ChartMarkSurface.HatchOpacity(pattern));

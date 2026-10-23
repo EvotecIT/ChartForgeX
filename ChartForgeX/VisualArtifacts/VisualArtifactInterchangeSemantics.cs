@@ -12,7 +12,9 @@ public enum VisualArtifactInterchangeFamily {
     /// <summary>Flow lanes, steps, and connectors.</summary>
     Flow,
     /// <summary>Sequence participants, messages, activations, notes, and blocks.</summary>
-    Sequence
+    Sequence,
+    /// <summary>Native railroad rules and symbolic expression structure.</summary>
+    Railroad
 }
 
 /// <summary>Identifies the stable role of an interchange group without closing the free-form kind token.</summary>

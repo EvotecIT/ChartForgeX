@@ -20,7 +20,7 @@ internal static partial class VisualCartesianCompiler {
         var left = map.X(sourceLeft); var right = map.X(sourceRight); var low = map.Y(sourceLow); var high = map.Y(sourceHigh);
         var horizontalCap = ErrorCap(plot.Width, series.ErrorBars.Count); var verticalCap = ErrorCap(plot.Height, series.ErrorBars.Count);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.ErrorBarStrokeWidth;
-        var extent = Math.Max(radius, VisualMarkerScene.Extent(series, radius));
+        var extent = VisualMarkerScene.FootprintExtent(series, radius);
         var halfWidth = Math.Max(extent, source.YBounds.HasValue ? (horizontalCap + stroke) / 2 : 0);
         var halfHeight = Math.Max(extent, source.XBounds.HasValue ? (verticalCap + stroke) / 2 : 0);
         var xStroke = source.XBounds.HasValue ? stroke / 2 : 0; var yStroke = source.YBounds.HasValue ? stroke / 2 : 0;

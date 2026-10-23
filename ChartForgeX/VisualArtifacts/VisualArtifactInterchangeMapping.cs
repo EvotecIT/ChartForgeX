@@ -29,6 +29,9 @@ public static partial class VisualArtifactInterchangeMapping {
                     VisualArtifactRendering.TopologyOptions(artifact, renderOptions)).Visual);
             case FlowArtifact flow:
                 return FromMutablePreparedArtifact(artifact, flow.Prepare(ChartForgeX.Rendering.VisualExportRequest.ForFlow(flow).Context), flow.Metadata);
+            case ChartForgeX.VisualBlocks.RailroadDiagramBlock railroad:
+                MapRailroad(envelope, railroad);
+                break;
             case SequenceArtifact sequence:
                 MapSequence(envelope, sequence, artifactMetadataKeys);
                 break;

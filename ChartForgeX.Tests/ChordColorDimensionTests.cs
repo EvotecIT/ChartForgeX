@@ -28,7 +28,8 @@ public sealed partial class ChordColorDimensionTests {
         Assert.Equal(Prepare(legacy).ToPng(), Prepare(nullable).ToPng());
         var zero = new ChartFlowLink("zero", "a", "b", 7, 0); var negative = new ChartFlowLink("negative", "a", "b", 2, -12);
         Assert.Equal(7, zero.Value); Assert.Equal((double?)0, zero.ColorValue); Assert.Equal((double?)-12, negative.ColorValue);
-        Assert.Throws<NotSupportedException>(() => Chart.Create().AddSankey("Unsupported", Nodes(), new[] { zero }));
+        var sankey = Chart.Create().AddSankey("Independent color fact", Nodes(), new[] { zero });
+        Assert.Equal((double?)0, Assert.Single(sankey.Series[0].FlowLinks).ColorValue);
     }
 
     [Fact]

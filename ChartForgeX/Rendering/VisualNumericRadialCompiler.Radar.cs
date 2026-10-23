@@ -40,8 +40,7 @@ internal static partial class VisualNumericRadialCompiler {
                         ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                     var id = source >= 0 ? PointId(seriesIndex, source) : SeriesId(seriesIndex) + "-missing-category-" + category;
                     var marker = VisualMarkerScene.Radius(series, context);
-                    var extent = VisualMarkerScene.Extent(series, marker);
-                    var bounds = geometry.Outer > 0 ? VisualMarkerScene.Bounds(mapped[category].X, mapped[category].Y, Math.Max(marker, extent))
+                    var bounds = geometry.Outer > 0 ? VisualMarkerScene.Bounds(series, mapped[category].X, mapped[category].Y, marker)
                         : new ChartRect(mapped[category].X, mapped[category].Y, 0, 0);
                     builder.AddRegion(new VisualSemanticRegion(id, "radar-point", bounds, categoryLabels[category] + ": " + text));
                     var facts = new Dictionary<string, string> {
@@ -64,9 +63,12 @@ internal static partial class VisualNumericRadialCompiler {
                             VisualMarkerScene.Draw(builder, series, source, mapped[category].X, mapped[category].Y, marker, pointColor,
                                 VisualChartPaint.Series(series, pointColor, source), "radar-point", colors.Surface, 1,
                                 SvgPaint.Of(colors.Surface, SvgColorRole.Surface), pattern, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "radar-point-pattern");
-                            if (obstacles != null && extent > 0) obstacles.Add(new LabelObstacle(id,
-                                new LabelMarkShape(new[] { ChartMarkerGeometry.Path(series.Markers.Shape, mapped[category].X, mapped[category].Y, marker).Flatten() },
+                            if (obstacles != null && VisualMarkerScene.Extent(series, marker) > 0) {
+                                var contour = new VisualScenePath(ChartMarkerGeometry.Path(series.Markers, mapped[category].X, mapped[category].Y, marker),
+                                    true, null, null, 0, null, null);
+                                obstacles.Add(new LabelObstacle(id, new LabelMarkShape(VisualSceneGeometry.Flatten(contour, 8),
                                     true, VisualMarkerScene.StrokeWidth(series, true), plot)));
+                            }
                         }
                     }
                     if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)))

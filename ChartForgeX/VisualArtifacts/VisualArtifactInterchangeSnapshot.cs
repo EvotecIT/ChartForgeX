@@ -21,6 +21,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Topology = Copy(source.Topology),
             Flow = Copy(source.Flow),
             Sequence = Copy(source.Sequence),
+            Railroad = source.Railroad?.Clone(),
             Width = source.Width,
             Height = source.Height,
             AccessibleName = source.AccessibleName,

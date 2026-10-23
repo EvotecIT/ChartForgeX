@@ -116,7 +116,10 @@ public static partial class ExampleRecipes {
             foreach (var variant in variants) recipes.Add((kind, variant), recipe);
         }
         Add(ChartSeriesKind.Donut, nameof(ConcentricPieRecipe), ConcentricPieRecipe.Create, "concentric");
-        Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options");
+        Add(ChartSeriesKind.TrendLine, nameof(TrendLineModelRecipe), TrendLineModelRecipe.Create, "polynomial", "logarithmic", "exponential", "power", "confidence", "prediction");
+        Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options", "source-colors", "target-colors", "quantitative-colors");
+        Add(ChartSeriesKind.Lollipop, nameof(LollipopHorizontalRecipe), LollipopHorizontalRecipe.Create, "horizontal");
+        Add(ChartSeriesKind.Dumbbell, nameof(DumbbellEndpointRecipe), DumbbellEndpointRecipe.Create, "horizontal", "endpoint-markers");
         Add(ChartSeriesKind.Chord, nameof(ChordRecipe), ChordRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Scatter, nameof(ScatterMarkerShapesRecipe), ScatterMarkerShapesRecipe.Create, "options");
         Add(ChartSeriesKind.Scatter, nameof(ScatterColorScaleRecipe), ScatterColorScaleRecipe.Create, "color-scale");
@@ -124,7 +127,7 @@ public static partial class ExampleRecipes {
         Add(ChartSeriesKind.Scatter, nameof(ScatterColorDimensionRecipe), ScatterColorDimensionRecipe.Create, "color-dimension", "gradient-color-legend", "swatch-color-legend");
         Add(ChartSeriesKind.Scatter, nameof(ScatterQuadrantsRecipe), ScatterQuadrantsRecipe.Create, "quadrants");
         Add(ChartSeriesKind.Scatter, nameof(ScatterPartialColorRangeRecipe), ScatterPartialColorRangeRecipe.Create, "partial-color-range");
-        Add(ChartSeriesKind.Bubble, nameof(BubbleMarkerOptionsRecipe), BubbleMarkerOptionsRecipe.Create, "options");
+        Add(ChartSeriesKind.Bubble, nameof(BubbleMarkerOptionsRecipe), BubbleMarkerOptionsRecipe.Create, "options", "custom-markers");
         Add(ChartSeriesKind.Bubble, nameof(BubbleColorScaleRecipe), BubbleColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.Bubble, nameof(BubbleColorDimensionRecipe), BubbleColorDimensionRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Bubble, nameof(BubblePlotRegionsRecipe), BubblePlotRegionsRecipe.Create, "plot-regions");

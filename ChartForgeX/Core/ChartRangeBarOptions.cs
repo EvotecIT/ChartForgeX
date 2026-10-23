@@ -20,6 +20,12 @@ public sealed class ChartRangeBarOptions {
     /// <remarks>Used only with Endpoints content. Evaluated once for Start then End per authored observation during preparation, including hidden or omitted captions. Null, empty or whitespace output suppresses that endpoint. Complete captions remain in source metadata. Exceptions propagate; prepared exports never invoke the formatter again. Custom point labels remain observation headings.</remarks>
     public Func<ChartRangeBarEndpointLabelContext, string?>? EndpointLabelFormatter { get; set; }
 
+    /// <summary>Gets independent visibility, typography and physical placement for the authored Start caption in Endpoints mode.</summary>
+    public ChartValueLabelOptions StartLabel { get; private set; } = new();
+
+    /// <summary>Gets independent visibility, typography and physical placement for the authored End caption in Endpoints mode.</summary>
+    public ChartValueLabelOptions EndLabel { get; private set; } = new();
+
     /// <summary>Gets or sets the value direction. Vertical is the default; horizontal uses X for values and Y for categories.</summary>
     public ChartOrientation Orientation {
         get => _orientation;
@@ -30,5 +36,9 @@ public sealed class ChartRangeBarOptions {
     }
 
     /// <summary>Copies the configured state for isolated chart configuration.</summary>
-    internal ChartRangeBarOptions Clone() => (ChartRangeBarOptions)MemberwiseClone();
+    internal ChartRangeBarOptions Clone() {
+        var copy = (ChartRangeBarOptions)MemberwiseClone();
+        copy.StartLabel = StartLabel.Clone(); copy.EndLabel = EndLabel.Clone();
+        return copy;
+    }
 }

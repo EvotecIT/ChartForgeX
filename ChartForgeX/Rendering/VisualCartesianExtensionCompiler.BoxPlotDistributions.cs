@@ -40,7 +40,9 @@ internal static partial class VisualCartesianCompiler {
         foreach (var source in distribution.OutlierSourceIndices) {
             var value = series.BoxPlotSourceSamples[source]; var center = project(value);
             var point = series.BoxPlots.Count + source; var id = PointId(seriesIndex, point);
-            var bounds = VisualMarkerScene.Bounds(center.X, center.Y, VisualMarkerScene.Extent(series, 4.5));
+            var bounds = series.Markers.CustomPath == null
+                ? VisualMarkerScene.Bounds(center.X, center.Y, VisualMarkerScene.Extent(series, 4.5))
+                : VisualMarkerScene.Bounds(series, center.X, center.Y, 4.5);
             var formatted = Value(chart, value);
             var description = series.Name + ": " + category + " " + formatted;
             var metadata = new Dictionary<string, string> {

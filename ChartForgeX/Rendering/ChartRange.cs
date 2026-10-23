@@ -41,7 +41,8 @@ internal sealed partial class ChartRange {
             if (hasHorizontalSeries && series.ValueAxis == ChartAxisSide.Secondary) {
                 foreach (var category in ChartCartesianOrientation.Categories(series)) {
                     range.IncludeY(category);
-                    if (series.Kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) horizontalBarYValues.Add(category);
+                    if (series.Kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot
+                        || ChartCartesianOrientation.IsHorizontalComparison(chart, series)) horizontalBarYValues.Add(category);
                 }
                 continue;
             }
@@ -65,13 +66,18 @@ internal sealed partial class ChartRange {
                 continue;
             }
             if (ChartSeriesKindTraits.IsExclusive(series.Kind)) continue;
-            if (series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot && ChartCartesianOrientation.IsHorizontal(chart, series)) {
+            if ((series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot || ChartCartesianOrientation.IsHorizontalComparison(chart, series))
+                && ChartCartesianOrientation.IsHorizontal(chart, series)) {
                 foreach (var point in series.RenderPoints) {
                     range.IncludeY(point.X); horizontalBarYValues.Add(point.X);
                     range.IncludeX(point.Y);
                 }
                 foreach (var distribution in series.BoxPlotDistributions) {
                     range.IncludeX(distribution.SourceMinimum); range.IncludeX(distribution.SourceMaximum);
+                }
+                if (series.Kind == ChartSeriesKind.Lollipop) {
+                    usesHorizontalBaseline = true;
+                    if (UsesZeroBaseline(chart.Options.XAxis)) range.IncludeX(0);
                 }
                 continue;
             }
@@ -82,6 +88,11 @@ internal sealed partial class ChartRange {
                     categories.AddRange(series.RenderPoints.Select((point, pointIndex) => series.Kind == ChartSeriesKind.Bar
                         ? coordinateMap.Resolve(seriesIndex, pointIndex).Value : point.X));
                 }
+                continue;
+            }
+
+            if (series.HasAdvancedTrendLine) {
+                foreach (var point in TrendLineRangePoints(series)) range.Include(point);
                 continue;
             }
 
@@ -220,7 +231,7 @@ internal sealed partial class ChartRange {
         range.ApplyBarPadding(bubbleXValues, chart.Options.XAxis);
         if (hasHorizontalSeries) {
             if (usesHorizontalBaseline) range.ApplyLogarithmicXBaseline(chart.Options.XAxis);
-            else if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series)))
+            else if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series) || ChartCartesianOrientation.IsHorizontalComparison(chart, series)))
                 (range.MinX, range.MaxX) = PaddedValueBounds(range.MinX, range.MaxX, chart.Options.XAxis);
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
@@ -354,6 +365,10 @@ internal sealed partial class ChartRange {
     }
 
     private static void IncludeSeriesY(ChartRange range, ChartSeries series, ChartAxis axis) {
+        if (series.HasAdvancedTrendLine) {
+            foreach (var point in TrendLineRangePoints(series)) range.IncludeY(point.Y);
+            return;
+        }
         foreach (var distribution in series.BoxPlotDistributions) {
             range.IncludeY(distribution.SourceMinimum); range.IncludeY(distribution.SourceMaximum);
         }

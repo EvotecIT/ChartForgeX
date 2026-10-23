@@ -6,6 +6,7 @@ namespace ChartForgeX.Markup;
 
 public sealed partial class MarkupChartParser {
     private static ChartPoint[] BuildSeriesPoints(string type, IReadOnlyList<double> values) {
+        if (NormalizeKey(type) == "dumbbell") return BuildDumbbellPoints(values);
         if (NormalizeKey(type) != "polar") {
             var indexed = new ChartPoint[values.Count];
             for (var i = 0; i < indexed.Length; i++) indexed[i] = new ChartPoint(i + 1, values[i]);

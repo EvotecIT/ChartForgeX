@@ -66,6 +66,9 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Gets or sets sequence-wide semantics for a sequence envelope.</summary>
     public VisualArtifactInterchangeSequenceArtifact? Sequence { get; set; }
 
+    /// <summary>Gets or sets typed native railroad rules and presentation. Older version-1 readers without this family reject it.</summary>
+    public VisualArtifactInterchangeRailroadArtifact? Railroad { get; set; }
+
     /// <summary>Gets or sets the natural width in pixels when known.</summary>
     public double? Width { get; set; }
 

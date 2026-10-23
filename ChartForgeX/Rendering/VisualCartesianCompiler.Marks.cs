@@ -72,7 +72,7 @@ internal static partial class VisualCartesianCompiler {
             var sourceX = series.RenderPoints[pointIndex].X;
             var sourceY = horizontal ? sourceX : stacks.Point(index, pointIndex).End;
             var insideSourceX = ViewportObservationVisible(xViewport, yViewport, horizontal ? series.RenderPoints[pointIndex].Y : sourceX, sourceY, sourceY, map);
-            var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
+            var bounds = VisualMarkerScene.Bounds(series, point.X, point.Y, radius);
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && insideSourceX && (!clipMarks || inside)
                 && ShowMarker(chart, series, pointIndex);
@@ -199,13 +199,18 @@ internal static partial class VisualCartesianCompiler {
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
         TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null, SvgPaint? markFillPaint = null,
-        string? labelId = null) {
+        string? labelId = null, ChartValueLabelOptions? valueLabel = null) {
+        if (valueLabel?.Visible == false) return;
         if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.RenderPoints[pointIndex].Y;
         var spacing = context.Theme.Spacing;
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = valueLabel?.Placement ?? series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        if (horizontal && valueLabel?.Placement.HasValue == true) {
+            if (placement == ChartDataLabelPlacement.Above) anchor = new ChartPoint(anchor.X, mark.Top);
+            if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(anchor.X, mark.Bottom);
+        }
         var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar or ChartSeriesKind.Waterfall;
         if (placement == ChartDataLabelPlacement.Auto && bar && ChartStackLayout.Participates(chart, series))
             placement = ChartDataLabelPlacement.Inside;
@@ -299,11 +304,12 @@ internal static partial class VisualCartesianCompiler {
         var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center;
         var autoInside = placement == ChartDataLabelPlacement.Auto && bar;
         if (autoInside) candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
-        var style = resolvedLabel.Style;
+        var style = valueLabel == null ? resolvedLabel.Style : valueLabel.Style.Resolve(resolvedLabel.Style);
         var insideStyle = style;
         Themes.SvgPaint? paint = null;
         Themes.SvgPaint? insidePaint = null;
         if ((inside || autoInside)
+            && valueLabel?.Style.Color == null
             && !chart.Options.DataLabelStyle.Color.HasValue && !series.DataLabelStyle.Color.HasValue
             && !(pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex]?.Color != null)) {
             var colors = context.Theme.Resolve(context.ThemeMode);

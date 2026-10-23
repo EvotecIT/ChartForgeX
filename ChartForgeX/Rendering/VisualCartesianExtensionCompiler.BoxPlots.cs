@@ -23,6 +23,8 @@ internal static partial class VisualCartesianCompiler {
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         IReadOnlyDictionary<double, string> categories) {
         var series = chart.Series[index]; var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
+        var labelOptions = chart.Options.BoxPlot.Clone();
+        var statisticLabels = labelOptions.LabelContent == ChartBoxPlotLabelContent.Statistics;
         var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.BoxPlot).ToArray();
         var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth
             : Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth));
@@ -43,8 +45,16 @@ internal static partial class VisualCartesianCompiler {
             var bounds = horizontal ? Extents(Math.Min(Math.Min(min.X, max.X), box.Left), box.Top, Math.Max(Math.Max(min.X, max.X), box.Right), box.Bottom)
                 : Extents(box.Left, Math.Min(Math.Min(min.Y, max.Y), box.Top), box.Right, Math.Max(Math.Max(min.Y, max.Y), box.Bottom));
             var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
-            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("median", median));
+            var summary = new ChartBoxPlot(x, minimum, q1, median, q3, maximum);
+            var captions = statisticLabels ? ResolveBoxPlotLabels(chart, context, series, item, colors, categories[x], summary, labelOptions) : default;
+            var label = statisticLabels ? captions.Observation : ResolveObservationLabel(chart, context, series, item, colors, format => format("median", median));
             var facts = BoxPlotMetadata(chart, series, item, categories[x]);
+            if (statisticLabels) for (var member = 0; member < captions.Captions.Length; member++) {
+                var name = BoxPlotStatisticNames[member];
+                if (captions.Captions[member] != null) facts["data-cfx-" + name + "-label"] = captions.Captions[member]!;
+                facts["data-cfx-formatted-" + name] = captions.Numeric[member];
+                if (member == 0) facts["data-cfx-formatted-y"] = captions.Numeric[member];
+            }
             using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, facts,
                 ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
                 var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
@@ -70,7 +80,9 @@ internal static partial class VisualCartesianCompiler {
             }
             obstacles.Add(new LabelObstacle(PointId(index, item), new ChartRect(bounds.Left - padding / 2, bounds.Top - padding / 2,
                 bounds.Width + padding, bounds.Height + padding)));
-            if (horizontal) AddHorizontalLabel(chart, context, series, index, item, Project(median), bounds, median,
+            if (statisticLabels) AddBoxPlotStatisticLabels(chart, context, series, index, item, bounds, horizontal, Project, summary,
+                label, captions.Captions, labelOptions, labels);
+            else if (horizontal) AddHorizontalLabel(chart, context, series, index, item, Project(median), bounds, median,
                 max.X >= min.X ? 1 : -1, label, labels);
             else AddLabel(chart, context, series, index, item, Project(median), bounds, label, labels, median);
             DrawBoxPlotOutliers(chart, builder, series, index, item, categories[x], Project, color, sourcePaint, obstacles);

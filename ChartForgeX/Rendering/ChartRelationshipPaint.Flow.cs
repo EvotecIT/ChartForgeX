@@ -1,3 +1,4 @@
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
 
@@ -31,13 +32,16 @@ internal readonly struct ChartRelationshipFlowPaint {
         PatternColor = ChartColorMath.WithOpacity(color, overlayOpacity);
         PatternPaint = paint.WithOpacity(PatternColor, overlayOpacity);
         // Retain the scene's existing unused default width when no outline is enabled.
-        StrokeWidth = style.StrokeWidth ?? 1;
+        var outline = style.OutlineStroke;
+        StrokeWidth = outline?.Width ?? style.StrokeWidth ?? 1;
+        Dash = outline?.Dash?.ToArray(); DashOffset = style.StrokeDashOffset;
         Stroke = null; StrokePaint = null;
-        if (StrokeWidth > 0 && (style.Stroke.HasValue || style.StrokeWidth.HasValue)) {
-            var strokeColor = style.Stroke ?? color;
-            var strokeOpacity = style.StrokeOpacity ?? 1;
+        if (StrokeWidth > 0 && (outline != null || style.Stroke.HasValue || style.StrokeWidth.HasValue)) {
+            var explicitStroke = outline?.Color ?? style.Stroke;
+            var strokeColor = explicitStroke ?? color;
+            var strokeOpacity = outline?.Opacity ?? style.StrokeOpacity ?? 1;
             Stroke = ChartColorMath.WithOpacity(strokeColor, strokeOpacity);
-            StrokePaint = (style.Stroke.HasValue ? SvgPaint.Of(strokeColor, SvgColorRole.Series) : paint).WithOpacity(Stroke.Value, strokeOpacity);
+            StrokePaint = (explicitStroke.HasValue ? SvgPaint.Of(strokeColor, SvgColorRole.Series) : paint).WithOpacity(Stroke.Value, strokeOpacity);
         }
     }
 
@@ -52,5 +56,7 @@ internal readonly struct ChartRelationshipFlowPaint {
     internal ChartColor? Stroke { get; }
     internal double StrokeWidth { get; }
     internal SvgPaint? StrokePaint { get; }
+    internal double[]? Dash { get; }
+    internal double DashOffset { get; }
     internal VisualScenePaintBinding Binding => new(fill: FillPaint, stroke: StrokePaint);
 }

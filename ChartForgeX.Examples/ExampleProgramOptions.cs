@@ -15,6 +15,11 @@ internal static class ExampleProgramOptions {
             IntegerAxisExamples.Write(output, pngOutputScale);
             return true;
         }
+        if (HasArg(args, "--composition-effects-only")) {
+            CompositionEffectsExamples.Write(output);
+            Console.WriteLine("Generated baked composition effect examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--composition-only")) {
             CompositionShapeExamples.Write(output);
             Console.WriteLine("Generated image composition examples in: " + output);

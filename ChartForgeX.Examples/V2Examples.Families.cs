@@ -60,6 +60,12 @@ public static partial class V2Examples {
                     : kind == ChartSeriesKind.BoxPlot && variant is "horizontal" or "compact-horizontal" ? "Grouped horizontal summaries retain all five statistics"
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
+                    : kind == ChartSeriesKind.Lollipop && variant is "horizontal" or "compact-horizontal" ? "Delivery stages share a horizontal order-count axis"
+                    : kind == ChartSeriesKind.Dumbbell && variant is "horizontal" or "compact-horizontal" ? "Horizontal Start and End glyphs retain both authored capacity values"
+                    : kind == ChartSeriesKind.Dumbbell && variant is "endpoint-markers" or "compact-endpoint-markers" ? "Independent endpoint shapes, sizes and colors preserve source order"
+                    : kind == ChartSeriesKind.Sankey && variant.EndsWith("source-colors", StringComparison.Ordinal) ? "Source endpoint colors retain explicit flow paint overrides"
+                    : kind == ChartSeriesKind.Sankey && variant.EndsWith("target-colors", StringComparison.Ordinal) ? "Target endpoint colors retain explicit flow paint overrides"
+                    : kind == ChartSeriesKind.Sankey && variant.EndsWith("quantitative-colors", StringComparison.Ordinal) ? "Request counts size ribbons; independent latency measurements color them"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
                     : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap
                         ? "Zero stays fixed; the color peak follows reported counts" : "The color ceiling stays at 100%; the lower bound follows observations"

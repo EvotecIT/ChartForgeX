@@ -7,6 +7,18 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Owns normalized marker contours for scene marks, pattern clipping and legend glyphs.</summary>
 internal static partial class ChartMarkerGeometry {
+    internal static ChartPath Path(ChartMarkerOptions options, double x, double y, double radius) {
+        if (options.CustomPath == null) return Path(options.Shape, x, y, radius);
+        var commands = new List<ChartPathCommand>(options.CustomPath.Commands.Count);
+        foreach (var command in options.CustomPath.Commands) {
+            commands.Add(command.Kind == ChartPathCommandKind.MoveTo ? ChartPathCommand.MoveTo(x + command.X * radius, y + command.Y * radius)
+                : command.Kind == ChartPathCommandKind.LineTo ? ChartPathCommand.LineTo(x + command.X * radius, y + command.Y * radius)
+                : ChartPathCommand.CubicTo(x + command.Control1X * radius, y + command.Control1Y * radius,
+                    x + command.Control2X * radius, y + command.Control2Y * radius, x + command.X * radius, y + command.Y * radius));
+        }
+        return new ChartPath(commands);
+    }
+
     internal static ChartPath Path(ChartMarkerShape shape, double x, double y, double radius) {
         if (shape == ChartMarkerShape.Circle) return ChartPathBuilder.Ellipse(x, y, radius, radius);
         var commands = new List<ChartPathCommand>();

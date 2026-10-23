@@ -31,7 +31,8 @@ internal static partial class VisualCartesianCompiler {
             var showMarkers = PairedObservationMarkersEnabled(series, item);
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
             var a = geometry.First[item]; var b = geometry.Second[item];
-            var bounds = Extents(a.X, a.Y, b.X, b.Y, VisualMarkerScene.Extent(series, radius));
+            var bounds = series.Markers.CustomPath == null ? Extents(a.X, a.Y, b.X, b.Y, VisualMarkerScene.Extent(series, radius))
+                : VisualMarkerScene.PairBounds(series, a, b, radius);
             var firstText = Value(chart, first.Y); var secondText = Value(chart, second.Y);
             var options = series.DifferenceArea;
             var label = ResolveObservationLabel(chart, context, series, item, colors,

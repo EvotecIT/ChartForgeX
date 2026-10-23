@@ -11,6 +11,8 @@ internal static partial class VisualCartesianCompiler {
         var bin = series.HistogramBins[pointIndex];
         var interval = "[" + Number(bin.LowerBound) + ", " + Number(bin.UpperBound) + (pointIndex == bin.Layout.Count - 1 ? "]" : ")");
         var label = series.Name + ": " + interval + ", " + series.HistogramAggregation + "=" + displayedValue + ", observations=" + Number(bin.Count);
+        if (series.HistogramEncoding == ChartHistogramEncoding.Probability) return label + ", probability=" + Number(bin.RenderedValue);
+        if (series.HistogramEncoding == ChartHistogramEncoding.ProbabilityDensity) return label + ", probability density=" + Number(bin.RenderedValue);
         return series.IsHistogramDensity ? label + ", density=" + Number(bin.RenderedValue) : label;
     }
 
@@ -36,7 +38,7 @@ internal static partial class VisualCartesianCompiler {
         metadata["data-cfx-histogram-encoding"] = series.HistogramEncoding!.Value.ToString().ToLowerInvariant();
         metadata["data-cfx-derived"] = "histogram-bin";
         if (bin.Value.HasValue) metadata["data-cfx-bin-value"] = Number(bin.Value.Value);
-        if (series.IsHistogramDensity) metadata["data-cfx-rendered-y"] = Number(bin.RenderedValue);
+        if (series.HistogramEncoding != ChartHistogramEncoding.Value) metadata["data-cfx-rendered-y"] = Number(bin.RenderedValue);
     }
 
 
