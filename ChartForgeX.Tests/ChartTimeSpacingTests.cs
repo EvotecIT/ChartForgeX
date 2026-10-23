@@ -43,7 +43,7 @@ public sealed class ChartTimeSpacingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CalendarMonthsKeepMissingBandsCenterRawInstantsAndBoundBarFootprints(bool horizontal) {
-        var chart = Chart.Create();
+        var chart = Chart.Create().WithMaximumBarWidth(1000);
         var points = new[] { new ChartPoint(Oa(January.AddDays(9)), 3), new ChartPoint(Oa(January.AddMonths(2).AddDays(29)), 7) };
         if (horizontal) chart.AddHorizontalBar("Monthly", points); else chart.AddBar("Monthly", points);
         var authored = horizontal ? chart.Options.YAxis : chart.Options.XAxis;

@@ -127,7 +127,7 @@ public sealed class IntegerAxisTickTests {
                 axis = chart.Options.XAxis;
             } else {
                 chart.AddBar("Items", new[] { new ChartPoint(1, 1), new ChartPoint(2, maximum) });
-                if (location == "secondary-y") { chart.Series[0].UseSecondaryYAxis(); chart.WithSecondaryYAxisIntegerTicks(); axis = chart.Options.SecondaryYAxis; }
+                if (location == "secondary-y") { chart.Series[0].UseSecondaryValueAxis(); chart.WithSecondaryYAxisIntegerTicks(); axis = chart.Options.SecondaryYAxis; }
                 else { chart.WithYAxisIntegerTicks(); axis = chart.Options.YAxis; }
             }
             if (dark) axis.WithBounds(0, maximum);
