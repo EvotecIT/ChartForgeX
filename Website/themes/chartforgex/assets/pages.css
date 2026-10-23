@@ -123,6 +123,9 @@
   right: 0;
   z-index: 2;
   aspect-ratio: 4 / 3;
+  /* Let the source viewport keep the plate's ratio instead of growing to the code's intrinsic height. */
+  min-height: 0;
+  overflow: hidden;
 }
 .cfx-family__source .cfx-codeblock { border-width: 0 0 1px; border-radius: 0; }
 .cfx-family__source .cfx-codeblock__bar { border-radius: 0; }
