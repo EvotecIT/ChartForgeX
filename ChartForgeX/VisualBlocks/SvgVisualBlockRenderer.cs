@@ -80,7 +80,7 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (!options.HostOwnsFrame && !options.TransparentBackground && surfaceBackground.A > 0) writer.StartElement("rect").Attribute("data-cfx-role", "visual-background").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", surfaceBackground.ToCss()).EndEmptyElement().Line();
         if (options.ShowCard && !options.HostOwnsFrame) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "visual-card").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", 0.5).Attribute("y", 0.5).Attribute("width", Math.Max(0, options.Size.Width - 1)).Attribute("height", Math.Max(0, options.Size.Height - 1)).Attribute("rx", Math.Max(0, theme.CornerRadius - 0.5)).Attribute("fill", theme.CardBackground.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("data-cfx-role", "visual-card").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", 0.5).Attribute("y", 0.5).Attribute("width", Math.Max(0, options.Size.Width - 1)).Attribute("height", Math.Max(0, options.Size.Height - 1)).Attribute("rx", Math.Max(0, theme.CornerRadius)).Attribute("fill", theme.CardBackground.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
         }
 
         renderContent(writer);
