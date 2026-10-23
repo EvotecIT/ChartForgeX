@@ -1,4 +1,4 @@
-  // Commit native state before motion.
+  // Native commit before motion.
   const captureChartUpdateMotion = value => {
     if (value === undefined || value === null) return Object.freeze({ duration: 0 });
     if (typeof value !== 'object' || !Number.isFinite(value.duration) || value.duration < 0 || value.duration > 1000)

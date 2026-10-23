@@ -1,4 +1,4 @@
-  // Overlays: CSS/scroll; hits: screen; axis-aligned scale only.
+  // Overlay: CSS/scroll; hit: screen; axis-aligned only.
 
   const stageProjection = stage => {
     const rect = stage.getBoundingClientRect();
@@ -15,7 +15,7 @@
   };
   const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
 
-  // Clip overlays; stale guides must not add scroll on resize.
+  // Clip overlays against resize scroll.
   const visibleCartesianPlot = (root, stage, plot = root._cfxCartesianPlot) => {
     const svg = stage.querySelector('svg');
     if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;

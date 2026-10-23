@@ -129,7 +129,7 @@
 
       if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
     }));
-    // Local paint loss keeps peer hover.
+    // Retain peer hover on paint loss.
     if (hiddenActive) clearHover(root, true, false);
   };
   const applyRootBranchHighlight = (root, active) => {

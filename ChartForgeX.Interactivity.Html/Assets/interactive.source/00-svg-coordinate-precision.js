@@ -28,7 +28,7 @@
     const matrix = node?.getScreenCTM();
     return matrix && projection ? projection.multiply(matrix) : matrix;
   };
-  // Allow native .001/screen rounding.
+  // Allow .001/screen rounding.
   const svgCoordinatePrecision = matrix => ({
     x: .001 * (Math.abs(matrix.a) + Math.abs(matrix.c)) + .0001,
     y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001

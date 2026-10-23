@@ -51,10 +51,10 @@
     syncXViewportControls(root); syncHierarchyNavigation(root);
   };
   const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null, preparedAdaptive) => {
-    // Validate alternates before scene release.
+    // Validate before release.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : preparedAdaptive === undefined ? readAdaptiveLayout(next) : preparedAdaptive;
-    // Commit drawing before host events.
-    // Replies keep layout; updates use live width; hidden keeps scene.
+    // Commit before host events.
+    // Reply: keep layout; update: live width; hidden: keep scene.
 
     if (adaptive && !adaptiveDrawing) {
       if (nativeKind && lifetime.adaptive) adaptive.current = lifetime.adaptive.current;
@@ -70,19 +70,19 @@
     const navigationFocus = active && root.contains(active) ? active.dataset?.cfxXControl : null;
     const hierarchyFocus = active && root.contains(active) ? active.dataset?.cfxHierarchyControl : null;
     const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
-    // Keep pending until validation reports errors.
+    // Keep pending through validation.
     if (nativeKind) lifetime.preparationPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
-    // Keep root/connections; replace scene work.
+    // Retain root/connections.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
-    // Publish accepted basis before restore/host events.
+    // Publish basis before restore/events.
     if (nativeState && lifetime.preparationSession === nativeState.session) nativeState.session.basis = nativeState.basis;
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    // Keep reset dismissal before rebinding.
+    // Retain reset dismissal.
     if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind && !preserveViewport);
@@ -116,7 +116,7 @@
       if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
-      // Validate all drawings before advancing basis.
+      // Validate all before basis.
       const adaptive = readAdaptiveLayout(next);
       for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) hooks.validate(drawing, request);
       const before = hooks.beforeCommit?.();

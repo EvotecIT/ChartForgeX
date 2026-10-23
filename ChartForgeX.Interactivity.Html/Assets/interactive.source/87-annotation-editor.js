@@ -1,4 +1,4 @@
-  // Browser: drafts/bounded history; native: model/transport.
+  // Browser drafts/history; native model/transport.
   const annotationEditorState = root => chartLifetimes.get(root)?.annotationEditor;
   const annotationDrawingAt = (root, id) => {
     const data = nativeAnnotationNode(root, id)?.dataset;

@@ -2,7 +2,7 @@
     && ['area', 'steparea', 'stackedarea', 'differencearea', 'rangearea', 'rangeband'].includes((subject.dataset.cfxKind || '').toLowerCase())
     && /^(area|difference-(positive|negative)|range-(area|band))(-pattern)?$/.test(node.dataset.cfxRole || '');
   const cartesianFillOwnsObservation = (node, subject) => {
-    // Fill/hatch owners use indices, not coordinates.
+    // Fill/hatch use indices.
     const segment = node.closest('[data-cfx-role="fill-segment"]');
     if (!segment) return false;
     const first = Number(segment.dataset.cfxFillPointStart), count = Number(segment.dataset.cfxFillPointCount);
@@ -24,7 +24,7 @@
     const role = node.dataset.cfxRole || '';
     if (!role.endsWith('-pattern')) return typeof node.isPointInFill === 'function'
       ? { key: node, matrix: node.getScreenCTM(), contains: point => node.isPointInFill(point) } : null;
-    // Query hatch clip-rule independently.
+    // Separate hatch clip-rule.
 
     for (let parent = node.parentElement; parent && parent.ownerSVGElement; parent = parent.parentElement) {
       const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
@@ -62,7 +62,7 @@
     if (subjects.has(subject)) return subjects.get(subject);
     const sourceInverse = sourceMatrix.inverse(), shapeInverse = shapeMatrix.inverse();
     const paired = pairedExtentObservation(subject), x = region.x + region.width / 2;
-    // Clip scalars at their source.
+    // Clip source scalars.
     if (!paired && !paintWithinNativeClips(node, subject, styles)) return false;
     const low = paired ? region.y + region.width / 2 : region.y + region.height / 2;
     const high = paired ? region.y + region.height - region.width / 2 : low;
@@ -89,7 +89,7 @@
         && py - radius >= region.y && py + radius <= region.y + region.height
         && contains(px, py) && [-1, 1].every(dx => [-1, 1].every(dy => contains(px + dx * radius, py + dy * radius))));
     } else if (high > low) {
-      // Partition Step holds by neighbor clips/bounds.
+      // Clip Step holds by neighbors.
 
       visible = atY(low / 2 + high / 2, Math.min(inset, (high - low) / 4));
       if (!visible) {

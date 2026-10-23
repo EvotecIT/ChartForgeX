@@ -80,7 +80,7 @@
     };
   };
   const installChartSection = (root, next) => {
-    // Preserve host attrs/CSS/accent.
+    // Retain host attrs/CSS/accent.
     for (const attribute of Array.from(root.attributes)) if (attribute.name.startsWith('data-cfx-')) root.removeAttribute(attribute.name);
     for (const property of Array.from(root.style)) if (property.startsWith('--cfx-') && property !== '--cfx-host-accent') root.style.removeProperty(property);
     for (const attribute of Array.from(next.attributes)) {
@@ -92,7 +92,7 @@
     root.replaceChildren(...Array.from(next.childNodes).map(node => node.cloneNode(true)));
   };
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
-    // IDs persist; ordinals are scene-local.
+    // Persistent IDs; local ordinals.
     applySelectionSetByTargets(root, state.selected, true);
     root._cfxComparePage = state.comparePage;
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
@@ -105,6 +105,6 @@
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     restoreLegendOverflow(root, state.legendOverflow);
-    // Focus recovery cannot revive old pins/readouts.
+    // Focus cannot revive pins/readouts.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };

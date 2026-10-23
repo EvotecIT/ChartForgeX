@@ -16,7 +16,7 @@
     resumePointerReadout(root);
   };
   const suspendPointerReadout = root => {
-    // Reset resumes on fresh input only.
+    // Reset awaits fresh input.
     root._cfxPointerReadoutSuspended = true;
     hideTip(root, root.querySelector('.cfx-tooltip'), true);
   };
@@ -48,7 +48,7 @@
     }
   };
   const cancelTooltipRequest = (root) => {
-    // Restored paint never restarts canceled timers.
+    // Restore keeps timers canceled.
     root._cfxCancelPointerHover?.();
     const request = tooltipRequests.get(root);
     if (!request) return;
@@ -77,7 +77,7 @@
     return point && point.node;
   };
   const checkPendingTooltipMutations = (records) => {
-    // Ignore probes to avoid observer loops.
+    // Ignore observer probes.
     records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
     if (!records.length) return;
     for (const pending of Array.from(pendingTooltips)) {

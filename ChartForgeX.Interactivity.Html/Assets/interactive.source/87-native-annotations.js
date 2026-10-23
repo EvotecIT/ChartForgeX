@@ -1,4 +1,4 @@
-  // Exact geometry; native owns drawing/export.
+  // Native drawing/export geometry.
   const nativeAnnotationNode = (root, id) => Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
     .find(node => node.dataset.cfxAnnotationId === id);
   const sourceAnnotationProjection = (root, yAxis) => {

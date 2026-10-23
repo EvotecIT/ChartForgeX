@@ -230,7 +230,7 @@
     return count;
   };
   const reconcileSourceSelection = (root, previous, targets) => {
-    // Reconcile gesture IDs, not unrelated peer state.
+    // Reconcile gesture IDs only.
 
     const batch = selectionTargetBatch(root), before = new Set(), after = new Set();
     for (const target of previous) batch.resolve(target).forEach(node => before.add(node));
@@ -300,7 +300,7 @@
       return;
     }
     if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
-      // Keep primary/secondary physical axes distinct.
+      // Distinct physical axes.
       const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
       const binding = nativePreparationBinding(root, 'viewport');
       const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
@@ -335,7 +335,7 @@
       if (applyHoverByTarget(root, detail.target)) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') {
-      // Retire accepted hover only; local input takes over.
+      // Retire accepted hover; local input wins.
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
     }
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {

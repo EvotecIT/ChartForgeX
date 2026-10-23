@@ -85,7 +85,7 @@
 
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
         let pointerFocus = false;
-        // Touch mouse follows pointerup; mid-press reveal retargets.
+        // Touch mouse follows pointerup; reveal retargets.
         ['pointerdown', 'mousedown'].forEach(type => listenChart(root, focusNode, type, (event) => { pointerFocus = event.button === 0; }));
         ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => listenChart(root, focusNode, type, () => { pointerFocus = false; }));
         listenChart(root, focusNode, 'focus', (event) => {
@@ -145,11 +145,11 @@
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
-        // Enter follows links; Space selects without navigation.
+        // Enter follows links; Space selects.
         if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
         event.stopPropagation();
-        // Keep key events; synthetic (0,0) loses focus.
+        // Keep keys; (0,0) loses focus.
         activateTarget(event);
       });
     });
@@ -250,7 +250,7 @@
         if (pointerFrame) cancelAnimationFrame(pointerFrame);
         pointerFrame = 0; pendingPointerMove = null;
       };
-      // Cancel hover, not gestures; pointerup commits final sample.
+      // Cancel hover only; pointerup commits final.
 
       root._cfxCancelPointerHover = () => { if (!drag) cancelPointerMove(); };
       const applyPointerMove = (event, nativeTarget = event.target) => {
@@ -318,7 +318,7 @@
       listenChart(root, stage, 'pointermove', (event) => {
         resumePointerHover(root);
         if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
-        // Capture native target/timing before shadow retargeting.
+        // Capture before shadow retargeting.
 
         const nativeTarget = event.composedPath().find(node => node instanceof Element && stage.contains(node)) || event.target;
         pendingPointerMove = { event, nativeTarget };
@@ -366,7 +366,7 @@
       listenChart(root, stage, 'pointercancel', (event) => {
         if (drag?.id === event.pointerId || !drag && ownsTooltipPointer(root, event)) cancelPointerMove();
         if (drag && drag.id === event.pointerId) {
-          // Cancel draft gesture only; keep selection/box.
+          // Cancel draft, not selection/box.
           if (drag.mode === 'brush' && brush) {
             brush.hidden = drag.previousBrush.hidden;
             for (const name of ['left', 'top', 'width', 'height']) brush.style[name] = drag.previousBrush[name];

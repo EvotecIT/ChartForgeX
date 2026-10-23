@@ -26,7 +26,7 @@
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // Never mix OLE dates and Unix milliseconds.
+    // Separate OLE/Unix dates.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -70,7 +70,7 @@
       if (candidate[key] !== undefined && !Array.isArray(candidate[key])) throw new TypeError('Chart match ' + key + ' must be an array.');
     return candidate;
   };
-  // Parse whole ms first; engines round fractions differently.
+  // Whole ms first; fractions vary by engine.
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
     : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value)
       ? Date.parse(value.replace(/(\.\d{3})\d+(Z|[+-]\d\d:\d\d)$/, '$1$2')) : NaN;
@@ -206,7 +206,7 @@
       delete match.observationIds;
       removed = true;
     }
-    // Ordinals are scene-local; IDs/filters persist.
+    // Local ordinals; persistent IDs/filters.
     if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
     else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {

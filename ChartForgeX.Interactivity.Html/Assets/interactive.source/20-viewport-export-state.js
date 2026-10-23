@@ -88,7 +88,7 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  // Cancel draft before pointerup recommits.
+  // Cancel before pointerup.
   const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
     const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
@@ -163,7 +163,7 @@
         requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
       else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
         requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
-      // Atomic replay; rejected reader state stays intact.
+      // Atomic replay; preserve rejected state.
       return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');
