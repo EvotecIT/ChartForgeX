@@ -3,6 +3,8 @@
   const current=document.currentScript?.parentElement;
   if(window.ChartForgeXResponsive){window.ChartForgeXResponsive.mount(current);return;}
   async function initialize(host){
+    // Parser-added hosts can appear before their inline specification is complete.
+    if(document.readyState==='loading')await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
     const compressed=host.querySelector('[data-cfx-spec-gzip]');
     let payload=host.querySelector('[data-cfx-spec]')?.textContent;
     if(compressed){
