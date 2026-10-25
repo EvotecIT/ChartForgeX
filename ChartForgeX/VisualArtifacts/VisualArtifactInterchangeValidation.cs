@@ -496,6 +496,7 @@ internal static partial class VisualArtifactInterchangeValidation {
             ValidateCaptionContent(node.Topology.LabelContent, node.Label, "node label runs");
             PositiveOptional(node.Topology.MaximumTextWidth, "topology node text wrapping width");
             NonNegativeOptional(node.Topology.ContentPadding, "topology node content padding");
+            OptionalText(node.Topology.AccessibleName, "topology node accessible name");
             Defined(node.Topology.Kind, "topology node kind", envelope);
             if (node.Topology.PaletteIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.PaletteIndex, "Topology node palette index must not be negative.");
             Defined(node.Topology.Status, "topology node status", envelope);

@@ -109,6 +109,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Status = native.Status, DisplayMode = native.DisplayMode, Shape = native.Shape, IconShape = native.IconShape,
             PreserveDisplayModeSize = true, FitLabelToContent = native.FitLabelToContent,
             Longitude = native.Longitude, Latitude = native.Latitude, ShowStatusBadge = native.ShowStatusBadge,
+            ShowHealthRing = native.ShowHealthRing, AccessibleName = native.AccessibleName,
             ShowLabel = native.ShowLabel, MaximumLabelCharacters = native.MaximumLabelCharacters,
             Artwork = RestoreTopologyArtwork(native.Artwork)
         };

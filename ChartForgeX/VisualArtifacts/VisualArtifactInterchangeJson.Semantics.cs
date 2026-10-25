@@ -166,6 +166,8 @@ internal static partial class VisualArtifactInterchangeJson {
         OptionalNumber(writer, "longitude", topology.Longitude);
         OptionalNumber(writer, "latitude", topology.Latitude);
         Boolean(writer, "showStatusBadge", topology.ShowStatusBadge);
+        if (topology.ShowHealthRing) Boolean(writer, "showHealthRing", true);
+        OptionalString(writer, "accessibleName", topology.AccessibleName);
         if (!topology.ShowLabel) Boolean(writer, "showLabel", false);
         OptionalNumber(writer, "maximumLabelCharacters", topology.MaximumLabelCharacters);
         OptionalNumber(writer, "maximumTextWidth", topology.MaximumTextWidth);
@@ -448,6 +450,8 @@ internal static partial class VisualArtifactInterchangeJson {
             FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? false,
             Longitude = OptionalNumber(item, "longitude"), Latitude = OptionalNumber(item, "latitude"),
             ShowStatusBadge = OptionalBool(item, "showStatusBadge") ?? true,
+            ShowHealthRing = OptionalBool(item, "showHealthRing") ?? false,
+            AccessibleName = OptionalString(item, "accessibleName"),
             ShowLabel = OptionalBool(item, "showLabel") ?? true,
             MaximumLabelCharacters = OptionalInt(item, "maximumLabelCharacters"), MaximumTextWidth = OptionalNumber(item, "maximumTextWidth"), ContentPadding = OptionalNumber(item, "contentPadding"), Artwork = ReadArtwork(item)
         };
