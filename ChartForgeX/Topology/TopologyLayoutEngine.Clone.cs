@@ -93,6 +93,8 @@ internal static partial class TopologyLayoutEngine {
             PaletteIndex = node.PaletteIndex,
             BackgroundColor = node.BackgroundColor,
             ShowStatusBadge = node.ShowStatusBadge,
+            ShowHealthRing = node.ShowHealthRing,
+            AccessibleName = node.AccessibleName,
             ShowLabel = node.ShowLabel,
             PreserveDisplayModeSize = node.PreserveDisplayModeSize,
             FitLabelToContent = node.FitLabelToContent,

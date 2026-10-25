@@ -11,6 +11,12 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--topology-hierarchy-only")) {
+            TopologyHierarchyExamples.Write(output);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated topology and labelled hierarchy examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--integer-axis-only")) {
             IntegerAxisExamples.Write(output, pngOutputScale);
             return true;

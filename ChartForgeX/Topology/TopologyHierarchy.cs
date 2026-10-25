@@ -37,6 +37,18 @@ public sealed class TopologyHierarchyItem {
     /// <summary>Gets or sets the optional subtitle.</summary>
     public string? Subtitle { get; set; }
 
+    /// <summary>Gets or sets the label on the relationship from this item's parent. Roots have no incoming edge.</summary>
+    public string? ParentEdgeLabel { get; set; }
+
+    /// <summary>Gets or sets the incoming relationship's health. Null uses <see cref="TopologyHierarchyOptions.EdgeStatus"/>.</summary>
+    public TopologyHealthStatus? ParentEdgeStatus { get; set; }
+
+    /// <summary>Gets or sets short badge text copied to the generated node.</summary>
+    public string? Badge { get; set; }
+
+    /// <summary>Gets or sets whether the generated node shows a semantic health ring independently of its accent.</summary>
+    public bool ShowHealthRing { get; set; }
+
     /// <summary>Gets or sets the optional visual symbol.</summary>
     public string? Symbol { get; set; }
 
@@ -236,6 +248,8 @@ public static class TopologyHierarchyExtensions {
             chart.AddAutoNode(item.Id, item.Label, item.Kind, item.Status, item.GroupId, item.Subtitle, width: item.Width ?? options.NodeWidth, height: item.Height ?? options.NodeHeight, symbol: item.Symbol, color: item.Color, iconId: item.IconId);
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.BackgroundColor = item.BackgroundColor;
+            node.Badge = item.Badge;
+            node.ShowHealthRing = item.ShowHealthRing;
             if (options.NodeDisplayMode.HasValue) node.DisplayMode = options.NodeDisplayMode.Value;
             foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
             node.Metadata["layer"] = levels[item.Id].ToString(CultureInfo.InvariantCulture);
@@ -248,7 +262,9 @@ public static class TopologyHierarchyExtensions {
 
         foreach (var item in visible) {
             if (string.IsNullOrWhiteSpace(item.ParentId) || !visibleIds.Contains(item.ParentId!)) continue;
-            chart.AddEdge(EdgeId(options.EdgeIdPrefix, item.ParentId!, item.Id), item.ParentId!, item.Id, kind: options.EdgeKind, status: options.EdgeStatus, direction: options.EdgeDirection, routing: options.EdgeRouting);
+            chart.AddEdge(EdgeId(options.EdgeIdPrefix, item.ParentId!, item.Id), item.ParentId!, item.Id,
+                label: item.ParentEdgeLabel, kind: options.EdgeKind, status: item.ParentEdgeStatus ?? options.EdgeStatus,
+                direction: options.EdgeDirection, routing: options.EdgeRouting);
             var edge = chart.Edges[chart.Edges.Count - 1];
             ApplyHierarchyPorts(edge, options.LayoutDirection, options.ApplyLayeredLayout);
             edge.Metadata["hierarchy.relationship"] = "parent-child";

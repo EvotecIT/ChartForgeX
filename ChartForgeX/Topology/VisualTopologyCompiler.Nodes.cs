@@ -83,6 +83,7 @@ internal sealed partial class VisualTopologyCompiler {
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
             }
+            BuildHealthRing(node, bounds, active);
             if (!shapeContent && _options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
                 using var statusGroup = _builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id });

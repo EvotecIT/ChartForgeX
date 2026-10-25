@@ -47,6 +47,46 @@ In installed-font mode, for Arial and recognized DejaVu or Liberation bold compa
 
 ## Model
 
+Regions use `TopologyGroup`: a stable ID, title (`Label`), subtitle, health and optional position. Use `AddAutoGroup` with `GroupGrid` or `DenseGrouped` to pack nodes automatically. Assign `X` and `Y` on individual nodes to keep authored positions. Node dimensions, subtitles, symbols, icons and `Badge` remain caller-owned facts.
+
+Set `node.ShowHealthRing = true` or call `chart.WithNodeHealthRing(id)` for a semantic health ring inside the node bounds. The ring follows `Status` and the shared theme's health tokens independently of the node's accent, badge or icon colour. Circular shapes and icon nodes work particularly well. SVG and PNG use the same scene geometry; rings are opt-in and do not change existing diagrams. Set `AccessibleName` for a localized node name, or retain the default full label, subtitle, badge and health summary. Visual truncation does not truncate that name.
+
+### Labelled trees
+
+`AddHierarchy` creates a tree from neutral parent/child records. Each child's `ParentEdgeLabel` labels its incoming relationship, and `ParentEdgeStatus` overrides the shared edge health for that relationship. A root has no incoming edge. Node health, badge and optional health ring remain separate from relationship health.
+
+```csharp
+var hierarchy = TopologyChart.Create().WithViewport(800, 520)
+    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+    .AddHierarchy(new[] {
+        new TopologyHierarchyItem("reference", "Reference clock") {
+            Status = TopologyHealthStatus.Healthy, Badge = "REF"
+        },
+        new TopologyHierarchyItem("relay", "Regional clock", "reference") {
+            Subtitle = "Last synchronization 15 seconds ago",
+            ParentEdgeLabel = "+0.2 ms",
+            ParentEdgeStatus = TopologyHealthStatus.Healthy,
+            Status = TopologyHealthStatus.Healthy
+        }
+    });
+var svg = hierarchy.ToSvg(); // Script-free output for documents, email and print.
+var png = hierarchy.ToPng();
+```
+
+`TopologyHierarchyExamples` in the examples project generates service regions and a timing tree at 1440 light and 390 dark, plus an illustrative directory-shaped mapping. Run the examples with `--topology-hierarchy-only --output <directory>` to generate these SVG, PNG and interactive HTML files.
+
+### Browser events and linked views
+
+`HtmlInteractiveTopologyRenderer` hydrates the native SVG through the adapter-owned JavaScript runtime. Nodes receive keyboard focus, Enter or Space selects, arrow keys follow related items, and Escape clears selection. `cfx-topology-select` and `cfx-topology-hover` bubble to the embedding host. Their node detail contains the stable `id`, `label`, `subtitle`, `status`, `badge`, `accessibleName`, `healthRing`, group ID and caller metadata. Hosts use these facts to update their own linked views; inspectors, data collection and domain calculations remain outside the chart.
+
+```javascript
+document.addEventListener('cfx-topology-select', event => {
+  if (event.detail.kind === 'node') showServiceDetails(event.detail.id);
+});
+```
+
+Static SVG does not require JavaScript. The browser adapter reuses that geometry rather than maintaining a second layout implementation.
+
 - `TopologyChart` contains viewport, layout mode, layout direction, groups, nodes, edges, legend, and theme.
 - `TopologyGroup` represents a cluster, region, tier, team, location, or any other logical grouping.
 - `TopologyNode` represents a logical object such as a server, database, service, endpoint, person, team, queue, network segment, or application.

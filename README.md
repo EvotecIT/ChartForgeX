@@ -252,7 +252,7 @@ See [visual blocks](docs/visual-blocks.md), [visual canvases](docs/visual-canvas
 
 ## Diagrams and Mermaid
 
-Build product-neutral relationship diagrams with `TopologyChart`, or use the typed flow and sequence artifact models for process and interaction diagrams. Topology supports groups, ports, routed edges, status, icons, and several layout modes. Applications supply their own data and keep collection, filters, inspectors, and dashboard layout in their host.
+Build product-neutral relationship diagrams with `TopologyChart`, or use the typed flow and sequence artifact models for process and interaction diagrams. Topology supports regions, ports, routed edges, semantic health rings, badges, icons, and several layout modes. `AddHierarchy` builds trees with per-relationship labels and health. SVG and PNG share the native scene; the HTML adapter adds keyboard navigation and linked-view events. See the [topology examples and contracts](docs/topology.md#model). Applications supply their own data and keep collection, filters, inspectors, and dashboard layout in their host.
 
 For Mermaid input, install the optional language package:
 

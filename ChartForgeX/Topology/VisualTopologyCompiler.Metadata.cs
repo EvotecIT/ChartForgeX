@@ -27,8 +27,13 @@ internal sealed partial class VisualTopologyCompiler {
         var data = CommonMetadata(node.Id, "node", node.Status, TopologyScenarioStepKind.Node, node.Metadata, node.Metrics);
         data["class"] = CssPrefix + "__node" + CustomCssClasses(node.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsNodeHighlighted(node));
         data["data-node-kind"] = node.Kind.ToString(); data["data-node-label"] = node.Label;
+        data["data-node-subtitle"] = node.Subtitle ?? string.Empty;
+        data["aria-label"] = string.IsNullOrWhiteSpace(node.AccessibleName)
+            ? string.Join(", ", new[] { node.Label, node.Subtitle, node.Badge, node.Status.ToString() }.Where(value => !string.IsNullOrWhiteSpace(value)))
+            : node.AccessibleName!;
         if (node.Shape.HasValue) data["data-node-shape"] = node.Shape.Value.ToString();
         data["data-node-display-mode"] = EffectiveNodeDisplayMode(node, _options).ToString();
+        data["data-node-health-ring"] = node.ShowHealthRing ? "true" : "false";
         data["data-group-id"] = node.GroupId ?? string.Empty;
         data["data-group-label"] = _chart.Groups.FirstOrDefault(group => group.Id == node.GroupId)?.Label ?? string.Empty;
         data["data-node-badge"] = node.Badge ?? string.Empty; data["data-node-detail-count"] = node.Details.Count.ToString(CultureInfo.InvariantCulture);

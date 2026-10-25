@@ -47,6 +47,7 @@ NumericAxisExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);
 SunburstBranchHighlightExamples.Write(output);
 HierarchyViewExamples.Write(output);
+TopologyHierarchyExamples.Write(output);
 DenseLegendExamples.Write(output, DemoPngOutputScale);
 PagedFacetExamples.Write(output, DemoPngOutputScale);
 AnimatedVisualStoryExamples.Write(output, DemoPngOutputScale);
