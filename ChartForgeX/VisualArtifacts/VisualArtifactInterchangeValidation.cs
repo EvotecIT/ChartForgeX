@@ -396,6 +396,7 @@ internal static partial class VisualArtifactInterchangeValidation {
             throw new ArgumentException("Interchange node role and semantic record do not match.", nameof(envelope));
         }
         if (node.Topology != null) {
+            OptionalText(node.Topology.AccessibleName, "topology node accessible name");
             Defined(node.Topology.Kind, "topology node kind", envelope);
             if (node.Topology.PaletteIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.PaletteIndex, "Topology node palette index must not be negative.");
             Defined(node.Topology.Status, "topology node status", envelope);

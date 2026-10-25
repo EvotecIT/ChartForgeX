@@ -36,6 +36,7 @@ public static class TopologyHierarchyExamples {
             .WithEdgeLineStyle("mirror", TopologyEdgeLineStyle.Solid)
             .WithEdgeLineStyle("checkpoint", TopologyEdgeLineStyle.Dashed);
         chart.Edges.Single(edge => edge.Id == "mirror").StrokeWidth = 2.5;
+        foreach (var edge in chart.Edges) edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
         if (compact) {
             chart.WithEdgePorts("process", TopologyEdgePort.Right, TopologyEdgePort.Left)
                 .WithEdgePorts("checkpoint", TopologyEdgePort.Right, TopologyEdgePort.Left);

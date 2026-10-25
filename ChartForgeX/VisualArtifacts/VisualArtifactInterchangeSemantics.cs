@@ -217,6 +217,10 @@ public sealed class VisualArtifactInterchangeTopologyNode {
     public double? Latitude { get; set; }
     /// <summary>Gets or sets whether the status badge is shown.</summary>
     public bool ShowStatusBadge { get; set; } = true;
+    /// <summary>Gets or sets whether the node shows a semantic health ring independently of its accent.</summary>
+    public bool ShowHealthRing { get; set; }
+    /// <summary>Gets or sets the caller-provided accessible node name. Null preserves the default name derived from node facts.</summary>
+    public string? AccessibleName { get; set; }
     /// <summary>Gets or sets whether the semantic label is painted as a visible caption.</summary>
     public bool ShowLabel { get; set; } = true;
     /// <summary>Gets or sets the optional maximum label length.</summary>

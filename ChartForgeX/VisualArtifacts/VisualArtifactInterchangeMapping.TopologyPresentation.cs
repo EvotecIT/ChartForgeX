@@ -31,6 +31,8 @@ public static partial class VisualArtifactInterchangeMapping {
             Longitude = node.Longitude,
             Latitude = node.Latitude,
             ShowStatusBadge = showStatusBadge,
+            ShowHealthRing = node.ShowHealthRing,
+            AccessibleName = node.AccessibleName,
             ShowLabel = node.ShowLabel,
             MaximumLabelCharacters = node.MaximumLabelCharacters
         };
