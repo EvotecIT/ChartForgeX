@@ -2,7 +2,7 @@ namespace ChartForgeX.Raster;
 
 /// <summary>Selects a managed animation container.</summary>
 public enum RasterAnimationFormat {
-    /// <summary>GIF with a shared palette, binary transparency, and centisecond timing including zero delays.</summary>
+    /// <summary>GIF with adaptive/exact palettes, binary transparency, and centisecond timing including zero delays.</summary>
     Gif,
     /// <summary>Animated PNG with lossless RGBA pixels and rational frame timing.</summary>
     Apng
