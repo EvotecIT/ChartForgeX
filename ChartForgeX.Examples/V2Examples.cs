@@ -13,6 +13,7 @@ public static partial class V2Examples {
     public static void Write(string output, bool curated = false) {
         Directory.CreateDirectory(output);
         ExampleTypography.WriteAssets(output);
+        TopologyHierarchyExamples.Write(output);
         var artifacts = new List<ProofArtifact>();
         foreach (var family in new[] { "cartesian", "donut" }) {
             foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {

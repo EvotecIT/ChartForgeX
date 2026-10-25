@@ -45,6 +45,12 @@ internal static class ExampleProgramOptions {
             PolarViewportExamples.Write(output);
             return true;
         }
+        if (HasArg(args, "--topology-hierarchy-only")) {
+            TopologyHierarchyExamples.Write(output);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated topology and labelled hierarchy examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--radial-forms-only")) {
             RadialFormsExamples.Write(output, pngOutputScale);
             return true;
