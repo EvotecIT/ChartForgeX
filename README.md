@@ -55,10 +55,10 @@ full frames for transparent disposal. Mixed transparent GIF
 animations reserve one palette slot, leaving 255 exact opaque colours per frame.
 
 Starting with 3.1, these encoder types live in `ChartForgeX.dll` with the same
-namespace and names. Stories forwards its 3.0.1 type references to core, so existing
-compiled consumers continue to resolve them. New pixel-only consumers can remove
-the Stories package reference. Upgrade the core and Stories packages together
-when using authored scenes.
+namespace and names. Rebuild existing consumers against 3.1.0 because the owning
+assembly changes. Source calls remain valid through Stories' dependency on core;
+pixel-only consumers can reference core directly and remove Stories. Upgrade the
+core and Stories packages together when using authored scenes.
 
 ## Your first chart
 

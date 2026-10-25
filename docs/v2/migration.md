@@ -473,7 +473,7 @@ Package separation was introduced in `2.0.0`; the unified authoring contracts us
 | `VisualCanvas`, `ImageComposition`, factual metric/table/list blocks and static `VisualGrid` | Add `ChartForgeX.Visuals`; keep the domain namespaces |
 | `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.WithWatermarks(...)` decorator; semantic `Model` remains available |
 | `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
-| Timed RGBA animation frames | In 3.1, use core `RasterAnimationEncoder`, `RasterAnimationSource`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; the `ChartForgeX.Raster` namespace is unchanged and Stories forwards its 3.0.1 references |
+| Timed RGBA animation frames | In 3.1, use core `RasterAnimationEncoder`, `RasterAnimationSource`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; the `ChartForgeX.Raster` namespace is unchanged. Rebuild consumers against 3.1.0; source calls still compile through Stories' dependency on core |
 | `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
 | `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
 | `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |

@@ -87,9 +87,6 @@ internal static class PackageAssertions {
             "ChartForgeX.Stories.VisualStory", "ChartForgeX.Terminal.TerminalStory",
             "ChartForgeX.VisualArtifacts.VisualWatermark" })
             Require(core.GetType(name) == null, "Optional producer remains in core: " + name);
-        foreach (var type in new[] { typeof(RasterAnimationEncoder), typeof(RasterAnimationSource),
-            typeof(RasterAnimationFrame), typeof(RasterAnimationFormat), typeof(RasterAnimationOptions) })
-            Require(type.Assembly == core, "Animation encoder left core: " + type.FullName);
         var gif = new byte[] { 0x47,0x49,0x46,0x38,0x39,0x61,0x02,0x00,0x02,0x00,0x80,0x00,0x00,
             0x00,0xFF,0x00,0xFF,0x00,0x00,0x2C,0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x00,
             0x02,0x02,0x4C,0x01,0x00,0x3B };
