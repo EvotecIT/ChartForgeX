@@ -24,6 +24,7 @@
   <ItemGroup>
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="ExampleRecipeImports.cs" LogicalName="ChartForgeX.Examples.ExampleRecipeImports.cs" WithCulture="false" />
+    <None Update="Fixtures\Fonts\IBMPlexSans\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Assets\Embedding\*" LogicalName="ChartForgeX.Examples.Embedding.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Assets\Enhance\*" LogicalName="ChartForgeX.Examples.Enhance.%(Filename)%(Extension)" WithCulture="false" />

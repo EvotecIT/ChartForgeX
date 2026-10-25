@@ -4,6 +4,8 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyChart {
+    internal IReadOnlyDictionary<string, IReadOnlyList<ChartPoint>>? PreparedRegionRoutes { get; set; }
+    internal TopologyRegionPaintPlan? PreparedRegionPaintPlan { get; set; }
     /// <summary>
     /// Identifies bounds restored from a typed prepared-scene envelope. Only Manual rendering
     /// keeps this scene coordinate domain; explicit fitting and fresh automatic layout resolve it anew.

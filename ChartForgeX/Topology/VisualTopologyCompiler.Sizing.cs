@@ -122,7 +122,8 @@ internal sealed partial class VisualTopologyCompiler {
         var fitResolvedLayout = _options.FitContentToViewport
             && (_chart.UsesPreparedSceneCoordinates || _chart.LayoutMode != TopologyLayoutMode.Manual || canFitManualCards || _pathDecorations.Count > 0);
         var naturalContent = _naturalSize && !_resolvedLayout && !_options.FitContentToViewport;
-        var content = IncludeAnnotationBounds(fitResolvedLayout || naturalContent
+        var content = _chart.PreparedRegionPaintPlan != null ? new ChartRect(0, 0, _chart.PreparedRegionPaintPlan.Size.Width, _chart.PreparedRegionPaintPlan.Size.Height)
+            : IncludeAnnotationBounds(fitResolvedLayout || naturalContent
             ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent && !TrimNaturalFrame) : new ChartRect(padding, padding, width, height));
         _contentClip = _plot;
         if (naturalContent) {

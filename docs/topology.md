@@ -4,6 +4,39 @@
 
 Use it for static or embeddable diagrams such as service maps, SQL/server dependency views, people/team relationship diagrams, network connectivity maps, replication meshes, geographic-style location views, and product-specific topology views supplied by host applications.
 
+## Circular nodes in regions
+
+Set a group's `StatusText` to show an optional status chip in its header; null omits it. Its editable anatomy is in `topology-region-status.svg`.
+
+The HTML adapter reuses native preparations at container width bands, so automatic regions wrap before the phone breakpoint without a second layout engine. Authored positions preserve their arrangement on resize. Fitting a detached preparation keeps its original layout and actual shaped glyphs; prepare the model at a narrow width to choose the stacked phone arrangement instead.
+
+`TopologyLayoutMode.Regions` arranges circular nodes inside wrapping regions. At container widths below 640 pixels, the HTML adapter switches to stacked regions, cross-region link rows and overlay chips. The server also prepares this narrow arrangement when the requested SVG width is below 640 pixels. Static output has no script and always includes the used legend entries.
+
+```csharp
+var map = TopologyChart.Create().WithId("services")
+    .WithViewport(860, 500, 20).WithLayout(TopologyLayoutMode.Regions)
+    .AddAutoGroup("north", "North region", subtitle: "Primary processing")
+    .AddAutoGroup("south", "South region", subtitle: "Recovery processing")
+    .AddAutoNode("api", "API", groupId: "north", status: TopologyHealthStatus.Healthy)
+    .AddAutoNode("replica", "REPL", groupId: "south", status: TopologyHealthStatus.Warning)
+    .AddEdge("sync", "api", "replica", "42 s lag", status: TopologyHealthStatus.Warning);
+map.Nodes[0].Weight = TopologyNodeWeight.Primary;
+map.Nodes[0].AddBadge(new TopologyNodeBadge("crown", "Primary role"));
+map.Nodes[1].StatusText = "Warning: last update 42 seconds ago";
+var svg = map.ToSvg();
+var page = new HtmlInteractiveTopologyRenderer().RenderPage(map,
+    new TopologyRenderOptions { IncludeRegionDetails = true });
+var printSvg = map.ToSvg(new TopologyRenderOptions { RegionPrint = true });
+```
+
+Weights are `Primary`, `Standard` and `Minor`. `Tone` optionally overrides the health-derived presentation with `Good`, `Warn`, `Bad`, `Info` or `Neutral`; it does not replace the host's full `StatusText`. Named badges use the crown, star or lock anatomy. The first two are drawn; tooltips and accessible details retain every meaning. `IsOverlay` marks a spanning relationship. Node and group positions use the existing chart-coordinate overrides. Automatic nodes leave room for positioned nodes; overlapping manual node cores produce a clear error. Preparation does not mutate the source model.
+
+The visual contract is split between `ChartForgeX/Topology/Assets/topology-regions.svg` and `topology-regions.css`. The SVG asset contains editable anatomy and theme-role substitutions, compiled into the shared native scene. The stylesheet owns responsive layout and browser states. Keep `.cfx-topo`, `.cfx-region`, `.cfx-node`, `.cfx-edge`, `.cfx-edge-label`, `.cfx-legend` and `tone-*` class names stable. Literal model text is substituted as data, not interpreted as SVG markup. The rendering library contains no font files; the examples include licensed IBM Plex Sans reference faces for matching browser and native measurements.
+
+The HTML adapter has one visible chart tab stop. Arrow keys choose the nearest node in that direction, Enter selects, and Escape clears the focus dim. Hover and keyboard focus show the full node text, badge meanings and status. Edge hover shows the label and host metadata. Selection emits the existing `cfx-topology-select` event plus `node:select` or `edge:select`, with stable chart/model IDs. No record panel is created. Dispatch `cfx-topology-update-tones` with `{ nodes: [{ id, status, statusText }] }` to change health without moving prepared geometry; reduced-motion preferences disable the color transition. Membership changes require a new render.
+
+Print output uses the light theme and warning/failure dash patterns. `IncludeRegionDetails` adds a hidden nodes/links table to HTML and exposes it under Details when printing. Register the normal topology stylesheet/runtime when using the asset-free fragment API.
+
 ## Shared themes
 
 Topology uses the same immutable `VisualTheme` as charts, grids and other visual models. Reuse one paired theme and select `VisualThemeMode.Light` or `Dark` explicitly for each model. `WithFontFamily(...)` and `Configure(...)` return new theme snapshots; assign the returned value when customizing a shared theme.

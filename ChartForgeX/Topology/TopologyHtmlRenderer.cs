@@ -50,6 +50,7 @@ public sealed partial class TopologyHtmlRenderer {
         var messages = htmlText ?? new TopologyHtmlText();
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = chart.ResolveRenderOptions(options).CloneForRendering();
+        if (chart.LayoutMode == TopologyLayoutMode.Regions) return RenderRegionFragment(chart, options, includeAssets, preparedSvg, preparedWidth, renderSvg);
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
         var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);

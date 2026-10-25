@@ -28,6 +28,8 @@ internal static partial class TopologyLayoutEngine {
         copy.PreparedGroupHeaderParts = null;
         copy.PreparedGroupHeaderLayoutParts = null;
         copy.GroupHeaderLayout = null;
+        copy.PreparedRegionRoutes = null;
+        copy.PreparedRegionPaintPlan = null;
         copy.TextMeasurement = measurement ?? new TextMeasurementContext((copy.ResolvedTheme).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
         if (options != null) {
             options.TextMeasurement = copy.TextMeasurement;
@@ -47,6 +49,10 @@ internal static partial class TopologyLayoutEngine {
         var constrained = copy.Alignments.Count > 0 && copy.LayoutMode == TopologyLayoutMode.Layered;
         var compoundLayout = false;
         switch (copy.LayoutMode) {
+            case TopologyLayoutMode.Regions:
+                var regions = new TopologyRegionLayout(copy, copy.Viewport.Width, options?.IncludeTitle != false && !string.IsNullOrWhiteSpace(copy.Title) ? 86 : 20);
+                copy.Viewport.Height = Math.Max(copy.Viewport.Height, regions.Bottom + 80);
+                return copy;
             case TopologyLayoutMode.GroupGrid:
                 ApplyGroupGrid(copy);
                 break;
