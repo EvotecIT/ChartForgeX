@@ -3,12 +3,14 @@ using System.Xml.Linq;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
 using Xunit;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
 
 [Trait("BrowserSuite", "Compatibility")]
 [Collection(nameof(FontRegistryCollection))]
-public sealed class MermaidCynefinSourceSemanticsTests {
+public sealed class MermaidCynefinSourceSemanticsTests : IDisposable {
+    private const string TabProofFamily = "CFX Cynefin Bounded Tab Proof";
     [Fact]
     public void PinnedStringsRepeatedBlocksAndSelfLoopsRetainExactSourceButUseReferenceFacts() {
         const string source = "cynefin-beta:\r\ncomplex 'old'\r\nclear \"Ready\"\r\ncomplex 'Don\\'t' \"a\\nb\\t\\u1234\"\r\ncomplex --> complex : 'ignored loop'\r\ncomplex --> clear : 'Choose \\\"one\\\"'\r\ntitle \"Quoted  title\" %% tail";
@@ -25,18 +27,27 @@ public sealed class MermaidCynefinSourceSemanticsTests {
             var starts = new List<int> { 0 }; for (var i = 0; i < source.Length; i++) if (source[i] == '\n') starts.Add(i + 1);
             Assert.Equal(statement.Text, source.Substring(starts[statement.Span.Line - 1] + statement.Span.Column - 1, statement.Span.Length));
         }
-        // A semantic roundtrip owns a finite host font; arbitrary installed roots retain their independent wire cap.
+        // This input deliberately retains a tab. Carlito has no tab cmap entry; use an
+        // explicit small proof fallback for that scalar instead of an arbitrary host TTC.
+        var tabBytes=OpenTypeTestFonts.NameKeyed(extraGlyphs:new Dictionary<int,int>{{9,OpenTypeTestFonts.Box}});
+        FontRegistry.Register(TabProofFamily,tabBytes);
+        // A semantic roundtrip owns finite declared fonts; unrelated installed roots keep their wire cap.
         var chart = document.ToTopologyChart(new MermaidTopologyRenderOptions {
-            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family }
+            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family + ", " + TabProofFamily }
         }); Assert.Equal(2, chart.Nodes.Single(node => node.Id == "complex").Details.Count);
         Assert.Single(chart.Edges); Assert.NotNull(chart.Edges[0].PathGeometry);
         Assert.All(chart.Nodes.Where(node => node.Subtitle != null), node => Assert.True(node.SubtitleTextStyle!.Italic));
         Assert.All(chart.Nodes.SelectMany(node => node.Details), detail => Assert.NotNull(detail.BadgeStyle));
         var prepared = chart.Prepare(); TopologyPortableFontObservation.Capture("cynefin-source-semantics", prepared.Visual);
+        var requests=prepared.Visual.CapturedSemanticSnapshot!.Presentation!.ContextFont!.Text!.Requests;
+        var request=Assert.Single(requests,item=>item.Style.Font.Weight==400&&!item.Style.Font.Italic);
+        var tab=Assert.Single(request.Clusters.Decisions,item=>item.Raw.SequenceEqual(new[]{9}));
+        Assert.Equal(TabProofFamily,tab.Face.SelectedFamily);Assert.InRange(tab.Face.Root.CapturedByteLength,1,OwnedFontResources.MaximumRootBytes);
         var portable = VisualArtifactInterchangeEnvelope.FromJson(prepared.Visual.ToArtifact().ToInterchangeJson());
         Assert.Equal(2, portable.Version); var restored = portable.ToTopologyChart();
         Assert.All(restored.Nodes.Where(node => node.Subtitle != null), node => Assert.True(node.SubtitleTextStyle!.Italic));
         Assert.Equal(2, restored.Nodes.Single(node => node.Id == "complex").Details.Count);
+        Assert.Equal(prepared.ToPng(),restored.Prepare().ToPng());
     }
 
     [Fact]
@@ -85,4 +96,5 @@ public sealed class MermaidCynefinSourceSemanticsTests {
         var chart = parsed.Document!.ToTopologyChart(); Assert.Equal("", Assert.Single(chart.Nodes.Single(node => node.Id == "complex").Details).Text);
         Assert.Contains(XDocument.Parse(chart.ToSvg()).Descendants(), item => (string?)item.Attribute("data-cfx-role") == "topology-detail-badge");
     }
+    public void Dispose(){FontRegistry.Clear();_=BrowserProofFonts.Family;}
 }

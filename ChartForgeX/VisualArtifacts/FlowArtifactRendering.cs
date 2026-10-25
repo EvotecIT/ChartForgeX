@@ -63,6 +63,13 @@ public static class FlowArtifactRendering {
         artifact.Subtitle = flow.Subtitle;
         artifact.NaturalSize = new VisualArtifactSize(flow.Width, flow.Height);
         artifact.ExportFormats = flow.ExportFormats;
+        if (flow.PreparedPresentation is {} captured) {
+            // Match the existing topology wrapper policy: carried model facts are the baseline,
+            // while later wrapper edits remain independently authoritative at portable export.
+            captured.ApplyAccessibility(artifact.Accessibility);
+            captured.ApplyAccessibility(artifact.ModelAccessibilitySnapshot);
+            artifact.HasModelAccessibilitySnapshot = true;
+        }
         artifact.Metadata["render.model"] = nameof(FlowArtifact);
         artifact.Metadata["render.previewModel"] = nameof(TopologyChart);
         artifact.Metadata["flow.lanes"] = flow.Lanes.Count.ToString(CultureInfo.InvariantCulture);
