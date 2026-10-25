@@ -74,6 +74,7 @@ internal static class GifPaletteQuantizer {
     public static byte[] Quantize(RgbaImage frame, GifPalette palette, CancellationToken cancellationToken = default) {
         var indexed = new byte[frame.Width * frame.Height];
         var exact = new Dictionary<int, byte>();
+        GifNearestColorIndex? nearest = null;
         var slots = palette.HasTransparency ? palette.TransparentIndex : PaletteSize;
         for (var i = 0; i < slots; i++) {
             var offset = i * 3;
@@ -88,10 +89,11 @@ internal static class GifPaletteQuantizer {
                 continue;
             }
             var r = frame.Pixels[source]; var g = frame.Pixels[source + 1]; var b = frame.Pixels[source + 2];
-            // Never diffuse error across glyph edges. Exact colours bypass the approximate lookup entirely.
+            // Never diffuse error across glyph edges. Source colours already in the palette bypass lookup.
             var key = (r << 16) | (g << 8) | b;
             if (!exact.TryGetValue(key, out var match)) {
-                match = (byte)NearestColorIndex(palette, r, g, b);
+                nearest ??= new GifNearestColorIndex(palette, cancellationToken);
+                match = nearest.Find(r, g, b);
                 if (exact.Count < 65536) exact.Add(key, match);
             }
             indexed[i] = match;
@@ -190,24 +192,6 @@ internal static class GifPaletteQuantizer {
         colors[offset] = (byte)Math.Max(0, Math.Min(255, red / count));
         colors[offset + 1] = (byte)Math.Max(0, Math.Min(255, green / count));
         colors[offset + 2] = (byte)Math.Max(0, Math.Min(255, blue / count));
-    }
-
-    private static int NearestColorIndex(GifPalette palette, double red, double green, double blue) {
-        var best = 0;
-        var bestDistance = double.MaxValue;
-        var colorSlots = palette.HasTransparency ? palette.TransparentIndex : PaletteSize;
-        for (var i = 0; i < colorSlots; i++) {
-            var offset = i * 3;
-            var dr = red - palette.Colors[offset];
-            var dg = green - palette.Colors[offset + 1];
-            var db = blue - palette.Colors[offset + 2];
-            var distance = dr * dr + dg * dg + db * db;
-            if (distance >= bestDistance) continue;
-            bestDistance = distance;
-            best = i;
-        }
-
-        return best;
     }
 
     private static bool IsTransparent(byte alpha) => alpha < 128;
