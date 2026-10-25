@@ -1,7 +1,5 @@
 ﻿$assemblyPath = Get-BenchmarkInput AssemblyPath -Required
-$storiesPath = Get-BenchmarkInput StoriesAssemblyPath -Required
 Add-Type -Path $assemblyPath
-Add-Type -Path $storiesPath
 
 New-BenchmarkSuite 'chartforgex-animation' {
     Set-BenchmarkPolicy -Warmup 1 -Iterations 5 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
@@ -40,6 +38,6 @@ New-BenchmarkSuite 'chartforgex-animation' {
         if ($output) { [IO.File]::WriteAllBytes($output, $run.Bytes) }
     }
     Add-BenchmarkMetric OutputBytes { param($case, $run) $run.Bytes.Length }
-    Add-BenchmarkMetadata AssemblySha256 (Get-FileHash $storiesPath -Algorithm SHA256).Hash
+    Add-BenchmarkMetadata AssemblySha256 (Get-FileHash $assemblyPath -Algorithm SHA256).Hash
     Set-BenchmarkArtifacts Json, Csv, Markdown
 }

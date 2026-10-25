@@ -5,8 +5,8 @@ without changing the palette, nearest-colour result, tie order or encoded bytes.
 
 ## Reproduction
 
-Build `ChartForgeX.Stories` in Release for net8.0 at each revision and retain both
-assemblies (`ChartForgeX.dll` and `ChartForgeX.Stories.dll`) in separate directories.
+Build core `ChartForgeX` in Release for net8.0 and use `ChartForgeX.dll`.
+For historical revisions before the 3.1 move, use that revision's benchmark recipe.
 Use PowerForge's benchmark runner from PSPublishModule 3.0.168:
 
 ```powershell
@@ -14,7 +14,6 @@ Import-Module PSPublishModule
 Invoke-BenchmarkSuite -Path ./Benchmarks/animation.benchmark.ps1 `
     -OutputRoot ./Ignore/Benchmarks/Animation -WarmupCount 1 -IterationCount 3 `
     -Variable @{ AssemblyPath = '/path/to/ChartForgeX.dll'
-                 StoriesAssemblyPath = '/path/to/ChartForgeX.Stories.dll'
                  OutputPath = '/path/to/result.gif'
                  ExpectedSha256 = 'A6407E20839736953266EC3D451238E2E11C12765B81049A40D43E62BCDA3346' }
 ```
