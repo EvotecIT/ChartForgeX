@@ -8,40 +8,40 @@ namespace ChartForgeX.Terminal;
 /// </summary>
 internal sealed partial class ResolvedTerminalStyle {
     /// <summary>Gets or sets the outer page color.</summary>
-    public ChartColor PageBackground { get; set; } = ChartColor.FromHex("#07111F");
+    public ChartColor PageBackground { get; set; } = ChartColor.FromHex("#3A3A3F");
 
     /// <summary>Gets or sets the terminal content color.</summary>
-    public ChartColor Background { get; set; } = ChartColor.FromHex("#0A1322");
+    public ChartColor Background { get; set; } = ChartColor.FromHex("#0C0C0C");
 
     /// <summary>Gets or sets the terminal title-bar color.</summary>
-    public ChartColor HeaderBackground { get; set; } = ChartColor.FromHex("#111D2E");
+    public ChartColor HeaderBackground { get; set; } = ChartColor.FromHex("#1F2A3C");
 
     /// <summary>Gets or sets the frame and divider color.</summary>
-    public ChartColor Border { get; set; } = ChartColor.FromHex("#24354D");
+    public ChartColor Border { get; set; } = ChartColor.FromHex("#4B5060");
 
     /// <summary>Gets or sets the normal output color.</summary>
-    public ChartColor Text { get; set; } = ChartColor.FromHex("#E6EDF7");
+    public ChartColor Text { get; set; } = ChartColor.FromHex("#CCCCCC");
 
     /// <summary>Gets or sets the subdued output color.</summary>
-    public ChartColor Muted { get; set; } = ChartColor.FromHex("#8394AB");
+    public ChartColor Muted { get; set; } = ChartColor.FromHex("#8B8F9A");
 
     /// <summary>Gets or sets the prompt and command accent color.</summary>
-    public ChartColor Accent { get; set; } = ChartColor.FromHex("#67D8F3");
+    public ChartColor Accent { get; set; } = ChartColor.FromHex("#60A5FA");
 
     /// <summary>Gets or sets the success color.</summary>
-    public ChartColor Success { get; set; } = ChartColor.FromHex("#55D6A9");
+    public ChartColor Success { get; set; } = ChartColor.FromHex("#4ADE80");
 
     /// <summary>Gets or sets the warning color.</summary>
-    public ChartColor Warning { get; set; } = ChartColor.FromHex("#F4C76B");
+    public ChartColor Warning { get; set; } = ChartColor.FromHex("#FBBF24");
 
     /// <summary>Gets or sets the error color.</summary>
-    public ChartColor Error { get; set; } = ChartColor.FromHex("#FB7185");
+    public ChartColor Error { get; set; } = ChartColor.FromHex("#F87171");
 
     /// <summary>Gets or sets the cursor color.</summary>
-    public ChartColor Cursor { get; set; } = ChartColor.FromHex("#E6EDF7");
+    public ChartColor Cursor { get; set; } = ChartColor.FromHex("#CCCCCC");
 
     /// <summary>Gets or sets the CSS font-family stack.</summary>
-    public string FontFamily { get; set; } = ChartFontStacks.Mono;
+    public string FontFamily { get; set; } = "'Cascadia Mono', 'Cascadia Code', 'DejaVu Sans Mono', Menlo, Consolas, 'Liberation Mono', 'Courier New', monospace";
 
     /// <summary>Creates the restrained default dark terminal palette.</summary>
     public static ResolvedTerminalStyle Dark() => new();
@@ -59,7 +59,7 @@ internal sealed partial class ResolvedTerminalStyle {
         HeaderBackground = ChartColor.FromHex("#101C30"),
         Border = ChartColor.FromHex("#253A57"),
         Accent = ChartColor.FromHex("#63D6F2"),
-        Success = ChartColor.FromHex("#55D6A9")
+        Success = ChartColor.FromHex("#4ADE80")
     };
 
     /// <summary>Creates the classic Windows PowerShell blue palette.</summary>
@@ -124,17 +124,17 @@ internal sealed partial class ResolvedTerminalStyle {
 
     /// <summary>Creates a light terminal theme suitable for printed documentation.</summary>
     public static ResolvedTerminalStyle Light() => new() {
-        PageBackground = ChartColor.FromHex("#E8EDF4"),
-        Background = ChartColor.FromHex("#F8FAFC"),
-        HeaderBackground = ChartColor.FromHex("#E9EEF5"),
-        Border = ChartColor.FromHex("#C4CEDB"),
-        Text = ChartColor.FromHex("#172033"),
-        Muted = ChartColor.FromHex("#607089"),
-        Accent = ChartColor.FromHex("#0969DA"),
-        Success = ChartColor.FromHex("#18794E"),
-        Warning = ChartColor.FromHex("#9A6700"),
-        Error = ChartColor.FromHex("#CF222E"),
-        Cursor = ChartColor.FromHex("#172033")
+        PageBackground = ChartColor.FromHex("#C9C9CF"),
+        Background = ChartColor.FromHex("#FFFFFF"),
+        HeaderBackground = ChartColor.FromHex("#E5E7EB"),
+        Border = ChartColor.FromHex("#8A8A94"),
+        Text = ChartColor.FromHex("#24292F"),
+        Muted = ChartColor.FromHex("#6B7280"),
+        Accent = ChartColor.FromHex("#2563EB"),
+        Success = ChartColor.FromHex("#15803D"),
+        Warning = ChartColor.FromHex("#B45309"),
+        Error = ChartColor.FromHex("#B91C1C"),
+        Cursor = ChartColor.FromHex("#24292F")
     };
 
     /// <summary>Creates an independent copy of this palette.</summary>

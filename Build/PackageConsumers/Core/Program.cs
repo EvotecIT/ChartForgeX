@@ -11,6 +11,7 @@ using ChartForgeX.Themes;
 internal static partial class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
+        AnimationContainers();
         ThemeSnapshots();
         TypedSeriesLifecycle();
         NumericOwnershipAndWindowDimensions();

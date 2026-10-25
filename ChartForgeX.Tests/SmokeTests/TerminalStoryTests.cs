@@ -125,9 +125,10 @@ internal static partial class SmokeTests {
 
         var wideTranscript = new string('界', 28) + "😀";
         var wideLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Output(wideTranscript));
-        Assert(wideLayout.Lines.Count == 3 &&
+        var wideColumns = (int)Math.Floor((wideLayout.Width - wideLayout.ContentX * 2) / wideLayout.ColumnWidth);
+        Assert(wideLayout.Lines.Count == (int)Math.Ceiling(TerminalStoryLayout.DisplayWidth(wideTranscript) / (double)(wideColumns - wideColumns % 2)) &&
                string.Concat(wideLayout.Lines.Select(line => line.Text)) == wideTranscript &&
-               wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= 28),
+               wideLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= wideColumns),
             "Full-width and emoji transcript content should wrap by rendered display columns without clipping or data loss.");
 
         var proportionalTheme = TerminalThemes.Default();
@@ -151,7 +152,7 @@ internal static partial class SmokeTests {
             .WithFinalPrompt(false)
             .Command("A界", 3);
         var mixedWidthSvg = mixedWidthStory.ToSvg();
-        Assert(mixedWidthSvg.Contains("class=\"cfx-terminal-glyph\" fill=\"#E6EDF7\" style=\"--cfx-glyph-start:", StringComparison.Ordinal) &&
+        Assert(mixedWidthSvg.Contains("class=\"cfx-terminal-glyph\" fill=\"#CCCCCC\" style=\"--cfx-glyph-start:", StringComparison.Ordinal) &&
                mixedWidthSvg.Contains(">A</tspan>", StringComparison.Ordinal) &&
                mixedWidthSvg.Contains(">界</tspan>", StringComparison.Ordinal) &&
                !mixedWidthSvg.Contains("clip-path:inset", StringComparison.Ordinal),
@@ -323,7 +324,7 @@ internal static partial class SmokeTests {
         var maximumWidthWindowsTitle = TerminalStoryLayout.FitTitle(longWindowsTitle, 1800, TerminalWindowStyle.WindowsTerminal);
         Assert(defaultWidthWindowsTitle.EndsWith("…", StringComparison.Ordinal) &&
                defaultWidthWindowsTitle == maximumWidthWindowsTitle &&
-               TerminalTextWidth.Measure(defaultWidthWindowsTitle) * TerminalWindowChrome.TitleFontSize <= TerminalWindowChrome.WindowsTitleAvailableWidth(886),
+               TerminalTextWidth.Measure(defaultWidthWindowsTitle) * 8 <= TerminalWindowChrome.WindowsTitleAvailableWidth(886),
             "Windows Terminal titles should fit the capped tab with the same conservative width policy used for proportional terminal text.");
         var longWindowsTitleStory = TerminalStory.Create()
             .WithWidth(1800)
@@ -352,9 +353,9 @@ internal static partial class SmokeTests {
                !chromeFreeSvg.Contains("data-cfx-role=\"terminal-title\"", StringComparison.Ordinal) &&
                chromeFreeSvg.Contains(">Accessible title</title>", StringComparison.Ordinal),
             "Chrome-free stories should remove visible title-bar controls while preserving the accessible title.");
-        Assert(TerminalStoryLayout.Build(windowsStory).HeaderHeightValue == 50 &&
-               TerminalStoryLayout.Build(story).HeaderHeightValue == 42 &&
-               TerminalStoryLayout.Build(minimalStory).HeaderHeightValue == 38 &&
+        Assert(TerminalStoryLayout.Build(windowsStory).HeaderHeightValue == 32 &&
+               TerminalStoryLayout.Build(story).HeaderHeightValue == 28 &&
+               TerminalStoryLayout.Build(minimalStory).HeaderHeightValue == 28 &&
                TerminalStoryLayout.Build(chromeFreeStory).HeaderHeightValue == 0,
             "Each window style should own its header geometry so transcript content starts below the selected chrome.");
 
@@ -371,7 +372,7 @@ internal static partial class SmokeTests {
             .WithColumns("ColumnOne", "ColumnTwo", "ColumnThree", "ColumnFour", "ColumnFive", "ColumnSix", "ColumnSeven", "ColumnEight")
             .AddRow("abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij", "abcdefghij");
         var narrowLayout = TerminalStoryLayout.Build(TerminalStory.Create().WithWidth(480).WithTypography(24, 30).WithFinalPrompt(false).Table(narrowTable));
-        Assert(narrowLayout.Lines.All(line => line.Text.Length <= 28), "Tables should compact separators and columns enough to remain inside the narrowest supported terminal at maximum font size.");
+        Assert(narrowLayout.Lines.All(line => TerminalStoryLayout.DisplayWidth(line.Text) <= Math.Floor((narrowLayout.Width - narrowLayout.ContentX * 2) / narrowLayout.ColumnWidth)), "Tables should compact separators and columns enough to remain inside the narrowest supported terminal at maximum font size.");
 
         var unicodeTable = TerminalTable.Create()
             .WithColumns("N", "V")

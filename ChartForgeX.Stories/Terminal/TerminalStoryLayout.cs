@@ -7,8 +7,8 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Terminal;
 
 internal sealed class TerminalStoryLayout {
-    private const double HorizontalPadding = 28;
-    private const double VerticalPadding = 24;
+    private const double HorizontalPadding = 20;
+    private const double VerticalPadding = 20;
 
     public int Width { get; }
     public int Height { get; }
@@ -119,7 +119,7 @@ internal sealed class TerminalStoryLayout {
                     var commandText = prompt + Transform(tab, step.Text);
                     var typingDuration = step.DurationSeconds > 0
                         ? step.DurationSeconds
-                        : Math.Max(0.35, Math.Min(4.5, VisibleTextElementCount(step.Text) / story.CharactersPerSecond));
+                        : story.GetCommandDurationSeconds(step.Text);
                     var commandElements = Math.Max(1, VisibleTextElementCount(commandText));
                     var remainingPromptLength = prompt.Length;
                     foreach (var wrappedCommandLine in wrapContent ? Wrap(commandText, maxColumnsByTab[tab.Id]) : new[] { commandText }) {
@@ -329,7 +329,7 @@ internal sealed class TerminalStoryLayout {
     }
 
     private static double MeasureColumnWidth(TerminalTab tab, double fontSize, TrueTypeFont? outlineFont) {
-        var factor = TrueTypeFont.IsMonospaceFamily(tab.ResolvedStyle.FontFamily) ? 0.61 : 1.0;
+        var factor = TrueTypeFont.IsMonospaceFamily(tab.ResolvedStyle.FontFamily) ? 0.6 : 1.0;
         if (outlineFont != null) {
             factor = Math.Max(factor, outlineFont.Measure("W", 1));
             factor = Math.Max(factor, outlineFont.Measure("M", 1));

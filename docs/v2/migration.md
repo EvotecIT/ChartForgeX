@@ -473,7 +473,7 @@ Package separation was introduced in `2.0.0`; the unified authoring contracts us
 | `VisualCanvas`, `ImageComposition`, factual metric/table/list blocks and static `VisualGrid` | Add `ChartForgeX.Visuals`; keep the domain namespaces |
 | `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.WithWatermarks(...)` decorator; semantic `Model` remains available |
 | `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
-| Timed RGBA animation frames | Add `ChartForgeX.Stories` for `RasterAnimationEncoder`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; keep the `ChartForgeX.Raster` namespace and use Core `RgbaImage` inputs |
+| Timed RGBA animation frames | In 3.1, use core `RasterAnimationEncoder`, `RasterAnimationSource`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; the `ChartForgeX.Raster` namespace is unchanged and Stories forwards its 3.0.1 references |
 | `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
 | `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
 | `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |
@@ -543,7 +543,7 @@ Topology convenience SVG exports retain `TopologyRenderOptions.UseResponsiveSvg`
 | VisualStory, TerminalStory, motion timelines, topology route/scenario animation and GIF/APNG output | `ChartForgeX.Stories` → core |
 | Real browser interaction | Existing `ChartForgeX.Interactivity` / `.Html` and the host |
 
-Visuals and Stories are peers. Stories consumes common renderable/static inputs; Visuals must not depend on Stories to render a still canvas. Core must not switch over optional concrete types, reference watermark options, or load animation assemblies for a chart. Static GIF input/first-frame decoding remains a deliberately retained core input capability; GIF encoding, including single-frame output, belongs to Stories.
+Visuals and Stories are peers. Stories consumes common renderable/static inputs; Visuals must not depend on Stories to render a still canvas. Core must not switch over optional concrete types, reference watermark options, or load animation assemblies for a chart. Core owns static GIF input/first-frame decoding and, starting with 3.1, GIF/APNG encoding of timed RGBA frames. Stories owns authored animation and its story-to-GIF/APNG extensions.
 
 Do not move genuine diagrams solely because their current names end in `Block`. Wardley, Venn, packet, git graph, fishbone and block-layout diagrams remain core. Plain factual table layout belongs to Visuals; the neutral tabular semantic/interchange contract remains available to core adapters and markup parsers.
 
