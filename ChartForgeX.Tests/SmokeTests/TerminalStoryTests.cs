@@ -6,6 +6,7 @@ using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.Terminal;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
 
@@ -325,7 +326,7 @@ internal static partial class SmokeTests {
         Assert(defaultWidthWindowsTitle.EndsWith("…", StringComparison.Ordinal) &&
                defaultWidthWindowsTitle == maximumWidthWindowsTitle &&
                TerminalTextWidth.Measure(defaultWidthWindowsTitle) * 8 <= TerminalWindowChrome.WindowsTitleAvailableWidth(886),
-            "Windows Terminal titles should fit the capped tab with the same conservative width policy used for proportional terminal text.");
+            "Windows Terminal titles should keep the same cell-budget ceiling at capped tab widths.");
         var longWindowsTitleStory = TerminalStory.Create()
             .WithWidth(1800)
             .WithTheme(proportionalTheme)
@@ -333,9 +334,15 @@ internal static partial class SmokeTests {
             .WithTitle(longWindowsTitle)
             .Output("ready");
         var longWindowsTitleSvg = longWindowsTitleStory.ToSvg();
-        Assert(longWindowsTitleSvg.Contains(">" + maximumWidthWindowsTitle + "</text>", StringComparison.Ordinal) &&
+        var renderedTitle = System.Xml.Linq.XDocument.Parse(longWindowsTitleSvg).Descendants()
+            .Single(element => (string?)element.Attribute("data-cfx-role") == "terminal-tab-title").Value;
+        var titleMetrics = TextLayoutEngine.Measure(renderedTitle, new TextStyle {
+            Font = new FontSpec { Family = longWindowsTitleStory.ResolvedStyle.FontFamily }, FontSize = TerminalWindowChrome.TitleFontSize
+        });
+        Assert(renderedTitle.EndsWith("…", StringComparison.Ordinal) &&
+               titleMetrics.Width <= TerminalWindowChrome.WindowsTitleAvailableWidth(1800) &&
                longWindowsTitleSvg.Contains(">" + longWindowsTitle + "</title>", StringComparison.Ordinal),
-            "Windows Terminal rendering should keep the fitted tab title and the complete accessible title at maximum width.");
+            "Windows Terminal rendering should fit the configured face and keep the complete accessible title at maximum width.");
         Assert(longWindowsTitleStory.ToPng().Length > 8, "Windows Terminal raster rendering should preserve the capped-tab title fit at maximum width.");
 
         var minimalStory = TerminalStory.Create().WithWindowStyle(TerminalWindowStyle.Minimal).WithTitle("Portable shell").Output("ready");

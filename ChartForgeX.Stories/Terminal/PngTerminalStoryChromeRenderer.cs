@@ -63,7 +63,8 @@ internal static class PngTerminalStoryChromeRenderer {
             canvas.FillRoundedRect(tabX, 12, tabWidth, 28, 6, theme.HeaderBackground);
             if (tabOpacity > 0) canvas.FillRoundedRect(tabX, 12, tabWidth, 28, 6, WithOpacity(tab.ResolvedStyle.Background, tabOpacity));
             DrawTabIcon(canvas, tab, tabX + 12, 17);
-            var title = TerminalPngTextPreserver.Preserve(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount), tabFont);
+            var title = TerminalWindowChrome.FitTabTitle(TerminalPngTextPreserver.Preserve(tab.Title, tabFont), layout.Width, tabCount,
+                value => TerminalPngTextPreserver.Measure(value, canvas, TerminalWindowChrome.TitleFontSize, tabFont));
             TerminalPngTextPreserver.Draw(canvas, tabX + 40, 18, title, theme.Text, TerminalWindowChrome.TitleFontSize, tabFont);
             DrawCross(canvas, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 26, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted);
         }
@@ -90,7 +91,8 @@ internal static class PngTerminalStoryChromeRenderer {
             var tabOpacity = layout.TabOpacity(renderedTab.Tab.Id, elapsedSeconds);
             if (tabOpacity <= 0) continue;
             var tabFont = fonts.Outline(renderedTab.Tab);
-            var title = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(renderedTab.Tab.Title, tabFont), layout.Width, story.WindowStyle);
+            var title = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(renderedTab.Tab.Title, tabFont), layout.Width, story.WindowStyle,
+                value => TerminalPngTextPreserver.Measure(value, canvas, TerminalWindowChrome.TitleFontSize, tabFont));
             var titleX = x;
             if (centered) {
                 var width = TerminalPngTextPreserver.Measure(title, canvas, TerminalWindowChrome.TitleFontSize, tabFont);

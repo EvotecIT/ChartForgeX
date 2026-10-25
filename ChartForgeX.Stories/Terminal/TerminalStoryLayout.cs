@@ -304,7 +304,8 @@ internal sealed class TerminalStoryLayout {
         return string.Join(separator, cells);
     }
 
-    internal static string FitTitle(string value, int width, TerminalWindowStyle style) => TerminalWindowChrome.FitTitle(value, width, style);
+    internal static string FitTitle(string value, int width, TerminalWindowStyle style, Func<string, double>? measure = null) =>
+        TerminalWindowChrome.FitTitle(value, width, style, measure);
 
     internal static int TextElementCount(string value) {
         return TerminalTextWidth.ElementCount(value);

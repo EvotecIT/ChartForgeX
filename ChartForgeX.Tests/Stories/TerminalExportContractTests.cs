@@ -1,11 +1,54 @@
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Terminal;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
+[Collection(nameof(FontRegistryCollection))]
 public sealed class TerminalExportContractTests {
+    [Theory]
+    [InlineData(TerminalWindowStyle.MacOS, 84, 396)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal, 56, 234)]
+    [InlineData(TerminalWindowStyle.Linux, 56, 424)]
+    [InlineData(TerminalWindowStyle.Minimal, 20, 428)]
+    public void ConfiguredProportionalTitlesStayInsideTheControlReservations(TerminalWindowStyle style, int left, int right) {
+        try {
+            var family = BrowserProofFonts.Family;
+            var theme = TerminalThemes.Default().Configure(builder =>
+                builder.Typography = new VisualTypography(monospaceFamily: family));
+            TerminalStory CreateStory(string caption) => TerminalStory.Create().WithWidth(480).WithWindowStyle(style).WithTheme(theme)
+                .WithPngOutputScale(1).WithFinalPrompt(false).WithTitle(caption).Output("ready");
+            var story = CreateStory(new string('W', 60));
+            var svg = System.Xml.Linq.XDocument.Parse(story.ToSvg());
+            var title = Assert.Single(svg.Descendants(), element =>
+                (string?)element.Attribute("data-cfx-role") is "terminal-title" or "terminal-tab-title");
+            var textStyle = new TextStyle { Font = new FontSpec { Family = family }, FontSize = 13 };
+            var measured = TextLayoutEngine.Measure(title.Value, textStyle).Width;
+            var x = (double)title.Attribute("x")!;
+            var titleLeft = (string?)title.Attribute("text-anchor") == "middle" ? x - measured / 2 : x;
+            Assert.True(titleLeft >= left - 0.001 && titleLeft + measured <= right + 0.001,
+                $"Title occupies {titleLeft}–{titleLeft + measured}; reserved room is {left}–{right}.");
+
+            var longTitle = RasterImageDecoder.Decode(story.ToPng());
+            var shortTitle = RasterImageDecoder.Decode(CreateStory("i").ToPng());
+            Assert.Equal(longTitle.Width, shortTitle.Width);
+            Assert.Equal(longTitle.Height, shortTitle.Height);
+            var changed = 0;
+            for (var y = 8; y < 8 + TerminalWindowChrome.HeaderHeight(style); y++) {
+                for (var pixelX = 0; pixelX < longTitle.Width; pixelX++) {
+                    var at = (y * longTitle.Width + pixelX) * 4;
+                    if (longTitle.Pixels.AsSpan(at, 4).SequenceEqual(shortTitle.Pixels.AsSpan(at, 4))) continue;
+                    changed++;
+                    Assert.InRange(pixelX, left - 1, right);
+                }
+            }
+            Assert.True(changed > 0, "The title comparison must contain rendered glyphs.");
+        } finally { FontRegistry.Clear(); }
+    }
+
     [Theory]
     [InlineData(TerminalWindowStyle.MacOS, VisualThemeMode.Dark)]
     [InlineData(TerminalWindowStyle.MacOS, VisualThemeMode.Light)]

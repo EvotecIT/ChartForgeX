@@ -157,6 +157,12 @@ the actual title run for centring. Stories reserves 168 px for macOS controls,
 112 px for Linux before dividing the remaining width by 8.
 Windows title capacity is `floor(max(8,tabWidth-72)/8)`. Truncate on text-element
 boundaries with `…` (U+2026), not three full stops.
+The 8 px budget is an upper bound on text-element capacity. Measure the fitted
+run in its configured 13 px face and shorten it further if its actual advance
+exceeds the available width. PNG uses its selected raster face, including an
+explicit font override; SVG uses its configured family. This also protects
+proportional font overrides. Keep whole text elements and the ellipsis; omit the
+title if even the ellipsis cannot fit. Do not stretch the glyphs to fit.
 
 ### macOS
 

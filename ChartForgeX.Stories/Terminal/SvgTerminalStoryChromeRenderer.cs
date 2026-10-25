@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using ChartForgeX.Svg;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Terminal;
 
@@ -75,7 +76,7 @@ internal static class SvgTerminalStoryChromeRenderer {
                 .Attribute("font-family", tab.ResolvedStyle.FontFamily)
                 .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
                 .Attribute("font-weight", 400)
-                .Text(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount))
+                .Text(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount, value => MeasureTitle(value, tab.ResolvedStyle.FontFamily)))
                 .EndElement().Line();
             WriteCross(writer, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 26, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted.ToCss(), "terminal-tab-close");
             writer.EndElement().Line();
@@ -117,10 +118,13 @@ internal static class SvgTerminalStoryChromeRenderer {
                 .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
                 .Attribute("font-weight", 400)
                 .Attribute("text-anchor", anchor)
-                .Text(TerminalStoryLayout.FitTitle(tab.Title, layout.Width, story.WindowStyle))
+                .Text(TerminalStoryLayout.FitTitle(tab.Title, layout.Width, story.WindowStyle, value => MeasureTitle(value, tab.ResolvedStyle.FontFamily)))
                 .EndElement().Line();
         }
     }
+
+    private static double MeasureTitle(string value, string family) => TextLayoutEngine.Measure(value,
+        new TextStyle { Font = new FontSpec { Family = family }, FontSize = TerminalWindowChrome.TitleFontSize }).Width;
 
     private static void WriteTabIcon(SvgMarkupWriter writer, TerminalTab tab, double x, double y) {
         if (tab.Icon == TerminalTabIcon.None) return;
