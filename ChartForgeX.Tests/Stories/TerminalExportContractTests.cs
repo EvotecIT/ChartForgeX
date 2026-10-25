@@ -7,6 +7,25 @@ namespace ChartForgeX.Tests;
 
 public sealed class TerminalExportContractTests {
     [Theory]
+    [InlineData(TerminalWindowStyle.MacOS, VisualThemeMode.Dark)]
+    [InlineData(TerminalWindowStyle.MacOS, VisualThemeMode.Light)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal, VisualThemeMode.Dark)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal, VisualThemeMode.Light)]
+    [InlineData(TerminalWindowStyle.Linux, VisualThemeMode.Dark)]
+    [InlineData(TerminalWindowStyle.Linux, VisualThemeMode.Light)]
+    public void SvgChromeTitlesUseTheReviewedRegularPngTypography(TerminalWindowStyle style, VisualThemeMode mode) {
+        var story = TerminalStory.Create().WithWindowStyle(style).WithThemeMode(mode)
+            .WithTitle("Terminal export").WithFinalPrompt(false).Output("ready");
+        var document = System.Xml.Linq.XDocument.Parse(story.ToSvg());
+        var title = Assert.Single(document.Descendants(), element =>
+            (string?)element.Attribute("data-cfx-role") is "terminal-title" or "terminal-tab-title");
+        Assert.Equal("13", (string?)title.Attribute("font-size"));
+        Assert.Equal("400", (string?)title.Attribute("font-weight"));
+        Assert.Equal((style == TerminalWindowStyle.WindowsTerminal ? story.ResolvedStyle.Text : story.ResolvedStyle.Muted).ToCss(),
+            (string?)title.Attribute("fill"));
+    }
+
+    [Theory]
     [InlineData(TerminalStoryPlaybackSpeed.Slow, 28, .6, .14, 2)]
     [InlineData(TerminalStoryPlaybackSpeed.Normal, 42, .35, .08, 1.2)]
     [InlineData(TerminalStoryPlaybackSpeed.Fast, 72, .15, .04, .55)]

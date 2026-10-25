@@ -74,7 +74,7 @@ internal static class SvgTerminalStoryChromeRenderer {
                 .Attribute("fill", theme.Text.ToCss())
                 .Attribute("font-family", tab.ResolvedStyle.FontFamily)
                 .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
-                .Attribute("font-weight", 600)
+                .Attribute("font-weight", 400)
                 .Text(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount))
                 .EndElement().Line();
             WriteCross(writer, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 26, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted.ToCss(), "terminal-tab-close");
@@ -115,7 +115,7 @@ internal static class SvgTerminalStoryChromeRenderer {
                 .Attribute("fill", story.ResolvedStyle.Muted.ToCss())
                 .Attribute("font-family", tab.ResolvedStyle.FontFamily)
                 .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
-                .Attribute("font-weight", 600)
+                .Attribute("font-weight", 400)
                 .Attribute("text-anchor", anchor)
                 .Text(TerminalStoryLayout.FitTitle(tab.Title, layout.Width, story.WindowStyle))
                 .EndElement().Line();
