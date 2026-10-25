@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free static canvas, image composition, factual tiles, tables, lists and watermark decoration over ChartForgeX.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>ChartForgeX 3.0.1 adds offline responsive chart layouts, integer axis ticks, configurable bar widths and topology accent controls. See the consumer migration guide for 3.0 API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.1.0 adds core GIF/APNG encoding and aligned terminal story exports while preserving existing Stories encoder references.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>

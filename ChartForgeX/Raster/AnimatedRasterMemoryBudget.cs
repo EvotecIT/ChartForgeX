@@ -21,15 +21,15 @@ internal static class AnimatedRasterMemoryBudget {
         var pixelCount = checked(width * height);
         switch (format) {
             case AnimatedRasterFormat.Gif:
-                // The histogram and palette sample list coexist during quantization;
-                // row error buffers also scale with width, independently of pixel count.
+                // The histogram, palette samples and bounded exact-colour caches coexist during quantization.
+                // Keep conservative scratch headroom in addition to the retained frame buffers.
                 return checked(
                     ArrayBytes(pixelCount) * frameCount +
                     CollectionBytes(frameCount, GifIndexedFrameBytes) +
                     ArrayBytes(pixelCount) * 2 +
                     ArrayBytes(GifCompressedFrameUpperBound(pixelCount)) * 3 +
                     width * 48 +
-                    8L * 1024 * 1024);
+                    16L * 1024 * 1024);
             case AnimatedRasterFormat.Apng:
                 return checked(
                     ApngWorkingBytes(width, height) +

@@ -148,12 +148,12 @@ public sealed class StoryDesktopAppearanceTests {
         var image = PngReader.Decode(terminal.ToPng());
         Assert.Equal(480, image.Width);
         // Use the SVG control bounds to locate independent PNG title-bar ink.
-        var maximize = Roles(document, "terminal-window-maximize").Single();
-        var left = (int)Math.Floor((double)maximize.Attribute("x")!) - 1;
-        var top = (int)Math.Floor((double)maximize.Attribute("y")!) - 1;
-        var right = left + (int)Math.Ceiling((double)maximize.Attribute("width")!) + 2;
-        var bottom = top + (int)Math.Ceiling((double)maximize.Attribute("height")!) + 2;
-        var ink = terminal.Theme.Resolve(terminal.ThemeMode).Foreground;
+        var closeRing = Roles(document, "terminal-window-close-ring").Single();
+        var left = (int)Math.Floor((double)closeRing.Attribute("cx")! - (double)closeRing.Attribute("r")!) - 1;
+        var top = (int)Math.Floor((double)closeRing.Attribute("cy")! - (double)closeRing.Attribute("r")!) - 1;
+        var right = left + (int)Math.Ceiling((double)closeRing.Attribute("r")! * 2) + 2;
+        var bottom = top + (int)Math.Ceiling((double)closeRing.Attribute("r")! * 2) + 2;
+        var ink = terminal.Theme.Resolve(terminal.ThemeMode).MutedForeground;
         var controlPixels = 0;
         for (var y = top; y <= bottom; y++)
             for (var x = left; x <= right; x++) {

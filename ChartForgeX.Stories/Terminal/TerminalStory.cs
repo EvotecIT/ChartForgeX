@@ -174,7 +174,7 @@ public sealed partial class TerminalStory {
     public double FontSize { get; private set; } = 14;
 
     /// <summary>Gets the terminal line height.</summary>
-    public double LineHeight { get; private set; } = 22;
+    public double LineHeight { get; private set; } = 16.8;
 
     /// <summary>Gets the initial animation delay.</summary>
     public double InitialDelaySeconds { get; private set; } = 0.35;
@@ -247,7 +247,7 @@ public sealed partial class TerminalStory {
     /// <summary>Sets terminal typography.</summary>
     public TerminalStory WithTypography(double fontSize, double lineHeight) {
         FiniteRange(fontSize, 10, 24, nameof(fontSize));
-        FiniteRange(lineHeight, fontSize + 3, 40, nameof(lineHeight));
+        FiniteRange(lineHeight, fontSize * 0.8, 40, nameof(lineHeight));
         FontSize = fontSize;
         LineHeight = lineHeight;
         return this;
@@ -290,6 +290,13 @@ public sealed partial class TerminalStory {
                 throw new ArgumentOutOfRangeException(nameof(speed));
         }
         return this;
+    }
+
+    /// <summary>Calculates automatic typing time: visible text elements divided by characters per second, clamped to 0.35–4.5 seconds.</summary>
+    /// <remarks>The prompt is excluded. An explicit positive duration passed to Command overrides this calculation.</remarks>
+    public double GetCommandDurationSeconds(string command) {
+        if (command == null) throw new ArgumentNullException(nameof(command));
+        return Math.Max(0.35, Math.Min(4.5, TerminalStoryLayout.VisibleTextElementCount(command) / CharactersPerSecond));
     }
 
     /// <summary>Sets the minimum reading time after new content appears and before the active tab changes.</summary>

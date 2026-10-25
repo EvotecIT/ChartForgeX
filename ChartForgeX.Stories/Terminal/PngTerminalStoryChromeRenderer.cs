@@ -28,22 +28,25 @@ internal static class PngTerminalStoryChromeRenderer {
                 DrawWindowsTerminal(canvas, story, layout, fonts, elapsedSeconds);
                 break;
             case TerminalWindowStyle.Linux:
-                DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, layout.Width / 2d, 19, true);
+                DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, layout.Width / 2d, 8 + layout.HeaderHeightValue / 2 - TerminalWindowChrome.TitleFontSize / 2, true);
                 DrawWindowControls(canvas, story, layout);
                 break;
             case TerminalWindowStyle.Minimal:
-                DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, 28, 19, false);
+                DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, 20, 15, false);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(story.WindowStyle));
         }
     }
 
+    private static ChartColor TrafficLight(TerminalStory story, string light, string dark) =>
+        ChartColor.FromHex(story.Tabs[0].ThemeMode == ChartForgeX.Themes.VisualThemeMode.Light ? light : dark);
+
     private static void DrawMacOS(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds) {
-        canvas.DrawCircle(29, 29, 5.5, ChartColor.FromHex("#FF5F57"));
-        canvas.DrawCircle(49, 29, 5.5, ChartColor.FromHex("#FEBC2E"));
-        canvas.DrawCircle(69, 29, 5.5, ChartColor.FromHex("#28C840"));
-        DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, layout.Width / 2d, 19, true);
+        canvas.DrawCircle(26, 22, 6, TrafficLight(story, "#FF5F57", "#CE534C"));
+        canvas.DrawCircle(46, 22, 6, TrafficLight(story, "#FEBC2E", "#C59A2A"));
+        canvas.DrawCircle(66, 22, 6, TrafficLight(story, "#28C840", "#26A443"));
+        DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, layout.Width / 2d, 8 + layout.HeaderHeightValue / 2 - TerminalWindowChrome.TitleFontSize / 2, true);
     }
 
     private static void DrawWindowsTerminal(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds) {
@@ -57,24 +60,30 @@ internal static class PngTerminalStoryChromeRenderer {
             var tabX = TerminalWindowChrome.WindowsTabX(layout.Width, tabCount, index);
             var tabOpacity = layout.TabOpacity(tab.Id, elapsedSeconds);
             var tabFont = fonts.Outline(tab);
-            canvas.FillRoundedRect(tabX, 13, tabWidth, 37, 9, theme.HeaderBackground);
-            if (tabOpacity > 0) canvas.FillRoundedRect(tabX, 13, tabWidth, 37, 9, WithOpacity(tab.ResolvedStyle.Background, tabOpacity));
-            DrawTabIcon(canvas, tab, tabX + 12, 22);
-            var title = TerminalPngTextPreserver.Preserve(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount), tabFont);
-            TerminalPngTextPreserver.Draw(canvas, tabX + 40, 23, title, theme.Text, TerminalWindowChrome.TitleFontSize, tabFont);
-            DrawCross(canvas, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 31, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted);
+            canvas.FillRoundedRect(tabX, 12, tabWidth, 28, 6, theme.HeaderBackground);
+            if (tabOpacity > 0) canvas.FillRoundedRect(tabX, 12, tabWidth, 28, 6, WithOpacity(tab.ResolvedStyle.Background, tabOpacity));
+            DrawTabIcon(canvas, tab, tabX + 12, 17);
+            var title = TerminalWindowChrome.FitTabTitle(TerminalPngTextPreserver.Preserve(tab.Title, tabFont), layout.Width, tabCount,
+                value => TerminalPngTextPreserver.Measure(value, canvas, TerminalWindowChrome.TitleFontSize, tabFont));
+            TerminalPngTextPreserver.Draw(canvas, tabX + 40, 18, title, theme.Text, TerminalWindowChrome.TitleFontSize, tabFont);
+            DrawCross(canvas, TerminalWindowChrome.WindowsTabCloseX(layout.Width, tabCount, index), 26, TerminalWindowChrome.WindowsTabCloseRadius, theme.Muted);
         }
-        DrawPlus(canvas, tabRight + 25, 31, theme.Muted);
-        canvas.DrawLine(tabRight + 52, 28, tabRight + 56, 32, theme.Muted, 1.5);
-        canvas.DrawLine(tabRight + 56, 32, tabRight + 60, 28, theme.Muted, 1.5);
+        DrawPlus(canvas, tabRight + 25, 26, theme.Muted);
+        canvas.DrawLine(tabRight + 52, 23, tabRight + 56, 27, theme.Muted, 1.5);
+        canvas.DrawLine(tabRight + 56, 27, tabRight + 60, 23, theme.Muted, 1.5);
         DrawWindowControls(canvas, story, layout);
     }
 
     private static void DrawWindowControls(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout) {
         var theme = story.ResolvedStyle;
-        canvas.DrawLine(layout.Width - 106, 31, layout.Width - 94, 31, theme.Text, 1.3);
-        canvas.StrokeRect(layout.Width - 66, 25, 12, 12, theme.Text, 1.3);
-        DrawCross(canvas, layout.Width - 25, 31, 6, theme.Text);
+        if (story.WindowStyle == TerminalWindowStyle.Linux) {
+            canvas.DrawCircleOutline(layout.Width - 30, 26, 11, theme.Muted, 1.2);
+            DrawCross(canvas, layout.Width - 30, 26, 4, theme.Muted);
+            return;
+        }
+        canvas.DrawLine(layout.Width - 106, 26, layout.Width - 94, 26, theme.Text, 1.3);
+        canvas.StrokeRect(layout.Width - 66, 21, 12, 12, theme.Text, 1.3);
+        DrawCross(canvas, layout.Width - 25, 26, 6, theme.Text);
     }
 
     private static void DrawActiveTitles(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds, double x, double y, bool centered) {
@@ -82,7 +91,8 @@ internal static class PngTerminalStoryChromeRenderer {
             var tabOpacity = layout.TabOpacity(renderedTab.Tab.Id, elapsedSeconds);
             if (tabOpacity <= 0) continue;
             var tabFont = fonts.Outline(renderedTab.Tab);
-            var title = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(renderedTab.Tab.Title, tabFont), layout.Width, story.WindowStyle);
+            var title = TerminalStoryLayout.FitTitle(TerminalPngTextPreserver.Preserve(renderedTab.Tab.Title, tabFont), layout.Width, story.WindowStyle,
+                value => TerminalPngTextPreserver.Measure(value, canvas, TerminalWindowChrome.TitleFontSize, tabFont));
             var titleX = x;
             if (centered) {
                 var width = TerminalPngTextPreserver.Measure(title, canvas, TerminalWindowChrome.TitleFontSize, tabFont);

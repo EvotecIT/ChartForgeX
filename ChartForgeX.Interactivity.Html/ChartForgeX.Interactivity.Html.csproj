@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>ChartForgeX 3.0.1 adds offline responsive chart layouts, integer axis ticks, configurable bar widths and topology accent controls. See the consumer migration guide for 3.0 API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.1.0 adds core GIF/APNG encoding and aligned terminal story exports while preserving existing Stories encoder references.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

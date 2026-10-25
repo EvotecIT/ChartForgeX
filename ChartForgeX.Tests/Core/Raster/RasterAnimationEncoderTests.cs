@@ -5,7 +5,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-public sealed class RasterAnimationEncoderTests {
+public sealed partial class RasterAnimationEncoderTests {
     [Fact]
     public void GifReadabilityUsesContainerDurationsAcrossPreparedExportRoutes() {
         var story = VisualStory.Create("Rounded display clock").WithSize(480, 320);
@@ -35,7 +35,7 @@ public sealed class RasterAnimationEncoderTests {
         var image = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
         var frames = new[] {
             new RasterAnimationFrame(image, TimeSpan.FromMilliseconds(milliseconds)),
-            new RasterAnimationFrame(image, TimeSpan.FromMilliseconds(106))
+            new RasterAnimationFrame(new RgbaImage(1, 1, new byte[] { 0, 255, 0, 255 }), TimeSpan.FromMilliseconds(106))
         };
         var bytes = RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif);
         Assert.Equal(new[] { 10d, 110d }, ReadControls(bytes, RasterAnimationFormat.Gif).Durations);
@@ -56,7 +56,8 @@ public sealed class RasterAnimationEncoderTests {
         var bytes = RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif);
         var controls = ReadControls(bytes, RasterAnimationFormat.Gif);
         Assert.Equal(10_000, controls.Durations.Sum());
-        Assert.Equal(0, controls.Durations[20]);
+        Assert.Equal(4, controls.Durations.Count);
+        Assert.Equal(0, controls.Durations[1]);
         Assert.Equal(0, controls.Durations[^1]);
         var source = new RasterAnimationSource(1, 1, frames.Count, (index, _) => frames[index]);
         Assert.Equal(bytes, RasterAnimationEncoder.Encode(source, RasterAnimationFormat.Gif));
@@ -83,7 +84,9 @@ public sealed class RasterAnimationEncoderTests {
     [InlineData(RasterAnimationFormat.Apng)]
     public void FramesRetainIndividualDurationsAndFinitePlayback(RasterAnimationFormat format) {
         var frames = new[] {
-            Frame(2, 2, 135), Frame(2, 2, 250), Frame(2, 2, 470)
+            Frame(2, 2, 135),
+            new RasterAnimationFrame(new RgbaImage(2, 2, Enumerable.Repeat(new byte[] { 0, 255, 0, 255 }, 4).SelectMany(pixel => pixel).ToArray()), TimeSpan.FromMilliseconds(250)),
+            Frame(2, 2, 470)
         };
         var bytes = RasterAnimationEncoder.Encode(frames, format, new RasterAnimationOptions { PlayCount = 3 });
         var controls = ReadControls(bytes, format);
@@ -196,7 +199,10 @@ public sealed class RasterAnimationEncoderTests {
             var marker = bytes[position++];
             if (marker == 0x21) {
                 var extension = bytes[position++];
-                if (extension == 0xF9) result.Durations.Add(ReadLittle16(bytes, position + 2) * 10d);
+                if (extension == 0xF9) {
+                    result.Durations.Add(ReadLittle16(bytes, position + 2) * 10d);
+                    result.PackedControls.Add(bytes[position + 1]);
+                }
                 if (extension == 0xFF && Encoding.ASCII.GetString(bytes, position + 1, bytes[position]) == "NETSCAPE2.0") {
                     result.ContainerPlayCount = ReadLittle16(bytes, position + bytes[position] + 3);
                 }
@@ -219,6 +225,7 @@ public sealed class RasterAnimationEncoderTests {
 
     private sealed class Controls {
         internal List<double> Durations { get; } = new();
+        internal List<int> PackedControls { get; } = new();
         internal int? ContainerPlayCount { get; set; }
     }
 

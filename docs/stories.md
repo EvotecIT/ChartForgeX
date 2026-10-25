@@ -45,6 +45,14 @@ prepared.WriteAnimation(gif, RasterAnimationFormat.Gif, frames);
 
 `VisualStoryPlaybackOptions` controls transitions, the final hold and total plays. A play count of zero repeats indefinitely; one plays once. `VisualStoryFrameOptions` controls cadence, pixel scale and the explicit frame budget. Frame durations sum to one play in .NET ticks. GIF rounds cumulative boundaries to 10 milliseconds to avoid drift at rates such as six frames per second, and validates chapter readability on that display clock. GIF accepts up to 50 frames per second and requires a final delay of at least 20 milliseconds; increase the hold or change cadence when the rounded remainder is shorter. APNG supports up to 60 frames per second and retains fractions within its 16-bit timing precision. Each chapter needs a sample at least half opaque, including its incoming cross-fade, and an opacity-weighted display duration of at least one sampling interval, capped by its authored duration. A cadence that misses this visibility or reveals the final chapter before its boundary fails before producing frames. Default SVG and HTML sampling starts at six frames per second, increases cadence for short chapters, or lowers it for longer plays, while staying within 600 frames. If no candidate keeps every chapter readable within that limit, export fails before embedding frames and requires explicit sampling options. Supplied options retain their requested cadence and frame budget.
 
+GIF keeps a shared palette when it fits, and uses a lossless local palette for
+individual frames with at most 256 colours (255 when the animation uses transparency). Richer images
+reserve common source colours before quantisation. Nearest-colour mapping has no
+error diffusion, keeping flat fills and glyph edges free from dither speckles;
+gradients can show bands. Opaque changes use cropped rectangles with retained
+disposal. Identical positive-delay screens are merged up to GIF's delay limit;
+zero-delay boundaries remain explicit. LZW uses the full 12-bit dictionary.
+
 The convenience methods `story.ToSvg()`, `ToPng()`, `ToGif()` and `ToApng()` use this engine. `ToSvg()` produces animation; `prepared.ToSvg()` produces a static frame. Existing `VisualStoryAnimationOptions` configures convenience GIF/APNG exports. Prepare once when several outputs must share custom timing.
 
 For a longer presentation, set the frame budget explicitly. For example, a ten-minute story with a 1.5-second final hold needs 1,203 frames at two frames per second:
@@ -150,3 +158,5 @@ File.WriteAllText("player.html", page);
 The player lists every declared chapter and seeks to its first sample at least half opaque. It starts paused, uses standard keyboard-accessible controls and pauses when the page becomes hidden. Static animation needs no script and shows its completed poster under reduced motion or print. The adapter accepts bounded, self-contained sampled story SVG and rejects external image references and active markup.
 
 Run the examples with `dotnet run --project ChartForgeX.Examples -- --story-playback-only --output ./story-output`. They show a source typo, build error, selection and correction, successful output and a real chart in all three aspect ratios. The error transcript is authored; the example does not execute the displayed source. MP4 encoding and platform uploads are outside these exports.
+
+See [terminal appearance and playback calculations](terminal-export-spec.md) for the shared export reference.

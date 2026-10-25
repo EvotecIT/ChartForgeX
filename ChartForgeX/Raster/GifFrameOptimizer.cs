@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace ChartForgeX.Raster;
 
@@ -27,25 +25,21 @@ internal readonly struct GifIndexedFrame {
 }
 
 internal static class GifFrameOptimizer {
-    public static IReadOnlyList<GifIndexedFrame> BuildFrames(IReadOnlyList<RgbaImage> frames, GifPalette palette, CancellationToken cancellationToken = default) {
-        if (frames == null) throw new ArgumentNullException(nameof(frames));
-        if (palette == null) throw new ArgumentNullException(nameof(palette));
-        var indexed = new List<GifIndexedFrame>(frames.Count);
-        byte[]? previous = null;
-        for (var i = 0; i < frames.Count; i++) {
-            cancellationToken.ThrowIfCancellationRequested();
-            var current = GifPaletteQuantizer.Quantize(frames[i], palette, cancellationToken);
-            indexed.Add(palette.HasTransparency || i == 0 || previous == null ? FullFrame(frames[i], current) : DeltaFrame(frames[i], current, previous));
-            previous = current;
+    internal static bool SameColor(byte current, byte previous, GifPalette palette, GifPalette previousPalette) {
+        if (ReferenceEquals(palette, previousPalette)) return current == previous;
+        var transparent = palette.HasTransparency && current == palette.TransparentIndex;
+        var wasTransparent = previousPalette.HasTransparency && previous == previousPalette.TransparentIndex;
+        if (transparent || wasTransparent) return transparent == wasTransparent;
+        for (var channel = 0; channel < 3; channel++) {
+            if (palette.Colors[current * 3 + channel] != previousPalette.Colors[previous * 3 + channel]) return false;
         }
-
-        return indexed;
+        return true;
     }
 
     internal static GifIndexedFrame FullFrame(RgbaImage frame, byte[] pixels) =>
         new(0, 0, frame.Width, frame.Height, pixels);
 
-    internal static GifIndexedFrame DeltaFrame(RgbaImage frame, byte[] current, byte[] previous) {
+    internal static GifIndexedFrame DeltaFrame(RgbaImage frame, byte[] current, byte[] previous, GifPalette? palette = null, GifPalette? previousPalette = null) {
         var left = frame.Width;
         var top = frame.Height;
         var right = -1;
@@ -54,7 +48,7 @@ internal static class GifFrameOptimizer {
             var row = y * frame.Width;
             for (var x = 0; x < frame.Width; x++) {
                 var index = row + x;
-                if (current[index] == previous[index]) continue;
+                if (palette == null ? current[index] == previous[index] : SameColor(current[index], previous[index], palette, previousPalette!)) continue;
                 if (x < left) left = x;
                 if (x > right) right = x;
                 if (y < top) top = y;

@@ -116,6 +116,12 @@ foreach (var source in mermaidSources) {
 }
 
 PreparedPipelineSmoke.Run();
+var coreAnimationFrame = new ChartForgeX.Raster.RasterAnimationFrame(
+    new ChartForgeX.Raster.RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }), TimeSpan.FromSeconds(1));
+foreach (var format in new[] { ChartForgeX.Raster.RasterAnimationFormat.Gif, ChartForgeX.Raster.RasterAnimationFormat.Apng }) {
+    if (ChartForgeX.Raster.RasterAnimationEncoder.Encode(new[] { coreAnimationFrame }, format).Length < 32)
+        throw new InvalidOperationException("Core animation encoder failed under AOT.");
+}
 PresentationPackageSmoke.Run();
 
 static void AssertContains(string text, string expected, string message) {
