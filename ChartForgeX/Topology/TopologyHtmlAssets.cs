@@ -9,7 +9,7 @@ internal static class TopologyHtmlAssets
 
     private static readonly Lazy<string> StyleResource = new Lazy<string>(() => ReadResource(StyleResourceName));
 
-    internal static string Style => StyleResource.Value;
+    internal static string Style => StyleResource.Value + "\n" + TopologyRegionTemplate.Styles.Value;
 
     private static string ReadResource(string resourceName)
     {

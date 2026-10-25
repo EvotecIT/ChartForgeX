@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- Optional header anatomy, kept separate from the main region template. -->
+  <symbol id="region-status" class="cfx-region-status {{tone}}">
+    <rect x="{{chip-x}}" y="{{chip-y}}" width="{{chip-width}}" height="20" rx="10" fill="{{surface-sunken}}" stroke="{{status}}"/>
+    <text x="{{chip-label-x}}" y="{{chip-label-y}}" font-size="11" font-weight="500" fill="{{status}}">{{chip-label}}</text>
+  </symbol>
+</svg>

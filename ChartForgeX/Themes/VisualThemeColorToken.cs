@@ -25,5 +25,7 @@ public enum VisualThemeColorToken {
     /// <summary>The neutral state color.</summary>
     Neutral,
     /// <summary>The maintenance state color.</summary>
-    Maintenance
+    Maintenance,
+    /// <summary>The informational state or relationship color.</summary>
+    Info
 }

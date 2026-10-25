@@ -9,6 +9,12 @@ namespace ChartForgeX.Topology;
 /// Defines topology rendering options.
 /// </summary>
 public sealed class TopologyRenderOptions {
+    /// <summary>Uses light tokens and status dash patterns for a region diagram's static print output.</summary>
+    public bool RegionPrint { get; set; }
+    /// <summary>Includes an accessible node/link table, visible under Details in printed region HTML.</summary>
+    public bool IncludeRegionDetails { get; set; }
+    /// <summary>Gets or sets host wording for the region legend's health-ring explanation.</summary>
+    public string RegionRingLegendLabel { get; set; } = "Ring = health";
     internal TextMeasurementContext? TextMeasurement { get; set; }
     internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
     internal double ResolvedEdgeLabelScale { get; set; } = 1;

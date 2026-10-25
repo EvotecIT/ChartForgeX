@@ -293,6 +293,8 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static List<ChartPoint> EdgePoints(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
+        if (chart.LayoutMode == TopologyLayoutMode.Regions && chart.PreparedRegionRoutes != null && chart.PreparedRegionRoutes.TryGetValue(edge.Id, out var regionRoute))
+            return new List<ChartPoint>(regionRoute);
         return TopologyRenderRouteCache.Resolve(chart, edge, () => CalculateEdgePoints(chart, edge, nodes));
     }
 

@@ -18,6 +18,8 @@ internal static partial class TopologyLayoutEngine {
             RenderOptions = chart.RenderOptions?.Clone(),
             TextMeasurement = chart.TextMeasurement,
             PreparedGroupHeaderParts = chart.PreparedGroupHeaderParts,
+            PreparedRegionRoutes = chart.PreparedRegionRoutes,
+            PreparedRegionPaintPlan = chart.PreparedRegionPaintPlan,
             PreparedGroupHeaderLayoutParts = chart.PreparedGroupHeaderLayoutParts
         };
         copy.Accessibility.Name = chart.Accessibility.Name;

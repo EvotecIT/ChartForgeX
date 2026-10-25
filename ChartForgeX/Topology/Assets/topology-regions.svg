@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- Editable anatomy. Geometry and escaped text substitutions come from the deterministic layout.
+       These basic SVG shapes compile into the common native scene for SVG/PNG parity.
+       Token values are supplied by VisualTheme; CSS owns interaction and host layout states. -->
+  <symbol id="region" class="cfx-region">
+    <rect x="{{x}}" y="{{y}}" width="{{width}}" height="{{height}}" rx="16" fill="{{surface-sunken}}" stroke="{{border}}"/>
+    <text class="title" x="{{title-x}}" y="{{title-y}}" font-size="12" font-weight="600" fill="{{text-muted}}">{{title}}</text>
+    <text class="subtitle" x="{{title-x}}" y="{{subtitle-y}}" font-size="12" fill="{{text-muted}}">{{subtitle}}</text>
+  </symbol>
+  <symbol id="node" class="cfx-node {{tone}}">
+    <circle class="focus-ring" cx="{{cx}}" cy="{{cy}}" r="{{focus-r}}" fill="none" stroke="none" stroke-width="2"/>
+    <circle class="core {{tone}}" cx="{{cx}}" cy="{{cy}}" r="{{r}}" fill="{{surface}}" stroke="{{status}}" stroke-width="{{ring-width}}"/>
+    <text class="label" x="{{cx}}" y="{{label-y}}" text-anchor="middle" font-size="{{label-size}}" font-weight="700" fill="{{text}}">{{label}}</text>
+    <text class="sub" x="{{cx}}" y="{{sub-y}}" text-anchor="middle" font-size="12" fill="{{text-muted}}">{{sub}}</text>
+  </symbol>
+  <symbol id="badge" class="badge">
+    <polygon points="1,9 1,3 4.5,6 7,1 9.5,6 13,3 13,9" fill="{{badge-tone}}"/>
+  </symbol>
+  <symbol id="star" class="badge">
+    <polygon points="7,0 8.8,3.2 13,3.5 10,6 11,10 7,8 3,10 4,6 1,3.5 5.2,3.2" fill="{{badge-tone}}"/>
+  </symbol>
+  <symbol id="lock" class="badge">
+    <rect x="3" y="0" width="8" height="8" rx="3" fill="{{surface}}" stroke="{{badge-tone}}" stroke-width="2"/>
+    <rect x="1" y="4" width="12" height="6" rx="1" fill="{{badge-tone}}"/>
+  </symbol>
+  <symbol id="edge-label" class="cfx-edge-label {{tone}}">
+    <text x="{{x}}" y="{{y}}" text-anchor="middle" font-size="11.5" font-weight="500" fill="{{status}}" stroke="{{halo}}" stroke-width="3">{{label}}</text>
+  </symbol>
+  <symbol id="legend-item" class="cfx-legend">
+    <text x="{{x}}" y="{{y}}" font-size="12.5" fill="{{text-muted}}">{{label}}</text>
+  </symbol>
+</svg>

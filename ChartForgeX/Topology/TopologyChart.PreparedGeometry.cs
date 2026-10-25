@@ -4,6 +4,8 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyChart {
+    internal IReadOnlyDictionary<string, IReadOnlyList<ChartPoint>>? PreparedRegionRoutes { get; set; }
+    internal TopologyRegionPaintPlan? PreparedRegionPaintPlan { get; set; }
     /// <summary>
     /// Retains native painted header parts in chart coordinates on detached prepared geometry only.
     /// Fresh layout clears this snapshot; diagnostics and caption clearance reuse its immutable rectangles.

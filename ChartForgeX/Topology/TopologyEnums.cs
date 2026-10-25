@@ -27,7 +27,9 @@ public enum TopologyLayoutMode {
     /// <summary>Place a centered root with balanced left and right hierarchy branches for mind-map style diagrams.</summary>
     MindMap = 9,
     /// <summary>Align responsibility lanes across shared process ranks.</summary>
-    Swimlane = 10
+    Swimlane = 10,
+    /// <summary>Arrange circular status nodes in wrapping regions with a stacked narrow presentation.</summary>
+    Regions = 11
 }
 
 /// <summary>

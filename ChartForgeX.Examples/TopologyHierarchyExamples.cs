@@ -9,49 +9,43 @@ public static class TopologyHierarchyExamples {
     public static void Write(string output) {
         Directory.CreateDirectory(output);
         ExampleTypography.Register();
-        foreach (var dark in new[] { false, true }) {
-            var width = dark ? 390 : 1440;
+        foreach (var (width, dark) in new[] { (1440, false), (1440, true), (390, true) }) {
             WriteChart(output, "service-regions", CreateTopology(width, dark), dark);
-            WriteChart(output, "timing-hierarchy", CreateHierarchy(width, dark), dark);
             WriteChart(output, "directory-topology", CreateDirectoryExample(width, dark), dark);
+            if (width == 390 || !dark) WriteChart(output, "timing-hierarchy", CreateHierarchy(width, dark), dark);
         }
     }
 
     /// <summary>Creates a neutral service topology with automatically packed regions and typed relationships.</summary>
     public static TopologyChart CreateTopology(int width, bool dark) {
-        var compact = width < 640;
-        var chart = Frame("service-regions", "Service topology", "Four services · two regions · one relationship needs attention", width, dark)
-            .WithViewport(width - 48, compact ? 820 : 560, 24)
-            .WithLayout(compact ? TopologyLayoutMode.GroupGrid : TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-            .AddAutoGroup("north", "North region", TopologyHealthStatus.Healthy, "Primary processing · two services")
-            .AddAutoGroup("south", "South region", TopologyHealthStatus.Warning, "Recovery processing · two services")
-            .AddAutoNode("gateway", "Gateway", status: TopologyHealthStatus.Healthy, groupId: "north", subtitle: "Primary", symbol: "G")
-            .AddAutoNode("worker", "Worker", status: TopologyHealthStatus.Healthy, groupId: "north", subtitle: "Consumer", symbol: "W")
-            .AddAutoNode("replica", "Replica", status: TopologyHealthStatus.Warning, groupId: "south", subtitle: "Lag 42 s", symbol: "R")
-            .AddAutoNode("archive", "Archive", status: TopologyHealthStatus.Healthy, groupId: "south", subtitle: "Daily", symbol: "A")
-            .WithNodeBadge("gateway", "LEAD")
-            .AddEdge("process", "gateway", "worker", "Requests", status: TopologyHealthStatus.Healthy, direction: VisualLinkDirection.Forward)
-            .AddEdge("mirror", "worker", "replica", "42 s lag", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
-            .AddEdge("checkpoint", "replica", "archive", "Checkpoint", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .WithEdgeLineStyle("mirror", TopologyEdgeLineStyle.Solid)
-            .WithEdgeLineStyle("checkpoint", TopologyEdgeLineStyle.Dashed);
-        chart.Edges.Single(edge => edge.Id == "mirror").StrokeWidth = 2.5;
-        foreach (var edge in chart.Edges) edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
-        if (compact) {
-            chart.WithEdgePorts("process", TopologyEdgePort.Right, TopologyEdgePort.Left)
-                .WithEdgePorts("checkpoint", TopologyEdgePort.Right, TopologyEdgePort.Left);
-            chart.Edges.Single(edge => edge.Id == "process").Label = "Flow";
-            chart.Edges.Single(edge => edge.Id == "checkpoint").Label = "Save";
-        }
-        foreach (var node in chart.Nodes) {
-            node.DisplayMode = TopologyNodeDisplayMode.Tile;
-            node.Shape = TopologyNodeShape.Circle;
-            node.Width = node.Height = 64;
-            node.PreserveDisplayModeSize = true;
-            node.ShowStatusBadge = false;
-            node.ShowHealthRing = true;
-            node.Color = chart.Theme.Resolve(chart.ThemeMode).MutedForeground.ToCss();
-        }
+        TopologyRegionTypography.Register();
+        var chart = Frame("service-regions", "Service topology", "Two regions · five services · six links", width, dark)
+            .WithTheme(RegionTheme(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithViewport(width - 48, 500, 20).WithLayout(TopologyLayoutMode.Regions)
+            .AddAutoGroup("north", "North region", TopologyHealthStatus.Healthy, "Primary processing · zone A")
+            .AddAutoGroup("south", "South region", TopologyHealthStatus.Warning, "Recovery processing · zone B")
+            .AddAutoNode("gateway", "GATE", status: TopologyHealthStatus.Healthy, groupId: "north", subtitle: "Primary gateway")
+            .AddAutoNode("worker", "WORK", status: TopologyHealthStatus.Warning, groupId: "north", subtitle: "Queue growing")
+            .AddAutoNode("replica", "REPL", status: TopologyHealthStatus.Healthy, groupId: "south", subtitle: "Recovery leader")
+            .AddAutoNode("archive", "ARCH", status: TopologyHealthStatus.Critical, groupId: "south", subtitle: "Archive unavailable")
+            .AddAutoNode("cache", "MEM", status: TopologyHealthStatus.Healthy, groupId: "south", subtitle: "Read cache")
+            .AddEdge("process", "gateway", "worker", status: TopologyHealthStatus.Healthy)
+            .AddEdge("mirror", "gateway", "replica", "Scheduled · 47 min", status: TopologyHealthStatus.Warning)
+            .AddEdge("recovery", "worker", "replica", "4 min", status: TopologyHealthStatus.Healthy)
+            .AddEdge("checkpoint", "replica", "archive", "Failing 6 h", status: TopologyHealthStatus.Critical)
+            .AddEdge("cache-feed", "replica", "cache", status: TopologyHealthStatus.Healthy)
+            .AddEdge("overlay", "gateway", "replica", "Shared control plane", direction: VisualLinkDirection.Bidirectional)
+            .WithEdgeLineStyle("mirror", TopologyEdgeLineStyle.Dashed)
+            .WithLegend(TopologyLegend.Create().AddStatus("Current < 15 min", TopologyHealthStatus.Healthy)
+                .AddStatus("Scheduled, 15–60 min", TopologyHealthStatus.Warning).AddStatus("Failing", TopologyHealthStatus.Critical));
+        chart.Nodes.Single(node => node.Id == "gateway").Weight = TopologyNodeWeight.Primary;
+        chart.Groups[1].StatusText = "Attention";
+        chart.Nodes.Single(node => node.Id == "replica").Weight = TopologyNodeWeight.Primary;
+        chart.Nodes.Single(node => node.Id == "gateway").AddBadge(new TopologyNodeBadge("crown", "Primary role"));
+        chart.Nodes.Single(node => node.Id == "cache").Weight = TopologyNodeWeight.Minor;
+        chart.Edges.Single(edge => edge.Id == "overlay").IsOverlay = true;
+        chart.Edges.Single(edge => edge.Id == "mirror").Metadata["schedule"] = "Every 15 minutes";
+        foreach (var node in chart.Nodes) node.ShowHealthRing = true;
         return chart;
     }
 
@@ -86,16 +80,16 @@ public static class TopologyHierarchyExamples {
         chart.Groups[0].Label = "HQ site";
         chart.Groups[0].Subtitle = "10.20.0.0/24 · two controllers";
         chart.Groups[1].Label = "Branch site";
-        chart.Groups[1].Subtitle = "10.30.0.0/24 · two controllers";
-        var labels = new[] { "DC-01", "DC-02", "DC-03", "DC-04" };
+        chart.Groups[1].Subtitle = "10.30.0.0/24 · three controllers";
+        chart.Groups[1].StatusText = null;
+        var labels = new[] { "AD0", "AD1", "AD2", "RODC", "PL1" };
         for (var index = 0; index < chart.Nodes.Count; index++) {
             chart.Nodes[index].Label = labels[index];
-            chart.Nodes[index].Subtitle = index == 0 ? "PDC · GC" : "GC";
+            chart.Nodes[index].Subtitle = index == 0 ? "5 roles" : index == 1 ? "site SRV missing" : index == 2 ? "bridgehead" : index == 3 ? "read only" : "global catalog";
             chart.Nodes[index].Symbol = "DC";
         }
-        chart.Edges[0].Label = width < 640 ? "Sync" : "Replication";
-        chart.Edges[1].Label = "Last success 42 s";
-        chart.Nodes[0].Badge = "PDC";
+        chart.Edges[1].Label = "Inter-site · 47 min";
+        chart.Edges[5].Label = "example.net ⇄ example.org · parent–child";
         return chart;
     }
 
@@ -105,13 +99,35 @@ public static class TopologyHierarchyExamples {
             IncludeEdgeLabelLeaders = true,
             ReadableDenseLayout = true, NodeSurfaceStyle = TopologyNodeSurfaceStyle.Card,
             EnableHtmlViewportControls = true, EnableHtmlExportControls = true,
-            HtmlNarrowMinimumHeight = dark ? 620 : 0
+            IncludeRegionDetails = true, HtmlNarrowMinimumHeight = 0
         };
-        var stem = name + (dark ? "-390-dark" : "-1440-light");
+        var stem = name + "-" + (int)(chart.Viewport.Width + 48) + (dark ? "-dark" : "-light");
         var prepared = chart.Prepare(options);
         ExampleArtifactWriter.WriteText(Path.Combine(output, stem + ".svg"), prepared.ToSvg());
         File.WriteAllBytes(Path.Combine(output, stem + ".png"), prepared.ToPng());
         var html = new HtmlInteractiveTopologyRenderer().RenderPage(chart, options);
-        ExampleArtifactWriter.WriteText(Path.Combine(output, stem + ".html"), html.Replace("</head>", ExampleTypography.EmbeddedStyle + "</head>", StringComparison.Ordinal));
+        var typography = chart.LayoutMode == TopologyLayoutMode.Regions ? TopologyRegionTypography.EmbeddedStyle : ExampleTypography.EmbeddedStyle;
+        ExampleArtifactWriter.WriteText(Path.Combine(output, stem + ".html"), html.Replace("</head>", typography + "</head>", StringComparison.Ordinal));
+        if (chart.LayoutMode == TopologyLayoutMode.Regions && !dark) {
+            options.RegionPrint = true;
+            ExampleArtifactWriter.WriteText(Path.Combine(output, name + "-print.svg"), chart.ToSvg(options));
+            File.WriteAllBytes(Path.Combine(output, name + "-print.png"), chart.ToPng(options));
+            var printPage = new TopologyHtmlRenderer().RenderPage(chart, options);
+            ExampleArtifactWriter.WriteText(Path.Combine(output, name + "-print.html"), printPage.Replace("</head>", typography + "</head>", StringComparison.Ordinal));
+        }
     }
+
+    private static VisualTheme RegionTheme() => VisualTheme.Graphite().WithFontFamily(TopologyRegionTypography.Family).Configure(builder => {
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            var c = builder.Colors(mode); var dark = mode == VisualThemeMode.Dark;
+            ChartColor Color(string light, string night) => ChartColor.FromHex(dark ? night : light);
+            c.Background = Color("#f6f8f9", "#0f161b"); c.Surface = Color("#eef2f4", "#1b2730"); c.ElevatedSurface = Color("#ffffff", "#151f26");
+            c.Border = Color("#d6dde1", "#2a3943"); c.Foreground = Color("#14202a", "#e3eaef"); c.MutedForeground = Color("#5b6b76", "#93a4af");
+            c.Accent = Color("#0f7c76", "#4fc7bd"); c.Info = Color("#2f6fb5", "#6aa8ef");
+            c.Status.Pass = new VisualTokenColor(Color("#1f8a4c", "#4cc38a"), Color("#1f8a4c", "#4cc38a"));
+            c.Status.Medium = new VisualTokenColor(Color("#b7791f", "#e2b34c"), Color("#b7791f", "#e2b34c"));
+            c.Status.Critical = new VisualTokenColor(Color("#c2413a", "#f0716a"), Color("#c2413a", "#f0716a"));
+            c.Warning = c.Status.Medium.Fill;
+        }
+    });
 }
