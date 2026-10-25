@@ -45,6 +45,7 @@ internal static partial class Program {
             && invalidFence.HasErrors && invalidFence.Artifacts.Count == 0,
             "Packed invalid sequence numbering escaped parse validation into a lazy export failure.");
 
+        MermaidSequenceDepthContracts();
         MermaidRequirementStyleContracts();
         var bounded = new MermaidRenderOptions {
             ParseOptions = new MermaidParseOptions { ResourceLimits = new MermaidResourceLimits { MaximumSourceCharacters = 16 } }

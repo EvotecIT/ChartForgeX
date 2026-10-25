@@ -83,6 +83,7 @@ internal static partial class MermaidResourceGuard {
         internal CancellationToken Cancellation { get; }
         internal long ReservedEdges { get; set; }
         internal long ReservedElements { get; set; }
+        internal bool FlowchartOccurrenceBudget { get; set; }
     }
 
     private sealed class Scope : IDisposable {

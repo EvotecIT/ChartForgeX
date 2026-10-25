@@ -204,15 +204,20 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
     private sealed class NativeHost {
         private readonly int _width;
         private readonly VisualThemeMode _mode;
+        private readonly bool _typed;
+        private readonly bool _navigation;
+        private double _producerOffset;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, Snapshot> _snapshots = new();
-        internal NativeHost(int width, VisualThemeMode mode) {
-            _width = width; _mode = mode;
+        internal NativeHost(int width, VisualThemeMode mode, bool typed = false, bool navigation = false) {
+            _width = width; _mode = mode; _typed = typed; _navigation = navigation;
             var chart = Model();
-            _snapshots.Add("initial", new Snapshot(_renderer.PrepareSection(chart, configure: Configure), chart.Annotations.ToArray()));
+            _snapshots.Add("initial", new Snapshot(_renderer.PrepareSection(chart, configure: ConfigureForHost), chart.Annotations.ToArray()));
         }
         internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + _snapshots["initial"].Section.Html
             + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal HtmlChartSection Section(string basis) { lock (_snapshots) return _snapshots[basis].Section; }
+        internal void ReplaceProducerOffset(double offset) { lock (_snapshots) _producerOffset = offset; }
         internal object External() {
             lock (_snapshots) {
                 var chart = Model().ReplaceAnnotation(ChartAnnotation.Note(new ChartPoint(5, 45), "External base", Ink, new ChartAnnotationId("note")));
@@ -254,19 +259,27 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
             }
         }
         private object Store(Chart chart, ChartCartesianViewport? viewport) {
-            var section = _renderer.PrepareSection(chart, viewport, Configure);
+            var section = _renderer.PrepareSection(chart, viewport, ConfigureForHost);
             var basis = "native-" + _snapshots.Count;
             _snapshots.Add(basis, new Snapshot(section, chart.Annotations.ToArray()));
             return new { html = section.Html, basis };
         }
-        private Chart Model() => Chart.Create().WithSize(_width, 480).WithTheme(VisualTheme.Graphite(), _mode)
-            .WithFontFamily(BrowserProofFonts.Family)
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .WithTitle("Native host edits").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 100)
-            .AddSeries(new ChartSeries(new ChartSeriesId("readings"), "Readings", ChartSeriesKind.Line,
-                Enumerable.Range(0, 11).Select(value => new ChartPoint(value, 20 + value * 5))))
-            .AddVerticalLine(new ChartAnnotationId("guide"), 4, "Review threshold")
-            .AddNote(new ChartPoint(3, 40), "Review", Ink, new ChartAnnotationId("note"));
+        private Chart Model() {
+            var chart = Chart.Create().WithSize(_width, 480).WithTheme(VisualTheme.Graphite(), _mode)
+                .WithFontFamily(BrowserProofFonts.Family)
+                .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+                .WithTitle("Native host edits").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 100);
+            var source = _typed
+                ? ChartSeries.CreateRangeBar(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11)
+                    .Select(value => new ChartInterval(value, 20 + value * 5 + _producerOffset, 28 + value * 5 + _producerOffset)))
+                    .WithObservationIds(Enumerable.Range(0, 11).Select(value => new ChartObservationId("reading-" + value)))
+                : new ChartSeries(new ChartSeriesId("readings"), "Readings", ChartSeriesKind.Line,
+                    Enumerable.Range(0, 11).Select(value => new ChartPoint(value, 20 + value * 5 + _producerOffset)));
+            return chart.AddSeries(source)
+                .AddVerticalLine(new ChartAnnotationId("guide"), 4, "Review threshold")
+                .AddNote(new ChartPoint(3, 40), "Review", Ink, new ChartAnnotationId("note"));
+        }
+        private void ConfigureForHost(HtmlChartInteractionOptions options) { Configure(options); if (_navigation) options.XNavigation.Enabled = true; }
         private static readonly ChartColor Ink = ChartColor.FromHex("#278C74");
         private static void Configure(HtmlChartInteractionOptions options) {
             options.Interaction.ChartId = "managed-native";

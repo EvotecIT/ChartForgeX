@@ -1,0 +1,39 @@
+---
+config:
+  c4:
+    personFontFamily: Carlito
+    personFontSize: 18px
+    personFontWeight: 500
+    person_bg_color: '#225588'
+    person_border_color: '#113355'
+    containerFontFamily: Carlito
+    containerFontSize: 20
+    containerFontWeight: 400
+    container_bg_color: '#e5eef8'
+    container_border_color: '#335577'
+    external_containerFontFamily: Carlito
+    external_containerFontSize: 16
+    external_container_bg_color: '#686868'
+    external_container_border_color: '#555555'
+    boundaryFontFamily: Carlito
+    boundaryFontSize: 18
+    messageFontFamily: Carlito
+    messageFontSize: 15
+    c4ShapeMargin: 30
+    c4ShapePadding: 18
+    width: 216
+    diagramMarginX: 32
+    diagramMarginY: 24
+    nextLinePaddingX: 12
+    wrap: true
+---
+C4Container
+UpdateLayoutConfig(2,1)
+Boundary(platform, "Service platform", "Native boundary") {
+  Person(operator, "Operations coordinator", "Coordinates scheduled publication")
+  Container(service, "Publication orchestration service", "Managed runtime", "Captures and validates publication requests before delivery")
+  Container_Ext(partner, "External delivery service", "HTTPS", "Receives validated documents")
+}
+Rel(operator, service, "Starts publication", "Authenticated request")
+Rel(service, partner, "Delivers documents", "HTTPS")
+UpdateElementStyle(service, $fontColor="#183047")

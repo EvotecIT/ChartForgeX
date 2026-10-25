@@ -1,0 +1,22 @@
+using System;
+using System.IO;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Interactivity.Html;
+
+var kind = {{KIND}}; var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeReflowRecipe.Create(kind, {{WIDTH}}, VisualThemeMode.{{MODE}});
+var from = renderer.PrepareVisibilitySection(chart, NativeReflowRecipe.View(kind, false));
+var to = renderer.PrepareVisibilitySection(chart, NativeReflowRecipe.View(kind, true));
+var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 9);
+var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);
+var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let hidden=false;document.querySelector('#play').onclick=()=>{hidden=!hidden;chart.update(hidden?"
+    + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:hidden?" + JsonSerializer.Serialize(forward) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}})};";
+var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+    + "</style></head><body><button id='play' type='button'>Toggle current observation or group</button>" + from.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + action + "</script></body></html>";
+Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html", html); File.WriteAllText("output/visual.transition.json", forward);
+File.WriteAllText("output/visual.svg", to.PreparedVisual.ToSvg()); File.WriteAllBytes("output/visual.png", to.PreparedVisual.ToPng());
+
+{{SOURCE}}

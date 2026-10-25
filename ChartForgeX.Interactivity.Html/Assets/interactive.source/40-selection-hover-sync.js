@@ -230,7 +230,7 @@
     return count;
   };
   const reconcileSourceSelection = (root, previous, targets) => {
-    // Reconcile gesture IDs only.
+
 
     const batch = selectionTargetBatch(root), before = new Set(), after = new Set();
     for (const target of previous) batch.resolve(target).forEach(node => before.add(node));
@@ -293,14 +293,22 @@
   };
   const applySync = (root, detail) => {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    settleChartUpdateMotion(root);
     if (['hover', 'crosshair', 'navigate'].includes(detail.action)
       && !interactiveTargets(root).some(node => matchesTargetIdentity(node, detail.target))) {
 
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
-    if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
-      // Distinct physical axes.
+    if (detail.action === 'viewport' && detail.polarViewport && polarViewportConnected(root)) {
+      const projection = capturedPolarProjection(root), source = detail.polarViewport;
+      const viewport = Object.fromEntries(polarAxisNames.filter(name => polarAxisAvailable(root, name)
+        && (name === 'angle' ? validPolarAngle(source[name]) : validSourceAxisWindow(source[name], projection[name])))
+        .map(name => [name, source[name]]));
+      requestNativePolarWindow(root, viewport, false);
+    }
+    else if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
+
       const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
       const binding = nativePreparationBinding(root, 'viewport');
       const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
@@ -335,7 +343,7 @@
       if (applyHoverByTarget(root, detail.target)) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') {
-      // Retire accepted hover; local input wins.
+
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
     }
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {

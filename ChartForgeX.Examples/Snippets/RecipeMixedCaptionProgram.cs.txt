@@ -1,0 +1,15 @@
+using System;
+using System.IO;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+
+// Reference the ordinary ChartForgeX Core package; this program has no parser, adapter or browser dependency.
+var artifact = MixedCaptionRecipe.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("caption.svg", artifact.ToSvg());
+File.WriteAllBytes("caption.png", artifact.ToPng());
+File.WriteAllText("caption.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("caption.json", artifact.ToInterchangeJson());
+
+{{SOURCE}}

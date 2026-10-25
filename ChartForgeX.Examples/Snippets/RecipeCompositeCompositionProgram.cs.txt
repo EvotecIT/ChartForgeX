@@ -1,0 +1,24 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Composition;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+foreach (var operation in new[] { ChartForgeX.Effects.VisualCompositeOperator.SourceIn,
+    ChartForgeX.Effects.VisualCompositeOperator.DestinationOut, ChartForgeX.Effects.VisualCompositeOperator.Xor }) {
+    var composition = NativeCompositeCompositionExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}}, operation);
+    var image = composition.ToImage();
+    File.WriteAllBytes("native-composite-" + operation + ".png", composition.ToPng());
+    var canvas = VisualCanvas.Create(image.Width, image.Height).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        .AddImage(image, 0, 0, image.Width, image.Height);
+    File.WriteAllText("native-composite-" + operation + ".svg", canvas.ToSvg());
+}
+var source = NativeRetainedMaskExample.PrepareSource({{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("uncomposited-source.svg", source.ToSvg());
+File.WriteAllText("uncomposited-source-facts.json", source.ToArtifact().ToInterchangeJson());
+
+{{SOURCE}}

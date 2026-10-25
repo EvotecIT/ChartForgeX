@@ -4,6 +4,10 @@ description: "Migrate ChartForgeX consumers to the current preparation, data-edi
 
 # ChartForgeX consumer migration
 
+Automatic Swimlane layouts now honor existing `TopologyGroup.LayoutDirection` when it differs from the inherited direction. Such diagrams use the existing recursive native group composer: the local region follows its authored direction and preserves membership/containment, while process ranks are no longer globally aligned across every responsibility. Leave the direction null, or equal to its inherited/global direction, to retain the incumbent shared-rank lane path. Source links from a member to outside the group retain the existing parent-direction inheritance; a shell-to-shell handoff does not erase a local direction.
+
+`TopologyRenderOptions.LayeredNodeSpacing` and `LayeredRankSpacing` now apply to automatic Swimlane layouts as well as Layered layouts; null retains the old Swimlane 24/96 spacing constants. The new nullable `SwimlaneIgnoreCrossLaneRankConstraints` changes ranking only when true, through the existing native rank owner, and preserves real edges/ports and authored rank minima. It is host render policy, not a new portable editable-layout protocol. Use the source-owned `swimlane-native-layout-depth.mmd` and complete downloadable program for a before/after consumer example.
+
 This guide records the breaking-release target and the observed consumer contracts. Charts, grids, topology, flow and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps inspected calls to their destination, migration recipe and acceptance fixture. Its `owner_implementation` and `owner_evidence` columns distinguish available source and owner fixtures from downstream qualification. A row with `status=planned` still requires consumer migration or qualification; an implemented owner path does not close that gate. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
 
 Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
@@ -13,6 +17,10 @@ The unified authoring API uses the coordinated 3.0.0 package family. Upgrade the
 Treemaps display their group and leaf captions by default. An explicit `WithDataLabels(false)` on the chart or `ShowDataLabels = false` on its series still hides them. `ConfigureTreemap(options => options.ShowValues = false)` keeps the names while hiding their numeric values.
 
 ## Unified authoring contracts
+
+Quadrant source endpoint names now populate separate `chart.Options.XAxis.Labels` and `YAxis.Labels`; they are no longer joined into `XAxisTitle` or `YAxisTitle`. Read the label at `.25`/`.75` for paired low/high names. Native chart callers can still author independent axis titles normally. Source `chartWidth`/`chartHeight` apply unless the corresponding host render option is explicitly assigned. Setting `Width = 960` intentionally overrides a different source width; leaving it unassigned retains source precedence. Existing render-option CLR property signatures are unchanged.
+
+Scatter observations can capture detached `ChartMarkerOptions` through `ConfigurePointMarkers`, inspect authored copies through `GetPointMarkers`, and clear a single override through `UseSeriesMarkers`. Rebuild and reprepare artifacts after source edits; a previously prepared scene remains detached. The API does not add per-point marker ownership to other families.
 
 `ChartFlowStyle` adds optional outline dash and phase parameters to its constructor. Existing source calls retain their defaults when recompiled; rebuild precompiled consumers because the constructor's CLR signature changed. Sankey and Chord share the same immutable style snapshot.
 
@@ -35,6 +43,8 @@ Explicit-ID series now choose a deterministic categorical palette slot from thei
 For chart scenario routes, use `AddSeriesStep(series.Id, ...)` with `ChartForgeX.Interactivity.Html` in scope. The string overload targets the exact stable ID, including numeric strings: `"0"` identifies a series whose ID is `new ChartSeriesId("0")`. Replace positional series targets with the intended handle's `Id`. See [series identity and scenario steps](../interactivity.md#semantic-series-identity) for synchronized charts and source observation IDs.
 
 Replace `WithPointKey` with `WithObservationId(index, new ChartObservationId("item-id"))` where a stable authored identity is needed. Typed-family source ordinals now count observations, not encoded members. Read `FinancialValues` for Candlestick/OHLC, `Bubbles` for Bubble, and the named range/error/box/dumbbell/difference collections for their families. Numeric `Points` is empty and read-only for these kinds. Replace tuple-member edits with `Update*` for one complete observation or `Replace*` for the entire sequence. Single-item updates preserve ID and point styling; whole replacements clear per-observation metadata after successful validation.
+
+Slope sequences no longer require exactly two points. The collection overload `AddSlope(name, points)` and explicit-ID `ChartSeries` construction accept an empty retained series or two or more ordered stage observations; one point is rejected. The two-value `AddSlope` overloads retain their existing endpoint labels and defaults. Configure category labels explicitly for a collection. `BreakBefore` remains a gap; missing stages are not synthesized. Set `Options.SlopeOrientation` to `Horizontal` for physical Y categories with primary or secondary physical X values; existing vertical orientation remains the default. TrendLine still owns exactly two derived rendering endpoints, even when its fitting source contains more observations.
 
 Ordinary numeric `Points` still implements `IList<ChartPoint>`, with owner-controlled insert/remove/clear operations. Existing observation identities and presentation now follow their points through structural edits; index replacement preserves them, and clearing removes them. `SourcePointCount` reflects the current ordinary point count. A cast to the former concrete `List<ChartPoint>` is unsupported.
 
@@ -96,7 +106,9 @@ An explicit topology node `LabelColor` applies to its title and subtitle, includ
 
 ## Explicit Pie and Donut composition
 
-A single Pie or Donut with null `RadialBand` keeps its existing output. Multiple Pie/Donut series use `WithRadialBand(new ChartRadialBand(innerRatio, outerRatio))` on every series; bands must be finite, positive-width, within zero through one, and disjoint. Each series retains its own total, IDs, labels and `MaximumPieSlices` aggregation. The innermost hole owns center text. Active external labels on inner bands and positive multi-band slice offsets reject; choose in-band labels or explicitly hide them. See [explicit bands](api-conventions.md#explicit-pie-and-donut-bands) for usage and space limits.
+A single Pie or Donut with null `RadialBand` and null `RadialBandAllocation` keeps its existing output. Multiple Pie/Donut series use `WithRadialBand(new ChartRadialBand(innerRatio, outerRatio))` on every series, or `WithAutomaticRadialBands(new ChartRadialBandAllocation(innerRatio, gapRatio))` with all authored bands unset. Automatic bands follow source-series order, reserve empty rings and leave source `RadialBand` values null. Explicit bands must remain finite, positive-width, within zero through one, and disjoint. Each series retains its own total, IDs, labels and `MaximumPieSlices` aggregation. The innermost hole owns center text. Inner external captions now use shared measured lanes and haloed overlay leaders across enclosing bands. Positive slice offsets translate exact native sectors within one shared fitted frame; authored explosion may overlap another ring, retaining source-series paint order. Text or leaders that cannot fit without covering another caption are omitted with a diagnostic and complete source facts. Ordinary one-ring output is preserved.
+
+`WithPointSliceRadiusRatio(index, ratio)` selects a finite zero-through-one fraction of the resolved band thickness, rather than an absolute radius or a value-derived scale. `UseDefaultSliceRadius(index)` clears it; structural edits follow source observations and complete replacement clears overrides. Clear automatic allocation and radius overrides to restore previous geometry. An actual `Other` aggregate rejects materially differing radius policies instead of inventing a radius. Mutable artifact common metadata now follows subsequent band/radius edits and reset; already captured envelopes remain detached. Pie/Donut common facts still do not provide typed numeric-chart import. See [bands and observation radius](api-conventions.md#explicit-pie-and-donut-bands) for usage and limits.
 
 ## Annotation membership
 
@@ -114,6 +126,12 @@ A single Pie or Donut with null `RadialBand` keeps its existing output. Multiple
 Replacement retains paint position and the same explicit or anonymous identity. To change identity, remove the old annotation and add a new one. `RemoveAnnotation` also accepts an explicit `ChartAnnotationId`. Missing targets, duplicate IDs, repeated instances and invalid replacements reject before changing membership or focus-guide tracking. A retained collection view reflects later successful edits. Rebuild compiled callers that expected a mutable list.
 
 Anonymous guides remain supported through existing constructors, statistical/focus helpers and typed `Add*` conveniences. Keep an anonymous annotation's instance when it must be replaced or removed. Geometry and identity remain fixed, while `StrokeStyle` is mutable authoring state read by the next preparation. Already prepared SVG, PNG and semantic output stay detached. Annotation membership can be authored before the required series or axes exist; preparation checks the completed chart's coordinate-system compatibility.
+
+## UseCase source captions and named associations
+
+`MermaidUseCaseDocument.Notes` now holds attached source notes. Supported notes and stereotypes appear in native SVG/PNG through `TopologyAnnotation` and `TopologyNode.Subtitle`; callers that previously stored a nonempty Actor subtitle now see that caption, and its measured extent participates in sizing and automatic routes. Null or empty subtitles retain the existing Actor output.
+
+`MermaidFlowchartEdge.Id` is optional. Leave it null to keep the existing `mermaid-edge-N` native identities, or assign a unique authored ID before conversion. UseCase source selectors resolve actual named associations; do not target an anonymous generated ID or reuse a node/group/edge ID. Those cases report located errors instead of creating a node. Authored edge IDs, classes and bounded source-token facts survive native selection and portable export. The Core native `usecase-source-depth` recipe and the parsed-source program are separate public consumers.
 
 ## Mermaid flowchart shapes
 
@@ -643,7 +661,11 @@ Topology surface tints use premultiplied sRGB mixing, preserving the authored ac
 
 The typed snapshot is copied during preparation, before lazy JSON serialization. Mutating an original semantic DTO or its nested collections after `Prepare` cannot change a later artifact or interchange export. Portable JSON size/depth/collection limits apply when that interchange is requested, including `ToArtifact(...)`; they do not prevent static SVG/PNG rendering of the prepared scene. A consumer that requires native editable semantics must qualify that portable boundary separately from picture export.
 
-When a host supplies its own envelope, pass it as the third argument to `prepared.ToArtifact(id, kind, semanticInterchange)`. The factory snapshots it through the versioned writer/reader, requires matching ID/kind and any supplied dimensions, and returns an independent envelope on each read. The host is responsible for matching those semantics to its visual. An ordinary chart without supplied diagram semantics emits family `None` rather than fabricated diagram nodes or edges.
+Portable topology paths, subtitle-role overrides and captured nondefault topology title sizes require interchange version 2. The writer selects the minimum required version; ordinary envelopes with those fields absent remain byte-identical version 1. The reader accepts version 1 or 2, requires version 2 when those typed fields are present, and rejects future versions. `CurrentVersion` is the highest supported version rather than a promise that every writer emits it. Consumers that previously compared every payload to `CurrentVersion` should use the reader's version gate and qualify their supported typed fields. Rebuild package/process/PowerShell consumers against the matching assembly before accepting version-2 snapshots. No separate visual-artifact JSON schema or second version service is introduced.
+
+`TopologyPathDecoration.PathData` is a lossless public view of captured M/L/C numbers. JSON uses the existing G17 number writer and retains path order, IDs, closure, fill/stroke/dashes and logical stroke widths. Prepared snapshots transform commands, widths, dashes and explicit caption-role font sizes consistently. A retained raw hierarchy source keeps its authored values. Null styles, empty path collections and Graphite/omitted title sizes preserve ordinary renderer and wire output. A nondefault topology title size is captured as nullable `Presentation.Theme.TitleSize`, including Report/dashboard presets that previously lost it. This intentionally selects version 2 for those presets; other theme role sizes and explicit frame-style capture remain outside this addition.
+
+When a host supplies its own envelope, pass it as the third argument to `prepared.ToArtifact(id, kind, semanticInterchange)`. The factory snapshots it through the versioned writer/reader, requires matching ID/kind and any supplied dimensions, and returns an independent envelope on each read. The host is responsible for matching those semantics to its visual. An unsupported ordinary chart without supplied semantics emits family `None` rather than fabricated diagram nodes or edges. Waterfall has its own typed editable family; it does not project numeric observations into diagram nodes.
 
 `PreparedVisualArtifactTests.NativeDiagramSemanticsSurviveCallerAndReaderMutation` exercises explicit envelope capture and independent caller/reader mutation. `PreparedTopologyTests`, `PreparedSequenceTests` and the native diagram fixtures cover producer-owned prepared geometry and semantics. Use the automatically retained envelope when Office placement needs the prepared coordinate system; explicitly supplying an authored source envelope preserves the coordinates in that envelope. Native Office projections still require consumer qualification against the retained bounds, routes, groups and fidelity diagnostics.
 
@@ -766,3 +788,292 @@ New default source/model/export limits reject excessive requests deterministical
 Replace `MermaidJourneyDocument.ToChart()` with `ToJourneyDiagramBlock()` and `MermaidTimelineDocument.ToChart()` with `ToTimelineDiagramBlock()`. `ToVisualArtifact()`, `ToSvg()` and `ToPng()` retain their shared export entrypoints; the artifact models now retain visible diagram semantics rather than numeric chart approximations. Journey `SeriesName` and timeline `ShowEventDurations` are removed. Journey task and timeline period `Section` properties reference their typed section objects, preserving repeated labels as distinct phases.
 
 Venn consumers can inspect `VennDiagramBlock.MeasureLayout()` before relying on quantitative overlap geometry. Invalid set memberships are rejected; arbitrary three-set fits expose their residual and may carry `CFXM009`. C4 nested boundaries now have real native parents, and supported color/label-offset updates affect native output.
+
+## Mermaid directory-tree rendering
+
+TreeView's default artifact model is `TreeViewBlock` with native directory rows. Replace `MermaidRenderOptions.TreeView = new MermaidTopologyRenderOptions(...)` and TreeView `ToVisualArtifact`/`ToSvg`/`ToPng` option arguments with `MermaidTreeViewRenderOptions`. Its integer `Width` is fixed; `Height` is a minimum natural height. Replace topology-node reads on the default artifact with `TreeViewBlock.Items` and immutable row metadata.
+
+The explicit `MermaidTreeViewDocument.ToTopologyChart(MermaidTopologyRenderOptions)` conversion remains available for callers that choose a topology projection. It does not control the native row renderer. Portable JSON now carries the typed `TreeView` family in the existing version-1 envelope. Import with `VisualArtifactInterchangeEnvelope.FromJson(json).ToTreeViewBlock()`, then remeasure after edits. IDs remain exact and follow the existing interchange limit of 512 characters; longer native authoring IDs reject rather than being rewritten. Readers without this family reject it and can use the separately delivered SVG. Configured padding survives host-frame ownership changes in both TreeView and Railroad.
+
+
+## Editable Waterfall data across process boundaries
+
+Waterfall artifacts now emit the `Waterfall` family in the existing version-1 interchange envelope. Readers without that family reject it and may use the independently delivered SVG or PNG. Import through `VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart()` rather than interpreting SVG rectangles or copying rendered totals into a new delta series.
+
+The payload records which native overload authored the series. Numeric changes retain their one automatically appended derived total. Typed `ChartWaterfallItem` sequences retain an optional first opening balance and explicit subtotal/total checkpoints; checkpoint values remain calculated. Use `Points` for imported numeric changes and `UpdateWaterfallItem`/`ReplaceWaterfallItems` for imported typed data. Existing source and checkpoint IDs, local automatic-ID scope, orientation and the documented native presentation subset are retained.
+
+Custom callbacks and process-local or unsupported presentation reject explicitly rather than being silently discarded. Reapply such configuration after import when appropriate. Envelope metadata/source-language facts remain on the portable envelope. Other chart families do not acquire a generic series serializer. See [editable Waterfall interchange](api-conventions.md#editable-waterfall-interchange) for the supported fields and limits.
+
+## Event Modeling native timelines and data
+
+Event Modeling now uses shared Swimlane ranks and measured generic factual cards. Source frame order controls X progression, including a return to an existing namespace lane; numbers retain identity rather than numeric ordering. A reset stops its own inferred incoming edge and remains a source for following frames. Repeated `->> number` sources replace default inference, and incompatible or unresolved explicit sources reject. Existing inferred/explicit edge IDs become stable `eventmodeling-edge-SOURCE-TARGET` identities; migrate code that inspected positional edge names. Reset state is a native badge instead of an inferred infrastructure shape/icon. Generated lane IDs now use `e` plus the band number (`0` for UI/Automation, `1` for Command/Read Model, `2` for Events) and the authored namespace; callers inspecting old lane names should use the retained namespace/band metadata.
+
+Data bodies now paint through the existing factual detail owner. `document.ToDataTable(frameNumber)` and `block.ToDataTable()` return detached Core `TableArtifact` views with Field/Type/Value facts and explicit kind/path metadata. JSON remains finite and nested; schema words remain text. Unsupported external formats render literally with located diagnostics, and shared source/row/native detail/output limits apply. Keep native topology for portable save/load/edit; no new table interchange family or host dashboard is introduced. See [supported Event Modeling](../mermaid.md#event-modeling-diagrams).
+
+## Combined gauge anatomy, Bullet axes and Progress rows
+
+`ChartGaugeForm.ArcWithNeedle = 3` combines the existing arc and needle anatomy. Existing `Arc = 0`, `Needle = 1` and `Linear = 2` values retain their identities. `ChartGaugeBand` accepts optional `Color` and `Opacity` independently of semantic `State`; `BandGap = 0` and `NeedleColor = null` retain the existing paint defaults. Rebuild compiled consumers: the former three-parameter `ChartGaugeBand(double, double, ChartSeriesState)` constructor becomes a five-parameter constructor with optional color and opacity arguments. Existing source calls keep their defaults after recompilation.
+
+Bullet local axes require `ConfigureBullet(options => options.IndependentAxes = true)`. Configure each series through `ConfigureBulletAxis`; it captures a cloned `ChartAxis`, and `BulletAxis` returns a detached copy. `ChartOrientation` selects horizontal or vertical tracks. The default shared-domain horizontal workflow remains available; contradictory local/shared-axis settings reject explicitly.
+
+`Chart.AddProgressBars` now retains immutable `ChartProgressItem` observations. Its returned series exposes `ProgressItems`, an empty `Points` collection and one `ObservationCount`/`SourcePointCount` per row. Replace `series.Points.Add/Clear` after this factory with `ReplaceProgressItems`; replace point assignment with `UpdateProgressItem`. Updates preserve explicit observation IDs and presentation overrides; full replacement clears them, matching the other typed observation APIs. The direct numeric `new ChartSeries(id, name, ChartSeriesKind.ProgressBar, points)` workflow still uses `Points` and the shared `ChartOptions.ProgressMaximum`. Explicit `ChartProgressItem(label, value, minimum, maximum, color)` rows retain signed or out-of-range raw readings while geometry clamps to the row domain.
+
+HTML Progress editing is off by default. Enable `options.ProgressEditing.Enabled`, then connect the existing controller with `connectNative(host, {basis, axes:null, progressEditing:true})`. The host resolves authored `seriesKey`/`observationId`, changes the source model and returns fresh native `{html,basis}`. Stale, cancelled, invalid and disposed replies never commit. The adapter does not mutate C# data through SVG geometry. Scalar interchange remains descriptive option/domain/style facts plus SVG fallback; it does not load editable Gauge/Bullet/Progress models.
+
+## Editable topology from typed JSON
+
+Parse with `VisualArtifactInterchangeEnvelope.FromJson(json)`, then call `envelope.ToTopologyChart()`. Edit the detached native groups, nodes, edges or detail rows and prepare/export again. There is no generic `envelope.ToArtifact()` rehydrator.
+
+The imported chart uses Manual layout and the prepared group/node bounds saved in the envelope. These are scene coordinates: default Manual preparation preserves their origin and does not add the title/subtitle frame again. Natural export retains the saved canvas and can extend its right or bottom edge for edited content. Explicit output fitting may transform the geometry; ordinary authored Manual charts keep their existing content-coordinate frame placement. Raw `ToTopologyHierarchySource()` restoration retains authored coordinates and does not use the prepared-scene origin. To rearrange it, explicitly choose a native `LayoutMode`, for example `chart.LayoutMode = envelope.Topology!.LayoutMode`. Authored waypoints, anchors and lanes are restored; sampled resolved routes stay diagnostic facts on the original envelope.
+
+Envelope IDs remain exact. IDs normalized or discarded before export cannot be reconstructed; opaque `chartforgex.sourceId` metadata never controls identity. Entity metadata is detached. Common source-language/extension metadata remains on the envelope. The resolved theme does not contain the original custom palette, paired modes, typography sizes, padding or render options, so loading does not promise identical pixels. Unsupported carried fields reject explicitly instead of disappearing.
+
+## Hierarchical rectangular Heatmap axes
+
+Use the existing `ChartAxisLabel.Groups` on rectangular numeric or categorical Heatmap axes. X labels bind to actual column coordinates; Y labels bind to one-based source row slots. Source order and series identity remain independent of visual mirroring, so reordering rows deliberately changes slot membership while setting `Reversed` does not.
+
+Rectangular Heatmap now honors both axis reversal flags, including flat axes where those flags were previously ignored. Grouped Y captions cannot be combined with authored `LaneGroup` headers; grouped X plus `LaneGroup` remains supported. Numeric and categorical cells stay separate models. Missing cells do not become zero cells. Calendar and Hexbin Heatmap hierarchy is outside this contract.
+
+## Categorical radial sector-area encoding
+
+`ChartRadialGeometryOptions` appends the optional `ChartRadialValueEncoding valueEncoding` argument. Existing source calls keep `Radius` and the existing geometry after recompilation. Rebuild compiled consumers: the former six-parameter constructor becomes a seven-parameter CLR signature; replacing DLLs alone is insufficient.
+
+Use `AddRadialColumn` with `valueEncoding: ChartRadialValueEncoding.Area` for categorical sector-area charts, including ordinary grouped, named-stack and normalized-series workflows. The default `Radius` law and legacy single-series `AddPolarArea` output remain unchanged. Area requires homogeneous RadialColumn series, linear selected value axes, and nonnegative bounds/observations. Unsupported families/scales reject rather than change meaning. Primary and secondary scales and reversal use the same area law.
+
+Nominal sector area encodes the normalized visible interval. Raw-value proportionality needs a zero baseline and compatible normalization; an authored nonzero minimum clips the visible interval. Spacing, rounded corners and clipping can change painted pixel area. Raw observations and stable source IDs stay unchanged. The bounded metadata fact is descriptive, not editable radial JSON. Numeric radial navigation remains outside this contract; continuous Polar retains its separate captured-projection API.
+
+## Canonical repeated Mermaid subgraphs
+
+`MermaidFlowchartDocument.Subgraphs` contains one semantic group per ID in source first-ID order. The first actually completed declaration owns its title, direction and span; later declarations merge their raw node-reference lists in close order. A nested self declaration flattens, so its inner completed declaration owns those presentation facts. Inspect `SourceText` and `Statements` for every original header, direction and source occurrence. There is no second writable occurrence model or compatibility option.
+
+Node and group parents use the same first-closed claims, including references before a group declaration and later wrapper membership. Genuine cycles reject with a located invalid-statement diagnostic. Resource limits count repeated opening allocations without refunds, while portable required member metadata checks its existing text ceiling before materialization. Existing unique-ID inputs keep their semantic counting order and default native path. Source support and authored comparison contracts do not establish upstream version or visual outcomes until executed.
+
+## Git graph source policy and host overrides
+
+`MermaidGitGraphRenderOptions.ShowBranchLabels` and `ShowCommitLabels` are now nullable host overrides. Assigning `true` or `false` still explicitly overrides the source. Leaving them null uses source configuration, then the previous visible default; code that reads these options as a non-nullable `bool` should resolve its intended fallback explicitly. `Direction`, `ParallelCommits` and `RotateCommitLabels` follow the same override rule.
+
+Git graph `LR`/`TB`/`BT` headers now affect native geometry. Main-branch source configuration is applied before command intake, and source branch order is lowered to native display ranks while AST order remains authored. `GitGraphBlock.ShowBranchLabels = false` now honors its documented contract by hiding both lane lines and captions. Explicit source caption rotation is applied; absent rotation retains the native upright default. The direct native parallel mode requires parent-before-child source intake. Selected cherry-pick parents retain their existing AST and portable metadata representation; native placement continues to use the incumbent captured parent-edge list. Native commit constructors and `AddCommit` retain their existing signatures.
+
+## Mermaid Architecture ordered alignment
+
+Architecture `align row a b` and `align column a b` now map to one native `TopologyChart.Alignments` collection, including declarations before their services/junctions and repeated compatible occurrences. `MermaidArchitectureDocument.Alignments` retains typed kind, ordered members and the original span; raw `SourceText` and `Statements` retain every declaration. Shallow unaligned Architecture keeps its existing DenseGrouped path; an authored alignment selects Layered. Member IDs must name distinct services or junctions, rather than groups.
+
+Rows share body center-Y and retain global left-to-right member order; columns share center-X and retain top-to-bottom order. RL/BT and local group directions affect native preferences without reversing these authored global axes. Actual nested parent shells and measured header/caption space participate in the solve. Conflicting order/containment rejects; bounded search exhaustion reports a resource diagnostic and does not imply the source is contradictory.
+
+Nested compartment constraints now use the same nearest-ancestor direction as placement and separators. Feasible inherited Row/Column declarations no longer acquire a contradictory global-direction fallback. Final aligned/obstacle-aware routes also distinguish real node bodies from search padding when reconsidering an obstructed path, preserving named offsets, authored port sides, routing enums and waypoints. These corrections add no public or wire option; clear routes retain their existing points.
+
+This is an additive native/AST/portable API. Empty alignment collections preserve the existing wire shape. Ordinary typed JSON import remains Manual with prepared coordinates and portable identities; raw hierarchy import restores exact source alignment identities through optional ordered `SourceAlignments`, using the existing source identity type. Native automatic constrained models currently reject mixed coordinate overrides, authored ranks and minimum-rank spans above one; Manual validates supplied geometry without inventing a typography gap. There is no compatibility branch, browser layout, serializer, external renderer or production dependency.
+
+### Native block source grids
+
+`BlockLayoutBlock` keeps its existing flat default layout. Nested blocks use the same `Items` and `Edges` owners with optional `ParentId`, `IsComposite`, local `Columns` and explicit `AutoColumns`; item IDs are global, including composite source cells. Use `AddComposite` and the parent-aware `AddItem`/`AddSpace` overloads rather than flattening children or manufacturing aggregate nodes. The original four `BlockLayoutShape` numeric values remain unchanged; additional native contours are appended.
+
+For Mermaid block source, explicit `columns auto` now creates one source-ordered row. Omit the statement to retain the caller's `MermaidBlockRenderOptions.Columns` default. Explicit declarations stay in source order even when connectors reference their IDs earlier. Duplicate declarations, missing parents/end delimiters and local span overflow are diagnosed instead of silently flattened or clamped. Default/class/direct native style application replaces the old retained-only style warning; unsupported CSS is still diagnosed. Existing unstyled flat rendering remains on its incumbent output path.
+
+## Kanban source dimensions
+
+Authored `kanban.padding` now maps to native viewport padding and takes precedence over the generic topology host padding; omission keeps the existing host option and output path. `kanban.sectionWidth` initializes each native group width and the task interior. Any finite positive section width is accepted, including values smaller than the native content minimum. The existing group minimum, side clearances and measured complete captions/details may enlarge the final column; source width is not a command to crop content or reduce font floors. Both requested source dimensions remain inert facts in the existing group metadata after preparation and portable restoration. No layout engine, browser dependency or separate Kanban serializer is introduced.
+
+
+### Fishbone natural cause lanes
+
+`FishboneDiagramBlock` keeps its fixed default. Call `MeasureNaturalSize()` or
+`WithNaturalSize(minimumWidth, minimumHeight)` for complete measured cause captions
+and real parent-connected nested lanes. Remeasure after changing the tree, padding
+or typography; a measured block no longer accepts an undersized explicit frame.
+Mermaid Ishikawa conversion selects these lanes only when the incumbent scene
+cannot contain its complete captions or nested parent relationships. Requested
+source width/height then act as minimum dimensions. Expanded natural scenes keep
+their frame in scrollable HTML; `ishikawa.useMaxWidth: true` uses the existing
+fit-to-width host policy without changing native SVG/PNG geometry. No per-node
+CSS/class grammar or browser measurement engine is introduced.
+
+
+### Wardley sourcing, pipeline identities and annotations
+
+Existing simple native Wardley maps keep their default theme/grid/outline paint. Sourcing strategies now have distinct native glyphs; the supported values are `build`, `buy`, `outsource` and `market`. Unknown native strategy strings are rejected rather than painted as an indistinguishable generic ring. Inertia and default component captions clear the sourcing footprint; explicit label offsets keep their authored meaning.
+
+Source pipelines now capture solid rail paint, child label offsets and real `Parent_Child` endpoint identities. Main node IDs resolve first. A short child label is accepted only when it identifies one child; use its explicit endpoint ID when a label is ambiguous. Source identity collisions are located errors. Anonymous children created by the existing native `AddComponent(label, evolution)` overload keep their ordinary dashed output and are not link targets.
+
+`annotations [visibility,evolution]` uses the original annotation records to create a native measured legend. The source permits one legend origin. Saved common artifact envelopes retain Wardley counts and host dimensions; they are not an editable typed Wardley serialization. `VisualArtifact.Clone()` retains the model's existing mutable producer semantics while the optional paint object itself is immutable.
+
+### XY source overrides and datum captions
+
+`MermaidXYChartRenderOptions.Width`, `Height` and `ShowDataLabels` now use nullable overrides, matching source-aware family options. Null inherits source configuration and existing native defaults; explicit `false` suppresses source labels. Integer and Boolean assignments still compile. Code reading the old non-null defaults should resolve a fallback or inspect the converted chart. The native default remains 900 by 520 with a visible legend. `ShowLegend` and `ShowTitle` are optional host overrides.
+
+Quoted XY datum captions are exposed as `MermaidXYChartSeries.PointLabels`, retaining the datum index, decoded text, raw quoted token and source span. Line captions lower into existing native point labels; bar captions are retained only. No additional caption renderer or source-AST reconstruction API is introduced.
+
+
+### Structured native topology captions
+
+Safe Markdown in Flowchart node captions, Mindmap node labels and Requirement text values now preserves strong/italic emphasis. Those supported captions no longer emit the obsolete plain-text approximation warning. Unsupported code, links, images, HTML and math remain literal with located warnings; warning rejection still applies. Unwired edge/group and other-family captions retain their previous warnings.
+
+`TextContent` is immutable and owns both runs and plain semantic text. `LabelContent`, `Content` and `ValueContent` are native authoring accessors; setting the incumbent string accessor intentionally resets that caption to plain content. Portable fields carry structured runs only when needed and validate their plain projection. Structured SVG exports use permanent self-contained glyph resources instead of editable SVG `<text>`; edit through the native content owner. Plain-string SVG/PNG and caption semantics keep the incumbent path. Color/bitmap-only rich glyph outlines remain an explicit unsupported SVG export, while the built-in fontless TinyFont path stays available.
+
+
+## Explicit bounded Gaussian SVG import
+
+`SvgRasterizer.Rasterize` now accepts the optional trailing `SvgRasterFilterOptions? filters = null` parameter. Existing source calls retain their default unsupported-filter diagnostics and pixels. The CLR method signature changes, so already-compiled consumers must rebuild against this version; there is no compatibility overload or automatic filter opt-in. `ToImage` and `ToPng` keep their current best-effort behavior.
+
+An explicit options instance enables only the finite, source-sRGB, user-space SourceGraphic Gaussian subset documented in [visual canvas](../visual-canvas.md). It uses the existing native three-box approximation and cumulative raster limits. Other filters, source scopes and unqualified input-edge cases retain `SFR002`; strict mode rejects them. This does not add a native SVG filter writer/profile or change the fixed pixels of an already-baked captured layer.
+
+
+## Linked table content and UseCase JSON vertices
+
+`TopologyNode.TableContent` is additive. Existing nodes without a table and ordinary authored Visuals tables retain their default path. Embedded finite table data requires typed envelope version 2; readers that support only version 1 must reject it and can use a separately delivered SVG/PNG. Restore with `ToTopologyChart()`, then edit the detached table through its ordinary Core API. Saved `PresentationScale` is captured table geometry, rather than an inferred source viewport or a general transform option.
+
+UseCase `json ID @ { ... }` now creates that actual native graph vertex instead of an unsupported-statement error. Notes and supported solid associations refer to the same source ID. The canonical native table uses Property/Value headings. Ordered JSON pointers identify rows; type, number spelling, complete original JSON and raw spans remain facts. Nested objects and complex arrays flatten into native rows, scalar arrays keep the first visible property label and accessible path on later rows, and empty objects/arrays remain visible facts. Duplicate keys, nonobject roots, conflicting graph declarations, unsupported JSON relationships and finite limits reject with source diagnostics. Advanced actor contours are described in the finite actor presentation section below.
+
+
+## Finite actor presentation and retained native glyphs
+
+`TopologyNodeShape` appends `ActorHollow`, `ActorBusiness`, `ActorBusinessHollow`, `ActorSilhouette`, `ActorIcon` and `BusinessEllipse`; all earlier numeric enum values remain unchanged. Existing plain Actor geometry and null/empty subtitle behavior retain their default path. The variants use the same external caption, attachment and measured obstacle owners. A silhouette contains filled native head/body contours rather than a Person glyph.
+
+`TopologyNode.IconShape` is nullable and uses the existing `TopologyIconShape` enum. An explicit non-`Auto` value takes precedence over catalog/kind glyph inference, including a Generic node without `IconId`. Null preserves inference; `Auto` keeps the existing fallback. The typed envelope captures this policy, including known enum validation, and requires version 2 when a new actor/business surface or non-null glyph policy is present. Version-1-only readers must reject it; deliver separate SVG/PNG to those consumers. `ToTopologyChart()` restores finite native fields into detached mutable owners. It does not recreate a producer icon catalog, recover discarded source identities or promise whole-document byte-identical paint.
+
+UseCase `type:hollow`, `type:awesome`, business actor/ellipse metadata and exact native `icon` references now render instead of reporting an unlowered-contour warning. Existing strict hosts can accept these supported forms. `MermaidFlowchartRenderOptions.IconCatalog` supplies an optional cloned finite native catalog; unresolved references still warn and are rejected by strict policy. There is no provider, guessed alias or external font fetch. The native Core `usecase-advanced-actors` recipe and the ordinary parsed-source program are separate consumers of the same authored graph facts. Inferred legends continue to summarize node kinds/symbols/catalog ids; the node surface is not a new legend taxonomy.
+
+
+## Sequence role policies and source margins
+
+Sequence layout and role typography are optional immutable model policies. Existing callers that leave `Layout` and `Typography` null or empty keep their rendering and portable defaults. To edit a policy, construct a replacement; mutating a style passed to `SequenceTypography` or returned by its getter does not mutate the model. Rebuild consumers to use the new public members; existing signatures and enum values are retained.
+
+Source settings such as `sequence.actorFontSize`, `messageFontWeight`, `noteMargin` and `diagramMarginX/Y` now affect the native measured content. Previously these settings were retained as unsupported source losses. Shared/family host font fields override only their matching source dimensions; explicit native role edits resolve over an explicit context. Assigning `MermaidSequenceRenderOptions.Padding` expresses a host override, even if assigned 32 equals its default, and supersedes both source margin axes. Omitting it allows source axes to apply.
+
+Nonempty policies add typed Sequence fields and select version 2, including native theme/mode captured through the existing theme schema. Old version 1 readers reject those envelopes rather than silently dropping their layout or typography. Null/empty policies continue to omit the new fields. Native restoration deliberately avoids replaying the older resolved-theme fallback over the captured full theme; prepared role sizes/families are not scaled a second time. Explicit context viewports remain authoritative, and `WrapLabels=false` rejects insufficient fixed space while natural exports expand to complete lines.
+
+
+### Sequence participant view policy
+
+`SequenceLayoutPolicy` appends optional `mirrorParticipants` and `hideUnusedParticipants` constructor arguments. Rebuild callers against the updated Core package; no alias or compatibility overload is retained for this unpublished policy addition. Existing calls that omit both arguments retain native output. Explicit false also retains ordinary native output and omits an otherwise empty policy from portable JSON.
+
+Mirrored destruction uses the participant footer at the terminal message, with its lifeline ending at the footer top, instead of the ordinary standalone destruction cross. Public lifetime indices remain unchanged. Hidden unused columns remain editable source records and typed portable participants; a visible header/footer count is therefore distinct from `Participants.Count` and portable node count. Group ranges always refer to original source indices. Header and footer semantic regions share the same participant ID with distinct roles; footer SVG groups carry `data-source-id` rather than allocating a second DOM/entity ID.
+
+
+### Sequence message number presentation
+
+`SequenceLayoutPolicy` appends optional `messageAlignment`, `noteAlignment` and `numberPresentation` constructor arguments. Rebuild binary callers against the updated Core package. Null alignment and null/Inline number presentation keep ordinary native SVG, PNG and default portable bytes. When reconstructing a policy to change one dimension, copy its other retained fields; the source participant-view program demonstrates that pattern.
+
+Parsed Mermaid autonumber output changes from an inline caption such as `1000. Save` to a distinct measured `1000` badge and the `Save` message caption. Decimal values, per-occurrence visibility, message IDs and source order do not change. Consumers that inspect painted text should find the `sequence-number` role within the source message, or use its typed number metadata, rather than split a caption prefix. Native models using the existing numbering metadata remain Inline unless Badge is selected explicitly.
+
+Number badge and number text semantic regions share the message's source ID with distinct roles. The complete message region contains their captured footprint. Native NumberText/NumberFill paints are retained through the existing portable paint owner and select version 2; old readers must reject that version rather than silently lose paint. Explicit Number typography overrides matching automatic badge fields; partial overrides remain partial after save/load instead of copying one digit-size snapshot to every message.
+
+The ordinary adapter palette remains the default for omitted source paints. Explicit sequenceNumberColor and signalColor are lowered through their actual matching roles; full upstream preset synthesis is not claimed. New recipe/source examples use authored colors so native SVG/PNG and reference observations have a concrete paint contract.
+
+
+Sequence source default migration: omitted Mermaid settings now materialize the retained 12.2 mirror/footer, role fonts, centered message/note alignment, curved self routes, participant minima/separation and logical margins. SVG/PNG from previously unconfigured source intentionally changes; retain explicit source/native policies when a different presentation is required. Native `SequenceArtifact` null/empty policies retain incumbent output. `SequenceLayoutPolicy` appends FooterBottomMargin/FragmentTabMinimumWidth/Height; immutable rebuilds must preserve these and SelfMessageRouting. Optional `Paint.LifelineStroke` reuses ChartStrokeStyle and typed portable v2; source lifelines select solid0.5. Nonnegative bottom adjustments are supported; clipping through negative adjustments is rejected. Full upstream preset/look appearance is separately pending and is not implied by geometry/default lowering.
+
+### Sequence source preset materialization and participant bands
+
+Rebuild callers after updating `SequenceLayoutPolicy`: its constructor adds an optional trailing `SequenceParticipantBands? participantBands` argument. Existing source calls retain their argument meanings; already compiled callers need rebuilding. A null policy or an empty policy keeps ordinary native output. There is no compatibility alias.
+
+Parsed Sequence sources now materialize named preset colors and the selected neo participant bands. Omitted source appearance follows the Sequence-specific redux-color/neo defaults rather than inheriting the global default/classic appearance. CFX Dark host mode selects the paired redux-dark-color preset; an authored preset name stays literal. Explicit host themes replace preset defaults, while explicit source role colors and arrays keep their precedence. New per-participant `Border`, `ActivationFill` and `ActivationBorder`, `Paint.FragmentTitleText`, and nonempty band policies require typed interchange version2. The shared reader rejects a downgraded payload instead of silently dropping these facts.
+
+Source shadow effects remain a composition requirement: active unpainted neo glyph/note/tab/background roles produce a located warning and fail `MermaidWarningPolicy.Reject`. Keep strict consumers strict; compose the native effect owner before treating those source workflows as qualified. The public source example preserves genuine omitted defaults and does not disable effects to hide this boundary. Native null/default anatomy and paint remain unchanged.
+
+
+### Captured native alpha shadow overload
+
+`PreparedVisual.CaptureLayer` also accepts immutable `VisualDropShadow`. Existing typed `VisualLayerBlur` calls and method signatures remain valid. A source call that deliberately passes an untyped null literal is now ambiguous between the two effect requests; select `(VisualLayerBlur)null!` or `(VisualDropShadow)null!` when testing null validation. Ordinary callers pass their non-null request directly. No alias/base wrapper is required.
+
+Captured shadows return source-plus-shadow union bounds; the older imperative `ImageComposition.DrawShadow` still retains its fixed composition frame and device-unit behavior. Keep placement based on the original child origin when calling `DrawLayer`. Native captured output is a baked image; the separately expanded finite SVG importer does not make general filter graphs, native output profiles, masks or blending supported.
+
+
+## SVG luminance masks and explicit native blend selection
+
+Ordinary SVG luminance masks now use the CSS Masking / Filter Effects luminance matrix 0.2126/0.7152/0.0722 on unassociated RGB, followed by mask alpha. Previously colored masks used the legacy 299/587/114 canvas luma rule. An opaque red mask over opaque white therefore changes from alpha 76 to 54; green 149 to 182; blue 29 to 18. The mask definition's inherited `color-interpolation` defaults to sRGB; linearRGB first decodes sRGB channels, so gray 128 yields coverage 55. The referencing object's space and `color-interpolation-filters` do not select mask coverage. This is an ordinary source correctness correction, not an opt-in native mode. Historical SVG1.1 coefficients differ slightly; no source-version detector is introduced.
+
+Selected legacy native canvas/clip, three-argument `DrawLayer`, old blur/shadow and COLR arithmetic keep their existing paths. New `VisualMask` and the mandatory-mode `DrawLayer` overload opt into the documented fixed-grid precision. Explicit Normal can intentionally differ from the old truncating translucent overlap. Existing blur/shadow capture and three-argument DrawLayer binaries retain their signatures. Rebuild consumers to use the new request types and overloads; source calls passing a bare null CaptureLayer argument must select the intended request type explicitly. No obsolete alias or compatibility probe is added. These APIs do not turn a baked image export into editable live-filter SVG.
+
+
+### Retained Sequence shadows and SVG effect profiles
+
+`VisualDropShadow` appends optional `opacity` and `relativeRegion` constructor
+arguments. `VisualSvgOptions` appends optional `effectProfile` and
+`effectRasterOptions`. Existing source calls keep their defaults; rebuild binary
+consumers because optional arguments are part of the constructor signature.
+No alias constructor or compatibility bridge is retained.
+
+Native Sequence effects are nullable surface roles. Null keeps ordinary SVG,
+PNG and identity bytes. Non-null roles use interchange v2 and restore to the
+same editable Sequence owners; v1 cannot silently discard the new appearance.
+Operation tokens belong to the new `PreparedVisual.ToSvg(options, token)` and
+`ToPng(options, token)` overloads and never enter portable facts.
+
+Source neo participant glyphs now paint their actual inserted shadow, including
+when stylesheet `dropShadow` is `none`. This intentionally changes source pixels
+and removes only that completed loss warning. Literal supported shadow functions
+also reach the native note/tab/background owners. The known preset bare stylesheet URL has no local target in pinned standalone
+Sequence output and therefore paints nothing; its lowering now preserves that
+no-paint result without a false loss warning. It is not remapped to the separate
+namespaced glyph filter. Explicit unsupported authored URL targets remain located
+diagnostics and strict warning policy still rejects those unsupported inputs.
+
+
+### Retained prepared mask export
+
+Use `prepared.WithMask(mask)` to keep an explicit native SVG mask presentation,
+while `CaptureLayer(mask)` and `CapturedVisualLayer.WithMask(mask)` remain static
+captured-image workflows. The new operation does not change ordinary unmasked
+bytes. Its native output uses the existing fixed-density mask contract and rejects
+conflicting grids rather than resampling.
+
+Complete-root ordered masks now carry a typed replay payload, as described below.
+Other captured scopes omit Json and reject common interchange clearly. Keep original
+source-fact JSON separate when intentionally exporting only the unmasked model.
+
+### Retained mask JSON replay
+
+Complete-root `PreparedVisual.WithMask` chains now export typed captured mask data
+through common interchange instead of the first native/export-only tranche's
+blanket Json rejection. The wire remains the unpublished version2 schema; ordinary
+and empty-mask envelopes retain their prior version and bytes. There is no codec,
+provider or production dependency change.
+
+Existing editable family importers intentionally reject a carried mask rather than
+silently drop it. Read a detached second envelope and explicitly clear its
+`Presentation.CapturedEffects` before `ToSequenceArtifact` (or the corresponding
+supported typed importer); change `Messages[0].Text` on a Sequence model, prepare in
+the original viewport/context, then replay the unchanged original envelope with
+`ApplyCapturedEffects`. This is an explicit output-policy replay, not an editable
+scene rehydrator. Embedded/non-root masks remain unsupported for faithful JSON;
+large masks remain subject to the existing common envelope limit.
+
+### Explicit layer alpha operators
+
+`ImageComposition.DrawLayer` adds a mandatory `VisualCompositeOperator` overload;
+existing three-argument and `VisualBlendMode` calls retain their output. An untyped
+`default` as the fourth argument is now ambiguous between the two enums: use
+`VisualBlendMode.Normal` or the intended `VisualCompositeOperator.SourceOver`.
+There is no alias or compatibility shim. Copy's source extent and Clear's complete
+frame semantics are explicit; transparent source outside its placed extent
+participates for every operator. The new source primitive subset is opt-in through
+the existing `SvgRasterFilterOptions`; default source import behavior is unchanged.
+
+
+### Ordered captured presentation
+
+The unpublished mask-only `Presentation.CapturedMasks` API and `capturedMasks` wire field are replaced by
+`Presentation.CapturedEffects` and `capturedEffects`. Each ordered step has one typed `Mask`, `Outline`,
+`Bloom`, `DropShadow` or terminal `Blur` payload. Wrap a mask DTO in a `VisualArtifactInterchangeCapturedEffect`;
+access its bytes through `step.Mask.Pixels`. The old wire field rejects explicitly, so regenerate unpublished
+captures rather than treating an old policy as empty. Empty ordinary envelopes retain their incumbent bytes.
+
+Use `ApplyCapturedEffects(envelope, freshPreparedSource)` for a complete-root presentation in the source
+viewport. Source editing still uses a detached envelope copy with `CapturedEffects.Clear()` and the existing
+family importer. Complete-root `WithOutline`, `WithBloom`, `WithDropShadow` and `WithMask` remain ordered;
+source facts are retained independently of pixels. Capture outside that viewport with the existing `CaptureLayer`.
+
+An explicit `CapturedVisualLayer.ToArtifact()` records its source Width/Height separately from one terminal
+`CaptureFrame` containing actual output Bounds and raster options. Replay it with `ApplyCapturedLayer`.
+A changed source footprint rejects and requires a fresh capture. Generic prepared-artifact size checks remain
+strict; source geometry is never inferred from or translated to the expanded bitmap. Baked outputs carry no
+source-coordinate value or visibility plan. JSON is typed source plus explicit presentation replay, not a scene
+rehydration format. New APIs require recompilation; no obsolete mask-list alias is retained.
+
+
+### Standard isolated blend modes
+
+`VisualBlendMode` keeps Normal=0, Multiply=1, Screen=2 and PlusLighter=3. Standard separable modes append at4–12; Hue, Saturation, Color and Luminosity append at13–16. Update exhaustive application switches or serialized application-owned enum allowlists before selecting a new mode. Existing native and three-argument layer-composition calls keep their arithmetic. The new enum membership does not add retained blend replay or a blend field to the common interchange envelope.
+
+Finite source `feBlend` now lowers the standard names only for the existing explicit user-space flood/SourceGraphic shape in computed sRGB. Null filter options retain unsupported-filter behavior; implicit/linearRGB filter space, `no-composite`, unknown input references and `plus-lighter` remain explicit boundaries. Color-font composition keeps its existing linear-light input/output and float precision even though the normalized channel helpers are shared.

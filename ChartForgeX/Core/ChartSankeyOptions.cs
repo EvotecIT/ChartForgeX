@@ -14,11 +14,18 @@ public sealed class ChartSankeyOptions {
     private double _ribbonOpacity = .35;
     private double _ribbonVisibilityThreshold;
     private ChartSankeyFlowColorMode _flowColorMode;
+    private ChartSankeyLabelStyle _labelStyle;
 
     /// <summary>Gets or sets ribbon color inheritance. Source is the default and retains the existing source-node paint policy.</summary>
     public ChartSankeyFlowColorMode FlowColorMode {
         get => _flowColorMode;
         set { Defined(value); _flowColorMode = value; }
+    }
+
+    /// <summary>Gets or sets label paint. Backdrop preserves the native default; Plain and Outlined do not add a rectangular label surface.</summary>
+    public ChartSankeyLabelStyle LabelStyle {
+        get => _labelStyle;
+        set { Defined(value); _labelStyle = value; }
     }
 
     /// <summary>Gets or sets the independent quantitative flow-color scale. Null uses the theme's sequential scale in Quantitative mode.</summary>

@@ -19,9 +19,15 @@ internal static partial class VisualMarkerScene {
     /// <summary>Shares actual numeric custom-marker bounds between semantics, label obstacles and static painting.</summary>
     internal static ChartRect Bounds(ChartSeries series, double x, double y, double radius, ChartMarkerOptions? markerOptions = null) {
         var markers = markerOptions ?? series.Markers;
-        if (markers.CustomPath == null) return Bounds(x, y, Math.Max(radius, Extent(series, radius, markers)));
+        return ResolvedBounds(markers, x, y, radius, OutlineExtent(series, markers));
+    }
+
+    internal static ChartRect ResolvedBounds(ChartMarkerOptions markers, double x, double y, double radius, double outlineExtent) {
+        var visible = radius > 0 && markers.Enabled != false;
+        if (markers.CustomPath == null) return Bounds(x, y, Math.Max(radius,
+            visible ? ChartMarkerGeometry.Extent(markers, radius) + outlineExtent : 0));
         var bounds = ChartMarkerGeometry.Bounds(markers, x, y, radius);
-        var padding = radius > 0 && markers.Enabled != false ? OutlineExtent(series, markers) : 0;
+        var padding = visible ? outlineExtent : 0;
         return new ChartRect(bounds.X - padding, bounds.Y - padding, bounds.Width + padding * 2, bounds.Height + padding * 2);
     }
 

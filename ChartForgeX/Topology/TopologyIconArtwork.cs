@@ -8,7 +8,7 @@ namespace ChartForgeX.Topology;
 /// <summary>
 /// Describes optional external artwork for a topology icon.
 /// </summary>
-public sealed class TopologyIconArtwork {
+public sealed partial class TopologyIconArtwork {
     internal TopologyIconArtwork Clone() => (TopologyIconArtwork)MemberwiseClone();
 
     /// <summary>Gets or sets an SVG viewBox used for inline SVG artwork.</summary>

@@ -19,15 +19,16 @@ internal static partial class VisualHierarchyCompiler {
         }, chart.HierarchyPreparation);
         var tiles = layout.ToDictionary(tile => tile.ItemIndex);
         var paintOrder = layout.Select((tile, ordinal) => (tile.ItemIndex, ordinal)).ToDictionary(item => item.ItemIndex, item => item.ordinal);
+        var frameSurface = HierarchyCaptionSurface.Frame(context);
         if (tiles.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The treemap has no positive leaf sizes."));
         foreach (var root in Ordered(chart.HierarchyPreparation?.Roots ?? index.Roots)) Draw(root);
         if (chart.HierarchyPreparation?.Request != null)
-            for (var item = 0; item < series.HierarchyItems.Count; item++) if (!chart.HierarchyPreparation.Contains(item)) Draw(item, false);
+            for (var item = 0; item < series.HierarchyItems.Count; item++) if (!chart.HierarchyPreparation.WithinRoot(item)) Draw(item, false);
         DrawHierarchyScale(chart, context, builder, areas.Scale, surface, colors);
 
-        void Draw(int itemIndex, bool recurse = true) {
+        void Draw(int itemIndex, bool recurse = true, HierarchyCaptionSurface? beneath = null) {
             var item = series.HierarchyItems[itemIndex]; var children = index.Children(itemIndex);
-            var value = index.HierarchyValues[itemIndex]; var formatted = ChartNumericFormatter.FormatValue(chart.Options, value);
+            var value = chart.HierarchyPreparation?.Values[itemIndex] ?? index.HierarchyValues[itemIndex]; var formatted = ChartNumericFormatter.FormatValue(chart.Options, value);
             var full = HierarchyCaption(series, itemIndex, item.Label);
             var metadata = ChartRelationshipMetadata.Node(series, item.Id, item.Label, itemIndex);
             metadata["data-cfx-full-label"] = full; metadata["data-cfx-depth"] = N(index.Depths[itemIndex]);
@@ -50,23 +51,25 @@ internal static partial class VisualHierarchyCompiler {
             using (builder.PushGroup(id, role, metadata)) {
                 if (visible) {
                     var blend = surface.Blend(itemIndex);
+                    var captionSurface = children.Count > 0 || blend.Color.A != 255 ? (beneath ?? frameSurface).Over(blend.Color, blend.Paint) : null;
                     var state = ChartRelationshipPaint.State(series, itemIndex);
-                    var outline = surface.Scale != null && state != ChartSeriesState.None
-                        ? ChartSeriesColours.State(state, colors, colors.Foreground) : (ChartColor?)null;
-                    var strokeWidth = outline.HasValue ? Math.Min(2, Math.Min(bounds.Width, bounds.Height) / 4) : 0;
+                    var explicitStroke = itemIndex < series.PointStrokeColors.Count ? series.PointStrokeColors[itemIndex] : null;
+                    var outline = explicitStroke ?? (surface.Scale != null && state != ChartSeriesState.None
+                        ? ChartSeriesColours.State(state, colors, colors.Foreground) : (ChartColor?)null);
+                    var strokeWidth = outline.HasValue ? Math.Min(explicitStroke.HasValue ? series.StrokeWidth : 2, Math.Min(bounds.Width, bounds.Height) / 4) : 0;
                     builder.Rect(bounds, blend.Color, stroke: outline, strokeWidth: strokeWidth,
                         radius: Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * .1),
                         role: children.Count > 0 ? "treemap-group-mark" : "treemap-tile-mark",
-                        paint: new VisualScenePaintBinding(blend.Paint, outline.HasValue ? SvgPaint.Of(outline.Value, SvgColorRole.Status) : null));
+                        paint: new VisualScenePaintBinding(blend.Paint, outline.HasValue ? SvgPaint.Of(outline.Value, explicitStroke.HasValue ? SvgColorRole.Series : SvgColorRole.Status) : null));
                     Pattern(builder, Rectangle(bounds), series, itemIndex, blend.Color, "treemap-pattern");
                     if (showLabels) {
                         if (children.Count == 0) TreemapLabel(chart, context, builder, full, options.ShowValues ? formatted : null,
-                            bounds, blend.Color, itemIndex, blend.Paint, header: false);
+                            bounds, blend.Color, itemIndex, blend.Paint, captionSurface, header: false);
                         else if (options.ShowGroupLabels) TreemapLabel(chart, context, builder, full, options.ShowValues ? formatted : null,
-                            tile.HeaderRect, blend.Color, itemIndex, blend.Paint, header: true);
+                            tile.HeaderRect, blend.Color, itemIndex, blend.Paint, captionSurface, header: true);
                     }
-                    if (children.Count > 0) using (builder.PushClip(tile.ContentRect)) foreach (var child in Ordered(children)) Draw(child);
-                } else if (recurse) foreach (var child in Ordered(children)) Draw(child);
+                    if (children.Count > 0) using (builder.PushClip(tile.ContentRect)) foreach (var child in Ordered(children)) Draw(child, beneath: captionSurface);
+                } else if (recurse) foreach (var child in Ordered(children)) Draw(child, beneath: beneath);
             }
             var description = full + ": " + formatted;
             if (item.ColorValue.HasValue) description += "; " + surface.Title + ": " + surface.Presentation.Value(item.ColorValue.Value);

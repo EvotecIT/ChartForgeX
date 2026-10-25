@@ -614,4 +614,8 @@ public enum HtmlChartText {
     HierarchyFailed,
     /// <summary>Explains that hierarchy navigation requires the host's native preparation binding.</summary>
     HierarchyDisconnected,
+    /// <summary>Collapses one organization branch. Template: {label}.</summary>
+    HierarchyCollapse,
+    /// <summary>Expands one organization branch. Template: {label}.</summary>
+    HierarchyExpand,
 }

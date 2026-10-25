@@ -21,17 +21,17 @@ internal static class VisualPolarSeriesScene {
 
     internal static void Draw(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
         ChartPath path, ChartColor color, bool radar, bool closed = true) {
-        if (radar && closed && series.Radar.Form == ChartLineAreaForm.Area) {
-            var opacity = series.Radar.FillOpacity ?? context.Theme.AreaOpacity;
+        if (closed && (radar ? series.Radar.Form : series.Polar.Form) == ChartLineAreaForm.Area) {
+            var opacity = (radar ? series.Radar.FillOpacity : series.Polar.FillOpacity) ?? context.Theme.AreaOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
-            builder.Path(path, fill, role: "radar-area", close: true,
+            builder.Path(path, fill, role: radar ? "radar-area" : "polar-area", close: true,
                 paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, opacity)));
             if (series.FillPattern != ChartFillPattern.None && opacity > 0) {
                 var hatchOpacity = Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity));
-                builder.Pattern(path, series.FillPattern, ChartColorMath.WithOpacity(ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), hatchOpacity), role: "radar-pattern");
+                builder.Pattern(path, series.FillPattern, ChartColorMath.WithOpacity(ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), hatchOpacity), role: radar ? "radar-pattern" : "polar-pattern");
             }
         }
-        var stroke = radar ? series.Radar.OutlineStroke : null;
+        var stroke = radar ? series.Radar.OutlineStroke : series.Polar.OutlineStroke;
         var source = stroke?.Color ?? color;
         var outlineOpacity = stroke?.Opacity ?? 1;
         var actual = ChartColorMath.WithOpacity(source, outlineOpacity);
@@ -39,7 +39,7 @@ internal static class VisualPolarSeriesScene {
         if (width <= 0) return;
         foreach (var layer in ChartLineVisualLayers.Build(actual, width, chart.Options.LineVisualStyle))
             if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth,
-                role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: radar && closed,
+                role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: closed,
                 dash: stroke?.ResolveDash(Array.Empty<double>()),
                 paint: VisualChartPaint.Stroke(layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
                     : (stroke?.Color != null ? SvgPaint.Literal(source) : VisualChartPaint.Series(series, source))
@@ -48,7 +48,7 @@ internal static class VisualPolarSeriesScene {
 
     /// <summary>Measures only painted stroke layers so standalone and mixed radar fit the same outline overrides.</summary>
     internal static double StrokeExtent(Chart chart, VisualRenderContext context, ChartSeries series, ChartColor color) {
-        var stroke = series.Kind == ChartSeriesKind.Radar ? series.Radar.OutlineStroke : null;
+        var stroke = series.Kind == ChartSeriesKind.Radar ? series.Radar.OutlineStroke : series.Polar.OutlineStroke;
         var width = VisualReferenceStroke.PaintedWidth(stroke, color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth);
         if (width <= 0) return 0;
         var actual = ChartColorMath.WithOpacity(stroke?.Color ?? color, stroke?.Opacity ?? 1);

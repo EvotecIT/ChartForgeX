@@ -32,7 +32,7 @@ internal static partial class TopologyDenseRoutePlanner {
     /// <summary>Returns true when the planner owns the route of this edge.</summary>
     public static bool Handles(TopologyChart chart, TopologyEdge edge) =>
         TopologyLayoutEngine.UsesReadableDenseLayout(chart) &&
-        edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
+        edge.PathGeometry == null && edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
         !string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal);
 
     /// <summary>
@@ -86,6 +86,8 @@ internal static partial class TopologyDenseRoutePlanner {
                 hash = hash * 31 + (edge.SourcePortId == null ? 0 : RuntimeHelpers.GetHashCode(edge.SourcePortId));
                 hash = hash * 31 + (edge.TargetPortId == null ? 0 : RuntimeHelpers.GetHashCode(edge.TargetPortId));
                 foreach (var point in edge.Waypoints) hash = Mix(Mix(hash, point.X), point.Y);
+                if (edge.TargetMarkerStyle != null) hash = Mix(Mix(Mix(hash, edge.TargetMarkerStyle.Scale), edge.TargetMarkerStyle.Offset), edge.TargetMarkerStyle.StrokeWidth ?? -1);
+
             }
 
             return hash;
@@ -109,18 +111,8 @@ internal static partial class TopologyDenseRoutePlanner {
         var scene = Scene.Create(chart);
         if (scene == null) return routes;
 
-        var requests = new List<Request>(edges.Count);
-        for (var i = 0; i < edges.Count; i++) {
-            var edge = edges[i];
-            var source = nodes[edge.SourceNodeId];
-            var target = nodes[edge.TargetNodeId];
-            var starts = Terminals(chart, scene, source, target, edge.SourcePort, edge.SourcePortId, (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0);
-            var ends = Terminals(chart, scene, target, source, edge.TargetPort, edge.TargetPortId, (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0);
-            routes[edge] = null;
-            if (starts.Count == 0 || ends.Count == 0) continue;
-            var distance = Math.Abs(Center(source).X - Center(target).X) + Math.Abs(Center(source).Y - Center(target).Y);
-            requests.Add(new Request(edge, i, source, target, starts, ends, distance));
-        }
+        foreach (var edge in edges) routes[edge] = null;
+        var requests = CreateRequests(chart, scene, edges, nodes);
 
         // Without a grid (more lines than the search can hold) only facing neighbours are joined; every other edge falls
         // back to the corridor candidates.
@@ -170,18 +162,20 @@ internal static partial class TopologyDenseRoutePlanner {
         var terminals = new List<Terminal>(4);
         var caption = TopologyNodeFootprint.Caption(chart, node);
         var hasCaption = caption.Height > 0.5;
+        var captionTop = TopologyNodeFootprint.CaptionOnSide(chart, node, TopologyEdgePort.Top);
+        var captionBottom = TopologyNodeFootprint.CaptionOnSide(chart, node, TopologyEdgePort.Bottom);
         var captionLeft = node.X + node.Width / 2 - caption.Width / 2;
         var captionRight = node.X + node.Width / 2 + caption.Width / 2;
         var namedPort = string.IsNullOrWhiteSpace(namedPortId) ? null : node.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, namedPortId, StringComparison.Ordinal));
         TopologyEdgePort[] sides;
         if (namedPort != null) sides = new[] { namedPort.Side };
-        else if (port != TopologyEdgePort.Auto && !inferred && !(port == TopologyEdgePort.Bottom && hasCaption)) sides = new[] { port };
+        else if (port != TopologyEdgePort.Auto && !inferred && !(port == TopologyEdgePort.Bottom && captionBottom || port == TopologyEdgePort.Top && captionTop)) sides = new[] { port };
         else sides = new[] { TopologyEdgePort.Top, TopologyEdgePort.Right, TopologyEdgePort.Bottom, TopologyEdgePort.Left };
 
         var preferred = namedPort != null ? namedPort.Side : port != TopologyEdgePort.Auto ? port : FacingSide(node, other);
         foreach (var side in sides) {
             // A caption sits below the card, so nothing leaves through the bottom of a captioned tile.
-            if (side == TopologyEdgePort.Bottom && hasCaption) continue;
+            if (side == TopologyEdgePort.Bottom && captionBottom || side == TopologyEdgePort.Top && captionTop) continue;
             var vertical = side is TopologyEdgePort.Top or TopologyEdgePort.Bottom;
             var offset = namedPort != null ? namedPort.Offset : 0.5;
             var x = node.X + node.Width * (vertical ? offset : 0.5);
@@ -301,7 +295,11 @@ internal static partial class TopologyDenseRoutePlanner {
             var obstacles = new List<Obstacle>(chart.Nodes.Count * 2 + chart.Groups.Count);
             foreach (var node in chart.Nodes) {
                 // Artwork nodes are backdrops that routes may pass over.
-                if (node.DisplayMode == TopologyNodeDisplayMode.Artwork || (!node.DisplayMode.HasValue && TopologyRenderPrimitives.HasRenderableNodeArtwork(node))) continue;
+                if (!TopologyExternalCaption.HasPolicy(node) && (node.DisplayMode == TopologyNodeDisplayMode.Artwork || (!node.DisplayMode.HasValue && TopologyRenderPrimitives.HasRenderableNodeArtwork(node)))) continue;
+                if (TopologyNodeFootprint.ExplicitOccupiedBounds(node, options) is {} occupied) {
+                    obstacles.Add(new Obstacle(new Box(occupied.Left, occupied.Top, occupied.Right, occupied.Bottom), node.Id));
+                    continue;
+                }
                 obstacles.Add(new Obstacle(new Box(node.X, node.Y, node.X + node.Width, node.Y + node.Height), node.Id));
                 var caption = TopologyNodeFootprint.Caption(chart, node);
                 if (caption.Height <= 0.5) continue;

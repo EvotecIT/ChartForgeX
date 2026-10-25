@@ -67,7 +67,7 @@ internal static partial class VisualCartesianCompiler {
                     ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis), x, secondary ? secondaryY : primaryY);
                 continue;
             }
-            if (series.Markers.Enabled == false) continue;
+            if (series.Markers.Enabled == false && !series.HasPointMarkers) continue;
             var radius = ResolveMarkerRadius(series, context);
             var count = series.RenderPoints.Count / ObservationStride(series.Kind);
             for (var item = 0; item < count; item++) {
@@ -77,9 +77,11 @@ internal static partial class VisualCartesianCompiler {
                 }
                 var raw = item * ObservationStride(series.Kind);
                 var point = series.RenderPoints[raw];
+                var markers = series.ResolvePointMarkers(item);
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
-                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, series.Markers) : radius;
-                markerRadius = VisualMarkerScene.Extent(series, markerRadius);
+                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, series.Markers)
+                    : ReferenceEquals(markers, series.Markers) ? radius : VisualMarkerScene.Radius(series, context, markers);
+                markerRadius = VisualMarkerScene.Extent(series, markerRadius, markers);
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
                 if (ChartCartesianOrientation.IsHorizontal(chart, series)) Include(value, point.X, markerRadius, series.ValueAxis);

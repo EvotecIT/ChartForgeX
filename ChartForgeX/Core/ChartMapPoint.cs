@@ -35,6 +35,9 @@ public readonly struct ChartMapPoint {
     /// <summary>Gets an independent numeric color measurement, or null for a missing color measurement. <see cref="Weight"/> remains the point weight.</summary>
     public double? ColorValue { get; }
 
+    /// <summary>Gets optional immutable feature metadata, independent of the observation ID.</summary>
+    public ChartMapFeature? Feature { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartMapPoint"/> struct.
     /// </summary>
@@ -50,6 +53,7 @@ public readonly struct ChartMapPoint {
         Weight = null;
         Color = color;
         ColorValue = null;
+        Feature = null;
     }
 
     /// <summary>
@@ -70,23 +74,28 @@ public readonly struct ChartMapPoint {
         Weight = weight;
         Color = color;
         ColorValue = null;
+        Feature = null;
     }
 
-    private ChartMapPoint(ChartMapPoint point, double? colorValue) {
+    private ChartMapPoint(ChartMapPoint point, double? colorValue, ChartMapFeature? feature) {
         if (colorValue.HasValue) ChartGuards.Finite(colorValue.Value, nameof(colorValue));
         Label = point.Label; Longitude = point.Longitude; Latitude = point.Latitude;
-        Weight = point.Weight; Color = point.Color; ColorValue = colorValue;
+        Weight = point.Weight; Color = point.Color; ColorValue = colorValue; Feature = feature;
     }
 
     /// <summary>Returns a point with the same location, weight and explicit paint and a replacement independent color measurement.</summary>
     /// <param name="value">A finite signed color measurement, or null to clear it.</param>
     /// <returns>An independent point. Its weight is unchanged.</returns>
-    public ChartMapPoint WithColorValue(double? value) => new(this, value);
+    public ChartMapPoint WithColorValue(double? value) => new(this, value, Feature);
+
+    /// <summary>Returns a point retaining all source measurements with replacement feature metadata.</summary>
+    /// <param name="feature">The immutable snapshot, or null to clear it. No observation ID is assigned.</param>
+    public ChartMapPoint WithFeature(ChartMapFeature? feature) => new(this, ColorValue, feature);
 
     /// <summary>Revalidates a complete typed point, including defaults, while preserving independent weight and color measurements.</summary>
     internal ChartMapPoint ValidatedCopy() => (Weight.HasValue
         ? new ChartMapPoint(Label, Longitude, Latitude, Weight.Value, Color)
-        : new ChartMapPoint(Label, Longitude, Latitude, Color)).WithColorValue(ColorValue);
+        : new ChartMapPoint(Label, Longitude, Latitude, Color)).WithColorValue(ColorValue).WithFeature(Feature);
 
     private static void Validate(string label, double longitude, double latitude) {
         if (string.IsNullOrWhiteSpace(label)) throw new ArgumentException("Map point labels must not be empty.", nameof(label));

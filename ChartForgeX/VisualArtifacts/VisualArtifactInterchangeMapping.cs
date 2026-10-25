@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,16 +20,34 @@ public static partial class VisualArtifactInterchangeMapping {
     /// <returns>A portable semantic envelope. Unsupported visual kinds retain common metadata and use their separately rendered SVG fallback.</returns>
     public static VisualArtifactInterchangeEnvelope ToInterchangeEnvelope(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        if (artifact.CapturedLayer != null && artifact.Model is not ChartForgeX.Rendering.PreparedVisual)
+            throw new InvalidOperationException("A captured artifact cannot replace its immutable paint model while retaining terminal source facts.");
         if (artifact.Model is ChartForgeX.Rendering.PreparedVisual prepared)
             return FromPreparedArtifact(artifact, prepared);
         var envelope = Common(artifact, out var artifactMetadataKeys);
+        if (artifact.Model is ChartForgeX.Core.Chart numeric && (numeric.Series.All(series => ChartForgeX.Core.ChartSeriesKindTraits.IsPieLikeKind(series.Kind))
+            || numeric.Series.Any(series => series.Kind is ChartForgeX.Core.ChartSeriesKind.Gauge or ChartForgeX.Core.ChartSeriesKind.Bullet or ChartForgeX.Core.ChartSeriesKind.ProgressBar)
+            || envelope.Extensions.Keys.Any(key => ChartArtifactRendering.IsRadialFact(key) || ChartArtifactRendering.IsScalarFact(key))))
+            ChartArtifactRendering.WriteSeriesMetadata(numeric, envelope.Extensions);
         switch (artifact.Model) {
+            case ChartForgeX.Core.Chart chart when chart.Series.Any(series => series.Kind == ChartForgeX.Core.ChartSeriesKind.Waterfall):
+                MapWaterfall(envelope, chart);
+                break;
             case TopologyChart topology:
                 return FromMutablePreparedArtifact(artifact, VisualArtifactRendering.PrepareTopologyArtifact(artifact,
                     VisualArtifactRendering.TopologyModel(artifact, topology),
                     VisualArtifactRendering.TopologyOptions(artifact, renderOptions)).Visual);
             case FlowArtifact flow:
                 return FromMutablePreparedArtifact(artifact, flow.Prepare(ChartForgeX.Rendering.VisualExportRequest.ForFlow(flow).Context), flow.Metadata);
+            case ChartForgeX.VisualBlocks.JourneyDiagramBlock journey:
+                MapJourney(envelope, journey);
+                break;
+            case ChartForgeX.VisualBlocks.TimelineDiagramBlock timeline:
+                MapTimeline(envelope, timeline);
+                break;
+            case ChartForgeX.VisualBlocks.TreeViewBlock treeView:
+                MapTreeView(envelope, treeView);
+                break;
             case ChartForgeX.VisualBlocks.RailroadDiagramBlock railroad:
                 MapRailroad(envelope, railroad);
                 break;
@@ -95,15 +114,24 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Subtitle = prepared.Subtitle ?? string.Empty;
         envelope.Topology = new VisualArtifactInterchangeTopologyArtifact {
             LayoutMode = prepared.LayoutMode,
-            LayoutDirection = prepared.LayoutDirection
+            LayoutDirection = prepared.LayoutDirection,
+            ViewportPadding = TopologyPreparedFramePadding.WirePadding(prepared),
+            ContentClip = TopologyPreparedFramePadding.WireContentClip(prepared),
+            CrossingPaint = prepared.CrossingPaint
         };
+        foreach (var alignment in prepared.Alignments) {
+            var mapped = new VisualArtifactInterchangeTopologyAlignment { Id = ids.AddAlignment(alignment.Id), Kind = alignment.Kind };
+            foreach (var id in alignment.NodeIds) mapped.NodeIds.Add(ids.Node(id));
+            Copy(alignment.Metadata, mapped.Extensions); envelope.Topology.Alignments.Add(mapped);
+        }
+        envelope.Topology.PathDecorations.AddRange(prepared.PathDecorations);
         envelope.Family = VisualArtifactInterchangeFamily.Topology;
         // A preserved canvas describes the exported surface, even when a view prepares less content.
         envelope.Width = artifact.PreserveNaturalSize ? artifact.NaturalSize!.Value.Width : prepared.Viewport.Width;
         envelope.Height = artifact.PreserveNaturalSize ? artifact.NaturalSize!.Value.Height : prepared.Viewport.Height;
         envelope.Presentation = new VisualArtifactInterchangePresentation {
-            Theme = MapTheme(prepared.ResolvedTheme),
-            Legend = MapLegend(prepared)
+            Theme = MapTopologyTheme(prepared), Frame = prepared.PreparedFrame?.RequestValues(retainOwnedFonts: true), ContextFont = PreparedDiagramFont.ForRequest(prepared),
+            Legend = MapLegend(prepared), TopologyCaptions = TopologyCaptionPresentation.Capture(options, prepared.Nodes, prepared.Edges)
         };
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) {
             envelope.Presentation.MapViewport = new VisualArtifactInterchangeMapViewport {
@@ -121,7 +149,6 @@ public static partial class VisualArtifactInterchangeMapping {
             mapped.Topology!.ParentGroupId = ids.OptionalGroup(group.ParentGroupId);
             envelope.Groups.Add(mapped);
         }
-        var projectedSourceIds = new List<ProjectedSourceId>();
         foreach (var node in prepared.Nodes) {
             TopologyNodeDisplayMode displayMode = EffectiveNodeDisplayMode(node, options);
             string projectedId = ids.Node(node.Id);
@@ -129,7 +156,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options));
             envelope.Nodes.Add(mappedNode);
             if (!string.Equals(node.Id, projectedId, StringComparison.Ordinal)) {
-                projectedSourceIds.Add(new ProjectedSourceId(mappedNode.Extensions, node.Id));
+                mappedNode.PendingProjectedSourceId = node.Id;
             }
         }
         for (var index = 0; index < prepared.Edges.Count; index++) {
@@ -153,17 +180,26 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         foreach (var note in prepared.Annotations) {
             var annotation = new VisualArtifactInterchangeAnnotation {
-                Id = ids.AddAnnotation(note.Id), Kind = "TopologyNote", Text = note.Text, Placement = note.Side.ToString()
+                Id = ids.AddAnnotation(note.Id), Kind = "TopologyNote", Text = note.Text, Placement = note.Side.ToString(),
+                TopologyDefaultUnits = note.PreparedDefaultUnits == 1 ? null : note.PreparedDefaultUnits, TopologyRoutingViewport = note.PreparedRoutingViewport
             };
             if (note.TargetId != null && (prepared.Nodes.Exists(item => item.Id == note.TargetId) || prepared.Groups.Exists(item => item.Id == note.TargetId))) annotation.TargetIds.Add(ids.Endpoint(note.TargetId));
             envelope.Annotations.Add(annotation);
         }
-        if (projectedSourceIds.Count > 0) AddProjectedSourceIds(envelope, projectedSourceIds);
     }
 
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualArtifactSize? preparedSize = null) {
         envelope.Family = VisualArtifactInterchangeFamily.Sequence;
-        envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact();
+        envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact {
+            LifelineStroke = sequence.Paint.LifelineStroke,
+            NoteShadow = sequence.Paint.NoteShadow,
+            FragmentTabShadow = sequence.Paint.FragmentTabShadow,
+            BackgroundShadow = sequence.Paint.BackgroundShadow,
+            Layout = sequence.Layout?.HasOverrides == true ? sequence.Layout : null,
+            Typography = sequence.Typography?.HasOverrides == true ? sequence.Typography : null,
+            Theme = HasSequenceCapturedPolicy(sequence) ? sequence.Theme : null,
+            ThemeMode = HasSequenceCapturedPolicy(sequence) ? sequence.ThemeMode : null
+        };
         envelope.Presentation = new VisualArtifactInterchangePresentation {
             Theme = MapTheme(sequence.Theme.Resolve(sequence.ThemeMode), sequence.Theme.Typography.Family)
         };
@@ -187,6 +223,8 @@ public static partial class VisualArtifactInterchangeMapping {
                 Label = participant.Label,
                 Href = SafeHref(participant.Href),
                 Sequence = new VisualArtifactInterchangeSequenceNode {
+                    SurfaceShadow = participant.SurfaceShadow,Stereotype=participant.Stereotype,Symbol=participant.Symbol,MinimumWidth=participant.MinimumWidth,Fill=participant.Fill?.ToCss(),
+                    Border=participant.Border?.ToCss(),ActivationFill=participant.ActivationFill?.ToCss(),ActivationBorder=participant.ActivationBorder?.ToCss(),
                     Kind = participant.Kind,
                     Order = index,
                     IsImplicit = participant.IsImplicit,
@@ -194,10 +232,14 @@ public static partial class VisualArtifactInterchangeMapping {
                     DestroyedAtMessageIndex = participant.DestroyedAtMessageIndex
                 }
             };
+            node.Sequence!.NavigationLinks.AddRange(participant.NavigationLinks);
             Copy(participant.Metadata, node.Extensions);
             envelope.Nodes.Add(node);
         }
 
+        var carryOccurrence=HasSequenceNativePresentation(sequence);
+        MapSequenceNativePresentation(envelope,sequence);
+        MapSequencePaint(envelope, sequence);
         MapSequenceParticipantGroups(envelope, sequence, ids);
 
         for (var index = 0; index < sequence.Messages.Count; index++) {
@@ -235,6 +277,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 EndIndex = stepIndex,
                 Sequence = new VisualArtifactInterchangeSequenceAnnotation { NotePlacement = note.Placement }
             };
+            if(carryOccurrence)MapSequenceOccurrence(annotation,note.SourceOrder);
             foreach (string participantId in note.ParticipantIds) {
                 if (ids.TryNode(participantId, out string targetId)) annotation.TargetIds.Add(targetId);
             }
@@ -256,6 +299,7 @@ public static partial class VisualArtifactInterchangeMapping {
             };
             annotation.TargetIds.Add(targetId);
             Copy(activation.Metadata, annotation.Extensions);
+            if(carryOccurrence)MapSequenceOccurrence(annotation,activation.SourceOrder);
             envelope.Annotations.Add(annotation);
         }
 
@@ -276,6 +320,12 @@ public static partial class VisualArtifactInterchangeMapping {
                     IsEmpty = block.IsEmpty
                 }
             };
+            if(carryOccurrence)MapSequenceOccurrence(annotation,block.SourceOrder,block.EndSourceOrder,block.CloseStepIndex);
+            foreach(var participantId in block.ParticipantIds) {
+                if(!ids.TryNode(participantId,out var targetId))throw new System.ArgumentException("Sequence reference target does not exist: "+participantId);
+                annotation.TargetIds.Add(targetId);
+            }
+            if (block.BackgroundColor.HasValue) TrySetBoundedExtension(annotation.Extensions, "chartforgex.sequence.background", block.BackgroundColor.Value.ToCss());
             envelope.Annotations.Add(annotation);
         }
         for (var index = 0; index < sequence.Branches.Count; index++) {
@@ -297,6 +347,7 @@ public static partial class VisualArtifactInterchangeMapping {
                     IsEmpty = branch.IsEmpty
                 }
             };
+            if(carryOccurrence)MapSequenceOccurrence(annotation,branch.SourceOrder,branch.EndSourceOrder,branch.CloseStepIndex);
             envelope.Annotations.Add(annotation);
         }
     }
@@ -362,11 +413,13 @@ public static partial class VisualArtifactInterchangeMapping {
         foreach (var detail in node.Details) {
             var mappedDetail = new VisualArtifactInterchangeDetail {
                 Text = detail.Text,
+                Content = detail.Content?.IsStructured == true ? detail.Content : null,
+                ValueContent = detail.ValueContent.IsStructured ? detail.ValueContent : null,
                 Label = detail.Label,
                 Value = detail.Value,
                 IconId = detail.IconId,
                 Status = detail.Status?.ToString(),
-                Color = detail.Color, TextStyle = detail.TextStyle?.Clone()
+                Color = detail.Color, TextStyle = detail.TextStyle?.Clone(), BadgeStyle = detail.BadgeStyle?.Clone()
             };
             Copy(detail.Metadata, mappedDetail.Extensions);
             mapped.Details.Add(mappedDetail);
@@ -404,6 +457,8 @@ public static partial class VisualArtifactInterchangeMapping {
             Order = order,
             Topology = MapEdgePresentation(edge, ids)
         };
+        if (mapped.Topology?.LabelContent is { } content && !string.Equals(content.PlainText, mapped.Label, StringComparison.Ordinal))
+            mapped.Topology.LabelContent = null;
         Copy(edge.Metadata, mapped.Extensions);
         CopyMetrics(edge.Metrics, mapped.Metrics);
         return mapped;
@@ -546,6 +601,7 @@ public static partial class VisualArtifactInterchangeMapping {
         private readonly HashSet<string> _used = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _groups = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _nodes = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _alignments = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _edges = new(StringComparer.Ordinal);
         private readonly Dictionary<string, List<string>> _edgeOccurrences = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _scenarios = new(StringComparer.Ordinal);
@@ -574,6 +630,7 @@ public static partial class VisualArtifactInterchangeMapping {
             _scenarios.Add(sourceId, allocated);
             return allocated;
         }
+        public string AddAlignment(string sourceId) => Add(_alignments, sourceId, "alignment");
         public string AddAnnotation(string sourceId) => Allocate(sourceId, "annotation");
         public string AddPort(string nodeSourceId, string sourceId) {
             if (!_ports.TryGetValue(nodeSourceId, out var ports)) {

@@ -3,9 +3,12 @@ using System;
 namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Detaches typed semantic values without applying portable serialization budgets to static preparation.</summary>
-internal static class VisualArtifactInterchangeSnapshot {
+internal static partial class VisualArtifactInterchangeSnapshot {
     internal static VisualArtifactInterchangeEnvelope Capture(VisualArtifactInterchangeEnvelope source) {
         if (source == null) throw new ArgumentNullException(nameof(source));
+        VisualArtifactInterchangeValidation.RejectNestedTopologyHierarchy(source);
+        ValidateCapturedEffectSnapshots(source);
+        if (source.Topology?.Hierarchy != null) ValidateCapturedEffectSnapshots(source.Topology.Hierarchy.Source);
         return Copy(source)!;
     }
 
@@ -22,6 +25,10 @@ internal static class VisualArtifactInterchangeSnapshot {
             Flow = Copy(source.Flow),
             Sequence = Copy(source.Sequence),
             Railroad = source.Railroad?.Clone(),
+            TreeView = source.TreeView?.Clone(),
+            Waterfall = source.Waterfall?.Clone(),
+            Journey = source.Journey?.Clone(),
+            Timeline = source.Timeline?.Clone(),
             Width = source.Width,
             Height = source.Height,
             AccessibleName = source.AccessibleName,
@@ -65,6 +72,7 @@ internal static class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeNode? Copy(VisualArtifactInterchangeNode? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeNode {
+            PendingProjectedSourceId = source.PendingProjectedSourceId,
             Id = source.Id,
             Role = source.Role,
             Kind = source.Kind,
@@ -110,12 +118,12 @@ internal static class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeDetail? Copy(VisualArtifactInterchangeDetail? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeDetail {
-            Text = source.Text,
+            Text = source.Text, Content = source.Content, ValueContent = source.ValueContent,
             Label = source.Label,
             Value = source.Value,
             IconId = source.IconId,
             Status = source.Status,
-            Color = source.Color, TextStyle = source.TextStyle?.Clone(),
+            Color = source.Color, TextStyle = source.TextStyle?.Clone(), BadgeStyle = source.BadgeStyle?.Clone(),
         };
         foreach (var item in source.Extensions) copy.Extensions.Add(item.Key, item.Value);
         return copy;
@@ -201,7 +209,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Placement = source.Placement,
             StartIndex = source.StartIndex,
             EndIndex = source.EndIndex,
-            Sequence = Copy(source.Sequence),
+            Sequence = Copy(source.Sequence), TopologyDefaultUnits = source.TopologyDefaultUnits, TopologyRoutingViewport = source.TopologyRoutingViewport,
         };
         foreach (var item in source.Extensions) copy.Extensions.Add(item.Key, item.Value);
         foreach (var item in source.TargetIds) copy.TargetIds.Add(item);
@@ -213,7 +221,13 @@ internal static class VisualArtifactInterchangeSnapshot {
         var copy = new VisualArtifactInterchangeTopologyArtifact {
             LayoutMode = source.LayoutMode,
             LayoutDirection = source.LayoutDirection,
+            ViewportPadding = source.ViewportPadding,
+            ContentClip = source.ContentClip,
+            CrossingPaint = source.CrossingPaint,
+            Hierarchy = Copy(source.Hierarchy),
         };
+        foreach (var alignment in source.Alignments) copy.Alignments.Add(CopyAlignment(alignment));
+        copy.PathDecorations.AddRange(source.PathDecorations); // Immutable captures can be shared safely.
         return copy;
     }
 
@@ -222,13 +236,18 @@ internal static class VisualArtifactInterchangeSnapshot {
         var copy = new VisualArtifactInterchangeFlowArtifact {
             LayoutMode = source.LayoutMode,
             LayoutDirection = source.LayoutDirection,
+            ViewportPadding = source.ViewportPadding, ExportFormats = source.ExportFormats,
         };
         return copy;
     }
 
     private static VisualArtifactInterchangeSequenceArtifact? Copy(VisualArtifactInterchangeSequenceArtifact? source) {
         if (source == null) return null;
-        var copy = new VisualArtifactInterchangeSequenceArtifact();
+        var copy = new VisualArtifactInterchangeSequenceArtifact {
+            LifelineStroke=source.LifelineStroke,
+            NoteShadow = source.NoteShadow,
+            FragmentTabShadow = source.FragmentTabShadow,
+            BackgroundShadow = source.BackgroundShadow, Layout = source.Layout, Typography = source.Typography, Theme = source.Theme, ThemeMode = source.ThemeMode };
         return copy;
     }
 
@@ -237,14 +256,16 @@ internal static class VisualArtifactInterchangeSnapshot {
         var copy = new VisualArtifactInterchangePresentation {
             Theme = Copy(source.Theme),
             MapViewport = Copy(source.MapViewport),
-            Legend = Copy(source.Legend),
+            Legend = Copy(source.Legend), TopologyCaptions = source.TopologyCaptions, Frame = source.Frame?.RequestValues(retainOwnedFonts: true), ContextFont = source.ContextFont,
         };
+        foreach (var mask in source.CapturedEffects) copy.CapturedEffects.Add(Copy(mask));
         return copy;
     }
 
     private static VisualArtifactInterchangeTheme? Copy(VisualArtifactInterchangeTheme? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTheme {
+            Definition = source.Definition, Mode = source.Mode,
             Background = source.Background,
             Foreground = source.Foreground,
             MutedForeground = source.MutedForeground,
@@ -258,6 +279,8 @@ internal static class VisualArtifactInterchangeSnapshot {
             Unknown = source.Unknown,
             Disabled = source.Disabled,
             FontFamily = source.FontFamily,
+            TitleSize = source.TitleSize, DataLabelSize = source.DataLabelSize,
+            SubtitleSize = source.SubtitleSize, LegendSize = source.LegendSize,
         };
         return copy;
     }
@@ -304,7 +327,11 @@ internal static class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeTopologyGroup? Copy(VisualArtifactInterchangeTopologyGroup? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyGroup {
+            StrokeWidth=source.StrokeWidth,Opacity=source.Opacity,SurfaceOpacity=source.SurfaceOpacity,
+            LabelContent = source.LabelContent,
+            TextStyle = source.TextStyle?.Clone(),
             ParentGroupId = source.ParentGroupId,
+            ShowLabel = source.ShowLabel,
             Presentation = source.Presentation,
             LayoutDirection = source.LayoutDirection,
             Status = source.Status,
@@ -315,18 +342,31 @@ internal static class VisualArtifactInterchangeSnapshot {
             IconId = source.IconId,
             Symbol = source.Symbol,
         };
+        copy.DashPattern.AddRange(source.DashPattern);
         return copy;
     }
 
     private static VisualArtifactInterchangeTopologyNode? Copy(VisualArtifactInterchangeTopologyNode? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyNode {
+            BorderColor=source.BorderColor,
+            CaptionPlacement=source.CaptionPlacement, CaptionSurface=source.CaptionSurface, CaptionGap=source.CaptionGap,
+            CaptionTextStyle=source.CaptionTextStyle?.Clone(),
+            GlyphScale=source.GlyphScale, CornerRadius=source.CornerRadius,
+            PreparedNodeBasis = source.PreparedNodeBasis,
+            StrokeWidth=source.StrokeWidth,Opacity=source.Opacity,SurfaceOpacity=source.SurfaceOpacity,
+            LabelContent = source.LabelContent,
+            SubtitleTextStyle = source.SubtitleTextStyle?.Clone(),
+            TableContent = VisualArtifactInterchangeMapping.SnapshotTableContent(source.TableContent),
+            TextStyle = source.TextStyle?.Clone(),
             Kind = source.Kind,
             PaletteIndex = source.PaletteIndex,
             Status = source.Status,
             DisplayMode = source.DisplayMode,
-            Shape = source.Shape,
+            Shape = source.Shape, IconShape = source.IconShape,
             FitLabelToContent = source.FitLabelToContent,
+            MaximumTextWidth = source.MaximumTextWidth,
+            ContentPadding = source.ContentPadding,
             Longitude = source.Longitude,
             Latitude = source.Latitude,
             ShowStatusBadge = source.ShowStatusBadge,
@@ -334,6 +374,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             MaximumLabelCharacters = source.MaximumLabelCharacters,
             Artwork = Copy(source.Artwork),
         };
+        copy.DashPattern.AddRange(source.DashPattern);
         return copy;
     }
 
@@ -363,6 +404,11 @@ internal static class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeTopologyEdge? Copy(VisualArtifactInterchangeTopologyEdge? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyEdge {
+            LabelBackgroundColor = source.LabelBackgroundColor,
+            PathGeometry = source.PathGeometry, Interpolation = source.Interpolation, InterpolationCornerBlendLength = source.InterpolationCornerBlendLength, LabelPosition = source.LabelPosition, PreparedEdgePlan = source.PreparedEdgePlan,
+            SourceMarkerStyle = source.SourceMarkerStyle?.Clone(), TargetMarkerStyle = source.TargetMarkerStyle?.Clone(),
+            LabelContent = source.LabelContent,
+            TextStyle = source.TextStyle?.Clone(),
             Kind = source.Kind,
             PaletteIndex = source.PaletteIndex,
             Status = source.Status,
@@ -397,6 +443,7 @@ internal static class VisualArtifactInterchangeSnapshot {
         var copy = new VisualArtifactInterchangeFlowNode {
             Kind = source.Kind,
             FitLabelToContent = source.FitLabelToContent,
+            AuthoredWidth = source.AuthoredWidth, AuthoredHeight = source.AuthoredHeight,
         };
         return copy;
     }
@@ -413,12 +460,15 @@ internal static class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeSequenceNode? Copy(VisualArtifactInterchangeSequenceNode? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeSequenceNode {
+            SurfaceShadow = source.SurfaceShadow,Stereotype=source.Stereotype,Symbol=source.Symbol,MinimumWidth=source.MinimumWidth,Fill=source.Fill,
+            Border=source.Border,ActivationFill=source.ActivationFill,ActivationBorder=source.ActivationBorder,
             Kind = source.Kind,
             Order = source.Order,
             IsImplicit = source.IsImplicit,
             CreatedAtMessageIndex = source.CreatedAtMessageIndex,
             DestroyedAtMessageIndex = source.DestroyedAtMessageIndex,
         };
+        copy.NavigationLinks.AddRange(source.NavigationLinks);
         return copy;
     }
 

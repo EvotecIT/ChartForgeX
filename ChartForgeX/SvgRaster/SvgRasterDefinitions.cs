@@ -23,9 +23,10 @@ internal sealed class SvgRasterDefinitions {
 
     private SvgRasterStyleSheet _styleSheet = SvgRasterStyleSheet.Empty;
     public SvgRasterDiagnostics? Diagnostics { get; private set; }
+    internal SvgRasterFilterContext? Filters { get; private set; }
 
     public static SvgRasterDefinitions From(SvgRasterDocument document) {
-        var definitions = new SvgRasterDefinitions { Diagnostics = document.Diagnostics };
+        var definitions = new SvgRasterDefinitions { Diagnostics = document.Diagnostics, Filters = document.Filters };
         var ancestors = new List<SvgRasterElement> { document.Root };
         foreach (var child in document.Children) definitions.Collect(child, ancestors);
         definitions._styleSheet = SvgRasterStyleSheet.Parse(definitions._styleBlocks);
@@ -126,7 +127,10 @@ internal sealed class SvgRasterDefinitions {
         return true;
     }
 
-    private void Collect(SvgRasterElement element, List<SvgRasterElement> ancestors) {
+    private void Collect(SvgRasterElement element, List<SvgRasterElement> ancestors, bool insideFilter = false) {
+        // Filter children generally have no ID. Their inherited color space, variables and
+        // flood paint still resolve in the definition tree, never at the filtered target.
+        if (insideFilter && Filters != null) _elementAncestors[element] = ancestors.ToArray();
         if (string.Equals(element.Name, "style", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(element.Text)) {
             _styleBlocks.Add(element.Text);
         }
@@ -155,7 +159,7 @@ internal sealed class SvgRasterDefinitions {
         }
 
         ancestors.Add(element);
-        foreach (var child in element.Children) Collect(child, ancestors);
+        foreach (var child in element.Children) Collect(child, ancestors, insideFilter || element.Name == "filter");
         ancestors.RemoveAt(ancestors.Count - 1);
     }
 
@@ -440,28 +444,13 @@ internal static class SvgRasterGradientValues {
 
     private static RasterGradientStop ReadStop(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterStyle parentStyle) {
         var style = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
-        var customProperties = style.CustomProperties;
-        var stopColor = element.Get("stop-color");
-        var stopOpacity = element.Get("stop-opacity");
-        var declarations = new List<ChartForgeX.Svg.SvgStyleDeclaration>(styleSheet.DeclarationsFor(element, ancestors));
-        var inline = element.Get("style");
-        if (!string.IsNullOrWhiteSpace(inline)) declarations.AddRange(ChartForgeX.Svg.SvgStyleDeclarationList.Parse(inline!).Declarations);
-        foreach (var declaration in ChartForgeX.Svg.SvgStyleDeclarationList.InCascadeOrder(declarations)) {
-            if (string.Equals(declaration.Name, "stop-color", StringComparison.Ordinal)) stopColor = SvgRasterCssVariables.Resolve(declaration.Value, customProperties);
-            else if (string.Equals(declaration.Name, "stop-opacity", StringComparison.Ordinal)) stopOpacity = SvgRasterCssVariables.Resolve(declaration.Value, customProperties);
-        }
-
-        if (stopColor != null) stopColor = SvgRasterCssVariables.Resolve(stopColor, customProperties);
-        if (stopOpacity != null) stopOpacity = SvgRasterCssVariables.Resolve(stopOpacity, customProperties);
+        SvgRasterPaintProperties.Resolve(element, styleSheet, ancestors, style, "stop-color", "stop-opacity", out var stopColor, out var stopOpacity);
         var color = SvgRasterPaint.Parse(stopColor ?? string.Empty, style.Color, SvgRasterPaint.Solid(ChartColor.Black)).Color ?? ChartColor.Black;
-        return new RasterGradientStop(Math.Max(0, Math.Min(1, ParseCoordinate(element.Get("offset"), 0))), WithOpacity(color, ParseOpacity(stopOpacity, 1)));
+        return new RasterGradientStop(Math.Max(0, Math.Min(1, ParseCoordinate(element.Get("offset"), 0))), SvgRasterPaintProperties.WithOpacity(color, ParseOpacity(stopOpacity, 1)));
     }
 
     private static double ParseOpacity(string? value, double fallback) =>
         value == null ? fallback : Math.Max(0, Math.Min(1, ParseCoordinate(value, fallback)));
-
-    private static ChartColor WithOpacity(ChartColor color, double opacity) =>
-        ChartColor.FromRgba(color.R, color.G, color.B, (byte)Math.Round(color.A * opacity));
 
     public readonly struct GradientBounds {
         public readonly double Left;

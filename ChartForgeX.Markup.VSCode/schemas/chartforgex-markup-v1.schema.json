@@ -57,6 +57,8 @@
         "labels",
         "values",
         "series",
+        "node",
+        "flow",
         "annotation",
         "option"
       ],
@@ -67,9 +69,11 @@
             "key",
             "value"
           ]
-        }
+        },
+        { "name": "nodes", "columns": ["id", "label"] },
+        { "name": "flows", "columns": ["id", "source", "target", "value", "colorValue"] }
       ],
-      "tableMode": "A top-level Markdown table creates one or more chart series. The first column is labels; numeric columns become series."
+      "tableMode": "A top-level Markdown table creates numeric chart series. Typed Chord charts use nodes (id,label) and flows (id,source,target,value,optional colorValue) sections."
     },
     {
       "kind": "timeline",

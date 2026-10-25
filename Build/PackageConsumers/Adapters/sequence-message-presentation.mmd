@@ -1,0 +1,9 @@
+%%{init: {"sequence":{"mirrorActors":false,"messageAlign":"right","noteAlign":"center","width":64,"height":60,"actorMargin":8,"wrapPadding":8,"actorFontSize":14,"messageFontSize":12,"noteFontSize":12},"themeVariables":{"signalColor":"#3b5ccc","sequenceNumberColor":"#ffffff"}}}%%
+sequenceDiagram
+autonumber 1000 1
+participant A as Review
+participant B as Archive
+A->>B: Save<br/>Fact
+Note over A,B: Review<br/>Note
+B-->>A: Ready<br/>Next
+B->>B: Check<br/>Self

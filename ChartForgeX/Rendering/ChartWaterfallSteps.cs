@@ -7,7 +7,16 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Owns the accumulation and checkpoint intervals used by ranges, marks, labels and source metadata.</summary>
 internal static class ChartWaterfallSteps {
-    internal static IReadOnlyList<ChartWaterfallStep> Create(ChartSeries series) {
+    /// <param name="series">The existing native waterfall authoring owner.</param>
+    /// <param name="maximumSourceReferences">Optional aggregate contributor-array budget for a portable-data boundary. Null retains native authoring behavior.</param>
+    internal static IReadOnlyList<ChartWaterfallStep> Create(ChartSeries series, int? maximumSourceReferences = null) {
+        if (maximumSourceReferences < 0) throw new ArgumentOutOfRangeException(nameof(maximumSourceReferences));
+        long sourceReferences = 0;
+        void ReserveSourceReferences(int count) {
+            if (maximumSourceReferences.HasValue && count > maximumSourceReferences.Value - sourceReferences)
+                throw new ArgumentOutOfRangeException(nameof(maximumSourceReferences), "Waterfall contributor references exceed the portable aggregate budget.");
+            sourceReferences += count;
+        }
         series.ValidateWaterfall();
         var typed = series.IsTypedWaterfall;
         var items = typed ? series.WaterfallItems : series.RenderPoints.Select(point => ChartWaterfallItem.Delta(point.X, point.Y)).ToArray();
@@ -17,17 +26,20 @@ internal static class ChartWaterfallSteps {
             var item = items[index];
             if (item.Kind == ChartWaterfallItemKind.OpeningBalance) {
                 var value = item.Value!.Value;
+                ReserveSourceReferences(1);
                 steps.Add(new ChartWaterfallStep(index, sourceIndex, item.X, item.Kind, value, 0, value, new[] { sourceIndex }));
                 cumulative = value; checkpointBalance = value; sourceIndex++; checkpointSource = sourceIndex;
             } else if (item.Kind == ChartWaterfallItemKind.Delta) {
                 var value = item.Value!.Value; var end = cumulative + value;
                 RequireFinite(end);
+                ReserveSourceReferences(1);
                 steps.Add(new ChartWaterfallStep(index, sourceIndex, item.X, item.Kind, value, cumulative, end, new[] { sourceIndex }));
                 cumulative = end; subtotal += value; sourceIndex++;
             } else {
                 var total = item.Kind == ChartWaterfallItemKind.Total;
                 var value = total ? cumulative : subtotal;
                 RequireFinite(value);
+                ReserveSourceReferences(total ? sourceIndex : sourceIndex - checkpointSource);
                 var sources = Enumerable.Range(total ? 0 : checkpointSource, total ? sourceIndex : sourceIndex - checkpointSource).ToArray();
                 steps.Add(new ChartWaterfallStep(index, -1, item.X, item.Kind, value, total ? 0 : checkpointBalance, cumulative, sources));
                 checkpointBalance = cumulative; subtotal = 0; checkpointSource = sourceIndex;
@@ -41,6 +53,7 @@ internal static class ChartWaterfallSteps {
         var totalX = coordinates[coordinates.Length - 1] + spacing;
         if (!ChartMath.IsFinite(totalX) || totalX <= coordinates[coordinates.Length - 1])
             throw new InvalidOperationException("Waterfall coordinates must leave a finite position for the total.");
+        ReserveSourceReferences(sourceIndex);
         steps.Add(new ChartWaterfallStep(steps.Count, -1, totalX, ChartWaterfallItemKind.Total, cumulative, 0, cumulative,
             Enumerable.Range(0, sourceIndex).ToArray(), appendedTotal: true));
         return steps;

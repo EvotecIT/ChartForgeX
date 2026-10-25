@@ -69,6 +69,8 @@ internal static partial class VisualNumericRadialCompiler {
                 if (scales.TryGetValue(series.ValueAxis, out var scale)) {
                     seriesMetadata["data-cfx-min-value"] = N(scale.Minimum); seriesMetadata["data-cfx-max-value"] = N(scale.Maximum);
                 }
+                if (chart.Options.RadialGeometry.ValueEncoding == ChartRadialValueEncoding.Area)
+                    seriesMetadata["data-cfx-value-encoding"] = "area";
                 using (builder.PushGroup(SeriesId(seriesIndex), "series", seriesMetadata)) {
                     for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                         var key = coordinates.Resolve(seriesIndex, pointIndex);
@@ -86,6 +88,7 @@ internal static partial class VisualNumericRadialCompiler {
     }
 
     private static void Validate(Chart chart) {
+        ChartGuards.ValidateRadialValueEncoding(chart);
         if (chart.Options.XAxis.Minimum.HasValue || chart.Options.XAxis.Maximum.HasValue)
             throw new NotSupportedException("Numeric radial category axes use observation categories; explicit category bounds are not supported.");
         if (chart.Options.XAxis.Scale is ChartScaleKind.Logarithmic or ChartScaleKind.SymmetricLogarithmic)
@@ -105,7 +108,8 @@ internal static partial class VisualNumericRadialCompiler {
 
     private static Dictionary<ChartAxisSide, RadialValueScale> Scales(Chart chart, ChartStackLayout stacks) =>
         RadialValueScale.ForAxes(chart, series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)
-            .SelectMany(point => new[] { stacks.Point(series, point).Base, stacks.Point(series, point).End }), "Numeric radial", true);
+            .SelectMany(point => new[] { stacks.Point(series, point).Base, stacks.Point(series, point).End }), "Numeric radial",
+                chart.Options.RadialGeometry.ValueEncoding == ChartRadialValueEncoding.Radius);
 
     private static void DrawPoint(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialSeriesGeometry geometry,
         ChartSeries series, int seriesIndex, int pointIndex, string category, ChartStackPoint stack, RadialSeriesMark mark,
@@ -126,6 +130,7 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-clipped"] = mark.Clipped ? "true" : "false",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false"
         };
+        if (chart.Options.RadialGeometry.ValueEncoding == ChartRadialValueEncoding.Area) metadata["data-cfx-value-encoding"] = "area";
         if (geometry.Outer <= 0) metadata["data-cfx-geometry-status"] = "layout-collapse";
         else if (!mark.Painted && !mark.Clipped) metadata["data-cfx-geometry-status"] = point.Y == 0 ? "zero" : "precision-collapse";
         ChartStackLayout.AddMetadata(metadata, stack);

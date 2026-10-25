@@ -93,7 +93,7 @@ server{group}:B --> T:api";
         Assert(!result.HasErrors, "Mermaid architecture parser should parse group-boundary edges: " + MermaidDiagnostics(result));
         var document = result.Document ?? throw new InvalidOperationException("Mermaid architecture parser should produce a document.");
         var topology = document.ToTopologyChart();
-        Assert(topology.Nodes.Exists(node => node.Metadata.TryGetValue("mermaid.kind", out var kind) && kind == "group-boundary-anchor"), "Mermaid architecture conversion should create hidden topology anchors for group-boundary endpoints.");
-        Assert(topology.Edges.Count == 1 && topology.Edges[0].SourceNodeId.StartsWith("mermaid-architecture-group-anchor-subnet", StringComparison.Ordinal), "Mermaid architecture conversion should route group-boundary endpoints through the group anchor node.");
+        Assert(topology.Nodes.Count == document.Services.Count + document.Junctions.Count, "Mermaid architecture group-boundary routes must not add fabricated semantic nodes.");
+        Assert(topology.Edges.Count == 1 && topology.Edges[0].SourceNodeId == "subnet" && topology.Edges[0].SourcePort == TopologyEdgePort.Bottom, "Mermaid architecture conversion should route the authored side through the actual group endpoint.");
     }
 }

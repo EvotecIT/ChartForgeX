@@ -260,8 +260,13 @@ internal sealed partial class TrueTypeFont {
 
     public double Measure(string text, double fontSize) => Measure(text, fontSize, italic: false);
 
-    internal double Measure(string text, double fontSize, bool italic) {
-        if (!IsSimpleRun(text)) return MeasureShaped(text, fontSize) + (italic && text.Length > 0 ? ItalicOverhang(fontSize) : 0);
+    internal double Measure(string text, double fontSize, bool italic) => MeasureCore(text, fontSize, italic, null);
+
+    /// <summary>Retains native measurement arithmetic with already captured glyphs for the non-simple branch.</summary>
+    internal double MeasureCaptured(string text, double fontSize, bool italic, IReadOnlyList<ShapedGlyph> glyphs) => MeasureCore(text, fontSize, italic, glyphs);
+
+    private double MeasureCore(string text, double fontSize, bool italic, IReadOnlyList<ShapedGlyph>? captured) {
+        if (!IsSimpleRun(text)) return (captured == null ? MeasureShaped(text, fontSize) : MeasureGlyphs(captured, fontSize)) + (italic && text.Length > 0 ? ItalicOverhang(fontSize) : 0);
         var scale = ScaleFor(fontSize);
         var width = 0.0;
         ushort? previous = null;

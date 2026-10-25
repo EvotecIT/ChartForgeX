@@ -20,6 +20,8 @@ internal readonly partial struct SvgPaint {
         string source;
         try { source = Encoding.UTF8.GetString(Convert.FromBase64String(body.Substring(16))); }
         catch (FormatException) { return keepLiterals ? Literal(ink).Value! : ink.ToCss(); }
+        if (variables != null && source.StartsWith("A|", StringComparison.Ordinal)
+            && TrySurfaceContrastDescriptor(source, variables, out var adaptive)) return variables.DerivedInk(adaptive, ink);
         if (variables != null && source.Length > 2 && TokenLength(source, 0) == source.Length) {
             if (source[1] == 'P' && variables.TryInk(fill, Role(source[2])!.Value, out var direct)) return direct;
             if (TryContrastDescriptor(source, variables, out var descriptor)) return variables.DerivedInk(descriptor, ink);

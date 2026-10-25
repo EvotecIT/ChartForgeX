@@ -1,0 +1,15 @@
+using System;
+using System.IO;
+using ChartForgeX.Core;
+using ChartForgeX.Effects;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+
+// Ordinary package references: ChartForgeX and ChartForgeX.Visuals.
+foreach (var blend in (VisualBlendMode[])Enum.GetValues(typeof(VisualBlendMode))) {
+    var report = NativeMaskBlendCompositionExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}}, blend);
+    File.WriteAllBytes("mask-blend-" + blend + ".png", report.ToPng());
+}
+
+{{SOURCE}}

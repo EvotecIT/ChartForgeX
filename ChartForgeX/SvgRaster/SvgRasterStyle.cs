@@ -62,6 +62,8 @@ internal sealed class SvgRasterStyle {
     public string ClipRule { get; set; } = "nonzero";
     public string? ClipPath { get; set; }
     public string? Filter { get; set; }
+    public string? ColorInterpolationFilters { get; set; }
+    public string ColorInterpolation { get; set; } = "sRGB";
     public double FontSize { get; set; }
     public string? FontFamily { get; set; }
     public string? OpenTypeLanguageTag { get; set; }
@@ -108,6 +110,8 @@ internal sealed class SvgRasterStyle {
             StrokeDashOffset = StrokeDashOffset,
             FillRule = FillRule,
             ClipRule = ClipRule,
+            ColorInterpolationFilters = ColorInterpolationFilters,
+            ColorInterpolation = ColorInterpolation,
             FontSize = FontSize,
             FontFamily = FontFamily,
             OpenTypeLanguageTag = OpenTypeLanguageTag,
@@ -207,7 +211,7 @@ internal sealed class SvgRasterStyle {
         "stroke-linejoin", "stroke-miterlimit", "stroke-dasharray", "stroke-dashoffset", "opacity", "fill-opacity", "stroke-opacity",
         "font-size", "font-family", "font-language-override", "font-variation-settings", "font-palette", "font-weight", "font-style",
         "text-decoration", "text-decoration-style", "baseline-shift", "text-transform", "text-anchor", "dominant-baseline",
-        "alignment-baseline", "xml:space", "white-space", "display", "visibility", "mask-type", "overflow"
+        "alignment-baseline", "xml:space", "white-space", "display", "visibility", "mask-type", "overflow", "color-interpolation-filters", "color-interpolation"
     };
     private static readonly Dictionary<string, int> PresentationOrder = CreatePresentationOrder();
     [ThreadStatic] private static int[]? _presentationOrders;
@@ -292,6 +296,8 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "visibility");
         AddAttribute(declarations, element, "mask-type");
         AddAttribute(declarations, element, "overflow");
+        AddAttribute(declarations, element, "color-interpolation-filters");
+        AddAttribute(declarations, element, "color-interpolation");
     }
 
     private static void AddAttribute(List<SvgStyleDeclaration> declarations, SvgRasterElement element, string name) {
@@ -336,6 +342,15 @@ internal sealed class SvgRasterStyle {
                 break;
             case "filter":
                 style.Filter = value.Trim();
+                break;
+            case "color-interpolation":
+                var space = value.Trim();
+                if (string.Equals(space, "initial", StringComparison.OrdinalIgnoreCase) || string.Equals(space, "auto", StringComparison.OrdinalIgnoreCase)) style.ColorInterpolation = "sRGB";
+                else if (string.Equals(space, "sRGB", StringComparison.OrdinalIgnoreCase) || string.Equals(space, "linearRGB", StringComparison.OrdinalIgnoreCase)) style.ColorInterpolation = space;
+                // Inherited property: inherit/unset retain the already computed parent; invalid values are ignored.
+                break;
+            case "color-interpolation-filters":
+                if (!string.Equals(value.Trim(), "inherit", StringComparison.OrdinalIgnoreCase)) style.ColorInterpolationFilters = value.Trim();
                 break;
             case "clip-path":
                 style.ClipPath = value.Trim();

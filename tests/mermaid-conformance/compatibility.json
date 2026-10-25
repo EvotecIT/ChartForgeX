@@ -111,6 +111,10 @@
       },
       "provenance": "Authored ChartForgeX configuration merge example; verified with the pinned official Mermaid parsers."
     },
+    "fixtures/cynefin-source-semantics.mmd": {
+      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored Cynefin quoted-string, repeated-domain and self-loop contract from the pinned 12.2.0 grammar/database. The installed 11.17.2 database/parser sources are identical. Proposed outcomes require execution; no reference result is claimed by the scratch packet."
+    },
     "fixtures/cynefin-basic.mmd": {
       "syntax": {
         "10": "rejected",
@@ -476,6 +480,11 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/ishikawa-native-depth.mmd": {
+      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "mapping": "Typed indentation cause tree, family configuration and measured native Fishbone captions",
+      "provenance": "Authored native-depth fixture; expected syntax follows pinned grammar inspection; actual parser/render qualification pending maintained execution."
+    },
     "fixtures/ishikawa-basic.mmd": {
       "syntax": {
         "10": "rejected",
@@ -491,6 +500,10 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/kanban-source-geometry.mmd": {
+      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored source-dimension and dense-board fixture from pinned Kanban grammar/configuration; expected syntax states, current official parser/render execution pending. Native padding intentionally uses the existing viewport owner instead of the upstream mindmap-padding lookup."
     },
     "fixtures/kanban-basic.mmd": {
       "syntax": {
@@ -733,6 +746,22 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/sequence-native-depth.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored nested parallel/critical, notes, activations, HSL participant box and source role-color case from the official sequence/configuration contracts. Outcomes are qualification declarations until executed."
+    },
+    "fixtures/sequence-half-arrows.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored 16 half-arrow tokens from the pinned Mermaid 12.2.0 sequence grammar and native marker definitions. Outcomes are qualification declarations until executed."
     },
     "fixtures/sequence-presentation.mmd": {
       "syntax": {
@@ -1394,6 +1423,66 @@
       "expectedByReference": {
         "11": "state-native-safe-styles.expected.11.json"
       }
+    },
+    "fixtures/block-native-depth.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX block contract fixture; expected syntax derived from the retained pinned official block grammar. Actual pinned parser and browser observations must be retained by qualification."
+    },
+    "fixtures/block-native-shapes.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX block contract fixture; expected syntax derived from the retained pinned official block grammar. Actual pinned parser and browser observations must be retained by qualification."
+    },
+    "fixtures/c4-style-shapes-native.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression mapped against the retained pinned Mermaid C4 grammar/database/shape adapter. Expected syntax is source-derived; execution in each pinned lane is required. Native geometry and the explicit legend projection do not claim reference pixel identity.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/c4-layout-config-native.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression mapped against the retained pinned Mermaid C4 grammar/database/shape adapter. Expected syntax is source-derived; execution in each pinned lane is required. Native geometry and the explicit legend projection do not claim reference pixel identity.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/c4-config-typography-native.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source configuration using pinned Mermaid 12.2.0 C4DiagramConfig, C4 element CSSOM typography, c4ShapeAdapter element palettes and shared c4LabelHelper width/padding. Earlier-version syntax expectations are provisional until the maintained pinned parser corpus executes; no rendering or pixel-equivalence result is claimed."
+    },
+    "fixtures/wardley-native-overlays.mmd": {
+      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored annotation-box, source paint, sourcing, pipeline label and child-endpoint fixture from pinned Wardley grammar. Expected syntax is source-derived; actual engine qualification remains pending maintained execution."
     }
   }
 }

@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>Controls safe host integration of a detached SVG without changing its layout or static pixels.</summary>
+/// <summary>Controls safe SVG host integration and explicit captured-effect representation without repeating layout.</summary>
 public sealed class VisualSvgOptions {
     private readonly SvgColorVariables? _colorVariables;
     private bool _patternTiles;
@@ -15,22 +15,31 @@ public sealed class VisualSvgOptions {
     /// <summary>Returns an export policy with native user-space pattern tiles, retaining the other host settings.</summary>
     /// <param name="enabled">Whether to use tiles. Static exports keep individual native lines by default.</param>
     /// <returns>An independent export policy.</returns>
-    public VisualSvgOptions WithPatternTiles(bool enabled = true) => new VisualSvgOptions(IdPrefix, _colorVariables, LinkTarget, Responsive) { _patternTiles = enabled };
+    public VisualSvgOptions WithPatternTiles(bool enabled = true) => new VisualSvgOptions(IdPrefix, _colorVariables, LinkTarget, Responsive, EffectProfile, EffectRasterOptions) { _patternTiles = enabled };
 
     /// <summary>Creates a detached SVG export policy.</summary>
     /// <param name="idPrefix">Unique host namespace; null uses a deterministic content namespace.</param>
     /// <param name="colorVariables">Host CSS properties with resolved static fallback colors. The mapping is copied.</param>
     /// <param name="linkTarget">Whether safe scene links use the current browsing context or a new protected context.</param>
+    /// <param name="effectProfile">Baked native effect pixels, or supported typed native SVG effects on retained vectors.</param>
+    /// <param name="effectRasterOptions">Existing native raster options for baked effects; unused by native SVG filter math.</param>
     /// <param name="responsive">Whether inline SVG shrinks to its host width while preserving the logical viewport and aspect ratio.</param>
     public VisualSvgOptions(string? idPrefix = null, SvgColorVariables? colorVariables = null, VisualSvgLinkTarget linkTarget = VisualSvgLinkTarget.SameContext,
-        bool responsive = false) {
+        bool responsive = false, VisualSvgEffectProfile effectProfile = VisualSvgEffectProfile.Baked, VisualRenderOptions? effectRasterOptions = null) {
         if (!Enum.IsDefined(typeof(VisualSvgLinkTarget), linkTarget)) throw new ArgumentOutOfRangeException(nameof(linkTarget));
+        if (!Enum.IsDefined(typeof(VisualSvgEffectProfile), effectProfile)) throw new ArgumentOutOfRangeException(nameof(effectProfile));
+        EffectProfile = effectProfile;
+        EffectRasterOptions = effectRasterOptions;
         IdPrefix = idPrefix == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idPrefix);
         _colorVariables = colorVariables?.Clone();
         LinkTarget = linkTarget;
         Responsive = responsive;
     }
 
+    /// <summary>Gets how retained typed scene effects lower. Explicit captured images remain images.</summary>
+    public VisualSvgEffectProfile EffectProfile { get; }
+    /// <summary>Gets immutable density/coverage/cap options for baked effects; null resolves native defaults only when needed.</summary>
+    public VisualRenderOptions? EffectRasterOptions { get; }
     /// <summary>Gets the host ID namespace, or null for a deterministic content namespace.</summary>
     public string? IdPrefix { get; }
     /// <summary>Gets an independent copy of the host color mapping.</summary>

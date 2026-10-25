@@ -89,15 +89,17 @@ public sealed class MermaidClassSemanticNotationTests {
     }
 
     [Fact]
-    public void UpstreamUnsupportedCommaGenericsRemainOneLocatedDiagnosticWithoutFakeClasses() {
+    public void BalancedCommaGenericsAreOneLocatedChartForgeXExtensionWithStableIdentityAndRawCaption() {
         const string statement = "class Pair~K,V~";
         var result = MermaidRenderer.Render("classDiagram\nclass A\n  " + statement);
         Assert.False(result.HasErrors);
         var warning = Assert.Single(result.Diagnostics);
-        Assert.Equal((MermaidDiagnosticCodes.UnsupportedStatement, 3, 3, statement.Length),
+        Assert.Equal((MermaidDiagnosticCodes.ApproximateMapping, 3, 3, statement.Length),
             (warning.Code, warning.Span.Line, warning.Span.Column, warning.Span.Length));
-        Assert.Equal("A", Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes).Id);
-        Assert.Equal(statement, Assert.Single(result.Document!.RawStatements).Text);
+        var node = Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes.Single(node => node.Id == "Pair");
+        Assert.Equal("Pair<K,V>", node.Label);
+        Assert.Equal("Pair~K,V~", node.Metadata["mermaid.generic.source"]);
+        Assert.Empty(result.Document!.RawStatements);
     }
 
     [Theory]

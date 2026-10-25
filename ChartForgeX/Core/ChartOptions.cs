@@ -81,6 +81,9 @@ public sealed partial class ChartOptions {
     /// <summary>Gets whether <see cref="Padding"/> was set, by the caller or by a builder, rather than left at its default.</summary>
     internal bool HasExplicitPadding { get; private set; }
 
+    /// <summary>Gets authored padding independently of temporary host-frame ownership.</summary>
+    internal ChartPadding ConfiguredPadding => _padding;
+
     /// <summary>
     /// Gets or sets the visual theme used by renderers.
     /// </summary>

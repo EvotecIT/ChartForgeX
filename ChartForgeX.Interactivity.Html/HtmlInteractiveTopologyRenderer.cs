@@ -7,7 +7,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// <summary>
 /// Renders topology charts with the adapter-owned browser interaction runtime.
 /// </summary>
-public sealed class HtmlInteractiveTopologyRenderer {
+public sealed partial class HtmlInteractiveTopologyRenderer {
     /// <summary>Localizes adapter controls independently from native topology facts and descriptions.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();
 

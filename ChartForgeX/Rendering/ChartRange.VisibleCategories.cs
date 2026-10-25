@@ -48,6 +48,18 @@ internal sealed partial class ChartRange {
             }
             if (IsContinuous(series.Kind)) {
                 var anyVisible = false;
+                var aligned = stacks.AreaVertices(seriesIndex);
+                if (aligned != null) {
+                    var top = aligned.Select(vertex => Project(vertex.X, vertex.End, vertex.BreakBefore)).ToArray();
+                    var bottom = aligned.Select(vertex => Project(vertex.X, vertex.Base, vertex.BreakBefore)).ToArray();
+                    anyVisible = IncludePath(top, series) | IncludePath(bottom, series);
+                    // Authored point targets survive a group-wide gap and contribute their actual extent.
+                    for (var raw = 0; raw < series.RenderPoints.Count; raw++) if (Overlaps(series.RenderPoints[raw].X, series.RenderPoints[raw].X)) {
+                        Include(stacks.Point(seriesIndex, raw).Base); Include(stacks.Point(seriesIndex, raw).End);
+                    }
+                    if (hasBaseline && anyVisible) baseline = true;
+                    continue;
+                }
                 var stride = series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea ? 2 : 1;
                 for (var boundary = 0; boundary < stride; boundary++) {
                     var points = new List<ChartPoint>(); var lower = new List<ChartPoint>();
@@ -58,7 +70,7 @@ internal sealed partial class ChartRange {
                         points.Add(Project(point.X, value, missing));
                         if (series.Kind == ChartSeriesKind.StackedArea) lower.Add(Project(point.X, stacks.Point(seriesIndex, raw).Base, missing));
                     }
-                    anyVisible |= IncludePath(points, series); if (lower.Count > 0) anyVisible |= IncludePath(lower, series);
+                    anyVisible |= IncludePath(points, series, stride == 2 ? boundary : (int?)null); if (lower.Count > 0) anyVisible |= IncludePath(lower, series);
                 }
                 if (hasBaseline && anyVisible) baseline = true;
                 continue;
@@ -119,8 +131,10 @@ internal sealed partial class ChartRange {
             ChartScaleTransform.Normalize(ChartScaleTransform.Forward(category, categoryAxis), categoryStart, categoryEnd, false),
             ChartScaleTransform.Normalize(ChartScaleTransform.Forward(axis.Scale == ChartScaleKind.Logarithmic && value == 0
                 ? axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? fullMax : fullMin : value, axis), transformedMin, transformedMax, false), missing);
-        bool IncludePath(IReadOnlyList<ChartPoint> points, ChartSeries series) {
-            var bounds = ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition).BoundsInXRange(0, 1);
+        bool IncludePath(IReadOnlyList<ChartPoint> points, ChartSeries series, int? boundary = null) {
+            var path = boundary.HasValue ? ChartPairedBoundaryGeometry.BoundaryPath(series, points, boundary.Value == 0)
+                : ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition);
+            var bounds = path.BoundsInXRange(0, 1);
             if (bounds == null) return false;
             Include(ChartScaleTransform.Inverse(ChartMath.InterpolateOrExtrapolateRange(transformedMin, transformedMax, bounds.Value.Top), axis));
             Include(ChartScaleTransform.Inverse(ChartMath.InterpolateOrExtrapolateRange(transformedMin, transformedMax, bounds.Value.Bottom), axis));

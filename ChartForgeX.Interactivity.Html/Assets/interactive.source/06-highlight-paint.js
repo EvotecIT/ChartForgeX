@@ -77,7 +77,14 @@
   const interactionOutlineFootprint = (node) => {
     const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
     if (!matrix) return null;
-    const box = nativeRegionScreenBox(node) || nativeRegionScreenBox(node, node.getBBox());
+    let box;
+    const styles=new Map(),shapes=node.matches(paintShapes)?[node]:Array.from(node.querySelectorAll(paintShapes));
+    if(shapes.length&&!shapes.some(shape=>shape.localName!=='image'&&shapePaint(shape,styles,node))){
+      for(const shape of shapes)if(shape.localName==='image'&&shapePaint(shape,styles,node)){
+        const b=nativeRegionScreenBox(shape,nativeImagePaintBounds(shape));if(b)box=box?{left:Math.min(box.left,b.left),right:Math.max(box.right,b.right),top:Math.min(box.top,b.top),bottom:Math.max(box.bottom,b.bottom)}:b;
+      }
+    }
+    box ||= nativeRegionScreenBox(node) || nativeRegionScreenBox(node, node.getBBox());
     if (!box || !Object.values(box).every(Number.isFinite)) return null;
     const centerX = (box.left + box.right) / 2, centerY = (box.top + box.bottom) / 2;
     const halfWidth = Math.max(5, (box.right - box.left) / 2 + 3), halfHeight = Math.max(5, (box.bottom - box.top) / 2 + 3);
@@ -94,7 +101,7 @@
       if (outline) outline.remove();
       return;
     }
-    // Clone geometry, not IDs/targets/hatch/focus/paint.
+
     if (!outline) {
       outline = interactionOutlineNode(primary.localName, 'data-cfx-highlight-outline');
       paint.insertBefore(outline, paint.firstChild);
@@ -129,7 +136,7 @@
 
       if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
     }));
-    // Retain peer hover on paint loss.
+
     if (hiddenActive) clearHover(root, true, false);
   };
   const applyRootBranchHighlight = (root, active) => {

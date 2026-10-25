@@ -39,16 +39,16 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static double EdgeLabelClearanceX(TopologyEdgeLabelLayout layout, double centerX) =>
-        centerX - layout.Width / 2 + EdgeLabelClearanceHorizontalInset;
+        centerX - layout.Width / 2 + EdgeLabelClearanceHorizontalInset * TopologyPreparedEdgePlan.Units(layout.Edge);
 
     public static double EdgeLabelClearanceY(TopologyEdgeLabelLayout layout, double centerY) =>
-        centerY - layout.Height / 2 + EdgeLabelClearanceTopInset;
+        centerY - layout.Height / 2 + EdgeLabelClearanceTopInset * TopologyPreparedEdgePlan.Units(layout.Edge);
 
     public static double EdgeLabelClearanceWidth(TopologyEdgeLabelLayout layout) =>
-        layout.Width - EdgeLabelClearanceWidthInset;
+        layout.Width - EdgeLabelClearanceWidthInset * TopologyPreparedEdgePlan.Units(layout.Edge);
 
     public static double EdgeLabelClearanceHeight(TopologyEdgeLabelLayout layout) =>
-        Math.Max(EdgeLabelClearanceMinHeight, layout.Height - EdgeLabelClearanceHeightInset);
+        Math.Max(EdgeLabelClearanceMinHeight * TopologyPreparedEdgePlan.Units(layout.Edge), layout.Height - EdgeLabelClearanceHeightInset * TopologyPreparedEdgePlan.Units(layout.Edge));
 
     public static double EdgeLabelClearanceOpacity(TopologyGroup? group) =>
         group == null ? EdgeLabelClearanceBackgroundOpacity : EdgeLabelClearanceGroupOpacity;

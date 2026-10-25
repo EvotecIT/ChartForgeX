@@ -22,7 +22,7 @@ internal static class ChartRadarGeometry {
                 + "' retains its observed outline and points without area fill because its missing-category policy leaves no closed polygon."));
     }
 
-    internal static IReadOnlyList<RadarPath> Paths(ChartRadarOptions options, IReadOnlyList<ChartPoint> points, IReadOnlyList<int> sources) {
+    internal static IReadOnlyList<RadarPath> Paths(ChartRadarOptions options, IReadOnlyList<ChartPoint> points, IReadOnlyList<int> sources, bool cyclic = true) {
         var missing = -1;
         for (var index = 0; index < sources.Count; index++) if (sources[index] < 0) { missing = index; break; }
         var tension = options.CurveTension ?? 0;
@@ -30,12 +30,23 @@ internal static class ChartRadarGeometry {
             return new[] { Closed(points, tension) };
         if (options.MissingCategoryPolicy == ChartRadarMissingCategoryPolicy.Connect)
             return new[] { Closed(points.Where((point, index) => sources[index] >= 0).ToArray(), tension) };
+        if (!cyclic) return OpenRuns(points, sources, tension);
         var paths = new List<RadarPath>();
         var run = new List<ChartPoint>();
         // Starting after a gap keeps an authored run across the category seam intact.
         for (var offset = 1; offset <= points.Count; offset++) {
             var index = (missing + offset) % points.Count;
             if (sources[index] >= 0) run.Add(points[index]);
+            else if (run.Count > 0) { paths.Add(new RadarPath(ChartPathBuilder.OpenCurve(run, tension), false)); run.Clear(); }
+        }
+        return paths;
+    }
+
+    /// <summary>Partial angular viewports have two physical ends; a Gap never joins the last category to the first across them.</summary>
+    private static IReadOnlyList<RadarPath> OpenRuns(IReadOnlyList<ChartPoint> points, IReadOnlyList<int> sources, double tension) {
+        var paths = new List<RadarPath>(); var run = new List<ChartPoint>();
+        for (var index = 0; index <= points.Count; index++) {
+            if (index < points.Count && sources[index] >= 0) run.Add(points[index]);
             else if (run.Count > 0) { paths.Add(new RadarPath(ChartPathBuilder.OpenCurve(run, tension), false)); run.Clear(); }
         }
         return paths;

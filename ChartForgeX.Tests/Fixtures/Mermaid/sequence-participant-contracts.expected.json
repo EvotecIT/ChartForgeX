@@ -1,0 +1,47 @@
+{
+  "kind": "native and consumer contract; no version outcome declaration",
+  "ids": [
+    "P",
+    "U",
+    "B",
+    "C",
+    "E",
+    "D",
+    "L",
+    "Q"
+  ],
+  "kinds": [
+    "Participant",
+    "Actor",
+    "Boundary",
+    "Control",
+    "Entity",
+    "Database",
+    "Collections",
+    "Queue"
+  ],
+  "nativeLabels": [
+    "Native",
+    "User",
+    "Entry\nAPI",
+    "Worker",
+    "Record",
+    "Storage",
+    "Items",
+    "Inbox"
+  ],
+  "propertyLines": [
+    14,
+    15
+  ],
+  "linkLines": [
+    11,
+    12,
+    13
+  ],
+  "storageHref": "https://example.test/status",
+  "queueHref": null,
+  "propertyOwner": "Operations",
+  "menuWarnings": 1,
+  "messages": 9
+}

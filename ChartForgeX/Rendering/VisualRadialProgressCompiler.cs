@@ -42,32 +42,7 @@ internal static partial class VisualRadialProgressCompiler {
             throw new InvalidOperationException("Progress-ring values must be finite and between zero and 100.");
         var outer = Math.Min(maximum, maximum * .85 * chart.Options.RadialProgressRadiusScale);
         if (outer < 1) { builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "The viewport is too small for progress rings.")); return; }
-        var average = series.RenderPoints.Average(point => point.Y);
-        var value = ChartNumericFormatter.FormatValue(chart.Options, average);
-        var style = VisualRadialPrimitives.Style(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, 700);
-        var captionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize);
-        var requested = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressRingCenterLabel
-            ? RequestedCenterRadius(builder, context, value, series.Name, style, captionStyle) : 0;
-        var layout = ProgressRingLayout.Create(outer, series.RenderPoints.Count, chart.Options.RadialProgressStrokeScale, requested);
-        for (var index = 0; index < series.RenderPoints.Count; index++) {
-            var point = series.RenderPoints[index]; var label = VisualRadialPrimitives.Label(chart, point, index);
-            var formatted = ChartNumericFormatter.FormatValue(chart.Options, point.Y);
-            var radius = layout.RadiusAt(index); var color = VisualRadialPrimitives.Color(series, index, colors);
-            var bounds = new ChartRect(cx - radius - layout.StrokeWidth / 2, cy - radius - layout.StrokeWidth / 2,
-                radius * 2 + layout.StrokeWidth, radius * 2 + layout.StrokeWidth);
-            builder.AddRegion(new VisualSemanticRegion(Id(index), "progress-ring-ring", bounds, label + ": " + formatted));
-            using (builder.PushGroup(Id(index), "progress-ring-point", Metadata(chart, index, label, point.Y, 0, 100))) {
-                VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2, colors.Neutral2, "progress-ring-track", paint: SvgPaint.Of(colors.Neutral2, SvgColorRole.Surface));
-                VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2 * point.Y / 100,
-                    color, "progress-ring-ring", round: true, paint: VisualChartPaint.Series(series, color, index));
-            }
-        }
-        builder.Ellipse(cx, cy, layout.CenterRadius, layout.CenterRadius, colors.Surface, colors.Border, role: "progress-ring-center",
-            paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
-        if (series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressRingCenterLabel)
-            Center(builder, context, cx, cy, layout.CenterRadius, value, series.Name,
-                CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, layout.CenterRadius, 700),
-                CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, layout.CenterRadius), "progress-ring");
+        builder.CaptureValue(new RingPlan(chart, context, cx, cy, outer, colors));
     }
 
     private static void Layers(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double cx, double cy, double maximum, VisualThemeColors colors) {
@@ -79,43 +54,8 @@ internal static partial class VisualRadialProgressCompiler {
         var separatorClearance = series.RadialLayers.Max(layer => layer.SeparatorCount > 0 ? layer.SeparatorStrokeWidth / 2 : 0);
         var outer = Math.Min(maximum * .85 * chart.Options.RadialProgressRadiusScale, Math.Max(0, maximum - separatorClearance) / extent);
         if (outer <= 0) { builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "Layer separators exceed the available viewport.")); return; }
-        var centerRadius = maximum;
-        string? centerValue = null;
-        for (var index = 0; index < series.RadialLayers.Count; index++) {
-            var layer = series.RadialLayers[index];
-            var radius = outer * layer.RadiusRatio; var stroke = outer * layer.StrokeRatio * chart.Options.RadialProgressStrokeScale;
-            centerRadius = Math.Min(centerRadius, Math.Max(0, radius - stroke / 2));
-            var start = (layer.StartAngleDegrees % 360) * Math.PI / 180; var sweep = layer.SweepAngleDegrees * Math.PI / 180 * VisualRadialPrimitives.Clamp((layer.Value - layer.Minimum) / (layer.Maximum - layer.Minimum));
-            var color = ChartColorMath.WithOpacity(layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), layer.Opacity);
-            var bounds = new ChartRect(cx - radius - stroke / 2, cy - radius - stroke / 2, radius * 2 + stroke, radius * 2 + stroke);
-            centerValue = ChartNumericFormatter.FormatValue(chart.Options, layer.Value);
-            builder.AddRegion(new VisualSemanticRegion(Id(index), "layered-radial-layer", bounds, layer.Name + ": " + centerValue));
-            using (builder.PushGroup(Id(index), "layered-radial-point", Metadata(chart, index, layer.Name, layer.Value, layer.Minimum, layer.Maximum))) {
-                VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep, color, "layered-radial-layer", round: layer.LineCap == ChartRadialLayerCap.Round,
-                    paint: VisualChartPaint.Series(series, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), index, layer.Color.HasValue).WithOpacity(color, layer.Opacity));
-                if (sweep <= 0 || layer.SeparatorCount <= 0) continue;
-                var inset = Math.Min(Math.Max(0, stroke / 2 - .5), stroke * layer.SeparatorInsetRatio);
-                var inner = Math.Max(0, radius - stroke / 2 + inset); var outside = radius + stroke / 2 - inset;
-                for (var separator = 1; separator <= layer.SeparatorCount; separator++) {
-                    var angle = start + sweep * separator / (layer.SeparatorCount + 1);
-                    builder.Line(cx + Math.Cos(angle) * inner, cy + Math.Sin(angle) * inner,
-                        cx + Math.Cos(angle) * outside, cy + Math.Sin(angle) * outside,
-                        layer.SeparatorColor ?? colors.Surface, layer.SeparatorStrokeWidth, "layered-radial-separator", paint: VisualChartPaint.Stroke(layer.SeparatorColor ?? colors.Surface, SvgColorRole.Surface));
-                }
-            }
-        }
-        if (series.ResolveDataLabels(chart.Options, defaultVisible: true)) {
-            Center(builder, context, cx, cy, centerRadius, centerValue!, series.Name,
-                CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, centerRadius, 700),
-                CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, centerRadius), "layered-radial");
-        }
+        builder.CaptureValue(new LayerPlan(chart, context, cx, cy, maximum, outer, colors));
     }
 
     private static string Id(int index) => "series-0-point-" + index.ToString(CultureInfo.InvariantCulture);
-    private static IReadOnlyDictionary<string, string> Metadata(Chart chart, int index, string label, double value, double min, double max) => new Dictionary<string, string> {
-        ["data-cfx-series"] = "0", ["data-cfx-source-point"] = index.ToString(CultureInfo.InvariantCulture), ["data-cfx-source-count"] = "1",
-        ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
-        ["data-cfx-point"] = index.ToString(CultureInfo.InvariantCulture), ["data-cfx-label"] = label, ["data-cfx-value"] = value.ToString("R", CultureInfo.InvariantCulture),
-        ["data-cfx-min"] = min.ToString("R", CultureInfo.InvariantCulture), ["data-cfx-max"] = max.ToString("R", CultureInfo.InvariantCulture)
-    };
 }

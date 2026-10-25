@@ -81,7 +81,13 @@ public enum SequenceArtifactBlockKind {
     /// <summary>A break or exception-flow block.</summary>
     Break,
     /// <summary>An exception-handling fragment with source-ordered catch and finally branches.</summary>
-    Try
+    Try,
+    /// <summary>A distinct authored parallel-over fragment rendered through the common measured parallel geometry.</summary>
+    ParOver,
+    /// <summary>An instantaneous interaction-use reference with an optional participant span.</summary>
+    Reference,
+    /// <summary>An instantaneous labeled horizontal divider.</summary>
+    Divider
 }
 
 /// <summary>
@@ -240,7 +246,7 @@ public sealed partial class SequenceArtifact {
 /// <summary>
 /// Describes a sequence participant.
 /// </summary>
-public sealed class SequenceArtifactParticipant {
+public sealed partial class SequenceArtifactParticipant {
     private string _id;
     private string _label;
 
@@ -280,6 +286,7 @@ public sealed class SequenceArtifactParticipant {
 /// Describes a standalone participant activation state change.
 /// </summary>
 public sealed class SequenceArtifactActivation {
+    internal long? SourceOrder { get; set; }
     private string _participantId;
 
     /// <summary>Initializes a participant activation state change.</summary>
@@ -353,6 +360,7 @@ public sealed class SequenceArtifactMessage {
 /// Describes a sequence note.
 /// </summary>
 public sealed class SequenceArtifactNote {
+    internal long? SourceOrder { get; set; }
     private string _text;
 
     /// <summary>Initializes a sequence note.</summary>
@@ -377,7 +385,11 @@ public sealed class SequenceArtifactNote {
 /// <summary>
 /// Describes a sequence block span.
 /// </summary>
-public sealed class SequenceArtifactBlock {
+public sealed partial class SequenceArtifactBlock {
+    // Adapter occurrence order refines equal-message-boundary layout without exposing an ordering API.
+    internal long? SourceOrder { get; set; }
+    internal long? EndSourceOrder { get; set; }
+    internal int? CloseStepIndex { get; set; }
     private string _text;
 
     /// <summary>Initializes a sequence block span.</summary>
@@ -392,6 +404,9 @@ public sealed class SequenceArtifactBlock {
 
     /// <summary>Gets or sets the block kind.</summary>
     public SequenceArtifactBlockKind Kind { get; set; }
+
+    /// <summary>Gets or sets an explicit fill behind this fragment; a Rect fill has no synthetic caption or header.</summary>
+    public ChartForgeX.Primitives.ChartColor? BackgroundColor { get; set; }
 
     /// <summary>Gets or sets the block text.</summary>
     public string Text { get => _text; set => _text = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -413,6 +428,10 @@ public sealed class SequenceArtifactBlock {
 /// Describes one branch span within an alternative, parallel, or critical sequence block.
 /// </summary>
 public sealed class SequenceArtifactBranch {
+    // Adapter occurrence order refines equal-message-boundary layout without exposing an ordering API.
+    internal long? SourceOrder { get; set; }
+    internal long? EndSourceOrder { get; set; }
+    internal int? CloseStepIndex { get; set; }
     private string _kind;
     private string _text;
 

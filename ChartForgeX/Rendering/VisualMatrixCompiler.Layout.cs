@@ -9,8 +9,8 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
-    private static MatrixLayout MeasureMatrix(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartSeries[] rows, double[] columns, bool categorical, Func<double, string> formatColumn, ChartColorPresentation presentation, bool hasDomain, double min, double max, bool missing) {
+    private static MatrixLayout MeasureFlatMatrix(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
+        ChartSeries[] rows, double[] columns, bool categorical, Func<double, string> formatColumn, ChartColorPresentation presentation, bool hasDomain, double min, double max, bool missing, string[]? rowLabels = null) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         var x = chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels;
         var y = chart.Options.ShowAxes && chart.Options.YAxis.Visible;
@@ -19,7 +19,7 @@ internal static partial class VisualMatrixCompiler {
         var widest = captions
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var lineHeight = builder.MeasureText("Mg", style).Height;
-        var left = y ? Math.Min(viewport.Width * .3, rows.Select(row => builder.MeasureText(row.Name, style).Width).DefaultIfEmpty(0).Max() + gap) : 0;
+        var left = y ? Math.Min(viewport.Width * .3, rows.Select((row, index) => builder.MeasureText(rowLabels == null ? row.Name : rowLabels[index], style).Width).DefaultIfEmpty(0).Max() + gap) : 0;
         var hexagonal = rows[0].Kind == ChartSeriesKind.HexbinHeatmap;
         var pitch = Math.Max(0, viewport.Width - left) / (columns.Length + (hexagonal ? .5 : 0));
         var angle = ChartHeatmapColumnLabels.Angle(chart);
@@ -92,6 +92,7 @@ internal static partial class VisualMatrixCompiler {
                 var text = formatColumn(columns[index]);
                 var x = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (index + .5) * plot.Width / (columns.Length + .5)
                     : plot.Left + index * (cellWidth + gap) + cellWidth / 2;
+                if (ReverseColumns(chart)) x = plot.Left + plot.Right - x;
                 if (index % step != 0) {
                     // Density limits only visible labels. Retain the omitted column's complete caption
                     // and descriptive slot just as fitted visible labels retain their full source text.
@@ -119,7 +120,7 @@ internal static partial class VisualMatrixCompiler {
                             "heatmap-column-label", "matrix-column-" + index, angle < 0 ? TextAlignment.Right : TextAlignment.Left);
                 }
             }
-            VisualStateSceneTools.Text(builder, layout.XTitle, new ChartRect(plot.Left, plot.Bottom + layout.LabelHeight, plot.Width, layout.TitleHeight),
+            VisualStateSceneTools.Text(builder, layout.XTitle, new ChartRect(plot.Left, plot.Bottom + layout.LabelHeight + layout.ColumnGroupHeight, plot.Width, layout.TitleHeight),
                 layout.TitleStyle, "heatmap-x-axis-title", "matrix-x-title", TextAlignment.Center);
         }
         if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0)
@@ -222,10 +223,15 @@ internal static partial class VisualMatrixCompiler {
 
     private sealed class MatrixLayout {
         internal MatrixLayout(ChartRect plot, ChartRect scale, double labelHeight, double titleHeight, string xTitle, TextStyle titleStyle,
-            double labelAngle, string[] columnLabels) {
+            double labelAngle, string[] columnLabels, ChartRect rowGroupBand = default, ChartRect columnGroupBand = default,
+            double[]? rowGroupSizes = null, double[]? columnGroupSizes = null) {
             Plot = plot; Scale = scale; LabelHeight = labelHeight; TitleHeight = titleHeight; XTitle = xTitle; TitleStyle = titleStyle;
             LabelAngle = labelAngle; ColumnLabels = columnLabels;
+            RowGroupBand = rowGroupBand; ColumnGroupBand = columnGroupBand; RowGroupSizes = rowGroupSizes; ColumnGroupSizes = columnGroupSizes;
         }
+        internal ChartRect RowGroupBand { get; } internal ChartRect ColumnGroupBand { get; }
+        internal double RowGroupWidth => RowGroupBand.Width; internal double ColumnGroupHeight => ColumnGroupBand.Height;
+        internal double[]? RowGroupSizes { get; } internal double[]? ColumnGroupSizes { get; }
         internal ChartRect Plot { get; } internal ChartRect Scale { get; }
         internal double LabelHeight { get; } internal double TitleHeight { get; }
         internal string XTitle { get; } internal TextStyle TitleStyle { get; }

@@ -6,7 +6,7 @@ public enum ChartSankeyLabelPlacement {
     Left,
     /// <summary>Places the label to the right of the node bar, left aligned.</summary>
     Right,
-    /// <summary>Centers the label over the node bar with the existing readable backdrop.</summary>
+    /// <summary>Centers the label over the node bar using the configured label paint.</summary>
     Center
 }
 

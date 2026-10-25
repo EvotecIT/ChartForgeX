@@ -1,0 +1,26 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Interactivity.Html;
+
+var family = {{FAMILY}}; var automatic = {{AUTOMATIC}}; var intent = {{INTENT}}; var other = intent == "other"; var renderer = new HtmlInteractiveChartRenderer();
+var chart = NativeRadialBandMotionRecipe.Create(family,automatic,other,60,45,{{WIDTH}},VisualThemeMode.{{MODE}});
+var from = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(false)) : renderer.PrepareSection(chart);
+var to = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(true)) : renderer.PrepareSection(NativeRadialBandMotionRecipe.Create(family,automatic,false,80,55,{{WIDTH}},VisualThemeMode.{{MODE}}));
+var options = new HtmlNativeTransitionOptions(other ? HtmlNativeTransitionEffect.LegendVisibility : intent == "initial" ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values,9);
+var payload = renderer.PrepareNativeTransitionJson(from,to,options); var reverse = intent == "initial" ? payload : renderer.PrepareNativeTransitionJson(to,from,options);
+var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>" + (intent == "initial"
+    ? "chart.presentInitial(" + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});"
+    : "{chart.update(forward?" + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?" + JsonSerializer.Serialize(payload) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}});forward=!forward;}");
+var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+    + "</style></head><body><button id='play' type='button'>Present native radial bands</button>" + (intent == "initial" ? to.Html : from.Html)
+    + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + action + "</script></body></html>";
+Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html",html); File.WriteAllText("output/visual.transition.json",payload);
+File.WriteAllText("output/visual.svg",to.PreparedVisual.ToSvg()); File.WriteAllBytes("output/visual.png",to.PreparedVisual.ToPng());
+
+{{SOURCE}}

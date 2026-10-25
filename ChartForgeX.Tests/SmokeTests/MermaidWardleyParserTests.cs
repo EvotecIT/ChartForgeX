@@ -102,7 +102,9 @@ API -> Missing";
         var result = new MermaidParser().ParseWardley(source);
 
         Assert(result.HasErrors, "Mermaid Wardley parser should reject links to unknown nodes.");
-        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("previously declared nodes", StringComparison.Ordinal)), "Mermaid Wardley link diagnostics should explain the current declaration contract.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Severity == MermaidDiagnosticSeverity.Error
+            && diagnostic.Span.Line == 3 && diagnostic.Message.Contains("Missing", StringComparison.Ordinal)),
+            "Mermaid Wardley link diagnostics should locate and identify the unknown endpoint.");
     }
 
     private static void MermaidWardleyAcceptsIntegerAndPercentageCoordinates() {

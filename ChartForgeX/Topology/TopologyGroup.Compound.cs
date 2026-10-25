@@ -7,7 +7,7 @@ public sealed partial class TopologyGroup {
     /// <remarks>Automatic layered layout supports at most 128 nested regions and requires an acyclic parent tree.</remarks>
     public string? ParentGroupId { get; set; }
 
-    /// <summary>Gets or sets a local layered layout direction, or null to inherit the containing region.</summary>
+    /// <summary>Gets or sets a local automatic layered or swimlane composition direction, or null to inherit the containing region.</summary>
     public TopologyLayoutDirection? LayoutDirection {
         get => _layoutDirection;
         set {

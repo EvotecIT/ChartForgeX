@@ -8,6 +8,7 @@ namespace ChartForgeX.Topology;
 internal static class TopologyResolvedRouteSamples {
     internal static IReadOnlyList<ChartPoint> Sample(TopologyChart chart, TopologyRenderOptions options,
         TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, List<ChartPoint> points) {
+        if (edge.Interpolation.HasValue) return RenderedEdgeSamplePoints(chart, edge, nodes, points, 64);
         var rendered = RenderedEdgeSamplePoints(chart, edge, nodes, points, 64);
         return ShouldRoundEdgeCorners(edge, rendered, options)
             ? RoundedOrthogonalRoutePoints(rendered, options.EdgeCornerRadius) : rendered;

@@ -16,11 +16,7 @@ internal sealed class RasterEffectPreflight {
     private RasterEffectPreflight(RasterEffectPlan[] plans, RgbaImage[] sources, long maximumWorkSamples, long maximumLiveBytes, long additionalPixelBytes, long additionalWorkSamples) {
         if (plans == null || sources == null) throw new ArgumentNullException(nameof(plans));
         if (plans.Length == 0 || plans.Length > 16 || plans.Length != sources.Length) throw new ArgumentOutOfRangeException(nameof(plans));
-        if (maximumWorkSamples <= 0 || maximumWorkSamples > MaximumWorkSamples || maximumLiveBytes <= 0 || maximumLiveBytes > MaximumLiveBytes)
-            throw new ArgumentOutOfRangeException(nameof(maximumWorkSamples), "Caller limits may tighten, but never raise, the raster safety ceilings.");
-        if (additionalPixelBytes < 0 || additionalWorkSamples < 0) throw new ArgumentOutOfRangeException(nameof(additionalPixelBytes));
-        if (additionalPixelBytes > maximumLiveBytes || additionalWorkSamples > maximumWorkSamples)
-            throw new ArgumentOutOfRangeException(nameof(additionalPixelBytes), "Composition exceeds its raster preflight before execution.");
+        ValidateLimits(maximumWorkSamples, maximumLiveBytes, additionalPixelBytes, additionalWorkSamples);
         _plans = (RasterEffectPlan[])plans.Clone(); _sources = (RgbaImage[])sources.Clone(); _taken = new bool[plans.Length];
         var borrowed = new HashSet<byte[]>(); long work = additionalWorkSamples, bytes = additionalPixelBytes;
         for (int index = 0; index < plans.Length; index++) {
@@ -29,11 +25,41 @@ internal sealed class RasterEffectPreflight {
                 throw new ArgumentException("Effect sources require validated RGBA8 images.", nameof(sources));
             // The entire borrowed allocation counts, not just a clipped region. Duplicate source arrays count once.
             if (borrowed.Add(source.Pixels)) bytes = checked(bytes + source.Pixels.LongLength);
+            if (plan.Operand is RgbaImage operand) {
+                _ = new RgbaImage(operand.Width, operand.Height, operand.Pixels);
+                _ = new RasterEffectRegion(0, 0, operand.Width, operand.Height);
+                if (borrowed.Add(operand.Pixels)) bytes = checked(bytes + operand.Pixels.LongLength);
+            }
             work = checked(work + plan.WorkSamples); bytes = checked(bytes + plan.AllocatedBytes);
-            if (work > maximumWorkSamples || bytes > maximumLiveBytes)
-                throw new ArgumentOutOfRangeException(nameof(plans), "Effects exceed cumulative work or conservative live-buffer limits before execution.");
+            ValidateTotals(work, bytes, maximumWorkSamples, maximumLiveBytes);
         }
         WorkSamples = work; ConservativeLiveBytes = bytes;
+    }
+
+    /// <summary>Checks one planned source capture before its canvas, downsample, effect or private snapshot buffers allocate.</summary>
+    /// <remarks>The existing renderer's font/geometry work and encoder allocations remain governed by their own owners;
+    /// these counts cover declared capture/effect pixel arrays and explicit array visits, not process memory or latency.</remarks>
+    internal static void ValidateCapture(RasterEffectPlan? plan, long sourcePixelBytes, long additionalPixelBytes, long additionalWorkSamples,
+        out long workSamples, out long conservativeLiveBytes,
+        long maximumWorkSamples = MaximumWorkSamples, long maximumLiveBytes = MaximumLiveBytes) {
+        if (sourcePixelBytes < 0) throw new ArgumentOutOfRangeException(nameof(sourcePixelBytes));
+        ValidateLimits(maximumWorkSamples, maximumLiveBytes, additionalPixelBytes, additionalWorkSamples);
+        workSamples = checked(additionalWorkSamples + (plan?.WorkSamples ?? 0));
+        conservativeLiveBytes = checked(sourcePixelBytes + additionalPixelBytes + (plan?.AllocatedBytes ?? 0) + (plan?.Operand?.Pixels.LongLength ?? 0));
+        ValidateTotals(workSamples, conservativeLiveBytes, maximumWorkSamples, maximumLiveBytes);
+    }
+
+    private static void ValidateLimits(long maximumWorkSamples, long maximumLiveBytes, long additionalPixelBytes, long additionalWorkSamples) {
+        if (maximumWorkSamples <= 0 || maximumWorkSamples > MaximumWorkSamples || maximumLiveBytes <= 0 || maximumLiveBytes > MaximumLiveBytes)
+            throw new ArgumentOutOfRangeException(nameof(maximumWorkSamples), "Caller limits may tighten, but never raise, the raster safety ceilings.");
+        if (additionalPixelBytes < 0 || additionalWorkSamples < 0) throw new ArgumentOutOfRangeException(nameof(additionalPixelBytes));
+        if (additionalPixelBytes > maximumLiveBytes || additionalWorkSamples > maximumWorkSamples)
+            throw new ArgumentOutOfRangeException(nameof(additionalPixelBytes), "Composition exceeds its raster preflight before execution.");
+    }
+
+    private static void ValidateTotals(long work, long bytes, long maximumWorkSamples, long maximumLiveBytes) {
+        if (work > maximumWorkSamples || bytes > maximumLiveBytes)
+            throw new ArgumentOutOfRangeException("plans", "Effects exceed cumulative work or conservative live-buffer limits before execution.");
     }
 
     /// <summary>Safety limits, not performance results. Sum of every planned allocation avoids assuming collection or reuse between operations.</summary>

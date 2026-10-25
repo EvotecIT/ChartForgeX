@@ -83,7 +83,7 @@ internal sealed partial class VisualSceneBuilder {
                 }
             }
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata,
-                group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope);
+                group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope, group.Opacity, group.SurfaceShadow, group.RetainedEffect);
         }
     }
 

@@ -66,19 +66,27 @@ public sealed partial class ChartSeries {
 
     /// <summary>Detaches the same ordinal presentation for numeric and typed data before either transaction commits.</summary>
     private ObservationChangePresentation CaptureObservationChangePresentation<T>(List<ObservationChangeEntry<T>> retained) where T : struct => new() {
+        FunnelConnectorStyles = RemapObservationOverrides(_funnelConnectorStyles, retained),
         Colors = RemapObservationOverrides(PointColors, retained),
+        StrokeColors = RemapObservationOverrides(_pointStrokeColors, retained),
         Patterns = RemapObservationOverrides(PointFillPatterns, retained),
         Labels = RemapObservationOverrides(PointLabels, retained),
         LabelStyles = RemapObservationOverrides(PointDataLabelStyles, retained),
+        MarkerOptions = RemapObservationOverrides(_pointMarkers, retained),
         SliceOffsets = RemapObservationOverrides(PointSliceOffsets, retained),
+        SliceRadiusRatios = RemapObservationOverrides(_pointSliceRadiusRatios, retained),
         FinancialStyles = RemapObservationOverrides(_financialStyles, retained)
     };
 
     private void InstallObservationChangePresentation<T>(List<ObservationChangeEntry<T>> retained,
         ObservationChangePresentation presentation) where T : struct {
-        InstallPointOverrides(PointColors, presentation.Colors); InstallPointOverrides(PointFillPatterns, presentation.Patterns);
+        InstallPointOverrides(_funnelConnectorStyles, presentation.FunnelConnectorStyles);
+        InstallPointOverrides(PointColors, presentation.Colors); InstallPointOverrides(_pointStrokeColors, presentation.StrokeColors);
+        InstallPointOverrides(PointFillPatterns, presentation.Patterns);
         InstallPointOverrides(PointLabels, presentation.Labels); InstallPointOverrides(PointDataLabelStyles, presentation.LabelStyles);
+        InstallPointOverrides(_pointMarkers, presentation.MarkerOptions);
         InstallPointOverrides(PointSliceOffsets, presentation.SliceOffsets);
+        InstallPointOverrides(_pointSliceRadiusRatios, presentation.SliceRadiusRatios);
         _financialStyles = Array.AsReadOnly(presentation.FinancialStyles);
         _observationIds.Clear();
         for (var index = 0; index < retained.Count; index++) _observationIds.Add(index, retained[index].Id);
@@ -86,11 +94,15 @@ public sealed partial class ChartSeries {
     }
 
     private sealed class ObservationChangePresentation {
+        internal ChartFunnelConnectorStyle?[] FunnelConnectorStyles = null!;
         internal ChartColor?[] Colors = null!;
+        internal ChartColor?[] StrokeColors = null!;
         internal ChartFillPattern?[] Patterns = null!;
         internal string?[] Labels = null!;
         internal TextStyleOverride?[] LabelStyles = null!;
+        internal ChartMarkerOptions?[] MarkerOptions = null!;
         internal double[] SliceOffsets = null!;
+        internal double?[] SliceRadiusRatios = null!;
         internal ChartFinancialItemOptions?[] FinancialStyles = null!;
     }
 

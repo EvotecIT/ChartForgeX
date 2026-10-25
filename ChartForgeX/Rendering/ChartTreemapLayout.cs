@@ -10,14 +10,15 @@ namespace ChartForgeX.Rendering;
 internal static class ChartTreemapLayout {
     internal static IReadOnlyList<ChartTreemapTile> Compute(ChartSeries series, ChartRect plot, ChartTreemapOptions options, Func<int, double> headerHeight, ChartHierarchyPreparation? view = null) {
         var index = series.Relationships ?? throw new InvalidOperationException("Treemaps require explicit items.");
+        var values = view?.Values ?? index.HierarchyValues;
         var tiles = new List<ChartTreemapTile>(series.HierarchyItems.Count);
         Siblings(view?.Roots ?? index.Roots, plot);
         return tiles;
 
         void Siblings(IReadOnlyList<int> siblings, ChartRect area) {
-            var ordered = siblings.Where(item => index.HierarchyValues[item] > 0)
-                .OrderByDescending(item => index.HierarchyValues[item]).ThenBy(item => item).ToArray();
-            Split(ordered, 0, ordered.Length, area, index.HierarchyValues, (item, allocated) => {
+            var ordered = siblings.Where(item => values[item] > 0)
+                .OrderByDescending(item => values[item]).ThenBy(item => item).ToArray();
+            Split(ordered, 0, ordered.Length, area, values, (item, allocated) => {
                 var rect = Inset(allocated, options.Gap);
                 var children = index.Children(item);
                 var isGroup = children.Count > 0;

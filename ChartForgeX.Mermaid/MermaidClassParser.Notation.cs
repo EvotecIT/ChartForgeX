@@ -5,8 +5,7 @@ using System.Text.RegularExpressions;
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidClassParser {
-    private static readonly Regex Lollipop = new(@"^(?<source>\S+)\s*(?<connector>\(\)--|--\(\))\s*(?<target>\S+?)(?:\s*:\s*(?<label>.*))?$", RegexOptions.CultureInvariant);
-    private static readonly Regex Link = new(@"^(?:link\s+(?<id>\S+)|click\s+(?<id>\S+)\s+href)\s+""(?<url>[^""]*)""(?:\s+""(?<tooltip>[^""]*)"")?(?:\s+_(?:blank|self|parent|top))?\s*;?$", RegexOptions.CultureInvariant);
+    private static readonly Regex LinkTail = new(@"^""(?<url>[^""]*)""(?:\s+""(?<tooltip>[^""]*)"")?(?:\s+_(?:blank|self|parent|top))?\s*;?$", RegexOptions.CultureInvariant);
 
     private static bool TryNamespace(MermaidClassDocument document, string text, MermaidSourceSpan span,
         Stack<string> namespaces, Stack<MermaidSourceSpan> openings, MermaidParseResult<MermaidDocument> result) {
@@ -33,7 +32,10 @@ internal static partial class MermaidClassParser {
             var current = parent == null ? part : parent + "." + part;
             var existing = document.Namespaces.Find(item => item.Id == current);
             if (existing == null) document.Namespaces.Add(new MermaidClassNamespace(current, current == qualified ? label ?? part : part, span) { ParentId = parent });
-            else if (current == qualified && label != null) existing.Label = label;
+            else if (current == qualified && label != null) {
+                existing.Label = label;
+                document.NamespaceCaptionSpans[current] = span;
+            }
             parent = current;
         }
         MermaidResourceGuard.CheckDepth(qualified.Split('.').Length, span);
@@ -44,32 +46,28 @@ internal static partial class MermaidClassParser {
 
     private static bool TryLink(MermaidClassDocument document, Dictionary<string, MermaidClassNode> classes,
         string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
-        var match = Link.Match(text);
+        var click = MermaidParserUtilities.StartsStatement(text, "click");
+        if (!click && !MermaidParserUtilities.StartsStatement(text, "link")) return false;
+        var position = click ? 5 : 4;
+        if (!ReadIdentity(text, ref position, span, result, out var identity)) return true;
+        var tail = text.Substring(position).Trim();
+        if (click) {
+            if (!MermaidParserUtilities.StartsStatement(tail, "href")) return false;
+            tail = tail.Substring(4).TrimStart();
+        }
+        var match = LinkTail.Match(tail);
         if (!match.Success) return false;
         document.StyleStatements.Add(new MermaidClassStyleStatement(text, span));
-        if (!classes.TryGetValue(CleanEndpoint(match.Groups["id"].Value), out var target)) {
+        if (!classes.TryGetValue(CleanEndpoint(identity), out var target)) {
             MermaidParserUtilities.RetainUnsupported(document, text, span, result, "class link target not yet declared");
             return true;
         }
+        RetainGenericReference(document, target, target.Id, identity, span, result);
         target.Href = match.Groups["url"].Value;
         target.Tooltip = match.Groups["tooltip"].Success ? match.Groups["tooltip"].Value : null;
         return true;
     }
 
     private static bool TryLollipop(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
-        out MermaidClassRelationship? relationship) {
-        var match = Lollipop.Match(text);
-        relationship = null!;
-        if (!match.Success) return false;
-        var source = CleanEndpoint(match.Groups["source"].Value);
-        var target = CleanEndpoint(match.Groups["target"].Value);
-        if (MissingClassIdentity(source) || MissingClassIdentity(target)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
-                "Class lollipop endpoints require nonempty identities.", MermaidDiagnosticCodes.InvalidStatement);
-            return true;
-        }
-        relationship = new MermaidClassRelationship(source, target,
-            match.Groups["connector"].Value, match.Groups["label"].Success ? match.Groups["label"].Value.Trim() : null, span);
-        return true;
-    }
+        out MermaidClassRelationship? relationship) => TryReadRelationship(text, span, result, true, out relationship);
 }

@@ -469,66 +469,9 @@ internal sealed partial class RgbaCanvas {
 
     private void DrawGlyph(double x, double y, char ch, ChartColor color, double scale, bool italic, double boldOffset = 0,
         double maximumThickness = double.PositiveInfinity) {
-        var glyph = TinyFont.GetBitmap(ch);
-        var thickness = Math.Min(maximumThickness, Math.Max(1.4, scale * 0.8));
-        var paths = new List<IReadOnlyList<ChartPoint>>();
-        for (var row = 0; row < TinyFont.Height; row++) {
-            for (var col = 0; col < TinyFont.Width; col++) {
-                if (!GlyphCell(glyph, row, col)) continue;
-                var center = GlyphCenter(row, col);
-                var cx = center.X;
-                var cy = center.Y;
-                var connected = false;
-                if (GlyphCell(glyph, row, col + 1)) {
-                    var right = GlyphCenter(row, col + 1);
-                    AddStroke(center, right);
-                    connected = true;
-                }
-
-                if (GlyphCell(glyph, row + 1, col)) {
-                    var down = GlyphCenter(row + 1, col);
-                    AddStroke(center, down);
-                    connected = true;
-                }
-
-                if (GlyphCell(glyph, row + 1, col + 1) && !GlyphCell(glyph, row, col + 1) && !GlyphCell(glyph, row + 1, col)) {
-                    var downRight = GlyphCenter(row + 1, col + 1);
-                    AddStroke(center, downRight);
-                    connected = true;
-                }
-
-                if (GlyphCell(glyph, row + 1, col - 1) && !GlyphCell(glyph, row, col - 1) && !GlyphCell(glyph, row + 1, col)) {
-                    var downLeft = GlyphCenter(row + 1, col - 1);
-                    AddStroke(center, downLeft);
-                    connected = true;
-                }
-
-                if (!connected) paths.Add(new[] { new ChartPoint(cx / _scale, cy / _scale) });
-            }
-        }
-
-        if (boldOffset > 0) {
-            int count = paths.Count;
-            for (int i = 0; i < count; i++) {
-                var shifted = new List<ChartPoint>(paths[i].Count);
-                foreach (ChartPoint point in paths[i]) shifted.Add(new ChartPoint(point.X + boldOffset, point.Y));
-                paths.Add(shifted);
-            }
-        }
+        var paths = TinyFont.Strokes(x, y, ch, scale, italic, boldOffset, _scale);
+        var thickness = Math.Min(maximumThickness, Math.Max(1.4, scale * .8));
         StrokePolylines(paths, color, thickness / _scale, RasterLineCap.Round, RasterLineJoin.Round);
-
-        void AddStroke(ChartPoint start, ChartPoint stop) => paths.Add(new[] {
-            new ChartPoint(start.X / _scale, start.Y / _scale), new ChartPoint(stop.X / _scale, stop.Y / _scale)
-        });
-        ChartPoint GlyphCenter(int row, int col) {
-            var italicOffset = italic ? (TinyFont.Height - 1 - row) * scale * TrueTypeFont.ObliqueShear : 0;
-            return new ChartPoint(x + (col + 0.5) * scale + italicOffset, y + (row + 0.5) * scale);
-        }
-    }
-
-    private static bool GlyphCell(byte[] glyph, int row, int col) {
-        if (row < 0 || row >= TinyFont.Height || col < 0 || col >= TinyFont.Width) return false;
-        return ((glyph[row] >> (TinyFont.Width - 1 - col)) & 1) == 1;
     }
 
     private static ChartColor WithOpacity(ChartColor color, double opacity) {

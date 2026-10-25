@@ -29,5 +29,11 @@ internal static class CompositionEffectsExamples {
             canvas.SaveSvg(Path.Combine(output, name + ".svg")); canvas.SavePng(Path.Combine(output, name + ".png"));
             canvas.SaveHtml(Path.Combine(output, name + ".html"));
         }
+        CapturedNativeLayerExamples.Write(output);
+        NativeDropShadowExamples.Write(output);
+        NativeMaskBlendExamples.Write(output);
+        NativeRetainedMaskExamples.Write(output);
+        NativeCompositeExamples.Write(output);
+        NativeAppearanceExamples.Write(output);
     }
 }

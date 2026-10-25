@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Core;
 
@@ -6,6 +7,30 @@ namespace ChartForgeX.Core;
 public sealed class ChartTreemapOptions {
     private double _groupPadding = 6;
     private double _gap = 3;
+    private double? _minimumLabelFontSize;
+    private TextTrimming _labelTrimming;
+
+    /// <summary>Gets or sets an optional finite positive complete-caption font-size floor in logical pixels. Default: null.</summary>
+    /// <remarks>Complete wrapping and rotation at the resolved size take priority. Only a primary name that still does not fit may shrink. A larger floor never enlarges it; numeric value rows are never shortened.</remarks>
+    public double? MinimumLabelFontSize {
+        get => _minimumLabelFontSize;
+        set {
+            if (value.HasValue) {
+                ChartGuards.Finite(value.Value, nameof(value));
+                if (value.Value <= 0) throw new ArgumentOutOfRangeException(nameof(value));
+            }
+            _minimumLabelFontSize = value;
+        }
+    }
+    /// <summary>Gets or sets the final primary-caption overflow policy. Default: None, retaining complete-or-omitted names.</summary>
+    /// <remarks>Ellipsis applies only after complete wrapping, rotation and the optional font floor are exhausted. It trims at whole text-element boundaries and retains the full name and raw value in source semantics.</remarks>
+    public TextTrimming LabelTrimming {
+        get => _labelTrimming;
+        set {
+            if (!Enum.IsDefined(typeof(TextTrimming), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            _labelTrimming = value;
+        }
+    }
 
     /// <summary>Gets or sets the non-negative padding inside each group, in pixels. Default: six.</summary>
     public double GroupPadding {

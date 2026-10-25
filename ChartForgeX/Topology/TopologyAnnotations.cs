@@ -13,6 +13,8 @@ public enum TopologyAnnotationSide {
 
 /// <summary>A visible note that does not introduce a graph node or relationship.</summary>
 public sealed class TopologyAnnotation {
+    internal double PreparedDefaultUnits { get; set; } = 1;
+    internal ChartForgeX.Primitives.ChartRect? PreparedRoutingViewport { get; set; }
     /// <summary>Creates a note with stable identity and complete visible text.</summary>
     public TopologyAnnotation(string id, string text, string? targetId = null, TopologyAnnotationSide side = TopologyAnnotationSide.Right) {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Annotation ids must not be empty.", nameof(id));

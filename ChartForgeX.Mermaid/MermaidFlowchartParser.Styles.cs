@@ -7,29 +7,12 @@ namespace ChartForgeX.Mermaid;
 internal static partial class MermaidFlowchartParser {
     private static void ParseClassSuffix(string text, ref int position, List<string> classes, MermaidSourceSpan span,
         MermaidParseResult<MermaidDocument> result) {
-        if (StartsWith(text, position, ":::")) {
-            position += 3;
-            var start = position;
-            while (position < text.Length && !char.IsWhiteSpace(text[position]) && !StartsWith(text, position, ":::")
-                && !IsClassLinkBoundary(text, position)) position++;
+        if (MermaidStyleParser.InlineClass(text,ref position,out var name,out var start)) {
             // Unlike a class statement's comma-separated list, an inline suffix is one class name.
-            if (position > start) classes.Add(text.Substring(start, position - start));
+            if (name.Length>0) classes.Add(name);
             else MermaidParserUtilities.Add(result, MermaidFlowchartText.AtOffset(text, span, start - 3, 3),
                 MermaidDiagnosticSeverity.Error, "Flowchart inline classes require a class name after ':::'.", MermaidDiagnosticCodes.InvalidStatement);
-            SkipWhitespace(text, ref position);
         }
-    }
-
-    private static bool IsClassLinkBoundary(string text, int position) {
-        // o/x belong to the class identifier even immediately before a compact link.
-        // A single hyphen also belongs to an identifier such as "external-box".
-        var ch = text[position];
-        if (ch == '<' || ch == '>') return true;
-        if (ch != '-' && ch != '.' && ch != '=') return false;
-        // Count link-body strokes only. An endpoint in "-only" or "-xml"
-        // cannot turn the identifier's single hyphen into a link.
-        return position + 1 < text.Length
-            && (text[position + 1] == '-' || text[position + 1] == '.' || text[position + 1] == '=');
     }
 
     private static bool TryParseClassDefinition(MermaidFlowchartDocument document, string text, MermaidSourceSpan span,
@@ -39,7 +22,7 @@ internal static partial class MermaidFlowchartParser {
         var split = body.IndexOfAny(new[] { ' ', '\t' });
         if (split <= 0) return false;
         var styles = new Dictionary<string, string>();
-        ReadStyles(styles, body.Substring(split + 1), span, result, edge: false);
+        ReadStyles(styles, body.Substring(split + 1), span, result, edge: false,declaration:true);
         var names = SplitCsv(body.Substring(0, split));
         MermaidResourceGuard.ReserveElements(checked((long)names.Count * (1L + styles.Count)), span);
         foreach (var name in names) {
@@ -58,6 +41,11 @@ internal static partial class MermaidFlowchartParser {
         var split = body.IndexOfAny(new[] { ' ', '\t' });
         if (split <= 0) return false;
         var nodeId = body.Substring(0, split);
+        if(document.Edges.Exists(edge=>edge.Id==nodeId)) {
+            MermaidParserUtilities.Add(result,span,MermaidDiagnosticSeverity.Warning,
+                "Flowchart named-edge style is retained without application; use class or linkStyle for edge paints.",MermaidDiagnosticCodes.UnsupportedStatement);
+            return true;
+        }
         var styles = new Dictionary<string, string>();
         ReadStyles(styles, body.Substring(split + 1), span, result, edge: false);
         CopyStyles(GetOrAddNode(document, nodes, nodeId, span).Styles, styles, span);
@@ -80,19 +68,37 @@ internal static partial class MermaidFlowchartParser {
                 }
             }
         }
-        ReadStyles(style.Styles, body.Substring(split + 1), span, result, edge: true);
+        var declarations = body.Substring(split + 1);
+        if (MermaidFlowchartCurves.Applies(document.Kind)) declarations = ReadLinkInterpolation(style, declarations, text, span, result);
+        if (!string.IsNullOrWhiteSpace(declarations)) ReadStyles(style.Styles, declarations, span, result, edge: true);
         document.LinkStyles.Add(style);
         return true;
     }
 
-    private static void ApplyClassDefinitions(MermaidFlowchartDocument document) {
+    private static void ApplyClassDefinitions(MermaidFlowchartDocument document,MermaidParseResult<MermaidDocument> result) {
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         foreach (var node in document.Nodes) {
             var classes = new List<string>(node.Classes.Count + 1) { "node" };
             classes.AddRange(node.Classes);
+            var authored=new HashSet<string>(node.Styles.Keys,StringComparer.Ordinal);
             var resolved = MermaidStyleParser.Resolve(definitions, classes, node.Styles, node.Span);
             node.Styles.Clear();
             CopyStyles(node.Styles, resolved);
+            DiagnoseNodeProperties(node.Styles,authored,node.Span);
+        }
+        foreach(var group in document.Subgraphs) {
+            var authored=new HashSet<string>(group.Styles.Keys,StringComparer.Ordinal);
+            var resolved=MermaidStyleParser.Resolve(definitions,group.Classes,group.Styles,group.Span,includeDefault:false);
+            group.Styles.Clear();CopyStyles(group.Styles,resolved);DiagnoseNodeProperties(group.Styles,authored,group.Span);
+        }
+        foreach(var edge in document.Edges) {
+            var resolved=MermaidStyleParser.Resolve(definitions,edge.Classes,edge.Styles,edge.Span,includeDefault:false);
+            edge.Styles.Clear();CopyStyles(edge.Styles,resolved);
+        }
+        void DiagnoseNodeProperties(Dictionary<string,string> styles,HashSet<string> authored,MermaidSourceSpan span) {
+            foreach(var item in styles)if(!authored.Contains(item.Key)&&MermaidNativeStyles.UnsupportedSurface(item.Key))
+                MermaidParserUtilities.Add(result,span,MermaidDiagnosticSeverity.Warning,
+                    "Flowchart node/group style '"+item.Key+"' is retained without native application.",MermaidDiagnosticCodes.UnsupportedStatement);
         }
     }
 
@@ -115,7 +121,8 @@ internal static partial class MermaidFlowchartParser {
     }
 
     private static void ReadStyles(Dictionary<string, string> styles, string text, MermaidSourceSpan span,
-        MermaidParseResult<MermaidDocument> result, bool edge) => MermaidStyleParser.Read(styles, text, span, result, "Flowchart", edge);
+        MermaidParseResult<MermaidDocument> result, bool edge,bool declaration=false) => MermaidStyleParser.Read(styles, text, span, result, "Flowchart", edge,
+            nativeProperty:edge||declaration?MermaidNativeStyles.SupportsEdge:MermaidNativeStyles.SupportsSurface);
 
     private static void CopyStyles(Dictionary<string, string> target, Dictionary<string, string> source, MermaidSourceSpan? span = null) => MermaidStyleParser.Copy(target, source, span);
 }

@@ -22,7 +22,7 @@ public sealed class RailroadInterchangeTests {
         original.Options.Accessibility.Description = artifact.Accessibility.Description;
         original.Options.Accessibility.Language = artifact.Accessibility.Language;
         var json = artifact.ToInterchangeJson(); var envelope = VisualArtifactInterchangeEnvelope.FromJson(json);
-        Assert.Equal(VisualArtifactInterchangeEnvelope.CurrentVersion, envelope.Version);
+        Assert.Equal(1, envelope.Version); // Ordinary payloads retain the version-1 wire contract.
         Assert.Equal(VisualArtifactInterchangeFamily.Railroad, envelope.Family); Assert.NotNull(envelope.Railroad);
         Assert.Equal(VisualArtifactSourceLanguage.Mermaid, envelope.SourceLanguage);
         Assert.Equal(artifact.Metadata["mermaid.railroadDialect"], envelope.Extensions["mermaid.railroadDialect"]);

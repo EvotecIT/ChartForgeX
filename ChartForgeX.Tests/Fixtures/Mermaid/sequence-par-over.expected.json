@@ -1,0 +1,46 @@
+{
+  "kind": "native source contract; no syntax version outcome declaration",
+  "participants": [
+    "C",
+    "A",
+    "B"
+  ],
+  "messages": [
+    "Alpha request",
+    "Forward",
+    "Reply",
+    "Alpha done",
+    "Beta request",
+    "Recovery",
+    "Beta done",
+    "After fragment"
+  ],
+  "autonumberValues": [
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10"
+  ],
+  "sourceParOverLine": 7,
+  "postorderBlockKinds": [
+    "Par",
+    "Critical",
+    "ParOver"
+  ],
+  "outerBranchLabels": [
+    "First task",
+    "Second task",
+    "Notes only"
+  ],
+  "notes": [
+    "First task note",
+    "Guard note",
+    "Terminal task note"
+  ],
+  "messageCount": 8,
+  "activationBars": 2
+}

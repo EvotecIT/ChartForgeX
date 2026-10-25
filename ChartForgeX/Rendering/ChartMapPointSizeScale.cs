@@ -19,7 +19,7 @@ internal sealed class ChartMapPointSizeScale : IChartMarkerSizeScale {
         Presentation = new ChartSizePresentation(chart, _options.SizeDimension, weights.Where(value => value.HasValue).Select(value => value!.Value),
             MinimumValue, MaximumValue, Mapping);
         var viewport = chart.Options.MapViewport;
-        SetFrame(viewport.MaximumLongitude - viewport.MinimumLongitude, viewport.MaximumLatitude - viewport.MinimumLatitude,
+        SetFrame(viewport.LongitudeSpan, viewport.MaximumLatitude - viewport.MinimumLatitude,
             VisualMapCompiler.UsesCompactMapDot(viewport) ? 3.6 : 5.2);
     }
     internal bool HasValues { get; }

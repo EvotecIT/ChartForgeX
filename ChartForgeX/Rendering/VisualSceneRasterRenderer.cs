@@ -10,7 +10,10 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSceneRasterRenderer {
     internal static RgbaImage Render(VisualScene scene, int scale = 1, int supersampling = 2, long pixelBudget = 64000000, TextHinting? textHinting = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
-        CalculateAllocation(scene.Size, scale, supersampling, pixelBudget);
+        var allocation = CalculateAllocation(scene.Size, scale, supersampling, pixelBudget);
+        var opacity = PrepareOpacity(scene, allocation, density: scale, coverage: supersampling, pixelBudget: pixelBudget, textHinting: textHinting);
+        if (opacity?.RootMask != null) return opacity.RootMask.Capture(System.Threading.CancellationToken.None);
+        if (opacity != null) return RenderOpacity(scene, allocation, opacity, scale, supersampling, textHinting);
         // Fonts are already retained by each text run. Do not resolve a canvas default font at export.
         var canvas = new RgbaCanvas(scene.Size.Width, scene.Size.Height, supersampling, null, scale, useDefaultOutlineFont: false);
         var groups = new Stack<IDisposable?>();
@@ -26,37 +29,56 @@ internal static partial class VisualSceneRasterRenderer {
                     groups.Push(GroupClip(canvas, group, transform));
                 }
                 else if (node is VisualSceneEndGroup) { groups.Pop()?.Dispose(); transform = transforms.Pop(); }
-                else if (node is VisualSceneImage image) PaintImage(canvas, image, transform);
-                else if (node is VisualSceneGradient gradient) PaintGradient(canvas, gradient, transform);
-                else if (!transform.IsIdentity && node is VisualSceneMark transformedMark) PaintContours(canvas, transform.Apply(Contours(transformedMark, canvas.PixelsPerUnit)), transformedMark);
-                else if (node is VisualSceneRectangle rect) {
-                    var b = rect.Bounds;
-                    // Only an un-clipped first opaque viewport paint can replace contour blending.
-                    if (nodeIndex == 0 && !rect.Stroke.HasValue && rect.Radius == 0 &&
-                        rect.Fill.HasValue && rect.Fill.Value.A == 255 && b.X == 0 && b.Y == 0 &&
-                        scene.Size.Width == canvas.Width && scene.Size.Height == canvas.Height && b.Width == canvas.Width && b.Height == canvas.Height) {
-                        canvas.Clear(rect.Fill.Value);
-                        continue;
-                    }
-                    if (rect.Fill.HasValue) canvas.FillRoundedRect(b.X, b.Y, b.Width, b.Height, rect.Radius, rect.Fill.Value);
-                    if (rect.Stroke.HasValue && rect.StrokeWidth > 0) canvas.StrokeRoundedRectCentered(b.X, b.Y, b.Width, b.Height, rect.Radius, rect.Stroke.Value, rect.StrokeWidth);
-                } else if (node is VisualSceneEllipse ellipse) {
-                    if (ellipse.Fill.HasValue) canvas.FillEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, ellipse.Fill.Value);
-                    if (ellipse.Stroke.HasValue && ellipse.StrokeWidth > 0) canvas.StrokeEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, ellipse.Stroke.Value, ellipse.StrokeWidth);
-                } else if (node is VisualSceneLine line) {
-                    if (line.StrokeWidth > 0) canvas.StrokePolylines(new IReadOnlyList<ChartPoint>[] { new[] { line.Start, line.End } },
-                        line.Stroke!.Value, line.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, line.Dash, dashOffset: line.DashOffset);
-                } else if (node is VisualScenePath path) PaintContours(canvas, VisualSceneGeometry.Flatten(path, canvas.PixelsPerUnit), path);
-                else if (node is VisualSceneSlice slice) PaintContours(canvas, VisualSceneGeometry.Flatten(slice, canvas.PixelsPerUnit), slice);
-                else if (node is VisualSceneText text) {
-                    if (transform.IsIdentity && (!text.Stroke.HasValue || text.StrokeWidth <= 0)) PaintText(canvas, text, textHinting);
-                    else PaintTransformedText(canvas, text, transform, textHinting);
-                }
+                else PaintNativeNode(scene, canvas, node, nodeIndex, transform, textHinting);
             }
         } finally {
             while (groups.Count > 0) groups.Pop()?.Dispose();
         }
         return canvas.ToImage();
+    }
+
+    /// <summary>Observes operation cancellation without retaining its token in the scene.</summary>
+    internal static RgbaImage Render(VisualScene scene, int scale, int supersampling, long pixelBudget,
+        TextHinting? textHinting, System.Threading.CancellationToken cancellation) {
+        if (scene == null) throw new ArgumentNullException(nameof(scene));
+        cancellation.ThrowIfCancellationRequested();
+        var allocation = CalculateAllocation(scene.Size, scale, supersampling, pixelBudget);
+        var opacity = PrepareOpacity(scene, allocation, density: scale, coverage: supersampling, pixelBudget: pixelBudget, textHinting: textHinting);
+        var result = opacity?.RootMask != null ? opacity.RootMask.Capture(cancellation)
+            : opacity == null ? Render(scene, scale, supersampling, pixelBudget, textHinting)
+            : RenderOpacity(scene, allocation, opacity, scale, supersampling, textHinting, cancellation);
+        cancellation.ThrowIfCancellationRequested();
+        return result;
+    }
+
+    /// <summary>One native mark/text/image painter shared by ordinary and isolated group/element passes.</summary>
+    private static void PaintNativeNode(VisualScene scene, RgbaCanvas canvas, VisualSceneNode node, int nodeIndex, VisualSceneTransform transform, TextHinting? textHinting) {
+if (node is VisualSceneImage image) PaintImage(canvas, image, transform);
+        else if (node is VisualSceneGradient gradient) PaintGradient(canvas, gradient, transform);
+        else if (!transform.IsIdentity && node is VisualSceneMark transformedMark) PaintContours(canvas, transform.Apply(Contours(transformedMark, canvas.PixelsPerUnit)), transformedMark);
+        else if (node is VisualSceneRectangle rect) {
+            var b = rect.Bounds;
+            // Only an un-clipped first opaque viewport paint can replace contour blending.
+            if (nodeIndex == 0 && !rect.Stroke.HasValue && rect.Radius == 0 &&
+                rect.Fill.HasValue && rect.Fill.Value.A == 255 && b.X == 0 && b.Y == 0 &&
+                scene.Size.Width == canvas.Width && scene.Size.Height == canvas.Height && b.Width == canvas.Width && b.Height == canvas.Height) {
+                canvas.Clear(rect.Fill.Value);
+                return;
+            }
+            if (rect.Fill.HasValue) canvas.FillRoundedRect(b.X, b.Y, b.Width, b.Height, rect.Radius, rect.Fill.Value);
+            if (rect.Stroke.HasValue && rect.StrokeWidth > 0) canvas.StrokeRoundedRectCentered(b.X, b.Y, b.Width, b.Height, rect.Radius, rect.Stroke.Value, rect.StrokeWidth);
+        } else if (node is VisualSceneEllipse ellipse) {
+            if (ellipse.Fill.HasValue) canvas.FillEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, ellipse.Fill.Value);
+            if (ellipse.Stroke.HasValue && ellipse.StrokeWidth > 0) canvas.StrokeEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, ellipse.Stroke.Value, ellipse.StrokeWidth);
+        } else if (node is VisualSceneLine line) {
+            if (line.StrokeWidth > 0) canvas.StrokePolylines(new IReadOnlyList<ChartPoint>[] { new[] { line.Start, line.End } },
+                line.Stroke!.Value, line.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, line.Dash, dashOffset: line.DashOffset);
+        } else if (node is VisualScenePath path) PaintContours(canvas, VisualSceneGeometry.Flatten(path, canvas.PixelsPerUnit), path);
+        else if (node is VisualSceneSlice slice) PaintContours(canvas, VisualSceneGeometry.Flatten(slice, canvas.PixelsPerUnit), slice);
+        else if (node is VisualSceneText text) {
+            if (transform.IsIdentity && (!text.Stroke.HasValue || text.StrokeWidth <= 0)) PaintText(canvas, text, textHinting);
+            else PaintTransformedText(canvas, text, transform, textHinting);
+        }
     }
 
     /// <summary>Plans the exact raster canvas before either static or animated frame allocation.</summary>
@@ -104,6 +126,20 @@ internal static partial class VisualSceneRasterRenderer {
                 var boldOffset = prepared.Face.SynthesizeBold ? RgbaCanvas.EmphasisOffset(prepared.Size) : 0;
                 if (prepared.Face.Font != null) prepared.Face.Font.DrawGlyphs(canvas, node.LineLeft(line), y, line.Glyphs,
                     node.Color, prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
+                else if (prepared.NativeGlyphInk) {
+                    var cursor = node.LineLeft(line);
+                    foreach (var character in line.Text) {
+                        var ink = TinyFont.Ink(character, prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
+                        var translated = new List<List<ChartPoint>>(ink.Count);
+                        foreach (var contour in ink) {
+                            var points = new List<ChartPoint>(contour.Count);
+                            foreach (var point in contour) points.Add(new ChartPoint(point.X + cursor, point.Y + y));
+                            translated.Add(points);
+                        }
+                        canvas.FillCapturedTextStrokeContours(translated, node.Color);
+                        cursor += TinyFont.AdvanceFor(character) * TinyFont.ScaleForFontSize(prepared.Size);
+                    }
+                }
                 else canvas.DrawBitmapText(node.LineLeft(line), y, line.Text, node.Color,
                     prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
             }

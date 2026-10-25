@@ -12,6 +12,13 @@ using ChartForgeX.VisualBlocks;
 
 internal static partial class Program {
     private static void NativeDiagramContracts() {
+        NestedSwimlaneContracts();
+        FlowchartMembershipContracts();
+        NativeShapeCatalogContracts();
+        GraphStyleSettingsContracts();
+        FlowchartCurveContracts();
+        FlowchartAssetContracts();
+        NativeSurfacePaintContracts();
         const string state = "stateDiagram-v2\nclassDef marked fill:#fef9c3,stroke:#92400e,color:#78350f\nstate Active {\n[*] --> A:::marked\nA --> [*]\n--\n[*] --> B\nB --> [*]\n}\nActive --> Done";
         var stateArtifact = PackedNativeDiagram("state-regions", state);
         var stateModel = (TopologyChart)stateArtifact.Model!;

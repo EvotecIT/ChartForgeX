@@ -7,6 +7,16 @@ namespace ChartForgeX.Topology;
 internal static class TopologyGroupHierarchy {
     internal const int MaximumDepth = 128;
 
+    /// <summary>Resolves the nearest authored direction through an already validated parent tree.</summary>
+    internal static TopologyLayoutDirection ResolveDirection(TopologyGroup group, Func<string, TopologyGroup> parentById, TopologyLayoutDirection fallback) {
+        for (var depth = 0; depth < MaximumDepth; depth++) {
+            if (group.LayoutDirection.HasValue) return group.LayoutDirection.Value;
+            if (group.ParentGroupId == null) return fallback;
+            group = parentById(group.ParentGroupId);
+        }
+        throw new InvalidOperationException("Topology direction requires a validated bounded parent tree.");
+    }
+
     internal static TopologyValidationResult Validate(IEnumerable<(string Id, string? ParentId)> groups) {
         var result = new TopologyValidationResult();
         var parents = new Dictionary<string, string?>(StringComparer.Ordinal);

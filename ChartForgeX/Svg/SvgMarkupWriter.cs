@@ -8,12 +8,16 @@ namespace ChartForgeX.Svg;
 internal sealed class SvgMarkupWriter {
     private readonly StringBuilder _builder;
     private readonly int _maximumCharacters;
+    private readonly Func<long, Exception>? _overflowFactory;
     private readonly Stack<string> _elements = new();
     private string? _pendingElement;
 
     public SvgMarkupWriter() : this(1024) { }
 
-    public SvgMarkupWriter(int capacity, int maximumCharacters = int.MaxValue) {
+    public SvgMarkupWriter(int capacity, int maximumCharacters = int.MaxValue) : this(capacity, maximumCharacters, null) { }
+
+    internal SvgMarkupWriter(int capacity, int maximumCharacters, Func<long, Exception>? overflowFactory) {
+        _overflowFactory = overflowFactory;
         if (maximumCharacters < 1) throw new ArgumentOutOfRangeException(nameof(maximumCharacters));
         _maximumCharacters = maximumCharacters;
         _builder = new StringBuilder(Math.Min(maximumCharacters, Math.Max(16, capacity)));
@@ -204,83 +208,89 @@ internal sealed class SvgMarkupWriter {
     }
 
     private void AppendEscapedText(string value) =>
-        AppendEscapedText(_builder, value, escapeQuotes: false, _maximumCharacters);
+        AppendEscapedText(_builder, value, escapeQuotes: false, _maximumCharacters, _overflowFactory);
 
     private void AppendEscapedAttribute(string value) =>
-        AppendEscapedText(_builder, value, escapeQuotes: true, _maximumCharacters);
+        AppendEscapedText(_builder, value, escapeQuotes: true, _maximumCharacters, _overflowFactory);
 
-    private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes, int maximumCharacters = int.MaxValue) {
+    private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes, int maximumCharacters = int.MaxValue, Func<long, Exception>? overflowFactory = null) {
+        void Reserve(long count) => ReserveCharactersCore(builder, maximumCharacters, count, overflowFactory);
         var run = 0;
         for (var i = 0; i < value.Length; i++) {
             var ch = value[i];
             // Characters written unchanged are copied in runs; every other character takes the cases below.
             if (ch >= 0x20 && ch < 0x7F ? ch != '&' && ch != '<' && ch != '>' && (ch != '"' || !escapeQuotes)
                 : !escapeQuotes && ch is ('\t' or '\n' or '\r') || ch >= 0xA0 && ch < 0xD800 || ch >= 0xE000 && ch < 0xFDD0 || ch > 0xFDEF && ch < 0xFFFE) continue;
-            ReserveCharacters(builder, maximumCharacters, i - run);
+            Reserve(i - run);
             builder.Append(value, run, i - run);
             run = i + 1;
             if (char.IsHighSurrogate(ch)) {
                 if (i + 1 < value.Length && char.IsLowSurrogate(value[i + 1])) {
                     var next = value[i + 1];
                     if (IsMarkupScalar(char.ConvertToUtf32(ch, next))) {
-                        ReserveCharacters(builder, maximumCharacters, 2);
+                        Reserve(2);
                         builder.Append(ch).Append(next);
                     } else {
-                        AppendBounded(builder, "\uFFFD", maximumCharacters);
+                        AppendBounded(builder, "\uFFFD", maximumCharacters, overflowFactory);
                     }
                     i++;
                     run = i + 1;
                 } else {
-                    AppendBounded(builder, "\uFFFD", maximumCharacters);
+                    AppendBounded(builder, "\uFFFD", maximumCharacters, overflowFactory);
                 }
                 continue;
             }
             if (!IsMarkupScalar(ch)) {
-                AppendBounded(builder, "\uFFFD", maximumCharacters);
+                AppendBounded(builder, "\uFFFD", maximumCharacters, overflowFactory);
                 continue;
             }
             switch (ch) {
                 // XML normalizes literal attribute whitespace; references preserve source alternatives exactly.
                 case '\t' when escapeQuotes:
-                    AppendBounded(builder, "&#9;", maximumCharacters);
+                    AppendBounded(builder, "&#9;", maximumCharacters, overflowFactory);
                     break;
                 case '\n' when escapeQuotes:
-                    AppendBounded(builder, "&#10;", maximumCharacters);
+                    AppendBounded(builder, "&#10;", maximumCharacters, overflowFactory);
                     break;
                 case '\r' when escapeQuotes:
-                    AppendBounded(builder, "&#13;", maximumCharacters);
+                    AppendBounded(builder, "&#13;", maximumCharacters, overflowFactory);
                     break;
                 case '&':
-                    AppendBounded(builder, "&amp;", maximumCharacters);
+                    AppendBounded(builder, "&amp;", maximumCharacters, overflowFactory);
                     break;
                 case '<':
-                    AppendBounded(builder, "&lt;", maximumCharacters);
+                    AppendBounded(builder, "&lt;", maximumCharacters, overflowFactory);
                     break;
                 case '>':
-                    AppendBounded(builder, "&gt;", maximumCharacters);
+                    AppendBounded(builder, "&gt;", maximumCharacters, overflowFactory);
                     break;
                 case '"' when escapeQuotes:
-                    AppendBounded(builder, "&quot;", maximumCharacters);
+                    AppendBounded(builder, "&quot;", maximumCharacters, overflowFactory);
                     break;
                 default:
-                    ReserveCharacters(builder, maximumCharacters, 1);
+                    Reserve(1);
                     builder.Append(ch);
                     break;
             }
         }
 
-        ReserveCharacters(builder, maximumCharacters, value.Length - run);
+        Reserve(value.Length - run);
         builder.Append(value, run, value.Length - run);
     }
 
-    private static void AppendBounded(StringBuilder builder, string value, int maximumCharacters) {
-        ReserveCharacters(builder, maximumCharacters, value.Length);
+    private static void AppendBounded(StringBuilder builder, string value, int maximumCharacters, Func<long, Exception>? overflowFactory = null) {
+        ReserveCharactersCore(builder, maximumCharacters, value.Length, overflowFactory);
         builder.Append(value);
     }
 
-    private static void ReserveCharacters(StringBuilder builder, int maximumCharacters, long count) {
-        if (builder.Length + count > maximumCharacters)
+    private void ReserveCharacters(StringBuilder builder, int maximumCharacters, long count) =>
+        ReserveCharactersCore(builder, maximumCharacters, count, _overflowFactory);
+
+    private static void ReserveCharactersCore(StringBuilder builder, int maximumCharacters, long count, Func<long, Exception>? overflowFactory) {
+        if (builder.Length + count > maximumCharacters) {
+            if (overflowFactory != null) throw overflowFactory(count > long.MaxValue - builder.Length ? long.MaxValue : builder.Length + count);
             throw new InvalidOperationException("SVG document exceeds its " + maximumCharacters + "-character safety limit. Reduce text or embedded media.");
+        }
     }
 
     internal static bool IsMarkupScalar(int scalar) =>

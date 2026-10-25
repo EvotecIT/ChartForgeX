@@ -7,8 +7,15 @@ namespace ChartForgeX.Mermaid;
 /// Describes a parsed Mermaid class diagram.
 /// </summary>
 public sealed class MermaidClassDocument : MermaidDocument {
+    // Caption replacement locations are separate from the first identity occurrence.
+    internal Dictionary<string, MermaidSourceSpan> CaptionSpans { get; } = new(StringComparer.Ordinal);
+    internal Dictionary<string, MermaidSourceSpan> NamespaceCaptionSpans { get; } = new(StringComparer.Ordinal);
+
     /// <summary>Gets or sets the authored whole-diagram direction.</summary>
     public string? Direction { get; set; }
+
+    // Parsed generic declarations retain their exact caption without changing the public stable identity.
+    internal Dictionary<string, string> GenericDeclarations { get; } = new(StringComparer.Ordinal);
 
     /// <summary>Gets classes in source order.</summary>
     public List<MermaidClassNode> Classes { get; } = new();
@@ -121,6 +128,10 @@ public sealed class MermaidClassRelationship : MermaidAstNode {
         Connector = connector;
         Label = label;
     }
+
+    // Parsed spellings are separate from stable normalized graph identities. Programmatic relationships use their public ids.
+    internal string? SourceIdentity { get; set; }
+    internal string? TargetIdentity { get; set; }
 
     /// <summary>Gets the source class id.</summary>
     public string SourceId { get; }

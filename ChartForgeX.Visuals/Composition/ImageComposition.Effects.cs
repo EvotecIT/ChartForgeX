@@ -24,14 +24,8 @@ public sealed partial class ImageComposition {
         var plan = RasterEffectPlan.Blur(new RasterEffectRegion(0, 0, source.Width, source.Height), x, y);
         var batch = EffectBatch(source, plan, 20, finalBuffer: true);
         var filtered = RasterEffects.Execute(batch, 0, true, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        var final = new byte[checked(source.Width * source.Height * 4)];
-        for (int row = 0; row < source.Height; row++) {
-            cancellationToken.ThrowIfCancellationRequested();
-            var from = checked(((row - filtered.Region.Y) * filtered.Image.Width - filtered.Region.X) * 4);
-            Buffer.BlockCopy(filtered.Image.Pixels, from, final, row * source.Width * 4, source.Width * 4);
-        }
-        CommitEffect(final, cancellationToken); return this;
+        CommitEffect(CropEffect(source, filtered, cancellationToken), cancellationToken);
+        return this;
     }
 
     /// <summary>Draws a tinted, blurred alpha shadow beneath the complete current source exactly once.</summary>
@@ -73,8 +67,5 @@ public sealed partial class ImageComposition {
         Buffer.BlockCopy(final, 0, _canvas.Pixels, 0, final.Length);
     }
 
-    private static int EffectSigma(double sigma, string parameter) {
-        if (double.IsNaN(sigma) || double.IsInfinity(sigma) || sigma < 0 || sigma > 128) throw new ArgumentOutOfRangeException(parameter);
-        return (int)Math.Floor(sigma * 256 + .5);
-    }
+    private static int EffectSigma(double sigma, string parameter) => RasterEffectPlan.SigmaQ8(sigma, parameter);
 }

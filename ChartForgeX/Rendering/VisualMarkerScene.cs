@@ -63,8 +63,18 @@ internal static partial class VisualMarkerScene {
         ChartColor fill, SvgPaint fillPaint, string role, ChartColor? stroke = null, double strokeWidth = 1,
         SvgPaint? strokePaint = null, ChartFillPattern pattern = ChartFillPattern.None, ChartColor? backdrop = null,
         string? patternRole = null, (ChartColor Color, SvgPaint Paint)? quantitativeOutline = null, ChartMarkerOptions? markerOptions = null) {
+        if (radius <= 0 || !Enabled(series, markerOptions: markerOptions)) return;
+        ResolvePaint(series, point, fill, fillPaint, role, stroke, strokeWidth, strokePaint, pattern, backdrop, patternRole, quantitativeOutline, markerOptions).Paint(builder, x, y, radius);
+    }
+
+    internal static NativeMarkerPaint CapturePaint(ChartSeries series, int point, ChartColor fill, SvgPaint fillPaint,
+        string role, ChartFillPattern pattern, ChartColor backdrop, string patternRole, ChartMarkerOptions markers) =>
+        ResolvePaint(series, point, fill, fillPaint, role, null, 1, null, pattern, backdrop, patternRole, null, markers).Detached();
+
+    private static NativeMarkerPaint ResolvePaint(ChartSeries series, int point, ChartColor fill, SvgPaint fillPaint, string role,
+        ChartColor? stroke, double strokeWidth, SvgPaint? strokePaint, ChartFillPattern pattern, ChartColor? backdrop,
+        string? patternRole, (ChartColor Color, SvgPaint Paint)? quantitativeOutline, ChartMarkerOptions? markerOptions) {
         var markers = markerOptions ?? series.Markers;
-        if (radius <= 0 || !Enabled(series, markerOptions: markers)) return;
         (fill, fillPaint) = ResolveFill(series, point, fill, fillPaint, markers);
         if (UsesQuantitativeOutline(series) && quantitativeOutline.HasValue) {
             stroke = quantitativeOutline.Value.Color;
@@ -87,14 +97,7 @@ internal static partial class VisualMarkerScene {
         }
         if (width <= 0) { stroke = null; strokePaint = null; }
         var dash = outline?.ResolveDash(System.Array.Empty<double>());
-        var paint = new VisualScenePaintBinding(fillPaint, strokePaint);
-        var contour = ChartMarkerGeometry.Path(markers, x, y, radius);
-        if (markers.CustomPath == null && markers.Shape == ChartMarkerShape.Circle && (dash == null || dash.Length == 0))
-            builder.Ellipse(x, y, radius, radius, fill, stroke, width, role, paint: paint);
-        else builder.Path(contour, fill, stroke, width, role, close: true, dash: dash, paint: paint, dashOffset: markers.StrokeDashOffset);
-        if (pattern == ChartFillPattern.None) return;
-        var background = ChartColorMath.Blend(backdrop ?? ChartColor.White, ChartColor.FromRgb(fill.R, fill.G, fill.B), fill.A / 255d);
-        var ink = ChartColorMath.AccessibleTextOnBackground(background).WithOpacity(ChartMarkSurface.HatchOpacity(pattern));
-        builder.Pattern(contour, pattern, ink, role: patternRole ?? role + "-pattern");
+        return new NativeMarkerPaint(markers, fill, stroke, width, new VisualScenePaintBinding(fillPaint, strokePaint),
+            dash, role, pattern, backdrop ?? ChartColor.White, patternRole ?? role + "-pattern");
     }
 }

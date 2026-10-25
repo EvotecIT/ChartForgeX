@@ -6,11 +6,11 @@ using System.Linq;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    private static void ApplyEdgeRankHints(TopologyChart chart, bool force = false) {
+    private static void ApplyEdgeRankHints(TopologyChart chart, bool force = false, Func<TopologyEdge, bool>? rankConstraint = null, bool preserveAuthoredRanks = false, bool optimizeCrossings = false) {
         if (!force && chart.Edges.All(edge => edge.MinimumRankSpan <= 1)) return;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var edges = chart.Edges
-            .Where(edge => nodes.ContainsKey(edge.SourceNodeId) && nodes.ContainsKey(edge.TargetNodeId))
+            .Where(edge => nodes.ContainsKey(edge.SourceNodeId) && nodes.ContainsKey(edge.TargetNodeId) && (rankConstraint == null || rankConstraint(edge)))
             .OrderBy(edge => edge.Id, StringComparer.Ordinal)
             .ToList();
         var adjacency = nodes.Keys.ToDictionary(id => id, _ => new List<string>(), StringComparer.Ordinal);
@@ -29,8 +29,9 @@ internal static partial class TopologyLayoutEngine {
             .Select((layer, index) => new { layer, index })
             .ToDictionary(item => item.layer, item => item.index);
         var componentRanks = components
-            .Select(component => component.Select(nodeId => layerOrder[GetLayer(nodes[nodeId])]).Max())
+            .Select(component => component.Select(nodeId => preserveAuthoredRanks ? GetLayer(nodes[nodeId]) : layerOrder[GetLayer(nodes[nodeId])]).Max())
             .ToArray();
+        var minimumRanks = optimizeCrossings ? componentRanks.ToArray() : null;
         var outgoing = Enumerable.Range(0, components.Count).ToDictionary(component => component, _ => new List<TopologyEdge>());
         var indegree = Enumerable.Range(0, components.Count).ToDictionary(component => component, _ => 0);
         foreach (var edge in edges) {
@@ -47,12 +48,18 @@ internal static partial class TopologyLayoutEngine {
             ready.Remove(component);
             foreach (var edge in outgoing[component].OrderBy(item => item.Id, StringComparer.Ordinal)) {
                 var target = componentByNode[RankTarget(edge)];
-                componentRanks[target] = Math.Max(componentRanks[target], componentRanks[component] + edge.MinimumRankSpan);
+                var required = (long)componentRanks[component] + edge.MinimumRankSpan;
+                if (required > int.MaxValue) throw new NotSupportedException("Automatic rank constraints exceed the supported integer rank domain.");
+                componentRanks[target] = Math.Max(componentRanks[target], (int)required);
                 indegree[target]--;
                 if (indegree[target] == 0) ready.Add(target);
             }
         }
 
+        if (optimizeCrossings) {
+            var prepared = new RankPreparation(chart, components, componentByNode, edges, minimumRanks!);
+            OptimizeRankCrossings(prepared, componentRanks);
+        }
         foreach (var node in chart.Nodes) {
             node.Metadata["layer"] = componentRanks[componentByNode[node.Id]].ToString(CultureInfo.InvariantCulture);
             node.Metadata["layout.rankHintsApplied"] = "true";

@@ -33,6 +33,8 @@
       for (const source of primary.length ? primary : shapes) {
         if (!shapePaint(source, styles, node)) continue;
 
+        const image=source.localName==='image',bounds=image&&nativeImagePaintBounds(source);
+        if(image&&!bounds)continue;
         const signature = source.localName + stateCueGeometry.map(key => source.getAttribute(key) || '').join('|');
         let seen = geometryByParent.get(source.parentNode);
         if (!seen) geometryByParent.set(source.parentNode, seen = new Set());
@@ -40,14 +42,14 @@
         seen.add(signature); desired.add(source); geometricCue = true;
         let paint = cache.get(source);
         if (!paint || paint.parentNode !== source.parentNode) {
-          paint?.remove(); paint = createSelectionCuePaint(source.localName);
+          paint?.remove(); paint = createSelectionCuePaint(image?'rect':source.localName);
           source.parentNode.insertBefore(paint, source); cache.set(source, paint);
         }
-        const native = paintStyle(source, styles), width = parseFloat(native.strokeWidth) || 0;
+        const native = paintStyle(source, styles), width = image ? 0 : parseFloat(native.strokeWidth) || 0;
         styleSelectionCuePaint(paint, selected, width);
         for (const shape of paint.children) {
           for (const key of stateCueGeometry) {
-            const value = source.getAttribute(key);
+            const value = image&&['x','y','width','height'].includes(key)?String(bounds[key]):source.getAttribute(key);
             if (value === null) { if (shape.hasAttribute(key)) shape.removeAttribute(key); }
             else if (shape.getAttribute(key) !== value) shape.setAttribute(key, value);
           }

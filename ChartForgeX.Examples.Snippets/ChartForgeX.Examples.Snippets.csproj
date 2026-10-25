@@ -10,17 +10,47 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="RetainedAppearanceSnippetProof.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\NativeRetainedAppearanceExample.cs" Link="NativeRetainedAppearanceExample.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.RetainedAppearance.cs" Link="ExampleRecipeSource.RetainedAppearance.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="AppearanceSnippetProof.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\NativeMaskExample.cs" Link="NativeMaskExample.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.Mask.cs" Link="ExampleRecipeSource.Mask.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\NativeDropShadowExample.cs" Link="NativeDropShadowExample.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.DropShadow.cs" Link="ExampleRecipeSource.DropShadow.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\ExampleRecipeImports.cs" Link="RecipeImports.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\ExampleRecipes.cs" Link="ExampleRecipes.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\ExampleRecipes.*.cs" Link="%(Filename)%(Extension)" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\NativeAppearanceExample.cs" Link="NativeAppearanceExample.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.Appearance.cs" Link="ExampleRecipeSource.Appearance.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\NativeCompositeSourceExample.cs" Link="NativeCompositeSourceExample.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.Composite.cs" Link="ExampleRecipeSource.Composite.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\NativeRetainedMaskExample.cs" Link="NativeRetainedMaskExample.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.RetainedMask.cs" Link="ExampleRecipeSource.RetainedMask.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.cs" Link="ExampleRecipeSource.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\Recipes\*Recipe.cs" Link="Recipes\%(Filename)%(Extension)" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="$(RecipeSource)" Link="Program.cs" Condition="'$(RecipeSource)' != ''" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(RecipeSource)' == ''">
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeMaskProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeMaskProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeDropShadowExample.cs" LogicalName="ChartForgeX.Examples.NativeDropShadowExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeDropShadowProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeDropShadowProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeRetainedAppearanceExample.cs" LogicalName="ChartForgeX.Examples.NativeRetainedAppearanceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeNativeRetainedAppearanceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRetainedAppearanceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeAppearanceExample.cs" LogicalName="ChartForgeX.Examples.NativeAppearanceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeNativeAppearanceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeAppearanceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeCompositeSourceExample.cs" LogicalName="ChartForgeX.Examples.NativeCompositeSourceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeCompositeSourceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeCompositeSourceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeRetainedMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeRetainedMaskExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeRetainedMaskProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeRetainedMaskProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeFishboneProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeFishboneProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeBlockProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeBlockProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeChartProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeChartProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeKanbanProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeKanbanProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Assets\Mermaid\kanban-source-geometry.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.kanban-source-geometry.mmd" WithCulture="false" />
   </ItemGroup>
 </Project>

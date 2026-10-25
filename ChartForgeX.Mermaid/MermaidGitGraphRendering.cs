@@ -15,15 +15,28 @@ public static class MermaidGitGraphRendering {
     public static GitGraphBlock ToGitGraphBlock(this MermaidGitGraphDocument document, MermaidGitGraphRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidGitGraphRenderOptions();
+        var source = document.Configuration.GitGraph;
         var block = GitGraphBlock.Create()
             .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid git graph"))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding)
-            .WithBranchLabels(options.ShowBranchLabels)
-            .WithCommitLabels(options.ShowCommitLabels);
+            .WithBranchLabels(options.ShowBranchLabels ?? source?.ShowBranches ?? true)
+            .WithCommitLabels(options.ShowCommitLabels ?? source?.ShowCommitLabels ?? true)
+            .WithDirection(options.Direction ?? GitGraphDirectionFromSource(document.Direction))
+            .WithParallelCommits(options.ParallelCommits ?? source?.ParallelCommits ?? false)
+            .WithRotatedCommitLabels(options.RotateCommitLabels ?? source?.RotateCommitLabels ?? false);
 
-        foreach (var branch in document.Branches) block.AddBranch(branch.Name, branch.Order);
+        var ordered = new System.Collections.Generic.List<(MermaidGitGraphBranch Branch, int Index, double Order)>();
+        for (var index = 0; index < document.Branches.Count; index++) {
+            var branch = document.Branches[index];
+            var order = branch.Order.HasValue ? branch.Order.Value : double.Parse("0." + index.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+            ordered.Add((branch, index, order));
+        }
+        ordered.Sort((left, right) => { var comparison = left.Order.CompareTo(right.Order); return comparison == 0 ? left.Index.CompareTo(right.Index) : comparison; });
+        var ranks = new System.Collections.Generic.Dictionary<string, int>(StringComparer.Ordinal);
+        for (var index = 0; index < ordered.Count; index++) ranks[ordered[index].Branch.Name] = index;
+        foreach (var branch in document.Branches) block.AddBranch(branch.Name, ranks[branch.Name]);
         foreach (var commit in document.Commits) block.AddCommit(commit.Id, commit.BranchName, commit.ParentIds, commit.Type, commit.Label, commit.Tag, commit.SourceCommitId);
         return MermaidPresentation.Apply(block, document, options.Presentation);
     }
@@ -54,6 +67,12 @@ public static class MermaidGitGraphRendering {
         return MermaidPresentation.Apply(artifact, document);
     }
 
+    private static GitGraphDirection GitGraphDirectionFromSource(string direction) => direction switch {
+        "" => GitGraphDirection.LeftToRight, "LR" => GitGraphDirection.LeftToRight,
+        "TB" => GitGraphDirection.TopToBottom, "BT" => GitGraphDirection.BottomToTop,
+        _ => throw new ArgumentException("Git graph direction must be LR, TB or BT.", nameof(direction))
+    };
+
     /// <summary>Renders a Mermaid git graph document to static SVG.</summary>
     public static string ToSvg(this MermaidGitGraphDocument document, MermaidGitGraphRenderOptions? options = null) =>
         document.ToVisualArtifact(options).ToSvg();
@@ -76,9 +95,16 @@ public sealed class MermaidGitGraphRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the inner preview padding.</summary>
     public double Padding { get; set; } = 30;
 
-    /// <summary>Gets or sets whether branch labels and lane lines are rendered.</summary>
-    public bool ShowBranchLabels { get; set; } = true;
+    /// <summary>Gets or sets whether branch labels and lane lines are rendered; null uses source configuration, then true.</summary>
+    public bool? ShowBranchLabels { get; set; }
 
-    /// <summary>Gets or sets whether commit labels are rendered.</summary>
-    public bool ShowCommitLabels { get; set; } = true;
+    /// <summary>Gets or sets whether commit labels are rendered; null uses source configuration, then true.</summary>
+    public bool? ShowCommitLabels { get; set; }
+
+    /// <summary>Gets or sets a host direction override; null uses the source header, then LR.</summary>
+    public GitGraphDirection? Direction { get; set; }
+    /// <summary>Gets or sets a host parallel-placement override; null uses source configuration, then false.</summary>
+    public bool? ParallelCommits { get; set; }
+    /// <summary>Gets or sets a host caption-rotation override; null uses source configuration, then false.</summary>
+    public bool? RotateCommitLabels { get; set; }
 }

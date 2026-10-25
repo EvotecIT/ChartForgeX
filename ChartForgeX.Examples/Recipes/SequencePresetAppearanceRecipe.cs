@@ -1,0 +1,11 @@
+/// <summary>Authors native measured participant bands and independently retained row paints; source parsing lives in the adapter example.</summary>
+public static class SequencePresetAppearanceRecipe {
+    /// <summary>Creates a compact or wide static native sequence with portable edit facts.</summary>
+    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+        if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));var compact=variant=="compact";
+        var model=SequenceArtifact.Create("sequence-preset-appearance").WithSize(compact?390:1100,860).AddParticipant("A","Review\nOwner",SequenceArtifactParticipantKind.Actor).AddParticipant("B","Archive",SequenceArtifactParticipantKind.Control).AddMessage("A","B","Save").AddMessage("B","A","Stored");
+        model.ThemeMode=mode;model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:compact?64:150,participantSpacing:compact?8:50,participantBands:new SequenceParticipantBands(),mirrorParticipants:true,fragmentMargin:10,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:35);model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=compact?12:16});
+        var dark=mode==VisualThemeMode.Dark;model.Paint.ParticipantFill=ChartColor.FromHex(dark?"#111113":"#FFFFFF");model.Paint.ParticipantText=ChartColor.FromHex(dark?"#E0DFDF":"#28253D");model.Paint.FragmentTitleText=model.Paint.ParticipantText;
+        var a=model.Participants[0];a.Border=ChartColor.FromHex("#E879F9");a.ActivationBorder=a.Border;a.ActivationFill=ChartColor.FromHex(dark?"#111113":"#FDF4FF");var b=model.Participants[1];b.Border=ChartColor.FromHex("#2DD4BF");b.ActivationBorder=b.Border;b.ActivationFill=ChartColor.FromHex(dark?"#111113":"#F0FDFA");model.AddActivation("B",true,0).AddActivation("B",false,2).AddBlock(SequenceArtifactBlockKind.Loop,"Audit",1,1);return model;
+    }
+}

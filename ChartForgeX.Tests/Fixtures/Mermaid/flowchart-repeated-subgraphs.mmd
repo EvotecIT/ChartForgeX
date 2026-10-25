@@ -1,0 +1,37 @@
+flowchart LR
+subgraph Product[Product delivery]
+P[Plan]
+subgraph API[API]
+direction TB
+A[Accept]
+end
+end
+subgraph API[Ignored later API]
+B[Build]
+end
+subgraph Service[Service]
+S[Serve]
+end
+subgraph Wrapper[Review]
+subgraph Service[Ignored later service]
+T[Track]
+end
+R[Review work]
+end
+subgraph Ops[Ignored outer operations]
+O[Observe]
+subgraph Ops[Operations]
+direction LR
+D[Deliver]
+end
+Q[Qualify]
+end
+P --> A
+A --> B
+B --> S
+S --> T
+T --> R
+R --> D
+D --> O
+O --> Q
+A[Accepted]

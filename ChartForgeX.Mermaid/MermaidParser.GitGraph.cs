@@ -15,15 +15,19 @@ public sealed partial class MermaidParser {
         return result;
     }
 
-    private static MermaidGitGraphDocument ParseGitGraph(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, DiagramDescriptor descriptor, MermaidParseResult<MermaidDocument> result) {
+    private static MermaidGitGraphDocument ParseGitGraph(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, DiagramDescriptor descriptor, MermaidSourceConfiguration configuration, MermaidParseResult<MermaidDocument> result) {
         var document = new MermaidGitGraphDocument {
             SourceText = source,
             Kind = MermaidDiagramKind.GitGraph,
             Header = header.Text,
             HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
             FrontMatter = frontMatter.Text,
-            Direction = descriptor.Direction.TrimEnd(':')
+            Direction = descriptor.Direction.TrimEnd(':'),
+            Configuration = configuration
         };
+        if (document.Direction.Length > 0 && document.Direction != "LR" && document.Direction != "TB" && document.Direction != "BT")
+            Add(result, header.Line, header.Column, header.Text.Length, MermaidDiagnosticSeverity.Error,
+                "Mermaid gitGraph direction must be LR, TB or BT.", MermaidDiagnosticCodes.InvalidStatement);
         MermaidGitGraphParser.ParseStatements(document, lines, header.Line + 1, result);
         return document;
     }

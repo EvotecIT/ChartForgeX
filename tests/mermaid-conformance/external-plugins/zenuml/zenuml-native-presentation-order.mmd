@@ -1,0 +1,9 @@
+zenuml
+participant <<Service>> [rocket] API 176 as "API service" #336699
+participant Store
+API.work() {
+  ref("Inside call", API, Store)
+}
+== After return ==
+ref("Outside call", API, Store)
+API -> Store: next message

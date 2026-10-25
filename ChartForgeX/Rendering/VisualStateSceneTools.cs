@@ -79,7 +79,8 @@ internal static class VisualStateSceneTools {
     }
 
     internal static void Text(VisualSceneBuilder builder, string text, ChartRect bounds, TextStyle style, string role,
-        string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false, SvgPaint? paint = null, string? displayedText = null) {
+        string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false, SvgPaint? paint = null, string? displayedText = null,
+        ChartColor? stroke = null, double strokeWidth = 0, SvgPaint? strokePaint = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
         var displayed = displayedText ?? text;
         if (bounds.Width <= 0 || bounds.Height <= 0 || displayed.Length == 0) {
@@ -105,7 +106,7 @@ internal static class VisualStateSceneTools {
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - height) / 2 + builder.TextAscent(style);
-        using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint ?? VisualChartPaint.Text(style));
+        using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint ?? VisualChartPaint.Text(style), stroke, strokeWidth, strokePaint);
     }
 
     private static bool SameWords(string source, string displayed) =>

@@ -10,6 +10,14 @@ internal static partial class VisualBlockRendering {
     public const int MaximumFishboneDepth = 12;
 
     public static void ValidateFishboneDiagram(FishboneDiagramBlock block) {
+        ValidateFishboneSource(block);
+        if (!block.UsesNaturalLayout) return;
+        var natural = MeasureFishboneNatural(block).Size;
+        if (block.Options.Size.Width < natural.Width || block.Options.Size.Height < natural.Height)
+            throw new InvalidOperationException("The fishbone frame is smaller than its measured cause tree. Call WithNaturalSize after changing causes or typography.");
+    }
+
+    private static void ValidateFishboneSource(FishboneDiagramBlock block) {
         if (block.Effect.Trim().Length == 0) throw new InvalidOperationException("Fishbone diagrams must define an effect label.");
         if (block.Causes.Count == 0) throw new InvalidOperationException("Fishbone diagrams must contain at least one cause.");
         var count = 1;

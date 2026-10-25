@@ -168,6 +168,10 @@ public sealed class MermaidJourneyTimelineNativeTests {
         AssertBackground("opaque-source-transparent-host", "#112233", "#01020300", Options(transparentHost));
         AssertBackground("opaque-host-transparent-family", "#112233", "#04050600", Options(opaqueHost, transparentFamily));
         AssertBackground("transparent-host-opaque-family", "#11223300", "#040506", Options(transparentHost, opaqueFamily));
+        AssertBackground("source-preset", null, "#333333", null);
+        AssertBackground("host-replaces-preset", null, "#010203", Options(opaqueHost));
+        AssertBackground("family-replaces-preset", null, "#040506", Options(opaqueHost,opaqueFamily));
+        AssertBackground("transparent-host-replaces-preset", null, "#01020300", Options(transparentHost));
         Assert.Equal(ChartColor.FromHex("#010203"), opaqueHost.Resolve(VisualThemeMode.Dark).Background);
         Assert.Equal(ChartColor.FromHex("#01020300"), transparentHost.Resolve(VisualThemeMode.Dark).Background);
         Assert.Equal(ChartColor.FromHex("#040506"), opaqueFamily.Resolve(VisualThemeMode.Dark).Background);
@@ -181,8 +185,9 @@ public sealed class MermaidJourneyTimelineNativeTests {
             return options;
         }
 
-        void AssertBackground(string name, string sourceColor, string expected, MermaidRenderOptions? options) {
-            var source = "%%{init: {'theme':'dark','themeVariables':{'background':'" + sourceColor + "'}}}%%\n" + (journey ? Journey : Timeline);
+        void AssertBackground(string name, string? sourceColor, string expected, MermaidRenderOptions? options) {
+            var source = "%%{init: {\"theme\":\"dark\"" +
+                (sourceColor==null ? string.Empty : ",\"themeVariables\":{\"background\":\""+sourceColor+"\"}") + "}}%%\n" + (journey ? Journey : Timeline);
             var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
             var artifact = Assert.IsType<VisualArtifact>(direct.Artifact);
             var block = Assert.IsAssignableFrom<IVisualBlock>(artifact.Model); var color = ChartColor.FromHex(expected);

@@ -5,8 +5,24 @@ namespace ChartForgeX.Mermaid;
 
 /// <summary>Shares declaration parsing and native paint validation, without choosing a family's grammar or cascade.</summary>
 internal static class MermaidStyleParser {
+    /// <summary>Reads one inline class name, preserving compact link and hyphenated-name boundaries.</summary>
+    internal static bool InlineClass(string text,ref int position,out string name,out int start) {
+        name=string.Empty;start=position;
+        if(position+2>=text.Length||text.Substring(position,3)!=":::")return false;
+        position+=3;start=position;
+        while(position<text.Length&&!char.IsWhiteSpace(text[position])
+            &&!(position+2<text.Length&&text.Substring(position,3)==":::")&&!LinkBoundary(text,position))position++;
+        name=text.Substring(start,position-start);
+        while(position<text.Length&&char.IsWhiteSpace(text[position]))position++;
+        return true;
+    }
+    private static bool LinkBoundary(string text,int position) {
+        var ch=text[position];if(ch=='<'||ch=='>')return true;
+        if(ch!='-'&&ch!='.'&&ch!='=')return false;
+        return position+1<text.Length&&(text[position+1]=='-'||text[position+1]=='.'||text[position+1]=='=');
+    }
     internal static bool TryDefinition(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
-        List<MermaidStyleDefinition> definitions, string family) {
+        List<MermaidStyleDefinition> definitions, string family, Func<string, string, bool>? nativeProperty = null) {
         if (!MermaidParserUtilities.StartsStatement(text, "classDef")) return false;
         var body = text.Substring(8).Trim();
         if (!SplitHead(body, out var head, out var declarations)) {
@@ -17,7 +33,7 @@ internal static class MermaidStyleParser {
         if (names.Count == 0) { Invalid("Named style definitions require a name and declarations."); return true; }
         MermaidResourceGuard.ReserveElements(names.Count, span);
         var styles = new Dictionary<string, string>();
-        Read(styles, declarations, span, result, family);
+        Read(styles, declarations, span, result, family, nativeProperty: nativeProperty);
         MermaidResourceGuard.ReserveElements(checked((long)names.Count * styles.Count), span);
         foreach (var name in names) {
             MermaidResourceGuard.Checkpoint();
@@ -92,18 +108,25 @@ internal static class MermaidStyleParser {
     }
 
     internal static void Read(Dictionary<string, string> styles, string text, MermaidSourceSpan span,
-        MermaidParseResult<MermaidDocument> result, string family, bool edge = false) {
+        MermaidParseResult<MermaidDocument> result, string family, bool edge = false, Func<string, string, bool>? nativeProperty = null,
+        Func<string, string, bool>? accepts = null, bool preservePropertyCase = false) {
         foreach (var declaration in SplitDeclarations(text)) {
             var split = declaration.IndexOf(':');
             if (split <= 0) {
                 Unsupported(family + " style declaration is retained without native application: " + declaration + ".");
                 continue;
             }
-            var property = declaration.Substring(0, split).Trim().ToLowerInvariant();
+            var property = declaration.Substring(0, split).Trim();
+            if (!preservePropertyCase) property = property.ToLowerInvariant();
             var value = declaration.Substring(split + 1).Trim();
             styles[property] = value;
+            if (accepts != null) {
+                if (!accepts(property, value)) Unsupported(family + " style '" + property + "' is retained without native application.");
+                continue;
+            }
             if ((property == "stroke" || !edge && (property == "fill" || property == "color"))
                 && MermaidStyleValues.IsColor(value)) continue;
+            if (nativeProperty?.Invoke(property, value) == true) continue;
             if (edge && property == "stroke-dasharray" && MermaidStyleValues.TryDash(value, out var dashed)) {
                 if (dashed) Unsupported(family + " stroke-dasharray is retained; native rendering uses its shared dashed pattern.");
                 continue;

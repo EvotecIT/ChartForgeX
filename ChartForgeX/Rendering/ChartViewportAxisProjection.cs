@@ -19,6 +19,8 @@ internal sealed class ChartViewportAxisProjection {
         TransformedFullMinimum = ChartScaleTransform.Bound(fullMinimum, _axis, false); TransformedFullMaximum = ChartScaleTransform.Bound(fullMaximum, _axis, true, maximumInclusive: true);
         TransformedMinimum = ChartScaleTransform.Bound(minimum, _axis, false); TransformedMaximum = ChartScaleTransform.Bound(maximum, _axis, true);
     }
+    internal double LogicalMinimum => _logicalMinimum;
+    internal double LogicalMaximum => _logicalMaximum;
     internal double FullMinimum { get; }
     internal double FullMaximum { get; }
     internal double Minimum { get; }

@@ -4,6 +4,14 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.VisualArtifacts;
 
 public sealed partial class SequenceArtifact {
+    /// <summary>Gets explicit sequence role paints; unset roles use the active native theme.</summary>
+    public SequenceArtifactPaint Paint { get; } = new();
+
+    /// <summary>Gets or sets immutable optional logical allocations; null and empty retain incumbent output.</summary>
+    public SequenceLayoutPolicy? Layout { get; set; }
+    /// <summary>Gets or sets immutable role typography; explicit styles resolve over the active context.</summary>
+    public SequenceTypography? Typography { get; set; }
+
     private VisualTheme _theme = VisualTheme.Graphite();
     private VisualThemeMode _themeMode = VisualThemeMode.Light;
 

@@ -1,6 +1,9 @@
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
+    /// <summary>Auto retains its raw hint but does not supply a glyph or replace required catalog resolution.</summary>
+    internal static bool HasExplicitIconShape(TopologyIconShape? shape) => shape.HasValue && shape.Value != TopologyIconShape.Auto;
+
     public static TopologyIconDefinition? ResolveNodeIcon(TopologyNode node, TopologyRenderOptions options) {
         return string.IsNullOrWhiteSpace(node.IconId) ? null : (options.IconCatalog ?? TopologyIconCatalog.Default()).Resolve(node.IconId);
     }
@@ -25,6 +28,7 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static TopologyIconShape EffectiveIconShape(TopologyNode node, TopologyRenderOptions options) {
+        if (HasExplicitIconShape(node.IconShape)) return node.IconShape.GetValueOrDefault();
         var icon = ResolveNodeIcon(node, options);
         if (icon != null && icon.Shape != TopologyIconShape.Auto) return icon.Shape;
         return node.Kind switch {

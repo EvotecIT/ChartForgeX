@@ -71,6 +71,10 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
+    /// <summary>Gets or sets opt-in full authored native Pie/Donut value capture, including zero readings and actual aggregate contributor membership.</summary>
+    /// <remarks>False preserves ordinary metadata and finite positive value admission. True requires authored series/observation IDs and representable captured native policy; unsupported capture rejects before a section is returned. Raw source rows do not invent painted targets.</remarks>
+    public bool CaptureNativeValueSource { get; set; }
+
     /// <summary>Gets the native narrow drawing and container breakpoint used by <see cref="HtmlChartResponsiveLayout.Adaptive"/>.</summary>
     public HtmlChartAdaptiveLayoutOptions Adaptive { get; } = new HtmlChartAdaptiveLayoutOptions();
 
@@ -87,6 +91,9 @@ public sealed class HtmlChartInteractionOptions {
 
     /// <summary>Gets the transient mark and branch emphasis options.</summary>
     public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
+
+    /// <summary>Gets opt-in progress editing through the existing native host-preparation connection.</summary>
+    public HtmlChartProgressEditingOptions ProgressEditing { get; } = new HtmlChartProgressEditingOptions();
 
     /// <summary>Gets optional source-domain navigator, range preset and position scrollbar controls.</summary>
     public HtmlChartXNavigationOptions XNavigation { get; } = new HtmlChartXNavigationOptions();

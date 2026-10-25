@@ -14,6 +14,17 @@ internal sealed partial class RgbaCanvas {
         double e,
         double f,
         double opacity = 1) {
+        DrawImageTransformedCore(sourceWidth, sourceHeight, rgba, a, b, c, d, e, f, opacity, false);
+    }
+
+    /// <summary>Composites completed native objects with the typed effect channel conversion.</summary>
+    /// <remarks>The legacy image entrypoint keeps its arithmetic; both paths share this sampler and clipping.</remarks>
+    internal void DrawCapturedImageTransformed(int sourceWidth, int sourceHeight, byte[] rgba,
+        double a, double b, double c, double d, double e, double f, double opacity = 1) =>
+        DrawImageTransformedCore(sourceWidth, sourceHeight, rgba, a, b, c, d, e, f, opacity, true);
+
+    private void DrawImageTransformedCore(int sourceWidth, int sourceHeight, byte[] rgba,
+        double a, double b, double c, double d, double e, double f, double opacity, bool captured) {
         if (rgba == null) throw new ArgumentNullException(nameof(rgba));
         if (sourceWidth <= 0 || sourceHeight <= 0 || opacity <= 0) return;
         if (rgba.Length < sourceWidth * sourceHeight * 4) throw new ArgumentException("RGBA buffer is smaller than the requested source dimensions.", nameof(rgba));
@@ -41,8 +52,12 @@ internal sealed partial class RgbaCanvas {
             if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth || sourceY >= sourceHeight) continue;
             var color = SampleImageFiltered(rgba, sourceWidth, sourceHeight, sourceX - 0.5, sourceY - 0.5, footprintX, footprintY);
             if (opacity < 1) color = color.WithAlpha((byte)Math.Round(color.A * opacity));
-            if (color.A > 0) BlendPixel(targetX, targetY, color);
+            if (color.A > 0) {
+                if (captured) BlendCapturedPixel(targetX, targetY, color);
+                else BlendPixel(targetX, targetY, color);
+            }
         }
+        if (captured) HasCapturedEffectPixels = true;
     }
 
     private static void TransformImagePoint(double x, double y, double a, double b, double c, double d, double e, double f, out double targetX, out double targetY) {

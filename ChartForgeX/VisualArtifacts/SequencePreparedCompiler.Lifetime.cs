@@ -9,17 +9,17 @@ namespace ChartForgeX.VisualArtifacts;
 internal static partial class SequencePreparedCompiler {
     private static void ParticipantGroups(VisualSceneBuilder builder, SequenceArtifact model, SequencePreparedLayout layout,
         VisualArtifactInterchangeEnvelope semantics, VisualRenderContext context) {
-        var colors = context.Theme.Resolve(context.ThemeMode);
+        var colors = context.Theme.Resolve(context.ThemeMode);var padding=layout.Presentation.Layout?.FragmentLabelPadding;
         foreach (var item in layout.ParticipantGroups) {
             var source = model.ParticipantGroups[item.Index];
             using (Group(builder, item, "sequence-participant-group", source.Label)) {
                 builder.Rect(item.Bounds, source.Fill, colors.Border, context.Theme.AxisStrokeWidth, role: "sequence-participant-group-frame");
-                var label = new ChartRect(item.Bounds.X + 8, item.Bounds.Y + 6, item.Bounds.Width - 16, Math.Max(0, item.Y - 10));
+                var label = new ChartRect(item.Bounds.X + (padding??8), item.Bounds.Y + (padding??6), item.Bounds.Width - (padding.HasValue?padding.Value*2:16), Math.Max(0, item.Y - (padding.HasValue?padding.Value*2:10)));
                 // Group colors can be opaque in either palette. A theme surface behind the caption
                 // keeps it legible without changing the authored group fill.
                 if (item.Text.Length > 0) {
-                    builder.Rect(new ChartRect(item.Bounds.X + 4, item.Bounds.Y + 2, item.Bounds.Width - 8, item.Y - 4), colors.Surface);
-                    Text(builder, item.Text, label, layout.FontSize, colors.Foreground, center: true);
+                    builder.Rect(padding.HasValue?new ChartRect(item.Bounds.X,item.Bounds.Y,item.Bounds.Width,item.Y):new ChartRect(item.Bounds.X + 4, item.Bounds.Y + 2, item.Bounds.Width - 8, item.Y - 4), colors.Surface);
+                    Text(builder, item.Text, label, layout, SequenceTextRole.Fragment, colors.Foreground, center: true);
                 }
             }
             Region(builder, item, "sequence-participant-group", source.Label);
@@ -27,9 +27,6 @@ internal static partial class SequencePreparedCompiler {
             group.X = item.Bounds.X; group.Y = item.Bounds.Y; group.Width = item.Bounds.Width; group.Height = item.Bounds.Height;
         }
     }
-
-    private static double LifetimeEnd(SequenceArtifact model, SequencePreparedLayout layout, int index) =>
-        layout.Messages[index].Y + (model.Messages[index].SourceId == model.Messages[index].TargetId ? 24 : 0);
 
     private static void ValidateParticipantLifetimesAndGroups(SequenceArtifact model) {
         var occupied = new HashSet<int>();
@@ -64,7 +61,12 @@ internal static partial class SequencePreparedCompiler {
             RequireLifetime(message.SourceId, index, false); RequireLifetime(message.TargetId, index, false);
         }
         foreach (var note in model.Notes) foreach (var id in note.ParticipantIds) RequireLifetime(id, Math.Max(0, note.StepIndex), true);
-        foreach (var activation in model.Activations) RequireLifetime(activation.ParticipantId, Math.Max(0, activation.StepIndex), true);
+        foreach (var activation in model.Activations) {
+            RequireLifetime(activation.ParticipantId, Math.Max(0, activation.StepIndex), true);
+            if (activation.Active && model.Layout?.MirrorParticipants == true && participants.TryGetValue(activation.ParticipantId, out var participant)
+                && participant.DestroyedAtMessageIndex == Math.Max(0, activation.StepIndex))
+                throw new NotSupportedException("A mirrored terminal participant cannot start an activation at the destroying message.");
+        }
         void RequireLifetime(string id, int index, bool boundary) {
             if (!participants.TryGetValue(id, out var participant)) return; // The shared sequence validator reports unknown ids.
             if (participant.CreatedAtMessageIndex > index || boundary && participant.CreatedAtMessageIndex == index || participant.DestroyedAtMessageIndex < index)

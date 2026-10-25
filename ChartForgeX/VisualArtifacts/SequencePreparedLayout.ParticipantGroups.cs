@@ -8,13 +8,17 @@ namespace ChartForgeX.VisualArtifacts;
 internal sealed partial class SequencePreparedLayout {
     private double MeasureParticipantGroups(SequenceArtifact model, VisualArtifactInterchangeEnvelope semantics,
         VisualSceneBuilder builder, double laneWidth, double left, double top, double size) {
-        double height = 0;
+        double height = 0;var padding=Presentation.Layout?.FragmentLabelPadding;
         for (var index = 0; index < model.ParticipantGroups.Count; index++) {
             var group = model.ParticipantGroups[index];
-            double x = left + group.FirstParticipantIndex * laneWidth + 2;
-            double width = (group.LastParticipantIndex - group.FirstParticipantIndex + 1) * laneWidth - 4;
-            var text = Wrap(group.Label, width - 16, builder, size);
-            double header = text.Length == 0 ? 8 : builder.MeasureText(text, size).Height + 16;
+            var visible = Presentation.VisibleParticipantIndices;
+            var members = visible.Select((sourceIndex, column) => new { sourceIndex, column })
+                .Where(item => item.sourceIndex >= group.FirstParticipantIndex && item.sourceIndex <= group.LastParticipantIndex).ToArray();
+            if (members.Length == 0) continue;
+            double x = left + members[0].column * laneWidth + 2;
+            double width = (members[members.Length - 1].column - members[0].column + 1) * laneWidth - 4;
+            var text = Presentation.Wrap(group.Label, width - (padding.HasValue?padding.Value*2:16), builder, SequenceTextRole.Fragment, size);
+            double header = text.Length == 0 ? 8 : Presentation.Measure(text, builder, SequenceTextRole.Fragment, size).Height + (padding.HasValue?padding.Value*2:16);
             height = Math.Max(height, header);
             ParticipantGroups.Add(new Item { Id = semantics.Groups[index].Id, Index = index, Text = text,
                 Bounds = new ChartRect(x, top, width, 0), Y = header });

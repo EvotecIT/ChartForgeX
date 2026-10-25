@@ -1,0 +1,25 @@
+using System;
+using ChartForgeX;
+using System.IO;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.SvgRaster;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var layer = NativeMaskExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("mask-source.svg", layer.Source.ToSvg());
+File.WriteAllBytes("mask-source.png", layer.Source.ToPng());
+File.WriteAllText("mask.svg", layer.Visual.ToSvg());
+File.WriteAllBytes("mask.png", layer.Visual.ToPng());
+File.WriteAllText("mask.html", layer.Visual.ToArtifact("mask", VisualArtifactKind.Chart).ToHtmlPage());
+foreach (var blend in new[] { "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity" }) {
+    var source = NativeMaskExample.FilterSource(blend);
+    var imported = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
+    File.WriteAllText("blend-" + blend + ".source.svg", source);
+    File.WriteAllBytes("blend-" + blend + ".native.png", imported.Image.ToPng());
+    File.WriteAllBytes("blend-" + blend + ".rgba", imported.Image.Pixels);
+}
+
+{{SOURCE}}

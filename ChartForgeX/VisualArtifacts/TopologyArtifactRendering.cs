@@ -45,7 +45,7 @@ public static class TopologyArtifactRendering {
     }
 
     internal static void RefreshRegions(VisualArtifact artifact, PreparedTopology prepared) {
-        var semantic = prepared.ToInterchangeEnvelope();
+        var semantic = prepared.Visual.CapturedSemanticSnapshot!;
         artifact.Regions.Clear();
         foreach (var source in prepared.Visual.Regions) {
             var node = semantic.Nodes.FirstOrDefault(item => item.Id == source.Id);

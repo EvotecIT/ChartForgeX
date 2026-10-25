@@ -9,23 +9,42 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null) {
+    public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null, TopologyChart? hierarchySource = null) {
+        var external = new TopologyChartValidator().ValidateExternalPresentationInputs(chart, options ?? new TopologyRenderOptions());
+        if (!external.IsValid) throw new TopologyValidationException(external);
+        var paints=new TopologyChartValidator().ValidateSurfacePaintInputs(chart);
+        if(!paints.IsValid)throw new TopologyValidationException(paints);
+        if (chart.Alignments.Count > 0) {
+            var validation = new TopologyChartValidator().ValidateAlignmentInputs(chart);
+            if (!validation.IsValid) throw new TopologyValidationException(validation);
+            TopologyAlignmentLayout.ValidateState(chart);
+        }
+        ValidateRankOptimizationLayout(chart, options);
         var copy = Clone(chart);
+        TopologyPreparedNodeBasis.ApplyLifecycle(copy);
+        TopologyPreparedEdgePlan.ApplyLifecycle(copy);
         var authoredEdges = copy.Edges.Zip(chart.Edges, (working, authored) => (working, authored))
             .ToDictionary(pair => pair.working, pair => pair.authored);
         copy.PreparedGroupHeaderParts = null;
         copy.PreparedGroupHeaderLayoutParts = null;
         copy.GroupHeaderLayout = null;
         copy.TextMeasurement = measurement ?? new TextMeasurementContext((copy.ResolvedTheme).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
-        if (options != null) options.TextMeasurement = copy.TextMeasurement;
+        if (options != null) {
+            options.TextMeasurement = copy.TextMeasurement;
+            options.ResolvedSubtitleChipFontSize = copy.Theme.Typography.DataLabelSize * (9.5 / 11);
+            options.ResolvedCaptionStrokeWidth ??= copy.Theme.AxisStrokeWidth;
+        }
         copy.RenderOptions = options;
+        if (options?.HierarchyView != null) TopologyHierarchyPreparation.Apply(copy, hierarchySource ?? chart, options.HierarchyView, options);
         ApplyNamedPortSides(copy);
         if (options != null) {
             ApplyNodeDisplayMode(copy, options, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
 
         if (view != null) ApplyView(copy, view);
+        if (chart.Alignments.Count > 0) ProjectAlignments(copy);
         if (options != null) copy.Legend = options.IncludeLegend ? TopologyLegend.Resolve(copy, options.LegendMode) : null;
+        var constrained = copy.Alignments.Count > 0 && copy.LayoutMode == TopologyLayoutMode.Layered;
         var compoundLayout = false;
         switch (copy.LayoutMode) {
             case TopologyLayoutMode.GroupGrid:
@@ -38,8 +57,8 @@ internal static partial class TopologyLayoutEngine {
                 ApplySwimlane(copy, options);
                 break;
             case TopologyLayoutMode.Layered:
-                compoundLayout = TryApplyCompoundLayered(copy, options);
-                if (!compoundLayout) ApplyLayered(copy, options);
+                compoundLayout = TryApplyCompoundLayered(copy, options, !constrained);
+                if (!compoundLayout) ApplyLayered(copy, options, !constrained);
                 break;
             case TopologyLayoutMode.Matrix:
                 ApplyMatrix(copy, options);
@@ -61,8 +80,21 @@ internal static partial class TopologyLayoutEngine {
                 break;
         }
 
-        if (copy.LayoutMode == TopologyLayoutMode.Layered && !compoundLayout) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
-        TopologyLayoutNormalizer.Normalize(copy, options);
+        if (constrained) {
+            TopologyAlignmentLayout.Apply(copy, options);
+            if (compoundLayout) InferCompoundRoutes(copy, copy.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal), preserveRouting: true);
+            TopologyLayoutNormalizer.NormalizeAligned(copy, options);
+        } else {
+            if (copy.LayoutMode == TopologyLayoutMode.Layered && !compoundLayout) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
+            if (copy.Alignments.Count > 0) TopologyAlignmentLayout.ValidateManual(copy, options);
+            // A restored Manual scene already carries measured output-space bounds and route hints.
+            // Authoring normalization would repack it or reapply an absent/default padding policy.
+            // Explicit output fitting remains in the compiler; selecting a fresh layout resumes normalization.
+            if (!copy.UsesPreparedSceneCoordinates || copy.LayoutMode != TopologyLayoutMode.Manual) {
+                if (copy.Alignments.Count > 0 && copy.LayoutMode == TopologyLayoutMode.Manual) TopologyLayoutNormalizer.NormalizeAligned(copy, options);
+                else TopologyLayoutNormalizer.Normalize(copy, options);
+            }
+        }
         SyncHierarchyRouteDiagnostics(copy);
         return copy;
     }
@@ -89,7 +121,7 @@ internal static partial class TopologyLayoutEngine {
             if (node.PreserveDisplayModeSize) continue;
             if (options.IncludeNodeLabels && node.Details.Count > 0 && (node.DisplayMode ?? options.NodeDisplayMode) == TopologyNodeDisplayMode.Card) {
                 node.Width = Math.Max(node.Width, 184);
-                node.Height = Math.Max(node.Height, NodeDetailStartOffset(node, options) + node.Details.Count * 18 + 1);
+                node.Height = Math.Max(node.Height, NodeDetailStartOffset(node, options) + NodeDetailRows(node, options) * 18 + 1);
             }
             switch (node.DisplayMode ?? options.NodeDisplayMode) {
                 case TopologyNodeDisplayMode.CompactCard:
@@ -245,6 +277,7 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private static void ApplyGroupGrid(TopologyChart chart) {
+        if (chart.GridLayout != null) { ApplyBoundedGroupGrid(chart); return; }
         if (chart.Groups.Count == 0) {
             ApplyMatrix(chart);
             return;
@@ -432,15 +465,15 @@ internal static partial class TopologyLayoutEngine {
             if (UsesReadableDenseLayout(chart)) {
                 // Panels fill the row width but take the height of their content, not of the viewport; the panels of
                 // one row are evened out below and the canvas height follows the content (TopologyLayoutNormalizer).
-                group.Width = Math.Max(group.Width, Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy)));
-                group.Height = Math.Max(group.Height, Math.Max(170, DenseGroupHeight(chart, nodes, policy)));
+                group.Width = Math.Max(group.Width, Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy, group)));
+                group.Height = Math.Max(group.Height, Math.Max(170, DenseGroupHeight(chart, nodes, policy, group)));
             } else {
                 // Reserve an automatic grid before packing neighbors, including declared small panel sizes.
-                var automaticGrid = policy == TopologyGroupLayoutPolicy.Grid && !explicitGroupPositions.ContainsKey(group.Id);
-                if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
-                else if (automaticGrid) group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy));
-                if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
-                else if (automaticGrid) group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy));
+                var automaticGrid = (policy is TopologyGroupLayoutPolicy.Grid or TopologyGroupLayoutPolicy.VerticalStack) && !explicitGroupPositions.ContainsKey(group.Id);
+                if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy, group));
+                else if (automaticGrid) group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy, group));
+                if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy, group));
+                else if (automaticGrid) group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy, group));
             }
             columnWidths[col] = Math.Max(columnWidths[col], group.Width);
             rowHeights[row] = Math.Max(rowHeights[row], group.Height);
@@ -493,9 +526,10 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private static void PlaceDenseNodesInGroup(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroup group) {
-        if (nodes.Count == 0) return;
         var policy = ResolveDenseGroupPolicy(chart, group, nodes);
         group.AppliedLayoutPolicy = policy;
+        if (nodes.Count == 0) return;
+        if (policy == TopologyGroupLayoutPolicy.VerticalStack) { PlaceVerticalStack(chart, nodes, group); return; }
         if (policy == TopologyGroupLayoutPolicy.CollapsedDots) {
             foreach (var node in nodes) {
                 node.DisplayMode = TopologyNodeDisplayMode.Dot;

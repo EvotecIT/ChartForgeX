@@ -1,11 +1,11 @@
 
-  const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
-  // Ignore adapter/probe mutations.
+  const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon,image';
+
 
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
     'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
-    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule', 'slot', 'name'];
+    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule', 'slot', 'name', 'data-cfx-image-alpha-bounds', 'href'];
 
   const composedParent = (node) => node.assignedSlot || node.parentElement || node.getRootNode().host;
   const composedAncestry = (root) => {
@@ -15,7 +15,7 @@
     }
     return { nodes, trees: Array.from(trees) };
   };
-  // Per-probe CSS cache.
+
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
@@ -26,7 +26,7 @@
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
-    // aria-hidden is not paint; child visibility can override.
+
     return true;
   };
   const paintNodeVisible = (node, styles) => {
@@ -44,7 +44,7 @@
     if (Number(opacity) <= 0) return null;
     const reference = /^url\(\s*["']?([^"')]+)["']?\s*\)$/i.exec(value || '');
     if (!reference || !node.ownerSVGElement) return null;
-    // Local paint servers only.
+
     let server;
     try {
       const url = new URL(reference[1], node.ownerDocument.baseURI);
@@ -74,9 +74,9 @@
 
     return !!(previous && followsPrevious(node) || followsPrevious(next));
   };
-  // Native, not hit extent.
+
   const pairedExtentScreenBox = (node) => nativeRegionScreenBox(node, node._cfxPairedRegion);
-  // User-space clips follow owner.
+
   const nativePaintClips = (node) => {
     const clips = [];
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
@@ -150,26 +150,41 @@
         })) continue;
         const sample = point.matrixTransform(shapeMatrix.inverse());
         const radius = parseFloat(paint.strokeWidth) / 2 * (paint.strokeLinecap === 'square' ? Math.SQRT2 : 1);
-        // Clamp to endpoint stroke.
+
         if (Math.hypot(sample.x - source.x, sample.y - source.y) <= radius + .001 && node.isPointInStroke(sample)) return true;
       }
     }
     return false;
+  };
+  const nativeImagePaintBounds = node => {
+    const a=(node.dataset.cfxImageAlphaBounds||'').trim().split(/\s+/).map(Number),b=node.getBBox();
+    if(a.length!==6||!a.every(Number.isSafeInteger)||a.some(n=>n<0)||!a[2]||!a[3]||!a[4]||!a[5]
+      ||a[0]+a[2]>a[4]||a[1]+a[3]>a[5]||![b.x,b.y,b.width,b.height].every(Number.isFinite)||!(b.width>0&&b.height>0)
+      ||node.getAttribute('preserveAspectRatio')!=='none'||!node.getAttribute('href')?.startsWith('data:image/png;base64,'))return null;
+    let x=b.x+b.width*a[0]/a[4],y=b.y+b.height*a[1]/a[5],right=x+b.width*a[2]/a[4],bottom=y+b.height*a[3]/a[5];
+    const matrix=node.getScreenCTM(),clips=nativePaintClips(node);if(!matrix||!clips||![matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f].every(Number.isFinite)||matrix.a*matrix.d===matrix.b*matrix.c)return null;
+    for(const clip of clips){const m=matrix.inverse().multiply(clip.matrix),r=clip.rect;
+      if(![m.a,m.b,m.c,m.d,m.e,m.f].every(Number.isFinite)||m.b||m.c)return null;
+      const x1=m.a*r.x+m.e,x2=m.a*(r.x+r.width)+m.e,y1=m.d*r.y+m.f,y2=m.d*(r.y+r.height)+m.f;
+      x=Math.max(x,Math.min(x1,x2));right=Math.min(right,Math.max(x1,x2));y=Math.max(y,Math.min(y1,y2));bottom=Math.min(bottom,Math.max(y1,y2));
+    }
+    return right>x&&bottom>y?{x,y,width:right-x,height:bottom-y}:null;
   };
   const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
-    // Zero size suppresses stroke.
+
     let box;
     if (node.matches('rect,circle,ellipse')) {
       box = node.getBBox();
       if (!(box.width > 0 && box.height > 0)) return null;
     }
+    if(node.localName==='image'){const bounds=nativeImagePaintBounds(node);return bounds?{colour:'',imageNode:node,bounds}:null;}
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
-    // Bounds != ink; open: stroke only; collapsed: stroke.
+
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
 
     let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
@@ -250,7 +265,7 @@
     return null;
   };
   const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
-    // Suspend opacity; refresh CSS.
+
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
@@ -259,7 +274,7 @@
     return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
       || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
   };
-  // Reject box ink; keep muted legends/keyboard facts.
+
 
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;

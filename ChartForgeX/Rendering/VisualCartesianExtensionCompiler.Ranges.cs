@@ -19,13 +19,13 @@ internal static partial class VisualCartesianCompiler {
         for (var item = 0; item < count; item++) {
             var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1]; var x = map.X(low.X);
             var breakBefore = low.BreakBefore || high.BreakBefore;
-            middle.Add(new ChartPoint(x, map.Y((low.Y + high.Y) / 2), breakBefore));
+            middle.Add(new ChartPoint(x, map.Y(low.Y / 2 + high.Y / 2), breakBefore));
         }
         var offset = 0;
         foreach (var segment in ChartPointSegments.Split(upper)) {
             var lowSegment = lower.GetRange(offset, segment.Count);
-            var highPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition);
-            var lowPath = ChartPathBuilder.FromPoints(lowSegment, series.Interpolation, series.StepPosition);
+            var highPath = ChartPairedBoundaryGeometry.BoundaryPath(series, segment, false);
+            var lowPath = ChartPairedBoundaryGeometry.BoundaryPath(series, lowSegment, true);
             var highFlat = highPath.Flatten(12); var lowFlat = lowPath.Flatten(12);
             var polygon = ChartPairedBoundaryGeometry.Envelope(highFlat, lowFlat); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);

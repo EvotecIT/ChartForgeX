@@ -292,6 +292,22 @@ var composition = ImageComposition.FromImage(result.Image);
 
 Diagnostics identify unsupported visible elements (`SFR001`, including `foreignObject` and `textPath`), ignored filters (`SFR002`, including CSS filters), undecodable embedded images (`SFR003`), and unresolved or depth-limited `use` references (`SFR004`). Nested SVG images retain these diagnostics. At most 256 entries are returned; `SFR999` reports truncation. `Rasterize(svg, strict: true)` throws `NotSupportedException` when diagnostics are present. `ToImage` and `ToPng` retain their best-effort behavior. An empty diagnostic list does not guarantee complete browser SVG fidelity; shaping, stroke paints, and other subset limitations still apply.
 
+A host can opt into one bounded Gaussian filter import without changing the ordinary rasterization defaults:
+
+```csharp
+var result = SvgRasterizer.Rasterize(sourceSvg, strict: true,
+    filters: new SvgRasterFilterOptions(maximumApplications: 4));
+var composition = ImageComposition.FromImage(result.Image);
+```
+
+The accepted filter has exactly one `feGaussianBlur` with explicit `in="SourceGraphic"`, `edgeMode="none"`, numeric `stdDeviation`, `filterUnits="userSpaceOnUse"`, `primitiveUnits="userSpaceOnUse"`, a finite numeric x/y/width/height region, and computed `color-interpolation-filters: sRGB`. Its region must align to output device pixels. A filtered ordinary shape, text or solid-paint group is captured together, then the shared native three-box Gaussian approximation runs before the element's own user-space clip, simple user-space mask and opacity. Positive axis-aligned scale and translation convert each sigma once to output pixels; values above 128 device pixels reject. An exact Gaussian, browser-identical filtering, linearRGB, object-bounding-box units, arbitrary primitive regions, other primitives/functions and nested filtered/transform/viewport/image/paint-server source graphs are outside this subset and retain `SFR002`. Root viewport and symbol filters also remain unsupported.
+
+The finite source capture includes the kernel's dependency halo. Visible source paint crossing the explicit filter region stays diagnosed until those input-edge semantics qualify; it is never silently clipped or called a supported filter. Filter output is clipped to its explicit region and the existing output viewport. No live SVG filter is generated from the resulting pixels, and no already-baked captured layer is filtered again implicitly.
+
+The immutable options tighten the shared one-billion counted sample-visit and 256 MiB declared-pixel-array ceilings and limit applications to at most 16. Each painted `<use>` instance and embedded SVG document shares the same cumulative debit. Each renderer-owned root, ancestor, clip, mask, viewport, text-span, pattern and image-placement canvas and opacity copy is debited before allocation. Filter capture, kernel and one output are reserved once, including repeated source references and embedded documents. These are declared compositor/effect arrays, not process RSS, codec working buffers, arbitrary pre-existing SVG geometry/font intermediates or elapsed time. Raster decoders retain their existing separate input/pixel limits. Cancellation is cooperative at document/element boundaries, capture scans and existing kernel rows. A budget failure or cancellation throws without returning an unfiltered success. Null options and `ToImage`/`ToPng` keep their current best-effort filter-loss behavior.
+
+Generate the complete ordinary composition consumer with `--svg-gaussian-import-only`. It imports its mark/text source explicitly, composes the result through `ImageComposition`, and writes self-contained baked-image SVG, native PNG and HTML for compact/wide light/dark poses.
+
 Stroked SVG circles, ellipses, arcs, rounded rectangles, and curved paths are flattened to the output resolution and outlined as one shape, so they are as smooth as fills at any stroke width. `stroke-linecap` (`butt`, `round`, `square`), `stroke-linejoin` (`miter`, `round`, `bevel`), `stroke-miterlimit`, and `stroke-dasharray` are honoured. A gradient used as a stroke paint is drawn in its first stop color.
 
 ### Fonts for composed text

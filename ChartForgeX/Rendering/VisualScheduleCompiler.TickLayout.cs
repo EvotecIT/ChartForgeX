@@ -16,12 +16,12 @@ internal static partial class VisualScheduleCompiler {
         if (ticks.Count < 2 || axis.Labels.Count > 0 || hasFixedTicks || axis.LabelDensity == ChartLabelDensity.All) return ticks;
         var policy = axis.Clone();
         // Lane models use calendar ticks even when their source axis retains the default linear scale.
-        if (chart.Series[0].Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane) policy.Scale = ChartScaleKind.Time;
+        if (!ChartSeriesKindTraits.IsMixedSchedule(chart) && (chart.Series[0].Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane)) policy.Scale = ChartScaleKind.Time;
         // Automatic Gantt captions identify dates on day-scale windows, including
         // rejected dense fixed intervals. Keep the generated ticks on whole days;
         // authored clock formats and successful fixed intervals remain authoritative.
         var min = minimum ?? ticks[0]; var max = maximum ?? ticks[ticks.Count - 1];
-        var minimumStepDays = chart.Series[0].Kind == ChartSeriesKind.Gantt && max - min >= 1
+        var minimumStepDays = !ChartSeriesKindTraits.IsMixedSchedule(chart) && chart.Series[0].Kind == ChartSeriesKind.Gantt && max - min >= 1
             && ChartTimeScale.HasDayCaptionPrecision(axis, format, min) ? 1 : 0;
         bool Fits(IReadOnlyList<double> candidates) => ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
             GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style),

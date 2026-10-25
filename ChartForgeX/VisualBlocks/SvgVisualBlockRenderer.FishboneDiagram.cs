@@ -7,6 +7,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderFishboneDiagram(SvgMarkupWriter writer, FishboneDiagramBlock block) {
+        if (block.UsesNaturalLayout) { RenderNaturalFishbone(writer, block); return; }
         var options = block.Options;
         var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);

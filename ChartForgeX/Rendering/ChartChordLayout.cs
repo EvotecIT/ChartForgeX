@@ -7,17 +7,27 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Allocates one slot per directed endpoint; a self flow consumes two slots on its own node.</summary>
-internal static class ChartChordLayout {
+internal static partial class ChartChordLayout {
     internal static ChartChordModel Compute(ChartSeries series, ChartChordOptions options, ChartRect plot) {
         var facts = series.Relationships;
         var nodes = new List<ChartChordNode>();
         var links = new List<ChartChordLink>();
         var model = new ChartChordModel(nodes, links, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
-            Math.Max(0, Math.Min(plot.Width, plot.Height) / 2 - 1), options.NodeThicknessRatio);
-        if (facts == null) return model;
+            Math.Max(0, Math.Min(plot.Width, plot.Height) / 2 - 1), options.NodeThicknessRatio, options.RibbonTension);
+        if (facts == null) {
+            ResolveOrder(options.Ordering?.NodeIds, Array.Empty<string>(), "node");
+            ResolveOrder(options.Ordering?.OutgoingFlowIds, Array.Empty<string>(), "outgoing flow");
+            ResolveOrder(options.Ordering?.IncomingFlowIds, Array.Empty<string>(), "incoming flow");
+            return model;
+        }
         for (var index = 0; index < facts.Nodes.Count; index++) nodes.Add(new ChartChordNode(index, facts.Nodes[index],
             facts.FlowIncomingValues[index], facts.FlowOutgoingValues[index], facts.FlowEndpointValues[index]));
         for (var index = 0; index < facts.FlowLinks.Count; index++) links.Add(new ChartChordLink(index, facts.FlowLinks[index], facts.Source(index), facts.Target(index)));
+        // Resolve even empty/all-zero inputs: an order cannot silently retain removed or missing source IDs.
+        var nodeOrder = ResolveOrder(options.Ordering?.NodeIds, nodes.Select(node => node.Fact.Id).ToArray(), "node");
+        var flowIds = links.Select(link => link.Fact.Id).ToArray();
+        var outgoingOrder = ResolveOrder(options.Ordering?.OutgoingFlowIds, flowIds, "outgoing flow");
+        var incomingOrder = ResolveOrder(options.Ordering?.IncomingFlowIds, flowIds, "incoming flow");
         model.WeightReference = nodes.Count == 0 ? 0 : nodes.Max(node => node.Value);
         if (model.WeightReference == 0) return model;
 
@@ -30,7 +40,8 @@ internal static class ChartChordLayout {
         model.NormalizedAngularScale = availableDegrees * (Math.PI / 180) / total;
         var gap = options.NodeGapDegrees * (Math.PI / 180);
         var angle = options.StartAngleDegrees % 360 * (Math.PI / 180);
-        foreach (var node in nodes) {
+        foreach (var index in nodeOrder) {
+            var node = nodes[index];
             node.Start = angle;
             node.Sweep = model.Angle(node.Value);
             node.IsVisible = node.Value > 0 && model.OuterRadius > model.InnerRadius && model.HasDistinctArc(node.Start, node.Sweep, model.OuterRadius);
@@ -38,15 +49,20 @@ internal static class ChartChordLayout {
         }
         var outgoing = nodes.Select(node => node.Start).ToArray();
         var incoming = nodes.Select(node => node.Start + model.Angle(node.Outgoing)).ToArray();
+        var orderedSlots = options.Ordering?.OutgoingFlowIds != null || options.Ordering?.IncomingFlowIds != null;
         foreach (var link in links) {
             link.Sweep = model.Angle(link.Fact.Value);
+            if (orderedSlots) continue;
+            // Preserve incumbent arithmetic and traversal when endpoint orders are not authored.
             link.SourceStart = outgoing[link.Source];
             link.TargetStart = incoming[link.Target];
             outgoing[link.Source] += link.Sweep;
             incoming[link.Target] += link.Sweep;
-            link.IsVisible = link.Fact.Value > 0 && model.HasDistinctArc(link.SourceStart, link.Sweep, model.InnerRadius)
-                && model.HasDistinctArc(link.TargetStart, link.Sweep, model.InnerRadius);
         }
+        if (orderedSlots) OrderedSlots(model, outgoingOrder, incomingOrder, outgoing, incoming);
+        foreach (var link in links) link.IsVisible = link.Fact.Value > 0
+            && model.HasDistinctArc(link.SourceStart, link.Sweep, model.InnerRadius)
+            && model.HasDistinctArc(link.TargetStart, link.Sweep, model.InnerRadius);
         return model;
     }
 
@@ -64,8 +80,8 @@ internal static class ChartChordLayout {
     }
 
     private static void Connect(List<ChartPathCommand> commands, ChartChordModel model, ChartPoint from, ChartPoint to) =>
-        commands.Add(ChartPathCommand.CubicTo(model.CenterX + (from.X - model.CenterX) * .2, model.CenterY + (from.Y - model.CenterY) * .2,
-            model.CenterX + (to.X - model.CenterX) * .2, model.CenterY + (to.Y - model.CenterY) * .2, to.X, to.Y));
+        commands.Add(ChartPathCommand.CubicTo(model.CenterX + (from.X - model.CenterX) * model.ControlPointRatio, model.CenterY + (from.Y - model.CenterY) * model.ControlPointRatio,
+            model.CenterX + (to.X - model.CenterX) * model.ControlPointRatio, model.CenterY + (to.Y - model.CenterY) * model.ControlPointRatio, to.X, to.Y));
 
     internal static ChartPath DirectionCue(ChartChordModel model, ChartChordLink link) {
         var angle = link.TargetStart + link.Sweep / 2;
@@ -96,8 +112,10 @@ internal static class ChartChordLayout {
 }
 
 internal sealed class ChartChordModel {
-    internal ChartChordModel(List<ChartChordNode> nodes, List<ChartChordLink> links, double centerX, double centerY, double radius, double thickness) {
+    internal ChartChordModel(List<ChartChordNode> nodes, List<ChartChordLink> links, double centerX, double centerY, double radius, double thickness, double tension) {
         Nodes = nodes; Links = links; CenterX = centerX; CenterY = centerY; OuterRadius = radius; InnerRadius = radius * (1 - thickness);
+        // 1 - .8 is not the same binary value as .2; keep legacy controls byte-identical at the default.
+        ControlPointRatio = tension == .8 ? .2 : 1 - tension;
     }
     internal IReadOnlyList<ChartChordNode> Nodes { get; }
     internal IReadOnlyList<ChartChordLink> Links { get; }
@@ -105,6 +123,7 @@ internal sealed class ChartChordModel {
     internal double CenterY { get; }
     internal double OuterRadius { get; }
     internal double InnerRadius { get; }
+    internal double ControlPointRatio { get; }
     internal double WeightReference { get; set; }
     internal double NormalizedAngularScale { get; set; }
     internal double Angle(double weight) => WeightReference == 0 ? 0 : weight / WeightReference * NormalizedAngularScale;

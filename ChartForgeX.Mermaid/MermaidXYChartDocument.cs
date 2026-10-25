@@ -22,7 +22,12 @@ public sealed class MermaidXYChartDocument : MermaidDocument {
     public List<MermaidRawStatement> Statements { get; } = new();
 
     /// <summary>Gets or sets the requested chart orientation.</summary>
-    public ChartOrientation Orientation { get; set; }
+    public ChartOrientation Orientation {
+        get => _orientation;
+        set { _orientation = value; HasExplicitOrientation = true; }
+    }
+    private ChartOrientation _orientation;
+    internal bool HasExplicitOrientation { get; set; }
 
     /// <summary>Gets or sets the optional chart title.</summary>
     public string? Title { get; set; }
@@ -79,4 +84,7 @@ public sealed class MermaidXYChartSeries : MermaidAstNode {
 
     /// <summary>Gets parsed numeric values.</summary>
     public List<double> Values { get; } = new();
+
+    /// <summary>Gets explicitly quoted datum captions, indexed into Values. Bar captions are retained but not drawn by the Mermaid bar mapping.</summary>
+    public List<MermaidXYChartPointLabel> PointLabels { get; } = new();
 }

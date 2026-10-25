@@ -31,8 +31,8 @@ internal static partial class TopologyLayoutEngine {
         foreach (var group in chart.Groups) {
             var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
             var policy = ResolveDenseGroupPolicy(chart, group, nodes);
-            group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy));
-            group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy));
+            group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy, group));
+            group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy, group));
             sized.Add((group, nodes));
         }
 
@@ -120,7 +120,19 @@ internal static partial class TopologyLayoutEngine {
         return Math.Max(5, (int)Math.Ceiling(Math.Sqrt(count * 1.3)));
     }
 
-    private static double DenseGroupWidth(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroupLayoutPolicy policy) {
+    private static double DenseGroupWidth(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroupLayoutPolicy policy, TopologyGroup? group = null) {
+        if (policy == TopologyGroupLayoutPolicy.VerticalStack) {
+            var width = Math.Max(190, nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(142).Max() + 48);
+            var options = chart.RenderOptions ?? new TopologyRenderOptions();
+            if (group != null && group.ShowLabel && TopologyGroupHeader.IsDrawn(options)) {
+                var size = chart.Theme.Typography.DataLabelSize;
+                var reserve = 24 + TopologyGroupHeader.SymbolReserve(group, options);
+                width = Math.Max(width, DenseHeaderWidth(chart, group.Label, size, true, options) + reserve + 1);
+                if (!string.IsNullOrWhiteSpace(group.Subtitle)) width = Math.Max(width,
+                    DenseHeaderWidth(chart, group.Subtitle!, size * .85, false, options) + reserve + 1);
+            }
+            return width;
+        }
         if (nodes.Count == 0) return 190;
         if (policy == TopologyGroupLayoutPolicy.CollapsedDots) {
             const double dotSize = 22;
@@ -152,7 +164,9 @@ internal static partial class TopologyLayoutEngine {
         return Math.Max(190, 36 + branchColumns * Math.Max(70, branchMaxNodeWidth + 18));
     }
 
-    private static double DenseGroupHeight(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroupLayoutPolicy policy) {
+    private static double DenseGroupHeight(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroupLayoutPolicy policy, TopologyGroup? group = null) {
+        if (policy == TopologyGroupLayoutPolicy.VerticalStack) return Math.Max(170,
+            DenseStackHeaderHeight(chart, group) + nodes.Sum(node => TopologyNodeFootprint.Height(chart, node)) + Math.Max(0, nodes.Count - 1) * 16);
         if (nodes.Count == 0) return 170;
         if (policy == TopologyGroupLayoutPolicy.CollapsedDots) {
             const double dotSize = 22;

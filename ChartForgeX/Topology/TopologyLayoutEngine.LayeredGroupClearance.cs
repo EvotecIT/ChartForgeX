@@ -17,6 +17,7 @@ internal static partial class TopologyLayoutEngine {
         var origin = horizontal ? group.Y : group.X;
         var obstacles = placedGroups.Select(other => new ChartRect(other.X, other.Y, other.Width, other.Height))
             .Concat(outsiders.Select(node => {
+                if (chart.RenderOptions is {} options && TopologyNodeFootprint.ExplicitOccupiedBounds(node, options) is {} occupied) return occupied;
                 var width = TopologyNodeFootprint.Width(chart, node);
                 return new ChartRect(node.X + (node.Width - width) / 2, node.Y, width, TopologyNodeFootprint.Height(chart, node));
             }))

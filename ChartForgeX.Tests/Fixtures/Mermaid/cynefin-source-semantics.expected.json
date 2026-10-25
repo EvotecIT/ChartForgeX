@@ -1,0 +1,36 @@
+{
+  "cynefinFacts": {
+    "title": "\"Quoted title\"",
+    "domains": [
+      [
+        "complex",
+        [
+          "Don't",
+          "a\nb\tu1234"
+        ]
+      ],
+      [
+        "clear",
+        [
+          "Ready"
+        ]
+      ],
+      [
+        "confusion",
+        [
+          "One",
+          "Two",
+          "Three",
+          "Four"
+        ]
+      ]
+    ],
+    "transitions": [
+      [
+        "complex",
+        "clear",
+        "Choose \"one\""
+      ]
+    ]
+  }
+}

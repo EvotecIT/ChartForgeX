@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualMapCompiler {
     private static void Dotted(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var series = chart.Series[0]; var viewport = chart.Options.MapViewport;
-        var longitudeSpan = viewport.MaximumLongitude - viewport.MinimumLongitude; var latitudeSpan = viewport.MaximumLatitude - viewport.MinimumLatitude;
+        var longitudeSpan = viewport.LongitudeSpan; var latitudeSpan = viewport.MaximumLatitude - viewport.MinimumLatitude;
         if (!Finite(longitudeSpan) || !Finite(latitudeSpan) || longitudeSpan <= 0 || latitudeSpan <= 0)
             throw new InvalidOperationException("A dotted map viewport must have positive longitude and latitude spans.");
         foreach (var point in series.RenderPoints) ValidateCoordinate(point);
@@ -25,7 +25,8 @@ internal static partial class VisualMapCompiler {
         var dot = Math.Min(UsesCompactMapDot(viewport) ? 3.6 : 5.2,
             Math.Min(initial.Width / Math.Max(1, longitudeSpan / 3.5), initial.Height / Math.Max(1, latitudeSpan / 3.5)) * .42);
         var maxRadius = series.MarkerRadius ?? PointRadius(dot, valued.Length > 0 ? max : (double?)null, min, max);
-        var map = Fit(plot, longitudeSpan, latitudeSpan, Math.Max(dot * 2.45, maxRadius * 1.85) + Math.Max(1, dot * .55) / 2);
+        var map = Fit(plot, longitudeSpan, latitudeSpan, Math.Max(MapCalloutInset(chart, plot),
+            Math.Max(dot * 2.45, maxRadius * 1.85) + Math.Max(1, dot * .55) / 2));
         var labels = new List<MapLabel>(); var obstacles = new List<LabelObstacle>();
         using (builder.PushGroup("series-0", "dotted-map", new Dictionary<string, string> {
             ["role"] = "group", ["aria-label"] = chart.Options.Labels.Describe(DescriptionFacts(chart, true)),
@@ -52,10 +53,16 @@ internal static partial class VisualMapCompiler {
         if (!Finite(point.X) || !Finite(point.Y) || point.X < -180 || point.X > 180 || point.Y < -90 || point.Y > 90)
             throw new InvalidOperationException("Map coordinates must be finite longitude/latitude in their geographic ranges.");
     }
-    private static bool Visible(ChartPoint point, ChartMapViewport viewport) => point.X >= viewport.MinimumLongitude && point.X <= viewport.MaximumLongitude && point.Y >= viewport.MinimumLatitude && point.Y <= viewport.MaximumLatitude;
-    private static ChartPoint Geographic(ChartPoint point, ChartMapViewport viewport, ChartRect map) => new(
-        map.Left + (point.X - viewport.MinimumLongitude) / (viewport.MaximumLongitude - viewport.MinimumLongitude) * map.Width,
-        map.Top + (viewport.MaximumLatitude - point.Y) / (viewport.MaximumLatitude - viewport.MinimumLatitude) * map.Height);
+    private static bool Visible(ChartPoint point, ChartMapViewport viewport) => viewport.CrossesAntimeridian ? ChartGeographicProjection.Contains(point, viewport)
+        : point.X >= viewport.MinimumLongitude && point.X <= viewport.MaximumLongitude && point.Y >= viewport.MinimumLatitude && point.Y <= viewport.MaximumLatitude;
+    private static ChartPoint Geographic(ChartPoint point, ChartMapViewport viewport, ChartRect map) {
+        if (viewport.CrossesAntimeridian) {
+            var projection = viewport.GeographicProjection ?? ChartMapGeoJsonProjection.Equirectangular;
+            return Project(ChartGeographicProjection.Project(point.X, point.Y, projection, viewport), ChartGeographicProjection.Bounds(viewport, projection), map);
+        }
+        return new ChartPoint(map.Left + (point.X - viewport.MinimumLongitude) / (viewport.MaximumLongitude - viewport.MinimumLongitude) * map.Width,
+            map.Top + (viewport.MaximumLatitude - point.Y) / (viewport.MaximumLatitude - viewport.MinimumLatitude) * map.Height);
+    }
     private static double PointRadius(double dot, double? value, double min, double max) => value.HasValue
         ? Math.Max(Math.Min(3, dot * 1.35), dot * (1.15 + VisualRadialPrimitives.Clamp((value.Value - min) / (max > min ? max - min : 1)) * 1.05)) : dot * 1.35;
 

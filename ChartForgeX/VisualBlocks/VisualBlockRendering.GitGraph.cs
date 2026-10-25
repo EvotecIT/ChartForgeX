@@ -37,10 +37,12 @@ internal static partial class VisualBlockRendering {
             }
 
             if (commit.SourceCommitId.Length > 0 && !commits.Contains(commit.SourceCommitId)) throw new InvalidOperationException("Git graph cherry-pick source id was not found: " + commit.SourceCommitId + ".");
+
         }
     }
 
     public static GitGraphLayout BuildGitGraphLayout(GitGraphBlock graph, ChartRect content, double y, double bottomPadding, double totalHeight) {
+        if (graph.Direction != GitGraphDirection.LeftToRight) return BuildVerticalGitGraphLayout(graph, content, y, bottomPadding, totalHeight);
         var orderedBranches = OrderedGitGraphBranches(graph);
         var laneYs = new Dictionary<string, double>(StringComparer.Ordinal);
         var availableHeight = Math.Max(32, totalHeight - bottomPadding - y);
@@ -65,16 +67,17 @@ internal static partial class VisualBlockRendering {
 
         var placements = new List<GitGraphCommitPlacement>(graph.Commits.Count);
         var byId = new Dictionary<string, GitGraphCommitPlacement>(StringComparer.Ordinal);
-        var step = graph.Commits.Count <= 1 ? 0 : plotWidth / Math.Max(1, graph.Commits.Count - 1);
+        var columns = GitGraphColumns(graph, out var lastColumn);
+        var step = lastColumn == 0 ? 0 : plotWidth / lastColumn;
         for (var index = 0; index < graph.Commits.Count; index++) {
             var commit = graph.Commits[index];
-            var x = plotX + index * step;
+            var x = plotX + columns[index] * step;
             var placement = new GitGraphCommitPlacement(commit, index, x, laneYs[commit.BranchName]);
             placements.Add(placement);
             byId[commit.Id] = placement;
         }
 
-        return new GitGraphLayout(orderedBranches, laneYs, placements, byId, plotX, plotX + plotWidth, fontScale);
+        return new GitGraphLayout(orderedBranches, laneYs, placements, byId, plotX, plotX + plotWidth, fontScale, graph.Direction);
     }
 
     public static double GitCommitRadius(GitGraphCommit commit, double fontScale) => commit.Type switch {
@@ -94,12 +97,12 @@ internal static partial class VisualBlockRendering {
         });
     }
 
-    public static GitTagMetrics GitTag(GitGraphLayout layout, ResolvedVisualTheme theme, string tag, double x, double y, double radius) {
-        var font = GitFontSize(layout, theme, tag, 9.5, 86);
+    public static GitTagMetrics GitTag(GitGraphLayout layout, ResolvedVisualTheme theme, string tag, double x, double y, double radius, double maximumWidth = 96) {
+        var font = GitFontSize(layout, theme, tag, 9.5, Math.Max(1, maximumWidth - 10));
         var scale = font / 9.5;
         var inset = Math.Min(5, 5 * scale);
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = font, LineHeight = 1 };
-        var width = Math.Min(96, Math.Max(38, TextLayoutEngine.Measure(SingleLineText(tag), style).Width + inset * 2));
+        var width = Math.Min(maximumWidth, Math.Max(Math.Min(38, maximumWidth), TextLayoutEngine.Measure(SingleLineText(tag), style).Width + inset * 2));
         var top = y - radius - 24 * scale;
         return new GitTagMetrics(new ChartRect(x - width / 2, top, width, 18 * scale), font, inset, top + 12.5 * scale);
     }
@@ -138,7 +141,7 @@ internal static partial class VisualBlockRendering {
     }
 
     public sealed class GitGraphLayout {
-        public GitGraphLayout(IReadOnlyList<GitGraphBranch> branches, IReadOnlyDictionary<string, double> laneYs, IReadOnlyList<GitGraphCommitPlacement> placements, IReadOnlyDictionary<string, GitGraphCommitPlacement> placementsById, double plotX, double plotRight, double fontScale) {
+        public GitGraphLayout(IReadOnlyList<GitGraphBranch> branches, IReadOnlyDictionary<string, double> laneYs, IReadOnlyList<GitGraphCommitPlacement> placements, IReadOnlyDictionary<string, GitGraphCommitPlacement> placementsById, double plotX, double plotRight, double fontScale, GitGraphDirection direction, double laneSpacing = 0) {
             Branches = branches;
             LaneYs = laneYs;
             Placements = placements;
@@ -146,6 +149,8 @@ internal static partial class VisualBlockRendering {
             PlotX = plotX;
             PlotRight = plotRight;
             FontScale = fontScale;
+            Direction = direction;
+            LaneSpacing = laneSpacing;
         }
 
         public IReadOnlyList<GitGraphBranch> Branches { get; }
@@ -155,6 +160,9 @@ internal static partial class VisualBlockRendering {
         public double PlotX { get; }
         public double PlotRight { get; }
         public double FontScale { get; }
+        public GitGraphDirection Direction { get; }
+        public double LaneSpacing { get; }
+        public bool Vertical => Direction != GitGraphDirection.LeftToRight;
     }
 
     public readonly struct GitGraphCommitPlacement {

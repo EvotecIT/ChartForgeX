@@ -9,14 +9,13 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     /// <summary>Paints the independently measured top value axis of a horizontal Cartesian mixture.</summary>
     private static void DrawSecondaryHorizontalAxis(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        ChartRect plot, ChartRect viewport, ChartRange range, ChartMapper map, AxisLabelCache labels, VisualThemeColors colors,
+        ChartRect plot, ChartRect viewport, ChartRange range, ChartMapper map, ChartRange primaryRange, ChartMapper primaryMap, AxisLabelCache labels, VisualThemeColors colors,
         TextStyle style, double spacing) {
         var axis = chart.Options.SecondaryXAxis;
-        if (!axis.Visible) return;
+        if (!axis.Visible || axis.CrossAt.HasValue) return;
         labels.IncludeValueTicks(axis, range.MinX, range.MaxX);
         var ticks = labels.Ticks(axis, range.MinX, range.MaxX);
-        if (axis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Right, plot.Top, colors.Axis, context.Theme.AxisStrokeWidth,
-            role: "axis-secondary-x", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
+        if (axis.ShowLine) DrawAxisRule(chart, context, builder, plot, primaryRange, primaryMap, axis, true, plot.Top, colors, "axis-secondary-x");
         var height = TickMetrics(builder, axis, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, labels).Height;
         var bounds = new ChartRect(viewport.Left, Math.Max(viewport.Top, plot.Top - spacing - height), viewport.Width,
             Math.Max(0, Math.Min(height, plot.Top - viewport.Top - spacing)));

@@ -12,6 +12,7 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
+    const reflow = metadata.visibility?.layout === 'reflow';
     const annotations = annotationCatalog(svg, metadata);
     svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
       node._cfxAnnotationId = annotations.get(node);
@@ -23,6 +24,21 @@
     if (grouped.length) root._cfxCategoryPaths = new Map(grouped.map(item => [item.value, Object.freeze([...item.groups, item.text])]));
     else delete root._cfxCategoryPaths;
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
+
+    if (metadata.hierarchy?.kind === 'topology') {
+      const facts = new Map(metadata.hierarchy.nodes.map(node => [node.id, node]));
+      const nativeRegions = new Map((metadata.regions || []).filter(region => region.role === 'topology-node').map(region => [region.id, region]));
+      const parents = new Set(metadata.hierarchy.nodes.map(node => node.parentId));
+      const collapsed = new Set(metadata.hierarchy.collapsedNodeIds);
+      svg.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]').forEach(node => {
+        const id = node.dataset.nodeId, fact = facts.get(id), region = nativeRegions.get(id); if (!fact || !region) return;
+        node.dataset.cfxNode = id; node.dataset.cfxTargetKind = 'node'; node.dataset.cfxTargetId = id;
+        node.dataset.cfxKind = 'topology'; node.dataset.cfxLabel = fact.label;
+        node.dataset.cfxLeaf = parents.has(id) ? 'false' : 'true';
+        node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
+        if (parents.has(id)) node.setAttribute('aria-expanded', collapsed.has(id) ? 'false' : 'true');
+      });
+    }
 
     const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
     const plot = plots.length === 1 ? plots[0] : null;
@@ -52,7 +68,7 @@
       const region = regions.get(source);
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
-      if (reference) {
+      if (reference && !reflow) {
         const mark = referencedTargetNode(svg, { ...reference, seriesKey: data.cfxSeriesKey });
         if (mark) {
           data.cfxLabel = mark.dataset.cfxLabel || data.cfxLabel;
@@ -66,14 +82,17 @@
         const collectionKey = index + ':' + data.cfxPoint;
         const observationId = observationIds.get(collectionKey);
         const facts = sourceFacts.get(collectionKey);
-        if (observationId !== undefined && !facts?.derived) data.cfxObservationId = observationId;
-        if (facts) {
+        if (!reflow && observationId !== undefined && !facts?.derived) data.cfxObservationId = observationId;
+        if (!reflow && facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
           if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
           if (data.cfxDerivedIdentity === undefined) data.cfxDerivedIdentity = facts.identity;
           if (data.cfxGroupIndex === undefined && facts.groupIndex !== undefined) data.cfxGroupIndex = facts.groupIndex;
           if (data.cfxGroupId === undefined && facts.groupId !== undefined) data.cfxGroupId = facts.groupId;
         }
+      }
+      if (reflow && data.cfxPoint !== undefined) {
+        data.cfxLegendTargetKind = 'point'; data.cfxLegendTargetId = pointTargetId(node);
       }
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"],[data-cfx-role="circle-chart"]').forEach((node) => {
@@ -89,7 +108,7 @@
       if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      // Imputed zero: no ID; retain peer category IDs.
+
 
       if (data.cfxDerived === 'missing-category-zero') {
         data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);

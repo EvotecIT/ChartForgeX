@@ -4,11 +4,11 @@ using Microsoft.Playwright;
 namespace ChartForgeX.Tests;
 
 public sealed partial class MermaidNotationReferenceRenderingTests {
-    private static async Task<JsonElement> ObserveAsync(IPage page, string source, string key, bool dark, Dictionary<string, int> regions) {
+    private static async Task<JsonElement> ObserveAsync(IPage page, string source, string key, bool dark, Dictionary<string, int> regions,string? preset=null,string? look=null,bool omitAppearance=false) {
         var json = await page.EvaluateAsync<string>("""
-            async ({source,key,dark,regions,fontFamily}) => {
+            async ({source,key,dark,regions,fontFamily,preset,look,omitAppearance}) => {
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,
-                    theme:dark?'dark':'default',layout:'dagre',look:'classic',flowchart:{htmlLabels:true}});
+                    ...(omitAppearance?{}:{theme:preset??(dark?'dark':'default'),look:look??'classic'}),layout:'dagre',flowchart:{htmlLabels:true}});
                 const result=await mermaid.render('notation-reference-diagram',source);
                 document.querySelector('#reference').innerHTML=result.svg;
                 const reference=document.querySelector('#reference svg');
@@ -41,9 +41,9 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
                     hosts:[...document.querySelectorAll('section')].map(host=>({width:host.clientWidth,scrollWidth:host.scrollWidth})),
                     horizontalOverflow:document.documentElement.scrollWidth>innerWidth,
                     nativeScripts:native.querySelectorAll('script,foreignObject').length,
-                    referenceLayout:'dagre',referenceLook:'classic'});
+                    referenceLayout:'dagre',referenceLook:omitAppearance?'omitted':look??'classic'});
             }
-            """, new { source, key, dark, regions, fontFamily = BrowserProofFonts.Family });
+            """, new { source, key, dark, regions, fontFamily = BrowserProofFonts.Family,preset,look,omitAppearance });
         using var observed = JsonDocument.Parse(json);
         return observed.RootElement.Clone();
     }

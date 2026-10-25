@@ -16,9 +16,7 @@ public sealed partial class ChartSeries {
         RequireObservationKind(ChartSeriesKind.DottedMap);
         if (connectors == null) throw new ArgumentNullException(nameof(connectors));
         var snapshot = new List<ChartMapConnector>();
-        foreach (var connector in connectors) snapshot.Add(connector.RoutePoints.Count > 0
-            ? new ChartMapConnector(connector.Label, connector.RoutePoints, connector.Color)
-            : new ChartMapConnector(connector.Label, connector.FromLongitude, connector.FromLatitude, connector.ToLongitude, connector.ToLatitude, connector.Color));
+        foreach (var connector in connectors) snapshot.Add(connector.ValidatedCopy());
         _mapConnectors = snapshot.AsReadOnly();
         return this;
     }

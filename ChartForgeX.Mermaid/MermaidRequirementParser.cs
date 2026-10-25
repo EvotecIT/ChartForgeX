@@ -74,6 +74,8 @@ internal static partial class MermaidRequirementParser {
             ValidateRelationshipEndpoint(relationship.TargetName, requirements, elements, relationship.Span, "target", result);
         }
         ApplyStyles(document, requirements, elements, result);
+        foreach (var item in document.Requirements) MermaidInlineCaption.Diagnose(item.Name, item.Span, result, "Requirement name", markdownByDefault: true);
+        foreach (var item in document.Elements) MermaidInlineCaption.Diagnose(item.Name, item.Span, result, "Requirement element name", markdownByDefault: true);
         if (document.Requirements.Count == 0 && document.Elements.Count == 0) Invalid("Mermaid requirement diagrams require at least one requirement or element.", document.HeaderSpan);
         void Invalid(string message, MermaidSourceSpan span) => MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidStatement);
     }
@@ -81,7 +83,10 @@ internal static partial class MermaidRequirementParser {
     private static void ReadRequirementField(MermaidRequirementNode requirement, string key, string value, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         switch (NormalizeKey(key)) {
             case "id": requirement.RequirementId = value; return;
-            case "text": requirement.Text = value; return;
+            case "text":
+                requirement.Text = value;
+                MermaidInlineCaption.Diagnose(value, span, result, "Requirement", markdownByDefault: true);
+                return;
             case "risk":
                 requirement.Risk = value;
                 if (!IsOneOf(value, "low", "medium", "high")) Invalid("Requirement risk must be Low, Medium, or High.");

@@ -20,39 +20,33 @@ internal static partial class VisualGaugeCompiler {
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         if (!chart.Series[0].HasSourceData) { builder.AddDiagnostic(new VisualDiagnostic("gauge.no-data", "Gauge charts need one measured value.")); return; }
-        var colors = context.Theme.Resolve(context.ThemeMode);
-        var data = Read(chart, colors);
-        var series = chart.Series[0]; var options = chart.Options.Gauge;
-        var authoredValue = series.PointLabels.Count > 0 ? series.PointLabels[0] : null;
-        var showValue = series.ResolveDataLabels(chart.Options, defaultVisible: true);
-        var caption = options.Caption ?? series.Name;
-        var scaleValues = ScaleValues(chart, data);
-        var retainedValues = new List<double>(data.Targets.Select(target => target.Value));
-        if (authoredValue == null && showValue) retainedValues.Add(data.Raw);
-        var requestedValues = scaleValues.Where(number => ExplicitScaleLabel(options, number) == null).Concat(retainedValues);
-        // One caption per requested numeric fact keeps a shared value/target/tick consistent and resolves callbacks once.
-        var distinctValues = requestedValues.Distinct().ToArray();
-        var format = chart.Options.ValueFormat;
-        var formatted = distinctValues.Length == 0 ? Array.Empty<string>() : ChartNumericFormatter.FormatScaleValues(format, distinctValues);
-        var captions = new Dictionary<double, string>();
-        for (var index = 0; index < distinctValues.Length; index++) captions[distinctValues[index]] = formatted[index];
-        var scaleCaptions = scaleValues.Select(number => ExplicitScaleLabel(options, number) ?? captions[number]).ToArray();
-        FitGeneratedScale(chart, context, builder, plot, data, format, retainedValues, captions, ref scaleValues, ref scaleCaptions);
-        var value = authoredValue ?? (showValue ? captions[data.Raw] : N(data.Raw));
-        var targetCaptions = data.Targets.Select(target => target.Label ?? captions[target.Value]).ToArray();
+        builder.CaptureValue(new GaugePlan(chart, context, builder, plot));
+    }
+
+    /// <summary>Ordinary and captured observations use the same finite native gauge painter.</summary>
+    private static void Paint(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        GaugeData data, GaugePresentation presentation) {
+        var options = chart.Options; var value = presentation.Value; var caption = chart.Caption;
+        var scaleValues = presentation.ScaleValues; var scaleCaptions = presentation.ScaleCaptions;
+        var targetCaptions = presentation.TargetCaptions; var captions = presentation.Captions;
         var target = targetCaptions.Length > 0 ? targetCaptions[0] : null;
         var min = scaleCaptions.Length > 0 ? scaleCaptions[0] : null;
         var max = scaleCaptions.Length > 0 ? scaleCaptions[scaleCaptions.Length - 1] : null;
-        builder.AddRegion(new VisualSemanticRegion("series-0", "gauge", plot, series.Name + ": " + value));
+        builder.AddRegion(new VisualSemanticRegion("series-0", "gauge", plot, chart.Name + ": " + value));
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-point"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
             ["data-cfx-value"] = N(data.Raw), ["data-cfx-min"] = N(data.Min), ["data-cfx-max"] = N(data.Max),
             ["data-cfx-percent"] = N(data.Ratio), ["data-cfx-status"] = data.State.ToString(),
-            ["data-cfx-label-target"] = chart.Options.Labels.Target,
-            ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors ? "true" : "false",
-            ["aria-label"] = series.Name + ": " + value
+            ["data-cfx-label-target"] = chart.LabelTarget,
+            ["data-cfx-pin-state-colors"] = chart.PinStateColors ? "true" : "false",
+            ["aria-label"] = chart.Name + ": " + value
         };
         CaptureTargets(metadata, data, captions);
+        if (chart.Captured) {
+            metadata["data-cfx-series-key"] = chart.SeriesKey; metadata["data-cfx-series-scope"] = chart.Local ? "local" : "shared";
+            if (chart.ObservationId != null) metadata["data-cfx-observation-id"] = chart.ObservationId;
+            if (chart.AuthoredValue != null) metadata["data-cfx-authored-label"] = chart.AuthoredValue;
+        }
         using (builder.PushGroup("series-0", "gauge", metadata)) {
             for (var index = 0; index < data.Targets.Count; index++) ReferenceFact(builder, data, index, plot, captions[data.Targets[index].Value]);
             if (plot.Width <= 0 || plot.Height <= 0) { builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "No content viewport remains for the gauge.")); return; }
@@ -61,7 +55,7 @@ internal static partial class VisualGaugeCompiler {
                     Vertical(chart, context, builder, plot, data, value, caption, scaleValues, scaleCaptions, targetCaptions);
                 else if (options.Form == ChartGaugeForm.Linear)
                     Linear(chart, context, builder, plot, data, value, caption, target, scaleCaptions, scaleValues, targetCaptions);
-                else if (ConfiguredCircular(options) || data.Targets.Count > 1)
+                else if (options.Form == ChartGaugeForm.ArcWithNeedle || ConfiguredCircular(options) || data.Targets.Count > 1)
                     CircularConfigured(chart, context, builder, plot, data, value, caption, scaleValues, scaleCaptions, targetCaptions);
                 else Circular(chart, context, builder, plot, data, value, caption, target, min, max);
             }
@@ -78,18 +72,22 @@ internal static partial class VisualGaugeCompiler {
         var bands = chart.Options.Gauge.Bands.OrderBy(band => band?.Minimum).ToArray();
         if (bands.Any(band => band == null)) throw new InvalidOperationException("Gauge bands must not contain null.");
         for (var index = 1; index < bands.Length; index++) if (bands[index].Minimum < bands[index - 1].Maximum) throw new InvalidOperationException("Gauge bands must not overlap.");
-        var bounded = VisualRadialPrimitives.Clamp(raw, min, max); var ratio = (bounded - min) / (max - min);
-        var active = bands.FirstOrDefault(band => bounded >= band.Minimum && (bounded < band.Maximum || bounded == max && bounded == band.Maximum));
-        // A numeric value has no implied severity until the caller declares bands or a state.
-        var state = active?.State ?? ChartSeriesState.None;
-        if (series.StateRole != ChartSeriesState.None) state = series.StateRole;
-        var color = series.PointColors.Count > 0 && series.PointColors[0].HasValue ? series.PointColors[0]!.Value
-            : series.Color ?? (series.StateRole != ChartSeriesState.None || state is ChartSeriesState.Warning or ChartSeriesState.Danger
-                ? VisualRadialPrimitives.StateColor(colors, state, colors.Palette[0]) : colors.Palette[0]);
-        return new GaugeData(min, max, raw, ratio, state, color, bands, reading.Targets);
+        return ReadData(min, max, raw, series.StateRole, series.PointColors.Count > 0 ? series.PointColors[0] : null,
+            series.Color, bands, reading.Targets, colors);
     }
 
-    private static void Circular(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data,
+    /// <summary>One typed native state/color calculation serves ordinary reads and every captured raw reading.</summary>
+    private static GaugeData ReadData(double min, double max, double raw, ChartSeriesState declaredState, ChartColor? pointColor,
+        ChartColor? seriesColor, ChartGaugeBand[] bands, IReadOnlyList<ChartGaugeTarget> targets, VisualThemeColors colors) {
+        var bounded = VisualRadialPrimitives.Clamp(raw, min, max); var ratio = (bounded - min) / (max - min);
+        var active = bands.FirstOrDefault(band => bounded >= band.Minimum && (bounded < band.Maximum || bounded == max && bounded == band.Maximum));
+        var state = declaredState != ChartSeriesState.None ? declaredState : active?.State ?? ChartSeriesState.None;
+        var color = pointColor ?? seriesColor ?? (declaredState != ChartSeriesState.None || state is ChartSeriesState.Warning or ChartSeriesState.Danger
+            ? VisualRadialPrimitives.StateColor(colors, state, colors.Palette[0]) : colors.Palette[0]);
+        return new GaugeData(min, max, raw, ratio, state, color, bands, targets);
+    }
+
+    private static void Circular(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data,
         string value, string caption, string? target, string? min, string? max) {
         var colors = context.Theme.Resolve(context.ThemeMode); var gap = context.Theme.Spacing;
         var labelHeight = context.Theme.Typography.AxisSize * 1.5;
@@ -101,23 +99,21 @@ internal static partial class VisualGaugeCompiler {
         var stroke = Math.Min(context.Theme.GaugeStrokeWidth, outer * .3);
         var bandWidth = Math.Min(context.Theme.GaugeBandWidth, outer * .1);
         var radius = Math.Max(stroke / 2, outer - stroke / 2 - (data.Bands.Length > 0 ? bandWidth + gap / 2 : 0));
-        var start = Start(chart.Options.Gauge); var sweep = Sweep(chart.Options.Gauge);
+        var start = Start(chart.Options); var sweep = Sweep(chart.Options);
         VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep, colors.Neutral2, "gauge-track", paint: SvgPaint.Of(colors.Neutral2, SvgColorRole.Surface));
         for (var index = 0; index < data.Bands.Length; index++) {
             var band = data.Bands[index];
-            var lo = VisualRadialPrimitives.Clamp((band.Minimum - data.Min) / (data.Max - data.Min));
-            var hi = VisualRadialPrimitives.Clamp((band.Maximum - data.Min) / (data.Max - data.Min));
+            BandRatios(chart, data, band, outer - bandWidth / 2, true, out var lo, out var hi);
             using var source = Band(builder, band, index, new ChartRect(cx - outer, cy - outer, outer * 2, outer * 1.5));
             VisualRadialPrimitives.Arc(builder, cx, cy, outer - bandWidth / 2, bandWidth, start + sweep * lo, sweep * (hi - lo),
-                VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent), "gauge-band",
-                paint: SvgPaint.Of(VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent), band.State == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status));
+                BandColor(colors, band), "gauge-band", paint: BandPaint(colors, band));
         }
-        if (chart.Options.Gauge.Form == ChartGaugeForm.Arc)
-            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep * data.Ratio, data.Color, "gauge-value", "series-0-value", paint: GaugePaint(chart.Series[0], data));
-        else {
+        if (chart.Options.Form is ChartGaugeForm.Arc or ChartGaugeForm.ArcWithNeedle)
+            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep * data.Ratio, data.Color, "gauge-value", "series-0-value", paint: chart.ValuePaint(data));
+        if (chart.Options.Form is ChartGaugeForm.Needle or ChartGaugeForm.ArcWithNeedle) {
             var angle = start + sweep * data.Ratio;
-            builder.Line(cx, cy, cx + Math.Cos(angle) * (radius - stroke), cy + Math.Sin(angle) * (radius - stroke), data.Color,
-                Math.Max(1, context.Theme.SeriesStrokeWidth), "gauge-needle", paint: VisualChartPaint.Stroke(GaugePaint(chart.Series[0], data)));
+            builder.Line(cx, cy, cx + Math.Cos(angle) * (radius - stroke), cy + Math.Sin(angle) * (radius - stroke), chart.Options.NeedleColor ?? data.Color,
+                Math.Max(1, context.Theme.SeriesStrokeWidth), "gauge-needle", paint: VisualChartPaint.Stroke(NeedlePaint(chart, data)));
             builder.Ellipse(cx, cy, stroke / 3, stroke / 3, colors.Foreground, role: "gauge-pivot", paint: VisualChartPaint.Fill(colors.Foreground, SvgColorRole.Axis));
         }
         foreach (var reference in data.Targets) {
@@ -126,17 +122,17 @@ internal static partial class VisualGaugeCompiler {
                 cx + Math.Cos(angle) * (radius + stroke / 2 + bandWidth), cy + Math.Sin(angle) * (radius + stroke / 2 + bandWidth),
                 colors.Foreground, context.Theme.SeriesStrokeWidth, "gauge-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Axis));
         }
-        if (chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true)) {
-            var needle = chart.Options.Gauge.Form == ChartGaugeForm.Needle;
+        if (chart.ShowValue) {
+            var needle = chart.Options.Form == ChartGaugeForm.Needle;
             var captionBottom = Math.Min(plot.Bottom, cy + radius * .5 + stroke / 2);
             // Below-pivot summaries can use the gap before the scale row, including taller resolved faces.
             if (needle) captionBottom = min != null ? CircularScaleLabelTop(plot, cy, radius, stroke, gap, labelHeight) : plot.Bottom;
             var valueBudget = radius * (needle ? .34 : .6);
             var valueTop = needle ? cy + stroke / 3 + gap / 2 : 0;
             if (needle) {
-                var desiredCaptionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground,
+                var desiredCaptionStyle = chart.Style(colors.MutedForeground,
                     context.Theme.Typography.DataLabelSize, point: 0);
-                var captionHeight = string.IsNullOrEmpty(caption) ? 0 : builder.MeasureText(caption, desiredCaptionStyle).Height;
+                var captionHeight = string.IsNullOrEmpty(caption) ? 0 : chart.Measure(builder, caption, desiredCaptionStyle).Height;
                 // The needle summary sits below its pivot; reserve its real caption row before fitting the scalar.
                 valueBudget = Math.Min(valueBudget, Math.Max(0, captionBottom - valueTop - gap / 3 - captionHeight));
             }
@@ -145,31 +141,31 @@ internal static partial class VisualGaugeCompiler {
             var captionTop = 0d;
             if (needle) valueStyle = FitNeedleSummary(chart, context, builder, value, caption, start + sweep * data.Ratio,
                 cy, radius, stroke, captionBottom, valueBudget, out valueTop, out valueBudget, out captionTop);
-            var valueHeight = Math.Min(valueBudget, builder.MeasureText(value, valueStyle).Height);
+            var valueHeight = Math.Min(valueBudget, chart.Measure(builder, value, valueStyle).Height);
             if (!needle) { valueTop = cy - valueHeight / 2; captionTop = valueTop + valueHeight + gap / 3; }
-            VisualRadialPrimitives.Text(builder, value, new ChartRect(cx - radius * .7, valueTop, radius * 1.4, valueHeight),
+            chart.Text(builder, value, new ChartRect(cx - radius * .7, valueTop, radius * 1.4, valueHeight),
                 valueStyle, "gauge-label", "series-0-gauge-label");
             var captionStyle = LabelStyle(chart, context, builder, caption, Math.Max(0, captionBottom - captionTop),
                 context.Theme.Typography.DataLabelSize, muted: true, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
-            VisualRadialPrimitives.Text(builder, caption, new ChartRect(cx - radius * .75, captionTop, radius * 1.5,
-                Math.Max(0, Math.Min(builder.MeasureText(caption, captionStyle).Height, captionBottom - captionTop))),
+            chart.Text(builder, caption, new ChartRect(cx - radius * .75, captionTop, radius * 1.5,
+                Math.Max(0, Math.Min(chart.Measure(builder, caption, captionStyle).Height, captionBottom - captionTop))),
                 captionStyle, "gauge-title", "series-0-gauge-title");
         }
         CircularLabels(chart, context, builder, plot, data, target, min, max, cx, cy, radius, stroke, start, sweep, labelHeight);
     }
 
-    private static TextStyle FitNeedleSummary(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
+    private static TextStyle FitNeedleSummary(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder,
         string value, string caption, double angle, double cy, double radius, double stroke,
         double bottom, double maximumHeight, out double top, out double permittedHeight, out double captionTop) {
         var gap = context.Theme.Spacing;
         var captionStyle = LabelStyle(chart, context, builder, caption, bottom - cy,
             context.Theme.Typography.DataLabelSize, muted: true, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
-        var captionHeight = string.IsNullOrEmpty(caption) ? 0 : builder.MeasureText(caption, captionStyle).Height;
+        var captionHeight = string.IsNullOrEmpty(caption) ? 0 : chart.Measure(builder, caption, captionStyle).Height;
         TextStyle Style(double height) => LabelStyle(chart, context, builder, value, height,
             context.Theme.Typography.ScalarValueSize, 700, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
         double ClearTop(string text, TextStyle style, double width) {
-            var fitted = ChartTextFitting.TrimEnd(text, style.FontSize, width, (part, _) => builder.MeasureText(part, style).Width);
-            var measured = builder.MeasureText(fitted, style).Width;
+            var fitted = ChartTextFitting.TrimEnd(text, style.FontSize, width, (part, _) => chart.Measure(builder, part, style).Width);
+            var measured = chart.Measure(builder, fitted, style).Width;
             var portable = new TextMeasurementContext(style.Font);
             var displayed = TextCaseTransformer.Apply(fitted, style.TextCase, CultureInfo.InvariantCulture);
             var envelope = measured;
@@ -183,13 +179,13 @@ internal static partial class VisualGaugeCompiler {
                 ? Math.Min((radius - stroke) * down, half * down / sideways) : 0;
             // Browser SVG can use the face's Windows ascent even when the native painter uses
             // its shorter horizontal-header ascent. Move the shared row by that measured extent.
-            var ascenderOverflow = Math.Max(0, builder.TextAscentEnvelope(style) - builder.TextAscent(style));
+            var ascenderOverflow = Math.Max(0, chart.AscentEnvelope(builder, style) - chart.Ascent(builder, style));
             return cy + Math.Max(stroke / 3 + gap / 2,
                 depth + Math.Max(1, context.Theme.SeriesStrokeWidth) / 2 + gap / 2) + ascenderOverflow;
         }
         bool Fits(TextStyle style) {
             var start = ClearTop(value, style, radius * 1.4);
-            var height = builder.MeasureText(value, style).Height;
+            var height = chart.Measure(builder, value, style).Height;
             var captionStart = Math.Max(start + height + gap / 3, ClearTop(caption, captionStyle, radius * 1.5));
             return height <= maximumHeight + .000001 && captionStart + captionHeight <= bottom + .000001;
         }
@@ -207,12 +203,12 @@ internal static partial class VisualGaugeCompiler {
         var fits = Fits(result);
         top = fits ? ClearTop(value, result, radius * 1.4) : bottom;
         permittedHeight = fits ? maximumHeight : 0;
-        captionTop = fits ? Math.Max(top + builder.MeasureText(value, result).Height + gap / 3,
+        captionTop = fits ? Math.Max(top + chart.Measure(builder, value, result).Height + gap / 3,
             ClearTop(caption, captionStyle, radius * 1.5)) : bottom;
         return result;
     }
 
-    private static void CircularLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+    private static void CircularLabels(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         GaugeData data, string? target, string? min, string? max, double cx, double cy, double radius, double stroke,
         double start, double sweep, double height) {
         var gap = context.Theme.Spacing;
@@ -228,9 +224,9 @@ internal static partial class VisualGaugeCompiler {
         }
         if (target == null) return;
         var angle = start + sweep * Ratio(data, data.Targets[0].Value);
-        var style = VisualRadialPrimitives.Style(chart, context, context.Theme.Resolve(context.ThemeMode).MutedForeground,
+        var style = chart.Style(context.Theme.Resolve(context.ThemeMode).MutedForeground,
             context.Theme.Typography.AxisSize, ticks: true);
-        var width = Math.Min(plot.Width / 3, builder.MeasureText(target, style).Width + gap);
+        var width = Math.Min(plot.Width / 3, chart.Measure(builder, target, style).Width + gap);
         var outside = radius + stroke / 2 + gap + height / 2;
         var left = Math.Max(plot.Left, Math.Min(plot.Right - width, cx + Math.Cos(angle) * outside - width / 2));
         var labelTop = Math.Max(plot.Top, Math.Min(plot.Bottom - height, cy + Math.Sin(angle) * outside - height / 2));
@@ -246,19 +242,19 @@ internal static partial class VisualGaugeCompiler {
     private static double CircularScaleLabelTop(ChartRect plot, double cy, double radius, double stroke, double gap, double height) =>
         Math.Min(plot.Bottom - height, cy + radius * .5 + stroke / 2 + gap / 2);
 
-    private static void Linear(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data,
+    private static void Linear(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data,
         string value, string caption, string? target, IReadOnlyList<string> scaleCaptions, IReadOnlyList<double> scaleValues, IReadOnlyList<string> targetCaptions) {
         var colors = context.Theme.Resolve(context.ThemeMode); var gap = context.Theme.Spacing;
         var labelHeight = context.Theme.Typography.AxisSize * 1.5;
         if (scaleCaptions.Count > 0) {
-            var style = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
-            labelHeight = Math.Max(labelHeight, scaleCaptions.Max(text => builder.MeasureText(text, style).Height) + 3);
+            var style = chart.Style(colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
+            labelHeight = Math.Max(labelHeight, scaleCaptions.Max(text => chart.Measure(builder, text, style).Height) + 3);
         }
         if (targetCaptions.Count > 0) {
             var multiple = targetCaptions.Count > 1;
-            var style = VisualRadialPrimitives.Style(chart, context, multiple ? colors.MutedForeground : colors.Foreground,
+            var style = chart.Style(multiple ? colors.MutedForeground : colors.Foreground,
                 context.Theme.Typography.AxisSize, point: multiple ? -1 : 0, ticks: multiple);
-            labelHeight = Math.Max(labelHeight, targetCaptions.Max(text => builder.MeasureText(text, style).Height));
+            labelHeight = Math.Max(labelHeight, targetCaptions.Max(text => chart.Measure(builder, text, style).Height));
         }
         var height = Math.Min(plot.Height / 7, Math.Max(4, context.Theme.Typography.DataLabelSize * 1.4));
         var footerTop = plot.Bottom - labelHeight * ((scaleCaptions.Count > 0 ? 1 : 0) + (target != null ? 1 : 0));
@@ -272,43 +268,41 @@ internal static partial class VisualGaugeCompiler {
             minimumDefaultSize: context.Theme.Typography.DataLabelSize);
         var captionStyle = LabelStyle(chart, context, builder, caption, summaryBudget, context.Theme.Typography.DataLabelSize, muted: true,
             minimumDefaultSize: context.Theme.Typography.DataLabelSize);
-        var summaryHeight = !chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true) ? 0
-            : Math.Min(summaryBudget, Math.Max(builder.MeasureText(value, valueStyle).Height, builder.MeasureText(caption, captionStyle).Height));
+        var summaryHeight = !chart.ShowValue ? 0
+            : Math.Min(summaryBudget, Math.Max(chart.Measure(builder, value, valueStyle).Height, chart.Measure(builder, caption, captionStyle).Height));
         var trackTop = Math.Min(maximumTrackTop, Math.Max(plot.Top + plot.Height * .45, plot.Top + summaryHeight + gap / 3 + height / 2));
         var track = new ChartRect(plot.Left + gap, trackTop, Math.Max(0, plot.Width - gap * 2), height);
         if (track.Width <= 0 || height <= 0) { builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "The viewport is too small for a linear gauge.")); return; }
         builder.Rect(track, colors.Neutral2, role: "gauge-track", paint: VisualChartPaint.Fill(colors.Neutral2, SvgColorRole.Surface));
         for (var index = 0; index < data.Bands.Length; index++) {
             var band = data.Bands[index];
-            var lo = VisualRadialPrimitives.Clamp((band.Minimum - data.Min) / (data.Max - data.Min));
-            var hi = VisualRadialPrimitives.Clamp((band.Maximum - data.Min) / (data.Max - data.Min));
+            BandRatios(chart, data, band, track.Width, false, out var lo, out var hi);
             var bounds = new ChartRect(track.Left + track.Width * lo, track.Top, track.Width * (hi - lo), track.Height);
             using var source = Band(builder, band, index, bounds);
             builder.Rect(bounds,
-                VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent), role: "gauge-band",
-                paint: VisualChartPaint.Fill(VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent), band.State == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status));
+                BandColor(colors, band), role: "gauge-band", paint: VisualChartPaint.Fill(BandPaint(colors, band)));
         }
-        builder.Rect(new ChartRect(track.Left, track.Top + height / 3, track.Width * data.Ratio, height / 3), data.Color, role: "gauge-value", id: "series-0-value", paint: VisualChartPaint.Fill(GaugePaint(chart.Series[0], data)));
+        builder.Rect(new ChartRect(track.Left, track.Top + height / 3, track.Width * data.Ratio, height / 3), data.Color, role: "gauge-value", id: "series-0-value", paint: VisualChartPaint.Fill(chart.ValuePaint(data)));
         var x = track.Left + track.Width * data.Ratio;
         builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(x - height / 4, track.Top - height / 2),
-            ChartPathCommand.LineTo(x + height / 4, track.Top - height / 2), ChartPathCommand.LineTo(x, track.Top) }), data.Color, role: "gauge-value-marker", close: true, paint: VisualChartPaint.Fill(GaugePaint(chart.Series[0], data)));
+            ChartPathCommand.LineTo(x + height / 4, track.Top - height / 2), ChartPathCommand.LineTo(x, track.Top) }), data.Color, role: "gauge-value-marker", close: true, paint: VisualChartPaint.Fill(chart.ValuePaint(data)));
         foreach (var reference in data.Targets) {
             var tx = track.Left + track.Width * Ratio(data, reference.Value);
             builder.Line(tx, track.Top - height / 4, tx, track.Bottom + height / 4, colors.Foreground, context.Theme.SeriesStrokeWidth, "gauge-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Axis));
         }
-        if (chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true)) {
-            var valueWidth = Math.Min(track.Width * .6, builder.MeasureText(value, valueStyle).Width);
-            var captionWidth = Math.Min(Math.Max(0, track.Width - valueWidth - gap), builder.MeasureText(caption, captionStyle).Width);
+        if (chart.ShowValue) {
+            var valueWidth = Math.Min(track.Width * .6, chart.Measure(builder, value, valueStyle).Width);
+            var captionWidth = Math.Min(Math.Max(0, track.Width - valueWidth - gap), chart.Measure(builder, caption, captionStyle).Width);
             var summaryLeft = track.Left + (track.Width - valueWidth - gap - captionWidth) / 2;
-            VisualRadialPrimitives.Text(builder, value, new ChartRect(summaryLeft, plot.Top, valueWidth, summaryHeight),
+            chart.Text(builder, value, new ChartRect(summaryLeft, plot.Top, valueWidth, summaryHeight),
                 valueStyle, "gauge-label", "series-0-gauge-label");
-            VisualRadialPrimitives.Text(builder, caption, new ChartRect(summaryLeft + valueWidth + gap, plot.Top, captionWidth, summaryHeight),
+            chart.Text(builder, caption, new ChartRect(summaryLeft + valueWidth + gap, plot.Top, captionWidth, summaryHeight),
                 captionStyle, "gauge-title", "series-0-gauge-title");
         }
         LinearFooter(chart, context, builder, plot, target, scaleCaptions, labelHeight, data, scaleValues, targetCaptions);
     }
 
-    private static void LinearFooter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, string? target, IReadOnlyList<string> scaleCaptions, double height,
+    private static void LinearFooter(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, string? target, IReadOnlyList<string> scaleCaptions, double height,
         GaugeData data, IReadOnlyList<double> scaleValues, IReadOnlyList<string> targetCaptions) {
         var y = plot.Bottom - height;
         if (target != null) {
@@ -320,20 +314,20 @@ internal static partial class VisualGaugeCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var left = plot.Left + context.Theme.Spacing; var width = Math.Max(0, plot.Width - context.Theme.Spacing * 2);
         var occupied = new List<ChartRect>();
-        var style = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
+        var style = chart.Style(colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
         var labelBounds = new ChartRect[scaleCaptions.Count];
         for (var tick = 0; tick < scaleCaptions.Count; tick++) {
             var x = left + width * Ratio(data, scaleValues[tick]);
-            var captionWidth = builder.MeasureText(scaleCaptions[tick], style).Width;
+            var captionWidth = chart.Measure(builder, scaleCaptions[tick], style).Width;
             labelBounds[tick] = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - captionWidth, x - captionWidth / 2)),
                 y + 3, captionWidth, Math.Max(0, height - 3));
         }
         var last = scaleCaptions.Count - 1;
-        var reserveEndpoints = chart.Options.Gauge.TickLabels.Count == 0 && last > 0
+        var reserveEndpoints = chart.Options.TickLabels.Count == 0 && last > 0
             && FitsCaption(plot, labelBounds[0], occupied)
             && FitsCaption(plot, labelBounds[last], new List<ChartRect> { labelBounds[0] })
-            && builder.MeasureText(scaleCaptions[0], style).Height <= labelBounds[0].Height + .000001
-            && builder.MeasureText(scaleCaptions[last], style).Height <= labelBounds[last].Height + .000001;
+            && chart.Measure(builder, scaleCaptions[0], style).Height <= labelBounds[0].Height + .000001
+            && chart.Measure(builder, scaleCaptions[last], style).Height <= labelBounds[last].Height + .000001;
         // Reserve the complete generated endpoints before interior facts, retaining authored paint order.
         if (reserveEndpoints) { occupied.Add(labelBounds[0]); occupied.Add(labelBounds[last]); }
         builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "gauge-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
@@ -355,26 +349,27 @@ internal static partial class VisualGaugeCompiler {
         });
     }
 
-    private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds, string role, double size, int weight = 400, bool ticks = false, bool muted = false) =>
-        VisualRadialPrimitives.Text(builder, text, bounds,
+    private static void Label(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds, string role, double size, int weight = 400, bool ticks = false, bool muted = false) =>
+        chart.Text(builder, text, bounds,
             LabelStyle(chart, context, builder, text, bounds.Height, size, weight, ticks, muted), role, "series-0-" + role);
 
-    private static TextStyle LabelStyle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, double maximumHeight,
+    private static TextStyle LabelStyle(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, string text, double maximumHeight,
         double size, int weight = 400, bool ticks = false, bool muted = false, double minimumDefaultSize = .1) {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var color = muted || ticks ? colors.MutedForeground : colors.Foreground;
-        var style = VisualRadialPrimitives.Style(chart, context, color, size, weight, point: 0, ticks: ticks);
-        var measured = builder.MeasureText(text, style).Height;
+        var style = chart.Style(color, size, weight, point: 0, ticks: ticks);
+        var measured = chart.Measure(builder, text, style).Height;
         // Font rows depend on the resolved face, line height and authored formatting, not a font-size multiplier.
         // Re-resolving a bounded default keeps explicit chart, series and point font sizes authoritative.
-        return measured <= maximumHeight ? style : VisualRadialPrimitives.Style(chart, context, color,
+        return measured <= maximumHeight ? style : chart.Style(color,
             Math.Max(minimumDefaultSize, size * Math.Max(0, maximumHeight) / measured), weight, point: 0, ticks: ticks);
     }
 
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
-    private static SvgPaint GaugePaint(ChartSeries series, GaugeData data) => SvgPaint.Of(data.Color,
-        series.Color.HasValue || series.PointColors.Count > 0 && series.PointColors[0].HasValue ? SvgColorRole.Series
-            : series.StateRole != ChartSeriesState.None || data.State is ChartSeriesState.Warning or ChartSeriesState.Danger ? SvgColorRole.Status : SvgColorRole.Series);
+    private static SvgPaint GaugePaint(ChartSeries series, GaugeData data) => GaugePaint(
+        series.Color.HasValue || series.PointColors.Count > 0 && series.PointColors[0].HasValue, series.StateRole, data);
+    private static SvgPaint GaugePaint(bool authoredColor, ChartSeriesState declaredState, GaugeData data) => SvgPaint.Of(data.Color,
+        authoredColor ? SvgColorRole.Series : declaredState != ChartSeriesState.None || data.State is ChartSeriesState.Warning or ChartSeriesState.Danger ? SvgColorRole.Status : SvgColorRole.Series);
     private sealed class GaugeData {
         internal GaugeData(double min, double max, double raw, double ratio, ChartSeriesState state, ChartColor color, ChartGaugeBand[] bands, IReadOnlyList<ChartGaugeTarget> targets) {
             Min = min; Max = max; Raw = raw; Ratio = ratio; State = state; Color = color; Bands = bands; Targets = targets;

@@ -1,0 +1,31 @@
+using System;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+/// <summary>Effort/impact observations with native quadrant borders, deliberate captions and rules through an authored pivot.</summary>
+public static class QuadrantRegionDepthRecipe {
+    /// <summary>Creates a complete public-API chart; exports use the same native prepared scene.</summary>
+    public static Chart Create(string variant = "pivot-quadrants", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("pivot-quadrants" or "compact-pivot-quadrants" or "interior-quadrants" or "compact-interior-quadrants")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create().WithSize(variant.StartsWith("compact-", StringComparison.Ordinal) ? 360 : 800, 440)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Effort and impact").WithSubtitle("Authored 4-day / 6-point pivot")
+            .WithLegend(false).WithDataLabels(false).WithGrid(false)
+            .WithXAxis("Effort (days)").WithYAxis("Impact (score)").WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+            .AddScatter("Proposed work", new[] { new ChartPoint(1.4, 8.1), new ChartPoint(3.1, 7.3), new ChartPoint(7.2, 8.8),
+                new ChartPoint(8.4, 6.8), new ChartPoint(2.5, 2.1), new ChartPoint(6.5, 3.2) });
+        if (variant.EndsWith("interior-quadrants", StringComparison.Ordinal))
+            chart.ConfigureXAxis(axis => axis.WithCrossAt(6)).ConfigureYAxis(axis => axis.WithCrossAt(4));
+        else chart.ConfigureXAxis(axis => axis.WithRuleCrossAt(6)).ConfigureYAxis(axis => axis.WithRuleCrossAt(4));
+        var border = new ChartStrokeStyle(width: 1.5, opacity: .65, dash: new[] { 5d, 3d });
+        chart.AddPlotRegion(new ChartPlotRegion(0, xMaximum: 4, yMinimum: 6, label: "Prioritize")
+                .WithBorder(border).WithLabelPosition(ChartPlotRegionLabelPosition.TopLeft))
+            .AddPlotRegion(new ChartPlotRegion(1, xMinimum: 4, yMinimum: 6, label: "Plan")
+                .WithBorder(border).WithLabelPosition(ChartPlotRegionLabelPosition.TopRight))
+            .AddPlotRegion(new ChartPlotRegion(2, xMaximum: 4, yMaximum: 6, label: "Consider")
+                .WithBorder(border).WithLabelPosition(ChartPlotRegionLabelPosition.BottomLeft))
+            .AddPlotRegion(new ChartPlotRegion(3, xMinimum: 4, yMaximum: 6, label: "Reassess")
+                .WithBorder(border).WithLabelPosition(ChartPlotRegionLabelPosition.BottomRight));
+        return chart;
+    }
+}

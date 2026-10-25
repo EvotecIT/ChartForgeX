@@ -104,10 +104,10 @@ public sealed class MermaidSankeyConfigurationTests {
     }
 
     [Fact]
-    public void UnmappedPaintAndHostPolicySettingsRemainExplicitWarnings() {
+    public void AppliedPaintDoesNotHideTheRemainingHostPolicyWarning() {
         var parsed = new MermaidParser().ParseSankey("%%{init: {'sankey': {'linkColor': 'gradient', 'useMaxWidth': true}}}%%\n" + Body);
         Assert.False(parsed.HasErrors);
-        Assert.Equal(2, parsed.Diagnostics.Count);
+        Assert.Single(parsed.Diagnostics);
         Assert.All(parsed.Diagnostics, diagnostic => Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, diagnostic.Code));
     }
 }

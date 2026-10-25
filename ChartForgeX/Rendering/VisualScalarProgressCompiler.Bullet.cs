@@ -9,27 +9,32 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScalarProgressCompiler {
-    private static void Bullets(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var entries = chart.Series.Select((series, index) => (Series: series, Index: index)).Where(entry => entry.Series.HasSourceData).ToArray();
-        foreach (var entry in entries) Range(entry.Series, out _, out _);
-        var min = chart.Options.XAxis.Minimum ?? entries.Min(entry => entry.Series.RenderPoints[0].X);
-        var max = chart.Options.XAxis.Maximum ?? entries.Max(entry => entry.Series.RenderPoints[1].X);
+    private static void Bullets(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) =>
+        builder.CaptureValue(new BulletPlan(chart, context, plot, colors));
+
+    private static void PaintBullets(BulletPaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
+        if (chart.Independent || chart.Orientation == ChartOrientation.Vertical) {
+            ConfiguredBullets(chart, context, builder, plot, colors); return;
+        }
+        var entries = chart.Rows.Select(series => (Series: series, Index: series.Index)).ToArray();
+        var min = chart.XAxis.Minimum ?? entries.Min(entry => entry.Series.Reading.Minimum);
+        var max = chart.XAxis.Maximum ?? entries.Max(entry => entry.Series.Reading.Maximum);
         if (max <= min || !Finite(max - min)) throw new InvalidOperationException("Bullet charts require a finite shared positive range.");
-        var labels = entries.Select(entry => Value(chart, entry.Series, 0, entry.Series.RenderPoints[0].Y)).ToArray();
-        var targets = entries.Select(entry => ChartNumericFormatter.FormatValue(chart.Options, entry.Series.BulletValues[0].Target)).ToArray();
+        var labels = entries.Select(entry => entry.Series.AuthoredLabel ?? chart.Format.Format(entry.Series.Reading.Value)).ToArray();
+        var targets = entries.Select(entry => chart.Format.Format(entry.Series.Reading.Target)).ToArray();
         var gap = context.Theme.Spacing;
         var labelWidth = 0d; var valueWidth = 0d;
         for (var index = 0; index < entries.Length; index++) {
-            var series = entries[index].Series; if (!series.ResolveDataLabels(chart.Options, defaultVisible: true)) continue;
+            var series = entries[index].Series; if (!series.ShowLabels) continue;
             var style = Style(chart, context, series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 400);
-            labelWidth = Math.Max(labelWidth, builder.MeasureText(series.Name, style).Width + gap);
-            valueWidth = Math.Max(valueWidth, builder.MeasureText(labels[index], Style(chart, context, series, 0,
+            labelWidth = Math.Max(labelWidth, chart.Measure(builder, series.Name, style).Width + gap);
+            valueWidth = Math.Max(valueWidth, chart.Measure(builder, labels[index], Style(chart, context, series, 0,
                 colors.Foreground, context.Theme.Typography.DataLabelSize, 700)).Width
-                + builder.MeasureText("/ " + targets[index], Style(chart, context, series, 0, colors.MutedForeground,
+                + chart.Measure(builder, "/ " + targets[index], Style(chart, context, series, 0, colors.MutedForeground,
                     context.Theme.Typography.DataLabelSize, 400)).Width + gap * 1.5);
         }
         labelWidth = Math.Min(plot.Width * .3, labelWidth); valueWidth = Math.Min(plot.Width * .3, valueWidth);
-        var axisHeight = chart.Options.ShowAxes && chart.Options.XAxis.Visible ? Math.Min(plot.Height * .25, context.Theme.Typography.AxisSize * 1.8 + gap / 2) : 0;
+        var axisHeight = chart.ShowAxes && chart.XAxis.Visible ? Math.Min(plot.Height * .25, context.Theme.Typography.AxisSize * 1.8 + gap / 2) : 0;
         var rowHeight = Math.Max(0, (plot.Height - axisHeight) / entries.Length);
         var barHeight = Math.Min(context.Theme.Typography.DataLabelSize * 1.8, rowHeight * .32);
         var halfStroke = Math.Max(context.Theme.SeriesStrokeWidth, context.Theme.AxisStrokeWidth) / 2;
@@ -38,22 +43,24 @@ internal static partial class VisualScalarProgressCompiler {
         double X(double value) => left + width * VisualRadialPrimitives.Clamp((VisualRadialPrimitives.Clamp(value, min, max) - min) / (max - min));
         for (var index = 0; index < entries.Length; index++) {
             var series = entries[index].Series; var sourceIndex = entries[index].Index;
-            var value = series.RenderPoints[0].Y; var target = series.RenderPoints[1].Y;
+            var value = series.Reading.Value; var target = series.Reading.Target;
             var y = plot.Top + rowHeight * (index + .5); var bounds = new ChartRect(plot.Left, plot.Top + rowHeight * index, plot.Width, rowHeight);
             var status = value < target ? "below-target" : value > target ? "above-target" : "meets-target";
             var state = series.StateRole == ChartSeriesState.None ? value < target ? ChartSeriesState.Danger : ChartSeriesState.Success : series.StateRole;
-            var color = BulletColor(series, sourceIndex, colors);
-            var measurePaint = BulletPaint(series, color);
+            var color = series.Color;
+            var measurePaint = series.Paint;
             builder.AddRegion(new VisualSemanticRegion(Id(sourceIndex), "bullet-row", bounds, series.Name + ": " + labels[index] + ", target " + targets[index]));
-            using (builder.PushGroup(Id(sourceIndex), "bullet-row", new Dictionary<string, string> {
+            var metadata = new Dictionary<string, string> {
                 ["data-cfx-series"] = N(sourceIndex), ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
                 ["data-cfx-label"] = series.Name, ["data-cfx-value"] = N(value), ["data-cfx-target"] = N(target),
-                ["data-cfx-label-target"] = chart.Options.Labels.Target,
-                ["data-cfx-min"] = N(series.RenderPoints[0].X), ["data-cfx-max"] = N(series.RenderPoints[1].X), ["data-cfx-scale-min"] = N(min), ["data-cfx-scale-max"] = N(max),
-                ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey,
-                ["data-cfx-source-range-ends"] = string.Join(",", series.RenderPoints.Skip(2).Select(point => N(point.X)))
-            })) {
-                var ends = series.RenderPoints.Skip(2).Select(point => point.X).Where(end => end > min && end < max).OrderBy(end => end).Distinct().ToList();
+                ["data-cfx-label-target"] = chart.LabelTarget,
+                ["data-cfx-min"] = N(series.Reading.Minimum), ["data-cfx-max"] = N(series.Reading.Maximum), ["data-cfx-scale-min"] = N(min), ["data-cfx-scale-max"] = N(max),
+                ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-series-key"] = series.SeriesKey,
+                ["data-cfx-source-range-ends"] = string.Join(",", series.Reading.RangeEnds.Select(N))
+            };
+            chart.CaptureIdentity(metadata, series);
+            using (builder.PushGroup(Id(sourceIndex), "bullet-row", metadata)) {
+                var ends = series.Reading.RangeEnds.Where(end => end > min && end < max).OrderBy(end => end).Distinct().ToList();
                 if (ends.Count == 0) { ends.Add(min + (max - min) * .6); ends.Add(min + (max - min) * .8); }
                 ends.Add(max); var previous = min;
                 for (var range = 0; range < ends.Count; range++) {
@@ -65,13 +72,13 @@ internal static partial class VisualScalarProgressCompiler {
                 }
                 builder.Rect(new ChartRect(left, y - barHeight / 6, X(value) - left, barHeight / 3), color, role: "bullet-value", paint: VisualChartPaint.Fill(measurePaint));
                 builder.Line(X(target), y - barHeight / 2, X(target), y + barHeight / 2, colors.Foreground, context.Theme.SeriesStrokeWidth, "bullet-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Text));
-                if (series.ResolveDataLabels(chart.Options, defaultVisible: true)) {
+                if (series.ShowLabels) {
                     Text(chart, context, builder, series, 0, series.Name, new ChartRect(plot.Left, bounds.Top, Math.Max(0, labelWidth - gap), rowHeight),
                         "bullet-row-label", Id(sourceIndex) + "-label", colors.Foreground, context.Theme.Typography.DataLabelSize, alignment: TextAlignment.Left);
                     var textLeft = left + width + gap;
                     var available = Math.Max(0, plot.Right - textLeft);
                     var valueStyle = Style(chart, context, series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 700);
-                    var textWidth = Math.Min(builder.MeasureText(labels[index], valueStyle).Width, available * .6);
+                    var textWidth = Math.Min(chart.Measure(builder, labels[index], valueStyle).Width, available * .6);
                     var valueColor = value < target ? colors.Status.Critical.Ink : colors.Foreground;
                     BulletNumber(chart, context, builder, series, labels[index], new ChartRect(textLeft, bounds.Top, textWidth, rowHeight),
                         "bullet-value-label", Id(sourceIndex) + "-value", valueColor, context.Theme.Typography.DataLabelSize, 700, alignment: TextAlignment.Left);
@@ -86,7 +93,7 @@ internal static partial class VisualScalarProgressCompiler {
             builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var ticks = new double[5];
             for (var index = 0; index < ticks.Length; index++) ticks[index] = min + (max - min) * index / 4;
-            var formatTick = ChartAxisValueFormatter.Create(chart.Options.XAxis, ticks, chart.Options.ValueFormatter);
+            var formatTick = ChartAxisValueFormatter.Create(chart.XAxis, ticks, chart.ValueFormatter);
             var style = Style(chart, context, entries[0].Series, -1, colors.MutedForeground, context.Theme.Typography.AxisSize, 400, true);
             var labelArea = new ChartRect(plot.Left, y + axisHeight / 6, plot.Width, axisHeight * 5 / 6);
             var requests = new List<LabelPlacementRequest>();
@@ -94,7 +101,7 @@ internal static partial class VisualScalarProgressCompiler {
                 var tick = ticks[index]; var x = X(tick);
                 builder.Line(x, y, x, y + axisHeight / 6, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
                 var text = formatTick(tick);
-                var measured = builder.MeasureText(text, style);
+                var measured = chart.Measure(builder, text, style);
                 var anchor = Math.Max(labelArea.Left + measured.Width / 2, Math.Min(labelArea.Right - measured.Width / 2, x));
                 requests.Add(new LabelPlacementRequest(text, new ChartPoint(anchor, labelArea.Top + labelArea.Height / 2), style,
                     new[] { new LabelCandidate(0, 0, .5, .5) }, priority: index == 0 || index == ticks.Length - 1 ? 1 : 0) {
@@ -102,7 +109,7 @@ internal static partial class VisualScalarProgressCompiler {
                 });
             }
             var placements = new LabelPlacementService().Place(requests, labelArea, null, gap / 2,
-                (text, labelStyle) => builder.MeasureText(text, labelStyle));
+                (text, labelStyle) => chart.Measure(builder, text, labelStyle));
             for (var index = 0; index < placements.Count; index++) {
                 var placement = placements[index]; var id = "bullet-axis-label-" + index;
                 if (placement.IsDropped) {
@@ -115,12 +122,20 @@ internal static partial class VisualScalarProgressCompiler {
         }
     }
 
-    /// <summary>Keeps scalar facts complete at their resolved size; a constrained row omits the entire caption.</summary>
-    private static void BulletNumber(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
+    /// <summary>Keeps scalar facts complete at their resolved size in ordinary and captured native drawings.</summary>
+    private static void BulletNumber(BulletPaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, BulletRow series,
         string text, ChartRect bounds, string role, string id, ChartColor color, double size, int weight = 400, bool ticks = false,
         TextAlignment alignment = TextAlignment.Center) =>
-        VisualRadialPrimitives.Text(builder, text, bounds, Style(chart, context, series, ticks ? -1 : 0, color, size, weight, ticks),
-            role, id, alignment: alignment, fallback: LabelFallbackRule.Drop);
+        series.TextPolicy.Text(builder, text, bounds, Style(chart, context, series, ticks ? -1 : 0, color, size, weight, ticks),
+            role, id, chart.Captured, alignment: alignment, fallback: LabelFallbackRule.Drop);
+
+    private static TextStyle Style(BulletPaintContext chart, VisualRenderContext context, BulletRow series, int point,
+        ChartColor color, double size, int weight, bool ticks = false) => series.TextPolicy.Style(color, size, weight, point, ticks);
+    private static void Text(BulletPaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, BulletRow series, int point,
+        string text, ChartRect bounds, string role, string id, ChartColor color, double size, int weight = 400, bool ticks = false,
+        TextAlignment alignment = TextAlignment.Center) =>
+        series.TextPolicy.Text(builder, text, bounds, Style(chart, context, series, point, color, Math.Min(size, Math.Max(.1, bounds.Height / 1.3)), weight, ticks),
+            role, id, chart.Captured, alignment: alignment);
 
     private static bool HasBulletPaint(ChartSeries series) => series.Color.HasValue
         || series.PointColors.Count > 0 && series.PointColors[0].HasValue || series.StateRole != ChartSeriesState.None;

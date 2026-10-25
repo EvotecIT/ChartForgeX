@@ -1,0 +1,16 @@
+flowchart BT
+n41@{ shape: f-circ, label: "Retained junction label" }
+n42@{ shape: notch-pent, label: "Loop limit" }
+n43@{ shape: flip-tri, label: "Manual file" }
+n44@{ shape: sl-rect, label: "Manual input" }
+n45@{ shape: docs, label: "Documents" }
+n46@{ shape: st-rect, label: "Processes" }
+n47@{ shape: bow-rect, label: "Stored data" }
+n48@{ shape: cross-circ, label: "Retained summary label" }
+n49@{ shape: tag-doc, label: "Tagged document" }
+n50@{ shape: tag-rect, label: "Tagged process" }
+n51@{ shape: flag, label: "Paper tape" }
+n52@{ shape: odd, label: "Odd" }
+n53@{ shape: lin-doc, label: "Lined document" }
+n41 --> n42 --> n43 --> n44 --> n45 --> n46 --> n47
+n47 --> n48 --> n49 --> n50 --> n51 --> n52 --> n53

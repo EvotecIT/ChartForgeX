@@ -1,0 +1,22 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.Interactivity.Html;
+
+if(args.Length!=1)throw new ArgumentException("Pass a font file licensed for this output.");FontRegistry.Register("Native joint font",File.ReadAllBytes(args[0]));
+var variant={{KIND}};var renderer=new HtmlInteractiveChartRenderer();
+Chart Model(double value){var chart=NativeCompleteCartesianValueRecipe.Create(variant=="default-stacked"?"stacked-bar":variant,value,{{WIDTH}},VisualThemeMode.{{MODE}},"Native joint font");if(variant=="default-stacked"){foreach(var series in chart.Series)series.WithStackGroup(null);chart.WithBarMode(ChartBarMode.Stacked);}return chart;}
+ChartVisibilityView View(bool hidden)=>new(hidden?new[]{new ChartSeriesId("delivery")}:Array.Empty<ChartSeriesId>(),ChartVisibilityLabelLayering.GroupWithSeries);
+var from=renderer.PrepareVisibilitySection(Model(30),View(false));var to=renderer.PrepareVisibilitySection(Model(40),View(true));
+var payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValuesAndVisibility,5));
+var action="const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));document.querySelector('#play').onclick=()=>chart.update("+JsonSerializer.Serialize(to.Html)+",{sceneRevision:chart.sceneRevision,transition:"+JsonSerializer.Serialize(payload)+",motion:{duration:650}});";
+var html="<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>"+HtmlInteractiveChartRenderer.BuildFragmentStyle()+"</style></head><body><button id='play' type='button'>Present stacked values and full-source totals</button>"+from.Html+"<script>"+HtmlInteractiveChartRenderer.BuildInteractionScript()+"</script><script>"+action+"</script></body></html>";
+Directory.CreateDirectory("output");File.WriteAllText("output/visual.html",html);File.WriteAllText("output/visual.transition.json",payload);File.WriteAllText("output/visual.svg",to.PreparedVisual.ToSvg());File.WriteAllBytes("output/visual.png",to.PreparedVisual.ToPng());
+
+{{SOURCE}}

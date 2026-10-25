@@ -13,6 +13,7 @@ public static partial class VisualArtifactInterchangeMapping {
     public static RailroadDiagramBlock ToRailroadDiagramBlock(this VisualArtifactInterchangeEnvelope envelope) {
         if (envelope == null) throw new ArgumentNullException(nameof(envelope));
         envelope.Validate();
+        RequireEditableSourcePresentation(envelope);
         if (envelope.Family != VisualArtifactInterchangeFamily.Railroad || envelope.Railroad == null)
             throw new NotSupportedException("Only a typed railroad envelope can rebuild a railroad diagram.");
         var source = envelope.Railroad;
@@ -39,7 +40,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Title = block.Title; envelope.Subtitle = block.Subtitle;
         envelope.Railroad = new VisualArtifactInterchangeRailroadArtifact {
             RuleComparison = block.RuleComparison, Theme = source.Theme, ThemeMode = source.ThemeMode,
-            Padding = source.Padding, TransparentBackground = source.TransparentBackground, ShowCard = source.ShowCard,
+            Padding = source.ConfiguredPadding, TransparentBackground = source.TransparentBackground, ShowCard = source.ShowCard,
             HostOwnsFrame = source.HostOwnsFrame, PngOutputScale = source.PngOutputScale
         };
         envelope.Railroad.Rules.AddRange(block.Rules);

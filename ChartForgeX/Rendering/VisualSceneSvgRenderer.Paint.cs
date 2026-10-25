@@ -36,6 +36,12 @@ internal static partial class VisualSceneSvgRenderer {
         }
     }
 
+    private static void WriteOpacityIdentity(BinaryWriter writer, double opacity) {
+        // Default opacity contributes no extra bytes, preserving existing native IDs.
+        if (opacity == 1) return;
+        writer.Write("native-opacity"); writer.Write(opacity);
+    }
+
     private static void WriteDashOffsetIdentity(BinaryWriter writer, double offset) {
         // Preserve existing zero-phase scene IDs and their byte-exact SVG output.
         if (offset == 0) return;
@@ -45,6 +51,7 @@ internal static partial class VisualSceneSvgRenderer {
     private static void WriteGradientIdentity(BinaryWriter writer, VisualSceneGradient gradient) {
         var shape = gradient.Shape;
         Color(writer, shape.Fill); Color(writer, shape.Stroke); writer.Write(shape.StrokeWidth); PaintIdentity(writer, shape.Paint);
+        WriteOpacityIdentity(writer, shape.Opacity);
         if (shape is VisualSceneRectangle rect) { writer.Write(1); Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); }
         else if (shape is VisualScenePath path) { writer.Write(2); WritePathIdentity(writer, path); }
         else if (shape is VisualSceneSlice slice) {

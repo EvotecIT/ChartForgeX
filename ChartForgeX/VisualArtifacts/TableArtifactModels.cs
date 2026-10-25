@@ -59,6 +59,8 @@ public enum TableArtifactColumnType {
 /// Describes one reusable table artifact for static rendering and native-host interaction.
 /// </summary>
 public sealed class TableArtifact {
+    // Captured native table scale preserves the incumbent max(1, bodyScale) header law after Manual restoration.
+    internal double CapturedPresentationScale { get; set; } = 1;
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;

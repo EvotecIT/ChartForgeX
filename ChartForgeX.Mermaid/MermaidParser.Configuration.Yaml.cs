@@ -33,10 +33,14 @@ public sealed partial class MermaidParser {
                 if (sequenceItem && indent == parent.Indent && parent.ChildIndent < 0) break;
                 CompleteConfigurationYamlParent(parents, configuration);
             }
+            if(sequenceItem&&parents.Count>0&&MermaidThemePresetInputs.IsPalettePath(parents[parents.Count-1].Path)) {
+                var parent=parents[parents.Count-1];ReadConfigurationPaletteYaml(lines,ref index,indent,parent.Path,parent.Span,configuration,result);parents.RemoveAt(parents.Count-1);continue;
+            }
             if (sequenceItem && parents.Count > 0 && parents[parents.Count - 1].ChildIndent < 0) {
                 var parent = parents[parents.Count - 1];
                 if (!IsConfigurationScalarPath(parent.Path))
                     configuration.Add(new MermaidConfigurationSetting(parent.Path.Length == 0 ? "config" : parent.Path, null, false, parent.Span));
+                configuration.MarkStructured(parent.Path.Length == 0 ? "config" : parent.Path, parent.Span);
                 parents.RemoveAt(parents.Count - 1);
                 opaqueIndent = parent.Indent;
                 if (SkipOpaqueConfigurationYamlNode(lines, ref index, trimmed)) opaqueScalarIndent = indent;
@@ -54,7 +58,10 @@ public sealed partial class MermaidParser {
             if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
             if (parents.Count > 0) {
                 var parent = parents[parents.Count - 1];
-                if (parent.ChildIndent < 0) parents[parents.Count - 1] = (parent.Indent, parent.Path, indent, parent.Span);
+                if (parent.ChildIndent < 0) {
+                    configuration.MarkStructured(parent.Path, parent.Span);
+                    parents[parents.Count - 1] = (parent.Indent, parent.Path, indent, parent.Span);
+                }
                 else if (parent.ChildIndent != indent) {
                     ConfigurationError(result, span, "Mermaid configuration mapping keys must use consistent sibling indentation.");
                     continue;
@@ -69,6 +76,7 @@ public sealed partial class MermaidParser {
             }
             var path = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
             if (parents.Count > 0) path = path.Length == 0 ? ConfigurationPathKey(key!) : path + "." + ConfigurationPathKey(key!);
+            var parentPath = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
             var valueText = TrimConfigurationYaml(TrimYamlComment(match.Groups[2].Value, parents.Count == 0));
             if (!declared.Add(path)) { ConfigurationError(result, span, "Mermaid frontmatter configuration repeats '" + (path.Length == 0 ? "config" : path) + "'."); continue; }
             if (declared.Count > 256) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds 256 keys."); break; }
@@ -84,7 +92,7 @@ public sealed partial class MermaidParser {
                     if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
                 if (parents.Count == 0) {
                     if (IsOpaqueConfigurationYamlValue(valueText)) {
-                        configuration.Add(new MermaidConfigurationSetting("config", valueText, false, span));
+                        configuration.Add(new MermaidConfigurationSetting("config", valueText, false, span, null, null, false, true));
                         opaqueIndent = indent;
                         if (SkipOpaqueConfigurationYamlNode(lines, ref index, valueText)) opaqueScalarIndent = indent;
                         continue;
@@ -96,15 +104,28 @@ public sealed partial class MermaidParser {
                     var normalized = NormalizeConfigurationJson(valueText, offsets, yamlFlowMapping: true);
                     AddConfigurationJson(GeoJsonValue.Parse(normalized, StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"),
                         string.Empty, span, configuration, value => ConfigurationJsonPropertySpan(value, offsets, sourceLines, sourceLineStarts, span));
+                } else if(MermaidThemePresetInputs.IsPalettePath(path)&&valueText.StartsWith("[",StringComparison.Ordinal)) {
+                    valueText=ReadConfigurationFlowMapping(lines,ref index,valueText);
+                    var value=GeoJsonValue.Parse(NormalizeConfigurationJson(valueText),StringComparer.Ordinal,ConfigurationJsonLimits);
+                    configuration.Add(MermaidThemePresetInputs.CapturePalette(new MermaidConfigurationSetting(path,null,false,span,parentPath,key,false),value));
+                } else if (MermaidSankeySettings.IsNodeColorsPath(path) && valueText.StartsWith("{", StringComparison.Ordinal)) {
+                    var sourceLines = new List<ConfigurationJsonLine>();
+                    valueText = ReadConfigurationFlowMapping(lines, ref index, valueText, sourceLines, indent + match.Groups[2].Index + 1);
+                    var offsets = new List<int>();
+                    var normalized = NormalizeConfigurationJson(valueText, offsets, yamlFlowMapping: true);
+                    var mapping = GeoJsonValue.Parse(normalized, StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid Sankey nodeColors");
+                    configuration.Add(new MermaidConfigurationSetting(path, null, false, span, parentPath, key, true));
+                    AddConfigurationJson(mapping, path + ".", span, configuration,
+                        value => ConfigurationJsonPropertySpan(value, offsets, sourceLines, sourceLineStarts, span));
                 } else {
-                    var isString = true;
+                    var isString = true; var isStructured = false;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
                         value = ReadDoubleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
                         value = MermaidYamlScalar.ReadSingleQuoted(valueText);
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || IsOpaqueConfigurationYamlValue(valueText)) {
-                        value = null; isString = false;
+                        value = null; isString = false; isStructured = true;
                         opaqueIndent = indent;
                         if (SkipOpaqueConfigurationYamlNode(lines, ref index, valueText)) opaqueScalarIndent = indent;
                     } else {
@@ -113,7 +134,7 @@ public sealed partial class MermaidParser {
                             throw new ArgumentException("Mermaid YAML plain scalars cannot contain a mapping separator; quote strings containing a colon followed by whitespace or an ending colon.");
                         if (IsTypedConfigurationYamlScalar(valueText)) isString = false;
                     }
-                    configuration.Add(new MermaidConfigurationSetting(path, value, isString, span));
+                    configuration.Add(new MermaidConfigurationSetting(path, value, isString, span, parentPath, key, false, isStructured));
                 }
             } catch (ArgumentException exception) { ConfigurationError(result, span, exception.Message); }
         }

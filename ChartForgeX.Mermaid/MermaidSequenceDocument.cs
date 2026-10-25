@@ -28,7 +28,9 @@ public enum MermaidSequenceBlockKind {
     /// <summary>An option branch inside a critical block.</summary>
     Option,
     /// <summary>An end statement closing the current block.</summary>
-    End
+    End,
+    /// <summary>A parallel-over block; preserves the authored token independently from an ordinary parallel block.</summary>
+    ParOver
 }
 
 /// <summary>
@@ -59,8 +61,14 @@ public sealed class MermaidSequenceDocument : MermaidDocument {
     /// <summary>Gets parsed actor menu links.</summary>
     public List<MermaidSequenceLink> Links { get; } = new();
 
-    /// <summary>Gets parsed autonumber configuration, when present.</summary>
-    public MermaidSequenceAutonumber? Autonumber { get; set; }
+    /// <summary>Gets raw, located participant property declarations in authored order.</summary>
+    public List<MermaidSequenceProperties> PropertyStatements { get; } = new();
+
+    /// <summary>Gets authored numbering controls in source order, including off and resume occurrences.</summary>
+    public List<MermaidSequenceAutonumber> AutonumberStatements { get; } = new();
+
+    /// <summary>Gets the last authored numbering control, when present; edit <see cref="AutonumberStatements"/> to author controls.</summary>
+    public MermaidSequenceAutonumber? Autonumber => AutonumberStatements.Count == 0 ? null : AutonumberStatements[AutonumberStatements.Count - 1];
 
     /// <summary>Gets participant creation and destruction directives with their associated message indices.</summary>
     public List<MermaidSequenceLifetime> Lifetimes { get; } = new();
@@ -197,6 +205,9 @@ public sealed class MermaidSequenceAutonumber : MermaidAstNode {
     /// <summary>Initializes autonumber configuration.</summary>
     public MermaidSequenceAutonumber(MermaidSourceSpan span) : base(span) {
     }
+
+    /// <summary>Gets or sets whether numbering is visible after this occurrence; true with no values resumes the current counter and step.</summary>
+    public bool Enabled { get; set; } = true;
 
     /// <summary>Gets or sets the optional starting number text.</summary>
     public string? Start { get; set; }

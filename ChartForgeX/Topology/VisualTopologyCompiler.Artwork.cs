@@ -15,7 +15,9 @@ internal sealed partial class VisualTopologyCompiler {
         if (artwork.ImageHref is string href) {
             if (href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {
                 var size = ArtworkSamplingSize(new ChartRect(0, 0, node.Width, node.Height));
-                if (SvgRasterRenderer.TryDecodeImageResource(href, size.Width, size.Height, artwork.PreserveAspectRatio, out _)) return true;
+                if (IsEmbeddedRasterResource(href)) {
+                    if (TryCaptureRasterResource(node, href, new ChartRect(0, 0, node.Width, node.Height), artwork.PreserveAspectRatio, out _)) return true;
+                } else if (SvgRasterRenderer.TryDecodeImageResource(href, size.Width, size.Height, artwork.PreserveAspectRatio, out _)) return true;
             } else if (VisualSceneImageResource.IsSafeHref(href)) return true;
         }
         if (!artwork.HasSvgBody) return false;
@@ -24,7 +26,7 @@ internal sealed partial class VisualTopologyCompiler {
             dimensions.Width, dimensions.Height, out _);
     }
 
-    private bool BuildArtwork(TopologyNode node, ChartRect bounds, bool selectedOutline = true, double? opacity = null, ChartColor? fallbackColor = null) {
+    private bool BuildArtwork(TopologyNode node, ChartRect bounds, bool selectedOutline = true, double? opacity = null, ChartColor? fallbackColor = null, Action? beforePaint = null) {
         var artwork = ResolveRenderableNodeArtwork(node, _options);
         if (artwork == null) return false;
         // Frame legend markers are compiled before the topology layout and highlight state exist.
@@ -34,8 +36,15 @@ internal sealed partial class VisualTopologyCompiler {
         if (artwork.ImageHref is string href) {
             if (href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {
                 var dataSize = ArtworkSamplingSize(bounds);
-                if (SvgRasterRenderer.TryDecodeImageResource(href, dataSize.Width, dataSize.Height, artwork.PreserveAspectRatio, out var image)) {
-                    _builder.Image(image, bounds, "topology-node-artwork", opacity: imageOpacity, preserveAspectRatio: artwork.PreserveAspectRatio);
+                if (IsEmbeddedRasterResource(href)) {
+                    if (TryCaptureRasterResource(node, href, bounds, artwork.PreserveAspectRatio, out var resource)) {
+                        beforePaint?.Invoke();
+                        _builder.Image(resource, bounds, "topology-node-artwork", opacity: imageOpacity, preserveAspectRatio: artwork.PreserveAspectRatio);
+                        ArtworkSelection(node, bounds, active, selectedOutline); return true;
+                    }
+                } else if (SvgRasterRenderer.TryDecodeImageResource(href, dataSize.Width, dataSize.Height, artwork.PreserveAspectRatio, out var image)) {
+                    beforePaint?.Invoke();
+                        _builder.Image(image, bounds, "topology-node-artwork", opacity: imageOpacity, preserveAspectRatio: artwork.PreserveAspectRatio);
                     ArtworkSelection(node, bounds, active, selectedOutline); return true;
                 }
             } else if (VisualSceneImageResource.IsSafeHref(href)) {
@@ -53,6 +62,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (artwork.HasSvgBody) {
             var size = ArtworkSamplingSize(bounds); var width = size.Width; var height = size.Height;
             if (SvgRasterRenderer.TryRenderFragment(artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio, width, height, out var pixels)) {
+                beforePaint?.Invoke();
                 _builder.Image(new RgbaImage(width, height, pixels), bounds, "topology-node-artwork", opacity: imageOpacity);
                 ArtworkSelection(node, bounds, active, selectedOutline); return true;
             }

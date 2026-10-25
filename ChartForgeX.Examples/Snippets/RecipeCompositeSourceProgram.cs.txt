@@ -1,0 +1,22 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+using System.Globalization;
+
+foreach (var operation in new[] { "over", "in", "out", "atop", "xor" }) {
+    var source = NativeCompositeSourceExample.Source({{VARIANT}}, VisualThemeMode.{{MODE}}, operation);
+    var result = NativeCompositeSourceExample.Rasterize({{VARIANT}}, VisualThemeMode.{{MODE}}, operation);
+    File.WriteAllText("composite-" + operation + ".svg", source);
+    File.WriteAllBytes("composite-" + operation + ".native.png", result.Image.ToPng());
+}
+
+var opacitySource = NativeCompositeSourceExample.SourceWithOpacity({{VARIANT}}, VisualThemeMode.{{MODE}});
+var opacityResult = NativeCompositeSourceExample.RasterizeWithOpacity({{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("composite-source-opacity.svg", opacitySource);
+File.WriteAllBytes("composite-source-opacity.native.png", opacityResult.Image.ToPng());
+
+{{SOURCE}}

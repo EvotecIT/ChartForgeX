@@ -33,14 +33,18 @@ internal static partial class VisualSpecialtyCompiler {
         var slot = Math.Max(0, (symbolWidth - gap * (columns - 1)) / columns);
         var size = Math.Min(slot, Math.Min(rowHeight, slot) * .82 * options.PictorialSymbolScale);
         var startX = plot.Left + labelWidth + margin;
-        var custom = CustomPictorialPath(options, size);
-        using var chartGroup = builder.PushGroup("pictorial-chart", "pictorial-chart", new Dictionary<string, string> {
+        var custom = options.PictorialArtwork == null ? CustomPictorialPath(options, size) : null;
+        var metadata = new Dictionary<string, string> {
             ["data-cfx-shape"] = options.PictorialShape.ToString(), ["data-cfx-custom-symbol"] = custom != null ? "true" : "false",
             ["data-cfx-columns"] = N(columns), ["data-cfx-maximum"] = N(maximum),
             ["data-cfx-value-per-symbol"] = unit.HasValue ? N(unit.Value) : "proportional",
             ["data-cfx-show-values"] = showValues ? "true" : "false", ["data-cfx-symbol-scale"] = N(options.PictorialSymbolScale),
             ["data-cfx-empty-opacity"] = N(options.PictorialEmptyOpacity)
-        });
+        };
+        if (options.PictorialArtwork != null) metadata["data-cfx-image-artwork"] = "true";
+        if (options.PictorialFillDirection != ChartPictorialFillDirection.LeftToRight)
+            metadata["data-cfx-fill-direction"] = options.PictorialFillDirection.ToString();
+        using var chartGroup = builder.PushGroup("pictorial-chart", "pictorial-chart", metadata);
         var rowOffset = 0;
         for (var index = 0; index < rows.Length; index++) {
             var top = plot.Top + rowOffset * rowHeight + index * itemGap;
@@ -61,17 +65,21 @@ internal static partial class VisualSpecialtyCompiler {
                     var x = startX + column * (slot + gap) + (slot - size) / 2;
                     var y = top + row * rowHeight + (rowHeight - size) / 2;
                     var symbolBounds = new ChartRect(x, y, size, size);
-                    var path = PictorialPath(options.PictorialShape, symbolBounds, custom);
+                    var path = options.PictorialArtwork == null ? PictorialPath(options.PictorialShape, symbolBounds, custom) : null;
                     using (builder.PushGroup(Id(index) + "-symbol-" + row + "-" + column, "pictorial-symbol", new Dictionary<string, string> {
                         ["data-cfx-point"] = N(index), ["data-cfx-row"] = N(row), ["data-cfx-column"] = N(column),
                         ["data-cfx-fill"] = N(amount), ["data-cfx-partial-fill"] = amount > 0 && amount < 1 ? "clip" : "none"
                     })) {
-                        if (amount < 1) builder.Path(path, colors.Border.WithOpacity(options.PictorialEmptyOpacity), role: "pictorial-empty", close: true,
-                            paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(colors.Border.WithOpacity(options.PictorialEmptyOpacity), options.PictorialEmptyOpacity)));
-                        if (amount > 0) {
-                            using (builder.PushClip(new ChartRect(x, y, size * amount, size))) {
-                                builder.Path(path, color, role: "pictorial-fill", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
-                                Pattern(chart, builder, index, path, color);
+                        if (options.PictorialArtwork is { } artwork) {
+                            PictorialImage(builder, artwork, symbolBounds, amount, options);
+                        } else {
+                            if (amount < 1) builder.Path(path!, colors.Border.WithOpacity(options.PictorialEmptyOpacity), role: "pictorial-empty", close: true,
+                                paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(colors.Border.WithOpacity(options.PictorialEmptyOpacity), options.PictorialEmptyOpacity)));
+                            if (amount > 0) {
+                                using (builder.PushClip(PictorialPartialBounds(symbolBounds, amount, options.PictorialFillDirection))) {
+                                    builder.Path(path!, color, role: "pictorial-fill", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                                    Pattern(chart, builder, index, path!, color);
+                                }
                             }
                         }
                     }

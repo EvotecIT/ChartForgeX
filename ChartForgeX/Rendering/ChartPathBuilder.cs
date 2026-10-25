@@ -21,7 +21,7 @@ internal static class ChartPathBuilder {
         }
     }
 
-    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End) {
+    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End, bool preserveXIntervals = false) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var commands = new List<ChartPathCommand>();
         if (points.Count == 0) return new ChartPath(commands);
@@ -32,7 +32,7 @@ internal static class ChartPathBuilder {
                 // A round-capped zero-length segment keeps an isolated observation visible.
                 commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
             } else if (interpolation == ChartInterpolation.Step) AddStepSegments(commands, segment, stepPosition);
-            else if (interpolation == ChartInterpolation.Smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
+            else if (interpolation == ChartInterpolation.Smooth && segment.Count >= 3) AddSmoothSegments(commands, segment, preserveXIntervals);
             else AddStraightSegments(commands, segment);
         }
 
@@ -88,16 +88,16 @@ internal static class ChartPathBuilder {
         position == ChartStepPosition.Start ? previousX
             : position == ChartStepPosition.Middle ? previousX / 2 + nextX / 2 : nextX;
 
-    private static void AddSmoothSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points) {
+    private static void AddSmoothSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points, bool preserveXIntervals) {
         for (var i = 0; i < points.Count - 1; i++) {
             var p0 = points[Math.Max(0, i - 1)];
             var p1 = points[i];
             var p2 = points[i + 1];
             var p3 = points[Math.Min(points.Count - 1, i + 2)];
             commands.Add(ChartPathCommand.CubicTo(
-                p1.X + (p2.X - p0.X) / 6,
+                preserveXIntervals ? p1.X * (2d / 3) + p2.X / 3 : p1.X + (p2.X - p0.X) / 6,
                 p1.Y + (p2.Y - p0.Y) / 6,
-                p2.X - (p3.X - p1.X) / 6,
+                preserveXIntervals ? p1.X / 3 + p2.X * (2d / 3) : p2.X - (p3.X - p1.X) / 6,
                 p2.Y - (p3.Y - p1.Y) / 6,
                 p2.X,
                 p2.Y));

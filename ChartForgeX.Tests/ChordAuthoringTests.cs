@@ -99,6 +99,6 @@ public sealed class ChordAuthoringTests {
             ```
             """);
         Assert.True(result.HasErrors);
-        Assert.Contains(result.Diagnostics, item => item.Message.Contains("Unknown chart type", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, item => item.Message.Contains("cannot invent relationships", StringComparison.Ordinal));
     }
 }

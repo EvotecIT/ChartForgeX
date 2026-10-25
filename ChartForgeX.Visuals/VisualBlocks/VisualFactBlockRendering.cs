@@ -473,10 +473,7 @@ internal static partial class VisualFactBlockRendering {
         if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline) {
             var data = cell.GetSparklineData(); return (data.Minimum, data.Maximum);
         }
-        var minimum = cell.MicroVisualMinimum ?? Minimum(cell.MicroVisualValues);
-        var maximum = cell.MicroVisualMaximum ?? Maximum(cell.MicroVisualValues);
-        if (Math.Abs(maximum - minimum) < double.Epsilon) maximum = minimum + 1;
-        return (minimum, maximum);
+        return ChartForgeX.Rendering.NativeTablePaintPlan.MicroBounds(cell.MicroVisualValues, cell.MicroVisualMinimum, cell.MicroVisualMaximum);
     }
 
     private static void ValidateTableCellMicroVisual(ChartTableCell cell) {

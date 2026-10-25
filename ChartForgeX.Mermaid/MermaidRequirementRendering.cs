@@ -25,9 +25,14 @@ public static class MermaidRequirementRendering {
             .WithLayout(TopologyLayoutMode.Layered, direction);
 
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
+        // Host themes select unconfigured paints; explicitly authored role values remain specific.
+        var sourceTheme = document.Configuration.RequirementTheme;
         foreach (var requirement in document.Requirements) {
             chart.AddAutoNode(requirement.Name, RequirementLabel(requirement), TopologyNodeKind.Certificate, RiskStatus(requirement.Risk), subtitle: RequirementSubtitle(requirement), width: 170, height: 82, symbol: "R", cssClass: CssClass("cfx-mermaid-requirement", requirement.Classes));
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            sourceTheme?.Apply(node);
+            var nameContent = MermaidInlineCaption.Content(requirement.Name, markdownByDefault: true);
+            if (nameContent.IsStructured) node.LabelContent = nameContent;
             node.Metadata["mermaid.kind"] = "requirement";
             node.Metadata["mermaid.requirementType"] = requirement.RequirementType;
             if (!string.IsNullOrWhiteSpace(requirement.RequirementId)) node.Metadata["mermaid.requirementId"] = requirement.RequirementId!;
@@ -40,6 +45,9 @@ public static class MermaidRequirementRendering {
         foreach (var element in document.Elements) {
             chart.AddAutoNode(element.Name, element.Name, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, subtitle: ElementSubtitle(element), width: 160, height: 72, symbol: "E", cssClass: CssClass("cfx-mermaid-requirement-element", element.Classes));
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            sourceTheme?.Apply(node);
+            var nameContent = MermaidInlineCaption.Content(element.Name, markdownByDefault: true);
+            if (nameContent.IsStructured) node.LabelContent = nameContent;
             node.Metadata["mermaid.kind"] = "element";
             if (!string.IsNullOrWhiteSpace(element.ElementType)) node.Metadata["mermaid.elementType"] = element.ElementType!;
             if (!string.IsNullOrWhiteSpace(element.DocumentReference)) node.Metadata["mermaid.docref"] = element.DocumentReference!;
@@ -51,6 +59,7 @@ public static class MermaidRequirementRendering {
         for (var index = 0; index < document.Relationships.Count; index++) {
             var relationship = document.Relationships[index];
             chart.AddEdge("mermaid-requirement-edge-" + index.ToString(CultureInfo.InvariantCulture), relationship.SourceName, relationship.TargetName, relationship.RelationshipType, ToEdgeKind(relationship.RelationshipType), TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            sourceTheme?.Apply(chart.Edges[chart.Edges.Count - 1]);
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.relationship"] = relationship.RelationshipType;
         }
 
@@ -87,7 +96,7 @@ public static class MermaidRequirementRendering {
 
     private static void AddRequirementDetails(TopologyNode node, MermaidRequirementNode requirement) {
         if (requirement.RequirementId != null) node.Details.Add(new TopologyNodeDetail { Label = "id", Value = requirement.RequirementId });
-        if (requirement.Text != null) node.Details.Add(new TopologyNodeDetail { Label = "text", Value = requirement.Text });
+        if (requirement.Text != null) node.Details.Add(new TopologyNodeDetail { Label = "text", ValueContent = MermaidInlineCaption.Content(requirement.Text, markdownByDefault: true) });
         if (requirement.Risk != null) node.Details.Add(new TopologyNodeDetail { Label = "risk", Value = requirement.Risk });
         if (requirement.VerifyMethod != null) node.Details.Add(new TopologyNodeDetail { Label = "verifymethod", Value = requirement.VerifyMethod });
     }

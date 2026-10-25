@@ -135,7 +135,7 @@
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
     let hit = pointLabelTarget(root, nativeTarget) || (nativeTarget instanceof Element ? nativeTarget.closest(targetSelector) : null);
-    // Stop at caption owner/ID; retain hidden targets.
+
 
     while (hit && root.contains(hit) && !isInteractiveTarget(hit)) {
       if (hit.dataset.cfxRole === 'legend-entry-omitted') { hit = null; break; }
@@ -174,7 +174,7 @@
   const pointerActivationTarget = (root, node, event) => {
     if (isDataTarget(node) || renderedTargetKind(node) !== 'series' || !usesCartesianCoordinates(node)
       || !(event instanceof MouseEvent) || event.detail <= 0) return node;
-    // Top fill owns hit/nearest.
+
 
     const series = seriesTarget(node), candidates = pointerCandidates(root, event, true, event.target, series);
     const fill = event.target instanceof Element ? event.target.closest('[data-cfx-role]') : null;

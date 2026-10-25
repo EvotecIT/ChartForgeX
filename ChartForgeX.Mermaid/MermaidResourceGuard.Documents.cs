@@ -27,14 +27,19 @@ internal static partial class MermaidResourceGuard {
             case MermaidFlowchartDocument flow:
                 Items(flow.Nodes); Items(flow.Subgraphs); Items(flow.ClassDefinitions); Items(flow.LinkStyles); Links(flow.Edges);
                 foreach (var definition in flow.ClassDefinitions) AddElements(definition.Styles.Count, definition.Span);
-                foreach (var node in flow.Nodes) AddElements(node.Classes.Count + node.Styles.Count, node.Span);
+                foreach (var node in flow.Nodes) AddElements(node.Classes.Count + node.Styles.Count + node.Properties.Count, node.Span);
+                foreach (var group in flow.Subgraphs) AddElements(group.Classes.Count + group.Styles.Count, group.Span);
+                if (flow is MermaidUseCaseDocument useCase) Items(useCase.Notes);
                 foreach (var style in flow.LinkStyles) AddElements(style.Styles.Count, style.Span);
-                foreach (var edge in flow.Edges) AddElements(edge.Styles.Count, edge.Span);
-                ParentDepths(flow.Subgraphs.Select(group => (group.Id, group.ParentSubgraphId, group.Span)));
+                foreach (var edge in flow.Edges) {
+                    AddElements(edge.Styles.Count + edge.Classes.Count, edge.Span);
+                    if (edge.Id != null) CheckInterchangeFactLength(edge.Id.Length, edge.IdentitySpan ?? edge.Span);
+                }
+                ParentDepths(flow.Subgraphs.Select(group => (group.Id, group.ParentSubgraphId, group.Span)), stopAtRepeatedParent: true);
                 break;
             case MermaidSequenceDocument sequence:
                 Items(sequence.Participants); Items(sequence.Notes); Items(sequence.Blocks); Items(sequence.Activations);
-                Items(sequence.Lifetimes); Items(sequence.ParticipantBoxes); Items(sequence.Links); Links(sequence.Messages);
+                Items(sequence.Lifetimes); Items(sequence.ParticipantBoxes); Items(sequence.Links); Items(sequence.PropertyStatements); Items(sequence.AutonumberStatements); Links(sequence.Messages);
                 foreach (var block in sequence.Blocks) CheckDepth(block.Depth + 1, block.Span);
                 break;
             case MermaidClassDocument classes:
@@ -70,11 +75,13 @@ internal static partial class MermaidResourceGuard {
                 break;
             case MermaidAgentflowDocument agentflow:
                 Items(agentflow.Nodes); Items(agentflow.Flows); Links(agentflow.Edges);
+                Items(agentflow.ClassDefinitions);
+                foreach (var definition in agentflow.ClassDefinitions) AddElements(definition.Styles.Count, definition.Span);
                 ParentDepths(agentflow.Flows.Select(flow => (flow.Id, flow.ParentId, flow.Span))
                     .Concat(agentflow.Nodes.Select(node => (node.Id, node.IsGlobal ? null : node.ParentFlowId, node.Span))));
-                foreach (var node in agentflow.Nodes) Metadata(node.Metadata);
-                foreach (var flow in agentflow.Flows) Metadata(flow.Metadata);
-                foreach (var edge in agentflow.Edges) Metadata(edge.Metadata);
+                foreach (var node in agentflow.Nodes) { Metadata(node.Metadata); AddElements(node.Classes.Count + node.Styles.Count, node.Span); }
+                foreach (var flow in agentflow.Flows) { Metadata(flow.Metadata); AddElements(flow.Classes.Count + flow.Styles.Count, flow.Span); }
+                foreach (var edge in agentflow.Edges) { Metadata(edge.Metadata); AddElements(edge.Classes.Count + edge.Styles.Count, edge.Span); }
                 break;
             case MermaidPieDocument pie: Spans(pie.Slices.Select(item => item.Span)); break;
             case MermaidJourneyDocument journey:
@@ -91,7 +98,11 @@ internal static partial class MermaidResourceGuard {
                 break;
             case MermaidMindMapDocument mind:
                 Items(mind.Nodes);
-                foreach (var node in mind.Nodes) { CheckDepth(node.Level + 1, node.Span); if (node.ParentId != null) AddEdges(1, node.Span); }
+                foreach (var node in mind.Nodes) {
+                    CheckDepth(node.Level + 1, node.Span);
+                    AddElements(node.Classes.Count + node.Icons.Count, node.Span);
+                    if (node.ParentId != null) AddEdges(1, node.Span);
+                }
                 break;
             case MermaidTimelineDocument timeline:
                 Items(timeline.Sections); Items(timeline.Periods);
@@ -103,10 +114,17 @@ internal static partial class MermaidResourceGuard {
                 foreach (var item in requirement.Requirements) AddElements(item.Classes.Count + item.Styles.Count, item.Span);
                 foreach (var item in requirement.Elements) AddElements(item.Classes.Count + item.Styles.Count, item.Span);
                 break;
-            case MermaidQuadrantDocument quadrant: Items(quadrant.Points); break;
+            case MermaidQuadrantDocument quadrant:
+                Items(quadrant.Points); Items(quadrant.ClassDefinitions);
+                foreach (var definition in quadrant.ClassDefinitions) AddElements(definition.Styles.Count, definition.Span);
+                foreach (var point in quadrant.Points) AddElements(point.Styles.Count + (point.ClassName == null ? 0 : 1), point.Span);
+                break;
             case MermaidXYChartDocument xy:
                 Items(xy.Series); AddElements(xy.XAxis.Labels.Count, xy.HeaderSpan);
-                foreach (var series in xy.Series) AddElements(series.Values.Count, series.Span);
+                foreach (var series in xy.Series) {
+                    AddElements(series.Values.Count, series.Span);
+                    Items(series.PointLabels);
+                }
                 break;
             case MermaidSankeyDocument sankey:
                 Links(sankey.Links);
@@ -121,7 +139,8 @@ internal static partial class MermaidResourceGuard {
                 foreach (var curve in radar.Curves) AddElements(curve.OrderedValues.Count + curve.ValuesByAxisId.Count, curve.Span);
                 break;
             case MermaidTreemapDocument treemap:
-                Items(treemap.Nodes);
+                Items(treemap.Nodes); Items(treemap.ClassDefinitions);
+                foreach (var definition in treemap.ClassDefinitions) AddElements(definition.Styles.Count, definition.Span);
                 foreach (var node in treemap.Nodes) {
                     var depth = 0;
                     for (var current = node; current != null; current = current.Parent) CheckDepth(++depth, node.Span);
@@ -129,10 +148,20 @@ internal static partial class MermaidResourceGuard {
                 }
                 break;
             case MermaidKanbanDocument kanban:
-                Items(kanban.Columns); foreach (var column in kanban.Columns) Items(column.Tasks);
+                Items(kanban.Columns);
+                foreach (var column in kanban.Columns) {
+                    AddElements(column.Metadata.Count, column.Span); Items(column.Tasks);
+                    foreach (var task in column.Tasks) AddElements(task.Metadata.Count, task.Span);
+                }
                 break;
             case MermaidArchitectureDocument architecture:
                 Items(architecture.Groups); Items(architecture.Services); Items(architecture.Junctions); Links(architecture.Edges);
+                Items(architecture.Alignments); foreach (var alignment in architecture.Alignments) {
+                    MermaidArchitectureAlignment.CheckMemberCount(alignment.Members.Count, alignment.Span);
+                    AddElements(alignment.Members.Count, alignment.Span);
+                    foreach (var id in alignment.Members) if (id != null && id.Length > ChartForgeX.VisualArtifacts.VisualArtifactInterchangeValidation.MaximumIdCharacters)
+                        throw new MermaidResourceLimitException("Interchange.MaximumIdCharacters", ChartForgeX.VisualArtifacts.VisualArtifactInterchangeValidation.MaximumIdCharacters, id.Length, alignment.Span);
+                }
                 ParentDepths(architecture.Groups.Select(group => (group.Id, group.ParentId, group.Span)));
                 break;
             case MermaidC4Document c4:
@@ -140,7 +169,10 @@ internal static partial class MermaidResourceGuard {
                 ParentDepths(c4.Boundaries.Select(group => (group.Id, group.ParentId, group.Span)));
                 break;
             case MermaidBlockDocument block:
-                Spans(block.Items.Select(item => item.Span));
+                Spans(block.Items.Select(item => item.Span)); Items(block.ClassDefinitions); Items(block.StyleStatements);
+                ParentDepths(block.Items.Select(item => (item.Id, item.ParentId, item.Span)));
+                foreach (var definition in block.ClassDefinitions) AddElements(definition.Styles.Count, definition.Span);
+                foreach (var item in block.Items) AddElements(item.Classes.Count + item.Styles.Count, item.Span);
                 foreach (var edge in block.Edges) AddEdges(1, edge.Span);
                 break;
             case MermaidPacketDocument packet: Spans(packet.Fields.Select(item => item.Span)); break;
@@ -156,6 +188,7 @@ internal static partial class MermaidResourceGuard {
                 }
                 break;
             case MermaidWardleyDocument wardley:
+                if (wardley.AnnotationsBox != null) Spans(new[] { wardley.AnnotationsBox.Span });
                 Spans(wardley.Nodes.Select(item => item.Span)); Spans(wardley.Notes.Select(item => item.Span));
                 Spans(wardley.Annotations.Select(item => item.Span)); Spans(wardley.Markers.Select(item => item.Span)); Spans(wardley.Pipelines.Select(item => item.Span));
                 foreach (var link in wardley.Links) AddEdges(1, link.Span);
@@ -198,13 +231,16 @@ internal static partial class MermaidResourceGuard {
                 foreach (var value in current.Value.Items) pending.Push((value, current.Depth + 1));
             }
         }
-        void ParentDepths(IEnumerable<(string Id, string? ParentId, MermaidSourceSpan Span)> groups) {
+        void ParentDepths(IEnumerable<(string Id, string? ParentId, MermaidSourceSpan Span)> groups, bool stopAtRepeatedParent = false) {
             var parents = new Dictionary<string, (string? ParentId, MermaidSourceSpan Span)>(StringComparer.Ordinal);
             foreach (var group in groups) if (!parents.ContainsKey(group.Id)) parents.Add(group.Id, (group.ParentId, group.Span));
             foreach (var group in parents) {
                 var parent = group.Value.ParentId; var depth = 1;
+                var visited = stopAtRepeatedParent ? new HashSet<string>(StringComparer.Ordinal) { group.Key } : null;
                 CheckDepth(depth, group.Value.Span);
                 while (parent != null && parents.TryGetValue(parent, out var next)) {
+                    // Flowchart finalization reports genuine parent cycles as located invalid source.
+                    if (visited != null && !visited.Add(parent)) break;
                     CheckDepth(++depth, group.Value.Span); parent = next.ParentId;
                 }
             }

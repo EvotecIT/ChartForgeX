@@ -1,5 +1,7 @@
 using System;
 using System.Text;
+using System.Collections.Generic;
+using ChartForgeX.Rendering;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Svg;
@@ -58,6 +60,21 @@ internal sealed class SvgPathDataBuilder {
         AppendNumber(xAxisRotation);
         _builder.Append(' ').Append(largeArc ? '1' : '0').Append(' ').Append(sweep ? '1' : '0').Append(' ');
         AppendPoint(x, y);
+        return this;
+    }
+
+    /// <summary>Appends captured native commands, preserving each disconnected subpath and its close policy.</summary>
+    internal SvgPathDataBuilder Append(IReadOnlyList<ChartPathCommand> commands, bool close) {
+        var hasSubpath = false;
+        foreach (var command in commands) {
+            if (command.Kind == ChartPathCommandKind.MoveTo) {
+                if (hasSubpath && close) Close();
+                MoveTo(command.X, command.Y); hasSubpath = true;
+            } else if (hasSubpath && command.Kind == ChartPathCommandKind.LineTo) LineTo(command.X, command.Y);
+            else if (hasSubpath && command.Kind == ChartPathCommandKind.CubicTo)
+                CubicTo(command.Control1X, command.Control1Y, command.Control2X, command.Control2Y, command.X, command.Y);
+        }
+        if (hasSubpath && close) Close();
         return this;
     }
 

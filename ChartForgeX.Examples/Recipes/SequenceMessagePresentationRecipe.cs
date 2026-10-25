@@ -1,0 +1,17 @@
+/// <summary>Creates a native sequence with aligned multiline captions and independently measured number badges.</summary>
+public static class SequenceMessagePresentationRecipe {
+    /// <summary>Creates compact or wide native message presentation through the shared preparation owner.</summary>
+    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+        if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
+        var model=SequenceArtifact.Create("sequence-message-presentation").WithSize(variant=="compact"?390:1000,820)
+            .WithTitle("Message presentation").WithSubtitle("Measured number badges and independent message/note alignment")
+            .AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save\nFact")
+            .AddMessage("B","A","Ready\nNext",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage("B","B","Check\nSelf")
+            .AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Review\nNote");
+        model.Notes[0].StepIndex=1;model.Metadata["mermaid.autonumber"]="true";model.Metadata["mermaid.autonumber.start"]="1000";
+        model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8,wrapPadding:8,
+            messageAlignment:TextAlignment.Right,noteAlignment:TextAlignment.Center,numberPresentation:SequenceNumberPresentation.Badge);
+        model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12},note:new TextStyleOverride{FontSize=12});
+        model.Paint.MessageLine=ChartColor.FromHex("#3b5ccc");model.Paint.NumberText=ChartColor.White;model.Theme=VisualTheme.Graphite();model.ThemeMode=mode;return model;
+    }
+}

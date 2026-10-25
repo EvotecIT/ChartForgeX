@@ -7,10 +7,18 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
-    internal static double EdgeLabelTextWidth(string? primary, string? secondary, string? tertiary, TextMeasurementContext? measurement, double scale = 1) =>
-        Math.Max(48 * scale, Math.Max(EstimateTextWidth(primary ?? string.Empty, 12 * scale, true, measurement),
-            Math.Max(EstimateTextWidth(secondary ?? string.Empty, 10 * scale, false, measurement),
-                EstimateTextWidth(tertiary ?? string.Empty, 10 * scale, false, measurement))) + 18 * scale);
+    internal static int EdgeLabelRows(string? value, TopologyRenderOptions options) => string.IsNullOrWhiteSpace(value) ? 0
+        : TopologyTextLayout.AuthoredRowCount(value, options.AllowMultilineNodeLabels);
+
+    internal static int EdgeLabelRows(string? primary, string? secondary, string? tertiary, TopologyRenderOptions options) =>
+        EdgeLabelRows(primary, options) + EdgeLabelRows(secondary, options) + EdgeLabelRows(tertiary, options);
+
+    internal static double EdgeLabelTextWidth(string? primary, string? secondary, string? tertiary, TextMeasurementContext? measurement,
+        double scale = 1, bool allowMultiline = true) {
+        double Width(string? value, double size, bool bold) => value == null ? 0 : TopologyTextLayout.AuthoredRows(value, allowMultiline)
+            .Max(row => EstimateTextWidth(row, size * scale, bold, measurement));
+        return Math.Max(48 * scale, Math.Max(Width(primary, 12, true), Math.Max(Width(secondary, 10, false), Width(tertiary, 10, false))) + 18 * scale);
+    }
 
     public static List<TopologyEdgeLabelLayout> EdgeLabelLayouts(TopologyChart chart, TopologyRenderOptions options) {
         var nodes = TopologyGroupEndpoints.Resolve(chart);
@@ -34,17 +42,52 @@ internal static partial class TopologyRenderPrimitives {
             if (string.IsNullOrWhiteSpace(label) && string.IsNullOrWhiteSpace(secondary) && string.IsNullOrWhiteSpace(tertiary)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
 
+            if (TopologyRenderRouteCache.Geometry(chart, edge)?.MainLabel is { } capturedLabel) {
+                var capturedBounds = capturedLabel.Bounds; var capturedAnchor = capturedLabel.Anchor;
+                placed.Add(LabelBox.FromBounds(capturedBounds.Left, capturedBounds.Top, capturedBounds.Right, capturedBounds.Bottom));
+                layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, capturedBounds.X + capturedBounds.Width / 2, capturedBounds.Y + capturedBounds.Height / 2,
+                    capturedBounds.Width, capturedBounds.Height, capturedAnchor.X, capturedAnchor.Y));
+                continue;
+            }
             // Empty labels must not route the whole chart before viewport normalization has finished.
             edgeSegments ??= EdgeSegments(chart, nodes);
 
             var points = EdgePoints(chart, edge, nodes);
+            if (edge.Interpolation.HasValue) points = RenderedEdgeSamplePoints(chart, edge, nodes, points);
             var labelPoint = IsGeographicCurve(chart, edge, nodes)
                 ? QuadraticPoint(points[0], GeographicCurveControlPoint(chart, edge, nodes, points), points[points.Count - 1], 0.5)
                 : EdgeLabelPoint(points);
-            var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
-            var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement, options.ResolvedEdgeLabelScale);
+            var units = TopologyPreparedEdgePlan.Units(edge);
+            var lineCount = EdgeLabelRows(label, secondary, tertiary, options);
+            var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement, options.ResolvedEdgeLabelScale * units, options.AllowMultilineNodeLabels);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 0;
-            var height = EdgeLabelHeight(lineCount, options);
+            var height = EdgeLabelHeight(lineCount, options) * units;
+            if (edge.TextStyle?.HasOverrides == true) {
+                var sourceMeasurement = options.TextMeasurement ?? new TextMeasurementContext(chart.Theme.Typography.ToFontSpec(), options.TextMeasurementMode);
+                var size = edge.TextStyle.FontSize ?? chart.Theme.Typography.DataLabelSize * units;
+                var measuredWidth = 0d; var measuredHeight = 0d;
+                var labels = new[] { label, secondary, tertiary };
+                for (var index = 0; index < labels.Length; index++) {
+                    var value = labels[index]; if (string.IsNullOrWhiteSpace(value)) continue;
+                    var weight = index == 0 ? 600 : 400;
+                    var style = TopologyTextPolicy.Resolve(edge.TextStyle, sourceMeasurement.Font, size, weight);
+                    var measurement = TopologyTextPolicy.Measurement(edge.TextStyle, sourceMeasurement, weight);
+                    var rows = TopologyTextLayout.AuthoredRows(value!, options.AllowMultilineNodeLabels);
+                    var fontSize = size * (index == 0 ? 1 : .85);
+                    measuredWidth = Math.Max(measuredWidth, rows.Max(row => measurement.MeasureMetrics(row, fontSize, style.Font.Weight).Width));
+                    measuredHeight += rows.Length * measurement.MeasureMetrics("Ag", fontSize, style.Font.Weight).LineHeight;
+                }
+                width = Math.Max(width, measuredWidth + 18 * units); height = Math.Max(height, measuredHeight + 4 * units);
+            }
+            var inlineExtent = InlineEdgeLabelExtent(chart, edge, label, secondary, tertiary, options, width, height);
+            width = inlineExtent.Width; height = inlineExtent.Height;
+            if (edge.LabelPosition is TopologyLabelPosition position) {
+                var explicitCenter = ResolveExplicitLabelCenter(chart, options, edge, position, label, secondary, tertiary, width, height, lineCount);
+                var explicitAnchor = EdgeLabelAnchor(edge, nodes, labelPoint, explicitCenter);
+                placed.Add(LabelBox.FromCenter(explicitCenter.X, explicitCenter.Y, width, height));
+                layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, explicitCenter.X, explicitCenter.Y, width, height, explicitAnchor.X, explicitAnchor.Y));
+                continue;
+            }
             if (PlacesLabelAlongRoute(chart, options, edge)) {
                 routeObstacles ??= RouteLabelObstacles(chart, options);
                 if (PlaceLabelAlongRoute(chart, options, edge, points, width, height, lineCount, routeObstacles, placed, edgeSegments) is { } alongRoute) {
@@ -95,6 +138,13 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     private static LabelBox EdgeLabelNodeObstacle(TopologyNode node, TopologyRenderOptions options, double padding) {
+        if (TopologyNodeFootprint.ExplicitOccupiedBounds(node, options) is {} occupied)
+            return LabelBox.FromBounds(occupied.Left - padding, occupied.Top - padding, occupied.Right + padding, occupied.Bottom + padding);
+        if (TopologyActorCaption.Applies(node, options)) {
+            var caption = TopologyActorCaption.Prepare(node, options).Bounds;
+            return LabelBox.FromBounds(Math.Min(node.X, caption.Left) - padding, Math.Min(node.Y, caption.Top) - padding,
+                Math.Max(node.X + node.Width, caption.Right) + padding, Math.Max(node.Y + node.Height, caption.Bottom) + padding);
+        }
         if (EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Icon || !options.IncludeNodeLabels || !options.IncludeIconLabels) return LabelBox.FromNode(node, padding);
         var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
         var labelY = IconLabelPlateY(node);
@@ -161,8 +211,8 @@ internal static partial class TopologyRenderPrimitives {
 
     internal static double EdgeLabelHeight(int lineCount, TopologyRenderOptions options) {
         if (lineCount <= 1) return 22 * options.ResolvedEdgeLabelScale;
-        if (IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates) return (lineCount == 2 ? 46 : 62) * options.ResolvedEdgeLabelScale;
-        return (lineCount == 2 ? 38 : 52) * options.ResolvedEdgeLabelScale;
+        if (IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates) return (lineCount == 2 ? 46 : 62 + Math.Max(0, lineCount - 3) * 16) * options.ResolvedEdgeLabelScale;
+        return (lineCount == 2 ? 38 : 52 + Math.Max(0, lineCount - 3) * 16) * options.ResolvedEdgeLabelScale;
     }
 
     private static ChartPoint AutomaticRouteClearanceOffset(IReadOnlyList<ChartPoint> points, ChartPoint labelPoint, double width, double height, int lineCount, TopologyViewport viewport, TopologyLegend? legend) {

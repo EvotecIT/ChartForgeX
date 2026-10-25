@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScheduleCompiler {
-    private static bool IsMarker(ChartSeries series) => series.Kind == ChartSeriesKind.Gantt && series.GanttItems.Count == 1 && series.GanttItems[0].IsVerticalMarker;
+    internal static bool IsMarker(ChartSeries series) => series.Kind == ChartSeriesKind.Gantt && series.GanttItems.Count == 1 && series.GanttItems[0].IsVerticalMarker;
     private static ChartColor MarkerColor(ChartSeries series, VisualThemeColors colors) => ChartSeriesColours.Point(series, 0, colors, colors.MutedForeground);
     private static SvgColorRole MarkerColorRole(ChartSeries series) => VisualChartPaint.SeriesRole(series, 0, fallbackRole: SvgColorRole.Text);
 

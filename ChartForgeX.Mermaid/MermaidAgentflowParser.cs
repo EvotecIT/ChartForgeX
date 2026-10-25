@@ -21,12 +21,14 @@ internal static partial class MermaidAgentflowParser {
         var scopes = new Stack<Scope>();
         var nodes = new Dictionary<string, MermaidAgentflowNode>(StringComparer.Ordinal);
         var attachments = new List<Attachment>();
+        var linkStyles=new List<MermaidFlowchartLinkStyle>();
         for (var line = firstLine; line <= lines.Length; line++) {
             MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var text = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(text)) continue;
             var span = new MermaidSourceSpan(line, MermaidParserUtilities.LeadingWhitespace(raw) + 1, text.Length);
+            if(TryStyle(document,nodes,linkStyles,text,span,result))continue;
             if (text == "end") {
                 if (scopes.Count == 0) Error("Agentflow end has no open flow or global block.");
                 else scopes.Pop();
@@ -48,6 +50,7 @@ internal static partial class MermaidAgentflowParser {
             if (flow) {
                 if (document.Flows.Exists(item => item.Id == current!.Id)) { Error("Agentflow flow identities must be unique."); continue; }
                 var item = new MermaidAgentflowFlow(current!.Id, span) { Label = current.Label, ParentId = global ? null : parent };
+                item.Classes.AddRange(current.Classes);MermaidStyleParser.Copy(item.Styles,current.Styles,span);
                 document.Flows.Add(item);
                 MermaidResourceGuard.ReserveElements(1, span);
                 MermaidResourceGuard.CheckDepth(scopes.Count + 1, span);
@@ -72,6 +75,7 @@ internal static partial class MermaidAgentflowParser {
             "Agentflow flow and global blocks must close with end.", MermaidDiagnosticCodes.InvalidStatement);
         ApplyAttachments(document, attachments, result);
         document.Nodes.RemoveAll(node => document.Flows.Exists(flow => flow.Id == node.Id) || document.Edges.Exists(edge => edge.Id == node.Id));
+        ApplyStyles(document,linkStyles,result);
         foreach (var node in document.Nodes) if (node.IsGlobal) node.ParentFlowId = null;
         if (document.Nodes.Count == 0 && document.Flows.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error,
             "Agentflow diagrams require a node or flow.", MermaidDiagnosticCodes.InvalidStatement);

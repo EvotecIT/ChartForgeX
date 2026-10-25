@@ -28,12 +28,13 @@ public sealed partial class Chart : IVisualRenderable {
     /// <exception cref="InvalidOperationException">An explicit window is requested without observations or a usable plot rectangle.</exception>
     public PreparedVisual Prepare(VisualRenderContext context, ChartCartesianViewport? viewport) => PrepareCore(context, viewport);
 
-    private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null, ChartHierarchyView? hierarchyView = null, bool requireHierarchy = false) {
+    private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null, ChartHierarchyView? hierarchyView = null, bool requireHierarchy = false, ChartPolarViewport? polarViewport = null, bool requirePolar = false) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         var view = (Chart)MemberwiseClone();
         view.Options = Options.PresentationView(context);
-        view.HierarchyPreparation = ChartHierarchyPreparation.Resolve(view, hierarchyView, requireHierarchy);
+        view.HierarchyPreparation = ChartHierarchyPreparation.Resolve(view, hierarchyView ?? view.NativeHierarchyVisibility?.HierarchyView, requireHierarchy, view.NativeHierarchyVisibility);
         ChartTimeSpacingPreparation.Capture(view);
+        view.PolarPreparation = ChartPolarPreparation.Resolve(view, polarViewport, requirePolar);
         return view.PrepareScene(context, viewport, fullDomain);
     }
 
@@ -46,7 +47,8 @@ public sealed partial class Chart : IVisualRenderable {
         var sourceFrame = context.Frame;
         var frameColors = context.Theme.Resolve(context.ThemeMode);
         var axisLabels = family is VisualChartFamily.NumericRadial or VisualChartFamily.Cartesian ? new ChartAxisValueFormatter.Cache() : null;
-        var entries = VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale, colorScales);
+        var entries = _visibilityLegendEntries?.Invoke(context)
+            ?? VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale, colorScales);
         TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
             var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
             if (configured == null) fallback.Font.Weight = weight;
@@ -60,14 +62,26 @@ public sealed partial class Chart : IVisualRenderable {
             RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
             RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
             sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
-        context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
-        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
+        var captureHierarchy = Series.Count == 1 && Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst;
+        var captureCompleteCartesian = family == VisualChartFamily.Cartesian && viewport == null && VisualCartesianCompiler.NeedsCompleteCartesianValues(this);
+        var textCapture = context.NativeTextCapture ?? (family == VisualChartFamily.Radial || captureHierarchy || captureCompleteCartesian ? new VisualSceneTextCapture() : null);
+        context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithNativeValueSource(context.CaptureNativeValueSource);
+        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition
             ? VisualMapCompiler.ResolveTileLegendInset(this, context, builder, entries, colorScales.Map) : null;
         var content = VisualFrameLayout.Build(builder, context, mapLegendInset == null ? entries : Array.Empty<VisualLegendEntry>(), out var legendHeight);
         var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport, mapLegendInset, fullDomain);
         if (mapLegendInset != null) VisualFrameLayout.PaintOverlayLegend(builder, context, entries, mapLegendInset.LegendArea);
+        if (family == VisualChartFamily.Radial && textCapture != null && (!textCapture.IsReplay || context.CaptureNativeValueSource))
+            builder.CaptureExistingValue(scene => VisualRadialCompiler.TryCaptureValues(this, context, textCapture, scene),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
+        if (captureHierarchy && textCapture != null && !textCapture.IsReplay)
+            builder.CaptureExistingValue(scene => VisualHierarchyCompiler.TryCaptureValues(this, context, textCapture, scene),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
+        if (captureCompleteCartesian && textCapture != null && !textCapture.IsReplay)
+            builder.CaptureExistingValue(scene => VisualCartesianCompiler.TryCaptureCompleteValues(this, context, textCapture, scene, projection),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
         builder.CaptureChartIdentity(this, projection);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title
@@ -77,6 +91,6 @@ public sealed partial class Chart : IVisualRenderable {
             svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables), xProjection: projection?.X, yProjection: projection?.Y,
             secondaryXProjection: projection?.SecondaryX, secondaryYProjection: projection?.SecondaryY, viewport: viewport,
             cartesianOrientation: projection == null ? null : projection.Horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical,
-            hierarchyPreparation: HierarchyPreparation);
+            hierarchyPreparation: HierarchyPreparation, polarProjection: PolarPreparation?.Projection, polarViewport: PolarPreparation?.Request).WithCapturedText(textCapture?.Freeze());
     }
 }

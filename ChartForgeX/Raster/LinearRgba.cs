@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Primitives;
+using Rgb = ChartForgeX.Raster.RasterBlendFunctions.Rgb;
 
 namespace ChartForgeX.Raster;
 
@@ -7,14 +8,8 @@ namespace ChartForgeX.Raster;
 internal readonly struct LinearRgba {
     internal readonly float R, G, B, A;
     internal LinearRgba(double r, double g, double b, double a) { R = (float)r; G = (float)g; B = (float)b; A = (float)a; }
-    private static readonly double[] Linear = CreateLinearTable();
-    private static double[] CreateLinearTable() {
-        var table = new double[256];
-        for (var i = 0; i < table.Length; i++) { var c = i / 255.0; table[i] = c <= 0.04045 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4); }
-        return table;
-    }
     internal static LinearRgba From(ChartColor color, double opacity = 1) {
-        var alpha = color.A / 255.0 * opacity; return new LinearRgba(Linear[color.R] * alpha, Linear[color.G] * alpha, Linear[color.B] * alpha, alpha);
+        var alpha = color.A / 255.0 * opacity; return new LinearRgba(RasterColorTransfer.Linear(color.R) * alpha, RasterColorTransfer.Linear(color.G) * alpha, RasterColorTransfer.Linear(color.B) * alpha, alpha);
     }
     internal LinearRgba Opacity(double amount) => new(R * amount, G * amount, B * amount, A * amount);
     internal ChartColor ToColor(double opacity = 1) => A <= 0 ? new ChartColor(0, 0, 0, 0) :
@@ -49,42 +44,9 @@ internal readonly struct LinearRgba {
         if (mode > 27 || mode < 13) return default;
         var s = new Rgb(sa > 0 ? source.R / sa : 0, sa > 0 ? source.G / sa : 0, sa > 0 ? source.B / sa : 0);
         var d = new Rgb(da > 0 ? backdrop.R / da : 0, da > 0 ? backdrop.G / da : 0, da > 0 ? backdrop.B / da : 0);
-        var blended = mode >= 24 ? Nonseparable(s, d, mode) : new Rgb(Blend(s.R, d.R, mode), Blend(s.G, d.G, mode), Blend(s.B, d.B, mode));
+        var blended = mode >= 24 ? RasterBlendFunctions.Nonseparable(s, d, mode) : new Rgb(RasterBlendFunctions.Separable(s.R, d.R, mode), RasterBlendFunctions.Separable(s.G, d.G, mode), RasterBlendFunctions.Separable(s.B, d.B, mode));
         var outside = Weighted(source, backdrop, 1 - da, 1 - sa); var overlap = sa * da;
         return new LinearRgba(outside.R + blended.R * overlap, outside.G + blended.G * overlap, outside.B + blended.B * overlap, sa + da - overlap);
     }
-    private static double Blend(double s, double d, int mode) {
-        switch (mode) {
-            case 13: return s + d - s * d;
-            case 14: return d <= 0.5 ? 2 * s * d : 1 - 2 * (1 - s) * (1 - d);
-            case 15: return Math.Min(s, d);
-            case 16: return Math.Max(s, d);
-            case 17: return d <= 0 ? 0 : s >= 1 ? 1 : Math.Min(1, d / (1 - s));
-            case 18: return d >= 1 ? 1 : s <= 0 ? 0 : 1 - Math.Min(1, (1 - d) / s);
-            case 19: return s <= 0.5 ? 2 * s * d : 1 - 2 * (1 - s) * (1 - d);
-            case 20: return s <= 0.5 ? d - (1 - 2 * s) * d * (1 - d) : d + (2 * s - 1) * ((d <= 0.25 ? ((16 * d - 12) * d + 4) * d : Math.Sqrt(d)) - d);
-            case 21: return Math.Abs(d - s);
-            case 22: return d + s - 2 * d * s;
-            default: return d * s;
-        }
-    }
-    private readonly struct Rgb {
-        internal Rgb(double r, double g, double b) { R = r; G = g; B = b; }
-        internal readonly double R, G, B;
-        internal double Lum => 0.3 * R + 0.59 * G + 0.11 * B;
-        internal double Sat => Math.Max(R, Math.Max(G, B)) - Math.Min(R, Math.Min(G, B));
-    }
-    private static Rgb Nonseparable(Rgb s, Rgb d, int mode) => mode == 24 ? SetLum(SetSat(s, d.Sat), d.Lum) :
-        mode == 25 ? SetLum(SetSat(d, s.Sat), d.Lum) : mode == 26 ? SetLum(s, d.Lum) : SetLum(d, s.Lum);
-    private static Rgb SetSat(Rgb color, double saturation) {
-        var minimum = Math.Min(color.R, Math.Min(color.G, color.B)); var span = color.Sat;
-        return span <= 0 ? new Rgb(0, 0, 0) : new Rgb((color.R - minimum) * saturation / span, (color.G - minimum) * saturation / span, (color.B - minimum) * saturation / span);
-    }
-    private static Rgb SetLum(Rgb color, double luminosity) {
-        var delta = luminosity - color.Lum; var r = color.R + delta; var g = color.G + delta; var b = color.B + delta;
-        var minimum = Math.Min(r, Math.Min(g, b)); var maximum = Math.Max(r, Math.Max(g, b));
-        if (minimum < 0) { var factor = luminosity / (luminosity - minimum); r = luminosity + (r - luminosity) * factor; g = luminosity + (g - luminosity) * factor; b = luminosity + (b - luminosity) * factor; }
-        if (maximum > 1) { var factor = (1 - luminosity) / (maximum - luminosity); r = luminosity + (r - luminosity) * factor; g = luminosity + (g - luminosity) * factor; b = luminosity + (b - luminosity) * factor; }
-        return new Rgb(r, g, b);
-    }
+
 }

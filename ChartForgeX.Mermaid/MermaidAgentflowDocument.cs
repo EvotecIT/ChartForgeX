@@ -13,6 +13,8 @@ public sealed class MermaidAgentflowDocument : MermaidDocument {
     public List<MermaidAgentflowFlow> Flows { get; } = new();
     /// <summary>Gets relationships in source order.</summary>
     public List<MermaidAgentflowEdge> Edges { get; } = new();
+    /// <summary>Gets inert named style declarations in authored order.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
 }
 
 /// <summary>The semantic meaning of an Agentflow edge.</summary>
@@ -46,6 +48,10 @@ public sealed class MermaidAgentflowNode : MermaidAstNode {
     public bool IsConnector { get; set; }
     /// <summary>Gets inert metadata, with exact prototype-shaped mapping keys removed recursively.</summary>
     public Dictionary<string, MermaidMetadataValue> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets authored class identities.</summary>
+    public List<string> Classes { get; } = new();
+    /// <summary>Gets retained native paint declarations after the source cascade.</summary>
+    public Dictionary<string,string> Styles { get; } = new();
     internal MermaidSourceSpan LabelSpan { get; set; }
 }
 
@@ -67,6 +73,10 @@ public sealed class MermaidAgentflowFlow : MermaidAstNode {
     public bool Collapsed { get; set; }
     /// <summary>Gets inert source metadata.</summary>
     public Dictionary<string, MermaidMetadataValue> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets authored class identities.</summary>
+    public List<string> Classes { get; } = new();
+    /// <summary>Gets retained native paint declarations after the source cascade.</summary>
+    public Dictionary<string,string> Styles { get; } = new();
 }
 
 /// <summary>A source-ordered workflow relationship.</summary>
@@ -91,4 +101,8 @@ public sealed class MermaidAgentflowEdge : MermaidAstNode {
     public string? Label { get; set; }
     /// <summary>Gets inert source metadata.</summary>
     public Dictionary<string, MermaidMetadataValue> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets authored class identities.</summary>
+    public List<string> Classes { get; } = new();
+    /// <summary>Gets retained native paint declarations after the source cascade.</summary>
+    public Dictionary<string,string> Styles { get; } = new();
 }

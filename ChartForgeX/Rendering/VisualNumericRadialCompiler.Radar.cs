@@ -18,7 +18,7 @@ internal static partial class VisualNumericRadialCompiler {
         if (series.RenderPoints.Count == 0) return;
         var scale = scales[series.ValueAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
         var (mapped, raw) = RadarPoints(chart, geometry, seriesIndex, coordinates, categories, scale);
-        var paths = ChartRadarGeometry.Paths(series.Radar, mapped, raw);
+        var paths = ChartRadarGeometry.Paths(series.Radar, mapped, raw, geometry.Sweep == Math.PI * 2);
         ChartRadarGeometry.DiagnoseOpenArea(builder, series, paths);
         using (builder.PushGroup(SeriesId(seriesIndex), "radar-series", new Dictionary<string, string> {
             ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
@@ -26,10 +26,8 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-form"] = series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line", ["data-cfx-missing-policy"] = ChartRadarGeometry.MissingPolicy(series.Radar),
             ["data-cfx-min-value"] = N(scale.Minimum), ["data-cfx-max-value"] = N(scale.Maximum)
         })) {
-            // Clip the hole in both native exporters, without clipping maximum-radius marker outlines.
-            var clipCommands = ChartPathBuilder.RoundedRectangle(plot, 0).Commands.ToList();
-            if (geometry.Inner > 0) clipCommands.AddRange(ChartPathBuilder.Ellipse(geometry.Cx, geometry.Cy, geometry.Inner, geometry.Inner).Commands);
-            using (builder.PushClip(new ChartPath(clipCommands))) {
+            // Shared typed clipping keeps the annular hole and partial angular limits in both exporters.
+            using (builder.PushClip(RadarClip(geometry, plot))) {
                 if (geometry.Outer > 0) foreach (var path in paths)
                     VisualPolarSeriesScene.Draw(chart, context, builder, series, path.Path, color, true, path.Closed);
                 for (var category = 0; category < categories.Length; category++) {

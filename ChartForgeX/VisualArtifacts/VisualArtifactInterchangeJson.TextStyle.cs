@@ -7,9 +7,9 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.VisualArtifacts;
 
 internal static partial class VisualArtifactInterchangeJson {
-    private static void DetailTextStyle(VisualArtifactInterchangeJsonWriter writer, TextStyleOverride? style) {
+    private static void DetailTextStyle(VisualArtifactInterchangeJsonWriter writer, TextStyleOverride? style, string name = "textStyle") {
         if (style == null) return;
-        writer.Property("textStyle"); writer.StartObject();
+        writer.Property(name); writer.StartObject();
         OptionalString(writer, "color", style.Color is { } color ? color.A == 255 ? color.ToHex() : color.ToHexRgba() : null);
         OptionalString(writer, "fontFamily", style.FontFamily); OptionalString(writer, "fontWeight", style.FontWeight);
         OptionalNumber(writer, "fontSize", style.FontSize);
@@ -28,8 +28,8 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.EndObject();
     }
 
-    private static TextStyleOverride? ReadDetailTextStyle(Dictionary<string, GeoJsonValue> detail) {
-        if (!detail.TryGetValue("textStyle", out var value) || value.IsNull) return null;
+    private static TextStyleOverride? ReadDetailTextStyle(Dictionary<string, GeoJsonValue> detail, string name = "textStyle") {
+        if (!detail.TryGetValue(name, out var value) || value.IsNull) return null;
         var item = value.AsObject("detail text style");
         var style = new TextStyleOverride {
             FontFamily = OptionalString(item, "fontFamily"), FontWeight = OptionalString(item, "fontWeight"), FontSize = OptionalNumber(item, "fontSize"),

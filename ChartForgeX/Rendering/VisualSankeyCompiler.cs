@@ -57,8 +57,7 @@ internal static partial class VisualSankeyCompiler {
                 if (!visible) metadata["data-cfx-geometry-status"] = distinct ? "below-paint-threshold" : "precision-collapse";
                 using (builder.PushGroup(ChartRelationshipMetadata.SourceId("link", link.Id), "sankey-link", metadata)) {
                     if (visible) {
-                        builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "sankey-ribbon", close: true,
-                            dash: flow.Dash, paint: flow.Binding, dashOffset: flow.DashOffset);
+                        Ribbon(builder, series, options, model.NodeWidth, source, target, link, path, flow, colors);
                         if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "sankey-ribbon-pattern", paint: flow.PatternPaint);
                     }
                 }

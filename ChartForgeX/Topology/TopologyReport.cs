@@ -117,7 +117,7 @@ public static partial class TopologyChartExtensions {
             node.DisplayMode = TopologyNodeDisplayMode.Card;
             node.PreserveDisplayModeSize = true;
             node.Width = Math.Max(options.MinimumNodeWidth, node.Width);
-            node.Height = Math.Max(options.MinimumNodeHeight, Math.Max(node.Height, TopologyRenderPrimitives.NodeDetailStartOffset(node, pageOptions) + node.Details.Count * 18 + 1));
+            node.Height = Math.Max(options.MinimumNodeHeight, Math.Max(node.Height, TopologyRenderPrimitives.NodeDetailStartOffset(node, pageOptions) + TopologyRenderPrimitives.NodeDetailRows(node, pageOptions) * 18 + 1));
             if (page != null && x + node.Width > options.PageWidth - margin && x > margin) {
                 x = margin; y += rowHeight + gap; rowHeight = 0;
             }

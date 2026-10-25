@@ -10,9 +10,9 @@ public sealed partial class Chart {
     /// <param name="points">Finite pairs in increasing X order within each connected segment.</param>
     /// <param name="color">Optional shared boundary and fill color. Direction-specific fills override it.</param>
     /// <returns>The current chart.</returns>
-    /// <remarks>Uses numeric/time X and linear primary or secondary Y. Explicit breaks cut both boundaries and fill.
+    /// <remarks>Uses numeric/time X and numeric Linear/Logarithmic/SymmetricLogarithmic primary or secondary Y. Explicit breaks cut both boundaries and fill.
     /// Positive means First is greater than Second, including when either axis is reversed.
-    /// Linear interpolation splits crossings; Step uses the series step position for both held boundaries. Smooth is unsupported.</remarks>
+    /// Linear, Smooth and Step boundaries share native fill geometry. Independent boundary policies override the series policy.</remarks>
     public Chart AddDifferenceArea(string name, IEnumerable<ChartDifferencePoint> points, ChartColor? color = null) {
         var series = ChartSeries.CreateDifferenceArea(name, points, color);
         AppendSeries(series);

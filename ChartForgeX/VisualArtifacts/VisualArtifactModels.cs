@@ -141,7 +141,7 @@ public sealed partial class VisualArtifact {
     internal VisualAccessibility ModelAccessibilitySnapshot { get; } = new();
     internal bool HasModelAccessibilitySnapshot { get; set; }
     internal VisualArtifactSize? TopologyNaturalSizeSnapshot { get; set; }
-    internal string? PreparedInterchangeSnapshot { get; set; }
+    internal System.Lazy<string>? PreparedInterchangeSnapshot { get; set; }
 
     /// <summary>Gets host-inspectable visual regions.</summary>
     public List<VisualArtifactRegion> Regions { get; } = new();
@@ -159,8 +159,14 @@ public sealed partial class VisualArtifact {
         };
     }
 
-    /// <summary>Returns true when the artifact declares support for the requested export format.</summary>
-    public bool SupportsExport(VisualArtifactExportFormat format) => format != VisualArtifactExportFormat.None && (ExportFormats & format) == format;
+    /// <summary>Returns true when the requested formats are declared and an explicitly queried prepared JSON handoff fits its portable contract.</summary>
+    /// <remarks>Prepared JSON qualification counts the current complete source/presentation without encoding or copying mask pixels.
+    /// Other formats and ordinary nonprepared declarations retain their existing path. Mutable host metadata is rechecked on each JSON query.</remarks>
+    public bool SupportsExport(VisualArtifactExportFormat format) {
+        if (format == VisualArtifactExportFormat.None || (ExportFormats & format) != format) return false;
+        return (format & VisualArtifactExportFormat.Json) == 0 || Model is not PreparedVisual && CapturedLayer == null
+            || VisualArtifactRendering.PreparedJsonExportSupported(this);
+    }
 }
 
 /// <summary>

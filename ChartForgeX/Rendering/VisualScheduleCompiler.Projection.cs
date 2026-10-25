@@ -16,7 +16,7 @@ internal static partial class VisualScheduleCompiler {
         var guides = new List<ChartPoint>();
         void Include(double value, double width) {
             if (width <= 0 || value < min || value > max) return;
-            var fraction = lanes ? ChartMath.Normalize(value, min, max) : ChartScaleTransform.Normalize(value, min, max, chart.Options.XAxis);
+            var fraction = ScheduleFraction(chart.Options.XAxis, value, min, max);
             guides.Add(new ChartPoint(fraction, width / 2));
         }
         if (now.HasValue) Include(now.Value, TodayWidth(chart, context));
@@ -25,6 +25,8 @@ internal static partial class VisualScheduleCompiler {
                 Include(annotation.Value, VisualReferenceStroke.PaintedWidth(annotation.StrokeStyle, annotation.Color, context.Theme.AxisStrokeWidth));
         }
         var axis = chart.Options.XAxis;
+        var leftPinned = axis.Reversed ? axis.Maximum.HasValue : axis.Minimum.HasValue;
+        var rightPinned = axis.Reversed ? axis.Minimum.HasValue : axis.Maximum.HasValue;
         var initial = MarkProjection(axis, plot, minimumExtent, maximumExtent);
         var left = initial.Left - plot.Left; var right = plot.Right - initial.Right;
         var largest = 0d;
@@ -32,16 +34,16 @@ internal static partial class VisualScheduleCompiler {
         var bounds = new VisualAxisPaintBounds();
         bounds.Include(0, left); bounds.Include(1, right);
         foreach (var guide in guides) bounds.Include(guide.X, guide.Y);
-        var fullWidthConflict = !axis.Minimum.HasValue && !axis.Maximum.HasValue && bounds.HasFullWidthConflict(plot.Width);
+        var fullWidthConflict = !leftPinned && !rightPinned && bounds.HasFullWidthConflict(plot.Width);
         foreach (var guide in guides) {
             // Preserve task and containable-guide geometry when a wider stroke must clip.
             if (guide.Y * 2 > plot.Width || fullWidthConflict && guide.Y * 2 == plot.Width) continue;
             largest = Math.Max(largest, guide.Y);
             var coordinate = left + guide.X * initial.Width;
-            if (!axis.Minimum.HasValue && coordinate < guide.Y || !axis.Maximum.HasValue && plot.Width - coordinate < guide.Y) fits = false;
+            if (!leftPinned && coordinate < guide.Y || !rightPinned && plot.Width - coordinate < guide.Y) fits = false;
         }
         if (fits) return initial;
-        if (bounds.TryExpand(0, 1, plot.Width, axis.Minimum.HasValue, axis.Maximum.HasValue, out var first, out var last)) {
+        if (bounds.TryExpand(0, 1, plot.Width, leftPinned, rightPinned, out var first, out var last)) {
             var width = plot.Width / (last - first);
             return new ChartRect(plot.Left - first * width, plot.Top, width, plot.Height);
         }
@@ -51,8 +53,8 @@ internal static partial class VisualScheduleCompiler {
 
     /// <summary>Reserves painted mark extents at automatic axis sides without changing dates or authored clipping windows.</summary>
     private static ChartRect MarkProjection(ChartAxis axis, ChartRect plot, double minimumExtent, double maximumExtent) {
-        var left = axis.Minimum.HasValue ? 0 : Math.Min(plot.Width / 2, minimumExtent);
-        var right = axis.Maximum.HasValue ? 0 : Math.Min(plot.Width / 2, maximumExtent);
+        var left = (axis.Reversed ? axis.Maximum.HasValue : axis.Minimum.HasValue) ? 0 : Math.Min(plot.Width / 2, axis.Reversed ? maximumExtent : minimumExtent);
+        var right = (axis.Reversed ? axis.Minimum.HasValue : axis.Maximum.HasValue) ? 0 : Math.Min(plot.Width / 2, axis.Reversed ? minimumExtent : maximumExtent);
         return new ChartRect(plot.Left + left, plot.Top, Math.Max(0, plot.Width - left - right), plot.Height);
     }
 }

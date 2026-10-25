@@ -9,24 +9,28 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlInteractiveChartRenderer {
     // Browser targets are a host concern. Source identities and completed layout come from the detached scene.
     private static string PreparedChartMetadata(Chart chart, PreparedVisual prepared) {
+        var reflow = prepared.Scene.VisibilityCapture?.ReflowSource;
         var fillInteriors = PreparedFillInteriors(prepared);
         var json = new StringBuilder("{\"series\":[");
         for (var index = 0; index < chart.Series.Count; index++) {
             if (index > 0) json.Append(',');
             var series = chart.Series[index];
-            json.Append("{\"name\":").Append(HtmlJsonString.Encode(series.Name))
-                .Append(",\"key\":").Append(HtmlJsonString.Encode(series.InteractionIdentityKey))
-                .Append(",\"local\":").Append(series.Id.IsAutomatic ? "true" : "false")
-                .Append(",\"kind\":").Append(HtmlJsonString.Encode(series.Kind.ToString().ToLowerInvariant()))
-                .Append(",\"state\":").Append(HtmlJsonString.Encode(series.StateRole.ToString().ToLowerInvariant()))
+            var retained = reflow?.SeriesRows[index];
+            var indices = prepared.Scene.VisibilityCapture?.RenderedSourceIndices(index) ?? series.SourcePointIndices;
+            var observationIds = retained?.ObservationIds ?? series.ObservationIds;
+            json.Append("{\"name\":").Append(HtmlJsonString.Encode(retained?.Name ?? series.Name))
+                .Append(",\"key\":").Append(HtmlJsonString.Encode(retained?.Id.Value ?? series.InteractionIdentityKey))
+                .Append(",\"local\":").Append(retained == null && series.Id.IsAutomatic ? "true" : "false")
+                .Append(",\"kind\":").Append(HtmlJsonString.Encode((retained?.Kind ?? series.Kind).ToString().ToLowerInvariant()))
+                .Append(",\"state\":").Append(HtmlJsonString.Encode((retained?.State ?? series.StateRole).ToString().ToLowerInvariant()))
                 .Append(",\"indices\":[");
-            for (var point = 0; point < series.SourcePointIndices.Count; point++) {
+            for (var point = 0; point < indices.Count; point++) {
                 if (point > 0) json.Append(',');
-                json.Append(series.SourcePointIndices[point].ToString(CultureInfo.InvariantCulture));
+                json.Append(indices[point].ToString(CultureInfo.InvariantCulture));
             }
             json.Append("],\"observationIds\":[");
             var firstId = true;
-            foreach (var observation in series.ObservationIds.OrderBy(observation => observation.Key)) {
+            foreach (var observation in observationIds.OrderBy(observation => observation.Key)) {
                 if (!firstId) json.Append(',');
                 firstId = false;
                 json.Append("{\"index\":").Append(observation.Key.ToString(CultureInfo.InvariantCulture))
@@ -35,10 +39,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append("]}");
         }
         json.Append(']');
+        AppendPreparedVisibility(json, prepared);
+        var nativeValues = PreparedNativeValueSource(prepared);
+        if (nativeValues != null) json.Append(",\"nativeValueSource\":").Append(nativeValues);
         AppendPreparedAnnotations(json, prepared);
         AppendPreparedHierarchy(json, prepared);
         json.Append(",\"xLabels\":[");
-        var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
+        var categoryLabels = reflow?.CategoryLabels ?? ChartCartesianOrientation.CategoryLabels(chart);
         for (var index = 0; index < categoryLabels.Count; index++) {
             if (index > 0) json.Append(',');
             var label = categoryLabels[index];
@@ -106,6 +113,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (prepared.CartesianOrientation == ChartOrientation.Horizontal) json.Append(",\"orientation\":\"horizontal\"");
         if (prepared.CartesianViewport?.ValueDomain == ChartValueDomain.VisibleCategories)
             json.Append(",\"valueDomain\":\"visibleCategories\"");
+        AppendPreparedPolar(json, prepared);
         AppendCapturedAxis(json, "xProjection", prepared.XProjection);
         AppendCapturedAxis(json, "yProjection", prepared.YProjection);
         AppendCapturedAxis(json, "secondaryXProjection", prepared.SecondaryXProjection);
@@ -124,7 +132,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
     private static void AppendViewportAxis(StringBuilder json, double fullMinimum, double fullMaximum, double minimum, double maximum,
         double transformedFullMinimum, double transformedFullMaximum, double transformedMinimum, double transformedMaximum,
         ChartScaleKind scale, double threshold, bool reversed, ChartForgeX.Primitives.ChartRect plot, ChartTimeSessionDomain? sessions,
-        double logarithmBase = 10, ChartLogarithmicDomain logarithmicDomain = ChartLogarithmicDomain.Positive, ChartTimeSpacingDomain? timeDomain = null, bool maximumInclusive = true) {
+        double logarithmBase = 10, ChartLogarithmicDomain logarithmicDomain = ChartLogarithmicDomain.Positive, ChartTimeSpacingDomain? timeDomain = null, bool maximumInclusive = true,
+        double? innerRadius = null, double? outerRadius = null) {
         json.Append("{\"fullMinimum\":").Append(fullMinimum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"fullMaximum\":").Append(fullMaximum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"minimum\":").Append(minimum.ToString("R", CultureInfo.InvariantCulture))
@@ -137,6 +146,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Append(",\"threshold\":").Append(threshold.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"reversed\":").Append(reversed ? "true" : "false");
         if (!maximumInclusive) json.Append(",\"maximumInclusive\":false");
+        if (innerRadius.HasValue && outerRadius.HasValue)
+            json.Append(",\"innerRadius\":").Append(innerRadius.Value.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"outerRadius\":").Append(outerRadius.Value.ToString("R", CultureInfo.InvariantCulture));
         AppendLogarithmicPolicy(json, logarithmBase, logarithmicDomain);
         AppendTimeSessions(json, sessions);
         AppendTimeSpacing(json, timeDomain);

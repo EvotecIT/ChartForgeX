@@ -1,0 +1,26 @@
+using System;
+using System.IO;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using ChartForgeX.Interactivity.Html;
+
+var chart = {{FACTORY}}.Create({{VARIANT}}, VisualThemeMode.{{MODE}}).WithSize({{WIDTH}}, 420);
+var renderer = new HtmlInteractiveChartRenderer();
+var final = renderer.PrepareSection(chart, configure: options => options.Interaction.ChartId = "native-initial-fade");
+var payload = renderer.PrepareNativeTransitionJson(final, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 12));
+var replay = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));const play=()=>chart.presentInitial("
+    + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});document.querySelector('#replay').onclick=play;play();";
+var page = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>"
+    + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body><button id='replay' type='button'>Replay initial fade</button>" + final.Html
+    + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + replay + "</script></body></html>";
+Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html", page); File.WriteAllText("output/visual.svg", final.PreparedVisual.ToSvg());
+File.WriteAllBytes("output/visual.png", final.PreparedVisual.ToPng()); File.WriteAllText("output/visual.transition.json", payload);
+
+{{SOURCE}}

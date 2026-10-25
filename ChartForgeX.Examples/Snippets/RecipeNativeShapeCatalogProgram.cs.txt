@@ -1,0 +1,17 @@
+using System.IO;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var source = {{SOURCE_TEXT}};
+var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions {
+    WarningPolicy = MermaidWarningPolicy.Reject,
+    Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, TopologySizing = MermaidTopologySizing.Natural },
+    Flowchart = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = 800 }
+});
+if (rendered.HasErrors || rendered.Artifact == null) throw new System.InvalidOperationException("The authored shape catalog could not render.");
+var artifact = rendered.Artifact;
+File.WriteAllText("shapes.svg", artifact.ToSvg());
+File.WriteAllBytes("shapes.png", artifact.ToPng());
+File.WriteAllText("shapes.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("shapes.json", artifact.ToInterchangeJson());

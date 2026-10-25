@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
             "Typed point mapping should reject tuple-encoded specialized series that need richer contracts.");
         AssertThrows<ArgumentException>(
             () => Chart.Create().AddSeries("Invalid slope", ChartSeriesKind.Slope, rows, row => row.Order, row => row.Value),
-            "Typed point mapping should reject derived slope series that require the dedicated two-value contract.");
+            "Typed point mapping should reject slope series that require the dedicated slope factory.");
         AssertThrows<ArgumentException>(
             () => Chart.Create().AddSeries("Invalid trend", ChartSeriesKind.TrendLine, rows, row => row.Order, row => row.Value),
             "Typed point mapping should reject derived trend lines that require least-squares calculation.");

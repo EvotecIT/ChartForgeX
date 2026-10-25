@@ -42,6 +42,7 @@ try {
         Get-ChildItem -LiteralPath $sourceRoot -Filter '*.cs' -File | Copy-Item -Destination $laneRoot
         Copy-Item -LiteralPath (Join-Path $sourceRoot "$lane/${lane}PackageProbe.csproj") -Destination $destination
         Get-ChildItem -LiteralPath (Join-Path $sourceRoot $lane) -Filter '*.cs' -File | Copy-Item -Destination $destination
+        Get-ChildItem -LiteralPath (Join-Path $sourceRoot $lane) -Filter '*.mmd' -File | Copy-Item -Destination $destination
         $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
         foreach ($package in $contract.Packages.Items) {
             Copy-Item -LiteralPath (Join-Path $packageRootResolved "$($package.Id).$($metadata.Version).nupkg") -Destination $feed

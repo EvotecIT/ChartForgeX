@@ -48,7 +48,7 @@ internal static partial class VisualCartesianCompiler {
             var metadata = new Dictionary<string, string> {
                 ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(point),
                 ["data-cfx-source-point"] = Number(source), ["data-cfx-source-count"] = "1",
-                ["data-cfx-group-index"] = Number(groupIndex), ["data-cfx-kind"] = "BoxPlotOutlier",
+                ["data-cfx-group-index"] = Number(series.IsVisibilityPreparation ? distribution.Index : groupIndex), ["data-cfx-kind"] = "BoxPlotOutlier",
                 ["data-cfx-x"] = Number(distribution.Summary.X), ["data-cfx-y"] = Number(value),
                 ["data-cfx-value"] = Number(value), ["data-cfx-label"] = formatted, ["data-cfx-formatted-value"] = formatted,
                 ["data-cfx-label-outlier"] = chart.Options.Labels.Outlier,

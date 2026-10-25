@@ -15,6 +15,7 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private readonly TopologyChart _source;
     private VisualRenderContext _context;
+    private readonly VisualFrame _frameRequest;
     private readonly TopologyRenderOptions _options;
     private VisualSceneBuilder _builder;
     private readonly VisualThemeColors _colors;
@@ -40,33 +41,15 @@ internal sealed partial class VisualTopologyCompiler {
     private double _offsetY;
 
     internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options, bool resolvedLayout = false, bool naturalSize = false) {
+        context = PreparedDiagramFont.ScopeContext(context, TopologyPreparedFont.HasMaterialTextPolicy(source, context.Font));
+        _frameRequest = context.Frame.RequestValues(retainOwnedFonts: true);
         _source = source;
         _svgTheme = new TopologyPaint(context.Theme, context.ThemeMode, options.SvgColorVariables?.Clone());
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
-        _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
-        _options.ResolvedEdgeLabelScale = context.Theme.Typography.DataLabelSize / 11;
-        var badgeFace = new VisualSceneTextFace(context.Font, 600);
-        var badgeFontSize = context.Theme.Typography.DataLabelSize * .75;
-        badgeFontSize = ChartTextFitting.FitFontSize(Math.Min(8, badgeFontSize), badgeFontSize,
-            size => badgeFace.Prepare("Ag", size).Metrics.LineHeight <= 18);
-        _options.ResolvedBadgeTextWidth = value => badgeFace.Prepare(value, badgeFontSize).Metrics.Width;
-        var endpointFace = new VisualSceneTextFace(context.Font, 600);
-        var endpointPreferredSize = context.Theme.Typography.DataLabelSize * .8;
-        var endpointMetrics = new Dictionary<string, (double FontSize, double Width, double Height)>(StringComparer.Ordinal);
-        _options.ResolvedEndpointLabelMetrics = text => {
-            if (endpointMetrics.TryGetValue(text, out var cached)) return cached;
-            var fitted = ChartTextFitting.FitFontSize(Math.Min(8, endpointPreferredSize), endpointPreferredSize, size => {
-                var metrics = endpointFace.Prepare(text, size).Metrics;
-                return metrics.Width <= 90 && metrics.Height <= 18;
-            });
-            var measured = endpointFace.Prepare(text, fitted).Metrics;
-            var metrics = (fitted, measured.Width + 6, measured.Height + 6);
-            endpointMetrics.Add(text, metrics);
-            return metrics;
-        };
+        InitializeOptionsMetrics(context, _options);
         if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
-        _builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
+        _builder = new VisualSceneBuilder(context.Layout.Size, context.Font, context.NativeTextCapture);
         _colors = context.Theme.Resolve(context.ThemeMode);
         _resolvedLayout = resolvedLayout;
         _naturalSize = naturalSize;
@@ -74,16 +57,25 @@ internal sealed partial class VisualTopologyCompiler {
 
     internal PreparedVisual Compile(FlowArtifact? flow = null) {
         var validator = new TopologyChartValidator();
+        var interpolation = validator.ValidateInterpolationInputs(_source);
+        if (!interpolation.IsValid) throw new TopologyValidationException(interpolation);
+        var paints=validator.ValidateSurfacePaintInputs(_source);
+        if(!paints.IsValid)throw new TopologyValidationException(paints);
+        ValidateSurfacePaintHost();
+        var external = validator.ValidateExternalPresentationInputs(_source, _options);
+        if (!external.IsValid) throw new TopologyValidationException(external);
+        if (_options.EnableHtmlInteractions && _options.EnableHtmlForceGraphControls && _source.Nodes.Any(TopologyExternalPresentationRules.HasPolicy))
+            throw new NotSupportedException("Explicit native external presentation cannot be rewritten by live force graph controls.");
         var references = validator.ValidateScenarioReferences(_source);
         if (!references.IsValid) throw new TopologyValidationException(references);
         var input = TopologyLayoutEngine.Clone(_source);
+        TopologyPreparedNodeBasis.ApplyLifecycle(input);
+        TopologyPreparedEdgePlan.ApplyLifecycle(input);
+        TopologyPreparedFramePadding.ApplyLifecycle(input, _options);
         var legend = _options.IncludeLegend ? TopologyLegend.Resolve(input, _options.LegendMode) : null;
         _legend = _context.Frame.ShowLegend ? legend : null;
-        var frame = _context.Frame;
-        if (frame.LegendTitle == null && _legend?.Title != null) {
-            _context = new VisualRenderContext(_context.Layout, _context.Theme, _context.ThemeMode,
-                frame.WithLegendTitle(_legend.Title), _context.Font);
-        }
+        _context = ResolveLegendFrame(_context, _legend);
+        TopologyPreparedFramePadding.ApplyAnnotationLifecycle(input, _options, _context);
         var entries = legend?.Items.Select((item, index) => new VisualLegendEntry(item.Label,
             Color(item.Color, item.Status.HasValue ? Status(item.Status.Value) : _colors.Accent), index.ToString(CultureInfo.InvariantCulture),
             marker: (builder, bounds, _) => BuildLegendMarker(item, bounds))).ToArray() ?? Array.Empty<VisualLegendEntry>();
@@ -93,35 +85,43 @@ internal sealed partial class VisualTopologyCompiler {
         input.Title = null; input.Subtitle = null; input.Legend = null;
         // Canonical topology coordinates already contain their padding. Give the layout that
         // domain once, then subtract its origin when placing it in the shared content frame.
-        if (!_resolvedLayout) input.Viewport = new TopologyViewport {
+        // Typed prepared imports already use the complete scene domain, including that frame.
+        if (!_resolvedLayout && !PreservePreparedSceneCoordinates) input.Viewport = new TopologyViewport {
             Width = _plot.Width + _context.Layout.Padding * 2, Height = _plot.Height + _context.Layout.Padding * 2,
             Padding = _context.Layout.Padding
         };
         input.Theme = _context.Theme; input.ThemeMode = _context.ThemeMode;
-        if (!_resolvedLayout) FitNodeLabels(input);
+        // Typed scene imports already carry fitted node bounds. Manual output may
+        // transform that scene uniformly, but must not rerun authoring-time sizing.
+        if (!_resolvedLayout && (!input.UsesPreparedSceneCoordinates || input.LayoutMode != TopologyLayoutMode.Manual))
+            FitNodeLabels(input);
         var layoutOptions = _options.CloneForRendering();
         layoutOptions.IncludeTitle = false; layoutOptions.IncludeLegend = false;
         // A view selects data and identity here. Its headings were already measured by the
         // common frame; the detached layout copy must not reserve them a second time.
         if (layoutOptions.View != null) { layoutOptions.View.Title = null; layoutOptions.View.Subtitle = null; }
-        _chart = _resolvedLayout ? input : TopologyLayoutEngine.Prepare(input, layoutOptions.View, layoutOptions, new TextMeasurementContext(_context.Font, _options.TextMeasurementMode));
+        _chart = _resolvedLayout ? input : TopologyLayoutEngine.Prepare(input, layoutOptions.View, layoutOptions, new TextMeasurementContext(_context.Font, _options.TextMeasurementMode), hierarchySource: _source);
         if (layoutOptions.View != null) TopologyLayoutEngine.DetachOmittedSourceGroups(input, _chart);
         var validation = validator.Validate(_chart, validateScenarioReferences: false, layoutOptions);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
         _options.TextMeasurement = _chart.TextMeasurement;
+        ValidateExternalGlyphSlots();
         // The common frame has already reserved the legend. Legacy geometry helpers must not
         // reserve a second legend inside the detached content viewport.
         _chart.Title = null; _chart.Subtitle = null; _chart.Legend = null;
         PrepareAnnotations();
+        PreparePathDecorations();
         DiagnoseExportOptions();
         _highlight = TopologyHighlightState.From(_chart, _options);
         var nodes = _nodesById = TopologyGroupEndpoints.Resolve(_chart);
         _edgeRenderOrders = EdgeRenderOrderMap(_chart, _options);
+        using var numericRouteScope = _chart.Edges.Any(edge => edge.Interpolation.HasValue || edge.PreparedEdgePlan?.Geometry != null) ? new TopologyRenderRouteCache(_chart) : null;
         foreach (var edge in _chart.Edges) {
+            if (SeedCapturedRoute(edge)) continue;
             var route = EdgePoints(_chart, edge, nodes);
             var paintRoute = TopologyDenseRoutePlanner.PaintPoints(_chart, edge, route, includeOwner: true);
             var trunk = TopologyDenseRoutePlanner.SharedTrunk(_chart, edge);
-            if (_options.FitContentToViewport) {
+            if (_options.FitContentToViewport && edge.PathGeometry == null) {
                 TopologyRenderPrimitives.AttachEndpointsToSurfaces(edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], route);
                 if (paintRoute.Count > 1) {
                     TopologyRenderPrimitives.AttachEndpoint(nodes[edge.SourceNodeId], edge.SourcePort, edge.SourcePortId, paintRoute, 0, 1);
@@ -131,20 +131,25 @@ internal sealed partial class VisualTopologyCompiler {
                         TopologyRenderPrimitives.AttachEndpoint(nodes[edge.TargetNodeId], edge.TargetPort, edge.TargetPortId, tail, tail.Count - 1, tail.Count - 2);
                 }
             }
-            _routes.Add(edge, SampleRoute(route));
-            _paintRoutes.Add(edge, SampleRoute(paintRoute));
-            if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge, (trunk.Owner, SampleRoute(trunk.Tail)));
+            _routes.Add(edge, edge.Interpolation.HasValue ? route.ToArray() : SampleRoute(route));
+            _paintRoutes.Add(edge, edge.Interpolation.HasValue ? paintRoute.ToArray() : SampleRoute(paintRoute));
+            if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge, (trunk.Owner, edge.Interpolation.HasValue ? trunk.Tail.ToArray() : SampleRoute(trunk.Tail)));
 
             IReadOnlyList<ChartPoint> SampleRoute(List<ChartPoint> points) {
                 return TopologyResolvedRouteSamples.Sample(_chart, _options, edge, nodes, points);
             }
         }
+        PrepareInterpolatedRoutes();
+        PrepareCrossingPaintPaths();
         _edgeLabels = _options.IncludeEdgeLabels ? EdgeLabelLayouts(_chart, _options) : Array.Empty<TopologyEdgeLabelLayout>();
         ResolveNaturalSize(entries);
         ResolveFit();
+        ResolveExplicitLabelBaselines();
+        EmitCrossingPaintDiagnostics();
         using (_builder.PushGroup(_source.Id, "topology", RootMetadata()))
         using (_builder.PushClip(_contentClip)) {
             BuildSurface(); BuildGroups();
+            BuildPathDecorations();
             _chart.PreparedGroupHeaderParts = CaptureGroupHeaderParts();
             foreach (var edge in OrderedEdgesForRendering(_chart, _options)) BuildEdge(edge.Edge);
             BuildEdgeLabels();
@@ -165,7 +170,8 @@ internal sealed partial class VisualTopologyCompiler {
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
         var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,
             _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext, responsive: _options.UseResponsiveSvg);
-        return new PreparedVisual(_builder.Build(), accessibility, semanticInterchange: semantics, svgOptions: svgOptions);
+        return new PreparedVisual(_builder.Build(), accessibility, semanticInterchange: semantics, svgOptions: svgOptions, topologyHierarchyPreparation: _chart.HierarchyPreparation)
+            .WithCapturedText(_context.Font.NativeTextCapture?.Freeze());
     }
 
     private void DiagnoseExportOptions() {
@@ -173,7 +179,7 @@ internal sealed partial class VisualTopologyCompiler {
             _builder.AddDiagnostic(new VisualDiagnostic("topology.host-options", "HTML interaction and viewport options remain host metadata; a static prepared scene does not install their controls."));
     }
 
-    private static VisualRenderContext ResolveFrame(VisualRenderContext context, TopologyChart source, TopologyRenderOptions options) {
+    internal static VisualRenderContext ResolveFrame(VisualRenderContext context, TopologyChart source, TopologyRenderOptions options) {
         var resolved = VisualDiagramPrimitives.WithFrame(context,
             options.IncludeTitle ? HeadingOrSource(options.View?.Title, source.Title) : null,
             options.IncludeTitle ? HeadingOrSource(options.View?.Subtitle, source.Subtitle) : null);
@@ -187,8 +193,13 @@ internal sealed partial class VisualTopologyCompiler {
             new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition, frame.ShowSurface, frame.TransparentBackground,
                 frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 700, colors.Foreground),
                 frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle,
-                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard, legendTitle: frame.LegendTitle), resolved.Font);
+                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard, legendTitle: frame.LegendTitle), resolved.Font).WithNativeTextCapture(resolved.NativeTextCapture);
     }
+
+    internal static VisualRenderContext ResolveLegendFrame(VisualRenderContext context, TopologyLegend? legend) =>
+        context.Frame.LegendTitle == null && legend?.Title != null
+            ? new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, context.Frame.WithLegendTitle(legend.Title), context.Font).WithNativeTextCapture(context.NativeTextCapture)
+            : context;
 
     private ChartPoint Point(ChartPoint p) => new(_offsetX + p.X * _scale, _offsetY + p.Y * _scale);
     private static string? HeadingOrSource(string? heading, string? source) => string.IsNullOrWhiteSpace(heading) ? source : heading;
@@ -198,9 +209,8 @@ internal sealed partial class VisualTopologyCompiler {
         TopologyHealthStatus.Critical => _colors.Status.Critical.Fill, TopologyHealthStatus.Disabled => _colors.Status.Maintenance.Fill,
         _ => _colors.Status.Neutral.Fill
     };
-    private static ChartColor Color(string? value, ChartColor fallback) => string.IsNullOrWhiteSpace(value) ? fallback
-        : ChartForgeX.SvgRaster.SvgRasterColor.TryParse(value, out var parsed) ? parsed
-        : SvgPaint.TryCssVariable(value, fallback, out var resolved, out _) ? resolved : ChartColor.Parse(value!);
+    private static ChartColor Color(string? value, ChartColor fallback) =>
+        TopologySurfacePaintRules.TryColor(value, fallback, out var resolved) ? resolved : ChartColor.Parse(value!);
     private ChartColor Highlight(ChartColor color, bool highlighted) => color.WithOpacity(color.A / 255d * (highlighted || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity));
     private TopologyPaint Theme() => new(_context.Theme, _context.ThemeMode);
 }

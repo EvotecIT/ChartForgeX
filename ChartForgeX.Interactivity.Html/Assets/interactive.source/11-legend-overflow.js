@@ -8,8 +8,11 @@
     const state = root._cfxLegendOverflow;
     if (!state) return;
     for (const control of state.controls) {
+      const native = nativeLegendConnected(root), visibility = native && capturedNativeVisibility(root);
+      control.isolate.disabled = native; control.mute.disabled = native && nativePreparationBackpressureBusy(root);
       for (const [button, attribute] of [[control.mute, 'cfxMuted'], [control.isolate, 'cfxIsolated']]) {
-        const active = control.source.dataset[attribute] === 'true';
+        const active = native ? attribute === 'cfxMuted' && !!visibility?.hiddenSeries.includes(seriesKey(control.source))
+          : control.source.dataset[attribute] === 'true';
         button.setAttribute('aria-pressed', String(active));
       }
     }

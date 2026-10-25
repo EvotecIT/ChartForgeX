@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -8,6 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 /// </summary>
 public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     private readonly List<string> _stages = new();
+    private IReadOnlyList<double> _stageBoundaries = Array.Empty<double>();
     private readonly List<WardleyMapNode> _nodes = new();
     private readonly List<WardleyMapLink> _links = new();
     private readonly List<WardleyMapEvolution> _evolutions = new();
@@ -18,6 +20,22 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
 
     /// <summary>Gets evolution stage labels from left to right.</summary>
     public IReadOnlyList<string> Stages => _stages;
+
+    /// <summary>Gets optional normalized right edges of source-ordered stages; empty keeps the incumbent quarter grid.</summary>
+    public IReadOnlyList<double> StageBoundaries => _stageBoundaries;
+
+    /// <summary>Sets detached, strictly increasing stage right edges in (0,1], or clears them with null.</summary>
+    public WardleyMapBlock WithStageBoundaries(IEnumerable<double>? boundaries) {
+        if (boundaries == null) { _stageBoundaries = Array.Empty<double>(); return this; }
+        var values = new List<double>(); var previous = 0d;
+        foreach (var value in boundaries) {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= previous || value > 1)
+                throw new ArgumentOutOfRangeException(nameof(boundaries), "Stage boundaries must increase within (0,1].");
+            values.Add(value); previous = value;
+        }
+        if (values.Count != (_stages.Count == 0 ? 4 : _stages.Count)) throw new ArgumentException("Stage boundaries must match the current stage count.", nameof(boundaries));
+        _stageBoundaries = values.AsReadOnly(); return this;
+    }
 
     /// <summary>Gets map nodes in render order.</summary>
     public IReadOnlyList<WardleyMapNode> Nodes => _nodes;
@@ -39,6 +57,26 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
 
     /// <summary>Gets pipeline groups attached to parent components.</summary>
     public IReadOnlyList<WardleyMapPipeline> Pipelines => _pipelines;
+
+    /// <summary>Gets or sets whether additional quarter-interval vertical/horizontal grid guides are drawn.</summary>
+    public bool ShowGrid { get; set; }
+
+    /// <summary>Gets immutable optional paint overrides. Null retains every ordinary theme role.</summary>
+    public WardleyMapStyle? Style { get; private set; }
+
+    /// <summary>Gets the optional normalized origin of the numbered annotation legend.</summary>
+    public WardleyMapAnnotationBox? AnnotationsBox { get; private set; }
+
+    /// <summary>Sets or clears immutable paint overrides without changing geometry or the shared theme.</summary>
+    public WardleyMapBlock WithStyle(WardleyMapStyle? style) { Style = style; return this; }
+
+    /// <summary>Places the annotation legend at normalized visibility/evolution coordinates; its measured box stays inside the plot.</summary>
+    public WardleyMapBlock WithAnnotationsBox(double visibility, double evolution) {
+        AnnotationsBox = new WardleyMapAnnotationBox(visibility, evolution); return this;
+    }
+
+    /// <summary>Restores ordinary inline annotation captions.</summary>
+    public WardleyMapBlock WithoutAnnotationsBox() { AnnotationsBox = null; return this; }
 
     /// <inheritdoc />
     public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Wardley map" : Title);
@@ -290,6 +328,19 @@ public sealed class WardleyMapPipeline {
     /// <summary>Gets child components in pipeline order.</summary>
     public IReadOnlyList<WardleyMapPipelineComponent> Components => _components;
 
+    /// <summary>Gets or sets immutable outline overrides. Null retains the incumbent dashed pipeline outline.</summary>
+    public ChartStrokeStyle? Outline { get; set; }
+
+    /// <summary>Gets or sets whether consecutive children are joined in increasing evolution order.</summary>
+    public bool ShowEvolutionLinks { get; set; }
+
+    /// <summary>Adds an explicitly identified child that may be used by ordinary dependency/evolution links.</summary>
+    public WardleyMapPipelineComponent AddComponent(string id, string label, double evolution) {
+        if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Pipeline component ids must not be empty.", nameof(id));
+        var component = new WardleyMapPipelineComponent(label, evolution, id);
+        _components.Add(component); return component;
+    }
+
     /// <summary>Adds a pipeline child component.</summary>
     public WardleyMapPipelineComponent AddComponent(string label, double evolution) {
         var component = new WardleyMapPipelineComponent(label, evolution);
@@ -301,10 +352,23 @@ public sealed class WardleyMapPipeline {
 /// <summary>Describes a child component inside a Wardley pipeline.</summary>
 public sealed class WardleyMapPipelineComponent {
     /// <summary>Initializes a Wardley pipeline child component.</summary>
-    public WardleyMapPipelineComponent(string label, double evolution) {
+    public WardleyMapPipelineComponent(string label, double evolution) : this(label, evolution, null) { }
+
+    /// <summary>Initializes an optionally identified pipeline child.</summary>
+    public WardleyMapPipelineComponent(string label, double evolution, string? id) {
         Label = label ?? throw new ArgumentNullException(nameof(label));
-        Evolution = evolution;
+        if (id != null && string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Pipeline component ids must not be empty.", nameof(id));
+        Evolution = evolution; Id = id;
     }
+
+    /// <summary>Gets the optional explicit source identity; anonymous legacy children are not link targets.</summary>
+    public string? Id { get; }
+
+    /// <summary>Gets or sets an optional finite X caption offset in logical pixels.</summary>
+    public double? LabelOffsetX { get; set; }
+
+    /// <summary>Gets or sets an optional finite Y caption offset in logical pixels.</summary>
+    public double? LabelOffsetY { get; set; }
 
     /// <summary>Gets the child component label.</summary>
     public string Label { get; }

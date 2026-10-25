@@ -9,15 +9,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidFlowchartLabelDepthTests {
     [Fact]
-    public void MultilineAndMarkdownLabelsKeepContentLocationsAndExplicitPlainTextMapping() {
+    public void MultilineAndMarkdownLabelsKeepContentLocationsAndNativeNodeRuns() {
         var source = File.ReadAllText(Fixture("flowchart-multiline-markdown.mmd"));
         using var expected = JsonDocument.Parse(File.ReadAllText(Fixture("flowchart-multiline-markdown.expected.json")));
         var direct = MermaidRenderer.Render(source);
         Assert.False(direct.HasErrors);
         var document = Assert.IsType<MermaidFlowchartDocument>(direct.Document);
         Assert.Equal(new[] { 2, 3, 4, 5 }, document.Nodes.Select(node => node.Span.Line));
-        Assert.Equal(2, direct.Diagnostics.Count);
-        Assert.All(direct.Diagnostics, diagnostic => Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, diagnostic.Code));
+        Assert.Empty(direct.Diagnostics);
+        Assert.True(direct.Artifact != null);
         var chart = Assert.IsType<TopologyChart>(direct.Artifact!.Model);
         foreach (var node in chart.Nodes) {
             Assert.Equal(expected.RootElement.GetProperty("displayLabels").GetProperty(node.Id).GetString(), node.Label);
@@ -27,6 +27,8 @@ public sealed class MermaidFlowchartLabelDepthTests {
         }
         Assert.Equal(expected.RootElement.GetProperty("displayEdgeLabels").EnumerateArray().Select(value => value.GetString()), chart.Edges.Select(edge => edge.Label ?? ""));
         Assert.Equal("`**Review** the\n*request*`", document.Nodes[0].Text);
+        Assert.Contains(chart.Nodes[0].LabelContent.Runs, run => run.Text == "Review" && run.Emphasis == TextInlineEmphasis.Bold);
+        Assert.Contains(chart.Nodes[0].LabelContent.Runs, run => run.Text == "request" && run.Emphasis == TextInlineEmphasis.Italic);
         var fenced = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
         Assert.Equal(direct.Diagnostics.Select(d => d.Span.Line + 3), fenced.Diagnostics.Select(d => d.Line));
@@ -55,17 +57,17 @@ public sealed class MermaidFlowchartLabelDepthTests {
     [InlineData("`Read **this** and *that*`", "Read this and that")]
     [InlineData("`version_one_two and \\*literal\\*`", "version_one_two and *literal*")]
     [InlineData("`**unfinished`", "**unfinished")]
-    public void PlainTextMarkdownFallbackPreservesEscapesAndUnmatchedDelimiters(string label, string displayed) {
+    public void NativeMarkdownKeepsEscapesAndUnmatchedDelimiters(string label, string displayed) {
         var result = MermaidRenderer.Render("flowchart LR\nA[\"" + label + "\"]");
         Assert.Equal(displayed, Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes[0].Label);
-        Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(result.Diagnostics).Code);
+        Assert.Empty(result.Diagnostics);
     }
 
     [Theory]
-    [InlineData("  A[\"`**Review**`\"]", "`**Review**`", MermaidDiagnosticCodes.ApproximateMapping, 3, 1)]
+    [InlineData("  A[\"`[Review](x)`\"]", "`[Review](x)`", MermaidDiagnosticCodes.UnsupportedStatement, 3, 1)]
     [InlineData("  A[\"<b>Review</b>\"]", "<b>Review</b>", MermaidDiagnosticCodes.UnsupportedStatement, 3, 1)]
     [InlineData("  A[\"$$x^2$$\"]", "$$x^2$$", MermaidDiagnosticCodes.UnsupportedStatement, 3, 1)]
-    [InlineData("  A@{ label: \"`**Review**`\" }", "`**Review**`", MermaidDiagnosticCodes.ApproximateMapping, 14, 14)]
+    [InlineData("  A@{ label: \"`[Review](x)`\" }", "`[Review](x)`", MermaidDiagnosticCodes.UnsupportedStatement, 14, 15)]
     [InlineData("  A@{ label: \"<b>Review</b>\" }", "<b>Review</b>", MermaidDiagnosticCodes.UnsupportedStatement, 14, 15)]
     [InlineData("  A@{ label: \"$$x^2$$\" }", "$$x^2$$", MermaidDiagnosticCodes.UnsupportedStatement, 14, 9)]
     public void ReplacedLabelDiagnosticsLocateTheDeclarationWithoutMovingTheOriginalNodeReference(
@@ -100,12 +102,21 @@ public sealed class MermaidFlowchartLabelDepthTests {
         var node = Assert.IsType<MermaidFlowchartDocument>(direct.Document).Nodes.Single(item => item.Id == "A");
         Assert.Equal("`**Final**\ncaption`", node.Text);
         Assert.Equal(2, node.Span.Line);
-        var diagnostic = Assert.Single(direct.Diagnostics);
-        Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, diagnostic.Code);
-        Assert.Equal((5, 20, 21), (diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
+        Assert.Empty(direct.Diagnostics);
+        Assert.Equal("Final\ncaption", Assert.IsType<TopologyChart>(direct.Artifact!.Model).Nodes.Single(item => item.Id == "A").LabelContent.PlainText);
         var fenced = new MermaidVisualMarkupParser().Parse("Intro\n```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
-        Assert.Equal(7, Assert.Single(fenced.Diagnostics).Line);
+        Assert.Empty(fenced.Diagnostics);
+        Assert.Equal(direct.Artifact!.ToSvg(), Assert.Single(fenced.Artifacts).ToSvg());
+        // Check the final scalar location through public diagnostics, without exposing parser internals.
+        var locatedSource = source.Replace("**Final**", "<b>Final</b>", StringComparison.Ordinal);
+        var located = MermaidRenderer.Render(locatedSource);
+        var diagnostic = Assert.Single(located.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, diagnostic.Code);
+        Assert.Equal((5, 20, 24), (diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
+        var locatedFence = new MermaidVisualMarkupParser().Parse("Intro\n```mermaid\n" + locatedSource + "\n```");
+        var mapped = Assert.Single(locatedFence.Diagnostics);
+        Assert.Equal(diagnostic.Code, mapped.Code); Assert.Equal((7, 20), (mapped.Line, mapped.Column));
     }
 
     [Fact]

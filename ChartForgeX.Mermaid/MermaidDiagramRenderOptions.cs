@@ -14,9 +14,12 @@ public abstract class MermaidDiagramRenderOptions {
     /// <summary>Copies mutable option fields and presentation so later host edits do not affect this configuration.</summary>
     public MermaidDiagramRenderOptions Clone() => Snapshot<MermaidDiagramRenderOptions>(null);
 
+    internal virtual void SnapshotMutableFields() { }
+
     internal T Snapshot<T>(MermaidPresentationOptions? defaults) where T : MermaidDiagramRenderOptions {
         var copy = (T)MemberwiseClone();
         copy.Presentation = MermaidPresentationOptions.Merge(defaults, Presentation);
+        copy.SnapshotMutableFields();
         return copy;
     }
 }

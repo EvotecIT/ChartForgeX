@@ -1,0 +1,23 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var source={{SOURCE_TEXT}};
+var artifact=SequenceParticipantViewsSourceRecipe.Create(source,{{VARIANT}},VisualThemeMode.{{MODE}});
+File.WriteAllText("sequence.mmd",source);File.WriteAllText("sequence.svg",artifact.ToSvg());File.WriteAllBytes("sequence.png",artifact.ToPng());
+File.WriteAllText("sequence.html",artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}));
+File.WriteAllText("sequence.json",artifact.ToInterchangeJson());
+var restored=VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToSequenceArtifact();
+// Reveal every retained source participant while keeping mirrored lifetime presentation.
+var layout=restored.Layout!;
+restored.Layout=new SequenceLayoutPolicy(layout.CanvasPadding,layout.ParticipantMinimumWidth,layout.ParticipantMinimumHeight,
+    layout.ParticipantSpacing,layout.MessageSpacing,layout.NoteSpacing,layout.FragmentMargin,layout.FragmentLabelPadding,
+    layout.ActivationWidth,layout.WrapPadding,layout.WrapLabels,mirrorParticipants:true,hideUnusedParticipants:false,
+    messageAlignment:layout.MessageAlignment,noteAlignment:layout.NoteAlignment,numberPresentation:layout.NumberPresentation,selfMessageRouting:layout.SelfMessageRouting,footerBottomMargin:layout.FooterBottomMargin,fragmentTabMinimumWidth:layout.FragmentTabMinimumWidth,fragmentTabMinimumHeight:layout.FragmentTabMinimumHeight,participantBands:layout.ParticipantBands);
+File.WriteAllText("sequence-all-participants.svg",restored.ToSvg());File.WriteAllBytes("sequence-all-participants.png",restored.ToPng());
+
+{{SOURCE}}

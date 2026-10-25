@@ -3,7 +3,9 @@ using System;
 namespace ChartForgeX.Core;
 
 /// <summary>An immutable annular band expressed as ratios of the pie chart's shared available radius.</summary>
-/// <remarks>An explicit band overrides Pie/Donut's default inner radius. Multiple pie-like series require disjoint explicit bands.</remarks>
+/// <remarks>An explicit band overrides Pie/Donut's default inner radius. Multiple pie-like series require disjoint unshifted bands.
+/// Multiple bands share one frame. Positive source slice offsets translate their exact sectors and may overlap other bands.
+/// External captions from any ring use shared outside lanes; their overlay leaders may cross enclosing rings.</remarks>
 public sealed class ChartRadialBand {
     /// <summary>Creates a finite positive-width band within the available radius.</summary>
     /// <param name="innerRatio">The inner ratio from zero inclusive to the outer ratio exclusive.</param>

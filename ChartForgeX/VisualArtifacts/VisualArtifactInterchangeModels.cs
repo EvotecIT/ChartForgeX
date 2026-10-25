@@ -17,8 +17,8 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>The schema identifier emitted by this ChartForgeX version.</summary>
     public const string SchemaId = "chartforgex.visual-artifact";
 
-    /// <summary>The schema version emitted by this ChartForgeX version.</summary>
-    public const int CurrentVersion = 1;
+    /// <summary>The highest schema version accepted by this ChartForgeX version.</summary>
+    public const int CurrentVersion = 2;
 
     /// <summary>Maximum accepted UTF-8 payload size for one interchange envelope.</summary>
     public const int MaximumJsonUtf8Bytes = 8 * 1024 * 1024;
@@ -28,6 +28,8 @@ public sealed class VisualArtifactInterchangeEnvelope {
 
     /// <summary>Maximum accepted materialized JSON values for one interchange envelope.</summary>
     public const int MaximumJsonValues = 600000;
+    /// <summary>Maximum characters in one recognized native raster Base64 artwork URI, within the whole-envelope budget.</summary>
+    public const int MaximumArtworkImageDataUriCharacters = 2 * 1024 * 1024;
 
     private string _id = string.Empty;
     private string _title = string.Empty;
@@ -36,8 +38,8 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Gets the schema identifier.</summary>
     public string Schema => SchemaId;
 
-    /// <summary>Gets the schema version.</summary>
-    public int Version => CurrentVersion;
+    /// <summary>Gets the minimum schema version required by the captured typed data. Ordinary envelopes remain version 1.</summary>
+    public int Version => VisualArtifactInterchangeValidation.RequiredVersion(this);
 
     /// <summary>Gets or sets the visual artifact kind.</summary>
     public VisualArtifactKind Kind { get; set; }
@@ -68,6 +70,18 @@ public sealed class VisualArtifactInterchangeEnvelope {
 
     /// <summary>Gets or sets typed native railroad rules and presentation. Older version-1 readers without this family reject it.</summary>
     public VisualArtifactInterchangeRailroadArtifact? Railroad { get; set; }
+
+    /// <summary>Gets or sets typed native directory rows and presentation. Older version-1 readers without this family reject it.</summary>
+    public VisualArtifactInterchangeTreeViewArtifact? TreeView { get; set; }
+
+    /// <summary>Gets or sets editable exclusive waterfall authoring and native presentation. Older version-1 readers reject this family.</summary>
+    public VisualArtifactInterchangeWaterfallArtifact? Waterfall { get; set; }
+
+    /// <summary>Gets or sets editable native journey tasks and presentation; requires version 2.</summary>
+    public VisualArtifactInterchangeJourneyArtifact? Journey { get; set; }
+
+    /// <summary>Gets or sets editable native categorical timeline periods and presentation; requires version 2.</summary>
+    public VisualArtifactInterchangeTimelineArtifact? Timeline { get; set; }
 
     /// <summary>Gets or sets the natural width in pixels when known.</summary>
     public double? Width { get; set; }
@@ -181,6 +195,8 @@ public sealed class VisualArtifactInterchangeGroup {
 
 /// <summary>Represents one semantic diagram node or participant.</summary>
 public sealed class VisualArtifactInterchangeNode {
+    // Optional projected source provenance is completed only on a detached portable copy, after all resolved geometry exists.
+    internal string? PendingProjectedSourceId { get; set; }
     /// <summary>Gets or sets the stable node id.</summary>
     public string Id { get; set; } = string.Empty;
     /// <summary>Gets or sets the well-known node role.</summary>
@@ -251,6 +267,12 @@ public sealed class VisualArtifactInterchangePort {
 
 /// <summary>Represents one typed node detail row.</summary>
 public sealed class VisualArtifactInterchangeDetail {
+    /// <summary>Gets or sets native detail surface styling. Non-null requires version 2.</summary>
+    public TopologyDetailBadgeStyle? BadgeStyle { get; set; }
+    /// <summary>Gets or sets immutable structured full-width text; its plain projection must equal Text.</summary>
+    public ChartForgeX.Typography.TextContent? Content { get; set; }
+    /// <summary>Gets or sets immutable structured value content; its plain projection must equal Value.</summary>
+    public ChartForgeX.Typography.TextContent? ValueContent { get; set; }
     /// <summary>Gets or sets full-width text instead of the label/value columns.</summary>
     public string? Text { get; set; }
 
@@ -377,6 +399,8 @@ public sealed class VisualArtifactInterchangeScenarioStep {
 
 /// <summary>Represents one semantic diagram note, block, or annotation.</summary>
 public sealed class VisualArtifactInterchangeAnnotation {
+    internal double? TopologyDefaultUnits { get; set; }
+    internal ChartRect? TopologyRoutingViewport { get; set; }
     /// <summary>Gets or sets the stable annotation id.</summary>
     public string Id { get; set; } = string.Empty;
     /// <summary>Gets or sets the well-known annotation role.</summary>

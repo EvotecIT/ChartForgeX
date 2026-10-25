@@ -84,6 +84,7 @@ internal sealed partial class ChartStackLayout {
                 bucket.Group.Key, bucket.Coordinate, bucket.Positive, total, bucket.SourceTotal, target));
         }
         var layout = new ChartStackLayout(points, sourceValues, seriesGroups, totals.ToArray(), zeroTotalCount, horizontalCategories);
+        layout.PrepareAreaAlignment(chart, coordinateIds);
         layout.ValidateHistogramDensity(chart, coordinates);
         return layout;
     }
@@ -106,6 +107,7 @@ internal sealed partial class ChartStackLayout {
             Id = id; SeriesIndex = seriesIndex; Kind = series.Kind; Axis = series.ValueAxis;
             Key = series.StackGroup; NormalizedTo = series.NormalizedTo; Stacked = stacked;
             Interpolation = series.Interpolation; StepPosition = series.StepPosition;
+            MissingData = series.StackedAreaMissingData;
             HistogramEncoding = series.HistogramEncoding; HistogramAggregation = series.HistogramAggregation;
         }
         internal int Id { get; }
@@ -115,6 +117,7 @@ internal sealed partial class ChartStackLayout {
         internal string? Key { get; }
         internal double? NormalizedTo { get; }
         internal bool Stacked { get; }
+        internal ChartStackedAreaMissingDataPolicy MissingData { get; }
         private ChartInterpolation Interpolation { get; }
         private ChartStepPosition StepPosition { get; }
         private ChartHistogramEncoding? HistogramEncoding { get; }
@@ -124,6 +127,8 @@ internal sealed partial class ChartStackLayout {
         internal void Validate(ChartSeries series) {
             if (NormalizedTo != series.NormalizedTo)
                 throw new InvalidOperationException("Every series in the same stack must use the same NormalizedTo target, including null for source units.");
+            if (Kind == ChartSeriesKind.StackedArea && MissingData != series.StackedAreaMissingData)
+                throw new InvalidOperationException("Every series in the same stacked-area group and axis must use the same StackedAreaMissingData policy.");
             if (Kind == ChartSeriesKind.StackedArea && (Interpolation != series.Interpolation || StepPosition != series.StepPosition))
                 throw new InvalidOperationException("Every series in the same stacked-area group and axis must use the same Interpolation and StepPosition so shared boundaries align.");
             if ((HistogramEncoding == ChartHistogramEncoding.Density || HistogramEncoding == ChartHistogramEncoding.ProbabilityDensity

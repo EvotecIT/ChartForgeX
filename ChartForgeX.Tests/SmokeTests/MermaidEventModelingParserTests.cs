@@ -26,8 +26,9 @@ data ItemAdded01 `json`{
         Assert(document.Kind == MermaidDiagramKind.EventModeling && document.Frames.Count == 6, "Mermaid Event Modeling parser should preserve the header and frames.");
         Assert(document.Frames[0].EntityKind == MermaidEventModelingEntityKind.Ui && document.Frames[0].InlineData != null && document.Frames[0].DataType == "json", "Mermaid Event Modeling parser should parse inline data.");
         Assert(document.Frames[2].Namespace == "Cart" && document.Frames[2].Name == "ItemAdded" && document.Frames[2].DataReference == "ItemAdded01", "Mermaid Event Modeling parser should parse namespaces and data refs.");
-        Assert(document.Frames[4].IsReset && document.Relations.Count == 3, "Mermaid Event Modeling parser should parse reset frames and inferred relations.");
+        Assert(document.Frames[4].IsReset && document.Relations.Count == 4, "Mermaid Event Modeling parser should parse reset frames and inferred relations.");
         Assert(document.Relations.Exists(relation => relation.SourceNumber == "03" && relation.TargetNumber == "04" && !relation.IsInferred), "Mermaid Event Modeling parser should parse explicit relations.");
+        Assert(document.Relations.Exists(relation => relation.SourceNumber == "05" && relation.TargetNumber == "06" && relation.IsInferred), "A reset frame remains available to the following different lane.");
         Assert(document.DataBlocks.Count == 1 && document.DataBlocks[0].Id == "ItemAdded01", "Mermaid Event Modeling parser should parse data blocks.");
     }
 
@@ -80,7 +81,8 @@ tf 01 widget Checkout";
 
     private static void MermaidEventModelingPreservesInlineDataBeforeReferences() {
         const string source = @"eventmodeling
-tf 01 evt CustomerUpdated `json`{ ""field"": ""[[customerId]]"" } [[Payload01]]";
+tf 01 evt CustomerUpdated `json`{ ""field"": ""[[customerId]]"" } [[Payload01]]
+data Payload01 { customerId: number }";
 
         var result = new MermaidParser().ParseEventModeling(source);
 

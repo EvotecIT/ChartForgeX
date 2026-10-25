@@ -1,0 +1,27 @@
+---
+title: Cart information flow
+---
+eventmodeling
+accTitle: Cart timeline with authored data facts
+accDescr: Source-ordered frames and reset boundaries across Cart and Inventory lanes.
+tf 30 ui Cart.Screen
+tf 10 cmd Cart.AddItem { sku: string, quantity: 1 }
+tf 20 evt Cart.ItemAdded [[Payload]]
+rf 05 evt Inventory.StockChanged `json`{ "available": true, "bin": null }
+tf 06 pcr Inventory.Reconcile
+tf 04 cmd Inventory.Update ->> 06
+tf 08 evt Inventory.Changed
+tf 01 rmo Cart.View ->> 08 ->> 20 [[ReadModel]]
+tf 02 ui Cart.Screen
+
+data Payload `json`{
+  "sku": "ABC",
+  "quantity": 1,
+  "customer": { "name": "Alex Morgan" },
+  "tags": ["priority", "review"],
+  "escaped/key": { "~value": "" }
+}
+data ReadModel {
+  total: number
+  ready: true
+}

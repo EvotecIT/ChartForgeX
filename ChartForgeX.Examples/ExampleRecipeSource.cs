@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 
 /// <summary>Packages one compiled native recipe as a standalone ordinary-package C# program.</summary>
-public static class ExampleRecipeSource {
+public static partial class ExampleRecipeSource {
     /// <summary>Creates a standalone program with the selected viewport, frame, palette mode and optional gallery typography.</summary>
     public static string Emit(ExampleRecipe recipe, string variant, string title, string subtitle, VisualThemeMode mode,
         int width, int height, bool? legend = null, string artifactKind = "Chart", bool surface = false,
@@ -40,8 +40,77 @@ public static class ExampleRecipeSource {
         });
     }
 
-    private static string Package(ExampleRecipe recipe, string template, Dictionary<string, string> tokens) {
-        tokens["{{SOURCE}}"] = ReadResource("ChartForgeX.Examples.Recipes." + recipe.Factory + ".cs").TrimEnd();
+    /// <summary>Packages the compiled native Git graph block through its existing static SVG/PNG owner, without a prepared-chart adapter.</summary>
+    public static string EmitGitGraph(string variant = "wide-lr", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+        // Capture the exact public fixture's supported variants before emitting an executable program.
+        _ = GitGraphDepthRecipe.Create(variant, mode);
+        return Package(nameof(GitGraphDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{FACTORY}}"] = nameof(GitGraphDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
+            ["{{FONT_SETUP}}"] = galleryTypography
+                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+        });
+    }
+
+    /// <summary>Packages the compiled native BlockLayout recipe through the existing static block program owner.</summary>
+    public static string EmitBlockLayout(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+        if (variant != "wide" && variant != "compact") throw new ArgumentOutOfRangeException(nameof(variant));
+        return Package(nameof(BlockLayoutDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{FACTORY}}"] = nameof(BlockLayoutDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
+            ["{{FONT_SETUP}}"] = galleryTypography
+                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+        });
+    }
+
+    /// <summary>Packages the maintained Kanban source as a complete ordinary Mermaid-package program.</summary>
+    public static string EmitKanban(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or compact.");
+        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        return Template("RecipeKanbanProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{SOURCE_TEXT}}"] = JsonSerializer.Serialize(ReadResource("ChartForgeX.Examples.MermaidFixtures.kanban-source-geometry.mmd")),
+            ["{{WIDTH}}"] = variant == "compact" ? "390" : "1100", ["{{MODE}}"] = mode.ToString()
+        });
+    }
+
+    /// <summary>Packages the complete native cause tree as a Core-only ordinary SVG/PNG/HTML program.</summary>
+    public static string EmitIshikawa(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+        _ = IshikawaDepthRecipe.Create(variant, mode);
+        return Package(nameof(IshikawaDepthRecipe), "RecipeFishboneProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(), ["{{WIDTH}}"] = variant == "compact" ? "390" : "1100",
+            ["{{FONT_SETUP}}"] = galleryTypography
+                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+        });
+    }
+
+    /// <summary>Packages the compiled native Wardley block as an ordinary dependency-free C# program.</summary>
+    public static string EmitWardley(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+        _ = WardleyDepthRecipe.Create(variant, mode);
+        return Package(nameof(WardleyDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{FACTORY}}"] = nameof(WardleyDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
+            ["{{FONT_SETUP}}"] = galleryTypography
+                ? "// Optional exact gallery typography; copy its fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+        });
+    }
+
+    /// <summary>Packages the compiled native XY counterpart as a complete ordinary Core program.</summary>
+    public static string EmitXYChart(string variant = "wide-vertical", VisualThemeMode mode = VisualThemeMode.Light) {
+        _ = MermaidXYChartDepthRecipe.Create(variant, mode);
+        return Package(nameof(MermaidXYChartDepthRecipe), "RecipeChartProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{FACTORY}}"] = nameof(MermaidXYChartDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant),
+            ["{{MODE}}"] = mode.ToString(), ["{{NAME}}"] = JsonSerializer.Serialize("xy-source-depth")
+        });
+    }
+
+    private static string Package(ExampleRecipe recipe, string template, Dictionary<string, string> tokens) => Package(recipe.Factory, template, tokens);
+    private static string Package(string factory, string template, Dictionary<string, string> tokens, string? sourceResource = null) {
+        tokens["{{SOURCE}}"] = ReadResource(sourceResource ?? "ChartForgeX.Examples.Recipes." + factory + ".cs").TrimEnd();
+        return Template(template, tokens);
+    }
+
+    private static string Template(string template, Dictionary<string, string> tokens) {
         var source = Regex.Replace(ReadResource("ChartForgeX.Examples." + template + ".cs"), @"\{\{[A-Z_]+\}\}", match => tokens[match.Value]);
         return source.Replace("\r\n", "\n").TrimEnd() + "\n";
     }

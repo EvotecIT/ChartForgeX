@@ -11,7 +11,9 @@ namespace ChartForgeX.Topology;
 public sealed class TopologyRenderOptions {
     internal TextMeasurementContext? TextMeasurement { get; set; }
     internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
+    internal double ResolvedSubtitleChipFontSize { get; set; } = 9.5;
     internal double ResolvedEdgeLabelScale { get; set; } = 1;
+    internal double? ResolvedCaptionStrokeWidth { get; set; }
     // Native badges retain their resolved face without changing portable diagram-layout estimates.
     internal Func<string, double>? ResolvedBadgeTextWidth { get; set; }
     // Layout and painting share the same fitted endpoint face and backplate extent.
@@ -243,6 +245,10 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets an optional focused topology view.</summary>
     public TopologyView? View { get; set; }
 
+    /// <summary>Gets or sets an immutable organization hierarchy projection, applied before the existing generic focused view.</summary>
+    /// <remarks>The source chart and original content remain available for expanding, saved-state restoration and source facts.</remarks>
+    public TopologyHierarchyView? HierarchyView { get; set; }
+
     /// <summary>Gets or sets a reusable render preset.</summary>
     public TopologyViewPreset Preset {
         get => _preset;
@@ -271,7 +277,19 @@ public sealed class TopologyRenderOptions {
         }
     }
 
-    /// <summary>Gets or sets an optional minimum gap between nodes within a layered rank.</summary>
+    /// <summary>Gets or sets whether native swimlane ranking excludes constraints between distinct outer responsibility groups.</summary>
+    /// <remarks>Only true changes ranking. Null/false retain incumbent behavior. Actual edges, ports, IDs and authored rank minima remain intact; this does not select a different router or optimize crossing counts.</remarks>
+    public bool? SwimlaneIgnoreCrossLaneRankConstraints { get; set; }
+
+    /// <summary>Gets or sets bounded native automatic ordering of outer Swimlane responsibilities.</summary>
+    /// <remarks>Only true optimizes weighted cross-responsibility distance. Null/false retain source order. Child groups, graph collections and identities are not reordered; this does not select node hierarchy order or route planning.</remarks>
+    public bool? SwimlaneAutomaticLaneOrdering { get; set; }
+
+    /// <summary>Gets or sets bounded native crossing optimization of automatic Layered or Swimlane component ranks.</summary>
+    /// <remarks>Only true changes ranking. Authored rank minima, retained minimum spans and strongly connected components remain authoritative. The objective is stable rank-order segment crossings, not final routed paint crossings or a global optimum.</remarks>
+    public bool? LayeredOptimizeRanksByCrossings { get; set; }
+
+    /// <summary>Gets or sets an optional minimum gap between nodes within an automatic layered or swimlane rank.</summary>
     public double? LayeredNodeSpacing {
         get => _layeredNodeSpacing;
         set {
@@ -280,7 +298,7 @@ public sealed class TopologyRenderOptions {
         }
     }
 
-    /// <summary>Gets or sets an optional minimum gap between layered ranks.</summary>
+    /// <summary>Gets or sets an optional minimum gap between automatic layered or swimlane ranks.</summary>
     public double? LayeredRankSpacing {
         get => _layeredRankSpacing;
         set {

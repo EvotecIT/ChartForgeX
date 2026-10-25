@@ -10,11 +10,11 @@ function fixture() {
   const requests = []; const binding = {};
   const api = new Function('capturedCartesianMetadata', 'hasFeature', 'nativePreparationBinding', 'copyHostValue',
     'chartLifetimes', 'uiText', 'interactiveTargets', 'requestNativePreparation', 'selectionSignature', 'emitHostEvent',
-    'publishResetSelection', 'publishInteractionState', 'syncResetControl', 'listenChart', source + '\nreturn {requestNativeHierarchy,hierarchySnapshot};')(
+    'publishResetSelection', 'publishInteractionState', 'syncResetControl', 'listenChart', 'nativeLegendConnected', source + '\nreturn {requestNativeHierarchy,hierarchySnapshot};')(
     target => ({ hierarchy: target.model || model }), () => true, () => binding, value => JSON.parse(JSON.stringify(value)),
     new WeakMap([[root, {}]]), (_, __, fallback) => fallback, () => [],
     (target, channel, payload, hooks) => { requests.push({ target, channel, payload, hooks }); return true; },
-    () => '', () => {}, () => {}, () => {}, () => {}, () => {});
+    () => '', () => {}, () => {}, () => {}, () => {}, () => {}, () => false); // This isolated hierarchy unit keeps native legend preparation disconnected.
   return { root, model, requests, api };
 }
 test('hierarchy requests validate source identity and use the existing managed transaction seam', () => {

@@ -7,27 +7,32 @@ using ChartForgeX.Core;
 
 namespace ChartForgeX.Raster;
 
-internal static class PngWriter {
+internal static partial class PngWriter {
     public static byte[] WriteRgba(RgbaImage image) => WriteRgba(image.Width, image.Height, image.Pixels);
 
     public static byte[] WriteRgba(RgbaImage image, RasterImageOptions? options) => WriteRgba(image.Width, image.Height, image.Pixels, options);
 
     public static byte[] WriteRgba(int width, int height, byte[] rgba) => WriteRgba(width, height, rgba, null);
 
-    public static byte[] WriteRgba(int width, int height, byte[] rgba, RasterImageOptions? options) {
+    public static byte[] WriteRgba(int width, int height, byte[] rgba, RasterImageOptions? options) =>
+        WriteRgbaCore(width, height, rgba, options, null, null);
+
+    private static byte[] WriteRgbaCore(int width, int height, byte[] rgba, RasterImageOptions? options,
+        long? maximumBytes, Func<long, Exception>? overflow) {
         using var ms = new MemoryStream();
-        ms.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, 0, 8);
+        Stream target = maximumBytes.HasValue ? new BoundedWriteStream(ms, maximumBytes.Value, overflow!) : ms;
+        target.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, 0, 8);
         var ihdr = new List<byte>();
         WriteUInt(ihdr, (uint)width); WriteUInt(ihdr, (uint)height);
         ihdr.Add(8); ihdr.Add(6); ihdr.Add(0); ihdr.Add(0); ihdr.Add(0);
-        WriteChunk(ms, "IHDR", ihdr.ToArray());
+        WriteChunk(target, "IHDR", ihdr.ToArray());
         if (options?.Dpi is double dpi) {
             var pixelsPerMeter = checked((uint)Math.Round(dpi / 0.0254, MidpointRounding.AwayFromZero));
             var physical = new List<byte>();
             WriteUInt(physical, pixelsPerMeter);
             WriteUInt(physical, pixelsPerMeter);
             physical.Add(1);
-            WriteChunk(ms, "pHYs", physical.ToArray());
+            WriteChunk(target, "pHYs", physical.ToArray());
         }
         var raw = new byte[height * (width * 4 + 1)];
         var src = 0; var dst = 0;
@@ -36,20 +41,22 @@ internal static class PngWriter {
             Buffer.BlockCopy(rgba, src, raw, dst, width * 4);
             src += width * 4; dst += width * 4;
         }
-        WriteChunk(ms, "IDAT", ZlibDeflate(raw, options));
-        WriteChunk(ms, "IEND", Array.Empty<byte>());
+        WriteChunk(target, "IDAT", ZlibDeflate(raw, options, maximumBytes.HasValue ? maximumBytes.Value - 57 : (long?)null,
+            maximumBytes.HasValue ? observed => overflow!(observed + 57) : overflow));
+        WriteChunk(target, "IEND", Array.Empty<byte>());
         return ms.ToArray();
     }
 
-    private static byte[] ZlibDeflate(byte[] data, RasterImageOptions? options) {
+    private static byte[] ZlibDeflate(byte[] data, RasterImageOptions? options, long? maximumBytes = null, Func<long, Exception>? overflow = null) {
         var compressionLevel = options?.PngCompressionLevel ?? 6;
         using var ms = new MemoryStream();
-        WriteZlibHeader(ms, compressionLevel);
-        using (var deflate = new DeflateStream(ms, ToCompressionLevel(compressionLevel), true)) {
+        Stream target = maximumBytes.HasValue ? new BoundedWriteStream(ms, maximumBytes.Value, overflow!) : ms;
+        WriteZlibHeader(target, compressionLevel);
+        using (var deflate = new DeflateStream(target, ToCompressionLevel(compressionLevel), true)) {
             deflate.Write(data, 0, data.Length);
         }
 
-        WriteUInt(ms, Adler32(data));
+        WriteUInt(target, Adler32(data));
         return ms.ToArray();
     }
 

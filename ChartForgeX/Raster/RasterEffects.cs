@@ -4,17 +4,28 @@ using System.Threading;
 namespace ChartForgeX.Raster;
 
 /// <summary>Opt-in scalar kernels over detached premultiplied RGBA16 or alpha16 buffers; legacy canvas arithmetic is untouched.</summary>
-internal static class RasterEffects {
+internal static partial class RasterEffects {
     /// <summary>Runs one already-budgeted operation once. Source pixels must remain frozen until its capture completes.</summary>
     internal static RasterEffectResult Execute(RasterEffectPreflight preflight, int index, bool orderedDither, CancellationToken cancellation) {
         if (preflight == null) throw new ArgumentNullException(nameof(preflight));
         cancellation.ThrowIfCancellationRequested();
         var plan = preflight.Take(index, out var source);
+        return ExecutePlan(source, plan, orderedDither, cancellation);
+    }
+
+    private static RasterEffectResult ExecutePlan(RgbaImage source, RasterEffectPlan plan,
+        bool orderedDither, CancellationToken cancellation) {
+        if (plan.BackdropBlur != null) return ExecuteBackdrop(source, plan, orderedDither, cancellation);
+        if (plan.IsBloom && !HasBrightSamples(source, plan, cancellation))
+            return new RasterEffectResult(source, plan.SourceRegion);
+        if (plan.PixelOperation != RasterPixelOperation.None) return ExecutePixels(source, plan, orderedDither, cancellation);
         int width = plan.OutputRegion.Width, height = plan.OutputRegion.Height, channels = plan.Channels;
         var first = new ushort[checked(width * height * channels)];
         cancellation.ThrowIfCancellationRequested();
         var second = new ushort[first.Length];
-        Capture(source, plan, first, cancellation);
+        if (plan.IsBloom) CaptureBrightPass(source, plan, first, cancellation);
+        else if (plan.SpreadRadius == 0) Capture(source, plan, first, cancellation);
+        else CaptureSpreadAlpha(source, plan, first, cancellation);
         foreach (var radius in plan.HorizontalRadii) if (radius > 0) {
             BoxPass(first, second, width, height, channels, radius, true, cancellation); Swap(ref first, ref second);
         }
@@ -32,19 +43,51 @@ internal static class RasterEffects {
                 if (plan.Shadow.HasValue) {
                     var color = plan.Shadow.Value;
                     long fx = (long)result.X + x - plan.OutputRegion.X, fy = (long)result.Y + y - plan.OutputRegion.Y;
-                    var coverage = fx >= 0 && fx < width && fy >= 0 && fy < height ? first[(int)fy * width + (int)fx] : 0;
-                    a = RasterEffectPixels.Multiply(coverage, color.A * 257);
+                    var visible = plan.ShadowVisibleRegion;
+                    var vx = (long)result.X + x;
+                    var vy = (long)result.Y + y;
+                    var inside = visible.HasValue && vx >= visible.Value.X &&
+                        vx < (long)visible.Value.X + visible.Value.Width && vy >= visible.Value.Y &&
+                        vy < (long)visible.Value.Y + visible.Value.Height;
+                    var coverage = inside && fx >= 0 && fx < width && fy >= 0 && fy < height
+                        ? first[(int)fy * width + (int)fx] : 0;
+                    if (plan.IsInnerShadow) {
+                        WriteInnerShadow(rgba, output, source, plan, vx, vy, coverage, orderedDither);
+                        continue;
+                    }
+                    if (plan.IsOutline) {
+                        var original = OriginalOffset(source, plan.SourceRegion, vx, vy);
+                        coverage = Math.Max(0, coverage - (original < 0 ? 0 : source.Pixels[original + 3] * 257));
+                    }
+                    var tintAlpha = color.A * 257;
+                    a = RasterEffectPixels.Multiply(coverage, tintAlpha);
+                    // Keep the exact opacity1 arithmetic. Fractional authored opacity is
+                    // applied to actual coverage before the existing final byte conversion.
+                    if (plan.ShadowOpacity != 1) a = (int)Math.Floor(a * plan.ShadowOpacity + .5);
                     r = RasterEffectPixels.Premultiply(color.R, a); g = RasterEffectPixels.Premultiply(color.G, a); b = RasterEffectPixels.Premultiply(color.B, a);
                     if (plan.CompositeSource) {
                         var sx = (long)result.X + x; var sy = (long)result.Y + y;
                         if (sx >= 0 && sx < source.Width && sy >= 0 && sy < source.Height) {
                             var at = checked(((int)sy * source.Width + (int)sx) * 4);
-                            if (a == 0 && source.Pixels[at + 3] > 0) { Buffer.BlockCopy(source.Pixels, at, rgba, output, 4); continue; }
-                            RasterEffectPixels.SourceOver(ref r, ref g, ref b, ref a, source.Pixels, at);
+                            if (a == 0 && (plan.IsOutline || source.Pixels[at + 3] > 0)) { Buffer.BlockCopy(source.Pixels, at, rgba, output, 4); continue; }
+                            if (plan.IsOutline) RasterEffectPixels.AddSource(ref r, ref g, ref b, ref a, source.Pixels, at);
+                            else RasterEffectPixels.SourceOver(ref r, ref g, ref b, ref a, source.Pixels, at);
                         }
                     }
                 } else {
                     var input = (y * width + x) * 4; r = first[input]; g = first[input + 1]; b = first[input + 2]; a = first[input + 3];
+                    if (plan.IsBloom) {
+                        r = RasterEffectPixels.Multiply(r, plan.BloomStrength16);
+                        g = RasterEffectPixels.Multiply(g, plan.BloomStrength16);
+                        b = RasterEffectPixels.Multiply(b, plan.BloomStrength16);
+                        a = RasterEffectPixels.Multiply(a, plan.BloomStrength16);
+                        var original = OriginalOffset(source, plan.SourceRegion, (long)result.X + x, (long)result.Y + y);
+                        if (a == 0 && original >= 0) {
+                            Buffer.BlockCopy(source.Pixels, original, rgba, output, 4);
+                            continue;
+                        }
+                        RasterEffectPixels.ScreenSource(ref r, ref g, ref b, ref a, source.Pixels, original);
+                    }
                 }
                 RasterEffectPixels.Write(rgba, output, r, g, b, a, unchecked(result.X + x), unchecked(result.Y + y), orderedDither);
             }

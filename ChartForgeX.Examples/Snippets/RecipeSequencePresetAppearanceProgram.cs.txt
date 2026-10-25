@@ -1,0 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+var source={{SOURCE_TEXT}};
+var model=SequencePresetAppearanceSourceRecipe.Create(source,{{VARIANT}},VisualThemeMode.{{MODE}});
+File.WriteAllText("sequence-source.mmd",source);File.WriteAllText("sequence.svg",model.ToSvg());File.WriteAllBytes("sequence.png",model.ToPng());File.WriteAllText("sequence.json",model.ToInterchangeJson());
+File.WriteAllText("sequence.html",model.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}));
+var restored=VisualArtifactInterchangeEnvelope.FromJson(model.ToInterchangeJson()).ToSequenceArtifact();restored.Messages[0].Text="Checked and saved";restored.Participants[0].Border=ChartForgeX.Primitives.ChartColor.FromHex("#008877");File.WriteAllText("sequence-edited.svg",restored.ToSvg());File.WriteAllBytes("sequence-edited.png",restored.ToPng());
+{{SOURCE}}

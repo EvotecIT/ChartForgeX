@@ -41,6 +41,16 @@ public static partial class V2Examples {
         WriteHistograms(output, artifacts);
         WriteViewports(output, artifacts);
         WriteLayeredData(output, artifacts);
+        WriteNativeDepth(output, artifacts);
+        WriteTableContentDepth(output, artifacts);
+        WriteSequenceLayoutTypography(output, artifacts);
+        WriteSequenceParticipantViews(output, artifacts);
+        WriteSequenceMessagePresentation(output, artifacts);
+        WriteSequenceSelfRoutes(output, artifacts);
+        WriteSequenceNavigation(output, artifacts);
+        WriteSequenceSourceDefaults(output, artifacts);
+        WriteSequencePresetAppearance(output,artifacts);
+        WriteSequenceSurfaceShadows(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

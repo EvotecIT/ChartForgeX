@@ -45,6 +45,22 @@ internal sealed partial class ChartRelationshipIndex {
             hierarchyItems: authored, depths: depths, hierarchyOrder: order);
     }
 
+    /// <summary>Resolves a retained membership view only after validating the complete authored source.</summary>
+    internal IReadOnlyList<double> ResolveHierarchyValues(ChartHierarchyValuePolicy policy, Func<int, bool> included) {
+        if (included == null) throw new ArgumentNullException(nameof(included));
+        _ = ResolveHierarchyValues(policy);
+        var values = new double[HierarchyItems.Count];
+        for (var index = _hierarchyOrder.Length - 1; index >= 0; index--) {
+            var node = _hierarchyOrder[index]; if (!included(node)) continue;
+            var children = Children(node);
+            if (children.Count == 0) { values[node] = HierarchyItems[node].Value!.Value; continue; }
+            var total = 0d; foreach (var child in children) total += values[child];
+            if (double.IsInfinity(total)) throw new ArgumentException("Visible hierarchy child totals must remain finite.", "items");
+            values[node] = policy == ChartHierarchyValuePolicy.AuthoredTotal ? HierarchyItems[node].Value ?? total : total;
+        }
+        return Array.AsReadOnly(values);
+    }
+
     /// <summary>Resolves geometry values from immutable facts without changing the authored snapshot or earlier preparations.</summary>
     internal IReadOnlyList<double> ResolveHierarchyValues(ChartHierarchyValuePolicy policy) {
         if (policy == ChartHierarchyValuePolicy.LeafAggregate) return HierarchyValues;

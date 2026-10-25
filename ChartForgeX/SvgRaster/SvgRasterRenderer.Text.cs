@@ -90,24 +90,27 @@ internal static partial class SvgRasterRenderer {
             return;
         }
 
-        var content = new RgbaCanvas(width, height, 1);
+        var content = AllocateCanvas(width, height, definitions);
         var contentStyle = compositeOpacity ? style.Inherit() : style;
         RenderTextContent(content, span, contentStyle, matrix, definitions, width, height, ancestors, viewport, paintBounds, false, ref cursorX, ref cursorY, ref whitespace, ref transform, layout);
         if (hasClipPath) {
-            var clipMask = new RgbaCanvas(width, height, 1);
+            var clipMask = AllocateCanvas(width, height, definitions);
             RenderClipPath(clipMask, clipPath, matrix, definitions, width, height, content.Pixels, viewport, span, style, ancestors);
-            var clipped = new RgbaCanvas(width, height, 1);
+            var clipped = AllocateCanvas(width, height, definitions);
             clipped.DrawImageMasked(0, 0, width, height, content.Pixels, clipMask.Pixels);
             content = clipped;
         }
         if (hasMask) {
-            var mask = new RgbaCanvas(width, height, 1);
+            var mask = AllocateCanvas(width, height, definitions);
             RenderMask(mask, maskDefinition, matrix, definitions, width, height, content.Pixels, viewport, span, style, ancestors);
-            var masked = new RgbaCanvas(width, height, 1);
-            masked.DrawImageMasked(0, 0, width, height, content.Pixels, mask.Pixels, maskDefinition.UsesAlpha);
+            var masked = AllocateCanvas(width, height, definitions);
+            definitions.Filters?.ReserveWorkSamples(checked((long)width * height * 16));
+            masked.DrawImageSvgMasked(0, 0, width, height, content.Pixels, mask.Pixels, maskDefinition.UsesAlpha,
+                    string.Equals(maskDefinition.RootStyle.ColorInterpolation, "linearRGB", StringComparison.OrdinalIgnoreCase),
+                    definitions.Filters?.Cancellation ?? default);
             content = masked;
         }
-        canvas!.DrawImage(0, 0, width, height, compositeOpacity ? ApplyOpacity(content.Pixels, style.Opacity) : content.Pixels);
+        canvas!.DrawImage(0, 0, width, height, compositeOpacity ? ApplyOpacity(content.Pixels, style.Opacity, definitions) : content.Pixels);
     }
 
     private static void RenderTextValue(RgbaCanvas? canvas, string value, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace, ref SvgRasterTextTransformer transform, SvgTextLayout? layout) {

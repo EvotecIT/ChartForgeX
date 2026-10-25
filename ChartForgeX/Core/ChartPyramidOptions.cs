@@ -42,6 +42,33 @@ public sealed class ChartPyramidOptions {
         }
     }
 
+    private ChartStageLabelContent _labelContent;
+    private double _outlineDashOffset;
+
+    /// <summary>Gets or sets combined (default) or independently positioned component captions. Shared data labels must be enabled.</summary>
+    public ChartStageLabelContent LabelContent {
+        get => _labelContent;
+        set {
+            if (!Enum.IsDefined(typeof(ChartStageLabelContent), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            _labelContent = value;
+        }
+    }
+    /// <summary>Gets independent category visibility, physical placement and typography in Separate mode. Null inherits series/chart placement; Auto prefers the outside rail.</summary>
+    public ChartValueLabelOptions CategoryLabel { get; private set; } = new();
+    /// <summary>Gets independent value visibility, physical placement and typography in Separate mode. Null inherits series/chart placement; Auto prefers the mark interior.</summary>
+    public ChartValueLabelOptions ValueLabel { get; private set; } = new();
+    /// <summary>Gets or sets the optional shared partition outline policy. Point stroke colors take precedence over its color; null preserves the existing unoutlined partition or Cone line.</summary>
+    public ChartStrokeStyle? PartitionOutline { get; set; }
+    /// <summary>Gets or sets the finite partition outline dash phase in logical units.</summary>
+    public double PartitionOutlineDashOffset {
+        get => _outlineDashOffset;
+        set { ChartGuards.Finite(value, nameof(value)); _outlineDashOffset = value; }
+    }
+
     /// <summary>Copies the configured state for isolated chart configuration.</summary>
-    internal ChartPyramidOptions Clone() => (ChartPyramidOptions)MemberwiseClone();
+    internal ChartPyramidOptions Clone() {
+        var copy = (ChartPyramidOptions)MemberwiseClone();
+        copy.CategoryLabel = CategoryLabel.Clone(); copy.ValueLabel = ValueLabel.Clone();
+        return copy;
+    }
 }

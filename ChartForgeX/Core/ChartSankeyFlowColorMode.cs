@@ -8,5 +8,8 @@ public enum ChartSankeyFlowColorMode {
     Target,
     /// <summary>Maps independent ChartFlowLink.ColorValue measurements through ColorScale; missing measurements use its no-data paint.</summary>
     /// <remarks>Explicit flow, source-point, family and series colors retain precedence. All flows contribute color-domain facts, including omitted or precision-collapsed ribbons.</remarks>
-    Quantitative
+    Quantitative,
+    /// <summary>Interpolates the existing source and target paint policies along each ribbon. Explicit ID-keyed flow fill remains solid.</summary>
+    /// <remarks>Both endpoint stops retain point, family, series and semantic paint precedence; geometry and raw flow facts are unchanged.</remarks>
+    Gradient
 }

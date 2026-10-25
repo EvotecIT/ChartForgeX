@@ -1,0 +1,21 @@
+using System;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+// Reference the ordinary ChartForgeX.Mermaid package. No reference browser engine is required.
+var source = {{SOURCE_TEXT}};
+var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
+    Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, TopologySizing = MermaidTopologySizing.Natural },
+    Kanban = new MermaidTopologyRenderOptions { Width = {{WIDTH}}, Height = 700 }
+});
+if (result.HasErrors || result.Artifact == null)
+    throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+var artifact = result.Artifact;
+File.WriteAllText("board.mmd", source);
+File.WriteAllText("board.svg", artifact.ToSvg());
+File.WriteAllBytes("board.png", artifact.ToPng());
+File.WriteAllText("board.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("board.json", artifact.ToInterchangeJson());

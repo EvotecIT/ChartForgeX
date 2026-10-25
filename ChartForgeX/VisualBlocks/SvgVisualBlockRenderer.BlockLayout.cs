@@ -8,12 +8,16 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgVisualBlockRenderer {
-    private static void RenderBlockLayout(SvgMarkupWriter writer, BlockLayoutBlock block) {
+    private static void RenderBlockLayout(SvgMarkupWriter writer, BlockLayoutBlock block, string id) {
         var options = block.Options;
         var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
+        if (VisualBlockRendering.ExtendedBlockLayout(block)) {
+            RenderBlockHierarchy(writer, block, new ChartRect(content.Left, y, content.Width, Math.Max(0, content.Bottom - y)), id);
+            return;
+        }
         var placements = VisualBlockRendering.BlockLayoutPlacements(block);
         if (placements.Count == 0) return;
 

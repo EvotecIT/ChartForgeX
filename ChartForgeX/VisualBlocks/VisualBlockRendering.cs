@@ -16,24 +16,29 @@ internal static partial class VisualBlockRendering {
     public static double BodyFontSize(ResolvedVisualTheme theme, double defaultSize) => defaultSize * theme.DataLabelFontSize / ResolvedVisualTheme.DefaultDataLabelFontSize;
 
     // Headings share a bounded portion of a fixed viewport; the remaining space belongs to the body.
-    public static BlockHeadingMetrics Headings(IVisualBlock block) {
-        var theme = block.Options.ResolvedTheme;
-        var titleGap = block.Title.Length > 0 ? 7 + (block.Subtitle.Length == 0 ? 8 : 0) : 0;
-        var subtitleGap = block.Subtitle.Length > 0 ? 13 : 0;
-        var titleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = theme.TitleFontSize, LineHeight = 1 };
-        var subtitleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily }, FontSize = theme.SubtitleFontSize, LineHeight = 1 };
-        var titleHeight = block.Title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Title), titleStyle).Height : 0;
-        var subtitleHeight = block.Subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Subtitle), subtitleStyle).Height : 0;
+    public static BlockHeadingMetrics Headings(IVisualBlock block) => Headings(block.Title, block.Subtitle, block.Options.ResolvedTheme, ContentRect(block.Options));
+
+    internal static BlockHeadingMetrics Headings(string title, string subtitle, ResolvedVisualTheme theme, ChartRect content) =>
+        Headings(title, subtitle, theme.FontFamily, theme.TitleFontSize, theme.SubtitleFontSize, content, 1);
+
+    internal static BlockHeadingMetrics Headings(string title, string subtitle, string family, double titleFontSize,
+        double subtitleFontSize, ChartRect content, double spacingScale) {
+        var titleGap = title.Length > 0 ? (7 + (subtitle.Length == 0 ? 8 : 0)) * spacingScale : 0;
+        var subtitleGap = subtitle.Length > 0 ? 13 * spacingScale : 0;
+        var titleStyle = new TextStyle { Font = new FontSpec { Family = family, Weight = 700 }, FontSize = titleFontSize, LineHeight = 1 };
+        var subtitleStyle = new TextStyle { Font = new FontSpec { Family = family }, FontSize = subtitleFontSize, LineHeight = 1 };
+        var titleHeight = title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(title), titleStyle).Height : 0;
+        var subtitleHeight = subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(subtitle), subtitleStyle).Height : 0;
         var fonts = titleHeight + subtitleHeight;
-        var available = ContentRect(block.Options).Height * .4;
+        var available = content.Height * .4;
         var gaps = titleGap + subtitleGap;
         var gapScale = gaps > 0 ? Math.Min(1, available / (gaps * 2)) : 1;
         var fontScale = fonts > 0 ? Math.Min(1, (available - gaps * gapScale) / fonts) : 1;
-        var titleSize = theme.TitleFontSize * fontScale; var subtitleSize = theme.SubtitleFontSize * fontScale;
+        var titleSize = titleFontSize * fontScale; var subtitleSize = subtitleFontSize * fontScale;
         titleStyle.FontSize = titleSize; subtitleStyle.FontSize = subtitleSize;
         var titleAscent = TextAscent(titleStyle); var subtitleAscent = TextAscent(subtitleStyle);
-        var titleAdvance = block.Title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Title), titleStyle).Height : 0;
-        var subtitleAdvance = block.Subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Subtitle), subtitleStyle).Height : 0;
+        var titleAdvance = title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(title), titleStyle).Height : 0;
+        var subtitleAdvance = subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(subtitle), subtitleStyle).Height : 0;
         return new BlockHeadingMetrics(titleSize, subtitleSize, titleAscent, subtitleAscent, titleAdvance + titleGap * gapScale, subtitleAdvance + subtitleGap * gapScale);
     }
 
@@ -51,6 +56,7 @@ internal static partial class VisualBlockRendering {
 
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
+        if (block is TreeViewBlock treeView) { ValidateTreeView(treeView); return; }
         if (block is RailroadDiagramBlock railroad) { ValidateRailroadDiagram(railroad); return; }
         if (block is JourneyDiagramBlock journey) { ValidateJourneyDiagram(journey); return; }
         if (block is TimelineDiagramBlock timeline) { ValidateTimelineDiagram(timeline); return; }

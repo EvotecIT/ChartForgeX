@@ -38,8 +38,9 @@ internal sealed partial class VisualSceneBuilder {
                 && series.ObservationIds.TryGetValue(sourceIndex, out var observationId))
                 metadata["data-cfx-observation-id"] = observationId.Value;
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata,
-                group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope);
+                group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope, group.Opacity, group.SurfaceShadow, group.RetainedEffect);
         }
+        CompleteValueIdentity();
     }
 
     private static void CaptureBoxPlotGroupIdentity(ChartSeries series, IDictionary<string, string> metadata) {

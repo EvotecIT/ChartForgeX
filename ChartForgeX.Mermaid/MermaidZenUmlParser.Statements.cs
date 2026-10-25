@@ -31,14 +31,19 @@ internal static partial class MermaidZenUmlParser {
             if (IsKeyword(text, "ref")) {
                 var names = Condition(text, "ref", token.Span);
                 if (names.Length == 0) throw Syntax("ZenUML ref requires a diagram name.", token.Span);
-                Unsupported(text, token.Span, "reference-frame presentation");
-                return New(MermaidZenUmlStatementKind.Reference, names, token, "ref");
+                var arguments=ReferenceArguments(names,token.Span);
+                var reference=New(MermaidZenUmlStatementKind.Reference,arguments[0],token,"ref");
+                for(var index=1;index<arguments.Count;index++) {
+                    var id=arguments[index]; if(!IsIdentity(id))throw Syntax("ZenUML reference targets require participant identities.",token.Span);
+                    if(reference.ReferenceParticipantIds.Contains(id))throw Syntax("ZenUML reference targets must be distinct.",token.Span);
+                    Participant(id,token.Span,true);reference.ReferenceParticipantIds.Add(id);
+                }
+                return reference;
             }
             if (text.StartsWith("==", StringComparison.Ordinal)) {
                 if (token.Span.Column != 1) throw Syntax("ZenUML dividers must start at column one.", token.Span);
                 var label = text.Substring(2).Trim();
                 if (label.EndsWith("==", StringComparison.Ordinal)) label = label.Substring(0, label.Length - 2).TrimEnd();
-                Unsupported(text, token.Span, "divider-line presentation");
                 return New(MermaidZenUmlStatementKind.Divider, label, token, "divider");
             }
             return Message(token, occurrence, depth);

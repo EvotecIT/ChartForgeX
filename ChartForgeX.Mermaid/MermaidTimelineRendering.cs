@@ -41,6 +41,7 @@ public static class MermaidTimelineRendering {
         artifact.Metadata["mermaid.events"] = document.Periods.Sum(period => period.Events.Count).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.direction"] = document.Direction.ToString();
         artifact.Metadata["render.model"] = nameof(TimelineDiagramBlock);
+        MermaidCategoricalSourceFacts.Apply(artifact, document);
         return MermaidPresentation.Apply(artifact, document);
     }
     /// <summary>Renders native static SVG.</summary>

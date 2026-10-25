@@ -31,6 +31,8 @@ public sealed class ChartAxis {
     private double? _maximum;
     private ChartScaleKind _scale;
     private bool _hasExplicitScale;
+    /// <summary>Gets whether the scale was authored rather than supplied by native defaults.</summary>
+    internal bool HasExplicitScale => _hasExplicitScale;
     private double _symmetricLogarithmThreshold = 1;
     private double _logarithmBase = 10;
     private ChartLogarithmicDomain _logarithmicDomain;
@@ -186,6 +188,48 @@ public sealed class ChartAxis {
     private bool _showLine = true;
     internal bool HasExplicitLine { get; private set; }
 
+    private double? _ruleCrossAt;
+    /// <summary>Gets or sets the coordinate on the opposite primary physical axis at which this axis rule is drawn. Null retains its frame edge.</summary>
+    /// <remarks>Moves only the rule: ticks, captions and titles retain their measured edge gutters. X and secondary X rules use primary Y coordinates;
+    /// Y and secondary Y rules use primary X coordinates, including horizontal charts. Uses the opposite axis's scale and reversal, never expands domains,
+    /// and omits the rule when outside the resolved viewport. Cartesian non-sparkline charts only. Compressed-time closures and invalid logarithmic signs reject.</remarks>
+    public double? RuleCrossAt {
+        get => _ruleCrossAt;
+        set {
+            ValidateFinite(value, nameof(value));
+            if (value.HasValue && _crossAt.HasValue) throw new InvalidOperationException("Clear CrossAt before configuring a rule-only crossing.");
+            _ruleCrossAt = value;
+        }
+    }
+
+    /// <summary>Moves only the axis rule to an opposite primary physical-axis coordinate, or restores its frame edge with null.</summary>
+    /// <param name="value">A finite source coordinate, or null.</param>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithRuleCrossAt(double? value) { RuleCrossAt = value; return this; }
+
+    private double? _crossAt;
+    /// <summary>Gets or sets the opposite primary physical coordinate for the complete Cartesian axis, or null for the frame edge.</summary>
+    /// <remarks>Moves the rule, tick captions, category parent bands and title together. Primary X captions follow below the rule, secondary X above;
+    /// primary Y captions follow left and secondary Y right. Horizontal Y titles follow their track's top endpoint, retaining the existing horizontal treatment.
+    /// Existing measured plot reservations and mark projection are preserved. Actual marks and previously painted axis text constrain visible captions;
+    /// omitted text retains complete semantic facts. Outside the resolved/windowed opposite domain omits the complete axis, without clamping.
+    /// Uses the same opposite PRIMARY physical coordinates, transforms, reversal and restrictions as RuleCrossAt; the two policies are mutually exclusive.</remarks>
+    public double? CrossAt {
+        get => _crossAt;
+        set {
+            ValidateFinite(value, nameof(value));
+            if (value.HasValue && _ruleCrossAt.HasValue) throw new InvalidOperationException("Clear RuleCrossAt before configuring a complete axis crossing.");
+            _crossAt = value;
+        }
+    }
+
+    /// <summary>Moves the complete Cartesian axis to an opposite primary physical coordinate, or restores its frame edge with null.</summary>
+    /// <param name="value">A finite source coordinate, or null. Clear any rule-only crossing first.</param>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithCrossAt(double? value) { CrossAt = value; return this; }
+
+    internal double? CrossingCoordinate => CrossAt ?? RuleCrossAt;
+
     /// <summary>Gets or sets a formatter for generated labels.</summary>
     public Func<double, string>? LabelFormatter {
         get => ValueFormat?.Callback;
@@ -254,6 +298,8 @@ public sealed class ChartAxis {
     public bool ShowTimeZone { get; set; }
 
     /// <summary>Gets explicit value-to-label mappings.</summary>
+    /// <remarks>For grouped rectangular Heatmap labels, X values are actual column coordinates and Y values
+    /// are one-based source row slots in series order. Series identities remain independent of axis labels.</remarks>
     public List<ChartAxisLabel> Labels { get; private set; } = new();
 
     /// <summary>Copies the axis's authored policy and detaches its explicit label collection.</summary>

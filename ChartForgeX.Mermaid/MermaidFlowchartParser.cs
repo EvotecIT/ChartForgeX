@@ -11,6 +11,7 @@ internal static partial class MermaidFlowchartParser {
 
         var nodes = new Dictionary<string, MermaidFlowchartNode>(StringComparer.Ordinal);
         var subgraphs = new Stack<MermaidFlowchartSubgraph>();
+        var closedSubgraphs = new List<MermaidFlowchartSubgraph>();
         foreach (var statement in MermaidFlowchartStatements.Read(lines, firstBodyLine, firstOffset)) {
             MermaidResourceGuard.Checkpoint();
             var trimmed = statement.Text;
@@ -18,21 +19,27 @@ internal static partial class MermaidFlowchartParser {
             var span = statement.Span;
             document.Statements.Add(statement);
             if (TryParseSubgraphStart(document, trimmed, span, subgraphs)) continue;
-            if (IsSubgraphEnd(trimmed, subgraphs, span, result)) continue;
+            if (IsSubgraphEnd(trimmed, subgraphs, closedSubgraphs, span, result)) continue;
             if (TryParseSubgraphDirection(document, trimmed, span, subgraphs, result)) continue;
+            if (document is MermaidUseCaseDocument useCase && TryUseCaseStyle(useCase, trimmed, span, result)) continue;
             if (TryParseClassDefinition(document, trimmed, span, result)) continue;
             if (TryParseClassAssignment(document, nodes, trimmed, span)) continue;
             if (TryParseStyleAssignment(document, nodes, trimmed, span, result)) continue;
             if (TryParseClickAssignment(document, nodes, trimmed, span)) continue;
             if (TryParseLinkStyle(document, trimmed, span, result)) continue;
+            if (TryParseEdgeProperties(document, trimmed, span, result)) continue;
             ParseStatement(document, nodes, trimmed, span, subgraphs.Count == 0 ? null : subgraphs.Peek(), result);
         }
 
         foreach (var subgraph in subgraphs) MermaidParserUtilities.Add(result, subgraph.Span, MermaidDiagnosticSeverity.Error, "Flowchart subgraph '" + subgraph.Id + "' must close with 'end'.");
-        ValidateSubgraphs(document, result);
+        if (subgraphs.Count == 0) ResolveSubgraphs(document, closedSubgraphs, result);
         RemoveSubgraphEndpointNodes(document);
-        ApplyClassDefinitions(document);
-        ApplyLinkStyles(document);
+        if (document is not MermaidUseCaseDocument) {
+            ApplyClassDefinitions(document,result);
+            ApplyLinkStyles(document);
+        }
+        MermaidFlowchartIdentities.Validate(document, (span, message) => MermaidParserUtilities.Add(result, span,
+            MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidStatement));
         AddLabelDiagnostics(document, result);
     }
 
@@ -43,15 +50,22 @@ internal static partial class MermaidFlowchartParser {
             return;
         }
         var inlineLabels = new MermaidFlowchartInlineLabels(text);
-        while (TryParseEdgeOperator(text, ref position, inlineLabels, out var edgeOperator, out var label)) {
+        while (TryParseNamedEdgeOperator(text, ref position, span, inlineLabels, document is MermaidUseCaseDocument, out var edgeOperator, out var label, out var edgeId, out var identitySpan)) {
             if (!TryParseNodeGroup(document, nodes, text, ref position, span, subgraph, result, out var target)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart edge operator '" + edgeOperator + "' is missing a target node.");
                 return;
             }
 
+            if (edgeId != null && (current.Count != 1 || target.Count != 1)) {
+                MermaidParserUtilities.Add(result, identitySpan!.Value, MermaidDiagnosticSeverity.Error,
+                    "An authored edge identity requires exactly one source and target.", MermaidDiagnosticCodes.InvalidStatement);
+                return;
+            }
             MermaidResourceGuard.ReserveEdges((long)current.Count * target.Count, span);
             foreach (var sourceNode in current) foreach (var targetNode in target)
-                document.Edges.Add(new MermaidFlowchartEdge(sourceNode.Id, targetNode.Id, edgeOperator, span) { Label = label });
+                document.Edges.Add(new MermaidFlowchartEdge(sourceNode.Id, targetNode.Id, edgeOperator, span) {
+                    Label = label, Id = edgeId, IdentitySpan = identitySpan
+                });
             current = target;
         }
         SkipWhitespace(text, ref position);
@@ -60,6 +74,7 @@ internal static partial class MermaidFlowchartParser {
 
     private static void AddOrUpdateNode(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, MermaidFlowchartNode candidate) {
         if (!nodes.TryGetValue(candidate.Id, out var existing)) {
+            MermaidResourceGuard.ReserveFlowchartNode(candidate.Span);
             nodes[candidate.Id] = candidate;
             document.Nodes.Add(candidate);
             return;
@@ -70,10 +85,12 @@ internal static partial class MermaidFlowchartParser {
             existing.LabelSpan = candidate.LabelSpan;
         }
         if (candidate.Shape != MermaidFlowchartNodeShape.Default) existing.Shape = candidate.Shape;
-        if (candidate.SubgraphId != null) existing.SubgraphId = candidate.SubgraphId;
         if (candidate.Href != null) existing.Href = candidate.Href;
         if (candidate.Tooltip != null) existing.Tooltip = candidate.Tooltip;
         foreach (var property in candidate.Properties) existing.Properties[property.Key] = property.Value;
+        foreach (var property in candidate.PropertySpans) existing.PropertySpans[property.Key] = property.Value;
+        foreach (var property in candidate.PropertyTokens) existing.PropertyTokens[property.Key] = property.Value;
+        foreach (var property in candidate.PropertyValueSpans) existing.PropertyValueSpans[property.Key] = property.Value;
         foreach (var className in candidate.Classes) existing.Classes.Add(className);
         foreach (var style in candidate.Styles) existing.Styles[style.Key] = style.Value;
     }
@@ -120,6 +137,9 @@ internal static partial class MermaidFlowchartParser {
 
         if (id.Length == 0) id = "subgraph-" + (document.Subgraphs.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         if (title.Length == 0) title = id;
+        var repeated = document.Subgraphs.Exists(group => string.Equals(group.Id, id, StringComparison.Ordinal));
+        MermaidResourceGuard.ReserveFlowchartSubgraph(repeated, document.Nodes.Count, span);
+        if (subgraphs.Count > 0) AddNodeToSubgraph(subgraphs.Peek(), id);
         var subgraph = new MermaidFlowchartSubgraph(id, title, span) {
             ParentSubgraphId = subgraphs.Count == 0 ? null : subgraphs.Peek().Id
         };
@@ -128,9 +148,9 @@ internal static partial class MermaidFlowchartParser {
         return true;
     }
 
-    private static bool IsSubgraphEnd(string text, Stack<MermaidFlowchartSubgraph> subgraphs, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static bool IsSubgraphEnd(string text, Stack<MermaidFlowchartSubgraph> subgraphs, List<MermaidFlowchartSubgraph> closedSubgraphs, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!string.Equals(text, "end", StringComparison.OrdinalIgnoreCase)) return false;
-        if (subgraphs.Count > 0) subgraphs.Pop();
+        if (subgraphs.Count > 0) closedSubgraphs.Add(subgraphs.Pop());
         else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart 'end' has no open subgraph.");
         return true;
     }
@@ -145,6 +165,8 @@ internal static partial class MermaidFlowchartParser {
         MermaidResourceGuard.ReserveElements(checked((long)nodeIds.Count * classNames.Count), span);
         foreach (var nodeId in nodeIds) {
             MermaidResourceGuard.Checkpoint();
+            var edge=document.Edges.Find(item=>item.Id==nodeId);
+            if(edge!=null) { edge.Classes.AddRange(classNames);continue; }
             var node = GetOrAddNode(document, nodes, nodeId, span);
             foreach (var className in classNames) node.Classes.Add(className);
         }
@@ -338,6 +360,7 @@ internal static partial class MermaidFlowchartParser {
 
     private static MermaidFlowchartNode GetOrAddNode(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string id, MermaidSourceSpan span) {
         if (nodes.TryGetValue(id, out var existing)) return existing;
+        MermaidResourceGuard.ReserveFlowchartNode(span);
         var node = new MermaidFlowchartNode(id, span);
         nodes[id] = node;
         document.Nodes.Add(node);

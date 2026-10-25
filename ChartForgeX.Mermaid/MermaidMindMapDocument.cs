@@ -27,10 +27,15 @@ public sealed class MermaidMindMapDocument : MermaidDocument {
 /// </summary>
 public sealed class MermaidMindMapNode : MermaidAstNode {
     /// <summary>Initializes a mindmap node.</summary>
-    public MermaidMindMapNode(string id, string text, int level, MermaidSourceSpan span) : base(span) {
+    public MermaidMindMapNode(string id, string text, int level, MermaidSourceSpan span) : this(id, text, level, span, null) { }
+
+    /// <summary>Initializes a node with its optional authored prefix identity, independently of its generated hierarchy id.</summary>
+    public MermaidMindMapNode(string id, string text, int level, MermaidSourceSpan span, string? sourceId) : base(span) {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Mindmap node id must not be empty.", nameof(id));
         if (string.IsNullOrWhiteSpace(text)) throw new ArgumentException("Mindmap node text must not be empty.", nameof(text));
+        if (sourceId != null && string.IsNullOrWhiteSpace(sourceId)) throw new ArgumentException("Authored mindmap identity must not be empty.", nameof(sourceId));
         Id = id;
+        SourceId = sourceId;
         Text = text;
         Level = level;
     }
@@ -38,7 +43,10 @@ public sealed class MermaidMindMapNode : MermaidAstNode {
     /// <summary>Gets the generated stable node id.</summary>
     public string Id { get; }
 
-    /// <summary>Gets the displayed node text.</summary>
+    /// <summary>Gets the optional authored prefix before a shape delimiter. Generated ids continue to own hierarchy links.</summary>
+    public string? SourceId { get; }
+
+    /// <summary>Gets the source caption, including any Markdown wrapper, before safe native text lowering.</summary>
     public string Text { get; }
 
     /// <summary>Gets the structural parent-child depth, starting at zero for the root, independently of indentation width.</summary>
@@ -53,7 +61,7 @@ public sealed class MermaidMindMapNode : MermaidAstNode {
     /// <summary>Gets parsed class names.</summary>
     public List<string> Classes { get; } = new();
 
-    /// <summary>Gets parsed icon class tokens.</summary>
+    /// <summary>Gets authored icon tokens. Only explicit qualified built-in catalog ids have a native visual mapping.</summary>
     public List<string> Icons { get; } = new();
 }
 

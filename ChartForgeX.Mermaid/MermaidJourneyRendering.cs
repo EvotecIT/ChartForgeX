@@ -39,6 +39,7 @@ public static class MermaidJourneyRendering {
         artifact.Metadata["mermaid.tasks"] = document.Tasks.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.actors"] = document.Tasks.SelectMany(task => task.Actors).Distinct(StringComparer.Ordinal).Count().ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(JourneyDiagramBlock);
+        MermaidCategoricalSourceFacts.Apply(artifact, document);
         return MermaidPresentation.Apply(artifact, document);
     }
     /// <summary>Renders native static SVG.</summary>

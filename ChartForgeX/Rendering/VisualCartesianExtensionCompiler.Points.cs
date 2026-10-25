@@ -72,9 +72,14 @@ internal static partial class VisualCartesianCompiler {
         var series = chart.Series[index];
         if (series.RenderPoints.Count < 2) return;
         var first = series.RenderPoints[0]; var last = series.RenderPoints[series.RenderPoints.Count - 1];
-        var points = new[] { new ChartPoint(map.X(first.X), map.Y(first.Y)), new ChartPoint(map.X(last.X), map.Y(last.Y)) };
-        var path = ChartPathBuilder.FromPoints(points, ChartInterpolation.Linear);
         var trend = series.Kind == ChartSeriesKind.TrendLine;
+        var horizontal = !trend && ChartCartesianOrientation.IsHorizontalComparison(chart, series);
+        var points = trend
+            ? new[] { new ChartPoint(map.X(first.X), map.Y(first.Y)), new ChartPoint(map.X(last.X), map.Y(last.Y)) }
+            : series.RenderPoints.Select(point => horizontal
+                ? new ChartPoint(map.X(point.Y), map.Y(point.X), point.BreakBefore)
+                : new ChartPoint(map.X(point.X), map.Y(point.Y), point.BreakBefore)).ToArray();
+        var path = ChartPathBuilder.FromPoints(points, ChartInterpolation.Linear);
         var sourceColor = Color(series, index, colors);
         DrawLayeredPath(chart, builder, path, sourceColor, VisualChartPaint.Series(series, sourceColor), Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context)),
             trend ? "trend-line" : "slope-line", trend ? new[] { 8d, 6d } : null);
@@ -85,13 +90,15 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-slope"] = Number(slope), ["data-cfx-intercept"] = Number(intercept), ["data-cfx-source-count"] = Number(series.TrendLineSourcePoints.Count)
             }).Dispose();
         }
-        obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(new[] { points.ToList() }, false, SeriesStroke(series, context), plot)));
+        obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(
+            ChartPointSegments.Split(points).Select(segment => segment.ToList()).ToArray(), false, SeriesStroke(series, context), plot)));
         var radius = ResolveMarkerRadius(series, context);
-        for (var endpoint = 0; endpoint < 2; endpoint++) {
-            var raw = endpoint == 0 ? 0 : series.RenderPoints.Count - 1; var source = series.RenderPoints[raw]; var point = points[endpoint];
+        for (var endpoint = 0; endpoint < points.Length; endpoint++) {
+            var raw = trend && endpoint != 0 ? series.RenderPoints.Count - 1 : endpoint; var source = series.RenderPoints[raw]; var point = points[endpoint];
             var bounds = trend ? Extents(point.X, point.Y, point.X, point.Y) : VisualMarkerScene.Bounds(series, point.X, point.Y, radius);
             var label = ResolveObservationLabel(chart, context, series, endpoint, colors, format => format("value", source.Y));
-            var visible = ViewportObservationVisible(xViewport, yViewport, source.X, source.Y, source.Y, map);
+            var visible = ViewportObservationVisible(xViewport, yViewport, horizontal ? source.Y : source.X,
+                horizontal ? source.X : source.Y, horizontal ? source.X : source.Y, map);
             using (ObservationGroup(builder, series, index, endpoint, raw, 1, bounds, label, visible, null, ("x", source.X), ("value", source.Y))) {
                 if (visible && !trend) {
                     var color = PointColor(series, index, endpoint, colors);

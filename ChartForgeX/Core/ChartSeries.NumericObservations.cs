@@ -16,14 +16,14 @@ public sealed partial class ChartSeries {
 
     /// <summary>Keeps ordinary observation identities and presentation aligned after structural edits.</summary>
     private void NumericPointInserted(int index) {
-        InsertDefault(PointColors, index); InsertDefault(PointFillPatterns, index); InsertDefault(PointLabels, index);
-        InsertDefault(PointDataLabelStyles, index); InsertDefault(PointSliceOffsets, index);
+        InsertDefault(_funnelConnectorStyles, index); InsertDefault(PointColors, index); InsertDefault(_pointStrokeColors, index); InsertDefault(PointFillPatterns, index); InsertDefault(PointLabels, index);
+        InsertDefault(_pointMarkers, index); InsertDefault(PointDataLabelStyles, index); InsertDefault(PointSliceOffsets, index); InsertDefault(_pointSliceRadiusRatios, index);
         ShiftNumericObservationIds(index, false);
     }
 
     private void NumericPointRemoved(int index) {
-        RemoveOverride(PointColors, index); RemoveOverride(PointFillPatterns, index); RemoveOverride(PointLabels, index);
-        RemoveOverride(PointDataLabelStyles, index); RemoveOverride(PointSliceOffsets, index);
+        RemoveOverride(_funnelConnectorStyles, index); RemoveOverride(PointColors, index); RemoveOverride(_pointStrokeColors, index); RemoveOverride(PointFillPatterns, index); RemoveOverride(PointLabels, index);
+        RemoveOverride(_pointMarkers, index); RemoveOverride(PointDataLabelStyles, index); RemoveOverride(PointSliceOffsets, index); RemoveOverride(_pointSliceRadiusRatios, index);
         ShiftNumericObservationIds(index, true);
     }
 

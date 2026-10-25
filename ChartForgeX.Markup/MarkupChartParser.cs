@@ -70,6 +70,12 @@ public sealed partial class MarkupChartParser {
                 continue;
             }
 
+            if (section is "nodes" or "flows") {
+                if (IsTableLine(line, headers)) headers = ParseChordTableLine(result, state, section, headers, line, lineNumber);
+                else ParseChordSectionCommand(result, state, section, line, lineNumber);
+                continue;
+            }
+
             if (section == "options") {
                 if (IsTableLine(line, headers)) headers = ParseOptionTableLine(result, state, headers, line, lineNumber);
                 else ParseChartOptionLine(result, state, line, lineNumber);
@@ -84,7 +90,9 @@ public sealed partial class MarkupChartParser {
             ParseCommand(result, state, line, lineNumber);
         }
 
-        if (state.Values.Count == 0 && state.Series.Count == 0) Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, "Chart markup must declare at least one numeric value or series.");
+        ValidateChordSource(result, state, block.FenceLine);
+        if (NormalizeKey(state.Type) != "chord" && state.Values.Count == 0 && state.Series.Count == 0)
+            Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, "Chart markup must declare at least one numeric value or series.");
         if (!result.HasErrors) {
             try {
                 result.Document = new MarkupChartDocument { Id = state.Id, Chart = BuildChart(state) };
@@ -121,7 +129,8 @@ public sealed partial class MarkupChartParser {
             .WithSize(state.Width, state.Height);
         if (state.Labels.Count > 0) chart.WithXLabels(state.Labels.ToArray());
 
-        if (state.Series.Count == 0) {
+        if (NormalizeKey(state.Type) == "chord") BuildChord(chart, state);
+        else if (state.Series.Count == 0) {
             var points = BuildSeriesPoints(state.Type, state.Values);
             AddSeries(chart, state.SeriesName, state.Type, points, null);
         } else {
@@ -220,6 +229,10 @@ public sealed partial class MarkupChartParser {
         var command = NormalizeKey(tokens[0].TrimEnd(':'));
         try {
             switch (command) {
+                case "node":
+                case "flow":
+                    ParseChordCommand(state, tokens, lineNumber);
+                    break;
                 case "id":
                     RequireTokenCount(tokens, 2, "id");
                     state.Id = tokens[1];
@@ -343,7 +356,8 @@ public sealed partial class MarkupChartParser {
                     break;
                 case "option":
                     RequireTokenCount(tokens, 3, "option");
-                    ParseChartOption(result, state, tokens[1], JoinTail(tokens, 2), lineNumber);
+                    if (!TryParseChordOrderOption(state, tokens[1], tokens.Skip(2), lineNumber))
+                        ParseChartOption(result, state, tokens[1], JoinTail(tokens, 2), lineNumber);
                     break;
                 case "annotation":
                     ParseAnnotationCommand(state, tokens);
@@ -412,6 +426,7 @@ public sealed partial class MarkupChartParser {
         var tokens = Tokenize(line);
         if (tokens.Count == 0) return;
         try {
+            if (TryParseChordOrderOption(state, tokens[0].TrimEnd(':'), tokens.Skip(1), lineNumber)) return;
             ParseChartOption(result, state, tokens[0].TrimEnd(':'), JoinTail(tokens, 1), lineNumber);
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, lineNumber, MarkupDiagnosticSeverity.Error, ex.Message);
@@ -516,46 +531,13 @@ public sealed partial class MarkupChartParser {
                     state.OverlayShowHeader = VisualMarkupFenceOptions.ParseBoolean(value, key);
                     break;
                 default:
-                    if (!TryParseComparisonOption(state, key, value)) Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown chart option '" + key + "'.");
+                    if (!TryParseComparisonOption(state, key, value) && !TryParseChordOption(state, key, value, lineNumber))
+                        Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown chart option '" + key + "'.");
                     break;
             }
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, lineNumber, MarkupDiagnosticSeverity.Error, ex.Message);
         }
-    }
-
-    private static Dictionary<string, string> Attributes(List<string> tokens, int start) {
-        var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        for (var i = start; i < tokens.Count; i++) {
-            var split = AttributeSplitIndex(tokens[i]);
-            if (split <= 0) continue;
-            attributes[NormalizeKey(tokens[i].Substring(0, split))] = tokens[i].Substring(split + 1);
-        }
-
-        return attributes;
-    }
-
-    private static bool IsAttribute(string token) => AttributeSplitIndex(token) > 0;
-
-    private static bool TrySplitAttribute(string token, out string key, out string value) {
-        var split = AttributeSplitIndex(token);
-        if (split <= 0) {
-            key = string.Empty;
-            value = string.Empty;
-            return false;
-        }
-
-        key = token.Substring(0, split);
-        value = token.Substring(split + 1);
-        return true;
-    }
-
-    private static int AttributeSplitIndex(string token) {
-        var colon = token.IndexOf(':');
-        var equals = token.IndexOf('=');
-        if (colon <= 0) return equals;
-        if (equals <= 0) return colon;
-        return Math.Min(colon, equals);
     }
 
     private static int FindHeader(List<string> headers, params string[] names) {
@@ -718,7 +700,7 @@ public sealed partial class MarkupChartParser {
 
     private static bool IsSection(string line) {
         var normalized = NormalizeKey(line.TrimEnd(':'));
-        return normalized == "options" || normalized == "data";
+        return normalized is "options" or "data" or "nodes" or "flows";
     }
 
     private static bool IsSectionEnd(string line) => string.Equals(line, "end", StringComparison.OrdinalIgnoreCase);
@@ -740,7 +722,7 @@ public sealed partial class MarkupChartParser {
         });
     }
 
-    private sealed class ChartState {
+    private sealed partial class ChartState {
         public string Id { get; set; } = "chart";
         public string Title { get; set; } = string.Empty;
         public string Subtitle { get; set; } = string.Empty;

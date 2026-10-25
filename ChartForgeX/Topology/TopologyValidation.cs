@@ -56,7 +56,7 @@ public sealed class TopologyValidationException : Exception {
 /// <summary>
 /// Validates topology chart models before rendering.
 /// </summary>
-public sealed class TopologyChartValidator {
+public sealed partial class TopologyChartValidator {
     /// <summary>
     /// Validates a topology chart.
     /// </summary>
@@ -64,13 +64,25 @@ public sealed class TopologyChartValidator {
     /// <returns>Structured validation output.</returns>
     public TopologyValidationResult Validate(TopologyChart chart) => Validate(chart, true);
 
-    internal TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences) {
+    internal TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences) =>
+        Validate(chart, validateScenarioReferences, allowAutomaticGroupDimensions: false);
+
+    // Raw hierarchy sources retain zero auto-sized group dimensions. The existing layout normalizer
+    // resolves them before the compiler applies its unchanged strict prepared-geometry validation.
+    internal TopologyValidationResult ValidateAuthoredHierarchySource(TopologyChart chart) =>
+        Validate(chart, validateScenarioReferences: true, allowAutomaticGroupDimensions: true);
+
+    private TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences, bool allowAutomaticGroupDimensions, bool validateAlignmentGeometry = true) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var result = new TopologyValidationResult();
+        ValidateSurfacePaints(chart,result);
+        ValidateExternalPresentation(chart, result);
         ValidateViewport(chart, result);
-        ValidateGroups(chart, result);
+        ValidateGroups(chart, result, allowAutomaticGroupDimensions);
         ValidateNodes(chart, result);
         ValidateEdges(chart, result);
+        ValidateCrossingPaint(chart, result);
+        ValidateAlignments(chart, result, validateAlignmentGeometry);
         ValidateScenarios(chart, result, validateScenarioReferences);
         return result;
     }
@@ -78,6 +90,8 @@ public sealed class TopologyChartValidator {
     internal TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences, TopologyRenderOptions options) {
         var result = Validate(chart, validateScenarioReferences);
         ValidateIconReferences(chart, result, options);
+        if (chart.CrossingPaint != null && options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls)
+            Add(result, "topology-crossing-live-force", "Crossing paint cannot be rewritten by live force controls.", chart.Id);
         return result;
     }
 
@@ -94,15 +108,15 @@ public sealed class TopologyChartValidator {
         if (!IsFinite(chart.Viewport.Padding) || chart.Viewport.Padding < 0) Add(result, "viewport-padding", "Viewport padding must be a non-negative finite number.", null);
     }
 
-    private static void ValidateGroups(TopologyChart chart, TopologyValidationResult result) {
+    private static void ValidateGroups(TopologyChart chart, TopologyValidationResult result, bool allowAutomaticGroupDimensions) {
         result.Errors.AddRange(TopologyGroupHierarchy.Validate(chart.Groups.Select(group => (group.Id, group.ParentGroupId))).Errors);
         foreach (var group in chart.Groups) {
             if (string.IsNullOrWhiteSpace(group.Id)) Add(result, "group-id-empty", "Group id is required.", null);
             if (string.IsNullOrWhiteSpace(group.Label)) Add(result, "group-label-empty", "Group label is required.", group.Id);
             if (group.Presentation == TopologyGroupPresentation.Compartment && group.ParentGroupId == null)
                 Add(result, "compartment-parent", "A compartment requires a containing group.", group.Id);
-            if (!IsPositive(group.Width)) Add(result, "group-width", "Group '" + group.Id + "' width must be positive.", group.Id);
-            if (!IsPositive(group.Height)) Add(result, "group-height", "Group '" + group.Id + "' height must be positive.", group.Id);
+            if (!IsPositive(group.Width) && !(allowAutomaticGroupDimensions && group.Width == 0)) Add(result, "group-width", "Group '" + group.Id + "' width must be positive.", group.Id);
+            if (!IsPositive(group.Height) && !(allowAutomaticGroupDimensions && group.Height == 0)) Add(result, "group-height", "Group '" + group.Id + "' height must be positive.", group.Id);
             if (!IsFinite(group.X) || !IsFinite(group.Y)) Add(result, "group-coordinate", "Group '" + group.Id + "' coordinates must be finite.", group.Id);
             ValidateCoordinatePair(result, "group", group.Id, group.Longitude, group.Latitude);
             if (group.LayoutDirection.HasValue && !Enum.IsDefined(typeof(TopologyLayoutDirection), group.LayoutDirection.Value))
@@ -123,8 +137,10 @@ public sealed class TopologyChartValidator {
     private static void ValidateNodes(TopologyChart chart, TopologyValidationResult result) {
         var groupIds = new HashSet<string>(chart.Groups.Select(group => group.Id), StringComparer.Ordinal);
         foreach (var node in chart.Nodes) {
+            var tableError = TopologyTableContentRules.Error(node, node.DisplayMode ?? chart.RenderOptions?.NodeDisplayMode ?? chart.DefaultRenderOptions?.NodeDisplayMode ?? TopologyNodeDisplayMode.Card);
+            if (tableError != null) Add(result, "node-table-content", tableError, node.Id);
             if (string.IsNullOrWhiteSpace(node.Id)) Add(result, "node-id-empty", "Node id is required.", null);
-            if (string.IsNullOrWhiteSpace(node.Label)) Add(result, "node-label-empty", "Node label is required.", node.Id);
+            if (node.Label == null || node.ShowLabel && string.IsNullOrWhiteSpace(node.Label)) Add(result, "node-label-empty", "A visible node label is required; hidden labels may be empty.", node.Id);
             if (!IsPositive(node.Width)) Add(result, "node-width", "Node '" + node.Id + "' width must be positive.", node.Id);
             if (!IsPositive(node.Height)) Add(result, "node-height", "Node '" + node.Id + "' height must be positive.", node.Id);
             if (!IsFinite(node.X) || !IsFinite(node.Y)) Add(result, "node-coordinate", "Node '" + node.Id + "' coordinates must be finite.", node.Id);
@@ -140,8 +156,9 @@ public sealed class TopologyChartValidator {
                 Add(result, "duplicate-node-port-id", "Node '" + node.Id + "' contains duplicate port id '" + duplicate.Key + "'.", node.Id);
             }
             if (node.Shape.HasValue && !Enum.IsDefined(typeof(TopologyNodeShape), node.Shape.Value)) Add(result, "node-shape", "Node '" + node.Id + "' has an undefined diagram shape.", node.Id);
+            if (node.IconShape.HasValue && !Enum.IsDefined(typeof(TopologyIconShape), node.IconShape.Value)) Add(result, "node-icon-shape", "Node '" + node.Id + "' has an undefined native icon shape.", node.Id);
             foreach (var detail in node.Details) {
-                if (detail.Text != null && string.IsNullOrWhiteSpace(detail.Text)) Add(result, "node-detail-text-empty", "Node '" + node.Id + "' contains an empty full-width detail row.", node.Id);
+                if (detail.BadgeStyle == null && detail.Text != null && string.IsNullOrWhiteSpace(detail.Text)) Add(result, "node-detail-text-empty", "Node '" + node.Id + "' contains an empty full-width detail row.", node.Id);
                 if (detail.Text == null && string.IsNullOrWhiteSpace(detail.Label)) Add(result, "node-detail-label-empty", "Node '" + node.Id + "' contains a detail row without a label.", node.Id);
                 if (detail.Text == null && string.IsNullOrWhiteSpace(detail.Value)) Add(result, "node-detail-value-empty", "Node '" + node.Id + "' contains a detail row without a value.", node.Id);
                 if (detail.Status.HasValue && !Enum.IsDefined(typeof(TopologyHealthStatus), detail.Status.Value)) Add(result, "node-detail-status", "Node '" + node.Id + "' contains a detail row with an undefined status.", node.Id);
@@ -156,7 +173,10 @@ public sealed class TopologyChartValidator {
     private static void ValidateEdges(TopologyChart chart, TopologyValidationResult result) {
         var nodeIds = new HashSet<string>(chart.Nodes.Select(node => node.Id), StringComparer.Ordinal);
         var groupIds = new HashSet<string>(chart.Groups.Select(group => group.Id), StringComparer.Ordinal);
+        var pathCount = chart.PathDecorations.Count;
+        var pathCommands = chart.PathDecorations.Sum(path => path?.Commands.Count ?? 0); var pathPoints = 0;
         foreach (var edge in chart.Edges) {
+            ValidateInterpolationPolicy(edge, result);
             if (string.IsNullOrWhiteSpace(edge.Id)) Add(result, "edge-id-empty", "Edge id is required.", null);
             if (string.IsNullOrWhiteSpace(edge.SourceNodeId)) Add(result, "edge-source-empty", "Edge '" + edge.Id + "' source node id is required.", edge.Id);
             if (string.IsNullOrWhiteSpace(edge.TargetNodeId)) Add(result, "edge-target-empty", "Edge '" + edge.Id + "' target node id is required.", edge.Id);
@@ -167,15 +187,25 @@ public sealed class TopologyChartValidator {
             if (!string.IsNullOrWhiteSpace(edge.TargetNodeId) && !nodeIds.Contains(edge.TargetNodeId) && !groupIds.Contains(edge.TargetNodeId)) {
                 Add(result, "missing-edge-target", "Edge '" + edge.Id + "' references missing target node '" + edge.TargetNodeId + "'.", edge.Id);
             }
-            if (edge.DashPattern.Count > 0) {
-                if (edge.DashPattern.Count % 2 != 0) Add(result, "edge-dash-pattern-pairs", "Edge '" + edge.Id + "' dash pattern must contain alternating dash and gap pairs.", edge.Id);
-                if (edge.DashPattern.Any(value => !IsPositive(value))) Add(result, "edge-dash-pattern-value", "Edge '" + edge.Id + "' dash pattern values must be positive finite numbers.", edge.Id);
+            if (edge.PathGeometry != null) {
+                if (chart.LayoutMode != TopologyLayoutMode.Manual) Add(result, "edge-path-layout", "Authored edge paths require Manual layout.", edge.Id);
+                if (edge.Waypoints.Count != 0 || edge.RouteLane != 0 || edge.HasRouteLaneOverride || edge.SourcePort != TopologyEdgePort.Auto || edge.TargetPort != TopologyEdgePort.Auto ||
+                    !string.IsNullOrWhiteSpace(edge.SourcePortId) || !string.IsNullOrWhiteSpace(edge.TargetPortId))
+                    Add(result, "edge-path-routing-conflict", "An authored edge path cannot also carry waypoints, route-lane or port overrides.", edge.Id);
+                pathCount++; pathCommands += edge.PathGeometry.Commands.Count;
+                try { if (pathPoints <= 65536) pathPoints += edge.PathGeometry.RoutePoints().Count; }
+                catch (ArgumentException error) { Add(result, "edge-path-geometry", error.Message, edge.Id); }
+
             }
+            if (edge.LabelPosition != null && (edge.LabelOffsetX != 0 || edge.LabelOffsetY != 0))
+                Add(result, "edge-label-position-conflict", "An explicit label position cannot also carry label offsets.", edge.Id);
             if (edge.SourceMarker.HasValue && !Enum.IsDefined(typeof(TopologyMarkerKind), edge.SourceMarker.Value)) Add(result, "edge-source-marker", "Edge '" + edge.Id + "' source marker is undefined.", edge.Id);
             if (edge.TargetMarker.HasValue && !Enum.IsDefined(typeof(TopologyMarkerKind), edge.TargetMarker.Value)) Add(result, "edge-target-marker", "Edge '" + edge.Id + "' target marker is undefined.", edge.Id);
             ValidateNamedPort(chart, result, edge, edge.SourceNodeId, edge.SourcePortId, "source");
             ValidateNamedPort(chart, result, edge, edge.TargetNodeId, edge.TargetPortId, "target");
         }
+        if (pathCount > TopologyPathDecoration.MaximumPaths || pathCommands > TopologyPathDecoration.MaximumTotalCommands || pathPoints > 65536)
+            Add(result, "topology-path-budget", "Topology paths exceed 1024 paths, 65536 commands or 65536 flattened edge points.", chart.Id);
 
     }
 
@@ -230,7 +260,7 @@ public sealed class TopologyChartValidator {
 
         foreach (var node in chart.Nodes) {
             if (string.IsNullOrWhiteSpace(node.IconId)) continue;
-            if (catalog.Resolve(node.IconId!) == null) Add(result, "missing-node-icon", "Node '" + node.Id + "' references missing icon '" + node.IconId + "'.", node.Id);
+            if (catalog.Resolve(node.IconId!) == null && !TopologyRenderPrimitives.HasExplicitIconShape(node.IconShape) && !TopologyRenderPrimitives.HasRenderableNodeArtwork(node)) Add(result, "missing-node-icon", "Node '" + node.Id + "' references missing icon '" + node.IconId + "'.", node.Id);
         }
 
         if (chart.Legend == null) return;

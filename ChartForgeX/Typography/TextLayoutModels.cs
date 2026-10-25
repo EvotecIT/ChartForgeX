@@ -45,10 +45,14 @@ public readonly struct TextMetrics {
 
 /// <summary>Describes one measured line in a text layout.</summary>
 public sealed class TextLayoutLine {
-    internal TextLayoutLine(string text, double width) { Text = text; Width = width; }
+    internal TextLayoutLine(string text, double width) : this(TextContent.Plain(text), width) { }
+    internal TextLayoutLine(TextContent content, double width) { Content = content; Width = width; }
 
-    /// <summary>Gets the text on the line.</summary>
-    public string Text { get; }
+    /// <summary>Gets the immutable content on this fitted line.</summary>
+    public TextContent Content { get; }
+
+    /// <summary>Gets the semantic text on the line, derived from Content.</summary>
+    public string Text => Content.PlainText;
 
     /// <summary>Gets the measured line width.</summary>
     public double Width { get; }

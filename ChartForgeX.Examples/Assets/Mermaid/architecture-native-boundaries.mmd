@@ -1,0 +1,14 @@
+architecture-beta
+group platform(cloud)[Platform]
+group private(server)[Private] in platform
+group data(database)[Data] in private
+group partner(cloud)[Partner]
+service gateway(server)[Gateway] in platform
+service worker(server)[Worker] in private
+service store(database)[Storage] in data
+service remote(server)[Remote] in partner
+junction split in private
+gateway:R --> L:split
+worker:T <-- B:split
+worker:B --> T:store
+store{group}:R --> L:remote{group}

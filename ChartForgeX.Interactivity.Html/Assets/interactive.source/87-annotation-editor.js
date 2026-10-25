@@ -1,4 +1,4 @@
-  // Browser drafts/history; native model/transport.
+
   const annotationEditorState = root => chartLifetimes.get(root)?.annotationEditor;
   const annotationDrawingAt = (root, id) => {
     const data = nativeAnnotationNode(root, id)?.dataset;
@@ -22,39 +22,39 @@
     const lifetime = chartLifetimes.get(root);
     const limit = options.historyLimit === undefined ? 32 : options.historyLimit;
     if (!Number.isInteger(limit) || limit < 0 || limit > 256 || options.createId !== undefined && typeof options.createId !== 'function')
-      throw new TypeError('Annotation historyLimit must be an integer from zero to 256; createId must be a function.');
-    if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Connect native preparation before enabling annotation editing.');
+      throw new TypeError('historyLimit: int 0..256; createId: function.');
+    if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Editor: native callback required.');
     if (lifetime.annotationEditor) {
       const state = lifetime.annotationEditor;
-      if (state.pending) throw new TypeError('Finish the pending native annotation edit first.');
+      if (state.pending) throw new TypeError('Editor: finish pending native edit.');
       state.enabled = true; state.limit = limit; state.createId = options.createId; state.undo = state.undo.slice(-limit || state.undo.length); state.redo = [];
       if (limit === 0) state.undo = [];
       bindAnnotationEditor(root); return state.api;
     }
     const state = { enabled: true, limit, createId: options.createId, draft: null, pending: false,
       undo: [], redo: [], replay: null, error: '', view: null, api: null };
-    const ready = () => { requireMounted(); if (!state.enabled || state.pending || !nativePreparationBinding(root, 'annotation')) throw new TypeError('The annotation editor is disabled or awaiting native preparation.'); };
+    const ready = () => { requireMounted(); requireNativePreparationIdle(root); if (!state.enabled || state.pending || !nativePreparationBinding(root, 'annotation')) throw new TypeError('Editor: disabled/native pending.'); };
     const api = Object.freeze({
       getState: () => { requireMounted(); return annotationEditorSnapshot(state); },
       begin: change => {
         ready();
         if (!change || !['add', 'replace', 'remove'].includes(change.operation) || typeof change.id !== 'string' || !change.id.trim())
-          throw new TypeError('An edit requires add, replace or remove and an authored ID.');
+          throw new TypeError('Edit: add/replace/remove; authored ID.');
         const id = change.id.trim(), existing = nativeAnnotationNode(root, id), before = annotationDrawingAt(root, id);
-        if (change.operation === 'add' ? !!existing : !before) throw new TypeError('Choose an unused ID to add or an existing source drawing to edit.');
+        if (change.operation === 'add' ? !!existing : !before) throw new TypeError('Edit ID: add unused; edit existing.');
         const drawing = change.operation === 'remove' ? null : sourceAnnotationDrawing(change.drawing ?? before);
-        if (drawing && !sourceAnnotationProjection(root, drawing.yAxis)) throw new TypeError('The source drawing requires captured, unambiguous native axes.');
+        if (drawing && !sourceAnnotationProjection(root, drawing.yAxis)) throw new TypeError('Drawing: captured unambiguous axes.');
         state.draft = Object.freeze({ operation: change.operation, id, ...(drawing ? { drawing } : {}) }); state.error = '';
         refreshAnnotationEditor(root); return api;
       },
       preview: drawing => {
-        ready(); if (!state.draft || state.draft.operation === 'remove') throw new TypeError('Begin a drawable edit first.');
+        ready(); if (!state.draft || state.draft.operation === 'remove') throw new TypeError('Begin drawable edit first.');
         const captured = sourceAnnotationDrawing(drawing);
-        if (!sourceAnnotationProjection(root, captured.yAxis)) throw new TypeError('The source drawing requires captured native axes.');
+        if (!sourceAnnotationProjection(root, captured.yAxis)) throw new TypeError('Drawing: captured axes missing.');
         state.draft = Object.freeze({ ...state.draft, drawing: captured }); state.error = ''; refreshAnnotationEditor(root); return api;
       },
-      commit: () => { ready(); if (!state.draft) throw new TypeError('Begin an annotation edit first.');
-        if (!requestAnnotationChange(root, state.draft)) throw new TypeError('Native annotation preparation could not start.'); return api; },
+      commit: () => { ready(); if (!state.draft) throw new TypeError('Begin annotation edit first.');
+        if (!requestAnnotationChange(root, state.draft)) throw new TypeError('Annotation: request unavailable.'); return api; },
       cancel: () => { requireMounted(); if (state.pending) cancelNativePreparation(lifetime);
         state.draft = null; state.error = ''; refreshAnnotationEditor(root); return api; },
       undo: () => { ready(); replayAnnotationEdit(root, state, false); return api; },

@@ -17,17 +17,10 @@ internal static partial class VisualNumericRadialCompiler {
         start + (bars ? ratio * sweep : side == ChartAxisSide.Secondary ? sweep : 0);
 
     private static double AxisLabelRotation(ChartAxis axis, double spokeAngle, bool angular) =>
-        VisualAxisText.Rotation(axis, spokeAngle * 180 / Math.PI + (angular ? 90 : 0));
+        VisualAxisText.RadialRotation(axis, spokeAngle, angular);
 
-    private static void ConfigureAxisLabel(LabelPlacementRequest request, ChartAxis axis, double spokeAngle, bool angular, double spacing) {
-        request.RotationDegrees = AxisLabelRotation(axis, spokeAngle, angular);
-        request.MinimumLabelGap = axis.LabelDensity switch {
-            ChartLabelDensity.Dense or ChartLabelDensity.All => 0,
-            ChartLabelDensity.Relaxed => spacing * 2,
-            _ => Math.Max(1, spacing / 3)
-        };
-        request.AllowLabelOverlap = axis.LabelDensity == ChartLabelDensity.All;
-    }
+    private static void ConfigureAxisLabel(LabelPlacementRequest request, ChartAxis axis, double spokeAngle, bool angular, double spacing) =>
+        VisualAxisText.ConfigureRadialLabel(request, axis, spokeAngle, angular, spacing);
 
     /// <summary>Reserves title strips inside the shared frame, before fitting the radial geometry and tick lanes.</summary>
     private static ChartRect AxisTitles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,

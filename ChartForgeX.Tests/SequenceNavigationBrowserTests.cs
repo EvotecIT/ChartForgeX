@@ -1,0 +1,27 @@
+using System.Text.Json;
+using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Markup.Mermaid;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+using Microsoft.Playwright;
+using Xunit;
+namespace ChartForgeX.Tests;
+[Trait("BrowserSuite","Compatibility")]
+public sealed class SequenceNavigationBrowserTests {
+    [BrowserTheory] [InlineData(false,390)] [InlineData(true,390)] [InlineData(false,1100)] [InlineData(true,1100)]
+    public async Task NativeDisclosuresRemainAnchoredKeyboardOperableAndOrderedForBothSourceStates(bool dark,int width) {
+        foreach(var expanded in new[]{false,true}) {
+            var source=SequenceNavigationSourceFixture.Canonical().Replace("forceMenus:true","forceMenus:"+(expanded?"true":"false"),StringComparison.Ordinal);var options=new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject,Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light,FontFamily=BrowserProofFonts.Family},Sequence=new MermaidSequenceRenderOptions{Width=width-32,Height=820}};var direct=MermaidRenderer.Render(source,options);Assert.Empty(direct.Diagnostics);var document=Assert.IsType<MermaidSequenceDocument>(direct.Document);var fence=new MermaidVisualMarkupParser(options).Parse("```mermaid\n"+source+"\n```");Assert.Empty(fence.Diagnostics);
+            foreach(var pair in new[]{("direct",direct.Artifact!),("fence",Assert.Single(fence.Artifacts))}) {
+                var sequence=Assert.IsType<SequenceArtifact>(pair.Item2.Model);var prepared=SequencePreparedCompiler.PrepareDefault(sequence);var header=prepared.Regions.Single(r=>r.Role=="sequence-participant"&&r.Id=="A");var html=sequence.ToNavigationHtmlPage(new HtmlSequenceNavigationOptions{InitiallyExpanded=document.Configuration.SequenceForceMenus==true});await using var session=await BrowserProofFonts.OpenAsync(html,width,900);var page=session.Page;var menu=page.Locator("details[data-source-id='A']");var summary=menu.Locator("summary");var before=await page.EvaluateAsync<JsonElement>("""
+                    () => {const d=document.querySelector('details'),s=document.querySelector('svg'),b=s.getBoundingClientRect(),q=d.getBoundingClientRect();return {open:d.open,links:[...d.querySelectorAll('a')].map(a=>({label:a.textContent,href:a.getAttribute('href')})),offset:{x:q.left-b.left,y:q.top-b.top},scripts:document.querySelectorAll('script').length,overflow:document.documentElement.scrollWidth>innerWidth,svg:s.outerHTML};}
+                    """);
+                var stem="sequence-navigation-"+pair.Item1+"-"+expanded+"-"+width+(dark?"-dark":"-light");await Capture("initial",before);
+                Assert.Equal(expanded,before.GetProperty("open").GetBoolean());Assert.Equal(new[]{"Guide","Status"},before.GetProperty("links").EnumerateArray().Select(x=>x.GetProperty("label").GetString()));Assert.Equal(new[]{"#guide","#status"},before.GetProperty("links").EnumerateArray().Select(x=>x.GetProperty("href").GetString()));Assert.Equal(header.Bounds.Left,before.GetProperty("offset").GetProperty("x").GetDouble(),2);Assert.Equal(header.Bounds.Bottom,before.GetProperty("offset").GetProperty("y").GetDouble(),2);Assert.False(before.GetProperty("overflow").GetBoolean());Assert.Equal(0,before.GetProperty("scripts").GetInt32());
+                await summary.FocusAsync();await page.Keyboard.PressAsync("Enter");Assert.Equal(!expanded,await menu.EvaluateAsync<bool>("d=>d.open"));if(expanded){await page.Keyboard.PressAsync("Enter");Assert.True(await menu.EvaluateAsync<bool>("d=>d.open"));}await page.Keyboard.PressAsync("Tab");Assert.Equal("Guide",await page.EvaluateAsync<string>("()=>document.activeElement.textContent"));await page.Keyboard.PressAsync("Enter");Assert.Equal("#guide",await page.EvaluateAsync<string>("()=>location.hash"));await summary.FocusAsync();await page.Keyboard.PressAsync("Space");Assert.False(await menu.EvaluateAsync<bool>("d=>d.open"));var after=await page.EvaluateAsync<JsonElement>("()=>({open:document.querySelector('details').open,focused:document.activeElement.tagName,hash:location.hash})");await Capture("keyboard",after);Assert.Equal(prepared.ToSvg(),pair.Item2.ToSvg());InteractiveChartBrowser.AssertNoConsoleErrors(session);
+                async Task Capture(string state,JsonElement observation){var output=Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");if(string.IsNullOrWhiteSpace(output))return;Directory.CreateDirectory(output);File.WriteAllText(Path.Combine(output,stem+".mmd"),source);File.WriteAllText(Path.Combine(output,stem+".svg"),prepared.ToSvg());File.WriteAllBytes(Path.Combine(output,stem+".native.png"),prepared.ToPng());File.WriteAllText(Path.Combine(output,stem+".native.json"),prepared.ToArtifact(sequence.Id,VisualArtifactKind.Sequence).ToInterchangeJson());File.WriteAllText(Path.Combine(output,stem+"."+state+".observed.json"),observation.GetRawText());await page.ScreenshotAsync(new PageScreenshotOptions{Path=Path.Combine(output,stem+"."+state+".browser.png"),FullPage=true});}
+            }
+        }
+    }
+}

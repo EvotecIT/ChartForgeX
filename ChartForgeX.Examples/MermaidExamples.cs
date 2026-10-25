@@ -2,15 +2,112 @@ using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
 
-internal static class MermaidExamples {
+internal static partial class MermaidExamples {
     internal static void Write(string output) {
         ExampleTypography.Register();
+        WriteGitGraphDepthExamples(output);
+        WriteNativeBlocks(output);
+        WriteKanbanSourceGeometryPrograms(output);
+        WriteIshikawaDepthExamples(output);
+        WriteWardleyDepthExamples(output);
+        WriteMixedCaptionExamples(output);
+        WriteZenUmlPresentationExamples(output);
+        WriteFlowchartCurveExamples(output);
+        WriteFlowchartAssetExamples(output);
+        WriteSequenceLayoutTypographyExamples(output);
+        WriteSequenceParticipantViewsExamples(output);
+        WriteSequenceMessagePresentationExamples(output);
+        WriteSequenceSelfRoutesExamples(output);
+        WriteSequenceNavigationExamples(output);
+        WriteSequenceSourceDefaultsExamples(output);
+        WriteSequencePresetAppearanceExamples(output);
+        WriteRequirementThemeExamples(output);
+        WriteSequenceSurfaceShadowExamples(output);
+        WriteXYSourceDepthExamples(output);
+        WriteUseCaseSourceDepthExamples(output);
+        WriteAdvancedActorExamples(output);
+        WriteNativeShapeCatalogExamples(output);
+        WriteGraphStyleSettingsExamples(output);
+        WriteNativeSurfacePaintExamples(output);
+        WriteUseCaseJsonExamples(output);
         const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
         var agentflow = MermaidFixtureSources.Read("agentflow-native-workflow");
         var zenuml = MermaidFixtureSources.Read("zenuml-native-occurrences");
         var stateStyles = MermaidFixtureSources.Read("state-native-safe-styles");
         var stateRegions = MermaidFixtureSources.Read("state-concurrent-regions");
+        var quadrantSource = MermaidFixtureSources.Read("quadrant-native-source-depth");
+        var quadrantDark = quadrantSource.Replace("theme: default", "theme: dark", StringComparison.Ordinal)
+            .Replace("quadrantXAxisTextFill: \"#475569\"", "quadrantXAxisTextFill: \"#CBD5E1\"", StringComparison.Ordinal)
+            .Replace("quadrantTitleFill: \"#0F172A\"", "quadrantTitleFill: \"#F1F5F9\"", StringComparison.Ordinal);
         var examples = new Dictionary<string, string> {
+            ["mermaid-block-depth-compact-light"] = MermaidFixtureSources.Read("block-native-depth"),
+            ["mermaid-block-depth-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("block-native-depth"),
+            ["mermaid-block-depth-wide-light"] = MermaidFixtureSources.Read("block-native-depth"),
+            ["mermaid-block-depth-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("block-native-depth"),
+            ["mermaid-kanban-source-compact-light"] = MermaidFixtureSources.Read("kanban-source-geometry"),
+            ["mermaid-kanban-source-compact-dark"] = MermaidFixtureSources.Read("kanban-source-geometry").Replace("\r\n", "\n", StringComparison.Ordinal).Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-kanban-source-wide-light"] = MermaidFixtureSources.Read("kanban-source-geometry"),
+            ["mermaid-kanban-source-wide-dark"] = MermaidFixtureSources.Read("kanban-source-geometry").Replace("\r\n", "\n", StringComparison.Ordinal).Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-ishikawa-depth-compact-light"] = MermaidIshikawaDepthExamples.Source(false),
+            ["mermaid-ishikawa-depth-compact-dark"] = MermaidIshikawaDepthExamples.Source(true),
+            ["mermaid-ishikawa-depth-wide-light"] = MermaidIshikawaDepthExamples.Source(false),
+            ["mermaid-ishikawa-depth-wide-dark"] = MermaidIshikawaDepthExamples.Source(true),
+            ["mermaid-c4-config-compact-light"] = MermaidFixtureSources.Read("c4-config-typography-native"),
+            ["mermaid-c4-config-compact-dark"] = MermaidFixtureSources.Read("c4-config-typography-native").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-c4-config-wide-light"] = MermaidFixtureSources.Read("c4-config-typography-native"),
+            ["mermaid-c4-config-wide-dark"] = MermaidFixtureSources.Read("c4-config-typography-native").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-c4-source-shapes-compact-light"] = MermaidFixtureSources.Read("c4-style-shapes-native"),
+            ["mermaid-c4-source-shapes-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("c4-style-shapes-native"),
+            ["mermaid-c4-source-shapes-wide-light"] = MermaidFixtureSources.Read("c4-style-shapes-native"),
+            ["mermaid-c4-source-shapes-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("c4-style-shapes-native"),
+            ["mermaid-c4-source-rows-compact-light"] = MermaidFixtureSources.Read("c4-layout-config-native"),
+            ["mermaid-c4-source-rows-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("c4-layout-config-native"),
+            ["mermaid-c4-source-rows-wide-light"] = MermaidFixtureSources.Read("c4-layout-config-native"),
+            ["mermaid-c4-source-rows-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("c4-layout-config-native"),
+            ["mermaid-quadrant-source-compact-light"] = quadrantSource,
+            ["mermaid-quadrant-source-compact-dark"] = quadrantDark,
+            ["mermaid-quadrant-source-wide-light"] = quadrantSource,
+            ["mermaid-quadrant-source-wide-dark"] = quadrantDark,
+            ["mermaid-gitgraph-depth-lr-compact-light"] = MermaidFixtureSources.Read("gitgraph-native-depth"),
+            ["mermaid-gitgraph-depth-lr-compact-dark"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-lr-wide-light"] = MermaidFixtureSources.Read("gitgraph-native-depth"),
+            ["mermaid-gitgraph-depth-lr-wide-dark"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-tb-compact-light"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph TB", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-tb-compact-dark"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph TB", StringComparison.Ordinal).Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-tb-wide-light"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph TB", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-tb-wide-dark"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph TB", StringComparison.Ordinal).Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-bt-compact-light"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph BT", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-bt-compact-dark"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph BT", StringComparison.Ordinal).Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-bt-wide-light"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph BT", StringComparison.Ordinal),
+            ["mermaid-gitgraph-depth-bt-wide-dark"] = MermaidFixtureSources.Read("gitgraph-native-depth").Replace("gitGraph LR", "gitGraph BT", StringComparison.Ordinal).Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-treemap-styles-compact-light"] = MermaidFixtureSources.Read("treemap-native-styles"),
+            ["mermaid-treemap-styles-compact-dark"] = MermaidFixtureSources.Read("treemap-native-styles").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-treemap-styles-wide-light"] = MermaidFixtureSources.Read("treemap-native-styles"),
+            ["mermaid-treemap-styles-wide-dark"] = MermaidFixtureSources.Read("treemap-native-styles").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-eventmodeling-depth-compact-light"] = MermaidFixtureSources.Read("eventmodeling-native-depth"),
+            ["mermaid-eventmodeling-depth-compact-dark"] = MermaidFixtureSources.Read("eventmodeling-native-depth").Replace("title: Cart information flow\n", "title: Cart information flow\nconfig:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-eventmodeling-depth-wide-light"] = MermaidFixtureSources.Read("eventmodeling-native-depth"),
+            ["mermaid-eventmodeling-depth-wide-dark"] = MermaidFixtureSources.Read("eventmodeling-native-depth").Replace("title: Cart information flow\n", "title: Cart information flow\nconfig:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-wardley-overlays-compact-light"] = MermaidFixtureSources.Read("wardley-native-overlays"),
+            ["mermaid-wardley-overlays-compact-dark"] = MermaidWardleyDepthExamples.Source(true),
+            ["mermaid-wardley-overlays-wide-light"] = MermaidFixtureSources.Read("wardley-native-overlays"),
+            ["mermaid-wardley-overlays-wide-dark"] = MermaidWardleyDepthExamples.Source(true),
+            ["mermaid-kanban-board-compact-light"] = MermaidFixtureSources.Read("kanban-native-board"),
+            ["mermaid-kanban-board-compact-dark"] = MermaidFixtureSources.Read("kanban-native-board").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-kanban-board-wide-light"] = MermaidFixtureSources.Read("kanban-native-board"),
+            ["mermaid-kanban-board-wide-dark"] = MermaidFixtureSources.Read("kanban-native-board").Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-class-captions-compact-light"] = MermaidFixtureSources.Read("class-native-captions"),
+            ["mermaid-class-captions-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("class-native-captions"),
+            ["mermaid-class-captions-wide-light"] = MermaidFixtureSources.Read("class-native-captions"),
+            ["mermaid-class-captions-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("class-native-captions"),
+            ["mermaid-er-captions-compact-light"] = MermaidFixtureSources.Read("er-native-captions"),
+            ["mermaid-er-captions-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("er-native-captions"),
+            ["mermaid-er-captions-wide-light"] = MermaidFixtureSources.Read("er-native-captions"),
+            ["mermaid-er-captions-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("er-native-captions"),
+            ["mermaid-treeview-rows-compact-light"] = MermaidTreeViewExamples.Source,
+            ["mermaid-treeview-rows-compact-dark"] = MermaidTreeViewExamples.Source.Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
+            ["mermaid-treeview-rows-wide-light"] = MermaidTreeViewExamples.Source,
+            ["mermaid-treeview-rows-wide-dark"] = MermaidTreeViewExamples.Source.Replace("config:\n", "config:\n  theme: dark\n", StringComparison.Ordinal),
             ["mermaid-agentflow-native-light"] = agentflow,
             ["mermaid-agentflow-native-dark"] = "%%{init: {'theme':'dark'}}%%\n" + agentflow,
             ["mermaid-zenuml-native-light"] = zenuml,
@@ -19,6 +116,10 @@ internal static class MermaidExamples {
             ["mermaid-state-styles-dark"] = "%%{init: {'theme':'dark'}}%%\n" + stateStyles,
             ["mermaid-state-regions-light"] = stateRegions,
             ["mermaid-state-regions-dark"] = "%%{init: {'theme':'dark'}}%%\n" + stateRegions,
+            ["mermaid-state-floating-compact-light"] = MermaidFixtureSources.Read("state-floating-notes"),
+            ["mermaid-state-floating-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("state-floating-notes"),
+            ["mermaid-state-floating-wide-light"] = MermaidFixtureSources.Read("state-floating-notes"),
+            ["mermaid-state-floating-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("state-floating-notes"),
             ["mermaid-railroad-ebnf-light"] = MermaidRailroadExamples.Ebnf,
             ["mermaid-railroad-ebnf-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidRailroadExamples.Ebnf,
             ["mermaid-railroad-abnf-light"] = MermaidRailroadExamples.Abnf,
@@ -35,6 +136,38 @@ internal static class MermaidExamples {
             ["mermaid-native-c4-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidMappedFamilyExamples.C4,
             ["mermaid-native-venn-light"] = MermaidMappedFamilyExamples.Venn,
             ["mermaid-native-venn-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidMappedFamilyExamples.Venn,
+            ["mermaid-architecture-alignments-compact-light"] = MermaidFixtureSources.Read("architecture-ordered-alignments"),
+            ["mermaid-architecture-alignments-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("architecture-ordered-alignments"),
+            ["mermaid-architecture-alignments-wide-light"] = MermaidFixtureSources.Read("architecture-ordered-alignments"),
+            ["mermaid-architecture-alignments-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("architecture-ordered-alignments"),
+            ["mermaid-architecture-captions-compact-light"] = MermaidFixtureSources.Read("architecture-optional-captions"),
+            ["mermaid-architecture-captions-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("architecture-optional-captions"),
+            ["mermaid-architecture-captions-wide-light"] = MermaidFixtureSources.Read("architecture-optional-captions"),
+            ["mermaid-architecture-captions-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("architecture-optional-captions"),
+            ["mermaid-architecture-boundaries-compact-light"] = MermaidFixtureSources.Read("architecture-native-boundaries"),
+            ["mermaid-architecture-boundaries-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("architecture-native-boundaries"),
+            ["mermaid-architecture-boundaries-wide-light"] = MermaidFixtureSources.Read("architecture-native-boundaries"),
+            ["mermaid-architecture-boundaries-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("architecture-native-boundaries"),
+            ["mermaid-sequence-participants-compact-light"] = MermaidFixtureSources.Read("sequence-participant-contracts"),
+            ["mermaid-sequence-participants-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("sequence-participant-contracts"),
+            ["mermaid-sequence-participants-wide-light"] = MermaidFixtureSources.Read("sequence-participant-contracts"),
+            ["mermaid-sequence-participants-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("sequence-participant-contracts"),
+            ["mermaid-sequence-par-over-compact-light"] = MermaidFixtureSources.Read("sequence-par-over"),
+            ["mermaid-sequence-par-over-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("sequence-par-over"),
+            ["mermaid-sequence-par-over-wide-light"] = MermaidFixtureSources.Read("sequence-par-over"),
+            ["mermaid-sequence-par-over-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("sequence-par-over"),
+            ["mermaid-sequence-rect-numbering-compact-light"] = MermaidFixtureSources.Read("sequence-rect-numbering"),
+            ["mermaid-sequence-rect-numbering-compact-dark"] = MermaidFixtureSources.Read("sequence-rect-numbering").Replace("theme: default", "theme: dark", StringComparison.Ordinal),
+            ["mermaid-sequence-rect-numbering-wide-light"] = MermaidFixtureSources.Read("sequence-rect-numbering"),
+            ["mermaid-sequence-rect-numbering-wide-dark"] = MermaidFixtureSources.Read("sequence-rect-numbering").Replace("theme: default", "theme: dark", StringComparison.Ordinal),
+            ["mermaid-sequence-depth-compact-light"] = MermaidFixtureSources.Read("sequence-native-depth"),
+            ["mermaid-sequence-depth-compact-dark"] = MermaidFixtureSources.Read("sequence-native-depth").Replace("theme: default", "theme: dark", StringComparison.Ordinal).Replace("signalColor: \"#276749\"", "signalColor: \"#74c69d\"", StringComparison.Ordinal).Replace("signalTextColor: \"#194d35\"", "signalTextColor: \"#b7e4c7\"", StringComparison.Ordinal),
+            ["mermaid-sequence-depth-wide-light"] = MermaidFixtureSources.Read("sequence-native-depth"),
+            ["mermaid-sequence-depth-wide-dark"] = MermaidFixtureSources.Read("sequence-native-depth").Replace("theme: default", "theme: dark", StringComparison.Ordinal).Replace("signalColor: \"#276749\"", "signalColor: \"#74c69d\"", StringComparison.Ordinal).Replace("signalTextColor: \"#194d35\"", "signalTextColor: \"#b7e4c7\"", StringComparison.Ordinal),
+            ["mermaid-sequence-half-arrows-compact-light"] = MermaidFixtureSources.Read("sequence-half-arrows"),
+            ["mermaid-sequence-half-arrows-compact-dark"] = MermaidFixtureSources.Read("sequence-half-arrows").Insert(0, "%%{init: {'theme':'dark'}}%%\n"),
+            ["mermaid-sequence-half-arrows-wide-light"] = MermaidFixtureSources.Read("sequence-half-arrows"),
+            ["mermaid-sequence-half-arrows-wide-dark"] = MermaidFixtureSources.Read("sequence-half-arrows").Insert(0, "%%{init: {'theme':'dark'}}%%\n"),
             ["mermaid-sequence-lifetimes-light"] = MermaidSequenceExamples.Lifecycle,
             ["mermaid-sequence-lifetimes-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidSequenceExamples.Lifecycle,
             ["mermaid-flowchart-nested-directions-light"] = MermaidCompoundExamples.Flowchart,
@@ -48,6 +181,10 @@ internal static class MermaidExamples {
             ["mermaid-theme-timeline-dark"] = "%%{init: {'theme':'dark'}}%%\ntimeline\ntitle Rendering history\n2024 : Fluent chart API : SVG and PNG output\n2025 : Topology diagrams\n",
             ["mermaid-theme-packet-dark"] = "---\ntitle: Packet fields\nconfig:\n  theme: dark\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
             ["mermaid-radar-theme"] = "---\nconfig:\n  themeVariables:\n    titleColor: '#7C3AED'\n    cScale0: '#2563EB'\n    cScale1: '#EA580C'\n    radar:\n      axisColor: '#16A34A'\n      axisStrokeWidth: 3\n      axisLabelFontSize: 15\n      graticuleColor: '#64748B'\n      graticuleOpacity: 0.12\n      graticuleStrokeWidth: 1.5\n      curveOpacity: 0.25\n      curveStrokeWidth: 4\n      legendFontSize: 16\n---\nradar-beta\ntitle Authored radar paint\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90,45,80,60}\ncurve target[\"Target\"]{95,85,90,80}\nmin 0\nmax 100\ngraticule circle\n",
+            ["mermaid-mindmap-notation-compact-light"] = MermaidFixtureSources.Read("mindmap-native-notation"),
+            ["mermaid-mindmap-notation-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("mindmap-native-notation"),
+            ["mermaid-mindmap-notation-wide-light"] = MermaidFixtureSources.Read("mindmap-native-notation"),
+            ["mermaid-mindmap-notation-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("mindmap-native-notation"),
             ["mermaid-mindmap-branch-light"] = "---\nconfig:\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
             ["mermaid-mindmap-depth-light"] = "---\nconfig:\n  mindmap:\n    colorBy: depth\n---\n" + mindMap,
             ["mermaid-mindmap-branch-dark"] = "---\nconfig:\n  theme: dark\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
@@ -136,6 +273,26 @@ internal static class MermaidExamples {
             ["mermaid-gantt-ticks"] = "gantt\ntitle Fortnightly delivery\naxisFormat %a %d %b\ntickInterval 2week\nweekday tuesday\nWindow :window, 2026-01-01, 2026-03-01\nBuild :build, 2026-01-13, 14d\nVerify :after build, 14d\n",
             ["mermaid-gantt-today-style"] = "gantt\ntitle Current schedule checkpoint\naxisFormat %a %d %b\ntodayMarker stroke:#16834a,stroke-width:3px,opacity:0.8,stroke-dasharray:6 6\nBuild :build,2026-01-01,4d\nReview :review,after build,2d\n",
             ["mermaid-gantt-date-anchor"] = "gantt\ntitle Anchored leap-year calendar\ndateFormat MM-DD\naxisFormat %a %d %b\nexcludes 02-29\nBuild :build,02-28,2d\nReview :review,after build,1d\nDeadline :vert,03-03,0d\n",
+            ["mermaid-membership-flowchart-compact-light"] = MermaidFixtureSources.Read("flowchart-membership"),
+            ["mermaid-membership-flowchart-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-membership"),
+            ["mermaid-membership-flowchart-wide-light"] = MermaidFixtureSources.Read("flowchart-membership"),
+            ["mermaid-membership-flowchart-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-membership"),
+            ["mermaid-membership-swimlane-compact-light"] = MermaidFixtureSources.Read("flowchart-membership").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-membership-swimlane-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-membership").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-membership-swimlane-wide-light"] = MermaidFixtureSources.Read("flowchart-membership").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-membership-swimlane-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-membership").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-subgraph-merge-flowchart-compact-light"] = MermaidFixtureSources.Read("flowchart-repeated-subgraphs"),
+            ["mermaid-subgraph-merge-flowchart-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-repeated-subgraphs"),
+            ["mermaid-subgraph-merge-flowchart-wide-light"] = MermaidFixtureSources.Read("flowchart-repeated-subgraphs"),
+            ["mermaid-subgraph-merge-flowchart-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-repeated-subgraphs"),
+            ["mermaid-subgraph-merge-swimlane-compact-light"] = MermaidFixtureSources.Read("flowchart-repeated-subgraphs").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-subgraph-merge-swimlane-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-repeated-subgraphs").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-subgraph-merge-swimlane-wide-light"] = MermaidFixtureSources.Read("flowchart-repeated-subgraphs").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-subgraph-merge-swimlane-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("flowchart-repeated-subgraphs").Replace("flowchart LR", "swimlane-beta LR", StringComparison.Ordinal),
+            ["mermaid-swimlane-nesting-compact-light"] = MermaidFixtureSources.Read("swimlane-native-nesting"),
+            ["mermaid-swimlane-nesting-compact-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("swimlane-native-nesting"),
+            ["mermaid-swimlane-nesting-wide-light"] = MermaidFixtureSources.Read("swimlane-native-nesting"),
+            ["mermaid-swimlane-nesting-wide-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidFixtureSources.Read("swimlane-native-nesting"),
             ["mermaid-swimlane-basic"] = "swimlane-beta LR\nsubgraph Requester\n A[Submit] --> B[Review]\nend\nsubgraph Service\n C{Approved?} --> D[Deliver]\nend\nB --> C\n",
             ["mermaid-usecase-basic"] = "usecase-beta\ndirection LR\nactor Customer\nsystemBoundary Store[Online store]\n Browse(\"Browse products\")\n Pay(\"Pay for order\")\n Authenticate(\"Authenticate\")\nend\nCustomer --> Browse\nBrowse ..> : include Authenticate\nPay --|> Browse\n",
             ["mermaid-usecase-vertical"] = "usecase-beta\nactor User\nUser --> Action(Do work)\n",
@@ -145,8 +302,63 @@ internal static class MermaidExamples {
             var options = item.Key switch {
                 "mermaid-gantt-today-style" => new MermaidRenderOptions { Gantt = new MermaidGanttRenderOptions { Today = new DateTime(2026, 1, 3) } },
                 "mermaid-gantt-date-anchor" => new MermaidRenderOptions { ParseOptions = new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 1, 1) } },
+                _ when (item.Key.StartsWith("mermaid-c4-source-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-c4-config-", StringComparison.Ordinal)) => new MermaidRenderOptions {
+                    C4 = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 800 }
+                },
+                _ when item.Key.StartsWith("mermaid-mindmap-notation-", StringComparison.Ordinal) => new MermaidRenderOptions {
+                    MindMap = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 560 }
+                },
+                _ when item.Key.StartsWith("mermaid-state-floating-", StringComparison.Ordinal) => new MermaidRenderOptions {
+                    State = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 680 }
+                },
                 _ => null
             };
+            if (item.Key.StartsWith("mermaid-membership-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-subgraph-merge-", StringComparison.Ordinal)) {
+                var width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100;
+                options = new MermaidRenderOptions { Flowchart = new MermaidFlowchartRenderOptions { Width = width, Height = 700 },
+                    Swimlane = new MermaidFlowchartRenderOptions { Width = width, Height = 700 } };
+            }
+            if (item.Key.StartsWith("mermaid-swimlane-nesting-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Swimlane = new MermaidFlowchartRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 750 } };
+            if (item.Key.StartsWith("mermaid-architecture-boundaries-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-architecture-captions-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Architecture = new MermaidTopologyRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 700 } };
+            if (item.Key.StartsWith("mermaid-sequence-depth-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-sequence-half-arrows-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-sequence-rect-numbering-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-sequence-par-over-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-sequence-participants-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Sequence = new MermaidSequenceRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 620 } };
+            if (item.Key.StartsWith("mermaid-architecture-alignments-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Architecture = new MermaidTopologyRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 700 } };
+            if (item.Key.StartsWith("mermaid-ishikawa-depth-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Ishikawa = new MermaidIshikawaRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 520 } };
+            if (item.Key.StartsWith("mermaid-treeview-rows-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { TreeView = new MermaidTreeViewRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 320 } };
+            if (item.Key.StartsWith("mermaid-class-captions-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-er-captions-", StringComparison.Ordinal)) {
+                var captionTopology = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 620 };
+                options = new MermaidRenderOptions { Class = captionTopology, EntityRelationship = captionTopology };
+            }
+            if (item.Key.StartsWith("mermaid-treemap-styles-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Treemap = new MermaidTreemapRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 620 } };
+            if (item.Key.StartsWith("mermaid-eventmodeling-depth-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { EventModeling = new MermaidTopologyRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1200, Height = 700 } };
+            if (item.Key.StartsWith("mermaid-wardley-overlays-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Wardley = new MermaidWardleyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 600 } };
+            if ((item.Key.StartsWith("mermaid-kanban-board-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-kanban-source-", StringComparison.Ordinal)))
+                options = new MermaidRenderOptions { Kanban = new MermaidTopologyRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1200, Height = 700 } };
+            if (item.Key.StartsWith("mermaid-gitgraph-depth-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { GitGraph = new MermaidGitGraphRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 620 } };
+            if (item.Key.StartsWith("mermaid-block-depth-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Block = new MermaidBlockRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 620 } };
+            if (item.Key.StartsWith("mermaid-quadrant-source-", StringComparison.Ordinal))
+                options = new MermaidRenderOptions { Quadrant = new MermaidQuadrantRenderOptions {
+                    Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 800, Height = 500 } };
             var parsed = new MermaidParser().Parse(item.Value, options?.ParseOptions);
             // Native text fitting can affect any diagram's natural frame. Keep gallery
             // defaults independent of installed fonts without overriding source fonts.
@@ -206,6 +418,8 @@ internal static class MermaidExamples {
                 }
             }
             if (item.Key == "mermaid-radar-hidden-fractional-guides" && result.Artifact.Model is Chart chart) chart.Options.ShowGrid = false;
+            if (item.Key.StartsWith("mermaid-quadrant-source-", StringComparison.Ordinal))
+                File.WriteAllText(Path.Combine(output, item.Key + ".mmd"), item.Value, System.Text.Encoding.UTF8);
             result.Artifact.SaveSvg(Path.Combine(output, item.Key + ".svg"));
             result.Artifact.SavePng(Path.Combine(output, item.Key + ".png"));
             var htmlPath = Path.Combine(output, item.Key + ".html");

@@ -1,0 +1,22 @@
+using System;
+using System.IO;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.SvgRaster;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var layer = NativeDropShadowExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("shadow-source.svg", layer.Source.ToSvg());
+File.WriteAllBytes("shadow-source.png", layer.Source.ToPng());
+File.WriteAllText("shadow.svg", layer.Visual.ToSvg());
+File.WriteAllBytes("shadow.png", layer.Visual.ToPng());
+File.WriteAllText("shadow.html", layer.Visual.ToArtifact("shadow", VisualArtifactKind.Chart).ToHtmlPage());
+var filterSource = NativeDropShadowExample.FilterSource();
+var filtered = SvgRasterizer.Rasterize(filterSource, strict: true, filters: new SvgRasterFilterOptions());
+File.WriteAllText("shadow-filter.source.svg", filterSource);
+// This Core-only import result is64x48 row-major RGBA8. Visuals ImageComposition can also encode it to PNG.
+File.WriteAllBytes("shadow-filter.rgba", filtered.Image.Pixels);
+
+{{SOURCE}}

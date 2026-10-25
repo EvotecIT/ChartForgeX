@@ -6,3 +6,4 @@ global using ChartForgeX.Themes;
 global using ChartForgeX.Topology;
 global using ChartForgeX.VisualArtifacts;
 global using ChartForgeX.VisualBlocks;
+global using ChartForgeX.Typography;

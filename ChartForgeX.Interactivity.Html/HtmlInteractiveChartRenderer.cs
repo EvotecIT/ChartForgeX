@@ -139,7 +139,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         PrepareChartSection(chart, options, titleFallback, assetSource, null).Html;
 
     private static HtmlChartSection PrepareChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource, ChartCartesianViewport? viewport,
-        VisualRenderContext? drawingContext = null, bool narrow = false, PreparedVisual? preparedDrawing = null, PreparedVisual? fullDrawing = null, PreparedVisual? narrowDrawing = null, PreparedVisual? fullNarrowDrawing = null) {
+        VisualRenderContext? drawingContext = null, bool narrow = false, PreparedVisual? preparedDrawing = null, PreparedVisual? fullDrawing = null, PreparedVisual? narrowDrawing = null, PreparedVisual? fullNarrowDrawing = null, ChartPolarViewport? polarViewport = null, bool requirePolar = false, ChartVisibilityView? visibility = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (options == null) throw new ArgumentNullException(nameof(options));
         var identityScope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
@@ -147,107 +147,42 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var chartId = options.Interaction.ChartId ?? identityScope;
         var request = VisualExportRequest.ForChart(chart);
         // The authored request remains the intrinsic host basis when a narrow drawing becomes active.
-        var context = drawingContext ?? request.Context;
+        var context = (drawingContext ?? request.Context).WithNativeValueSource(options.CaptureNativeValueSource);
         var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
         if (adaptive) ValidateAdaptiveOptions(options.Adaptive);
         if (adaptive && !narrow && preparedDrawing == null) {
-            var aligned = chart.PrepareAligned(context, AdaptiveDrawingContext(context, options.Adaptive), viewport,
-                retainFullDrawings: options.XNavigation.Enabled && options.XNavigation.IncludeNavigator);
-            preparedDrawing = aligned.First; narrowDrawing = aligned.Second;
-            fullDrawing = aligned.FullFirst; fullNarrowDrawing = aligned.FullSecond;
+            if (requirePolar) {
+                preparedDrawing = chart.PreparePolar(context, polarViewport);
+                narrowDrawing = chart.PreparePolar(AdaptiveDrawingContext(context, options.Adaptive), polarViewport);
+            } else {
+                var aligned = visibility == null
+                    ? chart.PrepareAligned(context, AdaptiveDrawingContext(context, options.Adaptive), viewport,
+                        retainFullDrawings: options.XNavigation.Enabled && options.XNavigation.IncludeNavigator)
+                    : chart.PrepareAlignedVisibility(context, AdaptiveDrawingContext(context, options.Adaptive), visibility, viewport,
+                        retainFullDrawings: options.XNavigation.Enabled && options.XNavigation.IncludeNavigator);
+                preparedDrawing = aligned.First; narrowDrawing = aligned.Second;
+                fullDrawing = aligned.FullFirst; fullNarrowDrawing = aligned.FullSecond;
+            }
         }
-        var prepared = preparedDrawing ?? chart.Prepare(context, viewport);
-        var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
+        var prepared = preparedDrawing ?? (requirePolar ? chart.PreparePolar(context, polarViewport) : visibility == null ? chart.Prepare(context, viewport) : chart.PrepareVisibility(context, visibility, viewport));
+        if (options.CaptureNativeValueSource && !VisualValueCapture.TryRawSource(prepared, out _, out _))
+            throw new NotSupportedException("Native raw value capture requires an authored Pie/Donut source and bounded captured formatting/font policy; ordinary preparation remains available.");
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         if (!Enum.IsDefined(typeof(HtmlChartToolbarLayout), options.Toolbar)) throw new ArgumentOutOfRangeException(nameof(options.Toolbar));
         if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));
         if (options.Tooltip.DelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.DelayMilliseconds));
-        var writer = new HtmlMarkupWriter();
-        writer.StartElement("section")
-            .Attribute("class", "cfx-interactive-chart")
-            .Attribute("data-cfx-look", "graphite")
-            .Attribute("role", "group")
-            .Attribute("aria-label", ChartTitle(chart, titleFallback))
-            .Attribute("lang", options.Localization.ResolveLanguage(chart.Accessibility.Language))
-            .Attribute("dir", options.Localization.DirectionAttribute)
-            .Attribute("data-cfx-ui", options.Localization.ToJson())
-            .Attribute("data-cfx-label-value", options.Localization[HtmlChartText.Value])
-            .Attribute("data-cfx-asset-source", assetSource)
-            .Attribute("data-cfx-chart-id", chartId)
-            .Attribute("data-cfx-prepared-chart", PreparedChartMetadata(chart, prepared))
-            .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())
-            .Attribute("data-cfx-interaction-group", options.Interaction.GroupName)
-            .Attribute("data-cfx-scenario-count", options.Interaction.Scenarios.Count)
-            .Attribute("data-cfx-active-scenario", options.Interaction.ActiveScenarioId)
-            .Attribute("data-cfx-deep-link-state", scenarioControls && options.Interaction.EnableDeepLinkState)
-            .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
-            .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
-            .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
-            .Attribute("data-cfx-adaptive-breakpoint", adaptive ? options.Adaptive.Breakpoint.ToString(CultureInfo.InvariantCulture) : null)
-            .Attribute("data-cfx-adaptive-drawing", adaptive ? narrow ? "narrow" : "wide" : null)
-            .Attribute("data-cfx-toolbar", options.Toolbar.ToString().ToLowerInvariant())
-            .Attribute("data-cfx-context-menu", options.IncludeContextMenu ? "true" : null)
-            .Attribute("data-cfx-selection-mode", options.Interaction.SelectionMode.ToString().ToLowerInvariant())
-            .Attribute("data-cfx-brush-axis", options.Interaction.BrushAxis.ToString().ToLowerInvariant())
-            .Attribute("data-cfx-dim-others-selected", options.Highlight.DimOthersWhileSelected ? "true" : "false")
-            .Attribute("data-cfx-pin-on-select", options.Tooltip.PinOnSelect ? "true" : "false")
-            .Attribute("data-cfx-tooltip-mode", options.Tooltip.Mode == HtmlChartTooltipMode.Single ? "single" : "shared-x")
-            .Attribute("data-cfx-tooltip-range", options.Tooltip.Range.SerializedKind)
-            .Attribute("data-cfx-tooltip-distance", options.Tooltip.Range.CssPixels?.ToString("R", CultureInfo.InvariantCulture))
-            .Attribute("data-cfx-tooltip-delay", options.Tooltip.DelayMilliseconds.ToString(CultureInfo.InvariantCulture))
-            .Attribute("data-cfx-tooltip-anchor", options.Tooltip.Position.Anchor.ToString().ToLowerInvariant())
-            .Attribute("data-cfx-tooltip-placements", options.Tooltip.Position.SerializedPlacements)
-            .Attribute("data-cfx-tooltip-gap", options.Tooltip.Position.Gap.ToString("R", CultureInfo.InvariantCulture))
-            .Attribute("data-cfx-tooltip-offset-x", options.Tooltip.Position.OffsetX.ToString("R", CultureInfo.InvariantCulture))
-            .Attribute("data-cfx-tooltip-offset-y", options.Tooltip.Position.OffsetY.ToString("R", CultureInfo.InvariantCulture))
-            .Attribute("data-cfx-crosshair-label", options.Crosshair.ShowLabel ? "true" : "false")
-            .Attribute("data-cfx-crosshair-styled", options.Crosshair.HasLineOverrides ? "true" : null)
-            .Attribute("style", "--cfx-intrinsic-width:" + request.Context.Layout.Size.Width.ToString(CultureInfo.InvariantCulture)
-                + "px;--cfx-native-width:" + context.Layout.Size.Width.ToString(CultureInfo.InvariantCulture)
-                + "px;--cfx-native-height:" + context.Layout.Size.Height.ToString(CultureInfo.InvariantCulture)
-                + "px" + GraphiteInteractionTokens(chart) + CrosshairInteractionTokens(options.Crosshair));
-        WriteHighlightOptions(writer, options.Highlight);
-        writer.EndStartElement().Line();
-        var toolbar = BuildToolbar(options);
-        if (toolbar.Length > 0) {
-            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", options.Localization[HtmlChartText.ChartControls]).EndStartElement()
-                .RawTrusted(toolbar)
-                .EndElement().Line();
-        }
-
-        if (scenarioControls) {
-            writer.RawTrusted(BuildScenarioControls(options));
-            writer.RawTrusted(BuildScenarioPanel(options));
-        }
-
-        writer.StartElement("div").Attribute("class", "cfx-frame").EndStartElement().Line()
-            .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
-            .RawTrusted(prepared.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables))).Line()
-            .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
-            .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
-            .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--x").EndStartElement().EndElement()
-            .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--y").EndStartElement().EndElement()
-            .StartElement("span").Attribute("class", "cfx-crosshair__label").Attribute("data-cfx-crosshair-label", "true").EndStartElement().EndElement()
-            .EndElement().Line()
-            .RawTrusted(BuildRevealLayer(options))
-            .EndElement().Line()
-            .RawTrusted(BuildResetControl(options))
-            .RawTrusted(BuildXNavigation(chart, options, prepared, context, viewport, scope, fullDrawing))
-            .RawTrusted(BuildHierarchyNavigation(options, prepared))
-            .RawTrusted(BuildCompareTray(options))
-            .EndElement().Line()
-            .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("data-cfx-pinned-label", options.Localization[HtmlChartText.Pinned])
-            .Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line();
-        HtmlChartSection? narrowSection = null;
-        if (adaptive && !narrow) {
-            var narrowContext = AdaptiveDrawingContext(context, options.Adaptive);
-            narrowSection = PrepareChartSection(chart, options, titleFallback, assetSource, viewport, narrowContext, true, narrowDrawing, fullNarrowDrawing);
-            writer.StartElement("template").Attribute("data-cfx-adaptive-narrow", "true").EndStartElement()
-                .RawTrusted(narrowSection.Html)
-                .EndElement().Line();
-        }
-        writer.EndElement();
-        return new HtmlChartSection(writer.Build(), prepared, narrowSection?.PreparedVisual);
+        return BuildPreparedSceneSection(new PreparedSceneSectionSource {
+            Drawing = prepared, Title = ChartTitle(chart, titleFallback), Language = chart.Accessibility.Language,
+            Metadata = PreparedChartMetadata(chart, prepared), AssetSource = assetSource, ChartId = chartId,
+            Context = context, IntrinsicWidth = request.Context.Layout.Size.Width, Narrow = narrow,
+            ThemeTokens = GraphiteInteractionTokens(chart),
+            SvgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables),
+            NativeNavigation = BuildXNavigation(chart, options, prepared, context, viewport, scope, fullDrawing),
+            HierarchyNavigation = BuildHierarchyNavigation(options, prepared),
+            PrepareNarrow = adaptive && !narrow ? () => PrepareChartSection(chart, options, titleFallback, assetSource, viewport,
+                AdaptiveDrawingContext(context, options.Adaptive), true, narrowDrawing, fullNarrowDrawing,
+                polarViewport: polarViewport, requirePolar: requirePolar, visibility: visibility) : null
+        }, options);
     }
 
     private static string BuildCompareTray(HtmlChartInteractionOptions options) {

@@ -20,7 +20,9 @@ public readonly struct ChartAxisLabel : IEquatable<ChartAxisLabel> {
     public readonly string Text;
 
     /// <summary>Gets the category's parent captions, ordered from the outermost group to the nearest parent.</summary>
-    /// <remarks>An empty path is an ordinary label. Group paths require a supported linear Cartesian category axis.</remarks>
+    /// <remarks>An empty path is an ordinary label. Group paths require a supported linear Cartesian category axis or rectangular Heatmap axis.
+    /// Heatmap X values identify actual columns; Y values are one-based source row slots in series order.
+    /// Axis reversal changes display positions, never source row/column identity.</remarks>
     public IReadOnlyList<string> Groups => _groups ?? Array.Empty<string>();
 
     /// <summary>

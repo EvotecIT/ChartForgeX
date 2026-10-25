@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     /// <summary>Fits a secondary run beneath an unchanged primary caption in their shared native sector.</summary>
     private static bool SunburstSecondaryLabel(Chart chart, VisualSceneBuilder builder, ChartSunburstNode node,
-        ChartColor fill, SvgPaint fillPaint, TextStyle primaryStyle, string primary, TextMetrics primaryMetrics,
+        ChartColor fill, SvgPaint fillPaint, HierarchyCaptionSurface? surface, TextStyle primaryStyle, string primary, TextMetrics primaryMetrics,
         string secondary, double x, double y, double[] orientations, Func<TextMetrics, double, bool> fits) {
         var options = chart.Options.Sunburst;
         var inherited = primaryStyle.Clone();
@@ -48,9 +48,9 @@ internal static partial class VisualHierarchyCompiler {
         void Draw(string text, TextMetrics measured, double degrees) {
             var top = y - Block(measured).Height / 2;
             primaryStyle.Alignment = TextAlignment.Center; style.Alignment = TextAlignment.Center;
-            var primaryPaint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(primaryStyle) : SvgPaint.Contrast(fill, fillPaint);
+            var primaryPaint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(primaryStyle) : surface?.Paint(fill, fillPaint, primaryStyle.Color) ?? SvgPaint.Contrast(fill, fillPaint);
             var secondaryPaint = options.SecondaryLabelStyle.Color.HasValue || VisualChartPaint.ExplicitDataLabelColor(chart, node.Index)
-                ? VisualChartPaint.Text(style) : SvgPaint.Contrast(fill, fillPaint);
+                ? VisualChartPaint.Text(style) : surface?.Paint(fill, fillPaint, style.Color) ?? SvgPaint.Contrast(fill, fillPaint);
             using (Math.Abs(degrees) < .001 ? null : builder.PushRotation(degrees, x, y)) {
                 builder.Text(primary, x, top + builder.TextAscent(primaryStyle), primaryStyle, "sunburst-label", Id("node-label", node.Index), primaryPaint);
                 builder.Text(text, x, top + primaryMetrics.Height + options.SecondaryLabelSpacing + builder.TextAscent(style), style,

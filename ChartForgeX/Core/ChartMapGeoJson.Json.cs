@@ -6,6 +6,8 @@ namespace ChartForgeX.Core;
 
 internal sealed class GeoJsonFeature {
     public string? Id { get; private set; }
+    internal GeoJsonValue? IdValue { get; private set; }
+    internal GeoJsonValue? PropertiesValue { get; private set; }
     public Dictionary<string, GeoJsonValue> Properties { get; private set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, GeoJsonValue>? Geometry { get; private set; }
     public string? GeometryType => Geometry?.OptionalString("type");
@@ -16,16 +18,26 @@ internal sealed class GeoJsonFeature {
         if (!string.Equals(feature.OptionalString("type"), "Feature", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("GeoJSON feature entries must have type Feature.");
         var item = new GeoJsonFeature {
             Id = feature.OptionalString("id"),
+            IdValue = feature.TryGetValue("id", out var id) ? id : null,
+            PropertiesValue = feature.TryGetValue("properties", out var properties) ? properties : null,
             Properties = feature.OptionalObject("properties") ?? new Dictionary<string, GeoJsonValue>(StringComparer.OrdinalIgnoreCase),
             Geometry = feature.OptionalObject("geometry")
         };
         return item;
     }
 
-    public string? PropertyString(string name) => Properties.TryGetValue(name, out var value) ? value.AsOptionalString() : null;
+    public string? PropertyString(string name) => TryProperty(name, out var value) ? value.AsOptionalString() : null;
+
+    internal bool TryProperty(string name, out GeoJsonValue value) {
+        if (Properties.TryGetValue(name, out value!)) return true;
+        foreach (var property in Properties) if (string.Equals(property.Key, name, StringComparison.OrdinalIgnoreCase)) {
+            value = property.Value; return true;
+        }
+        value = null!; return false;
+    }
 
     public void AddPropertyAliases(string name, List<string> aliases) {
-        if (!Properties.TryGetValue(name, out var value)) return;
+        if (!TryProperty(name, out var value)) return;
         if (value.TryAsArray(out var values)) {
             foreach (var item in values) {
                 var text = item.AsOptionalString();
@@ -40,6 +52,7 @@ internal sealed class GeoJsonFeature {
 
 internal sealed class GeoJsonValue {
     private readonly object? _value;
+    internal object? RawValue => _value;
 
     private GeoJsonValue(object? value) {
         _value = value;
@@ -140,6 +153,8 @@ internal sealed class GeoJsonReadLimits {
     public int MaximumObjectProperties { get; }
     public bool RejectDuplicateProperties { get; private set; }
     public bool PreserveNumberSpelling { get; private set; }
+    internal bool PreserveFeaturePropertyNames { get; private set; }
+    internal GeoJsonReadLimits KeepFeaturePropertyNames() { PreserveFeaturePropertyNames = true; return this; }
 
     public GeoJsonReadLimits KeepNumberSpelling() {
         PreserveNumberSpelling = true;
@@ -211,6 +226,7 @@ internal sealed class GeoJsonReader {
     private int _position;
     private int _valuesRead;
     private int _depth;
+    private bool _preservingFeatureProperties;
 
     public GeoJsonReader(string json, IEqualityComparer<string> propertyComparer) {
         _json = json ?? throw new ArgumentNullException(nameof(json));
@@ -255,10 +271,13 @@ internal sealed class GeoJsonReader {
 
     private GeoJsonValue ReadObject(string? propertyName) {
         EnterContainer();
+        var prior = _preservingFeatureProperties;
+        if (_limits?.PreserveFeaturePropertyNames == true && string.Equals(propertyName, "properties", StringComparison.OrdinalIgnoreCase))
+            _preservingFeatureProperties = true;
         try {
             return ReadObjectBody(propertyName);
         } finally {
-            _depth--;
+            _preservingFeatureProperties = prior; _depth--;
         }
     }
 
@@ -273,7 +292,7 @@ internal sealed class GeoJsonReader {
 
     private GeoJsonValue ReadObjectBody(string? propertyName) {
         Expect('{');
-        var values = new Dictionary<string, GeoJsonValue>(_propertyComparer);
+        var values = new Dictionary<string, GeoJsonValue>(_preservingFeatureProperties ? StringComparer.Ordinal : _propertyComparer);
         int propertyCount = 0;
         int maximumProperties = _limits?.ObjectProperties(propertyName) ?? int.MaxValue;
         SkipWhiteSpace();

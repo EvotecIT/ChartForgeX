@@ -173,13 +173,14 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         private readonly string? _group;
         private readonly bool _scenarios, _navigation, _adaptive, _sessions, _automaticBounds, _yReversed;
         private readonly ChartScaleKind _yScale;
+        private readonly Action<Chart>? _configureChart;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         internal NativeHost(bool dark = false, bool reversed = false, ChartSeriesKind kind = ChartSeriesKind.Line,
             bool time = false, int width = 800, string id = "native-readings", string? group = null, bool scenarios = false,
-            bool navigation = false, bool adaptive = false, bool sessions = false, bool automaticBounds = false, ChartScaleKind yScale = ChartScaleKind.Linear, bool yReversed = false) {
+            bool navigation = false, bool adaptive = false, bool sessions = false, bool automaticBounds = false, ChartScaleKind yScale = ChartScaleKind.Linear, bool yReversed = false, Action<Chart>? configureChart = null) {
             _dark = dark; _reversed = reversed; _kind = kind; _time = time || sessions; _width = width; Id = id; _group = group; _scenarios = scenarios;
             _navigation = navigation; _adaptive = adaptive; _sessions = sessions;
-            _automaticBounds = automaticBounds; _yScale = yScale; _yReversed = yReversed;
+            _automaticBounds = automaticBounds; _yScale = yScale; _yReversed = yReversed; _configureChart = configureChart;
             _sections.Add("initial", _renderer.PrepareSection(Chart(), configure: ConfigureSection));
         }
         internal string Id { get; }
@@ -285,6 +286,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("envelope"), "Envelope", points.Select(point => new ChartRangeBand(point.X, point.Y / 2 - 6, point.Y / 2 + 6))));
             }
             chart.Options.XAxis.Reversed = _reversed;
+            _configureChart?.Invoke(chart);
             return chart;
         }
     }

@@ -17,7 +17,8 @@ internal static class ChartCartesianOrientation {
 
     internal static bool IsHorizontalComparison(Chart chart, ChartSeries series) =>
         series.Kind == ChartSeriesKind.Lollipop && chart.Options.LollipopOrientation == ChartOrientation.Horizontal
-        || series.Kind == ChartSeriesKind.Dumbbell && chart.Options.DumbbellOrientation == ChartOrientation.Horizontal;
+        || series.Kind == ChartSeriesKind.Dumbbell && chart.Options.DumbbellOrientation == ChartOrientation.Horizontal
+        || series.Kind == ChartSeriesKind.Slope && chart.Options.SlopeOrientation == ChartOrientation.Horizontal;
 
     internal static bool IsHorizontalLine(Chart chart, ChartSeries series) =>
         (series.Kind == ChartSeriesKind.Line || series.Kind == ChartSeriesKind.StepLine)

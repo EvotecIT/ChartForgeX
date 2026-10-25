@@ -10,8 +10,8 @@ public static partial class ChartMapGeoJson {
     /// <param name="options">Optional feature, name, bounds and point-weight settings. Projection and coordinate precision do not change raw positions.</param>
     /// <returns>A detached read-only collection suitable for a dotted-map series, including an empty collection when no feature matches.</returns>
     /// <remarks>Feature names fall back to their code or ID. MultiPoint positions receive one-based part suffixes such as "Ports [1]".
-    /// Feature-level bounds filtering retains complete geometries without clipping. Source properties and feature IDs are not observation metadata;
-    /// assign stable observation IDs through the retained series when needed.</remarks>
+    /// Feature-level bounds filtering retains complete geometries without clipping. Immutable source properties and typed feature IDs are retained in Feature; multipart observations share that snapshot.
+    /// Feature IDs are not observation IDs; assign stable observation IDs through the retained series when needed.</remarks>
     public static IReadOnlyList<ChartMapPoint> ToMapPoints(string geoJson, ChartMapGeoJsonOptions? options = null) {
         var features = ObservationFeatures(geoJson, ref options);
         var points = new List<ChartMapPoint>();
@@ -34,9 +34,10 @@ public static partial class ChartMapGeoJson {
                 labelCharacters += PartLabelLength(label.Length, part, multiple);
             }
             if (positions.Count > 0 && options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude)) {
-                budget.Reserve(positions.Count, labelCharacters);
+                var metadata = ChartMapFeature.FromFeature(feature);
+                budget.Reserve(positions.Count, labelCharacters, (long)positions.Count * metadata.CharacterCount);
                 for (var part = 0; part < positions.Count; part++)
-                    points.Add(GeographicPosition(positions[part], PartLabel(label, part, multiple), weight).WithColorValue(colorValue));
+                    points.Add(GeographicPosition(positions[part], PartLabel(label, part, multiple), weight).WithColorValue(colorValue).WithFeature(metadata));
             }
             index++;
         }
@@ -49,7 +50,7 @@ public static partial class ChartMapGeoJson {
     /// <returns>A detached read-only connector collection in feature and line order, including an empty collection when no feature matches.</returns>
     /// <remarks>Each line requires at least two valid positions. MultiLineString parts receive one-based label suffixes.
     /// Bounds filtering retains complete feature geometries and waypoint order without clipping or projecting them.
-    /// Source properties and feature IDs are not retained as metadata by the connector primitive.</remarks>
+    /// Immutable source properties and typed feature IDs are retained in each connector Feature; multipart lines share that snapshot.</remarks>
     public static IReadOnlyList<ChartMapConnector> ToMapConnectors(string geoJson, ChartMapGeoJsonOptions? options = null) {
         var features = ObservationFeatures(geoJson, ref options);
         var connectors = new List<ChartMapConnector>();
@@ -77,7 +78,8 @@ public static partial class ChartMapGeoJson {
                 }
             }
             if (lines.Count == 0 || !options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude)) { index++; continue; }
-            budget.Reserve(observationCount, labelCharacters);
+            var metadata = ChartMapFeature.FromFeature(feature);
+            budget.Reserve(observationCount, labelCharacters, (long)lines.Count * metadata.CharacterCount);
             for (var part = 0; part < lines.Count; part++) {
                 var positions = lines[part].AsArray("LineString positions");
                 var lineLabel = PartLabel(label, part, multiple);
@@ -86,7 +88,7 @@ public static partial class ChartMapGeoJson {
                     var point = GeographicPosition(positions[position], PartLabel(lineLabel, position, true), null);
                     route.Add(point);
                 }
-                connectors.Add(new ChartMapConnector(lineLabel, route));
+                connectors.Add(new ChartMapConnector(lineLabel, route).WithFeature(metadata));
             }
             index++;
         }
@@ -97,7 +99,8 @@ public static partial class ChartMapGeoJson {
         if (string.IsNullOrWhiteSpace(geoJson)) throw new ArgumentException("GeoJSON must not be empty.", nameof(geoJson));
         options ??= new ChartMapGeoJsonOptions();
         options.Validate();
-        return ReadFeatures(GeoJsonValue.Parse(geoJson).AsObject("GeoJSON root"));
+        return ReadFeatures(GeoJsonValue.Parse(geoJson, StringComparer.OrdinalIgnoreCase,
+            new GeoJsonReadLimits(int.MaxValue, int.MaxValue, int.MaxValue).KeepNumberSpelling().KeepFeaturePropertyNames()).AsObject("GeoJSON root"));
     }
 
     private static ChartMapPoint GeographicPosition(GeoJsonValue value, string label, double? weight) {
@@ -115,7 +118,7 @@ public static partial class ChartMapGeoJson {
     }
 
     private static double? NumericFeatureValue(GeoJsonFeature feature, string? property) {
-        if (property == null || !feature.Properties.TryGetValue(property, out var value) || value.IsNull) return null;
+        if (property == null || !feature.TryProperty(property, out var value) || value.IsNull) return null;
         var number = value.AsNumber("point value property '" + property + "'");
         ChartGuards.Finite(number, nameof(property));
         return number;

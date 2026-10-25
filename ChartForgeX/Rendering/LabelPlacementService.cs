@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>Places labels with the same font resolution and shaping used by PNG text, with a bounded measurement cache.</summary>
 /// <remarks>For the same fonts and input order, placement is deterministic. Unresolvable fonts use portable measurements.
 /// Intersections with other labels and marks are rejected. Intentional containment in an associated mark is allowed.</remarks>
-public sealed class LabelPlacementService {
+public sealed partial class LabelPlacementService {
     internal const double DefaultGap = 2;
     private const int CacheCapacity = 4096;
     private const int ShardCount = 16;
@@ -162,16 +162,27 @@ public sealed class LabelPlacementService {
         var width = metrics.Width + request.Padding * 2 + (decoration?.Width ?? 0);
         var height = metrics.Height + request.Padding * 2 + (decoration?.Height ?? 0);
         for (var i = 0; i < request.Candidates.Count; i++) {
-            var candidate = request.Candidates[i];
-            var box = new ChartRect(request.Anchor.X + candidate.OffsetX - width * candidate.HorizontalAlignment,
-                request.Anchor.Y + candidate.OffsetY - height * candidate.VerticalAlignment, width, height);
-            if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) continue;
-            if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) continue;
-            var result = new PlacedLabel(request, text, box, false, i, ellipsized);
-            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(request.Anchor, result.LeaderEnd, request.MinimumLabelGap)) continue;
-            return result;
+            var result = TryCandidate(request.Candidates[i], i);
+            if (result != null) return result;
+        }
+        if (request.AutoPointMarkBounds.HasValue) {
+            var index = request.Candidates.Count;
+            foreach (var candidate in AutoPointCandidates(request, width, height, occupied)) {
+                var result = TryCandidate(candidate, index++);
+                if (result != null) return result;
+            }
         }
         return null;
+
+        PlacedLabel? TryCandidate(LabelCandidate candidate, int index) {
+            var box = new ChartRect(request.Anchor.X + candidate.OffsetX - width * candidate.HorizontalAlignment,
+                request.Anchor.Y + candidate.OffsetY - height * candidate.VerticalAlignment, width, height);
+            if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) return null;
+            if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) return null;
+            var result = new PlacedLabel(request, text, box, false, index, ellipsized);
+            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(request.Anchor, result.LeaderEnd, request.MinimumLabelGap)) return null;
+            return result;
+        }
     }
 
     internal static bool Contains(ChartRect outer, ChartRect inner) => inner.Left >= outer.Left - 0.0001 && inner.Right <= outer.Right + 0.0001 && inner.Top >= outer.Top - 0.0001 && inner.Bottom <= outer.Bottom + 0.0001;

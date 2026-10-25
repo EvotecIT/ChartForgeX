@@ -36,13 +36,15 @@ internal static partial class MermaidZenUmlParser {
                 var end = text.IndexOf(">>", StringComparison.Ordinal);
                 if (end < 2) throw Syntax("Unclosed ZenUML participant stereotype.", token.Span);
                 attributes["stereotype"] = text.Substring(2, end - 2);
-                text = text.Substring(end + 2).Trim(); Unsupported(token.Text, token.Span, "participant stereotype label");
+                text = text.Substring(end + 2).Trim();
             }
             if (text.StartsWith("[", StringComparison.Ordinal)) {
                 var end = text.IndexOf(']');
                 if (end <= 1) throw Syntax("Invalid ZenUML participant emoji shortcode.", token.Span);
                 attributes["emoji"] = text.Substring(0, end + 1);
-                text = text.Substring(end + 1).Trim(); Unsupported(token.Text, token.Span, "participant emoji shortcode");
+                text = text.Substring(end + 1).Trim();
+                MermaidZenUmlPresentation.Symbol(attributes["emoji"],out var known);
+                if(!known)Unsupported(token.Text,token.Span,"unresolved participant emoji shortcode");
             }
             var parts = Words(text, token.Span);
             if (parts.Count == 0) throw Syntax("ZenUML participant requires an identity.", token.Span);
@@ -50,7 +52,6 @@ internal static partial class MermaidZenUmlParser {
             var first = 0;
             if (parts.Count > 1 && !char.IsLetterOrDigit(parts[0][0]) && parts[0][0] != '_' && parts[0][0] != '$') {
                 attributes["emoji"] = parts[0]; first++;
-                Unsupported(token.Text, token.Span, "participant emoji glyph");
             }
             var id = parts[first++]; var participant = Participant(id, token.Span, false);
             participant.IsImplicit = false; participant.Kind = kind;
@@ -61,9 +62,9 @@ internal static partial class MermaidZenUmlParser {
                     participant.Alias = MermaidParserUtilities.Unquote(parts[first++]);
                 } else if (value.StartsWith("#", StringComparison.Ordinal)) {
                     if (!IsHexColor(value)) throw Syntax("ZenUML participant color must be a hex color.", token.Span);
-                    attributes["color"] = value; Unsupported(token.Text, token.Span, "participant color");
+                    attributes["color"] = value;
                 } else if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var width) && width > 0) {
-                    attributes["width"] = value; Unsupported(token.Text, token.Span, "participant minimum width");
+                    attributes["width"] = value;
                 } else throw Syntax("Unsupported ZenUML participant declaration token: " + value, token.Span);
             }
             foreach (var attribute in attributes) participant.Attributes[attribute.Key] = attribute.Value;

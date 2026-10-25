@@ -1,0 +1,18 @@
+/// <summary>Creates a native sequence view with retained unused source records and measured participant footers.</summary>
+public static class SequenceParticipantViewsRecipe {
+    /// <summary>Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.</summary>
+    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+        if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
+        var model=SequenceArtifact.Create("sequence-participant-views").WithSize(variant=="compact"?390:1000,820)
+            .WithTitle("Participant views").WithSubtitle("Unused records stay editable; footer occurrences share source identity")
+            .AddParticipant("A","Review",SequenceArtifactParticipantKind.Actor).AddParticipant("Unused","Retained unused participant")
+            .AddParticipant("B","Archive").AddParticipant("Empty","Retained empty-group participant").AddParticipant("N","Audit")
+            .AddMessage("A","B","Store").AddMessage("B","A","Saved",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage("A","B","Close")
+            .AddNote(SequenceArtifactNotePlacement.Over,new[]{"N"},"Retained note").AddActivation("B",true,1).AddActivation("B",false,2)
+            .AddParticipantGroup("handlers","Handlers",0,2).AddParticipantGroup("empty","Not participating",3,3);
+        model.Notes[0].StepIndex=0;model.Participants[2].DestroyedAtMessageIndex=2;
+        model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8,fragmentMargin:10,mirrorParticipants:true,hideUnusedParticipants:true);
+        model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12},note:new TextStyleOverride{FontSize=12});
+        model.Theme=VisualTheme.Graphite();model.ThemeMode=mode;return model;
+    }
+}

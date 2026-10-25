@@ -51,7 +51,7 @@ internal static partial class VisualMapCompiler {
         : Same(viewport, ChartMapViewport.SouthAmerica()) ? WorldMapDots.SouthAmericaBoundaries : Same(viewport, ChartMapViewport.Africa()) ? WorldMapDots.AfricaBoundaries
         : Same(viewport, ChartMapViewport.Asia()) ? WorldMapDots.AsiaBoundaries : Same(viewport, ChartMapViewport.Oceania()) ? WorldMapDots.OceaniaBoundaries : Array.Empty<ChartPoint[]>();
     private static ChartPoint[] Offsets(ChartMapViewport viewport) {
-        var longitude = viewport.MaximumLongitude - viewport.MinimumLongitude; var latitude = viewport.MaximumLatitude - viewport.MinimumLatitude;
+        var longitude = viewport.LongitudeSpan; var latitude = viewport.MaximumLatitude - viewport.MinimumLatitude;
         if (Same(viewport, ChartMapViewport.World()) || Same(viewport, ChartMapViewport.Europe()) || Same(viewport, ChartMapViewport.Poland()) || longitude >= 45 || latitude >= 30) return new[] { new ChartPoint(0, 0) };
         if (longitude <= 30 || latitude <= 18) return Enumerable.Range(-1, 3).SelectMany(x => Enumerable.Range(-1, 3).Select(y => new ChartPoint(x * 1.05, y * 1.05))).ToArray();
         return new[] { new ChartPoint(0, 0), new ChartPoint(-.9, -.9), new ChartPoint(.9, -.9), new ChartPoint(-.9, .9), new ChartPoint(.9, .9) };

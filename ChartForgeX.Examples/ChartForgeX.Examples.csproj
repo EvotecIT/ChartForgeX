@@ -15,20 +15,110 @@
     <ProjectReference Include="..\ChartForgeX.Examples.Snippets\ChartForgeX.Examples.Snippets.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
     <ProjectReference Include="..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="NativeMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeMaskBlendCompositionExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskBlendCompositionExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeMaskProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeMaskProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeMaskCompositionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeMaskCompositionProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeDropShadowExample.cs" LogicalName="ChartForgeX.Examples.NativeDropShadowExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeDropShadowProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeDropShadowProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-layout-typography.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-layout-typography.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-participant-views.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-participant-views.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-preset-appearance.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-preset-appearance.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-source-defaults.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-source-defaults.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-retained-surface-shadows.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-retained-surface-shadows.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceSurfaceShadowProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceSurfaceShadowProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequencePresetAppearanceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequencePresetAppearanceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceSourceDefaultsProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceSourceDefaultsProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-navigation.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-navigation.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceNavigationProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceNavigationProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-self-routes.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-self-routes.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceSelfRoutesProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceSelfRoutesProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\sequence-message-presentation.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.sequence-message-presentation.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceMessagePresentationProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceMessagePresentationProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceParticipantViewsProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceParticipantViewsProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeSequenceLayoutSourceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeSequenceLayoutSourceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeAuthoredHandoffProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeAuthoredHandoffProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeRetainedAppearanceExample.cs" LogicalName="ChartForgeX.Examples.NativeRetainedAppearanceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeRetainedAppearanceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRetainedAppearanceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeRetainedMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeRetainedMaskExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeRetainedMaskProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeRetainedMaskProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="MermaidRecipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.MermaidRecipes.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeUseCaseSourceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeUseCaseSourceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeAdvancedActorSourceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeAdvancedActorSourceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\usecase-advanced-actors.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.usecase-advanced-actors.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeValueTextRepertoireProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeValueTextRepertoireProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeFallbackRadialProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeFallbackRadialProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeJointValuesVisibilityProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeJointValuesVisibilityProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeScatterValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeScatterValueProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeCompleteCartesianValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeCompleteCartesianValueProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeJointStackValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeJointStackValueProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeOwnedValueFlashProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeOwnedValueFlashProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeRawValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRawValueProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeRadialMotionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRadialMotionProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeRadialBandsProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRadialBandsProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeHierarchyMotionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeHierarchyMotionProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeNumberCultureCaseProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeNumberCultureCaseProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeReflowProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeReflowProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeCartesianValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeCartesianValueProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeInitialFadeProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeInitialFadeProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeChartProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeChartProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeMixedCaptionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeMixedCaptionProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeMixedCaptionSourceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeMixedCaptionSourceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\SwimlaneLayoutDepthProgram.cs.txt" LogicalName="ChartForgeX.Examples.SwimlaneLayoutDepthProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\swimlane-native-layout-depth.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.swimlane-native-layout-depth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeShapeCatalogProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeShapeCatalogProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeGraphStyleSettingsProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeGraphStyleSettingsProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeSurfacePaintProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeSurfacePaintProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\flowchart-native-surface-paints.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.flowchart-native-surface-paints.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\agentflow-native-surface-paints.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.agentflow-native-surface-paints.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\flowchart-style-settings.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.flowchart-style-settings.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\agentflow-style-settings.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.agentflow-style-settings.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\flowchart-native-shape-catalog-a.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.flowchart-native-shape-catalog-a.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\flowchart-native-shape-catalog-b.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.flowchart-native-shape-catalog-b.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\flowchart-native-shape-catalog-c.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.flowchart-native-shape-catalog-c.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\flowchart-native-shape-catalog-d.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.flowchart-native-shape-catalog-d.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeUseCaseJsonProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeUseCaseJsonProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="MermaidUseCaseJsonSourceExample.cs" LogicalName="ChartForgeX.Examples.MermaidUseCaseJsonSourceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\usecase-json-table-content.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.usecase-json-table-content.mmd" WithCulture="false" />
+    <EmbeddedResource Include="MermaidRemainingCaptionRolesExample.cs" LogicalName="ChartForgeX.Examples.MermaidRemainingCaptionRolesExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeRemainingCaptionRolesProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeRemainingCaptionRolesProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="MermaidMixedCaptionSourceExample.cs" LogicalName="ChartForgeX.Examples.MermaidMixedCaptionSourceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeKanbanProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeKanbanProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeFishboneProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeFishboneProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeBlockProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeBlockProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\FiveLineChart.cs.txt" LogicalName="ChartForgeX.Examples.FiveLineChart.cs" WithCulture="false" />
+    <EmbeddedResource Include="Assets\mindmap-native-notation.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.mindmap-native-notation.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Assets\state-floating-notes.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.state-floating-notes.mmd" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.svg" LogicalName="ChartForgeX.Examples.styled-multilingual-text.svg" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.html" LogicalName="ChartForgeX.Examples.styled-multilingual-text.html" WithCulture="false" />
     <EmbeddedResource Include="Assets\Gallery\*" LogicalName="ChartForgeX.Examples.Gallery.%(Filename)%(Extension)" WithCulture="false" />
     <!-- These are inert authored source fixtures, not JavaScript/plugin dependencies. -->
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\c4-config-typography-native.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\c4-style-shapes-native.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\c4-layout-config-native.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\quadrant-native-source-depth.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.quadrant-native-source-depth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\usecase-native-source-depth.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.usecase-native-source-depth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\xychart-native-source-depth.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.xychart-native-source-depth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Assets\Mermaid\*.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\agentflow-native-workflow.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\state-native-safe-styles.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\state-concurrent-regions.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\external-plugins\zenuml\zenuml-native-occurrences.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="NativeCompositeSourceExample.cs" LogicalName="ChartForgeX.Examples.NativeCompositeSourceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeCompositeCompositionExample.cs" LogicalName="ChartForgeX.Examples.NativeCompositeCompositionExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeCompositeSourceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeCompositeSourceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeCompositeCompositionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeCompositeCompositionProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeAppearanceExample.cs" LogicalName="ChartForgeX.Examples.NativeAppearanceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeGlassCompositionExample.cs" LogicalName="ChartForgeX.Examples.NativeGlassCompositionExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeAppearanceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeAppearanceProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeGlassCompositionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeGlassCompositionProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="NativeVectorGlassExample.cs" LogicalName="ChartForgeX.Examples.NativeVectorGlassExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeVectorGlassProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeVectorGlassProgram.cs" WithCulture="false" />
   </ItemGroup>
 </Project>

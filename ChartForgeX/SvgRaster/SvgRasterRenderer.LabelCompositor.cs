@@ -21,7 +21,8 @@ internal static partial class SvgRasterRenderer {
         var height = Math.Min(canvas.Height, (int)Math.Ceiling(bottom + padding)) - y;
         if (width <= 0 || height <= 0) return;
         var density = canvas.DeviceScale;
-        var layer = new RgbaCanvas(width * density, height * density, 1) { TextHinting = canvas.TextHinting, FontStrikeScale = canvas.FontStrikeScale };
+        var layer = AllocateCanvas(width * density, height * density, definitions);
+        layer.TextHinting = canvas.TextHinting; layer.FontStrikeScale = canvas.FontStrikeScale;
         var deviceMatrix = SvgRasterMatrix.Translate(-x * density, -y * density).Multiply(SvgRasterMatrix.Scale(density, density)).Multiply(parentMatrix);
         RenderElement(layer, element, parent, deviceMatrix, definitions, layer.Width, layer.Height, 0, ancestors, viewport);
         canvas.DrawImage(x, y, layer.Width, layer.Height, layer.Pixels);

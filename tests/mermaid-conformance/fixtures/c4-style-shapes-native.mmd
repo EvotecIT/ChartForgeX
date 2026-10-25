@@ -1,0 +1,13 @@
+C4Container
+title Source presentation
+System_Boundary(platform, "Platform") {
+  Container(app, "Application", "Native", "Accepts requests")
+  ContainerDb(store, "Store", "SQL", "Keeps records")
+  ContainerQueue(queue, "Queue", "Messages", "Delivers work", $tags="pipe")
+  UpdateElementStyle(app, $bgColor="#123456", $fontColor="#ffffff", $borderColor="#ef6543", $shape="component", $legendText="Application tier")
+  UpdateElementStyle(store, $shape="database", $legendText="Data tier", $legendSprite="database")
+}
+Person(user, "User", $sprite="person")
+Rel(user, platform, "Uses boundary")
+Rel_D(app, store, "Writes")
+Rel_R(store, queue, "Enqueues")

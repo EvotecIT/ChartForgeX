@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -12,15 +13,18 @@ internal static partial class VisualSpecialtyCompiler {
     private static void Pyramid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var options = chart.Options.Pyramid; var colors = context.Theme.Resolve(context.ThemeMode);
         var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
+        var separate = show && chart.Options.Pyramid.LabelContent == ChartStageLabelContent.Separate
+            ? new StageCaptions(chart, context, builder, plot, false) : null;
+        var combined = show && separate == null;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var rail = 0d;
         var sideRail = placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right
             || placement is not (ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below) && options.Orientation == ChartOrientation.Vertical;
-        if (show) for (var index = 0; index < series.RenderPoints.Count; index++) {
+        if (combined) for (var index = 0; index < series.RenderPoints.Count; index++) {
             var measured = builder.MeasureText(PyramidLabel(chart, index), Style(chart, context, index, colors.Foreground));
             rail = Math.Max(rail, (sideRail ? measured.Width : measured.Height) + context.Theme.Spacing);
         }
-        if (show && placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center) {
+        if (combined && placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center) {
             var candidate = ChartPyramidLayout.Compute(series.RenderPoints, plot, options, 0, placement, context.Theme.Spacing);
             var needsRail = false;
             foreach (var stage in candidate.Stages) {
@@ -29,8 +33,13 @@ internal static partial class VisualSpecialtyCompiler {
             }
             if (!needsRail) rail = 0;
         }
-        var layout = ChartPyramidLayout.Compute(series.RenderPoints, plot, options, rail, placement, context.Theme.Spacing);
-        var captions = show ? PyramidCaptions(chart, context, builder, layout, placement, colors) : null;
+        var layout = ChartPyramidLayout.Compute(series.RenderPoints, separate?.Plot ?? plot, options, rail, placement, context.Theme.Spacing);
+        if (separate != null) separate.Place(builder, layout.Stages.Select(stage => new StageCaptionFrame(
+            stage.SourceIndex, stage.Bounds, stage.InsideLabel, stage.Segment, true, stage.HasGeometry,
+            StageOutline(series, stage.SourceIndex, Color(series, stage.SourceIndex, colors), options.PartitionOutline).Width,
+            stage.CaptionAnchor(ChartDataLabelPlacement.Left), stage.CaptionAnchor(ChartDataLabelPlacement.Right),
+            stage.CaptionAnchor(ChartDataLabelPlacement.Above), stage.CaptionAnchor(ChartDataLabelPlacement.Below))).ToArray());
+        var captions = combined ? PyramidCaptions(chart, context, builder, layout, placement, colors) : null;
         var encoding = options.ValueEncoding == ChartPyramidValueEncoding.Height ? "height" : "area";
         var collapsed = false;
         using var group = builder.PushGroup("pyramid-chart", "pyramid-chart", new Dictionary<string, string> {
@@ -55,11 +64,16 @@ internal static partial class VisualSpecialtyCompiler {
                 + (layout.Total > 0 ? stage.ValueFraction.ToString("0.#%", CultureInfo.InvariantCulture) + " of total" : "no positive total");
             using (Point(chart, builder, index, "pyramid-stage", stage.Bounds, summary, metadata)) {
                 if (stage.HasGeometry) {
-                    builder.Path(stage.Segment, color, role: "pyramid-segment", close: true,
-                        paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
-                    Pattern(chart, builder, index, stage.Segment, color);
+                    if (options.PartitionOutline != null || index < series.PointStrokeColors.Count && series.PointStrokeColors[index].HasValue)
+                        StagePartition(chart, builder, stage.Segment, index, color, "pyramid-segment", options.PartitionOutline, options.PartitionOutlineDashOffset);
+                    else {
+                        builder.Path(stage.Segment, color, role: "pyramid-segment", close: true,
+                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                        Pattern(chart, builder, index, stage.Segment, color);
+                    }
                 }
-                if (show) PyramidLabel(chart, context, builder, stage, layout.LabelSide, placement, color, colors, captions!);
+                if (separate != null) separate.Draw(chart, builder, index, "pyramid", colors);
+                else if (show) PyramidLabel(chart, context, builder, stage, layout.LabelSide, placement, color, colors, captions!);
             }
         }
         if (collapsed) builder.AddDiagnostic(new VisualDiagnostic("pyramid.precision", "A positive pyramid partition is below floating-point coordinate precision; its complete source value remains represented without an invented minimum size."));

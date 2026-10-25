@@ -11,6 +11,10 @@ public sealed class ChartSunburstOptions {
     private double? _minimumLabelFontSize;
     private double _sectorGap;
 
+    /// <summary>Gets or sets whether complete primary captions may follow a measured circular lane. Default: false.</summary>
+    /// <remarks>Applies to noncentral rings without secondary captions. Supported single-line, nonjoining text retains its captured glyph clusters. Unsupported or unfittable text uses the ordinary measured placement with a diagnostic; no source caption or numeric fact is changed.</remarks>
+    public bool CurvedLabels { get; set; }
+
     /// <summary>Gets or sets the optional finite positive primary caption font-size floor in logical pixels. Default: null, retaining fixed-size captions.</summary>
     /// <remarks>Only a complete primary caption that cannot fit at its resolved size may shrink. A larger minimum never enlarges it. Secondary typography inherits the final size before its explicit overrides; complete source text and numeric facts remain unchanged.</remarks>
     public double? MinimumLabelFontSize {

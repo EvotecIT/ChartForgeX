@@ -25,7 +25,7 @@ internal static partial class VisualCartesianCompiler {
         var series = chart.Series[index]; var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
         var labelOptions = chart.Options.BoxPlot.Clone();
         var statisticLabels = labelOptions.LabelContent == ChartBoxPlotLabelContent.Statistics;
-        var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.BoxPlot).ToArray();
+        var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.BoxPlot && (!chart.Series[i].IsVisibilityPreparation || chart.Series[i].HasSourceData)).ToArray();
         var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth
             : Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth));
         var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
@@ -99,7 +99,7 @@ internal static partial class VisualCartesianCompiler {
         };
         if (item < series.BoxPlotDistributions.Count) {
             AddBoxPlotDistributionMetadata(chart, metadata, series.BoxPlotDistributions[item]);
-            if (series.BoxPlotGroupIds.TryGetValue(item, out var id)) metadata["data-cfx-group-id"] = id.Value;
+            if (series.BoxPlotGroupIds.TryGetValue(series.IsVisibilityPreparation ? series.BoxPlotDistributions[item].Index : item, out var id)) metadata["data-cfx-group-id"] = id.Value;
         }
         return metadata;
     }
@@ -110,8 +110,15 @@ internal static partial class VisualCartesianCompiler {
         for (var item = 0; item < series.AuthoredObservationCount; item++) {
             var category = categories[series.RenderPoints[item * 5].X]; var pattern = ObservationPattern(series, item);
             var color = PointColor(series, 0, item, colors); var paint = VisualChartPaint.Series(series, color, item);
+            var metadata = BoxPlotMetadata(chart, series, item, category);
+            if (series.IsVisibilityPreparation) {
+                if (series.BoxPlotQuartileEstimator.HasValue) {
+                    var original = series.BoxPlotDistributions[item].Index;
+                    if (series.BoxPlotGroupIds.TryGetValue(original, out var id)) metadata["data-cfx-group-id"] = id.Value;
+                } else foreach (var pair in VisibilityLegendObservationFacts(series, item)) metadata[pair.Key] = pair.Value;
+            }
             entries.Add(new VisualLegendEntry(category, color, PointId(0, item), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
-                marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: BoxPlotMetadata(chart, series, item, category)));
+                marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: metadata));
         }
         return entries;
     }

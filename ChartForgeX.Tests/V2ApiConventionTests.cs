@@ -17,7 +17,7 @@ public sealed class V2ApiConventionTests {
     private static readonly Type[] ImmutableContracts = {
         typeof(VisualSize), typeof(VisualLayoutOptions), typeof(VisualFrame), typeof(VisualRenderContext),
         typeof(VisualRenderOptions), typeof(PreparedVisual), typeof(VisualDiagnostic), typeof(VisualSemanticRegion),
-        typeof(VisualTheme), typeof(VisualThemeColors), typeof(VisualTypography)
+        typeof(VisualTheme), typeof(VisualThemeColors), typeof(VisualTypography), typeof(ChartChordOrdering), typeof(ChartFunnelConnectorStyle), typeof(ChartDifferenceAlignment)
     };
 
     [Fact]

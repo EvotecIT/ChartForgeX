@@ -37,12 +37,25 @@ public sealed class PreparedTopology {
         _requestedWidth = visual.Size.Width; _requestedHeight = visual.Size.Height;
     }
 
+    private PreparedTopology(PreparedTopology source, PreparedVisual visual) {
+        _chart = source._chart; _options = source._options; _requestedWidth = source._requestedWidth;
+        _requestedHeight = source._requestedHeight; _visual = visual; _context = source._context;
+        _rasterOptions = source._rasterOptions; _title = source._title; _subtitle = source._subtitle;
+        _legend = source._legend; _geometry = source._geometry; _diagnostics = source._diagnostics;
+    }
+
+    internal PreparedTopology ForInteractivePngExport() => new PreparedTopology(this, _visual.ForInteractivePngExport());
+
     /// <summary>Gets the prepared geometry width in pixels, before optional output fitting.</summary>
     public double Width => _visual.Size.Width;
     /// <summary>Gets the prepared geometry height in pixels, before optional output fitting.</summary>
     public double Height => _visual.Size.Height;
     /// <summary>Gets the number of nodes retained by the selected view.</summary>
     public int NodeCount => _chart.Nodes.Count;
+    /// <summary>Gets the immutable organization request, or null for ordinary preparation.</summary>
+    public TopologyHierarchyView? HierarchyView => _visual.TopologyHierarchyView;
+    /// <summary>Gets the complete captured source count for an organization view, otherwise the retained node count.</summary>
+    public int SourceNodeCount => _visual.TopologyHierarchyPreparation?.SourceNodeCount ?? NodeCount;
     /// <summary>Gets the number of retained relationships.</summary>
     public int EdgeCount => _chart.Edges.Count;
     /// <summary>Gets the source title without requiring interchange serialization.</summary>
@@ -54,7 +67,7 @@ public sealed class PreparedTopology {
     internal PreparedTopology WithOutputSize(double width, double height) {
         if (width == _requestedWidth && height == _requestedHeight) return this;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), _context.Layout.PaddingEdges),
-            _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
+            _context.Theme, _context.ThemeMode, _context.Frame, _context.Font).WithNativeTextCapture(_context.NativeTextCapture);
         var source = TopologyLayoutEngine.Clone(_chart);
         source.Title = _title; source.Subtitle = _subtitle;
         source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
@@ -64,7 +77,7 @@ public sealed class PreparedTopology {
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
     public string ToSvg() => _visual.ToSvg();
-    internal string ToSvg(VisualAccessibility accessibility) => _visual.ToSvg(accessibility);
+    internal string ToSvg(VisualAccessibility accessibility, int? maximumCharacters = null) => _visual.ToSvg(accessibility, maximumCharacters: maximumCharacters);
 
     /// <summary>Renders the same prepared geometry through the dependency-free raster renderer.</summary>
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);

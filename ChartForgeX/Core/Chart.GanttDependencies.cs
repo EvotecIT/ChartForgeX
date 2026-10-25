@@ -62,7 +62,7 @@ public sealed partial class Chart {
     }
 
     private void RequireGanttDependencyRows() {
-        foreach (var series in Series) if (series.Kind != ChartSeriesKind.Gantt)
-            throw new InvalidOperationException("Gantt dependency links require a chart containing only Gantt tasks.");
+        foreach (var series in Series) if (!ChartSeriesKindTraits.IsSchedule(series.Kind))
+            throw new InvalidOperationException("Gantt dependency links require schedule rows; both endpoints must remain Gantt tasks.");
     }
 }

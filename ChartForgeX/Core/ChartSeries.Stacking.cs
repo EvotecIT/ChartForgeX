@@ -5,6 +5,23 @@ namespace ChartForgeX.Core;
 public sealed partial class ChartSeries {
     private string? _stackGroup;
     private double? _normalizedTo;
+    private ChartStackedAreaMissingDataPolicy _stackedAreaMissingData;
+
+    /// <summary>Gets or sets missing-X geometry for a stacked-area group. The default retains independent authored paths.</summary>
+    /// <remarks>Every member of a group and value axis must agree. Gap/Zero require unique increasing X per series;
+    /// explicit breaks cut the complete aligned group. Alignment never interpolates or creates source observations.</remarks>
+    public ChartStackedAreaMissingDataPolicy StackedAreaMissingData {
+        get => _stackedAreaMissingData;
+        set {
+            if (!Enum.IsDefined(typeof(ChartStackedAreaMissingDataPolicy), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            if (Kind != ChartSeriesKind.StackedArea && value != ChartStackedAreaMissingDataPolicy.Independent)
+                throw new InvalidOperationException("Stacked-area missing data policies require StackedArea.");
+            _stackedAreaMissingData = value;
+        }
+    }
+
+    /// <summary>Chooses independent, group-wide gaps or zero-contribution alignment at the group's observed X union.</summary>
+    public ChartSeries WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy policy) { StackedAreaMissingData = policy; return this; }
 
     /// <summary>
     /// Gets or sets the ordinal key of an independent Cartesian/radial bar, radial column, or stacked-area stack.

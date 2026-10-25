@@ -20,10 +20,11 @@ internal static partial class TopologyLayoutEngine {
             var primary = EdgeLabel(edge, labelOptions.EdgeLabelMetricKey, edge.Label);
             var secondary = EdgeLabel(edge, labelOptions.EdgeSecondaryLabelMetricKey, edge.SecondaryLabel);
             var tertiary = EdgeLabel(edge, labelOptions.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel);
-            var lines = new[] { primary, secondary, tertiary }.Count(text => !string.IsNullOrWhiteSpace(text));
+            var lines = EdgeLabelRows(primary, secondary, tertiary, labelOptions);
             if (lines == 0) continue;
-            var extent = horizontal ? EdgeLabelTextWidth(primary, secondary, tertiary, chart.TextMeasurement, labelOptions.ResolvedEdgeLabelScale)
-                : EdgeLabelHeight(lines, labelOptions);
+            var width = EdgeLabelTextWidth(primary, secondary, tertiary, chart.TextMeasurement, labelOptions.ResolvedEdgeLabelScale, labelOptions.AllowMultilineNodeLabels);
+            var size = InlineEdgeLabelExtent(chart, edge, primary, secondary, tertiary, labelOptions, width, EdgeLabelHeight(lines, labelOptions));
+            var extent = horizontal ? size.Width : size.Height;
             gap = Math.Max(gap, extent + EdgeEndpointGap * 2 + 16);
         }
         return gap;
@@ -57,31 +58,32 @@ internal static partial class TopologyLayoutEngine {
             // Preserve global rank slots, including wide ungrouped nodes between this group's ranks.
             // Compact only across ranks so a shell can never erase another node's flow-axis barrier.
             var ranks = nodes.GroupBy(GetLayer).OrderBy(g => g.Key).ToList();
-            var crossSize = ranks.Max(g => g.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, g.Count() - 1) * nodeSpacing);
+            var crossSize = ranks.Max(g => g.Sum(n => horizontal ? LayeredNodeHeight(chart, n) : LayeredNodeWidth(chart, n)) + Math.Max(0, g.Count() - 1) * nodeSpacing);
             var cross = horizontal ? nodes.Min(n => n.Y) : nodes.Min(n => n.X);
             foreach (var rank in ranks) {
                 var ordered = rank.OrderBy(n => horizontal ? n.Y : n.X).ToArray();
-                var length = ordered.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, ordered.Length - 1) * nodeSpacing;
+                var length = ordered.Sum(n => horizontal ? LayeredNodeHeight(chart, n) : LayeredNodeWidth(chart, n)) + Math.Max(0, ordered.Length - 1) * nodeSpacing;
                 var preferred = cross + (crossSize - length) / 2;
                 var cursor = ReserveUngroupedRankPeers(rank.Key, preferred, length);
                 var main = rankPositions.TryGetValue(rank.Key, out var automaticRankOrigin)
                     ? automaticRankOrigin : rank.Min(node => horizontal ? node.X : node.Y);
                 foreach (var node in ordered) {
-                    if (horizontal) { node.X = main; node.Y = cursor; } else { node.X = cursor; node.Y = main; }
-                    cursor += (horizontal ? node.Height : node.Width) + nodeSpacing;
+                    if (horizontal) { node.X = main; node.Y = cursor; } else { node.X = cursor + (LayeredNodeWidth(chart, node) - node.Width) / 2; node.Y = main; }
+                    cursor += (horizontal ? LayeredNodeHeight(chart, node) : LayeredNodeWidth(chart, node)) + nodeSpacing;
                 }
             }
-            group.X = nodes.Min(n => n.X) - 24;
-            group.Width = Math.Max(190, nodes.Max(n => n.X + n.Width) - group.X + 24);
+            group.X = nodes.Min(n => n.X + (n.Width - LayeredNodeWidth(chart, n)) / 2) - 24;
+            group.Width = Math.Max(190, nodes.Max(n => n.X + (n.Width + LayeredNodeWidth(chart, n)) / 2) - group.X + 24);
             group.Y = nodes.Min(n => n.Y) - 24;
-            group.Height = Math.Max(80, nodes.Max(n => n.Y + n.Height) - group.Y + 24);
+            group.Height = Math.Max(80, nodes.Max(n => n.Y + LayeredNodeHeight(chart, n)) - group.Y + 24);
             var header = options == null || TopologyGroupHeader.IsDrawn(options)
                 ? TopologyGroupHeader.ReservedBounds(chart, group, options ?? new TopologyRenderOptions()).Height + 12 : 0;
             group.Y -= header; group.Height += header;
 
             double ReserveUngroupedRankPeers(int rankIndex, double preferred, double groupLength) {
                 var peers = chart.Nodes.Where(node => node.GroupId == null && GetLayer(node) == rankIndex)
-                    .Select(node => (Start: horizontal ? node.Y : node.X, Length: horizontal ? node.Height : node.Width))
+                    .Select(node => (Start: horizontal ? node.Y : node.X + (node.Width - LayeredNodeWidth(chart, node)) / 2,
+                        Length: horizontal ? LayeredNodeHeight(chart, node) : LayeredNodeWidth(chart, node)))
                     .ToArray();
                 if (peers.Length == 0) return preferred;
                 bool IsFree(double start) => peers.All(peer => start + groupLength + nodeSpacing <= peer.Start

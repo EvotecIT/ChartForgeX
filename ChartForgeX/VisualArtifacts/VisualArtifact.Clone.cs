@@ -18,7 +18,8 @@ public sealed partial class VisualArtifact {
             ExportPolicy = ExportPolicy, HtmlSizing = HtmlSizing, ExportFormats = ExportFormats, NaturalSize = NaturalSize, PreserveNaturalSize = PreserveNaturalSize,
             HasModelAccessibilitySnapshot = HasModelAccessibilitySnapshot,
             TopologyNaturalSizeSnapshot = TopologyNaturalSizeSnapshot,
-            PreparedInterchangeSnapshot = PreparedInterchangeSnapshot
+            PreparedInterchangeSnapshot = PreparedInterchangeSnapshot,
+            CapturedLayer = CapturedLayer
         };
         CopyAccessibility(Accessibility, copy.Accessibility);
         CopyAccessibility(ModelAccessibilitySnapshot, copy.ModelAccessibilitySnapshot);

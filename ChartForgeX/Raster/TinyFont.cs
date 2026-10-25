@@ -1,6 +1,6 @@
 namespace ChartForgeX.Raster;
 
-internal static class TinyFont {
+internal static partial class TinyFont {
     public const int Width = 5;
     public const int Height = 7;
     public const int Advance = 6;

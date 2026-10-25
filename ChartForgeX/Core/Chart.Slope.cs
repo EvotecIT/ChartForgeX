@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
@@ -34,6 +35,22 @@ public sealed partial class Chart {
         if (endLabel == null) throw new ArgumentNullException(nameof(endLabel));
         EnsureSlopeAxisLabels(startLabel, endLabel);
         return AddSlopeCore(name, start, end, color);
+    }
+
+    /// <summary>Adds an ordered slope sequence whose X coordinates identify stages and Y coordinates carry values.</summary>
+    /// <remarks>The input is captured before attaching the series. Empty sequences retain a no-data series; one point is rejected.
+    /// Two or more points retain authored order and explicit segment breaks. Configure category labels explicitly for this overload.</remarks>
+    /// <param name="name">The series name.</param>
+    /// <param name="points">The finite stage observations, including any explicit breaks.</param>
+    /// <param name="color">An optional series color.</param>
+    /// <returns>The current chart.</returns>
+    public Chart AddSlope(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
+        EnsureCanAddSeries();
+        var series = new ChartSeries(name, ChartSeriesKind.Slope, points);
+        if (series.Points.Count == 1) throw new ArgumentException("A slope sequence must be empty or contain at least two stage observations.", nameof(points));
+        series.Color = color;
+        AppendSeries(series);
+        return this;
     }
 
     private Chart AddSlopeCore(string name, double start, double end, ChartColor? color) {

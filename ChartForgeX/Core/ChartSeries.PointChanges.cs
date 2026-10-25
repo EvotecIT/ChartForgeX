@@ -10,7 +10,7 @@ public sealed partial class ChartSeries {
     /// <summary>Applies a bounded, keyed numeric transaction while retaining surviving observations' identities and presentation.</summary>
     /// <remarks>
     /// Supported by the line, step-line, area, step-area, stacked-area, scatter, bar, horizontal-bar, radial-bar,
-    /// radial-column and lollipop families. Derived and typed series use their own source APIs.
+    /// radial-column, lollipop and ordered Funnel stage families. Derived and typed series use their own source APIs.
     /// Every existing observation must have an explicit ID. Each batch may name an ID once; append requires a new ID,
     /// and replace/remove require an existing ID. Enumeration, key, capacity and cancellation failures leave installed data unchanged.
     /// The optional rolling limit keeps the last observations in source order, rather than sorting by X.
@@ -28,8 +28,8 @@ public sealed partial class ChartSeries {
         if (changes == null) throw new ArgumentNullException(nameof(changes));
         ValidateObservationChangeLimits(maximumObservations, maximumChanges);
         RequireMutableNumericObservations();
-        if (!ChartSeriesKindTraits.SupportsPointSeriesMapping(Kind))
-            throw new NotSupportedException("Keyed point changes require a point-mapped numeric series family.");
+        if (!ChartSeriesKindTraits.SupportsPointSeriesMapping(Kind) && Kind != ChartSeriesKind.Funnel)
+            throw new NotSupportedException("Keyed point changes require a point-mapped numeric series or ordered Funnel stages.");
         var retained = PlanObservationChanges(_points, changes, point => point,
             maximumObservations, maximumChanges, cancellationToken);
         var points = retained.Select(entry => entry.Value).ToArray();

@@ -69,7 +69,9 @@ public enum TopologyGroupLayoutPolicy {
     /// <summary>Place group nodes in a compact staggered mini-mesh, useful for dense replication or connectivity clusters.</summary>
     MiniMesh,
     /// <summary>Render group nodes as compact dots in a deterministic grid.</summary>
-    CollapsedDots
+    CollapsedDots,
+    /// <summary>Place source-ordered cards in one measured vertical stack, retaining empty group shells.</summary>
+    VerticalStack
 }
 
 /// <summary>

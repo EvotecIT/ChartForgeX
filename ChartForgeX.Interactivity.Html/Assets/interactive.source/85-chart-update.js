@@ -3,19 +3,19 @@
     let section = value;
     if (typeof value === 'string') {
       const template = document.createElement('template'); template.innerHTML = value.trim();
-      if (template.content.children.length !== 1) throw new TypeError('Expected one generated chart section without assets.');
+      if (template.content.children.length !== 1) throw new TypeError('Section: one generated chart; no assets.');
       section = template.content.firstElementChild;
     }
     if (!(section instanceof Element) || !section.matches('section.cfx-interactive-chart'))
-      throw new TypeError('Expected a generated interactive chart section.');
-    if (fresh && section.dataset.cfxRuntimeBound === 'true') throw new TypeError('Update requires a fresh generated section.');
+      throw new TypeError('Section: generated interactive chart required.');
+    if (fresh && section.dataset.cfxRuntimeBound === 'true') throw new TypeError('Update: fresh generated section required.');
     if (section.querySelector('script') || section.querySelectorAll('.cfx-stage').length !== 1
       || section.querySelectorAll('.cfx-stage svg').length !== 1 || section.querySelectorAll('.cfx-tooltip').length !== 1)
-      throw new TypeError('The generated chart section must contain its scene and readout, without scripts.');
+      throw new TypeError('Section: scene/readout; no scripts.');
     const svg = section.querySelector('.cfx-stage svg');
     const box = svg.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number);
     let metadata;
-    try { metadata = JSON.parse(section.dataset.cfxPreparedChart); } catch { throw new TypeError('The chart section requires prepared metadata.'); }
+    try { metadata = JSON.parse(section.dataset.cfxPreparedChart); } catch { throw new TypeError('Section: prepared metadata required.'); }
     if (!section.dataset.cfxChartId || svg.namespaceURI !== 'http://www.w3.org/2000/svg' || !box || box.length !== 4 || !box.every(Number.isFinite) || box[2] <= 0 || box[3] <= 0
       || !metadata || !Array.isArray(metadata.series) || !Array.isArray(metadata.regions) || !Array.isArray(metadata.xLabels)
       || metadata.series.some(item => !item || typeof item.name !== 'string' || typeof item.key !== 'string' || !item.key
@@ -29,6 +29,7 @@
       || metadata.valueDomain !== undefined && !['fullData', 'visibleCategories'].includes(metadata.valueDomain)
       || metadata.orientation !== undefined && metadata.orientation !== 'horizontal'
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
+      || metadata.visibility !== undefined && !validNativeVisibilityMetadata(metadata)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
         || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'
@@ -37,11 +38,13 @@
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
         || item.fillInteriors !== undefined && (!Array.isArray(item.fillInteriors)
           || item.fillInteriors.some(box => !Array.isArray(box) || box.length !== 3 || !box.every(Number.isFinite)))))
-      throw new TypeError('The chart section has invalid prepared metadata or scene bounds.');
+      throw new TypeError('Section: invalid metadata/scene bounds.');
     if (Array.from(svg.querySelectorAll('[data-cfx-series]')).some(node => {
       const index = Number(node.dataset.cfxSeries);
       return !Number.isInteger(index) || index < 0 || index >= metadata.series.length;
-    })) throw new TypeError('The chart scene does not match its prepared series metadata.');
+    })) throw new TypeError('Section: prepared series/scene mismatch.');
+    validateNativeHierarchyVisibilitySection(section, metadata);
+    validateNativeValueSourceSection(section, metadata);
     annotationCatalog(svg, metadata);
     return section;
   };
@@ -80,7 +83,7 @@
     };
   };
   const installChartSection = (root, next) => {
-    // Retain host attrs/CSS/accent.
+
     for (const attribute of Array.from(root.attributes)) if (attribute.name.startsWith('data-cfx-')) root.removeAttribute(attribute.name);
     for (const property of Array.from(root.style)) if (property.startsWith('--cfx-') && property !== '--cfx-host-accent') root.style.removeProperty(property);
     for (const attribute of Array.from(next.attributes)) {
@@ -92,7 +95,7 @@
     root.replaceChildren(...Array.from(next.childNodes).map(node => node.cloneNode(true)));
   };
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
-    // Persistent IDs; local ordinals.
+
     applySelectionSetByTargets(root, state.selected, true);
     root._cfxComparePage = state.comparePage;
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
@@ -105,6 +108,6 @@
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     restoreLegendOverflow(root, state.legendOverflow);
-    // Focus cannot revive pins/readouts.
+
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };

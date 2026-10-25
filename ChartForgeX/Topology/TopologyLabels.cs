@@ -11,6 +11,7 @@ public sealed class TopologyLabels {
     private const string DefaultUntitled = "ChartForgeX topology";
     private string _untitledTopology = DefaultUntitled;
     private string _untitledReport = "Topology report";
+    private string _hiddenDescendants = "Hidden";
 
     /// <summary>
     /// Gets or sets the accessible name of a diagram without a title (the SVG <c>title</c> element and the HTML page
@@ -41,7 +42,14 @@ public sealed class TopologyLabels {
         set => _untitledReport = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Label text must not be empty.", nameof(value)) : value;
     }
 
-    internal TopologyLabels Clone() => new() { _untitledTopology = _untitledTopology, _untitledReport = _untitledReport, AccessibleTextFormatter = AccessibleTextFormatter };
+    /// <summary>Gets or sets the caption for a derived collapsed-descendant count in a hierarchy card.</summary>
+    public string HiddenDescendants {
+        get => _hiddenDescendants;
+        set => _hiddenDescendants = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Label text must not be empty.", nameof(value)) : value;
+    }
+
+    internal TopologyLabels Clone() => new() { _untitledTopology = _untitledTopology, _untitledReport = _untitledReport,
+        _hiddenDescendants = _hiddenDescendants, AccessibleTextFormatter = AccessibleTextFormatter };
 
     internal string Describe(TopologyChart chart) => Describe(chart.Title, chart.Groups.Count, chart.Nodes.Count, chart.Edges.Count);
 

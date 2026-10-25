@@ -1,0 +1,21 @@
+architecture-beta
+align row client api queue
+group platform(cloud)[Platform]
+group app(server)[Applications] in platform
+group data(database)[Data] in platform
+group partner(cloud)[Partner]
+service queue(database)[Queue] in data
+service client(server)[Client] in app
+service api(server)[API] in app
+service worker(server)[Worker] in app
+service audit(database)[Audit] in data
+service remote(cloud)[Remote] in partner
+junction bus in data
+client:R --> L:api
+api:R --> L:queue
+queue:B --> T:bus
+bus{group}:R --> L:remote
+align column api worker
+align column queue audit bus
+align row worker audit remote
+align row client api queue

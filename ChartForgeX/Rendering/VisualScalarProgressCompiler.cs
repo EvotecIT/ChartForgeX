@@ -29,6 +29,8 @@ internal static partial class VisualScalarProgressCompiler {
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind) || kind != ChartSeriesKind.Bullet && chart.Series.Count != 1)
             throw new InvalidOperationException("Scalar progress charts require one family; only bullet charts support multiple series.");
+        if (kind == ChartSeriesKind.Bullet && !chart.Options.Bullet.IndependentAxes && chart.Series.Any(series => series.HasBulletAxis))
+            throw new InvalidOperationException("A local bullet axis requires IndependentAxes=true.");
         if (chart.Series.All(series => !series.HasSourceData)) { builder.AddDiagnostic(new VisualDiagnostic("progress.no-data", "Scalar progress charts need a measured value.")); return; }
         if (chart.Series.SelectMany(series => series.RenderPoints).Any(point => !Finite(point.X) || !Finite(point.Y)))
             throw new InvalidOperationException("Scalar progress values must be finite.");
@@ -41,53 +43,17 @@ internal static partial class VisualScalarProgressCompiler {
         }
     }
 
-    private static void Circle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var series = chart.Series[0];
-        Range(series, out var min, out var max);
-        var raw = series.RenderPoints[0].Y; var ratio = VisualRadialPrimitives.Clamp((VisualRadialPrimitives.Clamp(raw, min, max) - min) / (max - min));
-        var status = ratio < .6 ? "negative" : ratio < .8 ? "warning" : "positive";
-        var state = series.StateRole == ChartSeriesState.None ? RatioState(ratio) : series.StateRole;
-        var color = CircleColor(series, colors);
-        var value = Value(chart, series, 0, raw);
-        var statusHeight = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowCircleStatusLabel ? Math.Min(plot.Height * .2, context.Theme.Typography.DataLabelSize * 1.5 + context.Theme.Spacing) : 0;
-        var radius = Math.Max(0, Math.Min(plot.Width / 2 - context.Theme.Spacing, (plot.Height - statusHeight) / 2 - context.Theme.Spacing));
-        var requested = Math.Min(plot.Width, plot.Height) * .28 * chart.Options.CircleRadiusScale;
-        var halfStrokeFactor = .08 * chart.Options.CircleStrokeScale;
-        radius = Math.Min(requested, radius / (1 + halfStrokeFactor));
-        if (radius <= 0) { builder.AddDiagnostic(new VisualDiagnostic("circle.insufficient-space", "No radius remains for the circle chart.")); return; }
-        var stroke = radius * .16 * chart.Options.CircleStrokeScale;
-        var cx = plot.Left + plot.Width / 2; var cy = plot.Top + (plot.Height - statusHeight) / 2;
-        builder.AddRegion(new VisualSemanticRegion(Id(0), "circle", new ChartRect(cx - radius - stroke / 2, cy - radius - stroke / 2, radius * 2 + stroke, radius * 2 + stroke), series.Name + ": " + value));
-        using (builder.PushGroup(Id(0), "circle-chart", new Dictionary<string, string> {
-            ["data-cfx-series"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
-            ["data-cfx-value"] = N(raw), ["data-cfx-min"] = N(min), ["data-cfx-max"] = N(max), ["data-cfx-percent"] = N(ratio),
-            ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-full-label"] = value,
-            ["data-cfx-radius-scale"] = N(chart.Options.CircleRadiusScale), ["data-cfx-stroke-scale"] = N(chart.Options.CircleStrokeScale)
-        })) {
-            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2, colors.Border, "circle-track", paint: SvgPaint.Of(colors.Border, SvgColorRole.Surface));
-            var valuePaint = SvgPaint.Of(color, series.Color.HasValue || series.PointColors.Count > 0 && series.PointColors[0].HasValue ? SvgColorRole.Series : SvgColorRole.Status);
-            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2 * ratio, color, "circle-value", round: true, paint: valuePaint);
-            var inner = Math.Max(0, radius - stroke * .82);
-            builder.Ellipse(cx, cy, inner, inner, colors.Surface, colors.Border, role: "circle-center", paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
-            if (series.ResolveDataLabels(chart.Options, defaultVisible: true)) {
-                Text(chart, context, builder, series, 0, value, new ChartRect(cx - inner * .8, cy - inner * .7, inner * 1.6, inner * .7), "circle-label", Id(0) + "-value", colors.Foreground, context.Theme.Typography.TitleSize, 700);
-                Text(chart, context, builder, series, 0, series.Name, new ChartRect(cx - inner * .8, cy, inner * 1.6, inner * .7), "circle-title", Id(0) + "-title", colors.MutedForeground, context.Theme.Typography.DataLabelSize);
-                if (chart.Options.ShowCircleStatusLabel) {
-                    var y = plot.Bottom - statusHeight;
-                    var marker = Math.Min(context.Theme.MarkerRadius, statusHeight / 4);
-                    builder.Ellipse(cx - plot.Width * .15, y + statusHeight / 2, marker, marker, ChartSeriesColours.State(state, colors, color), role: "circle-status-marker", paint: VisualChartPaint.Fill(ChartSeriesColours.State(state, colors, color), SvgColorRole.Status));
-                    Text(chart, context, builder, series, 0, status, new ChartRect(cx - plot.Width * .1, y, plot.Width * .3, statusHeight), "circle-status-label", Id(0) + "-status", colors.MutedForeground, context.Theme.Typography.DataLabelSize);
-                }
-            }
-        }
-    }
+    private static void Circle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) =>
+        builder.CaptureValue(new CirclePlan(chart, context, plot, colors));
 
     private static ChartColor CircleColor(ChartSeries series, VisualThemeColors colors) {
         Range(series, out var min, out var max);
         var ratio = (VisualRadialPrimitives.Clamp(series.RenderPoints[0].Y, min, max) - min) / (max - min);
-        var state = series.StateRole == ChartSeriesState.None ? RatioState(ratio) : series.StateRole;
-        return series.PointColors.Count > 0 && series.PointColors[0].HasValue ? series.PointColors[0]!.Value : series.Color ?? ChartSeriesColours.State(state, colors, colors.Accent);
+        return CircleColor(ratio, series.StateRole, series.PointColors.Count > 0 ? series.PointColors[0] : null, series.Color, colors);
     }
+
+    private static ChartColor CircleColor(double ratio, ChartSeriesState stateRole, ChartColor? pointColor, ChartColor? seriesColor, VisualThemeColors colors) =>
+        pointColor ?? seriesColor ?? ChartSeriesColours.State(stateRole == ChartSeriesState.None ? RatioState(ratio) : stateRole, colors, colors.Accent);
 
     private static ChartSeriesState RatioState(double ratio) => ratio < .6 ? ChartSeriesState.Danger : ratio < .8 ? ChartSeriesState.Warning : ChartSeriesState.Success;
     private static void Range(ChartSeries series, out double min, out double max) {

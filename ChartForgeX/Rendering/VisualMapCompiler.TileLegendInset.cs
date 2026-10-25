@@ -12,7 +12,7 @@ internal static partial class VisualMapCompiler {
     internal static TileMapLegendInset? ResolveTileLegendInset(Chart chart, VisualRenderContext context,
         VisualSceneBuilder builder, IReadOnlyList<VisualLegendEntry> entries, ChartColorPresentation presentation) {
         var series = chart.Series[0]; var definition = series.TileMapDefinition;
-        if (series.Kind != ChartSeriesKind.TileMap || definition == null || entries.Count != 1 || !chart.Options.ShowMapLabels
+        if (chart.Series.Count != 1 || series.Kind != ChartSeriesKind.TileMap || definition == null || entries.Count != 1 || !chart.Options.ShowMapLabels
             || !context.Frame.ShowLegend || !presentation.ShowLegend || presentation.HasName
             || chart.Options.MapColorScale != null || chart.Options.MapScaleLegendPosition != ChartMapScaleLegendPosition.Bottom
             || chart.Options.HasExplicitMapScaleLegendPosition

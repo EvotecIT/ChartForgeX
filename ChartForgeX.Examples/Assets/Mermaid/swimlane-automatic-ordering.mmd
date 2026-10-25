@@ -1,0 +1,26 @@
+---
+config:
+  swimlane:
+    automaticLaneOrdering: true
+    optimizeRanksByCrossings: false
+    lineHops: false
+---
+swimlane-beta LR
+subgraph A[Alpha]
+ a[Accept]
+end
+subgraph B[Bravo]
+ b[Build]
+end
+subgraph C[Charlie]
+ c[Check]
+end
+subgraph D[Delta]
+ d[Deliver]
+end
+a --> d
+a --> d
+a --> d
+b --> c
+b --> c
+b --> c

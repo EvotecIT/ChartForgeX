@@ -29,11 +29,22 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static string ExportIdentity(VisualScene scene, string identity, VisualSvgOptions? options) {
         var colorScopes = ColorScopeOptions(scene, options);
-        if (colorScopes == null && (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive && !options.PatternTiles)) return identity;
+        var effectOptions = (scene.HasSurfaceEffects || scene.HasRetainedEffects) && options != null &&
+            (options.EffectProfile != VisualSvgEffectProfile.Baked || options.EffectRasterOptions != null);
+        if (colorScopes == null && (options == null || options.Variables == null &&
+            options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive &&
+            !options.PatternTiles && !effectOptions)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
-            writer.Write(identity); writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
+            writer.Write(identity);
+            if (scene.HasSurfaceEffects || scene.HasRetainedEffects) {
+                writer.Write((int)(options?.EffectProfile ?? VisualSvgEffectProfile.Baked));
+                if (options?.EffectProfile != VisualSvgEffectProfile.NativeFilters && options?.EffectRasterOptions is { } raster) {
+                    writer.Write(raster.Scale); writer.Write(raster.Supersampling);
+                }
+            }
+            writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
             if (options?.Responsive == true) writer.Write("responsive");
             if (options?.PatternTiles == true) writer.Write("pattern-tiles");
             for (var i = 0; i < scene.Nodes.Count; i++) {
@@ -73,7 +84,8 @@ internal static partial class VisualSceneSvgRenderer {
             if (scene.Nodes[i] is VisualSceneGroup group) {
                 stack.Push(current);
                 if (group.ColorScope != null) current = new VisualSvgOptions(colorVariables: group.ColorScope.Variables,
-                    linkTarget: options?.LinkTarget ?? VisualSvgLinkTarget.SameContext);
+                    linkTarget: options?.LinkTarget ?? VisualSvgLinkTarget.SameContext,
+                    effectProfile: options?.EffectProfile ?? VisualSvgEffectProfile.Baked, effectRasterOptions: options?.EffectRasterOptions);
             }
             result[i] = current;
             if (scene.Nodes[i] is VisualSceneEndGroup) current = stack.Pop();

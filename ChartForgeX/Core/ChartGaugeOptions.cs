@@ -10,7 +10,9 @@ public enum ChartGaugeForm {
     /// <summary>A needle over the same track and optional bands.</summary>
     Needle,
     /// <summary>A value track in the configured orientation.</summary>
-    Linear
+    Linear,
+    /// <summary>A measured value arc and a needle on the same radial scale.</summary>
+    ArcWithNeedle = 3
 }
 
 /// <summary>Declares a numeric gauge band and its semantic colour.</summary>
@@ -21,12 +23,17 @@ public sealed class ChartGaugeBand {
     public double Maximum { get; }
     /// <summary>Gets the band's semantic role.</summary>
     public ChartSeriesState State { get; }
+    /// <summary>Gets an optional authored paint color, independent of the semantic state.</summary>
+    public ChartForgeX.Primitives.ChartColor? Color { get; }
+    /// <summary>Gets the band opacity, from zero through one.</summary>
+    public double Opacity { get; }
     /// <summary>Creates a band in the gauge's value units.</summary>
-    public ChartGaugeBand(double minimum, double maximum, ChartSeriesState state) {
+    public ChartGaugeBand(double minimum, double maximum, ChartSeriesState state, ChartForgeX.Primitives.ChartColor? color = null, double opacity = 1) {
         ChartGuards.Finite(minimum, nameof(minimum)); ChartGuards.Finite(maximum, nameof(maximum));
         if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum));
         if (!Enum.IsDefined(typeof(ChartSeriesState), state) || state == ChartSeriesState.None) throw new ArgumentOutOfRangeException(nameof(state));
-        Minimum = minimum; Maximum = maximum; State = state;
+        ChartGuards.UnitInterval(opacity, nameof(opacity));
+        Minimum = minimum; Maximum = maximum; State = state; Color = color; Opacity = opacity;
     }
 }
 
@@ -37,6 +44,7 @@ public sealed class ChartGaugeOptions {
     private double _startAngleDegrees = 150;
     private double _sweepAngleDegrees = 240;
     private int? _tickCount;
+    private double _bandGap;
     private IReadOnlyList<ChartAxisLabel> _tickLabels = Array.Empty<ChartAxisLabel>();
     /// <summary>Gets or sets the gauge form.</summary>
     public ChartGaugeForm Form { get => _form; set { if (!Enum.IsDefined(typeof(ChartGaugeForm), value)) throw new ArgumentOutOfRangeException(nameof(value)); _form = value; } }
@@ -84,6 +92,14 @@ public sealed class ChartGaugeOptions {
             _tickLabels = Array.AsReadOnly(labels);
         }
     }
+    /// <summary>Gets or sets the total empty inset between band segments in logical pixels. Half is removed at each segment end; zero retains contiguous bands.</summary>
+    /// <remarks>Radial gauges convert pixels using their measured band radius. A segment narrower than the requested gap retains its source fact without painted width.</remarks>
+    public double BandGap {
+        get => _bandGap;
+        set { ChartGuards.Finite(value, nameof(value)); if (value < 0) throw new ArgumentOutOfRangeException(nameof(value)); _bandGap = value; }
+    }
+    /// <summary>Gets or sets an optional needle color. Null uses the measured value paint; it does not change the reading or semantic band state.</summary>
+    public ChartForgeX.Primitives.ChartColor? NeedleColor { get; set; }
     /// <summary>Gets or sets the caption beneath the value. Null uses the series name.</summary>
     public string? Caption { get; set; }
     /// <summary>Gets the optional bands. Overlap is rejected when rendering.</summary>

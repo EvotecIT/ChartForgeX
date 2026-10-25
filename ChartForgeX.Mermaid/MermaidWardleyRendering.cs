@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.Core;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Mermaid;
@@ -19,9 +20,17 @@ public static class MermaidWardleyRendering {
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(ResolveWidth(document, options), ResolveHeight(document, options))
-            .WithPadding(options.Padding);
+            .WithPadding(document.Configuration.Wardley?.Padding ?? options.Padding);
 
+        block.ShowGrid = document.Configuration.Wardley?.ShowGrid ?? false;
         block.SetStages(document.Stages);
+        if (document.Stages.Count > 0) {
+            if (document.StageBoundaries.Count == document.Stages.Count) block.WithStageBoundaries(document.StageBoundaries);
+            else {
+                var equal = new double[document.Stages.Count]; for (var index = 0; index < equal.Length; index++) equal[index] = (double)(index + 1) / equal.Length;
+                block.WithStageBoundaries(equal);
+            }
+        }
         foreach (var node in document.Nodes) {
             var mapped = block.AddNode(node.Id, node.Id, node.Visibility, node.Evolution, node.Kind);
             mapped.Inertia = node.Inertia;
@@ -34,13 +43,21 @@ public static class MermaidWardleyRendering {
         foreach (var evolution in document.Evolutions) block.AddEvolution(evolution.NodeId, evolution.TargetEvolution);
         foreach (var note in document.Notes) block.AddNote(note.Text, note.Visibility, note.Evolution);
         foreach (var annotation in document.Annotations) block.AddAnnotation(annotation.Number, annotation.Text, annotation.Visibility, annotation.Evolution);
+        if (document.AnnotationsBox != null) block.WithAnnotationsBox(document.AnnotationsBox.Visibility, document.AnnotationsBox.Evolution);
         foreach (var marker in document.Markers) block.AddMarker(marker.Label, marker.Visibility, marker.Evolution, marker.Kind);
         foreach (var pipeline in document.Pipelines) {
             var mapped = block.AddPipeline(pipeline.ParentId);
-            foreach (var component in pipeline.Components) mapped.AddComponent(component.Label, component.Evolution);
+            // Source grammar defines solid pipeline rails and increasing-evolution internal links.
+            mapped.Outline = new ChartStrokeStyle(dash: Array.Empty<double>()); mapped.ShowEvolutionLinks = true;
+            foreach (var component in pipeline.Components) {
+                var child = mapped.AddComponent(pipeline.ParentId + "_" + component.Label, component.Label, component.Evolution);
+                child.LabelOffsetX = component.LabelOffsetX; child.LabelOffsetY = component.LabelOffsetY;
+            }
         }
 
-        return MermaidPresentation.Apply(block, document, options.Presentation);
+        MermaidPresentation.Apply(block, document, options.Presentation);
+        if (options.Presentation?.Theme == null) block.WithStyle(document.Configuration.Wardley?.Style());
+        return block;
     }
 
     /// <summary>
@@ -57,12 +74,16 @@ public static class MermaidWardleyRendering {
         artifact.Subtitle = block.Subtitle;
         artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
+        var fit = document.Configuration.Wardley?.UseMaxWidth;
+        if (fit.HasValue) artifact.HtmlSizing = fit.Value ? VisualArtifactHtmlSizing.FitToWidth : VisualArtifactHtmlSizing.PreserveSize;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.nodes"] = document.Nodes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.links"] = document.Links.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.evolves"] = document.Evolutions.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.pipelines"] = document.Pipelines.Count.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["mermaid.annotations"] = document.Annotations.Count.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["mermaid.annotation-box"] = document.AnnotationsBox == null ? "false" : "true";
         artifact.Metadata["render.model"] = nameof(WardleyMapBlock);
         artifact.Metadata["render.note"] = "Deterministic Wardley map preview; browser-exact Mermaid styling and all advanced grammar are not runtime dependencies.";
         return MermaidPresentation.Apply(artifact, document);
@@ -80,9 +101,9 @@ public static class MermaidWardleyRendering {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Wardley");
     }
 
-    private static int ResolveWidth(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) => options.Width > 0 ? options.Width : document.CanvasWidth ?? 900;
+    private static int ResolveWidth(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) => options.Width > 0 ? options.Width : document.CanvasWidth ?? document.Configuration.Wardley?.Width ?? 900;
 
-    private static int ResolveHeight(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) => options.Height > 0 ? options.Height : document.CanvasHeight ?? 600;
+    private static int ResolveHeight(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) => options.Height > 0 ? options.Height : document.CanvasHeight ?? document.Configuration.Wardley?.Height ?? 600;
 }
 
 /// <summary>

@@ -1,0 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var source = NativeRetainedMaskExample.PrepareSource({{VARIANT}}, VisualThemeMode.{{MODE}});
+var masked = source.WithMask(NativeRetainedMaskExample.CreateMask(source));
+File.WriteAllText("masked.baked.svg", masked.ToSvg());
+File.WriteAllText("masked.native.svg", masked.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+File.WriteAllBytes("masked.png", masked.ToPng());
+File.WriteAllText("unmasked-source.svg", source.ToSvg());
+File.WriteAllText("unmasked-source-facts.json", source.ToArtifact().ToInterchangeJson());
+var saved = masked.ToArtifact().ToInterchangeJson();
+File.WriteAllText("masked.json", saved);
+var restored = NativeRetainedMaskExample.Restore(saved, {{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("restored.native.svg", restored.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+File.WriteAllBytes("restored.png", restored.ToPng());
+var edited = NativeRetainedMaskExample.Restore(saved, {{VARIANT}}, VisualThemeMode.{{MODE}}, messageText: "Approved");
+File.WriteAllText("edited.native.svg", edited.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+File.WriteAllBytes("edited.png", edited.ToPng());
+
+{{SOURCE}}

@@ -11,6 +11,8 @@ public static partial class V2Examples {
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
                     : variant is "concentric" or "compact-concentric" ? "Service mix across two periods"
+                    : variant is "variable-radius" or "compact-variable-radius" ? "Service shares with authored radii"
+                    : variant is "automatic-rings" or "compact-automatic-rings" ? "Three independent service mixes"
                     : variant is "quadrants" or "compact-quadrants" ? "Effort and impact"
                     : variant is "plot-regions" or "compact-plot-regions" ? "Capacity and delay"
                     : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap ? "Requests by state" : "Processing time and completion"
@@ -27,6 +29,9 @@ public static partial class V2Examples {
                 var compact = IsCompactVariant(variant);
                 var width = compact ? 360 : 800; var height = compact ? 360 : 440;
                 if (kind == ChartSeriesKind.Pyramid && variant == "compact-dense") { width = 390; height = 280; }
+                if (variant is "variable-radius" or "compact-variable-radius" or "automatic-rings" or "compact-automatic-rings") {
+                    width = compact ? 390 : 900; height = variant.EndsWith("automatic-rings", StringComparison.Ordinal) ? 600 : 480;
+                }
                 var rangeAcceptance = kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea or ChartSeriesKind.RangeBar
                     && variant is "singleton" or "compact-singleton" or "dense" or "compact-dense" or "dense-horizontal" or "compact-dense-horizontal" or "sparse-catalog" or "compact-sparse-catalog";
                 var scalarAcceptance = kind is ChartSeriesKind.Bullet or ChartSeriesKind.Gauge
@@ -44,6 +49,8 @@ public static partial class V2Examples {
                     : variant is "step-end" ? "Paired values change at the following observation; missing sections stay open"
                     : "Shading compares Actual above and below Forecast"
                     : variant is "concentric" or "compact-concentric" ? "Independent totals share categories; disjoint bands preserve each series"
+                    : variant is "variable-radius" or "compact-variable-radius" ? "Values determine angles; explicit fractions determine band thickness"
+                    : variant is "automatic-rings" or "compact-automatic-rings" ? "Source order allocates rings; every period keeps its own total"
                     : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"

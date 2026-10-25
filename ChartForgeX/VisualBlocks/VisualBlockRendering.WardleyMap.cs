@@ -18,14 +18,30 @@ internal static partial class VisualBlockRendering {
         if (map.Nodes.Count > MaximumWardleyNodes) throw new InvalidOperationException("Wardley maps must contain no more than " + MaximumWardleyNodes.ToString(CultureInfo.InvariantCulture) + " nodes.");
         if (map.Links.Count > MaximumWardleyLinks) throw new InvalidOperationException("Wardley maps must contain no more than " + MaximumWardleyLinks.ToString(CultureInfo.InvariantCulture) + " links.");
 
+        if (map.StageBoundaries.Count != 0 && map.StageBoundaries.Count != (map.Stages.Count == 0 ? 4 : map.Stages.Count))
+            throw new InvalidOperationException("Wardley stage boundaries must match the current stage count.");
         var ids = new HashSet<string>(StringComparer.Ordinal);
         foreach (var node in map.Nodes) {
             if (node.Id.Trim().Length == 0) throw new InvalidOperationException("Wardley map nodes must define ids.");
             if (node.Label.Trim().Length == 0) throw new InvalidOperationException("Wardley map nodes must define labels.");
             ValidateWardleyCoordinate(node.Visibility, "visibility");
             ValidateWardleyCoordinate(node.Evolution, "evolution");
+            ValidateWardleyOffset(node.LabelOffsetX); ValidateWardleyOffset(node.LabelOffsetY);
+            if (!Enum.IsDefined(typeof(WardleyMapNodeKind), node.Kind)) throw new InvalidOperationException("Unknown Wardley node kind.");
+            if (!string.IsNullOrWhiteSpace(node.Strategy) && node.Strategy != "build" && node.Strategy != "buy" && node.Strategy != "outsource" && node.Strategy != "market")
+                throw new InvalidOperationException("Wardley sourcing strategy must be build, buy, outsource or market.");
             if (!ids.Add(node.Id)) throw new InvalidOperationException("Wardley map node ids must be unique: " + node.Id + ".");
         }
+
+        var parentIds = new HashSet<string>(ids, StringComparer.Ordinal);
+        foreach (var pipeline in map.Pipelines) {
+            if (!parentIds.Contains(pipeline.ParentId)) throw new InvalidOperationException("Wardley map pipelines reference unknown parent node: " + pipeline.ParentId + ".");
+            foreach (var child in pipeline.Components) {
+                if (child.Id != null && !ids.Add(child.Id)) throw new InvalidOperationException("Wardley map endpoint ids must be unique: " + child.Id + ".");
+                ValidateWardleyOffset(child.LabelOffsetX); ValidateWardleyOffset(child.LabelOffsetY);
+            }
+        }
+        if (ids.Count > MaximumWardleyNodes) throw new InvalidOperationException("Wardley maps must contain no more than 256 identified endpoints.");
 
         foreach (var link in map.Links) {
             if (!ids.Contains(link.FromId)) throw new InvalidOperationException("Wardley map links reference unknown source node: " + link.FromId + ".");
@@ -77,6 +93,14 @@ internal static partial class VisualBlockRendering {
             lookup[node.Id] = placement;
         }
 
+        foreach (var pipeline in map.Pipelines) {
+            var parent = lookup[pipeline.ParentId];
+            foreach (var child in pipeline.Components) if (child.Id != null) {
+                // This is the existing declared pipeline child, projected at its parent's visibility.
+                var node = new WardleyMapNode(child.Id, child.Label, parent.Node.Visibility, child.Evolution, WardleyMapNodeKind.PipelineComponent);
+                lookup.Add(child.Id, new WardleyNodePlacement(node, parent.Index, ProjectWardleyX(plot, child.Evolution), parent.Y));
+            }
+        }
         return new WardleyMapLayout(body, plot, nodes, lookup);
     }
 
@@ -94,7 +118,7 @@ internal static partial class VisualBlockRendering {
     }
 
     /// <summary>Complete triangular head of an evolution overlay.</summary>
-    internal static string WardleyEvolutionArrowPath(double x, double y) => "M " + WardleyF(x) + " " + WardleyF(y) + " l -7 -4 v 8 z";
+    internal static string WardleyEvolutionArrowPath(double x, double y, double direction = 1) => "M " + WardleyF(x) + " " + WardleyF(y) + (direction < 0 ? " l 7 -4 v 8 z" : " l -7 -4 v 8 z");
 
     /// <summary>Outlined accelerator/deaccelerator with its common 49-unit footprint.</summary>
     internal static string WardleyMarkerPath(double x, double y, WardleyMapMarkerKind kind) =>
@@ -103,6 +127,10 @@ internal static partial class VisualBlockRendering {
             : "M " + WardleyF(x + 49) + " " + WardleyF(y - 10) + " h -32 v -7 l -17 17 l 17 17 v -7 h 32 z";
 
     private static string WardleyF(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private static void ValidateWardleyOffset(double? value) {
+        if (value.HasValue && !IsFinite(value.Value)) throw new InvalidOperationException("Wardley label offsets must be finite.");
+    }
 
     private static void ValidateWardleyCoordinate(double value, string label) {
         if (!IsFinite(value) || value < 0 || value > 1) throw new InvalidOperationException("Wardley map " + label + " values must be finite numbers from 0 to 1.");

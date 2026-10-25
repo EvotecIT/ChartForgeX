@@ -10,7 +10,7 @@ internal static partial class MermaidAgentflowParser {
         string? parent, bool global, MermaidParseResult<MermaidDocument> result, out MermaidAgentflowNode? node) {
         White(text, ref position); var start = position;
         while (position < text.Length && !char.IsWhiteSpace(text[position]) && "[({@;|".IndexOf(text[position]) < 0
-            && !IsOperator(text, position)) position++;
+            && !(position+2<text.Length&&text.Substring(position,3)==":::")&&!IsOperator(text, position)) position++;
         var id = text.Substring(start, position - start);
         node = null;
         if (id.Length == 0) { Error("Agentflow statements require a node identity."); return false; }
@@ -71,6 +71,11 @@ internal static partial class MermaidAgentflowParser {
                 if (line == lines.Length) { Error("Agentflow metadata must close with '}'."); return false; }
                 value.Append('\n'); current = lines[line++]; position = 0;
             }
+        }
+        if(MermaidStyleParser.InlineClass(text,ref position,out var inline,out var classStart)) {
+            if(inline.Length==0)MermaidParserUtilities.Add(result,new MermaidSourceSpan(span.Line,span.Column+classStart-3,3),
+                MermaidDiagnosticSeverity.Error,"Agentflow inline classes require a class name after ':::'.",MermaidDiagnosticCodes.InvalidStatement);
+            else {MermaidResourceGuard.ReserveElements(1,span);node.Classes.Add(inline);}
         }
         return true;
         void Error(string message) => MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + start, Math.Max(1, span.Length - start)),

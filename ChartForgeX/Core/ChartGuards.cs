@@ -48,9 +48,12 @@ internal static partial class ChartGuards {
         chart.ValidateExplicitGanttDependencies();
         ValidateRenderableChart(chart, preparing);
         ValidateSourceAnnotations(chart);
+        ValidatePolarOrientation(chart);
         ChartTimeSessionValidation.Validate(chart);
-        _ = ChartCategoryGroupPlan.TryCreate(chart);
+        ValidateRadialValueEncoding(chart);
+        ChartCategoryGroupPlan.ValidateChart(chart);
         chart.ValidatePlotRegions();
+        ValidateAxisRuleCrossings(chart);
         if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap && series.Kind != ChartSeriesKind.DottedMap))
             throw new InvalidOperationException("Map color presentation requires numeric region, tile or dotted maps.");
         if (chart.Options.HeatmapColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow
@@ -92,23 +95,28 @@ internal static partial class ChartGuards {
             throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
         if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
-        if ((chart.Options.Sunburst.SectorGap > 0 || chart.Options.Sunburst.MinimumLabelFontSize.HasValue)
+        if ((chart.Options.Sunburst.SectorGap > 0 || chart.Options.Sunburst.MinimumLabelFontSize.HasValue || chart.Options.Sunburst.CurvedLabels)
             && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst sector spacing and caption fitting require a Sunburst chart.");
+        if ((chart.Options.Treemap.MinimumLabelFontSize.HasValue || chart.Options.Treemap.LabelTrimming != ChartForgeX.Typography.TextTrimming.None)
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.Treemap))
+            throw new InvalidOperationException("Treemap caption fitting and trimming require a Treemap chart.");
         if (chart.Options.Sunburst.SecondaryLabelFormatter != null && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst secondary labels require a Sunburst chart.");
         if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
             || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
             || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
             || chart.Options.SecondaryXAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
-            && !ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart))
-            throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
+            && !ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart)
+            && !(chart.Series.Count > 0 && chart.Series.All(series => series.Kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar)))
+            throw new NotSupportedException("Relative axis label orientation requires numeric radial, Radar or Polar charts.");
         if (ChartSeriesKindTraits.IsMixedNumericRadial(chart)) {
             ValidateMixedNumericRadial(chart);
             return;
         }
         if (ChartMapComposition.ValidateMultiple(chart)) return;
         if (ValidateRadialBands(chart, preparing)) return;
+        if (ValidateMixedSchedules(chart, preparing)) return;
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -149,9 +157,6 @@ internal static partial class ChartGuards {
     }
 
     private static void ValidateMixedNumericRadial(Chart chart) {
-        var geometry = chart.Options.RadialGeometry;
-        if (Math.Abs(geometry.EndAngleDegrees - geometry.StartAngleDegrees - 360) > 1e-9)
-            throw new NotSupportedException("Mixed radial columns and radar series require a full-turn radial viewport.");
         var categoryCount = ValidateUniqueRadialCategories(chart);
         if (categoryCount < 3 && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0))
             throw new InvalidOperationException("Radar charts require at least three categories.");
@@ -202,13 +207,15 @@ internal static partial class ChartGuards {
         series.ValidateWaterfall();
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
+        series.ValidatePolarOptions();
         series.ValidateFinancialOptions();
         series.ValidateMapPointSize();
         series.ValidateColorValues(options);
         if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.RenderPoints.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
-            && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea && series.Kind != ChartSeriesKind.DifferenceArea)
-            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, difference-area, and scatter series.");
+            && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea && series.Kind != ChartSeriesKind.DifferenceArea
+            && series.Kind != ChartSeriesKind.Polar && series.Kind != ChartSeriesKind.Slope)
+            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, difference-area, scatter, polar, and slope series.");
         if (series.HistogramBinLayout != null) ValidateHistogramSeries(series);
         // Typed observation projections are derived snapshots; empty data retains the native no-data scene.
         if (preparing && series.RenderPoints.Count == 0) return;
@@ -329,7 +336,7 @@ internal static partial class ChartGuards {
             if (!preparing || chart.Series.Any(series => series.HasSourceData)) ValidateGantt(chart.Series);
         }
         else if (kind == ChartSeriesKind.Pyramid) ChartPyramidWeights.Total(chart.Series[0].RenderPoints);
-        else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
+        else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar && !chart.Series[0].IsTypedProgress || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
     }
 
     private static void ValidateNonNegativeValues(ChartSeries series, ChartSeriesKind kind) {

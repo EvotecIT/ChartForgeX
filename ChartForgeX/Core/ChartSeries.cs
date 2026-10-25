@@ -171,7 +171,7 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Gets or sets the stroke width for line and area series.
+    /// Gets or sets the stroke width for line/area series and explicitly colored Treemap/Sunburst node borders.
     /// </summary>
     public double StrokeWidth {
         get => _strokeWidth;
@@ -471,10 +471,11 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Sets the pie/donut slice offset ratio for one point.
+    /// Sets the pie/donut slice offset ratio for one point. Multiple rings share one fitted frame;
+    /// each exact translated sector may overlap neighbouring rings in source-series paint order.
     /// </summary>
     /// <param name="pointIndex">The zero-based point index.</param>
-    /// <param name="ratio">The offset ratio from zero to 0.35 of the outer radius.</param>
+    /// <param name="ratio">The offset ratio from zero to 0.35 of the observation's resolved outer radius.</param>
     /// <returns>The current series.</returns>
     public ChartSeries WithPointSliceOffset(int pointIndex, double ratio) {
         ValidatePointIndex(pointIndex);

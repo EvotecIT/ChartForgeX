@@ -38,6 +38,7 @@ internal static partial class TopologyRenderPrimitives {
     /// allowed line; other layouts keep one shortened line unless wrapping is switched on.
     /// </summary>
     public static List<string> TileCaptionLines(TopologyNode node, TopologyRenderOptions options) {
+        if (TopologyPreparedNodeBasis.ForPresentation(node) is {} basis) return TileCaptionLines(basis.OriginalNode(node), options);
         var maxWidth = Math.Max(node.Width + 34, 54);
         var limit = NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile);
         var label = node.Label ?? string.Empty;
@@ -120,6 +121,14 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         return best.Length == 0 ? value : best;
+    }
+
+    internal static string NodeDetailText(TopologyNodeDetail detail) => detail.Text ?? detail.Label + " " + detail.Value;
+
+    internal static int NodeDetailRows(TopologyNode node, TopologyRenderOptions options) {
+        var rows = 0;
+        foreach (var detail in node.Details) rows += TopologyTextLayout.AuthoredRowCount(NodeDetailText(detail), options.AllowMultilineNodeLabels);
+        return rows;
     }
 
     public static double NodeDetailStartOffset(TopologyNode node, TopologyRenderOptions options) {

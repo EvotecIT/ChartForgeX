@@ -8,12 +8,17 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void FitNodeLabels(TopologyChart chart) {
-        if (!_options.IncludeNodeLabels || !chart.Nodes.Any(node => node.FitLabelToContent)) return;
-        var size = _context.Theme.Typography.DataLabelSize;
-        var lineHeight = _builder.MeasureText("Ag", size, 600).LineHeight;
+        if ((!_options.IncludeNodeLabels && !chart.Nodes.Any(node => node.TableContent != null)) || !chart.Nodes.Any(node => node.FitLabelToContent)) return;
+        var ordinarySize = _context.Theme.Typography.DataLabelSize;
+        var ordinaryLineHeight = _builder.MeasureText("Ag", ordinarySize, 600).LineHeight;
         foreach (var node in chart.Nodes) {
-            if (!node.ShowLabel) continue;
-            if (node.FitLabelToContent && EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.Card
+            if (!_options.IncludeNodeLabels && node.TableContent == null) continue;
+            using var textPolicy = UseTextPolicy(node.TextStyle);
+            var size = TextPolicySize(ordinarySize);
+            var lineHeight = _textPolicy == null ? ordinaryLineHeight : MeasurePolicyText("Ag", size, 600).LineHeight;
+            if (!node.ShowLabel && node.TableContent == null) continue;
+            if (node.FitLabelToContent && (EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.Card
+                    || node.TableContent != null && EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.CompactCard)
                 && UseEnclosedShapeContent(node, TopologyNodeDisplayMode.Card, _options)) {
                 GrowShapeContent(node);
                 continue;
@@ -23,8 +28,14 @@ internal sealed partial class VisualTopologyCompiler {
             var source = label.Replace("\r\n", "\n").Replace('\r', '\n');
             if (!_options.AllowMultilineNodeLabels) source = source.Replace('\n', ' ');
             var lines = source.Split('\n').Take(Math.Max(1, _options.MaxNodeLabelLines)).ToArray();
-            var width = lines.Max(line => _builder.MeasureText(line, size, 600).Width) + .001;
+            var width = lines.Max(line => MeasurePolicyText(line, size, 600).Width) + .001;
             var height = lines.Length * lineHeight + .001;
+            if (node.LabelContent.IsStructured) {
+                var content = DisplayRows(NodeCaptionContent(node));
+                var layout = ChartForgeX.Typography.TextLayoutEngine.Layout(content, double.MaxValue / 4,
+                    InlineStyle(size, _colors.Foreground), ChartForgeX.Typography.TextWrapMode.NoWrap, Math.Max(1, _options.MaxNodeLabelLines));
+                width = layout.Metrics.Width + .001; height = layout.Metrics.Height + .001;
+            }
             node.Width = Math.Max(node.Width, width + 20);
             node.Height = Math.Max(node.Height, height + 12);
             if (node.Shape == TopologyNodeShape.Diamond) node.Height = Math.Max(node.Height, (height + 8) * 2);
@@ -44,7 +55,7 @@ internal sealed partial class VisualTopologyCompiler {
 
     private bool CanFitNodeLabelToContent(TopologyNode node) => node.FitLabelToContent
         && EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.Card
-        && node.Shape != TopologyNodeShape.Actor && node.Kind == TopologyNodeKind.Generic && string.IsNullOrWhiteSpace(node.IconId)
+        && !TopologyNodeShapeGeometry.IsActor(node) && node.Kind == TopologyNodeKind.Generic && !node.IconShape.HasValue && string.IsNullOrWhiteSpace(node.IconId)
         && string.IsNullOrWhiteSpace(node.Symbol) && ResolveRenderableNodeArtwork(node, _options) == null
         && string.IsNullOrWhiteSpace(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge);
 
@@ -54,7 +65,7 @@ internal sealed partial class VisualTopologyCompiler {
             // Recheck the final font against its output cell, including prepared-layout resizing.
             var bounds = contentBounds(candidate);
             var size = candidate * _scale;
-            var lineHeight = _builder.MeasureText("Ag", size, 600).LineHeight;
+            var lineHeight = MeasurePolicyText("Ag", size, 600).LineHeight;
             var maximum = Math.Min(Math.Max(1, _options.MaxNodeLabelLines), (int)Math.Floor(bounds.Height / lineHeight));
             if (bounds.Width <= 0 || maximum < 1) return false;
             FitTextLines(label, bounds.Width, size, 600, maximum, false, false, out var overflow);

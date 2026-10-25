@@ -6,7 +6,7 @@
       timeSessions: projection.timeSessions, maximumInclusive: true, reversed: false } : null;
   };
   const xNavigationWindow = (root, axis, minimum, maximum, maximumInclusive) => {
-    // Include full canonical calendar edges, uncentered.
+
 
     const inclusive = maximumInclusive ?? (axis.timeSpacing?.kind === 'unit'
       ? !validSourceAxisMaximum({ maximum, maximumInclusive: false }, axis) : chartXProjection(root)?.maximumInclusive !== false);
@@ -51,11 +51,12 @@
     if (!enabled) return;
     const first = projectedAxisRatio(axis, projection.minimum, false), last = projectedAxisRatio(axis, projection.maximum, true, projection.maximumInclusive !== false);
     paintXNavigationRange(root, first, last, { minimum: projection.minimum, maximum: projection.maximum });
-    const pending = chartLifetimes.get(root)?.preparationPending?.channel === 'viewport';
+    const pending = chartLifetimes.get(root)?.preparationPending?.channel === 'viewport' || nativePreparationBackpressureBusy(root);
+    if (nativePreparationBackpressureBusy(root)) panel.querySelectorAll('button,input').forEach(control => { control.disabled = true; });
     panel.setAttribute('aria-busy', String(pending));
     panel.querySelector('[data-cfx-x-status]').textContent = pending
       ? uiText(root, 'XRangeUpdating', 'Updating range…') : '';
-    panel.querySelector('[data-cfx-x-full]').setAttribute('aria-pressed', String(!nativeXWindowChanged(root)));
+    panel.querySelector('[data-cfx-x-full]').setAttribute('aria-pressed', String(!nativeAxisChanged(chartXProjection(root))));
     panel.querySelectorAll('[data-cfx-x-preset]').forEach(button => {
       const maximum = projection.fullMaximum, minimum = Math.max(projection.fullMinimum, maximum - Number(button.dataset.cfxXPreset));
       button.disabled = !(minimum < maximum);

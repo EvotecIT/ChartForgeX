@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -21,6 +22,21 @@ internal static class VisualAxisText {
         if (angle >= 90) angle -= 180;
         if (angle < -90) angle += 180;
         return angle == 0 ? 0 : angle;
+    }
+
+    /// <summary>Uses the local tangent for angular categories and the spoke for numeric radius axes.</summary>
+    internal static double RadialRotation(ChartAxis axis, double spokeRadians, bool angular) =>
+        Rotation(axis, spokeRadians * 180 / Math.PI + (angular ? 90 : 0));
+
+    /// <summary>Shares physical track orientation and authored density with dedicated and numeric radial labels.</summary>
+    internal static void ConfigureRadialLabel(LabelPlacementRequest request, ChartAxis axis, double spokeRadians, bool angular, double spacing) {
+        request.RotationDegrees = RadialRotation(axis, spokeRadians, angular);
+        request.MinimumLabelGap = axis.LabelDensity switch {
+            ChartLabelDensity.Dense or ChartLabelDensity.All => 0,
+            ChartLabelDensity.Relaxed => spacing * 2,
+            _ => Math.Max(1, spacing / 3)
+        };
+        request.AllowLabelOverlap = axis.LabelDensity == ChartLabelDensity.All;
     }
 
     /// <summary>Returns the axis-aligned footprint of the text rotated about its center.</summary>
@@ -79,14 +95,15 @@ internal static class VisualAxisText {
 
     /// <summary>Fits a title inside its reserved strip while retaining its complete descriptive text.</summary>
     internal static void Title(VisualSceneBuilder builder, string text, ChartRect bounds, TextStyle style, string role,
-        string? id, string diagnosticCode, string diagnosticMessage) {
+        string? id, string diagnosticCode, string diagnosticMessage, List<LabelObstacle>? obstacles = null) {
         builder.AddRegion(new VisualSemanticRegion(id ?? role, role, bounds,
             TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture)));
         var fraction = style.Alignment == TextAlignment.Right ? 1 : style.Alignment == TextAlignment.Center ? .5 : 0;
         var request = new LabelPlacementRequest(text, new ChartPoint(bounds.Left + bounds.Width * fraction, bounds.Top), style,
             new[] { new LabelCandidate(0, 0, fraction, 0) }) { MeasuredSize = builder.MeasureText(text, style) };
-        var label = new LabelPlacementService().Place(new[] { request }, bounds, null, 2, builder.MeasureText)[0];
+        var label = new LabelPlacementService().Place(new[] { request }, bounds, obstacles, 2, builder.MeasureText)[0];
         if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic(diagnosticCode, diagnosticMessage));
         Draw(builder, label, role, id);
+        if (!label.IsDropped) obstacles?.Add(new LabelObstacle(id ?? role, label.Bounds));
     }
 }

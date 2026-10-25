@@ -32,22 +32,7 @@ internal static partial class VisualBlockRendering {
         if (block.Items.Count == 0) throw new InvalidOperationException("Block layouts must contain at least one item.");
         if (block.Items.Count > MaximumBlockLayoutItems) throw new InvalidOperationException("Block layouts must contain no more than " + MaximumBlockLayoutItems.ToString(CultureInfo.InvariantCulture) + " items.");
         if (block.Edges.Count > MaximumBlockLayoutEdges) throw new InvalidOperationException("Block layouts must contain no more than " + MaximumBlockLayoutEdges.ToString(CultureInfo.InvariantCulture) + " edges.");
-        var ids = new HashSet<string>(StringComparer.Ordinal);
-        var visible = 0;
-        foreach (var item in block.Items) {
-            if (item.ColumnSpan > block.Columns) throw new InvalidOperationException("Block layout item spans must not exceed the layout column count.");
-            if (item.IsSpace) continue;
-            if (item.Id.Length == 0) throw new InvalidOperationException("Block layout items must define ids.");
-            if (item.Label.Length == 0) throw new InvalidOperationException("Block layout items must define labels.");
-            if (!ids.Add(item.Id)) throw new InvalidOperationException("Block layout item ids must be unique: " + item.Id + ".");
-            visible++;
-        }
-
-        if (visible == 0) throw new InvalidOperationException("Block layouts must contain at least one visible item.");
-        foreach (var edge in block.Edges) {
-            if (!ids.Contains(edge.SourceId)) throw new InvalidOperationException("Block layout edge source id was not found: " + edge.SourceId + ".");
-            if (!ids.Contains(edge.TargetId)) throw new InvalidOperationException("Block layout edge target id was not found: " + edge.TargetId + ".");
-        }
+        ValidateBlockHierarchy(block);
     }
 
     public static IReadOnlyList<BlockLayoutPlacement> BlockLayoutPlacements(BlockLayoutBlock block) {

@@ -15,6 +15,7 @@ public static partial class MermaidTopologyRendering {
             .Where(group => group.Count() > 1).ToDictionary(group => group.Key, group => group.OrderBy(region => region.Index).ToArray(), StringComparer.Ordinal);
         var regions = new Dictionary<string, string>(StringComparer.Ordinal);
         var usedIds = new HashSet<string>(document.States.Select(state => state.Id), StringComparer.Ordinal);
+        foreach (var note in document.Notes) if (note.Id != null) usedIds.Add(note.Id);
         foreach (var region in document.Regions.Where(region => concurrent.ContainsKey(region.CompositeStateId))) {
             var id = region.Id;
             while (!usedIds.Add(id)) id += "-region";
@@ -52,7 +53,9 @@ public static partial class MermaidTopologyRendering {
         }
         for (var index = 0; index < document.Transitions.Count; index++) {
             var item = document.Transitions[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency,
+            var id = EdgeId(index);
+            while (!usedIds.Add(id)) id += "-edge";
+            chart.AddEdge(id, item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency,
                 TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.MinimumRankSpan = 2;

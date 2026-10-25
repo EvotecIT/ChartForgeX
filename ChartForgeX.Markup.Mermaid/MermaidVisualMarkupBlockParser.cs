@@ -44,7 +44,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     private readonly MermaidTopologyRenderOptions _architectureRenderOptions;
     private readonly MermaidTopologyRenderOptions _c4RenderOptions;
     private readonly MermaidTopologyRenderOptions _mindMapRenderOptions;
-    private readonly MermaidTopologyRenderOptions _treeViewRenderOptions;
+    private readonly MermaidTreeViewRenderOptions _treeViewRenderOptions;
     private readonly MermaidTopologyRenderOptions _eventModelingRenderOptions;
     private readonly MermaidTopologyRenderOptions _kanbanRenderOptions;
 
@@ -94,7 +94,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         _architectureRenderOptions = renderOptions.Architecture == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.Architecture);
         _c4RenderOptions = renderOptions.C4 == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.C4);
         _mindMapRenderOptions = renderOptions.MindMap == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.MindMap);
-        _treeViewRenderOptions = renderOptions.TreeView == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.TreeView);
+        _treeViewRenderOptions = (MermaidTreeViewRenderOptions)(renderOptions.TreeView ?? new MermaidTreeViewRenderOptions()).Clone();
         _eventModelingRenderOptions = renderOptions.EventModeling == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.EventModeling);
         _kanbanRenderOptions = renderOptions.Kanban == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.Kanban);
     }
@@ -150,7 +150,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         MermaidDiagramKind.Architecture => new MermaidRenderOptions { Architecture = BuildTopologyOptions(block, _architectureRenderOptions) },
         MermaidDiagramKind.C4 => new MermaidRenderOptions { C4 = BuildTopologyOptions(block, _c4RenderOptions) },
         MermaidDiagramKind.MindMap => new MermaidRenderOptions { MindMap = BuildTopologyOptions(block, _mindMapRenderOptions) },
-        MermaidDiagramKind.TreeView => new MermaidRenderOptions { TreeView = BuildTopologyOptions(block, _treeViewRenderOptions) },
+        MermaidDiagramKind.TreeView => new MermaidRenderOptions { TreeView = BuildTreeViewOptions(block) },
         MermaidDiagramKind.EventModeling => new MermaidRenderOptions { EventModeling = BuildTopologyOptions(block, _eventModelingRenderOptions) },
         MermaidDiagramKind.Kanban => new MermaidRenderOptions { Kanban = BuildTopologyOptions(block, _kanbanRenderOptions) },
         MermaidDiagramKind.Flowchart => new MermaidRenderOptions { Flowchart = BuildOptions(block) },
@@ -250,6 +250,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (TryReadIntAttribute(block, "width", out var parsedWidth)) options.Width = parsedWidth;
         if (TryReadIntAttribute(block, "height", out var parsedHeight)) options.Height = parsedHeight;
         if (TryReadBooleanAttribute(block, "dataLabels", out var showDataLabels)) options.ShowDataLabels = showDataLabels;
+        if (TryReadBooleanAttribute(block, "legend", out var showLegend)) options.ShowLegend = showLegend;
+        if (TryReadBooleanAttribute(block, "showTitle", out var showTitle)) options.ShowTitle = showTitle;
         return options;
     }
 

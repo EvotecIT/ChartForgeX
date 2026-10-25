@@ -1,7 +1,7 @@
 namespace ChartForgeX.Raster;
 
 /// <summary>Gamma-encoded sRGB premultiplied16 conversions for explicit effects. Color-font LinearRgba remains linear-light and unchanged.</summary>
-internal static class RasterEffectPixels {
+internal static partial class RasterEffectPixels {
     private static readonly byte[] Bayer8 = {
          0,48,12,60, 3,51,15,63, 32,16,44,28,35,19,47,31,
          8,56, 4,52,11,59, 7,55, 40,24,36,20,43,27,39,23,

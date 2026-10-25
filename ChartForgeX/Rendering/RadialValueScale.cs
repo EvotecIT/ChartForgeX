@@ -91,6 +91,14 @@ internal sealed class RadialValueScale {
         return ChartScaleTransform.Normalize(bounded, Minimum, Maximum, _axis);
     }
 
+    /// <summary>Detaches the axis policy before a viewport adjusts the presentation copy.</summary>
+    internal RadialValueScale Detached() => new(_axis.Clone(), Minimum, Maximum, Ticks);
+
+    /// <summary>Projects an exact source-window boundary in the captured full scale, including its endpoint policy.</summary>
+    internal double NormalizeBoundary(double source, bool maximum, bool maximumInclusive = true) => ChartScaleTransform.Normalize(
+        ChartScaleTransform.Bound(source, _axis, maximum, maximumInclusive), ChartScaleTransform.Bound(Minimum, _axis, false),
+        ChartScaleTransform.Bound(Maximum, _axis, true, maximumInclusive: true), _axis.Reversed);
+
     public bool IsMaximum(double value) => ChartTicks.IsNumericTimeFallback(Ticks) ? value == Maximum : Math.Abs(value - Maximum) <= Math.Max(0.000001, Math.Abs(Maximum) * 0.000001);
 
     /// <summary>Returns in-domain labels for equal radial intervals, including logarithmic and reversed axes.</summary>

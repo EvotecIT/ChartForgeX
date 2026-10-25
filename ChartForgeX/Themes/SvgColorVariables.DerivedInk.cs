@@ -29,9 +29,14 @@ public sealed partial class SvgColorVariables {
             .ToDictionary(group => group.Key, group => group.First().Color, StringComparer.Ordinal);
         foreach (Match match in DerivedInkReference.Matches(svg)) {
             var name = match.Groups["name"].Value;
-            if (names.Contains(name) || !TryDerivedFill(name, source, out var fill)) continue;
+            if (names.Contains(name)) continue;
+            ChartColor ink;
+            if (!TryAdaptiveInk(name, source, out ink)) {
+                if (!TryDerivedFill(name, source, out var fill)) continue;
+                ink = ChartColorMath.AccessibleTextOnBackground(fill);
+            }
             names.Add(name);
-            result.Add(new SvgColorVariable(name, ChartColorMath.AccessibleTextOnBackground(fill), SvgColorRole.Text));
+            result.Add(new SvgColorVariable(name, ink, SvgColorRole.Text));
         }
         return result.AsReadOnly();
     }

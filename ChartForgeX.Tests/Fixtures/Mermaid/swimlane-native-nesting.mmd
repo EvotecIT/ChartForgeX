@@ -1,0 +1,22 @@
+swimlane-beta LR
+subgraph Product[Product delivery]
+P[Plan]
+subgraph API[API]
+A[Accept] --> B[Build]
+subgraph Storage[Storage]
+S[Persist]
+end
+B --> S
+end
+subgraph Ops[Operations]
+C[Check] --> D[Deliver]
+end
+end
+subgraph Partner[Partner]
+E[Observe]
+end
+P --> A
+S ---> C
+D --> E
+Z[External]
+Z --> P

@@ -69,6 +69,32 @@ public sealed class ChartPlotRegion {
     /// <summary>Gets whether to paint an interior caption when space permits.</summary>
     public bool ShowLabel { get; }
 
+    /// <summary>Gets an immutable border override, or null for no border. A missing color or width uses the theme axis stroke.</summary>
+    /// <remarks>The border encloses the visible clipped rectangle and paints inward, without expanding the data domain or hit targets.</remarks>
+    public ChartStrokeStyle? Border { get; }
+    /// <summary>Gets the screen-relative caption anchor. Auto retains center-first collision-aware placement.</summary>
+    public ChartPlotRegionLabelPosition LabelPosition { get; }
+
+    /// <summary>Returns a detached definition with the supplied border; null removes the border.</summary>
+    /// <param name="border">Immutable color, opacity, width and dash overrides.</param>
+    /// <returns>A new region preserving every authored bound, fill and caption.</returns>
+    public ChartPlotRegion WithBorder(ChartStrokeStyle? border) => new ChartPlotRegion(this, border, LabelPosition);
+
+    /// <summary>Returns a detached definition with one deliberate caption anchor.</summary>
+    /// <param name="position">The screen-relative anchor inside the clipped region. Explicit anchors shorten or omit rather than relocate.</param>
+    /// <returns>A new region preserving every authored bound, fill and border.</returns>
+    public ChartPlotRegion WithLabelPosition(ChartPlotRegionLabelPosition position) {
+        if (!Enum.IsDefined(typeof(ChartPlotRegionLabelPosition), position)) throw new ArgumentOutOfRangeException(nameof(position));
+        return new ChartPlotRegion(this, Border, position);
+    }
+
+    private ChartPlotRegion(ChartPlotRegion source, ChartStrokeStyle? border, ChartPlotRegionLabelPosition position) {
+        Color = source.Color; PaletteIndex = source.PaletteIndex;
+        XMinimum = source.XMinimum; XMaximum = source.XMaximum; YMinimum = source.YMinimum; YMaximum = source.YMaximum;
+        Label = source.Label; Opacity = source.Opacity; YAxis = source.YAxis; ShowLabel = source.ShowLabel;
+        Border = border; LabelPosition = position;
+    }
+
     private static void ValidateBounds(double? minimum, double? maximum, string minimumName, string maximumName) {
         if (minimum.HasValue) ChartGuards.Finite(minimum.Value, minimumName);
         if (maximum.HasValue) ChartGuards.Finite(maximum.Value, maximumName);

@@ -72,6 +72,26 @@ internal sealed class LabelSpatialIndex {
         }
         return false;
     }
+    /// <summary>Gets mapped enclosing mark bounds without mistaking a line's box or another caption for a solid mark.</summary>
+    internal ChartRect? ContainingMarks(ChartPoint anchor, string? associated) {
+        ChartRect? result = null;
+        foreach (var entry in _large) Include(entry);
+        if (_cells.TryGetValue((Cell(anchor.X), Cell(anchor.Y)), out var entries))
+            foreach (var entry in entries) Include(entry);
+        return result;
+
+        void Include(Entry entry) {
+            if (entry.Id == null || entry.Id == associated || entry.Shape != null
+                || anchor.X <= entry.Bounds.Left || anchor.X >= entry.Bounds.Right
+                || anchor.Y <= entry.Bounds.Top || anchor.Y >= entry.Bounds.Bottom) return;
+            if (!result.HasValue) { result = entry.Bounds; return; }
+            var bounds = result.Value;
+            var left = Math.Min(bounds.Left, entry.Bounds.Left); var top = Math.Min(bounds.Top, entry.Bounds.Top);
+            result = new ChartRect(left, top, Math.Max(bounds.Right, entry.Bounds.Right) - left,
+                Math.Max(bounds.Bottom, entry.Bounds.Bottom) - top);
+        }
+    }
+
     private bool Blocks(Entry entry, ChartRect original, string? associated, double labelGap, bool allowLabelOverlap) {
         if (entry.Id == null && allowLabelOverlap) return false;
         var expanded = Expand(original, entry.Id == null ? Math.Max(labelGap, entry.Gap) : _gap);

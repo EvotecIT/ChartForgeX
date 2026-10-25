@@ -24,11 +24,12 @@ internal static partial class MermaidSequenceParser {
         if (creates) {
             var kind = FirstToken(body);
             if ((!kind.Equals("participant", StringComparison.OrdinalIgnoreCase) && !kind.Equals("actor", StringComparison.OrdinalIgnoreCase))
-                || !TryParseParticipant(document, participants, body, span)) {
+                || !TryParseParticipant(document, participants, body, span, result)) {
                 Invalid(result, span, "Sequence create requires 'participant' or 'actor' and an identifier.");
                 return true;
             }
             id = ReadIdentifier(body.Substring(kind.Length).TrimStart(), out _);
+            if (id.Length == 0) return true; // The declaration owner already reported the missing identifier.
         } else {
             id = ReadIdentifier(body, out var consumed);
             if (id.Length == 0 || consumed != body.Length) {
@@ -129,13 +130,9 @@ internal static partial class MermaidSequenceParser {
     }
 
     private static void ValidateAutonumber(MermaidSequenceDocument document, MermaidParseResult<MermaidDocument> result) {
-        var numbering = document.Autonumber;
-        if (numbering == null) return;
-        decimal start = 1, increment = 1;
-        if (numbering.Start != null && !decimal.TryParse(numbering.Start, NumberStyles.Float, CultureInfo.InvariantCulture, out start)
-            || numbering.Increment != null && !decimal.TryParse(numbering.Increment, NumberStyles.Float, CultureInfo.InvariantCulture, out increment)) return;
-        try { _ = checked(start + Math.Max(0, document.Messages.Count - 1) * increment); }
-        catch (OverflowException) { Invalid(result, numbering.Span, "Sequence autonumber exceeds the supported decimal range across its messages."); }
+        if (document.AutonumberStatements.Count == 0) return;
+        if (!MermaidSequenceNumbering.TryResolve(document, out _, out var invalidSpan))
+            Invalid(result, invalidSpan, "Sequence autonumber exceeds the supported decimal range across its messages.");
     }
 
     private static void ValidateParticipantBoxes(MermaidSequenceDocument document, MermaidParseResult<MermaidDocument> result) {

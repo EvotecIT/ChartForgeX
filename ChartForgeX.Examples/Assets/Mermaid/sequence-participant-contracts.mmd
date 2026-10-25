@@ -1,0 +1,25 @@
+sequenceDiagram
+title Participant contracts
+participant P@{type: participant, alias: Native}
+actor U @{type: actor, alias: User}
+participant B@{"type":"boundary","alias":"Entry<br/>API"}
+participant C@{type: control, alias: Worker}
+participant E@{type: entity, alias: Record}
+participant D@{type: database, alias: Storage}
+participant L@{type: collections, alias: Items}
+participant Q@{type: queue, alias: Inbox}
+links D: {"Reference":"https://example.test/storage"}
+link D: Status @ https://example.test/status
+links Q: {"Guide":"https://example.test/queue","Health":"/health"}
+properties D: {"owner":"Platform","retries":3,"healthy":true,"note":null}
+properties D: {"owner":"Operations"}
+P->>U: Open
+U->>B: Request
+B->>+C: Handle
+C->>E: Read
+E->>D: Load
+D->>L: Collect
+L->>Q: Enqueue
+Q-->>C: Queued
+C-->>-B: Complete
+Note over D,Q: Stable source facts

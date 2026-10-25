@@ -18,7 +18,13 @@ internal static partial class MermaidAgentflowParser {
                 switch (pair.Key) {
                     case "shape":
                         if (node == null || flow != null || edge != null) Unsupported("Agentflow shape metadata applies only to nodes.");
-                        else if (scalar == null || !MermaidAgentflowRendering.TryNativeShape(scalar, out _)) Unsupported("This Agentflow shape has no native surface and is retained without application.");
+                        else if (scalar != null && MermaidAgentflowShapes.IsRemoved(scalar))
+                            MermaidParserUtilities.Add(result, pair.Value.Span, MermaidDiagnosticSeverity.Error,
+                                "Agentflow shape '" + scalar + "' was removed from the family and is retained without application.", MermaidDiagnosticCodes.InvalidStatement);
+                        else if (scalar != null && (scalar != scalar.ToLowerInvariant() || scalar.IndexOf('_') >= 0))
+                            MermaidParserUtilities.Add(result, pair.Value.Span, MermaidDiagnosticSeverity.Error,
+                                "Authored Agentflow shape names must be lowercase and must not contain underscores.", MermaidDiagnosticCodes.InvalidStatement);
+                        else if (scalar == null || !MermaidAgentflowShapes.TryResolve(scalar, out _)) Unsupported("This Agentflow shape is outside the family catalog and is retained without application.");
                         else node.Shape = scalar;
                         break;
                     case "label":

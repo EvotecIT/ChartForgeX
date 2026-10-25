@@ -1,0 +1,17 @@
+flowchart TB
+n01@{ shape: rect, label: "Process" }
+n02@{ shape: rounded, label: "Event" }
+n03@{ shape: stadium, label: "Terminal" }
+n04@{ shape: fr-rect, label: "Subprocess" }
+n05@{ shape: cyl, label: "Database" }
+n06@{ shape: datastore, label: "Data store" }
+n07@{ shape: folder, label: "Folder" }
+n08@{ shape: bucket, label: "Bucket" }
+n09@{ shape: console, label: "Console" }
+n10@{ shape: browser, label: "Browser" }
+n11@{ shape: person, label: "Reviewer" }
+n12@{ shape: circle, label: "Start" }
+n13@{ shape: bang, label: "Notice" }
+n14@{ shape: cloud, label: "Cloud" }
+n01 --> n02 --> n03 --> n04 --> n05 --> n06 --> n07
+n07 --> n08 --> n09 --> n10 --> n11 --> n12 --> n13 --> n14

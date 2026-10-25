@@ -537,7 +537,7 @@ internal static partial class SmokeTests {
 
     private static void VisualArtifactInterchangeRejectsInvalidContracts() {
         AssertThrows<NotSupportedException>(
-            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":2,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":3,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
             "Interchange parsing should reject unsupported schema versions.");
         VisualArtifactInterchangeEnvelope additive = VisualArtifactInterchangeEnvelope.FromJson(
             "{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"family\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"topology\":{\"layoutMode\":\"Layered\",\"layoutDirection\":\"LeftToRight\"},\"future\":{\"nested\":[1,true,\"value\"]}}");

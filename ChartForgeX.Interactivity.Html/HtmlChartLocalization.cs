@@ -84,6 +84,8 @@ public sealed partial class HtmlChartLocalization {
         var topology = TopologyHtmlText.Defaults.ToDictionary(pair => (HtmlChartText)Enum.Parse(typeof(HtmlChartText), pair.Key), pair => pair.Value);
         var messages = new Dictionary<HtmlChartText, string>(chart);
         foreach (var pair in graph.Concat(topology).Concat(report)) messages[pair.Key] = pair.Value;
+        messages[HtmlChartText.HierarchyCollapse] = "Collapse {label}";
+        messages[HtmlChartText.HierarchyExpand] = "Expand {label}";
         Defaults = messages;
         GraphKeys = graph.Keys.Concat(topology.Keys.Where(key => key.ToString().StartsWith("Explorer", StringComparison.Ordinal)))
             .Concat(new[] { HtmlChartText.ZoomIn, HtmlChartText.ZoomOut, HtmlChartText.Clear, HtmlChartText.Pause }).Distinct().ToArray();
@@ -129,6 +131,7 @@ public sealed partial class HtmlChartLocalization {
     internal string Format(HtmlChartText message, string name, int count) => Format(message, (name, count.ToString(CultureInfo.InvariantCulture)));
     internal string Format(HtmlChartText message, params (string Name, string Value)[] values) => TopologyHtmlText.FormatTemplate(this[message], values);
     internal string ToJson() => ToJson(ChartKeys);
+    internal string ToTopologyHierarchyJson() => ToJson(ChartKeys.Concat(new[] { HtmlChartText.HierarchyCollapse, HtmlChartText.HierarchyExpand }));
     internal string ToGraphJson() => ToJson(GraphKeys);
     internal string ToReportJson() => ToJson(ReportKeys);
     internal TopologyHtmlText ForTopology(string? inheritedLanguage) => new TopologyHtmlText(

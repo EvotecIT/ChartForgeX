@@ -11,7 +11,7 @@ public static partial class VisualArtifactRendering {
     /// <remarks>A scene without captured semantics has kind Unknown; native diagram data is never inferred from pixels.</remarks>
     public static VisualArtifact ToArtifact(this PreparedVisual prepared, string? id = null) {
         if (prepared == null) throw new ArgumentNullException(nameof(prepared));
-        var semantics = prepared.SemanticInterchange;
+        var semantics = prepared.CapturedSemanticSnapshot;
         return prepared.ToArtifact(id ?? semantics?.Id ?? "prepared-visual", semantics?.Kind ?? VisualArtifactKind.Unknown);
     }
 
@@ -35,12 +35,15 @@ public static partial class VisualArtifactRendering {
         new VisualArtifactInterchangeEnvelope { Id = id, Kind = kind }.Validate();
         VisualArtifactInterchangeEnvelope? semantics = null;
         if (semanticInterchange == null) {
-            semanticInterchange = prepared.SemanticInterchange;
-            if (semanticInterchange != null) semanticInterchange.Id = id;
-        }
-        if (semanticInterchange != null) {
-            // The versioned writer/reader captures every supported typed field and validates the portable boundary.
+            semantics = prepared.CapturedSemanticSnapshot;
+            if (semantics != null) semantics.Id = id;
+        } else {
+            // Explicit caller-supplied semantics retain the eager portable codec/validation boundary.
             semantics = VisualArtifactInterchangeEnvelope.FromUtf8Json(semanticInterchange.ToUtf8Json());
+            if (semantics.Presentation?.CapturedEffects.Count > 0)
+                throw new ArgumentException("Supplied source semantics must not carry captured effects; actual prepared effect scopes are captured once at export.", nameof(semanticInterchange));
+        }
+        if (semantics != null) {
             if (!string.Equals(semantics.Id, id, StringComparison.Ordinal) || semantics.Kind != kind)
                 throw new ArgumentException("Semantic artifact ID and kind must match the prepared artifact.", nameof(semanticInterchange));
             if (semantics.Width.HasValue && semantics.Width.Value != prepared.Size.Width ||
@@ -61,10 +64,12 @@ public static partial class VisualArtifactRendering {
         artifact.Accessibility.Language = semantics?.Language ?? accessibility.Language;
         artifact.Accessibility.IsDecorative = semantics?.IsDecorative ?? accessibility.IsDecorative;
         if (semantics != null) {
-            artifact.ExportFormats |= VisualArtifactExportFormat.Json;
-            artifact.PreparedInterchangeSnapshot = semantics.ToJson();
+            if (!prepared.HasUnsupportedInterchangePresentation) artifact.ExportFormats |= VisualArtifactExportFormat.Json;
+            artifact.PreparedInterchangeSnapshot = new Lazy<string>(semantics.ToJson);
             foreach (var pair in semantics.Extensions) artifact.Metadata.Add(pair.Key, pair.Value);
         }
+        if (prepared.Scene.HasRetainedEffects && !prepared.HasUnsupportedInterchangePresentation)
+            artifact.ExportFormats |= VisualArtifactExportFormat.Json;
         foreach (var region in prepared.Regions) {
             artifact.Regions.Add(new VisualArtifactRegion {
                 Id = region.Id, Kind = region.Role, Label = region.Label ?? string.Empty,
@@ -72,6 +77,17 @@ public static partial class VisualArtifactRendering {
             });
         }
         return artifact;
+    }
+
+    /// <summary>Only an explicit JSON capability query enters the same borrowed wire-validation boundary as export.</summary>
+    internal static bool PreparedJsonExportSupported(VisualArtifact artifact) {
+        if (artifact.Model is not PreparedVisual prepared) return false;
+        try {
+            VisualArtifactInterchangeMapping.ValidatePreparedJsonExport(artifact, prepared);
+            return true;
+        } catch (ArgumentException) { return false; }
+        catch (InvalidOperationException) { return false; }
+        catch (NotSupportedException) { return false; }
     }
 
     internal static PreparedVisual PreparedModel(VisualArtifact artifact, PreparedVisual prepared) {
@@ -85,7 +101,7 @@ public static partial class VisualArtifactRendering {
         var accessibility = artifact.Accessibility.Clone();
         accessibility.Name ??= artifact.Title.Length == 0 ? artifact.Id : artifact.Title;
         return PreparedModel(artifact, prepared).ToSvg(accessibility,
-            idScope == null ? SvgRenderedIdentity.CreateProvisionalId("artifact", artifact.Id) : VisualSvgOptions.NamespaceFromExternalId(idScope));
+            idScope == null ? SvgRenderedIdentity.CreateProvisionalId("artifact", artifact.Id) : VisualSvgOptions.NamespaceFromExternalId(idScope), SvgCharacterCeiling(artifact));
     }
 
     private static string RenderPreparedHtml(VisualArtifact artifact, PreparedVisual prepared, VisualArtifactRenderOptions? options) {

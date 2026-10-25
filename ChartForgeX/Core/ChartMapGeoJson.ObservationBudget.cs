@@ -15,17 +15,22 @@ public static partial class ChartMapGeoJson {
     private sealed class ObservationImportBudget {
         private long _observations;
         private long _labelCharacters;
+        private long _featureCharacters;
 
         internal ObservationImportBudget(ChartMapGeoJsonOptions options) {
             _observations = options.MaximumObservations;
             _labelCharacters = options.MaximumExpandedLabelCharacters;
+            _featureCharacters = options.MaximumExpandedFeatureCharacters;
         }
 
-        internal void Reserve(long observations, long labelCharacters) {
+        internal void Reserve(long observations, long labelCharacters, long featureCharacters = 0) {
             if (observations > _observations)
                 throw new ArgumentException("GeoJSON observation import exceeds MaximumObservations.", "geoJson");
             if (labelCharacters > _labelCharacters)
                 throw new ArgumentException("GeoJSON observation import exceeds MaximumExpandedLabelCharacters.", "geoJson");
+            if (featureCharacters > _featureCharacters)
+                throw new ArgumentException("GeoJSON observation import exceeds MaximumExpandedFeatureCharacters.", "geoJson");
+            _featureCharacters -= featureCharacters;
             _observations -= observations;
             _labelCharacters -= labelCharacters;
         }

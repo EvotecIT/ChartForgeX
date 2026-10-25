@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using ChartForgeX.Core;
+using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualArtifacts;
 
-internal sealed class VisualArtifactInterchangeJsonWriter {
+internal sealed partial class VisualArtifactInterchangeJsonWriter {
     private sealed class Context {
         public Context(bool isObject) { IsObject = isObject; }
         public bool IsObject { get; }
@@ -17,17 +19,24 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
     private readonly Stack<Context> _contexts = new();
     private readonly bool _writeText;
     private readonly bool _enforceValueLimit;
+    private readonly bool _escapeMarkupUnsafeCharacters;
     private bool _hasRoot;
     private long _valuesWritten;
+    private int _charactersWritten;
+    private int _utf8BytesWritten;
 
-    public VisualArtifactInterchangeJsonWriter(bool writeText = true, bool enforceValueLimit = true) {
+    public VisualArtifactInterchangeJsonWriter(bool writeText = true, bool enforceValueLimit = true, bool escapeMarkupUnsafeCharacters = false) {
         _writeText = writeText;
         _enforceValueLimit = enforceValueLimit;
+        _escapeMarkupUnsafeCharacters = escapeMarkupUnsafeCharacters;
     }
 
     public long ValuesWritten => _valuesWritten;
+    internal int CharactersWritten => _charactersWritten;
+    internal int Utf8BytesWritten => _utf8BytesWritten;
 
     public void StartObject() {
+        EnsureContainerDepth();
         BeforeValue();
         Append('{');
         EnsureWithinLimit();
@@ -43,6 +52,7 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
     }
 
     public void StartArray() {
+        EnsureContainerDepth();
         BeforeValue();
         Append('[');
         EnsureWithinLimit();
@@ -93,10 +103,35 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         EnsureWithinLimit();
     }
 
+    /// <summary>Writes an already parsed JSON value through the same escaping, value and size bounds.</summary>
+    internal void Value(GeoJsonValue value) {
+        switch (value.RawValue) {
+            case Dictionary<string, GeoJsonValue> properties:
+                StartObject();
+                foreach (var property in properties) { Property(property.Key); Value(property.Value); }
+                EndObject(); break;
+            case List<GeoJsonValue> items:
+                StartArray(); foreach (var item in items) Value(item); EndArray(); break;
+            case string text: String(text); break;
+            case bool flag: Boolean(flag); break;
+            case double number: Number(number); break;
+            case GeoJsonNumber parsedNumber:
+                // OriginalText is emitted only from the canonical finite-number parser, never from arbitrary raw text.
+                BeforeValue(); Append(parsedNumber.OriginalText); EnsureWithinLimit(); break;
+            case null: String(null); break;
+            default: throw new ArgumentException("Unsupported parsed JSON value.", nameof(value));
+        }
+    }
+
     public override string ToString() {
         if (_contexts.Count != 0) throw new InvalidOperationException("The JSON document is incomplete.");
         if (!_writeText) throw new InvalidOperationException("This writer was created for value counting only.");
         return _buffer.ToString();
+    }
+
+    private void EnsureContainerDepth() {
+        if (_contexts.Count >= VisualArtifactInterchangeJson.MaximumJsonDepth)
+            throw new InvalidOperationException("The interchange JSON exceeds the maximum supported depth.");
     }
 
     private void BeforeValue() {
@@ -137,8 +172,10 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
                 if (index + 1 >= value.Length || !char.IsLowSurrogate(value[index + 1])) {
                     throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(value));
                 }
-                Append(c);
-                Append(value[++index]);
+                var low = value[++index];
+                if (_escapeMarkupUnsafeCharacters && !SvgMarkupWriter.IsMarkupScalar(char.ConvertToUtf32(c, low))) {
+                    WriteUnicodeEscape(c); WriteUnicodeEscape(low);
+                } else { AppendSurrogatePair(c, low); }
                 continue;
             }
             if (char.IsLowSurrogate(c)) {
@@ -153,9 +190,8 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
                 case '\r': Append("\\r"); break;
                 case '\t': Append("\\t"); break;
                 default:
-                    if (c < 0x20) {
-                        Append("\\u");
-                        Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
+                    if (c < 0x20 || _escapeMarkupUnsafeCharacters && !SvgMarkupWriter.IsMarkupScalar(c)) {
+                        WriteUnicodeEscape(c);
                     } else {
                         Append(c);
                     }
@@ -166,17 +202,35 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         EnsureWithinLimit();
     }
 
+    private void WriteUnicodeEscape(char value) {
+        Append("\\u"); Append(((int)value).ToString("x4", CultureInfo.InvariantCulture));
+    }
+
     private void EnsureWithinLimit() {
-        if (_writeText && _buffer.Length > VisualArtifactInterchangeValidation.MaximumJsonCharacters) {
+        if (_charactersWritten > VisualArtifactInterchangeValidation.MaximumJsonCharacters)
             throw new InvalidOperationException("The interchange JSON exceeds the maximum supported size.");
-        }
+        if (_utf8BytesWritten > VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes)
+            throw new ArgumentOutOfRangeException("json", _utf8BytesWritten,
+                "Interchange UTF-8 JSON exceeds the existing supported byte budget.");
     }
 
     private void Append(char value) {
+        _charactersWritten = checked(_charactersWritten + 1);
+        _utf8BytesWritten = checked(_utf8BytesWritten + (value < 0x80 ? 1 : value < 0x800 ? 2 : 3));
         if (_writeText) _buffer.Append(value);
     }
 
+    private void AppendSurrogatePair(char high, char low) {
+        // WriteEscapedString already validated the scalar. Raw supplementary text has
+        // two UTF16 units and four UTF8 bytes; escaped pairs use the ordinary ASCII path.
+        _charactersWritten = checked(_charactersWritten + 2);
+        _utf8BytesWritten = checked(_utf8BytesWritten + 4);
+        if (_writeText) _buffer.Append(high).Append(low);
+    }
+
     private void Append(string value) {
+        _charactersWritten = checked(_charactersWritten + value.Length);
+        _utf8BytesWritten = checked(_utf8BytesWritten + Encoding.UTF8.GetByteCount(value));
         if (_writeText) _buffer.Append(value);
     }
 }

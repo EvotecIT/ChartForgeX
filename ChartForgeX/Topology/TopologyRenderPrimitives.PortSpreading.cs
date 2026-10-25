@@ -63,11 +63,12 @@ internal static partial class TopologyRenderPrimitives {
         var index = related.FindIndex(candidate => ReferenceEquals(candidate, edge));
         if (index < 0) return point;
         // UML markers are wider than the fine lines on ordinary topology cards.
-        var offset = (index - (related.Count - 1) / 2.0) * (node.Shape.HasValue ? 16 : EdgePortFanSpacing);
+        var units = TopologyPreparedNodeBasis.Units(node);
+        var offset = (index - (related.Count - 1) / 2.0) * (node.Shape.HasValue ? 16 : EdgePortFanSpacing) * units;
         var maximum = port is TopologyEdgePort.Top or TopologyEdgePort.Bottom
-            ? Math.Max(0, node.Width / 2 - EdgeEndpointSidePadding)
-            : Math.Max(0, node.Height / 2 - EdgeEndpointSidePadding);
-        if (node.Shape == TopologyNodeShape.Actor) maximum = Math.Min(maximum,
+            ? Math.Max(0, node.Width / 2 - EdgeEndpointSidePadding * units)
+            : Math.Max(0, node.Height / 2 - EdgeEndpointSidePadding * units);
+        if (TopologyNodeShapeGeometry.IsActor(node)) maximum = Math.Min(maximum,
             (port is TopologyEdgePort.Top or TopologyEdgePort.Bottom ? 14 : 26) * TopologyNodeShapeGeometry.ActorScale(node));
         offset = Clamp(offset, -maximum, maximum);
         var spread = port switch {

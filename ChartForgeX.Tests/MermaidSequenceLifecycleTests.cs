@@ -50,10 +50,12 @@ public sealed partial class MermaidSequenceLifecycleTests {
         Assert.True(workerGeometry.Y + workerGeometry.Height <= prepared.Edges[2].ResolvedRoute[0].Y);
         var workerLine = visual.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "sequence-lifeline").ElementAt(3);
         Assert.Equal(workerGeometry.Y + workerGeometry.Height, workerLine.Start.Y);
-        Assert.Equal(prepared.Edges[4].ResolvedRoute.Last().Y, workerLine.End.Y);
+        var workerFooter=visual.Regions.Single(region=>region.Role=="sequence-participant-footer"&&region.Id=="W");
+        Assert.Equal(prepared.Edges[4].ResolvedRoute.Last().Y,workerFooter.Bounds.Top+workerFooter.Bounds.Height/2);
+        Assert.Equal(workerFooter.Bounds.Top, workerLine.End.Y);
         var svg = XDocument.Parse(document.ToSvg());
         Assert.Equal(2, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "sequence-participant-group"));
-        Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "sequence-destruction");
+        Assert.DoesNotContain(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "sequence-destruction");
         Assert.True(document.ToPng().Length > 64);
         var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + Source + "\n```");
         Assert.Empty(fenced.Diagnostics);
@@ -94,8 +96,10 @@ public sealed partial class MermaidSequenceLifecycleTests {
             native.ThemeMode = mode;
             var svg = native.ToSvg();
             Assert.Contains("Repeated request", svg);
-            Assert.Contains("1.5. One", svg);
-            Assert.Contains("1.75. Two", svg);
+            var prepared = SequencePreparedCompiler.PrepareDefault(native); var facts = prepared.ToArtifact().ToInterchangeEnvelope();
+            Assert.Equal("1.5", prepared.Regions.Single(region => region.Role == "sequence-number" && region.Id == facts.Edges[0].Id).Label);
+            Assert.Equal("1.75", prepared.Regions.Single(region => region.Role == "sequence-number" && region.Id == facts.Edges[1].Id).Label);
+            Assert.Contains("One", svg); Assert.Contains("Two", svg);
             Assert.True(native.ToPng().Length > 64);
         }
         Assert.Equal("Caller heading", document.ToSequenceArtifact(new MermaidSequenceRenderOptions { Title = "Caller heading" }).Title);
@@ -124,7 +128,9 @@ public sealed partial class MermaidSequenceLifecycleTests {
         Assert.Equal("B", b.Id);
         Assert.Equal((0, 1), (b.CreatedAtMessageIndex, b.DestroyedAtMessageIndex));
         var final = visual.ToArtifact().ToInterchangeEnvelope().Edges.Last().ResolvedRoute;
-        Assert.Equal(finalMessage.StartsWith("B", StringComparison.Ordinal) ? final.First().Y : final.Last().Y, lifeline.End.Y);
+        var footer=visual.Regions.Single(region=>region.Role=="sequence-participant-footer"&&region.Id=="B");
+        Assert.Equal(finalMessage.StartsWith("B", StringComparison.Ordinal) ? final.First().Y : final.Last().Y, footer.Bounds.Top+footer.Bounds.Height/2);
+        Assert.Equal(footer.Bounds.Top, lifeline.End.Y);
         Assert.True(visual.ToPng().Length > 64);
     }
 

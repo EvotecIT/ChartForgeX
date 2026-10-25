@@ -13,10 +13,12 @@ public static partial class VisualArtifactRendering {
     /// <returns>A detached RGBA image at the producer's configured output density.</returns>
     public static RgbaImage ToRgbaImage(this VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Png, options);
-        var image = RenderRgbaImage(artifact, options);
-        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Png, null);
-        return image;
+        return ExportWithResourceTranslation(artifact, () => {
+            artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Png, options);
+            var image = RenderRgbaImage(artifact, options);
+            artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Png, null);
+            return image;
+        });
     }
 
     private static RgbaImage RenderRgbaImage(VisualArtifact artifact, VisualArtifactRenderOptions? options) {

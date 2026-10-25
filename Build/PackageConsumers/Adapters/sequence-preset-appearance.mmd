@@ -1,0 +1,10 @@
+sequenceDiagram
+actor A as Review<br/>Owner
+participant B@{type: control, alias: Archive}
+autonumber 10
+A->>+B: Save
+loop Audit
+B-->>A: Stored
+end
+deactivate B
+Note over A,B: Retain audit facts

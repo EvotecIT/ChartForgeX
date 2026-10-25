@@ -73,9 +73,9 @@ public enum MermaidZenUmlStatementKind {
     Section,
     /// <summary>An exception-flow fragment with catch/finally branches.</summary>
     Try,
-    /// <summary>A reference retained with an explicit native-presentation diagnostic.</summary>
+    /// <summary>An instantaneous native interaction-use reference.</summary>
     Reference,
-    /// <summary>A divider retained with an explicit native-presentation diagnostic.</summary>
+    /// <summary>An instantaneous native labeled divider.</summary>
     Divider
 }
 
@@ -94,6 +94,8 @@ public sealed class MermaidZenUmlStatement : MermaidAstNode {
     public string? CallerId { get; set; }
     /// <summary>Gets or sets the target participant for a call, asynchronous message, creation or return.</summary>
     public string? TargetId { get; set; }
+    /// <summary>Gets reference participant targets after the diagram-name argument, in source order.</summary>
+    public List<string> ReferenceParticipantIds { get; } = new();
     /// <summary>Gets or sets the complete inert assignment prefix, including a declared type or modifier.</summary>
     public string? Assignment { get; set; }
     /// <summary>Gets or sets the authored fragment keyword.</summary>

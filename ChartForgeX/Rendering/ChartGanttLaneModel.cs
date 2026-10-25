@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>
 /// Renderer-neutral rows, packed sub-rows, time ticks, and geometry for Gantt lanes so SVG and PNG stay in parity.
 /// </summary>
-internal sealed class ChartGanttLaneModel {
+internal sealed partial class ChartGanttLaneModel {
     public const double BandMaximum = 22;
     public const double BandMinimum = 4;
     public const double GroupRowUnits = 0.9;
@@ -18,7 +18,8 @@ internal sealed class ChartGanttLaneModel {
     public const double BarRadius = 3;
     public const double LabelPadding = 6;
 
-    private ChartGanttLaneModel(Chart chart, List<ChartGanttLaneRow> rows, double min, double max, double? now, IReadOnlyList<double> ticks, ChartStateCategoryLegend legend) {
+    private ChartGanttLaneModel(Chart chart, List<ChartGanttLaneRow> rows, double min, double max, double? now, IReadOnlyList<double> ticks, ChartStateCategoryLegend legend, bool mixed = false, bool fixedTicks = false) {
+        Mixed = mixed; HasFixedTicks = fixedTicks;
         Chart = chart;
         Rows = rows;
         Min = min;
@@ -34,6 +35,8 @@ internal sealed class ChartGanttLaneModel {
         HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader);
     }
 
+    internal bool Mixed { get; }
+    internal bool HasFixedTicks { get; }
     public Chart Chart { get; }
 
     public IReadOnlyList<ChartGanttLaneRow> Rows { get; }
@@ -59,13 +62,16 @@ internal sealed class ChartGanttLaneModel {
     /// <summary>Gets the layout height in lane units: one per sub-row plus a smaller unit per group header.</summary>
     public double Units { get; }
 
-    public static ChartGanttLaneModel Build(Chart chart, double? preparedPackingWidth = null, ChartColor? fallback = null) {
+    public static ChartGanttLaneModel Build(Chart chart, double? preparedPackingWidth = null, ChartColor? fallback = null, bool mixed = false) {
         var legend = new ChartStateCategoryLegend(chart, fallback);
         var min = double.PositiveInfinity;
         var max = double.NegativeInfinity;
         var hasOpen = false;
         foreach (var series in chart.Series) {
-            if (series.Kind != ChartSeriesKind.GanttLane) continue;
+            if (series.Kind != ChartSeriesKind.GanttLane) {
+                if (mixed) IncludeSourceWindow(series, ref min, ref max);
+                continue;
+            }
             foreach (var item in series.GanttLaneItems) {
                 min = Math.Min(min, item.Start);
                 max = Math.Max(max, item.End ?? item.Start);
@@ -73,6 +79,9 @@ internal sealed class ChartGanttLaneModel {
             }
         }
 
+        if (mixed) foreach (var annotation in chart.Annotations.Where(value => value.Kind == ChartAnnotationKind.VerticalLine)) {
+            min = Math.Min(min, annotation.Value); max = Math.Max(max, annotation.Value);
+        }
         var today = chart.Options.GanttToday;
         if (today.HasValue) {
             min = Math.Min(min, today.Value);
@@ -89,15 +98,17 @@ internal sealed class ChartGanttLaneModel {
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
-        IReadOnlyList<double> ticks = axis.Labels.Count > 0
+        var fixedTicks = mixed && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && chart.Options.GanttTickInterval != null
+            ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
+        IReadOnlyList<double> ticks = fixedTicks ?? (axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
-            : ChartTicks.GenerateTimeInside(axis, min, max);
+            : mixed && axis.Scale == ChartScaleKind.Linear ? ChartTicks.ForAxis(axis, min, max) : ChartTicks.GenerateTimeInside(axis, min, max));
 
         // Renderer text metrics differ slightly. Pack against the shared minimum possible plot width so a bar
         // with the two-pixel visual floor never obscures the next item in either SVG or PNG.
         var contentWidth = preparedPackingWidth ?? ChartStateTimelineModel.ContentBounds(ChartLayout.PlotArea(chart.Options)).Width;
         var hasSummary = !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) ||
-            chart.Series.Any(series => series.Kind == ChartSeriesKind.GanttLane && !string.IsNullOrWhiteSpace(series.LaneSummary));
+            chart.Series.Any(series => (mixed || series.Kind == ChartSeriesKind.GanttLane) && !string.IsNullOrWhiteSpace(series.LaneSummary));
         var labelReserve = chart.Options.ShowAxes && chart.Options.ShowYAxis ? contentWidth * 0.34 : 0;
         var summaryReserve = hasSummary ? Math.Max(8, contentWidth * 0.2 - ChartStateTimelineModel.ColumnGap) + ChartStateTimelineModel.ColumnGap : 0;
         var packingPlot = new ChartRect(0, 0, Math.Max(1, preparedPackingWidth ?? (contentWidth - labelReserve - summaryReserve)), 1);
@@ -105,14 +116,15 @@ internal sealed class ChartGanttLaneModel {
         string? currentGroup = null;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.GanttLane) continue;
+            if (series.Kind != ChartSeriesKind.GanttLane && (!mixed || !ChartSeriesKindTraits.IsSchedule(series.Kind))) continue;
+            if (mixed && VisualScheduleCompiler.IsMarker(series)) continue;
             if (series.LaneGroup != null && !string.Equals(series.LaneGroup, currentGroup, StringComparison.Ordinal)) rows.Add(ChartGanttLaneRow.Group(series.LaneGroup));
             else if (series.LaneGroup == null && currentGroup != null) rows.Add(ChartGanttLaneRow.Group(string.Empty));
             currentGroup = series.LaneGroup;
-            rows.Add(ChartGanttLaneRow.Lane(seriesIndex, series.Name, series.LaneSummary, Pack(series, legend, today, min, max, packingPlot)));
+            rows.Add(ChartGanttLaneRow.Lane(seriesIndex, series.Name, series.LaneSummary, series.Kind == ChartSeriesKind.GanttLane ? Pack(series, legend, today, min, max, packingPlot, axis) : new List<ChartGanttLanePlacedItem>()));
         }
 
-        return new ChartGanttLaneModel(chart, rows, min, max, today, ticks, legend);
+        return new ChartGanttLaneModel(chart, rows, min, max, today, ticks, legend, mixed, fixedTicks != null);
     }
 
     /// <summary>
@@ -120,7 +132,7 @@ internal sealed class ChartGanttLaneModel {
     /// the axis range get sub-row -1 and take no space. Open items end at the current time, or at the axis end when the
     /// current time is unset or earlier than their start.
     /// </summary>
-    private static List<ChartGanttLanePlacedItem> Pack(ChartSeries series, ChartStateCategoryLegend legend, double? now, double min, double max, ChartRect plot) {
+    private static List<ChartGanttLanePlacedItem> Pack(ChartSeries series, ChartStateCategoryLegend legend, double? now, double min, double max, ChartRect plot, ChartAxis axis) {
         var placed = new List<ChartGanttLanePlacedItem>(series.GanttLaneItems.Count);
         var subRowEnds = new List<double>();
         foreach (var entry in series.GanttLaneItems.Select((item, index) => (Item: item, Index: index))
@@ -134,8 +146,8 @@ internal sealed class ChartGanttLaneModel {
                 continue;
             }
 
-            var start = DisplayLeft(item.Start, min, max, plot);
-            var displayedEnd = DisplayRight(item.Start, end, min, max, plot);
+            var start = DisplayLeft(item.Start, min, max, plot, axis);
+            var displayedEnd = DisplayRight(item.Start, end, min, max, plot, axis);
             var subRow = subRowEnds.FindIndex(rowEnd => rowEnd <= start);
             if (subRow < 0) {
                 subRow = subRowEnds.Count;
@@ -155,9 +167,9 @@ internal sealed class ChartGanttLaneModel {
     /// <summary>Reuses the snapshotted window and current time while packing against the measured prepared viewport.</summary>
     internal ChartGanttLaneModel Repack(double width) {
         var plot = new ChartRect(0, 0, Math.Max(1, width), 1);
-        var rows = Rows.Select(row => row.IsGroup ? row : ChartGanttLaneRow.Lane(row.SeriesIndex, row.Name, row.Summary,
-            Pack(Chart.Series[row.SeriesIndex], Legend, Now, Min, Max, plot))).ToList();
-        return new ChartGanttLaneModel(Chart, rows, Min, Max, Now, Ticks, Legend);
+        var rows = Rows.Select(row => row.IsGroup || Chart.Series[row.SeriesIndex].Kind != ChartSeriesKind.GanttLane ? row : ChartGanttLaneRow.Lane(row.SeriesIndex, row.Name, row.Summary,
+            Pack(Chart.Series[row.SeriesIndex], Legend, Now, Min, Max, plot, Chart.Options.XAxis))).ToList();
+        return new ChartGanttLaneModel(Chart, rows, Min, Max, Now, Ticks, Legend, Mixed, HasFixedTicks);
     }
 
     /// <summary>Leaves separation within each allocated packed row, including measured caption-height requests.</summary>
@@ -183,16 +195,17 @@ internal sealed class ChartGanttLaneModel {
     private static double RowUnits(ChartGanttLaneRow row) => row.IsGroup ? (row.Name.Length == 0 ? SeparatorRowUnits : GroupRowUnits) : row.SubRows;
 
     public double BarTop(ChartRect plot, double rowTop, int subRow, double minimumCaptionBand = 0) =>
-        rowTop + subRow * UnitHeight(plot) + (UnitHeight(plot) - Band(plot, minimumCaptionBand)) / 2;
+        VisualScheduleCompiler.ScheduleRowTop(Chart, plot, rowTop + subRow * UnitHeight(plot)
+            + (UnitHeight(plot) - Band(plot, minimumCaptionBand)) / 2, Band(plot, minimumCaptionBand));
 
-    public double X(double value, ChartRect plot) => plot.Left + ChartMath.Normalize(Math.Max(Min, Math.Min(Max, value)), Min, Max) * plot.Width;
+    public double X(double value, ChartRect plot) => VisualScheduleCompiler.ScheduleX(Chart.Options.XAxis, value, Min, Max, plot);
 
-    private static double DisplayLeft(double start, double min, double max, ChartRect plot) =>
-        Math.Min(plot.Left + ChartMath.Normalize(Math.Max(min, Math.Min(max, start)), min, max) * plot.Width, plot.Right - 2);
+    private static double DisplayLeft(double start, double min, double max, ChartRect plot, ChartAxis axis) =>
+        Math.Min(plot.Left + VisualScheduleCompiler.ScheduleFraction(axis, start, min, max, physical: false) * plot.Width, plot.Right - 2);
 
-    private static double DisplayRight(double start, double end, double min, double max, ChartRect plot) {
-        var left = DisplayLeft(start, min, max, plot);
-        var endX = plot.Left + ChartMath.Normalize(Math.Max(min, Math.Min(max, end)), min, max) * plot.Width;
+    private static double DisplayRight(double start, double end, double min, double max, ChartRect plot, ChartAxis axis) {
+        var left = DisplayLeft(start, min, max, plot, axis);
+        var endX = plot.Left + VisualScheduleCompiler.ScheduleFraction(axis, end, min, max, physical: false) * plot.Width;
         return Math.Max(left + 2, endX);
     }
 
@@ -202,13 +215,16 @@ internal sealed class ChartGanttLaneModel {
         width = 0;
         var instant = item.Item.IsOpen && item.End == item.Item.Start;
         if (item.SubRow < 0 || (instant ? item.Item.Start < Min || item.Item.Start > Max : item.End <= Min || item.Item.Start >= Max)) return false;
-        left = DisplayLeft(item.Item.Start, Min, Max, plot);
-        width = DisplayRight(item.Item.Start, item.End, Min, Max, plot) - left;
+        left = DisplayLeft(item.Item.Start, Min, Max, plot, Chart.Options.XAxis);
+        width = DisplayRight(item.Item.Start, item.End, Min, Max, plot, Chart.Options.XAxis) - left;
+        if (Chart.Options.XAxis.Reversed) left = plot.Left + plot.Right - left - width;
         return true;
     }
 
     public string FormatTick(double value) => ChartAxisValueFormatter.Format(Chart.Options.XAxis, value,
-        tick => ChartTicks.IsNumericTimeFallback(Ticks) ? tick.ToString("G17", CultureInfo.InvariantCulture) : ChartTimeScale.Format(Chart.Options.XAxis, tick), Ticks);
+        tick => Mixed && Chart.Options.XAxis.Scale == ChartScaleKind.Linear ? tick.ToString("G17", CultureInfo.InvariantCulture)
+            : Mixed && Chart.Options.XAxis.TimeTickLabelFormatter != null ? Chart.Options.XAxis.TimeTickLabelFormatter(tick, HasFixedTicks ? Chart.Options.GanttTickInterval?.Unit : null)
+            : ChartTicks.IsNumericTimeFallback(Ticks) ? tick.ToString("G17", CultureInfo.InvariantCulture) : ChartTimeScale.Format(Chart.Options.XAxis, tick), Ticks);
 
     public string ItemSummary(ChartGanttLaneRow lane, ChartGanttLanePlacedItem placed) {
         var axis = Chart.Options.XAxis;

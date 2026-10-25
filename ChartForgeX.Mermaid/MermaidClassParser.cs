@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidClassParser {
-    private static readonly Regex Relationship = new(@"^(?<source>[^\s<|>*:]+)(?:\s+""(?<sourceMultiplicity>[^""]+)"")?\s*(?<connector>(?:<\||[<*o])?(?:--|\.\.)(?:\|>|[>*o])?)\s*(?:""(?<targetMultiplicity>[^""]+)""\s+)?(?<target>\S+?)(?:\s*:\s*(?<label>.*))?$", RegexOptions.CultureInvariant);
-    private static readonly Regex Note = new(@"^note(?:\s+for\s+(?<id>\S+))?\s+""(?<text>.*)""$", RegexOptions.CultureInvariant);
-
     public static void ParseStatements(MermaidClassDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var classes = new Dictionary<string, MermaidClassNode>(StringComparer.Ordinal);
         MermaidClassNode? activeClass = null;
@@ -45,9 +41,7 @@ internal static partial class MermaidClassParser {
             }
 
             if (MermaidParserUtilities.StartsStatement(trimmed, "note")) {
-                var note = Note.Match(trimmed);
-                if (note.Success) document.Notes.Add(new MermaidDiagramNote(MermaidNotationText.Note(note.Groups["text"].Value),
-                    note.Groups["id"].Success ? CleanEndpoint(note.Groups["id"].Value) : null, false, span));
+                if (TryNote(document, classes, trimmed, span, result, out var note)) document.Notes.Add(note!);
                 else MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class note syntax");
                 continue;
             }
@@ -55,7 +49,10 @@ internal static partial class MermaidClassParser {
             if (TryLollipop(trimmed, span, result, out var lollipop)) {
                 if (lollipop == null) continue;
                 document.Relationships.Add(lollipop);
-                var concrete = EnsureClass(document, classes, lollipop.SourceIsInterface ? lollipop.TargetId : lollipop.SourceId, span, result);
+                var concrete = EnsureClass(document, classes, lollipop.SourceIsInterface
+                    ? lollipop.TargetIdentity ?? lollipop.TargetId : lollipop.SourceIdentity ?? lollipop.SourceId, span, result);
+                RetainGenericReference(document, null, lollipop.SourceIsInterface ? lollipop.SourceId : lollipop.TargetId,
+                    lollipop.SourceIsInterface ? lollipop.SourceIdentity ?? lollipop.SourceId : lollipop.TargetIdentity ?? lollipop.TargetId, span, result);
                 if (concrete != null && concrete.Namespace == null && namespaces.Count > 0) concrete.Namespace = namespaces.Peek();
                 continue;
             }
@@ -77,14 +74,11 @@ internal static partial class MermaidClassParser {
                 }
                 var previousStyleCount = document.StyleStatements.Count;
                 var previousRetainedCount = document.RawStatements.Count;
-                ParseClassOrStyle(document, classes, trimmed, span, ref activeClass, result);
+                ParseClassOrStyle(document, classes, trimmed, span, ref activeClass, result, out var declared);
                 if (activeClass != null) activeClassOpening = span;
                 if (document.StyleStatements.Count > previousStyleCount && document.RawStatements.Count == previousRetainedCount)
                     MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class style");
-                if (namespaces.Count > 0 && trimmed.StartsWith("class ", StringComparison.Ordinal)) {
-                    var ids = trimmed.Substring(6).Split(new[] { ' ', '{', '[' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (ids.Length > 0 && classes.TryGetValue(CleanEndpoint(ReadInlineClass(ids[0], out _)), out var declared)) declared.Namespace = namespaces.Peek();
-                }
+                if (declared != null && namespaces.Count > 0) declared.Namespace = namespaces.Peek();
                 continue;
             }
 
@@ -102,8 +96,8 @@ internal static partial class MermaidClassParser {
             if (TryParseRelationship(trimmed, span, result, out var relationship)) {
                 if (relationship == null) continue;
                 document.Relationships.Add(relationship);
-                var source = EnsureClass(document, classes, relationship.SourceId, span, result);
-                var target = EnsureClass(document, classes, relationship.TargetId, span, result);
+                var source = EnsureClass(document, classes, relationship.SourceIdentity ?? relationship.SourceId, span, result);
+                var target = EnsureClass(document, classes, relationship.TargetIdentity ?? relationship.TargetId, span, result);
                 if (namespaces.Count > 0) {
                     if (source != null) source.Namespace ??= namespaces.Peek();
                     if (target != null) target.Namespace ??= namespaces.Peek();
@@ -111,7 +105,7 @@ internal static partial class MermaidClassParser {
                 continue;
             }
 
-            var colonIndex = trimmed.IndexOf(':');
+            var colonIndex = MemberSeparator(trimmed);
             if (colonIndex > 0) {
                 var classId = trimmed.Substring(0, colonIndex).Trim();
                 var member = trimmed.Substring(colonIndex + 1).Trim();
@@ -134,64 +128,49 @@ internal static partial class MermaidClassParser {
             MermaidParserUtilities.Add(result, note.Span, MermaidDiagnosticSeverity.Error, "Class notes must reference a declared class or relationship endpoint.", MermaidDiagnosticCodes.InvalidStatement);
         if (document.Classes.Count == 0 && document.Relationships.Count == 0 && document.Namespaces.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid class diagrams require at least one class, namespace or relationship.");
         ApplyStyles(document);
+        DiagnoseClassCaptions(document, result);
 
         void Unclosed(MermaidSourceSpan opening) => MermaidParserUtilities.Add(result, opening, MermaidDiagnosticSeverity.Error,
             "Class definitions and namespaces must close with '}'.");
     }
 
     private static void ParseClassOrStyle(MermaidClassDocument document, Dictionary<string, MermaidClassNode> classes, string text, MermaidSourceSpan span,
-        ref MermaidClassNode? activeClass, MermaidParseResult<MermaidDocument> result) {
+        ref MermaidClassNode? activeClass, MermaidParseResult<MermaidDocument> result, out MermaidClassNode? declared) {
+        declared = null;
         var body = ReadInlineClass(text.Substring(6).Trim(), out var style);
-        var declarationText = body.IndexOf('{') >= 0 ? body.Substring(0, body.IndexOf('{')).Trim() : body;
-        if (declarationText.IndexOf('~') >= 0 && declarationText.IndexOf(',') >= 0 && declarationText.IndexOf('[') < 0) {
-            document.StyleStatements.Add(new MermaidClassStyleStatement(text, span));
-            MermaidParserUtilities.RetainUnsupported(document, text, span, result, "comma-containing generic type");
-            return;
-        }
         if (style != null && (style.Length == 0 || style.IndexOf(":::", StringComparison.Ordinal) >= 0)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
-                "Class inline styling requires one name after ':::'.", MermaidDiagnosticCodes.InvalidStatement);
+            InvalidClass(result, span, "Class inline styling requires one name after ':::'.");
             return;
         }
-        if (MermaidStyleParser.SplitHead(body, out _, out _) && body.IndexOf("[", StringComparison.Ordinal) < 0 && body.IndexOf("{", StringComparison.Ordinal) < 0) {
-            document.StyleStatements.Add(new MermaidClassStyleStatement(text, span));
-            return;
-        }
-
-        var braceIndex = body.IndexOf('{');
-        if (braceIndex >= 0) {
-            var declaration = body.Substring(0, braceIndex).Trim();
-            activeClass = EnsureClass(document, classes, declaration, span, result);
-            if (activeClass == null) return;
-            if (style != null) activeClass.Classes.Add(style);
-            if (declaration.IndexOf('~') > 0) activeClass.Label = MermaidNotationText.Generics(declaration);
-            var remainder = body.Substring(braceIndex + 1).Trim();
-            if (remainder.EndsWith("}", StringComparison.Ordinal)) {
-                remainder = remainder.Substring(0, remainder.Length - 1).Trim();
-                if (remainder.Length > 0) AddMember(activeClass, remainder, span);
-                activeClass = null;
+        var position = 0;
+        if (!ReadIdentity(body, ref position, span, result, out var identity)) return;
+        var tail = body.Substring(position).Trim();
+        string? label = null;
+        if (tail.StartsWith("[", StringComparison.Ordinal)) {
+            if (!ReadAlias(tail, out var display, out var remainder)) {
+                InvalidClass(result, span, "Class aliases require a complete bracketed label.");
+                return;
             }
-
+            label = display;
+            tail = remainder.Trim();
+        }
+        if (tail.Length > 0 && !tail.StartsWith("{", StringComparison.Ordinal)) {
+            if ("~,]}\"`".IndexOf(tail[0]) >= 0) InvalidClass(result, span, "Class declarations require one identity with balanced delimiters.");
+            else document.StyleStatements.Add(new MermaidClassStyleStatement(text, span));
             return;
         }
-
-        if (MermaidParserUtilities.TryBracketed(body, out var bracketId, out var label, out _)) {
-            var node = EnsureClass(document, classes, bracketId, span, result);
-            if (node == null) return;
-            node.Label = MermaidParserUtilities.Unquote(label);
-            if (style != null) node.Classes.Add(style);
-            return;
-        }
-
-        if (body.IndexOf(',') >= 0 && !body.StartsWith("`", StringComparison.Ordinal) && !body.StartsWith("\"", StringComparison.Ordinal)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
-                "Class declarations require one class identity.", MermaidDiagnosticCodes.InvalidStatement);
-            return;
-        }
-        var plain = EnsureClass(document, classes, body, span, result);
-        if (plain == null) return;
-        if (style != null) plain.Classes.Add(style);
-        if (body.IndexOf('~') > 0) plain.Label = MermaidNotationText.Generics(body);
+        declared = EnsureClass(document, classes, identity, span, result);
+        if (declared == null) return;
+        if (label != null) { declared.Label = label; document.CaptionSpans[declared.Id] = span; }
+        if (style != null) declared.Classes.Add(style);
+        if (tail.Length == 0) return;
+        activeClass = declared;
+        var member = tail.Substring(1).Trim();
+        if (member.EndsWith("}", StringComparison.Ordinal)) {
+            member = member.Substring(0, member.Length - 1).Trim();
+            if (member.Length > 0) AddMember(activeClass, member, span);
+            activeClass = null;
+        } else if (member.Length > 0) AddMember(activeClass, member, span);
     }
 
     private static void ParseAnnotation(MermaidClassDocument document, Dictionary<string, MermaidClassNode> classes, string text, MermaidSourceSpan span,
@@ -205,31 +184,26 @@ internal static partial class MermaidClassParser {
     }
 
     private static bool TryParseRelationship(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
-        out MermaidClassRelationship? relationship) {
-        relationship = null!;
-        var match = Relationship.Match(text);
-        if (!match.Success) return false;
-        var source = CleanEndpoint(match.Groups["source"].Value);
-        var target = CleanEndpoint(match.Groups["target"].Value);
-        if (MissingClassIdentity(source) || MissingClassIdentity(target)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
-                "Class relationship endpoints require nonempty identities.", MermaidDiagnosticCodes.InvalidStatement);
-            return true;
-        }
-        relationship = new MermaidClassRelationship(source, target,
-            match.Groups["connector"].Value, match.Groups["label"].Success ? match.Groups["label"].Value.Trim() : null, span) {
-            SourceMultiplicity = match.Groups["sourceMultiplicity"].Success ? match.Groups["sourceMultiplicity"].Value : null,
-            TargetMultiplicity = match.Groups["targetMultiplicity"].Success ? match.Groups["targetMultiplicity"].Value : null
-        };
-        return true;
-    }
+        out MermaidClassRelationship? relationship) => TryReadRelationship(text, span, result, false, out relationship);
 
-    private static string CleanEndpoint(string value) => MermaidNotationText.ClassId(MermaidParserUtilities.Unquote(value));
+    private static string CleanEndpoint(string value) {
+        value = value.Trim();
+        if (value.Length >= 2 && (value[0] == '`' || value[0] == '"') && value[value.Length - 1] == value[0])
+            return value.Substring(1, value.Length - 2);
+        return MermaidNotationText.ClassId(value);
+    }
 
     private static bool MissingClassIdentity(string id) => string.IsNullOrWhiteSpace(id);
 
     private static MermaidClassNode? EnsureClass(MermaidClassDocument document, Dictionary<string, MermaidClassNode> classes, string id,
         MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        var authored = id.Trim();
+        var position = 0;
+        if (!ReadIdentity(authored, ref position, span, result, out _)) return null;
+        if (position != authored.Length) {
+            InvalidClass(result, span, "Class references require one complete identity.");
+            return null;
+        }
         var missingAliasIdentity = id.TrimStart().StartsWith("[", StringComparison.Ordinal);
         id = CleanEndpoint(id);
         if (missingAliasIdentity || MissingClassIdentity(id)) {
@@ -237,11 +211,28 @@ internal static partial class MermaidClassParser {
                 "Class declarations require an identity before aliases, generics or inline classes.", MermaidDiagnosticCodes.InvalidStatement);
             return null;
         }
-        if (classes.TryGetValue(id, out var existing)) return existing;
-        var node = new MermaidClassNode(id, span);
-        classes.Add(id, node);
-        document.Classes.Add(node);
+        if (!classes.TryGetValue(id, out var node)) {
+            node = new MermaidClassNode(id, span);
+            classes.Add(id, node);
+            document.Classes.Add(node);
+        }
+        RetainGenericReference(document, node, id, authored, span, result);
         return node;
+    }
+
+    private static void RetainGenericReference(MermaidClassDocument document, MermaidClassNode? node, string id, string authored,
+        MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        var genericReference = authored.Length > 0 && authored[0] != '`' && authored[0] != '"' && authored.IndexOf('~') > 0;
+        if (genericReference) {
+            document.GenericDeclarations[id] = authored;
+            if (authored.IndexOf(',') >= 0) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning,
+                "Balanced comma generics are a ChartForgeX extension; Mermaid 12.2 does not support comma generic arguments.", MermaidDiagnosticCodes.ApproximateMapping);
+        }
+        // Forward notes may retain a reference before the declared class exists. Apply its stored
+        // type caption when that owner arrives, without repeating the occurrence's warning or replacing an alias.
+        if (node != null && !document.CaptionSpans.ContainsKey(id) && (genericReference || node.Label == null)
+            && document.GenericDeclarations.TryGetValue(id, out var generic))
+            node.Label = MermaidNotationText.Generics(generic);
     }
 
     private static void AddMember(MermaidClassNode node, string text, MermaidSourceSpan span) {

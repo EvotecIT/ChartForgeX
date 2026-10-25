@@ -1,0 +1,24 @@
+using System;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var source = {{SOURCE_TEXT}};
+var result = SequenceSurfaceShadowSourceRecipe.Parse(source, {{VARIANT}}, VisualThemeMode.{{MODE}});
+foreach (var diagnostic in result.Diagnostics) Console.WriteLine(diagnostic.Code + ": " + diagnostic.Message);
+var artifact = result.Artifact!;
+File.WriteAllText("sequence-source.svg", artifact.ToSvg());
+File.WriteAllBytes("sequence-source.png", artifact.ToPng());
+var model = (SequenceArtifact)artifact.Model!;
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(model.Width, model.Height), 24), model.Theme, model.ThemeMode);
+var prepared = model.Prepare(context);
+File.WriteAllText("sequence-native-filter.svg", prepared.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+File.WriteAllText("sequence.json", prepared.ToArtifact(model.Id, VisualArtifactKind.Sequence).ToInterchangeJson());
+var restored = VisualArtifactInterchangeEnvelope.FromJson(File.ReadAllText("sequence.json")).ToSequenceArtifact();
+restored.Messages[0].Text = "Saved and edited";
+File.WriteAllText("sequence-edited.svg", restored.ToSvg());
+
+{{SOURCE}}
