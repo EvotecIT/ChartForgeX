@@ -77,7 +77,11 @@ public sealed class PngTerminalStoryRenderer {
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, fonts.InitialOutline(story), outputScale, useDefaultOutlineFont: false);
         canvas.Clear(theme.PageBackground);
         PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, fonts, elapsedSeconds);
-        canvas.FillRect(9, layout.HeaderHeightValue + 9, layout.Width - 18, layout.Height - layout.HeaderHeightValue - 18, layout.TabBackground(elapsedSeconds));
+        var bodyRadius = TerminalWindowChrome.FrameRadius(story.WindowStyle) - 1;
+        canvas.FillRoundedRect(9, layout.HeaderHeightValue + 9, layout.Width - 18,
+            layout.Height - layout.HeaderHeightValue - 18, bodyRadius, layout.TabBackground(elapsedSeconds));
+        canvas.FillRect(9, layout.HeaderHeightValue + 9, layout.Width - 18,
+            bodyRadius, layout.TabBackground(elapsedSeconds));
 
         foreach (var renderedTab in layout.Tabs) {
             var tab = renderedTab.Tab;

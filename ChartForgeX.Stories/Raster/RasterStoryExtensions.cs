@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ChartForgeX.Raster;
 
-/// <summary>Encodes static or animated pixel inputs using the Stories-owned GIF and APNG exporters.</summary>
+/// <summary>Encodes static or animated pixel inputs using the core GIF and APNG encoders.</summary>
 public static class RasterStoryExtensions {
     /// <summary>Encodes one RGBA image as a single-frame GIF.</summary>
     public static byte[] ToGif(this RgbaImage image) => GifWriter.WriteRgba(new[] { image }, 10, false);

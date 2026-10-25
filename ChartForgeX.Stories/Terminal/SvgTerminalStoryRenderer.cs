@@ -50,6 +50,10 @@ public sealed class SvgTerminalStoryRenderer {
             .StartElement("filter").Attribute("id", id + "-shadow").Attribute("x", "-15%").Attribute("y", "-15%").Attribute("width", "130%").Attribute("height", "140%").EndStartElement()
             .StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 12).Attribute("stdDeviation", 18).Attribute("flood-color", "#000").Attribute("flood-opacity", 0.28).EndEmptyElement()
             .EndElement().Line()
+            .StartElement("clipPath").Attribute("id", id + "-window-clip").EndStartElement()
+            .StartElement("rect").Attribute("x", 9).Attribute("y", 9).Attribute("width", layout.Width - 18)
+            .Attribute("height", layout.Height - 18).Attribute("rx", TerminalWindowChrome.FrameRadius(story.WindowStyle) - 1).EndEmptyElement()
+            .EndElement().Line()
             .StartElement("style").EndStartElement().Raw(BuildCss(id, layout)).EndElement().Line()
             .EndElement().Line()
             .StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.PageBackground.ToCss()).EndEmptyElement().Line();
@@ -57,6 +61,7 @@ public sealed class SvgTerminalStoryRenderer {
         writer.StartElement("rect")
             .Attribute("data-cfx-role", "terminal-tab-background")
             .Attribute("class", "cfx-terminal-tab-background")
+            .Attribute("clip-path", "url(#" + id + "-window-clip)")
             .Attribute("x", 9)
             .Attribute("y", layout.HeaderHeightValue + 9)
             .Attribute("width", layout.Width - 18)

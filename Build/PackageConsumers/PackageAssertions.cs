@@ -85,8 +85,8 @@ internal static class PackageAssertions {
             Require(core.GetType("ChartForgeX.VisualBlocks." + name) != null, "Genuine diagram left core: " + name);
         foreach (var name in new[] { "ChartForgeX.Composition.VisualCanvas", "ChartForgeX.Composition.ImageComposition",
             "ChartForgeX.Stories.VisualStory", "ChartForgeX.Terminal.TerminalStory",
-            "ChartForgeX.VisualArtifacts.VisualWatermark", "ChartForgeX.Raster.GifWriter", "ChartForgeX.Raster.ApngWriter" })
-            Require(core.GetType(name) == null, "Optional producer/encoder remains in core: " + name);
+            "ChartForgeX.VisualArtifacts.VisualWatermark" })
+            Require(core.GetType(name) == null, "Optional producer remains in core: " + name);
         var gif = new byte[] { 0x47,0x49,0x46,0x38,0x39,0x61,0x02,0x00,0x02,0x00,0x80,0x00,0x00,
             0x00,0xFF,0x00,0xFF,0x00,0x00,0x2C,0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x00,
             0x02,0x02,0x4C,0x01,0x00,0x3B };

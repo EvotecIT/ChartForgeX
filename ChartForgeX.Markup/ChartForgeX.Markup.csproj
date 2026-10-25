@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
-    <PackageReleaseNotes>ChartForgeX 3.0.1 adds offline responsive chart layouts, integer axis ticks, configurable bar widths and topology accent controls. See the consumer migration guide for 3.0 API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.1.0 adds core GIF/APNG encoding and aligned terminal story exports while preserving existing Stories encoder references.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;svg;png;html;topology;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>

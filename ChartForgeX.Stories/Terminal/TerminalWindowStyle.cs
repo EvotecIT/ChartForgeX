@@ -19,21 +19,21 @@ public enum TerminalWindowStyle {
 }
 
 internal static class TerminalWindowChrome {
-    internal const double TitleFontSize = 12;
+    internal const double TitleFontSize = 13;
     internal const double WindowsTabLeft = 16;
     internal const double WindowsTitleX = 56;
     internal const double WindowsTabCloseOffset = 19;
     internal const double WindowsTabCloseRadius = 4;
     private const double WindowsTitleControlGap = 10;
-    private const double WindowsTitleColumnWidth = TitleFontSize;
+    private const double TitleColumnWidth = 8;
 
     internal static double HeaderHeight(TerminalWindowStyle style) {
         Validate(style);
         switch (style) {
-            case TerminalWindowStyle.MacOS: return 42;
-            case TerminalWindowStyle.Linux: return 42;
-            case TerminalWindowStyle.WindowsTerminal: return 50;
-            case TerminalWindowStyle.Minimal: return 38;
+            case TerminalWindowStyle.MacOS: return 28;
+            case TerminalWindowStyle.Linux: return 36;
+            case TerminalWindowStyle.WindowsTerminal: return 32;
+            case TerminalWindowStyle.Minimal: return 28;
             case TerminalWindowStyle.None: return 0;
             default: throw new ArgumentOutOfRangeException(nameof(style));
         }
@@ -41,22 +41,20 @@ internal static class TerminalWindowChrome {
 
     internal static double FrameRadius(TerminalWindowStyle style) {
         Validate(style);
-        return style == TerminalWindowStyle.WindowsTerminal ? 9 : 14;
+        return style == TerminalWindowStyle.WindowsTerminal ? 8 : style == TerminalWindowStyle.Linux ? 12 : 10;
     }
 
-    internal static string FitTitle(string value, int width, TerminalWindowStyle style) {
+    internal static string FitTitle(string value, int width, TerminalWindowStyle style, Func<string, double>? measure = null) {
         if (value == null) throw new ArgumentNullException(nameof(value));
         Validate(style);
         if (style == TerminalWindowStyle.None) return string.Empty;
         if (style == TerminalWindowStyle.WindowsTerminal) {
-            var maximumWindowsColumns = Math.Max(1, (int)Math.Floor(WindowsTitleAvailableWidth(width, 1) / WindowsTitleColumnWidth));
-            return TerminalTextWidth.Fit(value, maximumWindowsColumns);
+            return FitMeasuredTitle(value, WindowsTitleAvailableWidth(width, 1), measure);
         }
 
-        var reservedWidth = style == TerminalWindowStyle.MacOS || style == TerminalWindowStyle.Linux ? 180 : 72;
+        var reservedWidth = style == TerminalWindowStyle.MacOS || style == TerminalWindowStyle.Linux ? (style == TerminalWindowStyle.MacOS ? 168 : 112) : 72;
         var available = Math.Max(12, width - reservedWidth);
-        var maximum = Math.Max(1, available / 12);
-        return TerminalTextWidth.Fit(value, maximum);
+        return FitMeasuredTitle(value, available, measure);
     }
 
     internal static double WindowsTabWidth(int width, int tabCount) {
@@ -79,15 +77,24 @@ internal static class TerminalWindowChrome {
     }
 
     internal static double WindowsTitleAvailableWidth(int width, int tabCount) {
-        return Math.Max(WindowsTitleColumnWidth, WindowsTabWidth(width, tabCount) - 72);
+        return Math.Max(TitleColumnWidth, WindowsTabWidth(width, tabCount) - 72);
     }
 
     internal static double WindowsTitleAvailableWidth(int width) => WindowsTitleAvailableWidth(width, 1);
 
-    internal static string FitTabTitle(string value, int width, int tabCount) {
+    internal static string FitTabTitle(string value, int width, int tabCount, Func<string, double>? measure = null) {
         if (value == null) throw new ArgumentNullException(nameof(value));
-        var maximumColumns = Math.Max(1, (int)Math.Floor(WindowsTitleAvailableWidth(width, tabCount) / WindowsTitleColumnWidth));
-        return TerminalTextWidth.Fit(value, maximumColumns);
+        return FitMeasuredTitle(value, WindowsTitleAvailableWidth(width, tabCount), measure);
+    }
+
+    private static string FitMeasuredTitle(string value, double available, Func<string, double>? measure) {
+        var maximumColumns = Math.Max(1, (int)Math.Floor(available / TitleColumnWidth));
+        var fitted = TerminalTextWidth.Fit(value, maximumColumns);
+        // Keep the terminal-cell budget, but also bound the actual configured face's advance.
+        while (measure != null && fitted.Length > 0 && measure(fitted) > available) {
+            fitted = TerminalTextWidth.Fit(value, --maximumColumns);
+        }
+        return fitted;
     }
 
     internal static void Validate(TerminalWindowStyle style) {

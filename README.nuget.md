@@ -34,6 +34,32 @@ dotnet add package ChartForgeX
 
 Supported targets are .NET Framework 4.7.2, .NET Standard 2.0, .NET 8, and .NET 10. Modern targets enable trimming and Native AOT analysis; the repository includes an executable AOT smoke check.
 
+## Animate existing pixels
+
+`ChartForgeX.Raster.RasterAnimationEncoder` writes GIF or APNG directly from complete
+RGBA canvases, without the Stories package:
+
+```csharp
+using ChartForgeX.Raster;
+
+var frame = new RasterAnimationFrame(image, TimeSpan.FromSeconds(1.2));
+var bytes = RasterAnimationEncoder.Encode(new[] { frame }, RasterAnimationFormat.Gif,
+    new RasterAnimationOptions { PlayCount = 1 });
+```
+
+`image` is an `RgbaImage`. Use a repeatable `RasterAnimationSource` for longer
+animations and `WriteTo` for a caller-owned output stream. Frame durations include
+the final hold. Both containers crop changes. GIF coalesces identical canvases
+when the combined delay fits, retains explicit zero-delay boundaries and uses
+full frames for transparent disposal. Mixed transparent GIF
+animations reserve one palette slot, leaving 255 exact opaque colours per frame.
+
+Starting with 3.1, these encoder types live in `ChartForgeX.dll` with the same
+namespace and names. Rebuild existing consumers against 3.1.0 because the owning
+assembly changes. Source calls remain valid through Stories' dependency on core;
+pixel-only consumers can reference core directly and remove Stories. Upgrade the
+core and Stories packages together when using authored scenes.
+
 ## Your first chart
 
 ```csharp
@@ -244,7 +270,7 @@ report.SaveHtml("summary.html");
 report.SavePng("summary.png");
 ```
 
-Add `ChartForgeX.Visuals` for factual tables, lists, metric cards, mixed visual grids, and fixed-size canvases such as wallpapers or social images. Add `ChartForgeX.Stories` for ordered scenes, code and terminal presentations, transcripts, and GIF/APNG output. These packages use core visuals and remain independent of each other.
+Add `ChartForgeX.Visuals` for factual tables, lists, metric cards, mixed visual grids, and fixed-size canvases such as wallpapers or social images. Add `ChartForgeX.Stories` for ordered scenes, code and terminal presentations, transcripts, and story animation exports. GIF/APNG encoding of existing pixels is in core. These packages use core visuals and remain independent of each other.
 
 See [visual blocks](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/visual-blocks.md), [visual canvases](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/visual-canvas.md), and [stories](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/stories.md) for their APIs and examples.
 
@@ -315,9 +341,9 @@ The adapter also offers legend controls, crosshairs, brushing, synchronized char
 
 | Package | Purpose |
 | --- | --- |
-| `ChartForgeX` | Typed charts and diagrams, shared prepared scenes, typography, SVG/HTML, and native still-image output |
+| `ChartForgeX` | Typed charts and diagrams, shared prepared scenes, typography, SVG/HTML, native still images, and GIF/APNG encoding |
 | `ChartForgeX.Visuals` | Tables, lists, metric cards, canvases, image composition, and watermarks |
-| `ChartForgeX.Stories` | Visual and terminal stories, playback, motion, transcripts, GIF and APNG |
+| `ChartForgeX.Stories` | Visual and terminal stories, playback, motion, transcripts, and story animation export |
 | `ChartForgeX.Mermaid` | Mermaid parsing, source spans, diagnostics, semantic documents, and native conversion |
 | `ChartForgeX.Markup` | Markdown-friendly ChartForgeX visual fences |
 | `ChartForgeX.Markup.Mermaid` | Optional Mermaid-fence bridge for the markup package |
