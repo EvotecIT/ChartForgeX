@@ -1802,6 +1802,54 @@
       }
     },
     {
+      "name": "directory-topology-1440-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1392,
+      "height": 560,
+      "logicalWidth": 1392.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 38,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 389760,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1278,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "directory-topology-390-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 342,
+      "height": 820,
+      "logicalWidth": 342.0,
+      "logicalHeight": 820.0,
+      "svg": {
+        "minVisualNodes": 39,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 140220,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1317,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "domain-control-horizontal-light",
       "layout": {
         "heightMode": "fixed",
@@ -9818,6 +9866,54 @@
       }
     },
     {
+      "name": "service-regions-1440-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1392,
+      "height": 560,
+      "logicalWidth": 1392.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 38,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 389760,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1392,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "service-regions-390-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 342,
+      "height": 820,
+      "logicalWidth": 342.0,
+      "logicalHeight": 820.0,
+      "svg": {
+        "minVisualNodes": 39,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 140220,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1431,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "session-replay-portrait",
       "layout": {
         "heightMode": "fixed",
@@ -10198,6 +10294,54 @@
         "minVisiblePixels": 1174656,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "timing-hierarchy-1440-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1392,
+      "height": 580,
+      "logicalWidth": 1392.0,
+      "logicalHeight": 580.0,
+      "svg": {
+        "minVisualNodes": 27,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 403680,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 681,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "timing-hierarchy-390-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 342,
+      "height": 820,
+      "logicalWidth": 342.0,
+      "logicalHeight": 820.0,
+      "svg": {
+        "minVisualNodes": 27,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 140220,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 755,
         "maxEdgeInkPixels": 0
       }
     },
