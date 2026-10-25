@@ -5,14 +5,16 @@ using System.Threading;
 namespace ChartForgeX.Raster;
 
 internal sealed class GifPalette {
-    public GifPalette(byte[] colors, int transparentIndex = -1) {
+    public GifPalette(byte[] colors, int transparentIndex = -1, bool exact = false) {
         if (colors == null) throw new ArgumentNullException(nameof(colors));
         if (colors.Length != 768) throw new ArgumentException("GIF palettes must contain 256 RGB colors.", nameof(colors));
         if (transparentIndex < -1 || transparentIndex >= 256) throw new ArgumentOutOfRangeException(nameof(transparentIndex), transparentIndex, "GIF transparent palette index must fit the palette.");
+        IsExact = exact;
         Colors = colors;
         TransparentIndex = transparentIndex;
     }
 
+    public bool IsExact { get; }
     public byte[] Colors { get; }
     public int TransparentIndex { get; }
     public bool HasTransparency => TransparentIndex >= 0;
@@ -23,7 +25,9 @@ internal static class GifPaletteQuantizer {
     private const int HistogramSize = 65536;
 
     public static GifPalette BuildPalette(IEnumerable<RgbaImage> frames, CancellationToken cancellationToken = default) {
-        var histogram = BuildHistogram(frames, cancellationToken, out var transparent);
+        var histogram = BuildHistogram(frames, cancellationToken, out var transparent, out var actualColors);
+        var exact = ExactPalette(actualColors, transparent);
+        if (exact != null) return exact;
         var transparentIndex = transparent ? PaletteSize - 1 : -1;
         var colorSlots = transparentIndex >= 0 ? PaletteSize - 1 : PaletteSize;
         var samples = new List<ColorSample>();
@@ -34,8 +38,12 @@ internal static class GifPaletteQuantizer {
         }
 
         if (samples.Count == 0) samples.Add(new ColorSample(0, 0, 0, 1));
+        // Preserve frequent source colours (including flat fills and glyph ink) before allocating gradient shades.
+        var frequent = new List<KeyValuePair<int, long>>(actualColors);
+        frequent.Sort((left, right) => { var order = right.Value.CompareTo(left.Value); return order != 0 ? order : left.Key.CompareTo(right.Key); });
+        var reserved = Math.Min(64, frequent.Count);
         var boxes = new List<ColorBox> { ColorBox.Create(samples, 0, samples.Count) };
-        while (boxes.Count < colorSlots) {
+        while (boxes.Count < colorSlots - reserved) {
             cancellationToken.ThrowIfCancellationRequested();
             var index = LargestSplittableBox(boxes);
             if (index < 0) break;
@@ -45,9 +53,10 @@ internal static class GifPaletteQuantizer {
         }
 
         var colors = new byte[PaletteSize * 3];
-        for (var i = 0; i < boxes.Count && i < colorSlots; i++) WriteAverageColor(colors, i, samples, boxes[i]);
-        var fallback = Math.Max(0, boxes.Count - 1);
-        for (var i = boxes.Count; i < colorSlots; i++) {
+        for (var i = 0; i < reserved; i++) WriteColor(colors, i, frequent[i].Key);
+        for (var i = 0; i < boxes.Count && i + reserved < colorSlots; i++) WriteAverageColor(colors, i + reserved, samples, boxes[i]);
+        var fallback = Math.Max(0, boxes.Count + reserved - 1);
+        for (var i = boxes.Count + reserved; i < colorSlots; i++) {
             colors[i * 3] = colors[fallback * 3];
             colors[i * 3 + 1] = colors[fallback * 3 + 1];
             colors[i * 3 + 2] = colors[fallback * 3 + 2];
@@ -64,53 +73,67 @@ internal static class GifPaletteQuantizer {
 
     public static byte[] Quantize(RgbaImage frame, GifPalette palette, CancellationToken cancellationToken = default) {
         var indexed = new byte[frame.Width * frame.Height];
-        var cache = new int[HistogramSize];
-        for (var i = 0; i < cache.Length; i++) cache[i] = -1;
-        var currentRed = new double[frame.Width + 2];
-        var currentGreen = new double[frame.Width + 2];
-        var currentBlue = new double[frame.Width + 2];
-        var nextRed = new double[frame.Width + 2];
-        var nextGreen = new double[frame.Width + 2];
-        var nextBlue = new double[frame.Width + 2];
-
-        for (var y = 0; y < frame.Height; y++) {
-            cancellationToken.ThrowIfCancellationRequested();
-            var row = y * frame.Width;
-            for (var x = 0; x < frame.Width; x++) {
-                var source = (row + x) * 4;
-                if (palette.HasTransparency && IsTransparent(frame.Pixels[source + 3])) {
-                    indexed[row + x] = (byte)palette.TransparentIndex;
-                    continue;
-                }
-
-                var r = ClampToByte(frame.Pixels[source] + currentRed[x + 1]);
-                var g = ClampToByte(frame.Pixels[source + 1] + currentGreen[x + 1]);
-                var b = ClampToByte(frame.Pixels[source + 2] + currentBlue[x + 1]);
-                var index = NearestColorIndex(palette, r, g, b, cache);
-                indexed[row + x] = (byte)index;
-                var offset = index * 3;
-                var er = r - palette.Colors[offset];
-                var eg = g - palette.Colors[offset + 1];
-                var eb = b - palette.Colors[offset + 2];
-                Diffuse(currentRed, nextRed, x, er);
-                Diffuse(currentGreen, nextGreen, x, eg);
-                Diffuse(currentBlue, nextBlue, x, eb);
-            }
-
-            Swap(ref currentRed, ref nextRed);
-            Swap(ref currentGreen, ref nextGreen);
-            Swap(ref currentBlue, ref nextBlue);
-            Array.Clear(nextRed, 0, nextRed.Length);
-            Array.Clear(nextGreen, 0, nextGreen.Length);
-            Array.Clear(nextBlue, 0, nextBlue.Length);
+        var exact = new Dictionary<int, byte>();
+        var slots = palette.HasTransparency ? palette.TransparentIndex : PaletteSize;
+        for (var i = 0; i < slots; i++) {
+            var offset = i * 3;
+            var key = (palette.Colors[offset] << 16) | (palette.Colors[offset + 1] << 8) | palette.Colors[offset + 2];
+            if (!exact.ContainsKey(key)) exact.Add(key, (byte)i);
         }
-
+        for (var i = 0; i < indexed.Length; i++) {
+            if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
+            var source = i * 4;
+            if (palette.HasTransparency && IsTransparent(frame.Pixels[source + 3])) {
+                indexed[i] = (byte)palette.TransparentIndex;
+                continue;
+            }
+            var r = frame.Pixels[source]; var g = frame.Pixels[source + 1]; var b = frame.Pixels[source + 2];
+            // Never diffuse error across glyph edges. Exact colours bypass the approximate lookup entirely.
+            var key = (r << 16) | (g << 8) | b;
+            if (!exact.TryGetValue(key, out var match)) {
+                match = (byte)NearestColorIndex(palette, r, g, b);
+                if (exact.Count < 65536) exact.Add(key, match);
+            }
+            indexed[i] = match;
+        }
         return indexed;
     }
 
-    private static GifHistogram BuildHistogram(IEnumerable<RgbaImage> frames, CancellationToken cancellationToken, out bool transparent) {
+    internal static GifPalette? TryExactPalette(RgbaImage image, CancellationToken token, bool reserveTransparency = false) {
+        var colors = new Dictionary<int, long>();
+        var transparent = reserveTransparency;
+        var canvasBytes = checked(image.Width * image.Height * 4);
+        for (var i = 0; i < canvasBytes; i += 4) {
+            if ((i & 16383) == 0) token.ThrowIfCancellationRequested();
+            if (IsTransparent(image.Pixels[i + 3])) { transparent = true; }
+            else {
+                var key = (image.Pixels[i] << 16) | (image.Pixels[i + 1] << 8) | image.Pixels[i + 2];
+                colors[key] = 1;
+            }
+            if (colors.Count > (transparent ? 255 : 256)) return null;
+        }
+        return ExactPalette(colors, transparent);
+    }
+
+    private static GifPalette? ExactPalette(Dictionary<int, long> actualColors, bool transparent) {
+        if (actualColors.Count > (transparent ? 255 : 256)) return null;
+        var keys = new List<int>(actualColors.Keys);
+        keys.Sort();
+        var colors = new byte[768];
+        for (var i = 0; i < keys.Count; i++) WriteColor(colors, i, keys[i]);
+        return new GifPalette(colors, transparent ? 255 : -1, exact: true);
+    }
+
+    private static void WriteColor(byte[] colors, int index, int color) {
+        colors[index * 3] = (byte)(color >> 16);
+        colors[index * 3 + 1] = (byte)(color >> 8);
+        colors[index * 3 + 2] = (byte)color;
+    }
+
+    private static GifHistogram BuildHistogram(IEnumerable<RgbaImage> frames, CancellationToken cancellationToken, out bool transparent, out Dictionary<int, long> actualColors) {
         var histogram = new GifHistogram();
         transparent = false;
+        actualColors = new Dictionary<int, long>();
         foreach (var frame in frames) {
             var pixels = frame.Pixels;
             for (var i = 0; i < frame.Width * frame.Height; i++) {
@@ -120,6 +143,9 @@ internal static class GifPaletteQuantizer {
                 var r = pixels[source];
                 var g = pixels[source + 1];
                 var b = pixels[source + 2];
+                var actual = (r << 16) | (g << 8) | b;
+                if (actualColors.TryGetValue(actual, out var count)) actualColors[actual] = count + 1;
+                else if (actualColors.Count < 65536) actualColors.Add(actual, 1);
                 var key = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
                 histogram.Counts[key]++;
                 histogram.Red[key] += r;
@@ -166,10 +192,7 @@ internal static class GifPaletteQuantizer {
         colors[offset + 2] = (byte)Math.Max(0, Math.Min(255, blue / count));
     }
 
-    private static int NearestColorIndex(GifPalette palette, double red, double green, double blue, int[] cache) {
-        var key = (((int)red & 0xF8) << 8) | (((int)green & 0xFC) << 3) | ((int)blue >> 3);
-        var cached = cache[key];
-        if (cached >= 0) return cached;
+    private static int NearestColorIndex(GifPalette palette, double red, double green, double blue) {
         var best = 0;
         var bestDistance = double.MaxValue;
         var colorSlots = palette.HasTransparency ? palette.TransparentIndex : PaletteSize;
@@ -184,27 +207,10 @@ internal static class GifPaletteQuantizer {
             best = i;
         }
 
-        cache[key] = best;
         return best;
     }
 
-    private static void Diffuse(double[] current, double[] next, int x, double error) {
-        current[x + 2] += error * 7.0 / 16.0;
-        next[x] += error * 3.0 / 16.0;
-        next[x + 1] += error * 5.0 / 16.0;
-        next[x + 2] += error / 16.0;
-    }
-
-    private static double ClampToByte(double value) =>
-        value < 0 ? 0 : value > 255 ? 255 : value;
-
     private static bool IsTransparent(byte alpha) => alpha < 128;
-
-    private static void Swap(ref double[] first, ref double[] second) {
-        var temp = first;
-        first = second;
-        second = temp;
-    }
 
     private sealed class GifHistogram {
         public readonly long[] Counts = new long[HistogramSize];

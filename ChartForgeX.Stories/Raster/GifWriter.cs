@@ -25,25 +25,12 @@ internal static partial class GifWriter {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (animation == null) throw new ArgumentNullException(nameof(animation));
         ValidateLogicalScreen(animation);
-        cancellationToken.ThrowIfCancellationRequested();
-        WriteAscii(stream, "GIF89a");
-        var palette = GifPaletteQuantizer.BuildPalette(animation.Frames, cancellationToken);
-        WriteUInt16(stream, animation.Width, "logical screen width");
-        WriteUInt16(stream, animation.Height, "logical screen height");
-        stream.WriteByte(0xF7);
-        stream.WriteByte(palette.HasTransparency ? (byte)palette.TransparentIndex : (byte)0);
-        stream.WriteByte(0);
-        WritePalette(stream, palette);
-        if (animation.PlayCount != 1) WriteLoopExtension(stream, animation.PlayCount == 0 ? 0 : animation.PlayCount - 1);
-        var indexedFrames = GifFrameOptimizer.BuildFrames(animation.Frames, palette, cancellationToken);
-        for (var index = 0; index < indexedFrames.Count; index++) {
-            cancellationToken.ThrowIfCancellationRequested();
-            WriteFrame(stream, indexedFrames[index], animation.DelayForFrame(index), palette, cancellationToken);
-        }
-        stream.WriteByte(0x3B);
+        var source = new RasterAnimationSource(animation.Width, animation.Height, animation.Frames.Count,
+            (index, _) => new RasterAnimationFrame(animation.Frames[index], TimeSpan.FromMilliseconds(animation.DelayForFrame(index) * 10d)));
+        WriteSource(stream, source, animation.PlayCount, cancellationToken);
     }
 
-    private static void WriteFrame(Stream stream, GifIndexedFrame frame, int delayCentiseconds, GifPalette palette, CancellationToken cancellationToken) {
+    private static void WriteFrame(Stream stream, GifIndexedFrame frame, int delayCentiseconds, GifPalette palette, CancellationToken cancellationToken, bool localPalette = false) {
         ValidateFrame(frame);
         stream.WriteByte(0x21);
         stream.WriteByte(0xF9);
@@ -57,7 +44,8 @@ internal static partial class GifWriter {
         WriteUInt16(stream, frame.Top, "frame top offset");
         WriteUInt16(stream, frame.Width, "frame width");
         WriteUInt16(stream, frame.Height, "frame height");
-        stream.WriteByte(0);
+        stream.WriteByte(localPalette ? (byte)0x87 : (byte)0);
+        if (localPalette) WritePalette(stream, palette);
         stream.WriteByte(8);
         WriteSubBlocks(stream, LzwEncode(frame.Pixels, 8, cancellationToken));
     }
@@ -67,41 +55,30 @@ internal static partial class GifWriter {
         var endCode = clearCode + 1;
         var nextCode = endCode + 1;
         var codeSize = minimumCodeSize + 1;
-        var resetBeforeCode = (1 << codeSize) - 1;
-        var dictionary = CreateDictionary();
+        var dictionary = new Dictionary<int, int>(4096);
         var writer = new BitWriter();
         writer.Write(clearCode, codeSize);
-        var prefix = indices.Length == 0 ? string.Empty : ((char)indices[0]).ToString();
+        if (indices.Length == 0) { writer.Write(endCode, codeSize); return writer.ToArray(); }
+        var prefix = (int)indices[0];
         for (var i = 1; i < indices.Length; i++) {
             if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
-            var value = (char)indices[i];
-            var candidate = prefix + value;
-            if (dictionary.ContainsKey(candidate)) {
-                prefix = candidate;
-                continue;
-            }
-
-            writer.Write(dictionary[prefix], codeSize);
-            if (nextCode < resetBeforeCode) {
-                dictionary[candidate] = nextCode++;
-            } else {
+            var value = indices[i];
+            var key = (prefix << 8) | value;
+            if (dictionary.TryGetValue(key, out var code)) { prefix = code; continue; }
+            writer.Write(prefix, codeSize);
+            // The decoder builds its dictionary one emitted code behind the encoder.
+            if (nextCode == 1 << codeSize && codeSize < 12) codeSize++;
+            if (nextCode < 4096) dictionary.Add(key, nextCode++);
+            else {
                 writer.Write(clearCode, codeSize);
-                dictionary = CreateDictionary();
-                nextCode = endCode + 1;
+                dictionary.Clear(); nextCode = endCode + 1; codeSize = minimumCodeSize + 1;
             }
-
-            prefix = value.ToString();
+            prefix = value;
         }
-
-        if (prefix.Length > 0) writer.Write(dictionary[prefix], codeSize);
+        writer.Write(prefix, codeSize);
+        if (nextCode == 1 << codeSize && codeSize < 12) codeSize++;
         writer.Write(endCode, codeSize);
         return writer.ToArray();
-    }
-
-    private static Dictionary<string, int> CreateDictionary() {
-        var dictionary = new Dictionary<string, int>(256, StringComparer.Ordinal);
-        for (var i = 0; i < 256; i++) dictionary[((char)i).ToString()] = i;
-        return dictionary;
     }
 
     private static void WritePalette(Stream stream, GifPalette palette) {
