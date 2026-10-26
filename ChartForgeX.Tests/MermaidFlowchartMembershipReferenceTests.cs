@@ -22,7 +22,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             + "<h2>Pinned Mermaid " + reference.GetProperty("version").GetString() + " / membership " + family + "</h2><section id='reference'></section>"
             + "<h2>Native SVG</h2><section id='native'>" + svg + "</section><h2>Native PNG</h2><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1050); await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,family,dark,fontFamily}) => {
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic',layout:family==='swimlane-beta'?'swimlane':'dagre',flowchart:{htmlLabels:false}});
                 const result=await mermaid.render('membership-reference',source);document.querySelector('#reference').innerHTML=result.svg;

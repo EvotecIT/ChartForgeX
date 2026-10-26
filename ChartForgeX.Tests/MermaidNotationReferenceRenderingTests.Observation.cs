@@ -5,6 +5,7 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class MermaidNotationReferenceRenderingTests {
     private static async Task<JsonElement> ObserveAsync(IPage page, string source, string key, bool dark, Dictionary<string, int> regions,string? preset=null,string? look=null,bool omitAppearance=false) {
+        await BrowserProofCaptions.InstallAsync(page);
         var json = await page.EvaluateAsync<string>("""
             async ({source,key,dark,regions,fontFamily,preset,look,omitAppearance}) => {
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,
@@ -21,16 +22,13 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
                 const db=key?(await mermaid.mermaidAPI.getDiagramFromText(source)).db:null;
                 const facts=key?window.cfxReferenceFacts[key](db):null;
                 const normalize=text=>text.replace(/\\n/g,' ').replace(/\s+/g,' ').trim();
-                const visibleText=svg=>normalize([...svg.querySelectorAll('text,foreignObject')].map(node=> {
-                    const copy=node.cloneNode(true); for(const br of copy.querySelectorAll('br')) br.replaceWith(' ');
-                    return copy.textContent;
-                }).join(' '));
+                const visibleText=window.cfxReferenceCaptionText;
                 const clip=[];
                 for(const [surface,svg] of [['reference',reference],['native',native]]) {
                     const frame=svg.getBoundingClientRect();
-                    for(const label of svg.querySelectorAll('text,foreignObject')) {
+                    for(const label of svg.querySelectorAll('text,foreignObject,[data-cfx-caption]')) {
                         const box=label.getBoundingClientRect();
-                        if(box.width===0||box.height===0||!label.textContent.trim()) continue;
+                        if(box.width===0||box.height===0||!window.cfxReferenceLabelText(label)) continue;
                         if(box.left<frame.left-1.5||box.top<frame.top-1.5||box.right>frame.right+1.5||box.bottom>frame.bottom+1.5)
                             clip.push(surface+': '+normalize(label.textContent));
                     }
@@ -55,7 +53,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         File.WriteAllText(Path.Combine(output, name + ".native.json"), semantics);
         File.WriteAllText(Path.Combine(output, name + ".native.svg"), nativeSvg);
         File.WriteAllBytes(Path.Combine(output, name + ".native.png"), nativePng);
-        File.WriteAllText(Path.Combine(output, name + ".reference.svg"), await page.Locator("#reference svg").EvaluateAsync<string>("element=>element.outerHTML"));
+        File.WriteAllText(Path.Combine(output, name + ".reference.svg"), await page.Locator("#reference > svg").EvaluateAsync<string>("element=>element.outerHTML"));
         File.WriteAllText(Path.Combine(output, name + ".html"), await page.EvaluateAsync<string>("""
             () => { const copy=document.documentElement.cloneNode(true); for(const script of copy.querySelectorAll('script')) script.remove(); return '<!doctype html>'+copy.outerHTML; }
             """));

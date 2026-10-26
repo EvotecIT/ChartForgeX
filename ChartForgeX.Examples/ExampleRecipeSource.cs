@@ -13,6 +13,7 @@ public static partial class ExampleRecipeSource {
                 ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\n" +
                     "FontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\n" +
                     "FontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : "",
             ["{{FONT}}"] = galleryTypography ? ", FontSpec.FromFamily(\"CFX Proof Carlito\")" : "",
             ["{{MODE}}"] = mode.ToString(),
             ["{{FACTORY}}"] = recipe.Factory,

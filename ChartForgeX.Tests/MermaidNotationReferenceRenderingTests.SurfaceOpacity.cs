@@ -26,7 +26,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, 900, 1000);
         var errors = new List<string>(); session.Page.PageError += (_, error) => errors.Add(error);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,fontFamily}) => {
                 mermaid.initialize({startOnLoad:false,securityLevel:'strict',htmlLabels:false,fontFamily,theme:'default',look:'classic',flowchart:{htmlLabels:false}});
                 document.querySelector('#reference').innerHTML=(await mermaid.render('surface-opacity-reference',source)).svg;

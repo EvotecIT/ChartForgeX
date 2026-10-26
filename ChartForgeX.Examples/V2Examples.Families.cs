@@ -1,7 +1,9 @@
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Topology;
 using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
 
 public static partial class V2Examples {
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -146,6 +148,21 @@ public static partial class V2Examples {
     private static void WriteModel(string output, ICollection<ProofArtifact> artifacts, IVisualRenderable model, string id, string family, string title,
         string variant, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, ExampleRecipe recipe, string[]? kinds = null, bool compact = false) {
         var context = GalleryContext(width, height, mode, title, subtitle, legend);
+        if (model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+            // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
+            var natural = topology.WithTitle(title).WithSubtitle(subtitle)
+                .WithTheme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
+            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), natural.ToSvg());
+            File.WriteAllBytes(Path.Combine(output, id + ".png"), natural.ToPng());
+            WriteThumbnail(output, model, id, title, family, mode, legend);
+            width = (int)Math.Ceiling(natural.NaturalSize!.Value.Width);
+            height = (int)Math.Ceiling(natural.NaturalSize.Value.Height);
+            WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, "Topology");
+            artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
+                new[] { "example.native-natural-size" }, natural.Regions.Count, kinds,
+                new[] { "Complete authored geometry retains natural size; compact hosts may scroll." }, compact));
+            return;
+        }
         var prepared = model.Prepare(context);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());

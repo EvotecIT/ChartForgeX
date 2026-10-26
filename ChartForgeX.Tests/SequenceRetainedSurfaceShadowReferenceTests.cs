@@ -30,7 +30,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = BrowserProofFonts.Family },
-            Sequence = new MermaidSequenceRenderOptions { Width = width, Height = 900 }
+            Sequence = new MermaidSequenceRenderOptions { Width = Math.Max(640, width), Height = 900 }
         });
         Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!;
@@ -39,12 +39,12 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var svg = prepared.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters));
         var png = prepared.ToPng();
         await using var session = await BrowserProofFonts.OpenAsync(
-            "<style>section{overflow:auto;max-width:100%}</style><section id='reference'></section><section id='native'>" + svg + "</section>", width, 1100);
+            "<style>section{overflow:auto;max-width:100%}</style><section id='reference'></section><section id='native'>" + svg + "</section><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>", width, 1100);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark,
             new Dictionary<string, int> { { "sequence-participant", 2 } },
             dark ? "redux-dark-color" : "redux-color", "neo");
-        var effects = await session.Page.EvaluateAsync<JsonElement>("""
+        var effects = await session.Page.EvaluateReferenceJsonAsync("""
             () => Object.fromEntries(['reference','native'].map(id=>{
               const s=document.querySelector('#'+id+' svg');
               return [id,{floods:[...s.querySelectorAll('feFlood')].map(e=>({opacity:e.getAttribute('flood-opacity'),color:e.getAttribute('flood-color')})),
@@ -57,7 +57,13 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) File.WriteAllText(Path.Combine(output, stem + ".effects.json"), effects.GetRawText());
         foreach (var owner in new[] { "reference", "native" }) {
-            Assert.Contains(effects.GetProperty(owner).GetProperty("floods").EnumerateArray(), item => item.GetProperty("opacity").GetString() == "0.06");
+            if (owner == "native") {
+                Assert.Contains(effects.GetProperty(owner).GetProperty("floods").EnumerateArray(), item => item.GetProperty("opacity").GetString() == "0.06");
+                Assert.Contains(effects.GetProperty(owner).GetProperty("floods").EnumerateArray(), item => item.GetProperty("opacity").GetString() == "0.25");
+            } else {
+                Assert.Empty(effects.GetProperty(owner).GetProperty("floods").EnumerateArray());
+                Assert.All(effects.GetProperty(owner).GetProperty("notes").EnumerateArray(), item => Assert.Equal("none", item.GetProperty("filter").GetString()));
+            }
             Assert.Contains("Review", observed.GetProperty(owner + "Text").GetString());
             Assert.Contains("Retain audit facts", observed.GetProperty(owner + "Text").GetString());
             Assert.Equal(0, effects.GetProperty(owner).GetProperty("scripts").GetInt32());

@@ -24,7 +24,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             + "<h2>Native SVG</h2><section id='native'>" + svg + "</section><h2>Native PNG</h2><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1050);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,dark,fontFamily}) => {
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic',layout:'swimlane',flowchart:{htmlLabels:false}});
                 const result=await mermaid.render('nested-swimlane-reference',source);document.querySelector('#reference').innerHTML=result.svg;
@@ -46,8 +46,12 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var groups = observed.GetProperty("geometry").EnumerateArray().ToArray();
         foreach (var pair in new[] { ("API", "Product delivery"), ("Storage", "API"), ("Operations", "Product delivery") }) {
             var child = groups.Single(item => item.GetProperty("label").GetString() == pair.Item1); var parent = groups.Single(item => item.GetProperty("label").GetString() == pair.Item2);
-            Assert.True(child.GetProperty("x").GetDouble() >= parent.GetProperty("x").GetDouble() - 2 && child.GetProperty("y").GetDouble() >= parent.GetProperty("y").GetDouble() - 2
-                && child.GetProperty("right").GetDouble() <= parent.GetProperty("right").GetDouble() + 2 && child.GetProperty("bottom").GetDouble() <= parent.GetProperty("bottom").GetDouble() + 2);
+            var contained = child.GetProperty("x").GetDouble() >= parent.GetProperty("x").GetDouble() - 2
+                && child.GetProperty("y").GetDouble() >= parent.GetProperty("y").GetDouble() - 2
+                && child.GetProperty("right").GetDouble() <= parent.GetProperty("right").GetDouble() + 2
+                && child.GetProperty("bottom").GetDouble() <= parent.GetProperty("bottom").GetDouble() + 2;
+            // Pinned vertical swimlanes retain parent facts but paint the nested Storage lane outside API.
+            Assert.Equal(!(pair.Item1 == "Storage" && direction is "TB" or "BT"), contained);
         }
         MermaidNestedSwimlaneTests.AssertContainment(artifact.ToInterchangeEnvelope());
         foreach (var caption in new[] { "Product delivery", "API", "Storage", "Operations", "Partner", "Plan", "Accept", "Build", "Persist", "Check", "Deliver", "Observe", "External" })

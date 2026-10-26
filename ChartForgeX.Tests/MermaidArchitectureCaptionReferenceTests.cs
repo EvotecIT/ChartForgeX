@@ -25,7 +25,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1000);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark, new Dictionary<string, int> { ["topology-node"] = 4, ["topology-group"] = 3, ["topology-edge"] = 3 });
-        var facts = await session.Page.EvaluateAsync<JsonElement>("""
+        var facts = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
                 const db=(await mermaid.mermaidAPI.getDiagramFromText(source)).db;
                 return {groups:db.getGroups().map(group=>({id:group.id,title:group.title??null,icon:group.icon??null})),

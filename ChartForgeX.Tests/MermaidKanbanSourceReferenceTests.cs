@@ -15,7 +15,8 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(corpus, "compatibility.json")));
         var reference = manifest.RootElement.GetProperty("references").GetProperty("12"); var bundle = Path.Combine(corpus, "node_modules", reference.GetProperty("package").GetString()!);
         using var installed = JsonDocument.Parse(File.ReadAllText(Path.Combine(bundle, "package.json"))); Assert.Equal(reference.GetProperty("version").GetString(), installed.RootElement.GetProperty("version").GetString());
-        var source = MermaidKanbanSourceGeometryTests.Fixture(); var rendered = MermaidRenderer.Render(source, MermaidKanbanSourceGeometryTests.Options(dark, width));
+        // Native accessibility declarations are separately qualified; this pinned parser treats them as Kanban sections.
+        var source = string.Join("\n", MermaidKanbanSourceGeometryTests.Fixture().Split('\n').Where(line => !line.StartsWith("accTitle:", StringComparison.Ordinal) && !line.StartsWith("accDescr:", StringComparison.Ordinal))); var rendered = MermaidRenderer.Render(source, MermaidKanbanSourceGeometryTests.Options(dark, width));
         Assert.Empty(rendered.Diagnostics); var artifact = rendered.Artifact!; var svg = artifact.ToSvg(); var png = artifact.ToPng();
         var html = "<style>body{padding:12px;box-sizing:border-box;font-family:'" + BrowserProofFonts.Family + "';background:" + (dark ? "#171b23;color:#edf2f7" : "white;color:#182235")
             + "}h2{font-size:18px}section{max-width:100%;overflow:auto;margin-bottom:20px}svg,img{display:block;max-width:none}</style><h2>Pinned Mermaid "
@@ -24,7 +25,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1000);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark, new Dictionary<string, int> { ["topology-node"] = 13, ["topology-group"] = 3, ["topology-edge"] = 0 });
-        var facts = await session.Page.EvaluateAsync<JsonElement>("""
+        var facts = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
               const data=(await mermaid.mermaidAPI.getDiagramFromText(source)).db.getData();
               return {padding:data.config.kanban.padding,sectionWidth:data.config.kanban.sectionWidth,

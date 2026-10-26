@@ -21,7 +21,7 @@ const string family = "Example Primary, Example Fallback";
 Chart Model(double value) => NativeRadialMotionRecipe.Create({{DONUT}}, false, value, {{WIDTH}}, VisualThemeMode.{{MODE}})
     .WithFontFamily(family).WithXLabels("Asia 世界", "Europe", "Americas");
 var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareSection(Model(60)); var to = renderer.PrepareSection(Model(80));
-var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 9);
+var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3);
 var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);
 var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>{chart.update(forward?"
     + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?"

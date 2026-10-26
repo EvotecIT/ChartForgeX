@@ -27,9 +27,9 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, 1100, 1000);
         var errors = new List<string>(); session.Page.PageError += (_, error) => errors.Add(error);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,fontFamily}) => {
-                mermaid.initialize({startOnLoad:false,securityLevel:'strict',fontFamily,theme:'default',look:'classic',flowchart:{htmlLabels:false},agentflow:{htmlLabels:false}});
+                mermaid.initialize({startOnLoad:false,securityLevel:'strict',htmlLabels:false,fontFamily,theme:'default',look:'classic',flowchart:{htmlLabels:false},agentflow:{htmlLabels:false}});
                 document.querySelector('#reference').innerHTML=(await mermaid.render('palette-reference-diagram',source)).svg;
                 await document.fonts.ready; await document.querySelector('#png').decode();
                 const reference=document.querySelector('#reference svg'),native=document.querySelector('#native svg');
@@ -53,12 +53,18 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         }
         Assert.Equal("rect", observed.GetProperty("nodeTag").GetString()); Assert.Equal("rect", observed.GetProperty("groupTag").GetString()); Assert.Equal("rect", observed.GetProperty("edgeLabelTag").GetString());
         Paint("node", explicitRoles ? "rgb(238,238,255)" : "rgb(236,236,255)", explicitRoles ? "rgb(18,52,86)" : "rgb(147,112,219)", 1);
-        Assert.Equal(explicitRoles ? "rgb(35,69,103)" : "rgb(51,51,51)", observed.GetProperty("label").GetProperty("fill").GetString());
+        Assert.Equal("rgb(51,51,51)", observed.GetProperty("label").GetProperty("fill").GetString());
+        var nativeLabel = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(e => e.Name.LocalName == "text" && e.Value == "Work");
+        Assert.Equal(explicitRoles ? "#234567" : "#333333", (string?)nativeLabel.Attribute("fill"), ignoreCase: true);
         Paint("group", family == "agentflow" ? "none" : explicitRoles ? "rgb(255,237,221)" : "rgb(255,255,222)", explicitRoles ? "rgb(135,101,67)" : "rgb(170,170,51)", 1);
         Assert.Equal(family == "agentflow" ? .75 : 1, observed.GetProperty("group").GetProperty("strokeWidth").GetDouble());
         Assert.Equal(explicitRoles ? "rgb(86,120,144)" : "rgb(51,51,51)", observed.GetProperty("groupLabel").GetProperty("fill").GetString());
         Paint("edgeLabel", explicitRoles ? "rgb(204,221,238)" : "rgba(232,232,232,0.8)", null, .5);
-        Assert.Equal(explicitRoles ? "rgb(35,69,103)" : "rgb(51,51,51)", observed.GetProperty("edgeText").GetProperty("fill").GetString());
+        // Pinned Mermaid retains its default edge-caption color even with textColor configured.
+        Assert.Equal("rgb(51,51,51)", observed.GetProperty("edgeText").GetProperty("fill").GetString());
+        var nativePaint = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "topology-edge-label").SelectMany(e => e.Descendants()).Where(e => e.Name.LocalName == "text").Select(e => (string?)e.Attribute("fill")).ToArray();
+        Assert.NotEmpty(nativePaint);
+        Assert.All(nativePaint, fill => Assert.Equal(explicitRoles ? "#234567" : "#333333", fill, ignoreCase: true));
         Assert.Equal("rgb(51,51,51)", observed.GetProperty("heading").GetProperty("fill").GetString());
         Assert.Equal(0, observed.GetProperty("nativeActive").GetInt32()); Assert.Empty(errors); InteractiveChartBrowser.AssertNoConsoleErrors(session);
         void Paint(string role, string fill, string? stroke, double opacity) {

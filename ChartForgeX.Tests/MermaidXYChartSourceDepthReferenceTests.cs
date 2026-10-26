@@ -28,7 +28,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var errors = new List<string>(); page.PageError += (_, message) => errors.Add(message);
         await page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         await page.AddScriptTagAsync(new PageAddScriptTagOptions { Content = File.ReadAllText(Path.Combine(corpus, "reference-xychart.mjs")).Replace("export function ", "function ", StringComparison.Ordinal) });
-        var observed = await page.EvaluateAsync<JsonElement>("""
+        var observed = await page.EvaluateReferenceJsonAsync("""
             async ({source,dark,fontFamily}) => {
               mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic'});
               const parsed=await mermaid.mermaidAPI.getDiagramFromText(source), facts=xyChartSourceFacts(parsed.db);

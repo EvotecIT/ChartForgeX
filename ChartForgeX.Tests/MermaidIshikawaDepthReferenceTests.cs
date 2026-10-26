@@ -25,14 +25,14 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1100);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark, new Dictionary<string, int> { ["fishbone-cause"] = 28 });
-        var facts = await session.Page.EvaluateAsync<JsonElement>("""
+        var facts = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
               const db=(await mermaid.mermaidAPI.getDiagramFromText(source)).db,root=db.getRoot(),nodes=[];
               const visit=(node,id,parent)=>{nodes.push({id,parent,text:node.text});node.children.forEach((child,i)=>visit(child,id+'.'+i,id))};
               root.children.forEach((node,i)=>visit(node,'cause-'+i,null));
               const svg=document.querySelector('#reference svg'),spine=svg.querySelector('.ishikawa-spine'),head=svg.querySelector('.ishikawa-head'),label=svg.querySelector('text');
               return {effect:root.text,nodes,paint:{line:getComputedStyle(spine).stroke,head:getComputedStyle(head).fill,text:getComputedStyle(label).fill},
-                referenceLabels:[...svg.querySelectorAll('text')].map(n=>n.textContent.replace(/\s+/g,' ').trim())};
+                referenceLabels:[...svg.querySelectorAll('text')].map(window.cfxReferenceLabelText)};
             }
             """, source);
         var name = "ishikawa-depth-reference12-" + width + (dark ? "-dark" : "-light");

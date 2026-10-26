@@ -33,7 +33,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark,
             new Dictionary<string, int> { ["sequence-participant"] = 8, ["sequence-message"] = 9, ["sequence-notation"] = 7 });
-        var participants = await session.Page.EvaluateAsync<JsonElement>("""
+        var participants = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
                 const db=(await mermaid.mermaidAPI.getDiagramFromText(source)).db;
                 return {actors:[...db.getActors()].map(([id,actor])=>({id,type:actor.type,alias:actor.description})),

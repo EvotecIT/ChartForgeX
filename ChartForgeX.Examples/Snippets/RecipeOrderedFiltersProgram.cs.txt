@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ChartForgeX.Effects;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
@@ -11,9 +12,10 @@ using ChartForgeX.VisualArtifacts;
 internal static class Program {
     private static void Main() {
         Directory.CreateDirectory("ordered-filter-output");
-        var builder = new VisualSceneBuilder(new VisualSize(8, 6), FontSpec.SystemSans());
-        builder.Rect(new ChartRect(2, 2, 3, 2), ChartColor.White);
-        var source = new PreparedVisual(builder.Build());
+        var model = Chart.Create().WithSize(160, 120).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels(false)
+            .AddLine("Source", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5) });
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(160, 120), 12));
+        var source = model.Prepare(context);
         var options = new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters);
         foreach (var kind in new[] { "outline", "bloom" }) {
             var root = kind == "outline" ? source.WithOutline(new VisualOutline(ChartColor.FromRgb(0, 0, 255), 1, false))

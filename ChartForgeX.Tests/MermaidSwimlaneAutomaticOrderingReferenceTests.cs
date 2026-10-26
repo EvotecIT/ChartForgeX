@@ -18,7 +18,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var artifact=rendered.Artifact!;var svg=artifact.ToSvg();var png=artifact.ToPng();
         await using var session=await BrowserProofFonts.OpenAsync("<style>body{margin:0;padding:16px;box-sizing:border-box}section{max-width:100%;overflow:auto}</style><h2>Reference</h2><section id='reference'></section><h2>Native</h2><section>"+svg+"</section>",width,1000);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions {Path=Path.Combine(bundle,"dist","mermaid.min.js")});
-        var observed=await session.Page.EvaluateAsync<JsonElement>("""
+        var observed=await session.Page.EvaluateReferenceJsonAsync("""
             async({source,dark,fontFamily})=>{
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic',layout:'swimlane',flowchart:{htmlLabels:false}});
                 const rendered=await mermaid.render('ordered-responsibilities',source);document.querySelector('#reference').innerHTML=rendered.svg;await document.fonts.ready;

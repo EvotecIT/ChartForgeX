@@ -19,24 +19,24 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         using var installed=JsonDocument.Parse(File.ReadAllText(Path.Combine(bundle,"package.json")));
         Assert.Equal(reference.GetProperty("version").GetString(),installed.RootElement.GetProperty("version").GetString());
         var pixels=FlowchartAssetRecipe.Image();var uri="data:image/png;base64,"+Convert.ToBase64String(PngWriter.WriteRgba(pixels));
-        var source="flowchart LR\nimage@{img:'"+uri+"',label:'Proof image',pos:'"+(top?"t":"b")+"',h:40,constraint:'on'}\nstyle image fill:#fef2f2,stroke:#475569,color:#1e293b";
+        var source="flowchart LR\nimage@{ img: '"+uri+"', label: 'Proof image', pos: '"+(top?"t":"b")+"', h: 40, constraint: 'on' }\nstyle image fill:#fef2f2,stroke:#475569,color:#1e293b";
         var result=MermaidRenderer.Render(source,new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject,
             Flowchart=new MermaidFlowchartRenderOptions{Width=640,Height=400,ImageBindings=new Dictionary<string,RgbaImage>{{uri,pixels}}},
             Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family,TopologySizing=MermaidTopologySizing.Natural}});
-        var artifact=result.Artifact??throw new InvalidOperationException("The finite owned image must produce a native artifact.");
+        var artifact=result.Artifact??throw new InvalidOperationException("The finite owned image must produce a native artifact. Diagnostics: " + string.Join("; ", result.Diagnostics.Select(d => d.Message)) + "");
         var native=Assert.IsType<TopologyChart>(artifact.Model).Prepare();var image=Assert.Single(native.Visual.Scene.Nodes.OfType<VisualSceneImage>());
         var captions=native.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(mark=>mark.Text.Lines.Any(line=>line.Text=="Proof image")).ToArray();
         var svg=artifact.ToSvg();var png=artifact.ToPng();var html="<style>body{margin:0;padding:16px;box-sizing:border-box}section{max-width:100%;overflow:auto;margin-bottom:24px}svg,img{display:block;max-width:none}</style><h2>Pinned Mermaid</h2><section id='reference'></section><h2>ChartForgeX SVG</h2><section id='native'>"+svg+"</section><h2>ChartForgeX PNG</h2><section><img id='png' src='data:image/png;base64,"+Convert.ToBase64String(png)+"'></section>";
         await using var session=await BrowserProofFonts.OpenAsync(html,640,1000);var errors=new List<string>();session.Page.PageError+=(_,error)=>errors.Add(error);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions{Path=Path.Combine(bundle,"dist","mermaid.min.js")});
-        var observed=await session.Page.EvaluateAsync<JsonElement>("""
+        var observed=await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,fontFamily}) => {
-                mermaid.initialize({startOnLoad:false,securityLevel:'strict',fontFamily,theme:'default',look:'classic',flowchart:{htmlLabels:false}});
+                mermaid.initialize({startOnLoad:false,securityLevel:'strict',htmlLabels:false,fontFamily,theme:'default',look:'classic',flowchart:{htmlLabels:false}});
                 document.querySelector('#reference').innerHTML=(await mermaid.render('image-reference-diagram',source)).svg;
                 await document.fonts.ready;await document.querySelector('#png').decode();
                 const reference=document.querySelector('#reference svg'),native=document.querySelector('#native svg');
                 for(const svg of [reference,native]){const v=svg.viewBox.baseVal;svg.style.width=v.width+'px';svg.style.height=v.height+'px';svg.style.maxWidth='none';}
-                const image=reference.querySelector('g.node image'),label=[...reference.querySelectorAll('g.node .label')].find(node=>node.textContent.includes('Proof image'));
+                const images=[...reference.querySelectorAll('image')];if(images.length!==1)throw Error('Expected the single source-authored reference image');const image=images[0],label=[...reference.querySelectorAll('text')].find(node=>node.textContent.trim()==='Proof image');
                 const ib=image.getBoundingClientRect(),lb=label.getBoundingClientRect(),frame=reference.getBoundingClientRect();
                 return {width:Number(image.getAttribute('width')),height:Number(image.getAttribute('height')),caption:label.textContent,
                     top:lb.bottom<=ib.top+0.5,bottom:lb.top>=ib.bottom-0.5,

@@ -19,7 +19,15 @@ internal static partial class Program {
         var document = XDocument.Parse(svg);
         PackageAssertions.Require(document.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "topology-node-subtitle"),
             "Packed Core Actor omitted its native subtitle owner.");
-        var words = string.Join(" ", document.Descendants().Where(node => node.Name.LocalName == "text").Select(node => node.Value));
+        var captions = document.Descendants().Where(node => node.Attribute("data-cfx-caption") != null).ToArray();
+        foreach (var caption in captions) {
+            var glyphs = caption.Descendants().Where(node => node.Name.LocalName == "use" && node.Ancestors().Any(parent => parent.Attribute("data-cfx-native-text-ink") != null)).ToArray();
+            PackageAssertions.Require(glyphs.Length != 0 && glyphs.All(glyph => document.Descendants().Any(path =>
+                path.Name.LocalName == "path" && "#" + (string?)path.Attribute("id") == (string?)glyph.Attribute("href") && !string.IsNullOrEmpty((string?)path.Attribute("d")))),
+                "Packed Actor contour captions have no resolved native glyph ink.");
+        }
+        var words = string.Join(" ", document.Descendants().Where(node => node.Name.LocalName == "text").Select(node => node.Value)
+            .Concat(captions.Select(node => (string)node.Attribute("data-cfx-caption")!)));
         PackageAssertions.Require(words.Contains("primary actor") && words.Contains("coordinator"), "Packed Actor lost complete native caption words.");
         PackageAssertions.Require(prepared.ToInterchangeEnvelope().Nodes.Single(node => node.Id == "author").Subtitle == "primary actor",
             "Packed Actor subtitle was not retained as a source fact.");

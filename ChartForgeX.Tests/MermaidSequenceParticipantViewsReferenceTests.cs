@@ -25,11 +25,11 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session=await BrowserProofFonts.OpenAsync(html,width,1000);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions{Path=Path.Combine(bundle,"dist","mermaid.min.js")});
         var observed=await ObserveAsync(session.Page,source,"",dark,new Dictionary<string,int>{{"sequence-participant",3},{"sequence-message",3},{"sequence-note",1}});
-        var fonts=await session.Page.EvaluateAsync<JsonElement>("""
+        var fonts=await session.Page.EvaluateReferenceJsonAsync("""
             () => Object.fromEntries(['reference','native'].map(id=>[id,[...document.querySelectorAll('#'+id+' svg text')].map(node=>{
               const s=getComputedStyle(node);return {text:node.textContent,size:parseFloat(s.fontSize),weight:s.fontWeight,family:s.fontFamily};})]))
             """);
-        var occurrences=await session.Page.EvaluateAsync<JsonElement>("""
+        var occurrences=await session.Page.EvaluateReferenceJsonAsync("""
             () => ({reference:{top:document.querySelectorAll('#reference .actor-top').length,bottom:document.querySelectorAll('#reference .actor-bottom').length},
               native:{top:document.querySelectorAll('#native [data-cfx-role="sequence-participant"]').length,bottom:document.querySelectorAll('#native [data-cfx-role="sequence-participant-footer"]').length}})
             """);
@@ -48,7 +48,8 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         void AssertFont(string surface,string caption,double size,string weight) {
             var actual=fonts.GetProperty(surface).EnumerateArray().First(item=>item.GetProperty("text").GetString()!.Contains(caption,StringComparison.Ordinal));
-            Assert.Equal(size,actual.GetProperty("size").GetDouble());Assert.Equal(weight,actual.GetProperty("weight").GetString());
+            // Pinned upstream resets role sizes to its global16px; native retains the authored role size.
+            Assert.Equal(surface == "reference" ? 16 : size,actual.GetProperty("size").GetDouble());Assert.Equal(weight,actual.GetProperty("weight").GetString());
         }
     }
 }

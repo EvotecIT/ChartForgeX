@@ -19,7 +19,7 @@ internal static partial class Program {
             "Packed organization portraits did not use native captured image media.");
         var restored = chart.ToVisualArtifact().ToInterchangeEnvelope().ToTopologyChart();
         PackageAssertions.Require(restored.Nodes[0].Id == "person" && restored.Nodes[0].Artwork!.ImageHref == captured
-            && restored.Nodes[0].Artwork.PreserveAspectRatio == "xMidYMid slice", "Packed portrait identity or crop was lost in interchange.");
+            && restored.Nodes[0].Artwork!.PreserveAspectRatio == "xMidYMid slice", "Packed portrait identity or crop was lost in interchange.");
         chart.Nodes[0].Artwork = null;
         PackageAssertions.Require(prepared.ToSvg() == svg, "Changing a source portrait changed its prepared export.");
         PackageAssertions.Png(prepared.ToPng()); PackageAssertions.Png(restored.ToPng(new TopologyRenderOptions { IncludeLegend = false }));

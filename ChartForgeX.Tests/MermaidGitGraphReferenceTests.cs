@@ -18,7 +18,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var reference = manifest.RootElement.GetProperty("references").GetProperty("12"); var bundle = Path.Combine(corpus, "node_modules", reference.GetProperty("package").GetString()!);
         using var installed = JsonDocument.Parse(File.ReadAllText(Path.Combine(bundle, "package.json")));
         Assert.Equal(reference.GetProperty("version").GetString(), installed.RootElement.GetProperty("version").GetString());
-        var source = MermaidGitGraphDepthTests.Source(direction, parallel); var options = MermaidGitGraphDepthTests.Options(width, dark);
+        var source = MermaidGitGraphDepthTests.Source(direction, parallel).Replace("gitGraph " + direction + "\n", "gitGraph " + direction + ":\n", StringComparison.Ordinal); var options = MermaidGitGraphDepthTests.Options(width, dark);
         options.GitGraph!.Presentation!.FontFamily = BrowserProofFonts.Family;
         var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics); var artifact = direct.Artifact!;
         var svg = artifact.ToSvg(); var png = artifact.ToPng();
@@ -28,7 +28,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             + "</section><h2>Native PNG</h2><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>";
         await using var session = await BrowserProofFonts.OpenAsync(body, width + 24, 1000);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,dark,fontFamily}) => {
               mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic'});
               const result=await mermaid.render('gitgraph-reference',source);document.querySelector('#reference').innerHTML=result.svg;

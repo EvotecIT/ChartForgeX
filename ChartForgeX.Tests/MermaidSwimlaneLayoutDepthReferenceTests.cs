@@ -18,7 +18,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var artifact=result.Artifact!;var svg=artifact.ToSvg();var png=artifact.ToPng();
         var html="<style>body{margin:0;padding:16px;box-sizing:border-box}section{max-width:100%;overflow:auto;margin-bottom:24px}svg,img{display:block;max-width:none}</style><h2>Pinned Mermaid "+reference.GetProperty("version").GetString()+"</h2><section id='reference'></section><h2>Native SVG</h2><section id='native'>"+svg+"</section><h2>Native PNG</h2><section><img id='png' src='data:image/png;base64,"+Convert.ToBase64String(png)+"'></section>";
         await using var session=await BrowserProofFonts.OpenAsync(html,width,1100);await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions {Path=Path.Combine(bundle,"dist","mermaid.min.js")});
-        var observed=await session.Page.EvaluateAsync<JsonElement>("""
+        var observed=await session.Page.EvaluateReferenceJsonAsync("""
             async({source,dark,fontFamily})=>{
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic',layout:'swimlane',flowchart:{htmlLabels:false}});
                 const rendered=await mermaid.render('swimlane-layout-depth-reference',source);document.querySelector('#reference').innerHTML=rendered.svg;
@@ -34,7 +34,11 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var facts=observed.GetProperty("facts").EnumerateArray().ToArray();Assert.Equal("Product",facts.Single(item=>item.GetProperty("id").GetString()=="API").GetProperty("parent").GetString());
         Assert.Equal("API",facts.Single(item=>item.GetProperty("id").GetString()=="A").GetProperty("parent").GetString());
         var boxes=observed.GetProperty("boxes").EnumerateArray().ToArray();var a=boxes.Single(item=>item.GetProperty("text").GetString()=="Accept");var b=boxes.Single(item=>item.GetProperty("text").GetString()=="Build");
-        Assert.True(b.GetProperty("y").GetDouble()>a.GetProperty("y").GetDouble());
+        // Pinned global lane geometry ignores this local vertical direction; native source geometry retains it.
+        Assert.Equal(a.GetProperty("y").GetDouble(),b.GetProperty("y").GetDouble(),5);
+        Assert.True(b.GetProperty("x").GetDouble()>a.GetProperty("right").GetDouble());
+        var native=artifact.ToInterchangeEnvelope();MermaidNestedSwimlaneTests.AssertContainment(native);
+        Assert.True(native.Nodes.Single(node=>node.Id=="B").Y!.Value>native.Nodes.Single(node=>node.Id=="A").Y!.Value);
         foreach(var caption in new[]{"Product delivery","API","Partner","Plan","Accept","Build","Check","Deliver"})foreach(var surface in new[]{"referenceText","nativeText"})Assert.Contains(caption,observed.GetProperty(surface).GetString());
         Assert.False(observed.GetProperty("invalid").GetBoolean());Assert.False(observed.GetProperty("overflow").GetBoolean());Assert.Equal(0,observed.GetProperty("active").GetInt32());InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }

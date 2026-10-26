@@ -16,7 +16,8 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var bundle = Path.Combine(corpus, "node_modules", reference.GetProperty("package").GetString()!);
         using var installed = JsonDocument.Parse(File.ReadAllText(Path.Combine(bundle, "package.json")));
         Assert.Equal(reference.GetProperty("version").GetString(), installed.RootElement.GetProperty("version").GetString());
-        var source = FlowchartCurveRecipe.Source("flowchart");
+        // The shared YAML spelling retains the same native curve; compact metadata remains a native parser contract.
+        var source = FlowchartCurveRecipe.Source("flowchart").Replace("curve:bumpX", "curve: bumpX", StringComparison.Ordinal);
         var artifact = FlowchartCurveRecipe.Create("flowchart", variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family);
         var svg = artifact.ToSvg(); var png = artifact.ToPng(); var semantics = artifact.ToInterchangeJson();
         var html = "<style>body{margin:0;padding:16px;box-sizing:border-box}section{max-width:100%;overflow:auto;margin-bottom:24px}svg,img{display:block;max-width:none}</style>"
@@ -26,7 +27,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var errors = new List<string>(); session.Page.PageError += (_, error) => errors.Add(error);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark, new() { ["topology-node"] = 6, ["topology-group"] = 2, ["topology-edge"] = 6 });
-        var curves = await session.Page.EvaluateAsync<JsonElement>("""
+        var curves = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
                 const db=(await mermaid.mermaidAPI.getDiagramFromText(source)).db,edges=db.getEdges();
                 return edges.map(e=>({id:e.id,curve:e.interpolate||edges.defaultInterpolate||mermaid.mermaidAPI.getConfig().flowchart.curve}));

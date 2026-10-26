@@ -36,7 +36,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark,
             new Dictionary<string, int> { ["mermaid-quadrant-point"] = 4, ["plot-region"] = 4 });
-        var facts = await session.Page.EvaluateAsync<JsonElement>("""
+        var facts = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
                 const data=(await mermaid.mermaidAPI.getDiagramFromText(source)).db.getQuadrantData();
                 const minX=Math.min(...data.quadrants.map(q=>q.x)),minY=Math.min(...data.quadrants.map(q=>q.y));

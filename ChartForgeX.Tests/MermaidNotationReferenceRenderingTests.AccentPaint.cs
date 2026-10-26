@@ -36,7 +36,7 @@ public async Task PinnedMarkerPaintOmittedProperties(string referenceId) {
         var scene = Assert.IsType<ChartForgeX.Topology.TopologyChart>(artifact.Model).Prepare().Visual.Scene;
         var nativePaint = scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(mark => mark.Role == "topology-node-surface")
             .Select(mark => new { Fill = mark.Fill?.ToHexRgba(), Stroke = mark.Stroke?.ToHexRgba(), mark.StrokeWidth, mark.Opacity }).ToArray();
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,nativeSvg,renderId,fontFamily}) => {
                 document.querySelector('#native').innerHTML=nativeSvg;
                 mermaid.initialize({startOnLoad:false,securityLevel:'strict',htmlLabels:false,fontFamily,theme:'default',look:'classic',flowchart:{htmlLabels:false}});

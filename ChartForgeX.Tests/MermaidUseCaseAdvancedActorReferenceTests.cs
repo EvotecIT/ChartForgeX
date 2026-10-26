@@ -24,7 +24,8 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             + "<h2>Native SVG</h2><section id='native'>" + svg + "</section><h2>Native PNG</h2><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'>", width + 24, width == 390 ? 1250 : 900);
         var errors = new List<string>(); session.Page.PageError += (_, message) => errors.Add(message);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        await BrowserProofCaptions.InstallAsync(session.Page);
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,dark,fontFamily}) => {
               mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic'});
               const diagram=await mermaid.mermaidAPI.getDiagramFromText(source),db=diagram.db;
@@ -32,7 +33,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
                 cases:[...db.getUseCases().values()].map(n=>({id:n.id,business:n.business,shape:n.shape})),edges:db.getRelationships().map(e=>e.id)};
               const rendered=await mermaid.render('advanced-actor-reference',source);document.querySelector('#reference').innerHTML=rendered.svg;
               await document.fonts.ready;await document.querySelector('#png').decode();
-              return {facts,referenceText:document.querySelector('#reference').textContent,nativeText:[...document.querySelectorAll('#native svg text')].map(e=>e.textContent).join(' '),
+              return {facts,referenceText:document.querySelector('#reference').textContent,nativeText:window.cfxReferenceCaptionText(document.querySelector('#native svg')),
                 hollow:document.querySelectorAll('#reference .usecase-actor-hollow-body').length,silhouette:document.querySelectorAll('#reference .usecase-actor-awesome-silhouette').length,
                 business:document.querySelectorAll('#reference .usecase-actor-business-marker').length,iconFrames:document.querySelectorAll('#reference .usecase-actor-icon-frame').length,
                 // The reference has no registered network icon pack. Its explicit fallback is evidence, never claimed as native Router pixel equality.

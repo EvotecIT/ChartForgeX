@@ -25,7 +25,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             + svg + "</section><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1050);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,dark,fontFamily})=>{
                 mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic',layout:'swimlane',flowchart:{htmlLabels:false}});
                 const rendered=await mermaid.render('crossing-reference',source);document.querySelector('#reference').innerHTML=rendered.svg;
@@ -46,11 +46,19 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             Assert.Contains(caption, observed.GetProperty("referenceText").GetString()); Assert.Contains(caption, observed.GetProperty("nativeText").GetString());
         }
         var referencePaths = observed.GetProperty("referencePaths").EnumerateArray().Select(path => path.GetProperty("d").GetString()!).ToArray();
-        if (form is "basis" or "false") Assert.DoesNotContain(referencePaths, path => path.Contains('A') || path.Count(character => character == 'M') > 1);
-        if (form == "arc") Assert.Contains(referencePaths, path => path.Contains('A'));
-        if (form == "gap") Assert.Contains(referencePaths, path => path.Count(character => character == 'M') > 1);
-        // Actual path records and screenshots are retained for Arc/Gap inspection. Native later-paint ownership
-        // deliberately differs from the pinned horizontal preference; no whole-path or pixel equality assertion.
+        // The pinned route detours around the other edge. Hop requests do not invent a crossing.
+        Assert.DoesNotContain(referencePaths, path => path.Contains('A') || path.Count(character => character == 'M') > 1);
+        var polylines = observed.GetProperty("referencePaths").EnumerateArray().Select(path => {
+            using var points = JsonDocument.Parse(Convert.FromBase64String(path.GetProperty("points").GetString()!));
+            return points.RootElement.EnumerateArray().Select(point => (X: point.GetProperty("x").GetDouble(), Y: point.GetProperty("y").GetDouble())).ToArray();
+        }).ToArray();
+        for (var a = 1; a < polylines[0].Length; a++) for (var b = 1; b < polylines[1].Length; b++)
+            Assert.False(ProperCrossing(polylines[0][a - 1], polylines[0][a], polylines[1][b - 1], polylines[1][b]));
+        // Native positive crossing paint is independently covered by the native crossing contracts.
         Assert.False(observed.GetProperty("overflow").GetBoolean()); Assert.Equal(0, observed.GetProperty("scripts").GetInt32()); InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        static bool ProperCrossing((double X, double Y) a, (double X, double Y) b, (double X, double Y) c, (double X, double Y) d) {
+            static double Side((double X, double Y) p, (double X, double Y) q, (double X, double Y) r) => (q.X - p.X) * (r.Y - p.Y) - (q.Y - p.Y) * (r.X - p.X);
+            return Side(a, b, c) * Side(a, b, d) < 0 && Side(c, d, a) * Side(c, d, b) < 0;
+        }
     }
 }

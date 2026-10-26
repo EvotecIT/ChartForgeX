@@ -34,8 +34,8 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1000);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark,
-            new Dictionary<string, int> { ["sequence-message"] = 8, ["sequence-block"] = 3, ["sequence-note"] = 3, ["sequence-activation-bar"] = 2 });
-        var geometry = await session.Page.EvaluateAsync<JsonElement>("""
+            new Dictionary<string, int> { ["sequence-message"] = 8, ["sequence-block"] = 3, ["sequence-note"] = 3, ["sequence-activation-bar"] = 4 });
+        var geometry = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,ordinary}) => {
                 const control=await mermaid.render('parallel-control-diagram',ordinary);
                 document.querySelector('#parallel-control').innerHTML=control.svg;
@@ -67,7 +67,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         Assert.True(geometry.GetProperty("commonMeasuredGeometry").GetBoolean(), "Pinned par_over/par geometry differs; inspect the captured primary observation before changing native policy.");
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.False(observed.GetProperty("horizontalOverflow").GetBoolean());
         Assert.Equal(0, observed.GetProperty("nativeScripts").GetInt32());
-        foreach (var (role, count) in new Dictionary<string, int> { ["sequence-message"] = 8, ["sequence-block"] = 3, ["sequence-note"] = 3, ["sequence-activation-bar"] = 2 })
+        foreach (var (role, count) in new Dictionary<string, int> { ["sequence-message"] = 8, ["sequence-block"] = 3, ["sequence-note"] = 3, ["sequence-activation-bar"] = 4 })
             Assert.Equal(count, observed.GetProperty("nativeRegions").GetProperty(role).GetInt32());
         foreach (var label in new[] { "Alpha request", "Forward", "Reply", "Alpha done", "Beta request", "Recovery", "Beta done", "After fragment", "First task note", "Guard note", "Terminal task note" })
             foreach (var surface in new[] { "referenceText", "nativeText" }) Assert.Contains(label, observed.GetProperty(surface).GetString());

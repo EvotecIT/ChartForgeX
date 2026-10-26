@@ -13,7 +13,7 @@ internal static class NativeFallbackRadialExamples {
                 return numericValueText ? model.WithTitle(string.Empty).WithSubtitle(string.Empty).WithHeader(false).WithLegend(false).WithDonutCenterLabel(false)
                     .WithPieSliceLabelContent(ChartPieSliceLabelContent.Value).WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithValueFormat(ChartValueFormat.Compact()) : model;
             }
-            var from = renderer.PrepareSection(Model(numericValueText ? 900 : 60)); var to = renderer.PrepareSection(Model(numericValueText ? 1100 : 80)); var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 9);
+            var from = renderer.PrepareSection(Model(numericValueText ? 900 : 60)); var to = renderer.PrepareSection(Model(numericValueText ? 1100 : 80)); var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3);
             var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);
             var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>{chart.update(forward?"
                 + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?" + JsonSerializer.Serialize(forward) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}});forward=!forward;};";

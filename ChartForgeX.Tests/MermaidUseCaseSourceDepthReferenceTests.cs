@@ -25,7 +25,8 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
             + "</section><h2>Native PNG</h2><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>", width + 24, 1100);
         var errors = new List<string>(); session.Page.PageError += (_, message) => errors.Add(message);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
-        var observed = await session.Page.EvaluateAsync<JsonElement>("""
+        await BrowserProofCaptions.InstallAsync(session.Page);
+        var observed = await session.Page.EvaluateReferenceJsonAsync("""
             async ({source,dark,fontFamily}) => {
               mermaid.initialize({startOnLoad:false,deterministicIds:true,securityLevel:'strict',fontFamily,theme:dark?'dark':'default',look:'classic'});
               const diagram=await mermaid.mermaidAPI.getDiagramFromText(source),db=diagram.db;
@@ -36,7 +37,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
               const rendered=await mermaid.render('usecase-source-reference',source);document.querySelector('#reference').innerHTML=rendered.svg;
               await document.fonts.ready;await document.querySelector('#png').decode();
               return {facts,referenceText:document.querySelector('#reference').textContent,
-                nativeText:[...document.querySelectorAll('#native svg text')].map(n=>n.textContent).join(' '),
+                nativeText:window.cfxReferenceCaptionText(document.querySelector('#native svg')),
                 referencePaint:document.querySelectorAll('#reference path,#reference rect,#reference ellipse').length,
                 nativeActive:document.querySelectorAll('#native script,#native image,#native foreignObject').length};
             }

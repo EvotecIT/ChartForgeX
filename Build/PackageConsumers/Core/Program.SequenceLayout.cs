@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;

@@ -25,7 +25,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 32, 1100);
         await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
         var observed = await ObserveAsync(session.Page, source, "", dark, new Dictionary<string, int> { ["wardley-annotation-box"] = 1, ["wardley-annotation"] = 2, ["wardley-pipeline-component"] = 2 });
-        var facts = await session.Page.EvaluateAsync<JsonElement>("""
+        var facts = await session.Page.EvaluateReferenceJsonAsync("""
             async source => {
               const data=(await mermaid.mermaidAPI.getDiagramFromText(source)).db.getWardleyData(),svg=document.querySelector('#reference svg'),box=svg.querySelector('.wardley-annotations-box'),rect=box.querySelector('rect');
               return {nodes:data.nodes.map(n=>({id:n.id,label:n.label,x:n.x,y:n.y,strategy:n.sourceStrategy,inertia:n.inertia,labelX:n.labelOffsetX,labelY:n.labelOffsetY})),
@@ -42,10 +42,18 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var scale = facts.GetProperty("nodes").EnumerateArray().Single(n => n.GetProperty("id").GetString() == "Service_Scale"); Assert.Equal(48, scale.GetProperty("x").GetDouble()); Assert.Equal(-8, scale.GetProperty("labelX").GetDouble()); Assert.Equal(30, scale.GetProperty("labelY").GetDouble());
         Assert.Equal(new[] { .30, .55, .78, 1d }, facts.GetProperty("axes").GetProperty("stageBoundaries").EnumerateArray().Select(e => e.GetDouble()));
         Assert.Equal(new[] { "New / Idea", "Custom", "Product", "Commodity" }, facts.GetProperty("axes").GetProperty("stages").EnumerateArray().Select(e => e.GetString()));
-        var strategies = facts.GetProperty("nodes").EnumerateArray().Where(n => n.TryGetProperty("strategy", out _)).Select(n => n.GetProperty("strategy").GetString()).ToArray();
+        var strategies = facts.GetProperty("nodes").EnumerateArray().Where(n => n.TryGetProperty("strategy", out var strategy) && strategy.ValueKind == JsonValueKind.String).Select(n => n.GetProperty("strategy").GetString()).ToArray();
         Assert.Equal(new[] { "build", "buy", "outsource", "market" }, strategies);
-        Assert.Equal(dark ? "rgb(16, 59, 54)" : "rgb(209, 250, 229)", facts.GetProperty("paint").GetProperty("fill").GetString()); Assert.Equal("rgb(5, 150, 105)", facts.GetProperty("paint").GetProperty("stroke").GetString());
-        Assert.Equal(6, facts.GetProperty("gridLines").GetInt32());
+        Assert.Equal("rgb(255, 255, 255)", facts.GetProperty("paint").GetProperty("fill").GetString());
+        Assert.Equal("rgb(71, 85, 105)", facts.GetProperty("paint").GetProperty("stroke").GetString());
+        Assert.Equal(0, facts.GetProperty("gridLines").GetInt32());
+        // Native source-owned annotation paint and grids remain independently exact.
+        var native = System.Xml.Linq.XDocument.Parse(svg);
+        var box = native.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "wardley-annotation-box");
+        var nativeSurface = box.Elements().Single(node => node.Name.LocalName == "rect");
+        Assert.Equal(dark ? "#103B36" : "#D1FAE5", (string?)nativeSurface.Attribute("fill"));
+        Assert.Equal("#059669", (string?)nativeSurface.Attribute("stroke"));
+        Assert.Equal(6, native.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "wardley-grid"));
         Assert.Equal(0, observed.GetProperty("nativeScripts").GetInt32()); Assert.False(observed.GetProperty("horizontalOverflow").GetBoolean());
         foreach (var label in new[] { "User", "Build", "Buy", "Service", "Market", "Small", "Scale", "Keep the user need visible", "Prefer a portable service contract" })
             foreach (var surface in new[] { "referenceText", "nativeText" }) Assert.Contains(label, observed.GetProperty(surface).GetString());
