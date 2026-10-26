@@ -1,5 +1,7 @@
 /// <summary>Authored hierarchy values and absolute subtree/root visibility use the incumbent native hierarchy owner.</summary>
 internal static class NativeHierarchyMotionRecipe {
+    // Five authored samples keep this caption-rich example within the existing transport cap.
+    internal const int PresentationFrameCount = 5;
     internal static Chart Create(string family, double reading, int width, VisualThemeMode mode, string fontFamily) {
         if (family is not ("treemap" or "sunburst-leaf" or "sunburst-total")) throw new ArgumentOutOfRangeException(nameof(family));
         var authored = family == "sunburst-total";

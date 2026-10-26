@@ -1,5 +1,7 @@
 /// <summary>Two native Pie/Donut bands with scoped observations and captured Other membership.</summary>
 internal static class NativeRadialBandMotionRecipe {
+    // Keep the two-band captured presentation within the existing transport cap.
+    internal const int PresentationFrameCount = 5;
     internal static Chart Create(string family, bool automatic, bool other, double inner, double outer, int width, VisualThemeMode mode) {
         var chart = Chart.Create().WithTitle("Native radial bands").WithSubtitle(other ? "Each Other target keeps its original contributors" : "Each band keeps its authored series and observations")
             .WithSize(width,420).WithTheme(VisualTheme.Graphite(),mode).WithLegend(true).WithDataLabels(true).WithDataLabelPlacement(ChartDataLabelPlacement.Outside)

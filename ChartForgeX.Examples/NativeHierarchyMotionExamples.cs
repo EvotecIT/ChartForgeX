@@ -20,7 +20,7 @@ internal static class NativeHierarchyMotionExamples {
             var membership = intent is "subtree" or "root"; var initial = intent == "initial";
             var from = membership ? renderer.PrepareVisibilitySection(Model(30), NativeHierarchyMotionRecipe.View()) : renderer.PrepareHierarchySection(Model(initial ? 0 : 30));
             var to = membership ? renderer.PrepareVisibilitySection(Model(30), NativeHierarchyMotionRecipe.View(intent == "subtree", intent == "root")) : renderer.PrepareHierarchySection(Model(40));
-            var options = new HtmlNativeTransitionOptions(membership ? HtmlNativeTransitionEffect.LegendVisibility : initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 9);
+            var options = new HtmlNativeTransitionOptions(membership ? HtmlNativeTransitionEffect.LegendVisibility : initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, NativeHierarchyMotionRecipe.PresentationFrameCount);
             var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = initial ? forward : renderer.PrepareNativeTransitionJson(to, from, options);
             var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>" + (initial
                 ? "chart.presentInitial(" + JsonSerializer.Serialize(forward) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});"

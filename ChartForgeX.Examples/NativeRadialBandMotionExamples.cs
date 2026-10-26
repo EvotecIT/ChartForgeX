@@ -8,7 +8,7 @@ internal static class NativeRadialBandMotionExamples {
             var other = row.Intent == "other"; var chart = NativeRadialBandMotionRecipe.Create(row.Family,row.Automatic,other,60,45,row.Width,row.Mode);
             var from = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(false)) : renderer.PrepareSection(chart);
             var to = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(true)) : renderer.PrepareSection(NativeRadialBandMotionRecipe.Create(row.Family,row.Automatic,false,80,55,row.Width,row.Mode));
-            var options = new HtmlNativeTransitionOptions(other ? HtmlNativeTransitionEffect.LegendVisibility : row.Intent == "initial" ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values,9);
+            var options = new HtmlNativeTransitionOptions(other ? HtmlNativeTransitionEffect.LegendVisibility : row.Intent == "initial" ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, NativeRadialBandMotionRecipe.PresentationFrameCount);
             var payload = renderer.PrepareNativeTransitionJson(from,to,options); var reverse = row.Intent == "initial" ? payload : renderer.PrepareNativeTransitionJson(to,from,options);
             var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>" + (row.Intent == "initial"
                 ? "chart.presentInitial(" + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});"

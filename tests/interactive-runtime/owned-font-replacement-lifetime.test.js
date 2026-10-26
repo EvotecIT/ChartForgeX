@@ -100,6 +100,37 @@ test('initial public mount validates and loads the owned binary before replacing
   } finally { f.close(); }
 });
 
+test('public mount admits parser-fragmented font text while rejecting non-text resource content', async () => {
+  for (const malformed of [false, true]) {
+    const f = setup(); let current;
+    try {
+      await f.ready(0, 'owned-font-fragmented-predecessor-control');
+      const next = f.section('fragmented-root'), resource = next.querySelector('template[data-cfx-font-root]');
+      const payload = resource.content.textContent, middle = Math.floor(payload.length / 2);
+      // WebKit naturally splits long template text at 64 KiB. Keep real adjacent
+      // text nodes through the public DOM mount, rather than normalizing via HTML serialization.
+      resource.content.replaceChildren(f.window.document.createTextNode(payload.slice(0, middle)),
+        f.window.document.createTextNode(payload.slice(middle)));
+      if (malformed) resource.content.append(f.window.document.createComment('foreign content'));
+      assert.equal(resource.content.childNodes.length, malformed ? 3 : 2);
+      f.controller.dispose(); f.root.replaceWith(next);
+      current = f.window.ChartForgeXCharts.mount(next);
+      if (malformed) {
+        await f.settle(); await f.settle();
+        assert.equal(f.loads.length, 1); assert.equal(f.fonts.size, 0);
+        assert.deepEqual(f.visible(next.querySelector('svg')), { text: 0, fallback: 1 });
+      } else {
+        await f.until(() => f.loads.length === 2, 'Text-only parser chunks must reach the real owned-font validation/load boundary.');
+        assert.deepEqual(f.hashes[1], fontBytes); f.loads[1].complete(); await f.settle();
+        assert.equal(f.fonts.size, 1);
+        assert.deepEqual(f.visible(next.querySelector('svg')), { text: 1, fallback: 0 });
+      }
+      assert.deepEqual(f.pageErrors, []);
+      current.dispose(); assert.equal(f.fonts.size, 0);
+    } finally { current?.dispose(); f.close(); }
+  }
+});
+
 test('accepted public update keeps the replacement font work in the current chart lifetime', async () => {
   const f = setup(); let external;
   try {

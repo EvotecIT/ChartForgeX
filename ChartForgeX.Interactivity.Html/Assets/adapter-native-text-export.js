@@ -105,7 +105,7 @@
       if (!attributesAre(record, ['data-cfx-font-root', 'data-cfx-font-byte-length']) || !/^[a-f0-9]{64}$/.test(id || '')
         || !Number.isSafeInteger(length) || length < 1 || length > maximumRootBytes || roots.has(id)
         || roots.size >= maximumRoots || (total += length) > maximumDistinctBytes
-        || record.content.childNodes.length > 1 || record.content.firstChild && record.content.firstChild.nodeType !== 3)
+        || Array.from(record.content.childNodes).some(node => node.nodeType !== 3))
         throw new TypeError('Owned HTML font roots require exact bounded identity/length records.');
       if (!payload && !allowEmpty) throw new TypeError('A normal owned HTML font root requires its captured binary bytes.');
       if (payload) {
