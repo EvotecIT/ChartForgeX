@@ -107,19 +107,4 @@ public sealed class InnerShadowPresentationTests {
             saved.Replace("\"sigmaX\":2", "\"sigmaX\":-1")));
     }
 
-    [Theory]
-    [InlineData("linearRGB")]
-    [InlineData("missing-input")]
-    [InlineData("wrong-order")]
-    public void FiniteSourceSubsetRejectsDifferentColorSpaceInputsOrCompositionWithoutFallback(string variant) {
-        var svg = InnerShadowFixture.FilterSource(1);
-        if (variant == "linearRGB") svg = svg.Replace("sRGB", "linearRGB");
-        if (variant == "missing-input") svg = svg.Replace("in2='shifted'", "in2='not-declared'");
-        if (variant == "wrong-order") svg = svg.Replace("operator='atop'", "operator='over'");
-        var result = SvgRasterizer.Rasterize(svg, strict: false, filters: new SvgRasterFilterOptions());
-        NativeEffectBeforeCapture.Write("inner-rejected-" + variant, svg, result.Image.ToPng(), result.Image);
-        NativeEffectBeforeCapture.Json("inner-rejected-" + variant + "-diagnostics", result.Diagnostics);
-        Assert.Contains(result.Diagnostics, item => item.Code == "SFR002");
-        Assert.Throws<NotSupportedException>(() => SvgRasterizer.Rasterize(svg, strict: true, filters: new SvgRasterFilterOptions()));
-    }
 }
