@@ -96,7 +96,8 @@ internal static partial class Program {
         if (!html.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML brush controls missing.");
         if (!html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML export controls missing.");
         if (!html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML PNG export controls missing.");
-        if (!html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML sync events missing.");
+        if (!html.Contains("ChartForgeXCharts", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML controller runtime missing.");
+        if (!html.Contains("cfxsync", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML sync protocol missing.");
         var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
             options.IdScope = "package-dashboard";
             options.Interaction.GroupName = "package-group";

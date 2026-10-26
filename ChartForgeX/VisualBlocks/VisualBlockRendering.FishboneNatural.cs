@@ -55,7 +55,9 @@ internal static partial class VisualBlockRendering {
     private static FishboneNaturalLabel FishboneLabel(string text, ResolvedVisualTheme theme, double size, int weight) {
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = Math.Max(.001, Math.Round(BodyFontSize(theme, size), 3)), LineHeight = 1.2 };
         var normalized = SingleLineText(text);
-        var width = Math.Max(180, Math.Max(style.FontSize * 12, DiagramWordWidth(normalized, style)));
+        var preferredWrapWidth = Math.Max(180, style.FontSize * 12);
+        var measuredWidth = TextLayoutEngine.Measure(normalized, style).Width;
+        var width = Math.Max(1, Math.Max(DiagramWordWidth(normalized, style), Math.Min(preferredWrapWidth, measuredWidth)));
         var layout = TextLayoutEngine.Layout(normalized, width, style, TextWrapMode.Word);
         return new FishboneNaturalLabel(normalized, style, layout, width, layout.Metrics.Height + 4);
     }

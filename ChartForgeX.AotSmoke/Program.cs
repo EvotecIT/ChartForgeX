@@ -92,7 +92,8 @@ var interactive = chart.ToInteractiveHtmlPage(options => {
     options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
 });
 AssertContains(interactive, "data-cfx-export=\"png\"", "Interactive PNG export control missing.");
-AssertContains(interactive, "new CustomEvent('cfxsync'", "Interactive sync runtime missing.");
+AssertContains(interactive, "ChartForgeXCharts", "Interactive controller runtime missing.");
+AssertContains(interactive, "cfxsync", "Interactive sync protocol missing.");
 AssertContains(interactive, "data-cfx-pinned-label=\"Przypięte\"", "AOT localized tooltip status missing.");
 
 var mermaidSources = new[] {

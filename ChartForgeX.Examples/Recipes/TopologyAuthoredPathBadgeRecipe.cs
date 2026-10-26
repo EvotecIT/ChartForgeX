@@ -11,9 +11,9 @@ public static class TopologyAuthoredPathBadgeRecipe {
         chart.AddNode("gateway", "Gateway", 64, 100, width: 220, height: 180);
         chart.AddNode("worker", "Worker", 510, 100, width: 220, height: 180);
         chart.Nodes[0].FitLabelToContent = true; chart.Nodes[1].FitLabelToContent = true;
-        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "Queued", TextStyle = new TextStyleOverride { FontSize = 14 },
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "Queued", TextStyle = new TextStyleOverride { FontSize = 14, Color = ChartColor.FromHex("#193857") },
             BadgeStyle = new TopologyDetailBadgeStyle { Fill = ChartColor.FromHex("#E3F2FD"), Stroke = ChartColor.FromHex("#315A87") } });
-        chart.Nodes[1].Details.Add(new TopologyNodeDetail { Text = "Ready", TextStyle = new TextStyleOverride { FontSize = 14 },
+        chart.Nodes[1].Details.Add(new TopologyNodeDetail { Text = "Ready", TextStyle = new TextStyleOverride { FontSize = 14, Color = ChartColor.FromHex("#20472B") },
             BadgeStyle = new TopologyDetailBadgeStyle { Fill = ChartColor.FromHex("#E8F5E9"), Stroke = ChartColor.FromHex("#376947") } });
         chart.AddEdge("dispatch", "gateway", "worker", "Dispatch", direction: VisualLinkDirection.Forward);
         chart.Edges[0].PathGeometry = new TopologyPathGeometry("M 284 190 C 350 42 444 42 510 190");

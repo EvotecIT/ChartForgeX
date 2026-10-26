@@ -361,16 +361,36 @@ internal static partial class MermaidExamples {
                 options = new MermaidRenderOptions { Quadrant = new MermaidQuadrantRenderOptions {
                     Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 800, Height = 500 } };
             var parsed = new MermaidParser().Parse(item.Value, options?.ParseOptions);
-            // Native text fitting can affect any diagram's natural frame. Keep gallery
-            // defaults independent of installed fonts without overriding source fonts.
-            var proofTypography = parsed.Document != null && parsed.Document.Configuration.FontFamily == null;
-            if (proofTypography) {
+            // Ordinary gallery examples keep the native Graphite host palette. Dedicated
+            // source-palette recipes and authored source paint retain their own presentation.
+            var configuration = parsed.Document?.Configuration;
+            var galleryTheme = configuration != null
+                && (configuration.Theme == null || configuration.Theme is "default" or "dark")
+                && configuration.Settings.All(setting => !setting.Path.StartsWith("themeVariables.", StringComparison.Ordinal)
+                    || setting.Path is "themeVariables.fontFamily" or "themeVariables.fontSize");
+            // Keep gallery metrics independent of installed fonts without replacing source fonts or sizes.
+            var proofTypography = configuration != null && configuration.FontFamily == null;
+            if (proofTypography || galleryTheme) {
                 options ??= new MermaidRenderOptions();
                 options.Presentation ??= new MermaidPresentationOptions();
-                options.Presentation.FontFamily = ExampleTypography.FontFamily;
+                if (proofTypography) options.Presentation.FontFamily = ExampleTypography.FontFamily;
+                if (galleryTheme) options.Presentation.Theme ??= ChartForgeX.Themes.VisualTheme.Graphite();
             }
             var result = MermaidRenderer.RenderParsed(parsed, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+            // These incumbent examples retain their authored gallery host presentation.
+            if ((item.Key == "mermaid-sequence-lifetimes-light" || item.Key == "mermaid-sequence-lifetimes-dark")
+                && result.Artifact.Model is SequenceArtifact lifetimes) {
+                lifetimes.Layout = null;
+                lifetimes.Typography = null;
+            }
+            if (item.Key == "mermaid-cynefin-basic") {
+                result.Artifact.NaturalSize = new VisualArtifactSize(960, 621);
+                result.Artifact.PreserveNaturalSize = true;
+            }
+            if (galleryTheme && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock galleryBlock
+                && galleryBlock is ChartForgeX.VisualBlocks.JourneyDiagramBlock or ChartForgeX.VisualBlocks.TimelineDiagramBlock)
+                galleryBlock.Options.TransparentBackground = true;
             if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block
                 && block is not ChartForgeX.VisualBlocks.JourneyDiagramBlock && block is not ChartForgeX.VisualBlocks.TimelineDiagramBlock)
                 block.Options.ShowCard = false;

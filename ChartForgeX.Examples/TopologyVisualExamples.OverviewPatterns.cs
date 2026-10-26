@@ -7,7 +7,7 @@ internal static partial class TopologyVisualExamples {
             .WithId("visual-impact-dependency-overview")
             .WithTitle("Impact Dependency Overview")
             .WithSubtitle("Reusable blast-radius map: dependencies, owners, consumers, controls, and risks around a selected platform.")
-            .WithViewport(1120, 600, 28)
+            .WithViewport(1120, 715, 28)
             .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create("Impact Legend")
                 .AddNodeKind("Platform", TopologyNodeKind.Application, "#2563EB", "APP")
