@@ -1,7 +1,10 @@
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
@@ -29,8 +32,15 @@ internal static partial class Program {
         PackageAssertions.Require(envelope.Nodes.Single(node => node.Label == "Worker").Sequence?.DestroyedAtMessageIndex == 1
             && envelope.Groups.Single().Role == VisualArtifactInterchangeGroupRole.SequenceParticipantGroup,
             "Packed sequence lifetime or participant group was lost during typed JSON round-trip.");
-        PackageAssertions.Require(artifact.ToSvg().Contains("sequence-destruction", StringComparison.Ordinal),
-            "Packed sequence omitted its native destruction mark.");
+        var prepared = sequence.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 900)), sequence.Theme, sequence.ThemeMode));
+        var footer = prepared.Regions.Single(region => region.Role == "sequence-participant-footer" && region.Id == "W");
+        var survivingFooter = prepared.Regions.Single(region => region.Role == "sequence-participant-footer" && region.Id == "API");
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var workerLine = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "sequence-lifeline"
+            && Math.Abs(double.Parse((string)node.Attribute("x1")!, CultureInfo.InvariantCulture) - footer.Bounds.X - footer.Bounds.Width / 2) < .001);
+        PackageAssertions.Require(sequence.Layout?.MirrorParticipants == true && footer.Bounds.Bottom < survivingFooter.Bounds.Top
+            && Math.Abs(double.Parse((string)workerLine.Attribute("y2")!, CultureInfo.InvariantCulture) - footer.Bounds.Top) < .001,
+            "Packed mirrored sequence did not end the worker lifeline at its destruction footer before the surviving participant.");
         PackageAssertions.Png(artifact.ToPng());
         var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,

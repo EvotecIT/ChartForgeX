@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Markup;
 using ChartForgeX.Rendering;

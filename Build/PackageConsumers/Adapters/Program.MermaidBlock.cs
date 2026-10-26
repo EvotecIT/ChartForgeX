@@ -11,7 +11,7 @@ internal static partial class Program {
         PackageAssertions.Require(!parsed.HasErrors && parsed.Document != null, "Packed nested Mermaid block source was rejected.");
         var block = parsed.Document!.ToBlockLayoutBlock(); var svg = XDocument.Parse(block.ToSvg());
         PackageAssertions.Require(block.Items.Single(item => item.Id == "a").ParentId == "group" &&
-            svg.Descendants().Any(node => (string?)node.Attribute("fill") == "#bbf7d0"), "Packed block source lost hierarchy or native class paint.");
+            svg.Descendants().Any(node => string.Equals((string?)node.Attribute("fill"), "#bbf7d0", StringComparison.OrdinalIgnoreCase)), "Packed block source lost hierarchy or native class paint.");
         PackageAssertions.Png(block.ToPng());
     }
 }

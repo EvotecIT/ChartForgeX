@@ -849,6 +849,7 @@ try {
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       </PropertyGroup>
     </Project>
 '@ | Set-Content -Path (Join-Path $consumerRoot 'PackageConsumer.csproj') -Encoding UTF8
@@ -883,6 +884,18 @@ try {
                     Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion, '--package-directory', $consumerPackageCache) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                     Get-ChildItem -LiteralPath (Join-Path $root 'Build/PackageConsumers/Adapters') -Filter '*.cs' -File | Copy-Item -Destination $consumerRoot
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/PackageAssertions.cs') -Destination $consumerRoot
+                    # The quick consumer runs the same adapter contracts; retain their declared source fixtures.
+                    $adapterSourceRoot = Join-Path $root 'Build/PackageConsumers/Adapters'
+                    [xml] $adapterProject = Get-Content -LiteralPath (Join-Path $adapterSourceRoot 'AdaptersPackageProbe.csproj') -Raw
+                    $consumerProjectPath = Join-Path $consumerRoot 'PackageConsumer.csproj'
+                    [xml] $consumerProject = Get-Content -LiteralPath $consumerProjectPath -Raw
+                    $resourceItems = $consumerProject.CreateElement('ItemGroup')
+                    foreach ($resourceItem in $adapterProject.SelectNodes('//EmbeddedResource')) {
+                        Copy-Item -LiteralPath (Join-Path $adapterSourceRoot $resourceItem.GetAttribute('Include')) -Destination $consumerRoot
+                        [void] $resourceItems.AppendChild($consumerProject.ImportNode($resourceItem, $true))
+                    }
+                    [void] $consumerProject.Project.AppendChild($resourceItems)
+                    $consumerProject.Save($consumerProjectPath)
                     Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
                     $consumerSucceeded = $true
                 } finally {

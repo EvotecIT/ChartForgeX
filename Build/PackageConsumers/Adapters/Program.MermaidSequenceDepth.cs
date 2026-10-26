@@ -18,7 +18,7 @@ internal static partial class Program {
             "Packed source sequence paint, HSL box, half-arrow, captions or numbering was rejected.");
         var artifact = direct.Artifact ?? throw new InvalidOperationException("Packed sequence depth omitted its artifact.");
         var sequence = artifact.Model as SequenceArtifact ?? throw new InvalidOperationException("Packed depth lost the native sequence owner.");
-        PackageAssertions.Require(sequence.Paint.ParticipantFill == ChartColor.FromRgb(227, 239, 255)
+        PackageAssertions.Require(sequence.Paint.ParticipantFill?.Equals(ChartColor.FromRgb(227, 239, 255)) == true
             && sequence.Participants[0].Label == "Native\nAPI" && sequence.Messages[0].Metadata["mermaid.operator"] == "-|/",
             "Packed source presentation did not reach the reusable sequence owner.");
         var svg = artifact.ToSvg();

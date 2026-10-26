@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
@@ -22,7 +23,7 @@ internal static partial class Program {
         var points = chart.Series.Single();
         PackageAssertions.Require(points.Kind == ChartSeriesKind.Scatter && points.Points.Count == 4
             && points.PointLabels[0] == "Opportunity" && points.GetPointMarkers(0)!.Radius == 9
-            && points.GetPointMarkers(1)!.Fill == ChartColor.FromHex("#0369A1") && points.GetPointMarkers(3) == null,
+            && points.GetPointMarkers(1)!.Fill?.Equals(ChartColor.FromHex("#0369A1")) == true && points.GetPointMarkers(3) == null,
             "Packed class/direct source paint lost source order or per-point ownership.");
         PackageAssertions.Require(chart.Options.XAxis.Labels.Any(label => label.Value == .25 && label.Text == "Low effort")
             && chart.Options.XAxis.Labels.Any(label => label.Value == .75 && label.Text == "High effort")

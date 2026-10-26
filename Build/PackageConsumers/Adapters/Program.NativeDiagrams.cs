@@ -42,7 +42,8 @@ internal static partial class Program {
             && customer.Details.Any(detail => (detail.Text ?? "").Contains("PK", StringComparison.Ordinal) && (detail.Text ?? "").Contains("FK", StringComparison.Ordinal))
             && entityModel.Edges.Count == 1, "Packed ER aliases, typed keys or native paint was lost.");
 
-        const string themed = "%%{init: {'theme':'dark','themeVariables':{'background':'#112233','primaryColor':'#334455','primaryTextColor':'#FFEEDD','lineColor':'#CCDDEE'}}}%%\nflowchart LR\nA[Start] --> B[Finish]";
+        // Topology's global text role is textColor; primaryTextColor has a separate source-preset role.
+        const string themed = "%%{init: {'theme':'dark','themeVariables':{'background':'#112233','primaryColor':'#334455','textColor':'#FFEEDD','lineColor':'#CCDDEE'}}}%%\nflowchart LR\nA[Start] --> B[Finish]";
         var theme = ((TopologyChart)PackedNativeDiagram("theme-roles", themed).Model!).Theme.Resolve(VisualThemeMode.Dark);
         PackageAssertions.Require(theme.Background.Equals(ChartColor.FromHex("#112233")) && theme.Surface.Equals(ChartColor.FromHex("#334455"))
             && theme.Foreground.Equals(ChartColor.FromHex("#FFEEDD")) && theme.Status.Neutral.Fill.Equals(ChartColor.FromHex("#CCDDEE")),

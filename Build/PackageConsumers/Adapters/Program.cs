@@ -133,8 +133,16 @@ internal static partial class Program {
         if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
         var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid" });
         if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
-        PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark &&
-            mermaidTopology.Theme.ToJson() == VisualTheme.Graphite().ToJson(), "Packed Mermaid conversion did not preserve the canonical paired theme and explicit dark mode.");
+        PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark
+            && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Background.Equals(ChartColor.FromHex("#333333"))
+            && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Foreground.Equals(ChartColor.FromHex("#CCCCCC")),
+            "Packed Mermaid conversion lost its native dark source preset.");
+        var hostTheme = VisualTheme.Graphite();
+        var hostArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions {
+            Presentation = new MermaidPresentationOptions { Theme = hostTheme, ThemeMode = VisualThemeMode.Dark }
+        });
+        PackageAssertions.Require(hostArtifact.Model is TopologyChart hostTopology && hostTopology.ThemeMode == VisualThemeMode.Dark
+            && hostTopology.Theme.ToJson() == hostTheme.ToJson(), "Packed Mermaid conversion did not preserve an explicit paired host theme.");
         var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
         if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");
         if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
