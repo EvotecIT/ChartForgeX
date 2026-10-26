@@ -40,6 +40,7 @@ internal static partial class VisualMatrixCompiler {
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
         var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing, categoryGroups);
         var plot = layout.Plot;
+        builder.AddRegion(new VisualSemanticRegion("matrix-plot", "matrix-plot", plot));
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
             Math.Min(columns.Length > 1 ? plot.Width / columns.Length * .5 : double.PositiveInfinity,
