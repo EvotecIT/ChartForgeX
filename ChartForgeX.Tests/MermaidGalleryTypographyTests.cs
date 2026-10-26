@@ -20,6 +20,7 @@ public sealed class MermaidGalleryTypographyTests {
     public MermaidGalleryTypographyTests(ITestOutputHelper output) => _output = output;
 
     [Fact]
+    [Trait("Category", "Gallery")]
     public void PublishedSamplesRetainDefaultGeometryAndAuthoredFontsWhenHostFallbackFacesChange() {
         var output = ExampleTestOutput.CreateScratchPath("CFX-Mermaid-gallery-font-");
         Directory.CreateDirectory(output);
