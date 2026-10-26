@@ -56,7 +56,7 @@ public sealed class MermaidSequenceMessagePresentationBrowserTests {
             Assert.All(observed.GetProperty("activationWidths").EnumerateArray(),item=>Assert.Equal(10,item.GetDouble()));
             var host=page.Locator("[data-cfx-html-sizing='preserve-size']");
             if(observed.GetProperty("host").GetProperty("contentWidth").GetInt32()>observed.GetProperty("host").GetProperty("width").GetInt32()) {
-                await host.FocusAsync();await page.Keyboard.PressAsync("ArrowRight");
+                await host.FocusAsync();await page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
                 await page.WaitForFunctionAsync("""() => document.querySelector('[data-cfx-html-sizing="preserve-size"]').scrollLeft > 0""");
                 Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft")>0);
                 if(!string.IsNullOrWhiteSpace(output))await page.ScreenshotAsync(new PageScreenshotOptions{Path=Path.Combine(output,stem+".scrolled.browser.png"),FullPage=true});

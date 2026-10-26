@@ -48,7 +48,7 @@ public sealed class MermaidFlowchartCatalogBrowserTests {
             Assert.Empty(root.GetProperty("clipped").EnumerateArray());Assert.Empty(root.GetProperty("lost").EnumerateArray());Assert.Empty(root.GetProperty("hidden").EnumerateArray());
             Assert.Equal(0,root.GetProperty("scripts").GetInt32());Assert.False(root.GetProperty("outerOverflow").GetBoolean());
             if(root.GetProperty("scrollable").GetBoolean()) {
-                var host=session.Page.Locator("[data-cfx-html-sizing=preserve-size]");await host.FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight");
+                var host=session.Page.Locator("[data-cfx-html-sizing=preserve-size]");await host.FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
                 await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft>0");
             }
             InteractiveChartBrowser.AssertNoConsoleErrors(session);

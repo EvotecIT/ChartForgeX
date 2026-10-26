@@ -37,7 +37,7 @@ public sealed class ZenUmlPresentationBrowserTests {
         }
         var host=session.Page.Locator("[data-cfx-html-sizing='preserve-size']");
         if(await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {
-            await host.FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-html-sizing]').scrollLeft>0");
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);

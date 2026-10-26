@@ -72,7 +72,7 @@ public sealed partial class MermaidSequenceParOverTests {
         foreach (var label in new[] { "First task note", "Guard note", "Terminal task note", "and [Second task]", "and [Notes only]" }) Assert.Contains(label, labels);
         Assert.DoesNotContain(labels, label => label?.Contains("parover", StringComparison.OrdinalIgnoreCase) == true);
         if (observed.GetProperty("contentWidth").GetInt32() > observed.GetProperty("hostWidth").GetInt32()) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft > 0");
             Assert.True(await host.EvaluateAsync<double>("element => element.scrollLeft") > 0);
         }

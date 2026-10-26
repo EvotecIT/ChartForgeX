@@ -76,7 +76,7 @@ public sealed partial class MermaidSequenceParticipantTests {
         var labels = observed.GetProperty("labels").EnumerateArray().Select(value => value.GetString()).ToArray();
         foreach (var label in new[] { "Native", "User", "Entry API", "Worker", "Record", "Storage", "Items", "Inbox", "Open", "Request", "Handle", "Read", "Load", "Collect", "Enqueue", "Queued", "Complete", "Stable source facts" }) Assert.Contains(label, labels);
         if (observed.GetProperty("contentWidth").GetInt32() > observed.GetProperty("hostWidth").GetInt32()) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft > 0");
             Assert.True(await host.EvaluateAsync<double>("element => element.scrollLeft") > 0);
         }

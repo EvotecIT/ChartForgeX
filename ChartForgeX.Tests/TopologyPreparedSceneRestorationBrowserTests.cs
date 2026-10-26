@@ -55,7 +55,7 @@ public sealed class TopologyPreparedSceneRestorationBrowserTests {
         Assert.Empty(observed.GetProperty("clipped").EnumerateArray()); Assert.Equal(0, observed.GetProperty("scripts").GetInt32()); Assert.False(observed.GetProperty("overflow").GetBoolean());
         var host = session.Page.Locator("[data-cfx-html-sizing='preserve-size']");
         if (await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing]').scrollLeft>0");
             Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft") > 0);
         }

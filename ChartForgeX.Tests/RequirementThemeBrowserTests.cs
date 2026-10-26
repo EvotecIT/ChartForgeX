@@ -36,7 +36,7 @@ public sealed class RequirementThemeBrowserTests {
         Assert.Contains(observed.GetProperty("fills").EnumerateArray(), item => item.GetString() == (dark ? "#3B2755" : "#E7F2E9"));
         var host = session.Page.Locator("[data-cfx-html-sizing='preserve-size']");
         if (await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-html-sizing]').scrollLeft>0");
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);

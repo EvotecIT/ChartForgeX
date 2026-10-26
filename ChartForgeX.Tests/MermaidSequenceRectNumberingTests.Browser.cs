@@ -65,7 +65,7 @@ public sealed partial class MermaidSequenceRectNumberingTests {
         Assert.Equal(new[] { "5.5", "6.5", "10", "11", "12" }, observed.GetProperty("numbers").EnumerateArray().Select(value => value.GetString()));
         Assert.DoesNotContain(labels, label => label?.Contains("rgba(", StringComparison.Ordinal) == true || label?.Contains("hsla(", StringComparison.Ordinal) == true);
         if (observed.GetProperty("contentWidth").GetInt32() > observed.GetProperty("hostWidth").GetInt32()) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft > 0");
             Assert.True(await host.EvaluateAsync<double>("element => element.scrollLeft") > 0);
         }

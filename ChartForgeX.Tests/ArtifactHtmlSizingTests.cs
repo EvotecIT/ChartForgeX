@@ -39,7 +39,7 @@ public sealed class ArtifactHtmlSizingTests {
             await Capture(session.Page, "artifact-html-size-" + route + "-start-" + width);
             Assert.True(await host.EvaluateAsync<bool>("element => element.scrollWidth > element.clientWidth"));
             await host.FocusAsync();
-            await session.Page.Keyboard.PressAsync("ArrowRight");
+            await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('.chartforgex-visual-artifact').scrollLeft > 0");
             await session.Page.Locator("[data-cfx-role='sequence-participant']").Last.ScrollIntoViewIfNeededAsync();
             Assert.True(await session.Page.Locator("[data-cfx-role='sequence-participant']").Last.EvaluateAsync<bool>(

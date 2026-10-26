@@ -41,7 +41,7 @@ public sealed class MermaidGraphStyleSettingsBrowserTests {
             foreach(var label in new[]{"Review","Work","Done","Reads"})Assert.Contains(label,root.GetProperty("text").GetString());
             Assert.Empty(root.GetProperty("clipped").EnumerateArray());Assert.Equal(0,root.GetProperty("unsafe").GetInt32());Assert.False(root.GetProperty("outerOverflow").GetBoolean());
             if(root.GetProperty("scrollable").GetBoolean()) {
-                await session.Page.Locator("[data-cfx-html-sizing=preserve-size]").FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight");
+                await session.Page.Locator("[data-cfx-html-sizing=preserve-size]").FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
                 await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft>0");
             }
             InteractiveChartBrowser.AssertNoConsoleErrors(session);

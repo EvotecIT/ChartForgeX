@@ -52,7 +52,7 @@ public sealed partial class MermaidRepeatedSubgraphTests {
         Assert.DoesNotContain(labels, caption => caption?.Contains("Ignored", StringComparison.Ordinal) == true);
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.Equal(0, observed.GetProperty("scripts").GetInt32()); Assert.False(observed.GetProperty("overflow").GetBoolean());
         if (await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft>0"); Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft") > 0);
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);

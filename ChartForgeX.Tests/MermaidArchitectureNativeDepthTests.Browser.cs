@@ -58,7 +58,7 @@ public sealed partial class MermaidArchitectureNativeDepthTests {
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.False(observed.GetProperty("overflow").GetBoolean());
         Assert.Equal(0, observed.GetProperty("scripts").GetInt32());
         if (await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
+            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft>0");
             Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft") > 0);
         }
