@@ -32,8 +32,8 @@ public sealed partial class NativeTransitionBrowserTests {
         }
         Assert.Equal(observed.GetProperty("before").GetString(), observed.GetProperty("revision").GetString()); Assert.Empty(observed.GetProperty("events").EnumerateArray());
         Assert.Contains("-surface-shadow-", observed.GetProperty("filter").GetString()); Assert.EndsWith("-retained-mask-1", observed.GetProperty("mask").GetString());
-        await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=point] [data-cfx-role=bar]:first-of-type", "settled-effects-ink-" + width + "-" + dark);
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
+        await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=point][data-cfx-point='0'] [data-cfx-role=bar]", "settled-effects-ink-" + width + "-" + dark);
+        await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         await page.Clock.ResumeAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var path = await download.PathAsync() ?? throw new InvalidOperationException("The accepted effect endpoint was not exported.");
         var exported = await File.ReadAllTextAsync(path);

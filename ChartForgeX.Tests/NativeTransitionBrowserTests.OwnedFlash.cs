@@ -27,6 +27,6 @@ public sealed partial class NativeTransitionBrowserTests {
         var actual=System.Xml.Linq.XDocument.Parse(exported);var expected=System.Xml.Linq.XDocument.Parse(to.WideEmission!.Svg);var roles=new[]{"line","bar","donut-slice","treemap-tile-mark"};
         var a=actual.Descendants().Where(row=>(string?)row.Attribute("data-cfx-role") is { } role&&roles.Contains(role)).ToArray();var b=expected.Descendants().Where(row=>(string?)row.Attribute("data-cfx-role") is { } role&&roles.Contains(role)).ToArray();Assert.Equal(b.Length,a.Length);Assert.NotEmpty(a);
         for(var index=0;index<a.Length;index++)Assert.Equal(b[index].Attributes().Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()),a[index].Attributes().Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()));
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions{ReducedMotion=ReducedMotion.Reduce});await page.EvaluateAsync("()=>ownedFlash.dispose()");await page.Clock.RunForAsync(1500);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync());AssertNoConsoleErrors(session);
+        await ReduceAndFlushMotionAsync(page);await page.EvaluateAsync("()=>ownedFlash.dispose()");await page.Clock.RunForAsync(1500);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync());AssertNoConsoleErrors(session);
     }
 }

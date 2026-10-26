@@ -12,7 +12,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (!Enabled) return;
         var renderer = new HtmlInteractiveChartRenderer();
         var section = renderer.PrepareSection(HtmlNativeLineInkTests.Model(fixture), configure: OwnedOptions);
-        var html = OwnedPage(section.Html, "window.FontFace=undefined;");
+        var html = OwnedPage("<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + section.Html
+            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>", "window.FontFace=undefined;");
         await using var session = await OpenAsync(html, 760, 700); var page = session.Page;
         await page.WaitForFunctionAsync("()=>[...document.querySelectorAll('[data-cfx-native-raster-text-ink] image')].some(image=>image.getBBox().width>0)");
         var observed = await page.EvaluateAsync<JsonElement>("()=>({violations:ownedFontViolations,ink:[...document.querySelectorAll('[data-cfx-native-raster-text-ink]')].map(node=>({display:getComputedStyle(node).display,images:node.querySelectorAll('image').length,text:node.querySelectorAll('text').length})),resources:performance.getEntriesByType('resource').map(row=>row.name)})");

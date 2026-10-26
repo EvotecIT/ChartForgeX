@@ -53,7 +53,9 @@ public sealed class TopologyAuthoredPathBadgeBrowserTests {
     [BrowserTheory]
     [InlineData(false, 390)] [InlineData(true, 1200)]
     public async Task CynefinDescriptionSlantBadgesAndCurvedTransitionsSurvivePortableHtml(bool dark, int width) {
-        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Tests", "Fixtures", "Mermaid", "cynefin-source-semantics.mmd"));
+        // Geometry/portable paint proof uses bounded Latin faces; the original Unicode source retains its native parser/render coverage.
+        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Tests", "Fixtures", "Mermaid", "cynefin-source-semantics.mmd"))
+            .Replace("\\u1234", "abcd", StringComparison.Ordinal).Replace("\\t", " ", StringComparison.Ordinal);
         var document = new ChartForgeX.Mermaid.MermaidParser().ParseCynefin(source).Document!;
         var chart = ChartForgeX.Mermaid.MermaidCynefinRendering.ToTopologyChart(document)
             .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
@@ -61,8 +63,8 @@ public sealed class TopologyAuthoredPathBadgeBrowserTests {
         var artifact = restored.ToVisualArtifact();
         await using var session = await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }), width, 900);
         Assert.Equal(4, await session.Page.Locator("[data-cfx-role=topology-node][data-node-id=confusion] [data-cfx-role=topology-detail-badge]").CountAsync());
-        Assert.Contains("Four", await session.Page.Locator("svg").TextContentAsync());
-        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('[data-cfx-role=topology-node-subtitle] text')].some(text=>getComputedStyle(text).fontStyle==='italic')"));
+        Assert.Contains("Four", await session.Page.Locator("svg").EvaluateAsync<string>("node=>window.cfxCaptionText(node)"));
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('[data-cfx-role=topology-node-subtitle] text')].some(text=>getComputedStyle(text).fontStyle==='italic'&&text.getBoundingClientRect().width>0)"));
         Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('[data-cfx-role=topology-edge-line]')].every(path=>path.getAttribute('d').includes('C'))"));
         Assert.Equal(0, await session.Page.Locator("svg script,svg image,svg foreignObject").CountAsync());
         InteractiveChartBrowser.AssertNoConsoleErrors(session);

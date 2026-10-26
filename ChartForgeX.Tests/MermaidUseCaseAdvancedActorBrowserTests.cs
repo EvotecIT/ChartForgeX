@@ -22,16 +22,16 @@ public sealed class MermaidUseCaseAdvancedActorBrowserTests {
               const svg=document.querySelector('svg'),frame=svg.getBoundingClientRect();
               const box=e=>{const b=e.getBoundingClientRect();return {left:b.left,top:b.top,right:b.right,bottom:b.bottom,width:b.width,height:b.height}};
               const nodes=[...svg.querySelectorAll('[data-cfx-role=topology-node]')].map(node=>({id:node.getAttribute('data-node-id'),shape:node.getAttribute('data-node-shape'),
-                glyph:node.getAttribute('data-node-icon-shape'),text:[...node.querySelectorAll('text')].map(e=>e.textContent).join(' '),bounds:box(node),
+                glyph:node.getAttribute('data-node-icon-shape'),text:window.cfxCaptionText(node),bounds:box(node),
                 surfaces:[...node.querySelectorAll('[data-cfx-role=topology-node-surface]')].map(p=>({fill:p.getAttribute('fill'),d:p.getAttribute('d')}))}));
-              const texts=[...svg.querySelectorAll('text')];
+              const texts=[...svg.querySelectorAll('text,[data-cfx-caption]')].filter(node=>!node.closest('[data-cfx-native-text-ink]'));
               const captions=[...svg.querySelectorAll('[data-cfx-role=topology-node-label],[data-cfx-role=topology-node-subtitle]')].map(e=>({id:e.closest('[data-node-id]')?.getAttribute('data-node-id'),bounds:box(e)}));
               const overlaps=[];for(let i=0;i<captions.length;i++)for(let j=i+1;j<captions.length;j++){const a=captions[i],b=captions[j],x=a.bounds,y=b.bounds;
                 if(a.id!==b.id&&Math.min(x.right,y.right)-Math.max(x.left,y.left)>.5&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>.5)overlaps.push([a.id,b.id]);}
               return {nodes,overlaps,edges:[...svg.querySelectorAll('[data-cfx-role=topology-edge]')].map(e=>e.getAttribute('data-edge-id')),
                 clipped:texts.filter(e=>{const b=e.getBoundingClientRect();return b.left<frame.left-1||b.top<frame.top-1||b.right>frame.right+1||b.bottom>frame.bottom+1}).map(e=>e.textContent),
                 note:svg.querySelector('[data-cfx-role=topology-annotation]').getAttribute('data-target-id'),
-                text:texts.map(e=>e.textContent).join(' '),active:svg.querySelectorAll('script,image,foreignObject').length};
+                text:window.cfxCaptionText(svg),active:svg.querySelectorAll('script,image,foreignObject').length};
             }
             """);
         Assert.Equal(new[] { "Plain", "Hollow", "Business", "BusinessHollow", "Silhouette", "Icon", "Submit" }, observed.GetProperty("nodes").EnumerateArray().Select(n => n.GetProperty("id").GetString()));

@@ -67,7 +67,7 @@ public sealed partial class MermaidSequenceDepthTests {
                         clip.push(text.textContent);
                 }
                 return {clip, scripts:svg.querySelectorAll('script,foreignObject').length,
-                    text:svg.textContent.replace(/\s+/g,' ').trim(), hostWidth:host.clientWidth, contentWidth:host.scrollWidth,
+                    text:window.cfxCaptionText(svg), hostWidth:host.clientWidth, contentWidth:host.scrollWidth,
                     pageOverflow:document.documentElement.scrollWidth>innerWidth};
             }
             """);

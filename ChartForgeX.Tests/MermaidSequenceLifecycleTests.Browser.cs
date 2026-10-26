@@ -36,7 +36,9 @@ public sealed partial class MermaidSequenceLifecycleTests {
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
         Assert.Equal(2, await session.Page.Locator("[data-cfx-role='sequence-participant-group']").CountAsync());
-        Assert.Single(await session.Page.Locator("[data-cfx-role='sequence-destruction']").AllAsync());
+        // Mirrored lifetime endpoints use the retained participant footer, rather than a second cross.
+        Assert.Equal(0, await session.Page.Locator("[data-cfx-role='sequence-destruction']").CountAsync());
+        Assert.Equal(1, await session.Page.Locator("[data-cfx-role='sequence-participant-footer'][data-source-id='W']").CountAsync());
         var worker = await session.Page.Locator("[data-cfx-role='sequence-participant'][data-label='Worker']").BoundingBoxAsync();
         var service = await session.Page.Locator("[data-cfx-role='sequence-participant'][data-label='Service']").BoundingBoxAsync();
         Assert.NotNull(worker);

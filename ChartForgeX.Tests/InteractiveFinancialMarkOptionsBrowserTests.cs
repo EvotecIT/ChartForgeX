@@ -200,9 +200,9 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         await MoveAwayAsync(page); await legend.BlurAsync();
         const string caption = "[data-cfx-source-id='series-0-point-1-label']";
         Assert.Equal(1, await page.Locator(caption).CountAsync());
-        await MoveToAsync(page, caption);
+        await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
         await CaptureAsync(page, directory, name + ".caption-hover.png");
-        var captionState = await page.Locator(caption).EvaluateAsync<JsonElement>("node => {const box=node.getBoundingClientRect(),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);return {labelFor:node.closest('[data-cfx-label-for]')?.dataset.cfxLabelFor||null,hitTag:hit?.localName,hitRole:hit?.dataset.cfxRole||hit?.parentElement?.dataset.cfxRole};}");
+        var captionState = await page.Locator(caption).EvaluateAsync<JsonElement>("node => {const p=window.cfxCaptionPoint(node),hit=document.elementFromPoint(p.x,p.y);return {labelFor:node.closest('[data-cfx-label-for]')?.dataset.cfxLabelFor||null,hitTag:hit?.localName,hitRole:hit?.dataset.cfxRole||hit?.parentElement?.dataset.cfxRole};}");
         Assert.Equal("series-0-point-1", captionState.GetProperty("labelFor").GetString());
         if (directory != null) await File.WriteAllTextAsync(Path.Combine(directory, name + ".caption-hover.runtime.json"), JsonSerializer.Serialize(new {
             hidden = await page.Locator(".cfx-tooltip").IsHiddenAsync(),
@@ -213,7 +213,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         Assert.Contains("cfx-hovered", await page.Locator(Point(0, 1)).GetAttributeAsync("class"));
         Assert.Equal(prices, await page.Locator(".cfx-tooltip dt").EvaluateAllAsync<string[]>(
             "nodes => nodes.filter(node => ['Opening price','High','Low','Close'].includes(node.textContent)).map(node => node.nextElementSibling.textContent)"));
-        await page.Locator(caption).ClickAsync();
+        await BrowserProofCaptions.ClickAsync(page, page.Locator(caption));
         Assert.Equal("true", await page.Locator(Point(0, 1)).GetAttributeAsync("aria-selected"));
         Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.Contains("cfx-tooltip--pinned", await page.Locator(".cfx-tooltip").GetAttributeAsync("class"));
@@ -234,7 +234,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         await page.Keyboard.PressAsync("Space"); await page.Locator(Point(0, 1)).BlurAsync(); await MoveAwayAsync(page);
         // A separately painted caption cannot promote an observation whose native ink is hidden.
         await page.Locator(Point(0, 1)).EvaluateAsync("node=>node.style.opacity='0'");
-        await MoveToAsync(page, caption);
+        await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.DoesNotContain("cfx-hovered", await page.Locator(Point(0, 1)).GetAttributeAsync("class") ?? "");
         AssertNoConsoleErrors(session);

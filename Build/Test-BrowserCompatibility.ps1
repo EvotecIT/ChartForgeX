@@ -38,10 +38,17 @@ if (-not $SkipBuild) {
     }
 }
 
+# Only establishes a trustworthy origin; each fixture installs its own exact HTML.
+$origin = Join-Path $output 'origin'
+New-Item -ItemType Directory -Path $origin -Force | Out-Null
+[IO.File]::WriteAllText((Join-Path $origin 'catalog.html'), '<!doctype html><title>Browser test origin</title>')
+[IO.File]::WriteAllText((Join-Path $origin 'manifest.json'), '{}')
+. (Join-Path $PSScriptRoot 'Invoke-BrowserTestHost.ps1')
 $settings = @{
     HFX_TEST_ENABLE_PLAYWRIGHT = '1'
     CFX_TEST_REQUIRE_BROWSER = '1'
     CFX_TEST_BROWSER = $Browser.ToLowerInvariant()
+    CFX_V2_GALLERY_URL = $null
     CFX_V2_CAPTURE_ROOT = $captures
     CFX_BROWSER_CAPTURE_DIRECTORY = $captures
 }
@@ -50,6 +57,9 @@ foreach ($name in $settings.Keys) {
     $saved[$name] = [Environment]::GetEnvironmentVariable($name)
 }
 try {
+    Invoke-BrowserTestHost -Root $origin -OutputRoot $output -Action {
+        param($galleryUri)
+        $settings.CFX_V2_GALLERY_URL = $galleryUri.AbsoluteUri
     foreach ($name in $settings.Keys) {
         [Environment]::SetEnvironmentVariable($name, $settings[$name])
     }
@@ -67,6 +77,7 @@ try {
         throw 'Compatibility proof must discover and execute tests without skips.'
     }
     Write-Host "$Browser compatibility proof passed: $($counters.total) executed cases. Evidence: $output"
+    }
 } finally {
     foreach ($name in $saved.Keys) {
         [Environment]::SetEnvironmentVariable($name, $saved[$name])

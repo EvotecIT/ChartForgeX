@@ -39,8 +39,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => peerRoot.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The compatible peer did not export.");
         var exported = XDocument.Load(path);
-        Assert.Equal(await peerRoot.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), exported.Descendants()
-            .Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value).ToArray());
+        Assert.Equal(await peerRoot.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), await BrowserProofCaptions.ExportedAsync(page, exported, "axis-x-label", peerRoot.Locator(".cfx-stage svg")));
         Assert.Empty(await page.EvaluateAsync<string[]>("()=>capabilityErrors.map(error=>error.message)"));
         await CaptureAsync(page, "peer-compatible-x-" + differentYScale, new { differentYScale, requests });
         AssertNoConsoleErrors(session);
@@ -113,8 +112,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             var source = Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-observation-id") == id);
             Assert.Contains(source.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "marker");
         }
-        Assert.Equal(await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), svg.Descendants()
-            .Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value).ToArray());
+        Assert.Equal(await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label"));
         await CaptureAsync(page, "reset-lost-y-" + gestureAxes + "-" + contextMenu, new { gestureAxes, contextMenu, reset });
         AssertNoConsoleErrors(session);
     }

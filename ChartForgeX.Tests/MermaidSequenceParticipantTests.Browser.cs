@@ -45,7 +45,7 @@ public sealed partial class MermaidSequenceParticipantTests {
         var observed = await session.Page.EvaluateAsync<JsonElement>("""
             () => {
                 const svg=document.querySelector('svg'), frame=svg.getBoundingClientRect(), clip=[];
-                const labels=[...svg.querySelectorAll('text')].map(text=>[...text.querySelectorAll('tspan')].map(span=>span.textContent).join(' ')||text.textContent);
+                const labels=[...svg.querySelectorAll('[data-cfx-role="frame-heading"],[data-cfx-role="sequence-participant-label"],[data-cfx-role="sequence-label"],[data-cfx-role="sequence-fragment-title"]')].map(window.cfxCaptionText);
                 for(const text of svg.querySelectorAll('text')) {
                     const box=text.getBoundingClientRect();
                     if(box.width&&box.height&&(box.left<frame.left-1.5||box.top<frame.top-1.5||box.right>frame.right+1.5||box.bottom>frame.bottom+1.5)) clip.push(text.textContent);

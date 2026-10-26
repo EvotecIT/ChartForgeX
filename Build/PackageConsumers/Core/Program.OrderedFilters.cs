@@ -18,9 +18,9 @@ internal static partial class Program {
         var actual = SvgRasterizer.Rasterize(filterSource, strict: true, filters: new SvgRasterFilterOptions(maximumApplications: 1));
         PackageAssertions.Require(actual.Diagnostics.Count == 0 && actual.Image.Pixels.SequenceEqual(new byte[] { 16, 16, 16, 255 }),
             "Named native filter results lost their retained high-precision channels.");
-        var model = Chart.Create().WithSize(160, 120).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels(false)
+        var model = Chart.Create().WithSize(160, 120).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithPlotClipping(false).WithDataLabels(false)
             .AddLine("Source", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5) });
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(160, 120), 12));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(160, 120), 12), frame: new VisualFrame(showLegend: false, transparentBackground: true));
         var source = model.Prepare(context);
         var visual = source.WithOutline(new VisualOutline(ChartColor.FromRgb(0, 0, 255), 1, false));
         var svg = visual.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters));

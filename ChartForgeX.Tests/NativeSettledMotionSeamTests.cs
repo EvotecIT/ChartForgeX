@@ -77,6 +77,7 @@ internal static class NativeSettledMotionFixture {
     internal static HtmlChartSection Section(int width, bool dark, VisualSvgEffectProfile profile) {
         var chart = NativeSeriesVisibilityDefaultControls.Model("bar", width, dark).WithDataLabels(false);
         var ordinary = new HtmlInteractiveChartRenderer().PrepareSection(chart, configure: options => {
+            options.TextPresentation = HtmlChartTextPresentation.NativeContours;
             options.Interaction.ChartId = "settled-native-effects"; options.Interaction.Enable(ChartInteractionFeatures.Export);
         });
         var drawing = Drawing(width, dark, profile);

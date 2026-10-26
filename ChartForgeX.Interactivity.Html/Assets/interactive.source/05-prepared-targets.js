@@ -179,7 +179,7 @@
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);
       const point = mark && mark.closest('[data-cfx-point],[data-cfx-target-kind]');
-      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
+      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text,[data-cfx-native-text-ink]')) return;
       label._cfxLabelTarget = point;
       (point._cfxPointLabels ||= []).push(label);
     });

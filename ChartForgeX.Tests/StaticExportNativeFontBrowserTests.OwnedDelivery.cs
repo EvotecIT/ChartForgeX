@@ -34,7 +34,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             ? "const Actual=FontFace;window.FontFace=function(...args){const face=new Actual(...args);face.load=()=>Promise.reject(new Error('Intentional owned-font rejection'));return face;};"
             : "window.FontFace=undefined;";
         var html=OwnedPage(Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions),failure);
-        await using var session=await OpenAsync(html,784,760);var page=session.Page;
+        await using var session=await OpenAsync(html,784,760,waitForOwnedFonts:false);var page=session.Page;
         var observed=await page.EvaluateAsync<JsonElement>("()=>({violations:ownedFontViolations,fonts:document.fonts.size,visible:[...document.querySelectorAll('[data-cfx-owned-font-native]')].filter(node=>getComputedStyle(node).display!=='none').length,text:[...document.querySelectorAll('[data-cfx-owned-font-text]')].filter(node=>getComputedStyle(node).display!=='none').length})");
         HtmlOwnedFontDeliveryTests.Save("binary-failure-"+rejected+".page.html",html);HtmlOwnedFontDeliveryTests.Save("binary-failure-"+rejected+".observed.json",observed.GetRawText());
         await page.ScreenshotAsync(new PageScreenshotOptions{Path=CapturePath("owned-font-failure-"+rejected+".png"),FullPage=true});
@@ -44,7 +44,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     public async Task BinaryRegistrationDetachesCallerBytesAndChartDisposalKeepsAnIndependentlyOwnedFace() {
         if (!Enabled) return;
         var html=OwnedPage(Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions));
-        await using var session=await OpenAsync(html,784,760);var page=session.Page;
+        await using var session=await OpenAsync(html,784,760,waitForOwnedFonts:false);var page=session.Page;
         await page.WaitForFunctionAsync("()=>[...document.fonts].some(face=>face.family.includes('cfx-owned-')&&face.status==='loaded')");
         var observed=await page.EvaluateAsync<JsonElement>("async()=>{const module=window[Symbol.for('ChartForgeX.nativeTextExport')],payload=document.querySelector('template[data-cfx-font-root]').content.textContent;const bytes=Uint8Array.from(atob(payload),c=>c.charCodeAt(0));const owner=module.registerBinary('Independent caller',bytes,{weight:'400'});bytes.fill(0);await owner.ready;const root=document.querySelector('.cfx-interactive-chart');ChartForgeXCharts.get(root).dispose();const after=[...document.fonts].map(face=>({family:face.family,status:face.status}));owner.release();return{after,final:document.fonts.size,violations:ownedFontViolations};}");
         HtmlOwnedFontDeliveryTests.Save("caller-mutation-lifetime.observed.json",observed.GetRawText());
@@ -57,7 +57,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         const string delayed="window.pendingOwnedLoads=[];const Actual=FontFace;window.FontFace=function(...args){const face=new Actual(...args),load=face.load.bind(face);face.load=()=>new Promise((resolve,reject)=>pendingOwnedLoads.push(()=>load().then(resolve,reject)));return face;};";
         var first=Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions);
         var next=Model(760,VisualThemeMode.Light).WithTitle("A replacement drawing").ToInteractiveHtmlFragmentWithoutAssets(OwnedOptions);
-        await using var session=await OpenAsync(OwnedPage(first,delayed),784,760);var page=session.Page;
+        await using var session=await OpenAsync(OwnedPage(first,delayed),784,760,waitForOwnedFonts:false);var page=session.Page;
         await page.WaitForFunctionAsync("()=>pendingOwnedLoads.length>0");
         await page.EvaluateAsync("html=>{window.oldOwnedSvg=document.querySelector('.cfx-stage svg');window.oldOwnedCount=pendingOwnedLoads.length;ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).update(html);}",next);
         var observed=await page.EvaluateAsync<JsonElement>("async()=>{await Promise.all(pendingOwnedLoads.splice(0,oldOwnedCount).map(load=>load()));await Promise.resolve();return{detached:!oldOwnedSvg.isConnected,oldVisible:[...oldOwnedSvg.querySelectorAll('[data-cfx-owned-font-text]')].filter(node=>!node.hasAttribute('display')).length,faces:document.fonts.size,newVisible:[...document.querySelectorAll('[data-cfx-owned-font-text]')].filter(node=>!node.hasAttribute('display')).length};}");

@@ -48,7 +48,7 @@ public sealed class MermaidSequenceMessagePresentationBrowserTests {
                 File.WriteAllText(Path.Combine(output,stem+".observed.json"),observed.GetRawText());
                 await page.ScreenshotAsync(new PageScreenshotOptions{Path=Path.Combine(output,stem+".browser.png"),FullPage=true});
             }
-            Assert.Equal(2,observed.GetProperty("participants").GetInt32());Assert.Equal(3,observed.GetProperty("messages").GetInt32());Assert.Equal(new[]{"A","B"},observed.GetProperty("footers").EnumerateArray().Select(item=>item.GetProperty("source").GetString()));
+            Assert.Equal(2,observed.GetProperty("participants").GetInt32());Assert.Equal(3,observed.GetProperty("messages").GetInt32());Assert.Empty(observed.GetProperty("footers").EnumerateArray()); // The canonical source explicitly sets mirrorActors:false.
             Assert.Equal(new[]{"1000","1001","1002"},observed.GetProperty("badges").EnumerateArray().Select(item=>item.GetProperty("text").GetString()));
             Assert.All(observed.GetProperty("badges").EnumerateArray(),item=>{Assert.True(item.GetProperty("inside").GetBoolean());Assert.False(item.GetProperty("captionOverlap").GetBoolean());Assert.Equal(9,item.GetProperty("size").GetDouble());Assert.Equal("rgb(255, 255, 255)",item.GetProperty("ink").GetString());Assert.Equal("rgb(59, 92, 204)",item.GetProperty("fill").GetString());});
             Assert.Empty(observed.GetProperty("clip").EnumerateArray());Assert.Equal(0,observed.GetProperty("nativeScripts").GetInt32());Assert.False(observed.GetProperty("pageOverflow").GetBoolean());

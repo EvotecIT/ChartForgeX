@@ -44,7 +44,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal(initial, observed.GetProperty("revision").GetString() == observed.GetProperty("originalRevision").GetString()); Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength());
         Assert.Equal(1, await page.Locator(".cfx-native-motion-frame").CountAsync());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-observation-id=current] [data-cfx-role=" + (bar ? "bar" : "marker") + "]", name + "-ink");
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
+        await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted Cartesian export missing.");
         Assert.Contains("data-cfx-y=\"80\"", await File.ReadAllTextAsync(file));
         await page.EvaluateAsync("()=>cartesian.dispose()"); await page.Clock.RunForAsync(2000); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);

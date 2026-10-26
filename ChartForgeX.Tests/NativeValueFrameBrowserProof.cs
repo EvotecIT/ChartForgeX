@@ -24,7 +24,9 @@ internal static class NativeValueFrameBrowserProof {
         var mark = await paint.BoundingBoxAsync()
             ?? throw new InvalidOperationException("The captured native mark has no visible bounds.");
         Assert.True(mark.Width > 4 && mark.Height > 4);
-        var clip = new Clip { X = mark.X + 2, Y = mark.Y + 2, Width = mark.Width - 4, Height = mark.Height - 4 };
+        // The marker perimeter is real paint too. A center-only crop can be entirely covered
+        // by an unchanged uncertainty stem beneath a small circular marker.
+        var clip = new Clip { X = mark.X, Y = mark.Y, Width = mark.Width, Height = mark.Height };
         var visible = await page.ScreenshotAsync(new PageScreenshotOptions { Clip = clip });
         byte[] hidden;
         await paint.EvaluateAsync("mark=>mark.style.visibility='hidden'");
@@ -35,13 +37,13 @@ internal static class NativeValueFrameBrowserProof {
         var ink = Enumerable.Range(0, on.Width * on.Height).Count(pixel =>
             Math.Abs(on.Pixels[pixel * 4] - off.Pixels[pixel * 4]) + Math.Abs(on.Pixels[pixel * 4 + 1] - off.Pixels[pixel * 4 + 1])
                 + Math.Abs(on.Pixels[pixel * 4 + 2] - off.Pixels[pixel * 4 + 2]) > 24);
-        Assert.True(ink >= Math.Max(1, (int)Math.Ceiling(on.Width * on.Height * minimumInkFraction)), "The displayed native frame must paint visible native mark ink.");
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {
             Directory.CreateDirectory(output); await File.WriteAllBytesAsync(Path.Combine(output, name + ".visible.png"), visible);
             await File.WriteAllBytesAsync(Path.Combine(output, name + ".hidden.png"), hidden);
-            await File.WriteAllTextAsync(Path.Combine(output, name + ".bounds.json"), layout.GetRawText());
+            await File.WriteAllTextAsync(Path.Combine(output, name + ".bounds.json"), JsonSerializer.Serialize(new { layout, mark, ink, pixels = on.Width * on.Height, minimumInkFraction }));
         }
+        Assert.True(ink >= Math.Max(1, (int)Math.Ceiling(on.Width * on.Height * minimumInkFraction)), "The displayed native frame must paint visible native mark ink.");
     }
 
 }

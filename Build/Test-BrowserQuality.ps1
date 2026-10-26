@@ -23,41 +23,13 @@ dotnet run --project (Join-Path $repository 'ChartForgeX.Examples/ChartForgeX.Ex
 if ($LASTEXITCODE) { throw 'Fresh browser gallery generation failed.' }
 if (-not (Test-Path -LiteralPath (Join-Path $gallery 'manifest.json'))) { throw 'The generated gallery has no manifest.' }
 
-$addressFile = Join-Path $output ('gallery-address-' + [Guid]::NewGuid().ToString('N') + '.txt')
-$serverLog = Join-Path $output 'gallery-server.log'
-$start = [Diagnostics.ProcessStartInfo]::new('node')
-$start.CreateNoWindow = $true
-$start.UseShellExecute = $false
-$start.RedirectStandardOutput = $true
-$start.RedirectStandardError = $true
-$start.ArgumentList.Add((Join-Path $PSScriptRoot 'Serve-BrowserGallery.cjs'))
-$start.ArgumentList.Add($gallery)
-$start.ArgumentList.Add($addressFile)
-$server = $null
+. (Join-Path $PSScriptRoot 'Invoke-BrowserTestHost.ps1')
 $variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_TEST_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
 $saved = @{}
 foreach ($name in $variables) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
 try {
-    $server = [Diagnostics.Process]::Start($start)
-    $standardOutput = $server.StandardOutput.ReadToEndAsync()
-    $standardError = $server.StandardError.ReadToEndAsync()
-    $startupTimeoutSeconds = 60
-    $startupTimer = [Diagnostics.Stopwatch]::StartNew()
-    while (-not [IO.File]::Exists($addressFile)) {
-        if ($server.HasExited) { throw "Gallery server exited with code $($server.ExitCode) before readiness. See $serverLog." }
-        if ($startupTimer.Elapsed.TotalSeconds -ge $startupTimeoutSeconds) {
-            throw "Gallery server did not become ready within $startupTimeoutSeconds seconds (PID $($server.Id); readiness file: $addressFile). See $serverLog."
-        }
-        Start-Sleep -Milliseconds 100
-    }
-    # The server publishes a complete, closed file by rename. Read once after
-    # publication so no reader can deny the writer access on Windows.
-    $address = [IO.File]::ReadAllText($addressFile)
-    $galleryUri = $null
-    if (-not [Uri]::TryCreate($address, [UriKind]::Absolute, [ref] $galleryUri) -or
-        $galleryUri.Scheme -ne 'http' -or -not $galleryUri.IsLoopback -or $galleryUri.AbsolutePath -ne '/catalog.html') {
-        throw "Gallery server published an invalid readiness address. See $serverLog."
-    }
+    Invoke-BrowserTestHost -Root $gallery -OutputRoot $output -Action {
+        param($galleryUri)
     $env:HFX_TEST_ENABLE_PLAYWRIGHT = '1'
     $env:CFX_TEST_REQUIRE_BROWSER = '1'
     $env:CFX_TEST_BROWSER = 'chromium'
@@ -342,22 +314,7 @@ try {
     }
     if (-not (Test-Path -LiteralPath (Join-Path $captures 'native-family-matrix.json'))) { throw 'Native family matrix evidence is missing.' }
     Write-Host "Required browser proof passed: $($counters.total) executed tests. Evidence: $output"
+    }
 } finally {
     foreach ($name in $variables) { [Environment]::SetEnvironmentVariable($name, $saved[$name]) }
-    if ($server) {
-        try {
-            if (-not $server.HasExited) { $server.Kill(); [void] $server.WaitForExit(10000) }
-            if (-not $server.HasExited) { Write-Warning "Gallery server PID $($server.Id) did not exit within 10 seconds after termination." }
-            $capturedOutput = if ($standardOutput.Wait(5000)) { $standardOutput.Result } else { '[stdout capture did not finish]' }
-            $capturedError = if ($standardError.Wait(5000)) { $standardError.Result } else { '[stderr capture did not finish]' }
-            [IO.File]::WriteAllText($serverLog, $capturedOutput + $capturedError)
-            if ($capturedOutput -or $capturedError) { Write-Host ($capturedOutput + $capturedError) }
-            else { Write-Host 'Gallery server produced no stdout or stderr.' }
-        } finally {
-            # This per-attempt file has no retained evidence value; the address is
-            # already in the server log. Keep it only if termination was incomplete.
-            if ($server.HasExited -and [IO.File]::Exists($addressFile)) { [IO.File]::Delete($addressFile) }
-            $server.Dispose()
-        }
-    }
 }

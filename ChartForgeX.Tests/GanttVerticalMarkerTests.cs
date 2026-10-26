@@ -197,7 +197,7 @@ public sealed class GanttVerticalMarkerTests {
         var marker = page.Locator("[data-cfx-role='gantt-vertical-marker']");
         Assert.Equal("series", await marker.GetAttributeAsync("data-cfx-target-kind"));
         Assert.Equal("deadline-source", await marker.GetAttributeAsync("data-cfx-target-id"));
-        await marker.Locator("[data-cfx-role='annotation-label']").ClickAsync();
+        await BrowserProofCaptions.ClickAsync(page, marker.Locator("[data-cfx-role='annotation-label']"));
         Assert.Equal(1, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
         Assert.Equal("series", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetKind"));
         Assert.Equal("deadline-source", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
@@ -214,7 +214,7 @@ public sealed class GanttVerticalMarkerTests {
             await page.EvaluateAsync<string>("() => window.cfxSelections[2].target.value"));
         Assert.Equal("true", await marker.GetAttributeAsync("aria-selected"));
         var annotation = page.Locator("[data-cfx-role='annotation']");
-        await annotation.Locator("[data-cfx-role='annotation-label']").ClickAsync();
+        await BrowserProofCaptions.ClickAsync(page, annotation.Locator("[data-cfx-role='annotation-label']"));
         Assert.Equal("annotation", await page.EvaluateAsync<string>("() => window.cfxSelections[3].target.targetKind"));
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {

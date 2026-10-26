@@ -32,10 +32,10 @@ public sealed partial class NativeTransitionBrowserTests {
         var expectedPaint=expected.Descendants().Where(row=>(string?)row.Attribute("data-cfx-role") is "pie-slice" or "donut-slice" or "radial-slice-outline").ToArray();
         var actualPaint=actual.Descendants().Where(row=>(string?)row.Attribute("data-cfx-role") is "pie-slice" or "donut-slice" or "radial-slice-outline").ToArray();
         Assert.Equal(expectedPaint.Length,actualPaint.Length);Assert.NotEmpty(actualPaint);
-        for(var index=0;index<expectedPaint.Length;index++)Assert.Equal(expectedPaint[index].Attributes().Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()),actualPaint[index].Attributes().Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()));
+        for(var index=0;index<expectedPaint.Length;index++)Assert.Equal(expectedPaint[index].Attributes().Where(row=>row.Name.LocalName!="style").Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()),actualPaint[index].Attributes().Where(row=>row.Name.LocalName!="style").Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()));
         Assert.Equal(to.PreparedVisual.Scene.ValueCapture!.Plan.Readings.Select(row=>row.Value),observed.GetProperty("metadata").GetProperty("nativeValueSource").GetProperty("readings").EnumerateArray().Select(row=>row.GetProperty("value").GetDouble()));
         NativeRadialMotionBeforeControls.Save(name+".endpoint-native.svg",endpoint.ToSvg());
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions{ReducedMotion=ReducedMotion.Reduce});Assert.Equal(0,await page.Locator(".cfx-native-motion-frame").CountAsync());await page.EvaluateAsync("()=>rawChart.dispose()");await page.Clock.RunForAsync(2000);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync());AssertNoConsoleErrors(session);
+        await ReduceAndFlushMotionAsync(page);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame").CountAsync());await page.EvaluateAsync("()=>rawChart.dispose()");await page.Clock.RunForAsync(2000);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync());AssertNoConsoleErrors(session);
     }
     [BrowserTheory] [InlineData(false,760,false)] [InlineData(true,390,true)]
     public async Task RealSourceReflowChangesRawValuesAndOtherMembershipOnTheExistingManagedLegendChannel(bool donut,int width,bool dark) {

@@ -22,9 +22,23 @@ internal static partial class Program {
         var captions = document.Descendants().Where(node => node.Attribute("data-cfx-caption") != null).ToArray();
         foreach (var caption in captions) {
             var glyphs = caption.Descendants().Where(node => node.Name.LocalName == "use" && node.Ancestors().Any(parent => parent.Attribute("data-cfx-native-text-ink") != null)).ToArray();
-            PackageAssertions.Require(glyphs.Length != 0 && glyphs.All(glyph => document.Descendants().Any(path =>
-                path.Name.LocalName == "path" && "#" + (string?)path.Attribute("id") == (string?)glyph.Attribute("href") && !string.IsNullOrEmpty((string?)path.Attribute("d")))),
+            PackageAssertions.Require(glyphs.Length != 0 && glyphs.All(glyph => document.Descendants().Any(target =>
+                "#" + (string?)target.Attribute("id") == (string?)glyph.Attribute("href")))
+                && glyphs.Any(glyph => document.Descendants().Any(target =>
+                    "#" + (string?)target.Attribute("id") == (string?)glyph.Attribute("href") && target.DescendantsAndSelf().Any(path =>
+                        path.Name.LocalName == "path" && !string.IsNullOrEmpty((string?)path.Attribute("d"))))),
                 "Packed Actor contour captions have no resolved native glyph ink.");
+            var captionWords = (string)caption.Attribute("data-cfx-caption")!;
+            if (captionWords == "Release coordinator" || captionWords == "primary actor") {
+                // These finite Latin fixtures have one glyph per character. Only their
+                // authored spaces may resolve to an empty outline.
+                PackageAssertions.Require(glyphs.Length == captionWords.Length, "Packed Actor lost a finite caption glyph.");
+                for (var index = 0; index < glyphs.Length; index++) {
+                    var target = document.Descendants().Single(path => "#" + (string?)path.Attribute("id") == (string?)glyphs[index].Attribute("href"));
+                    var painted = target.DescendantsAndSelf().Any(path => path.Name.LocalName == "path" && !string.IsNullOrEmpty((string?)path.Attribute("d")));
+                    PackageAssertions.Require(painted != char.IsWhiteSpace(captionWords[index]), "Packed Actor lost a non-whitespace glyph or fabricated space ink.");
+                }
+            }
         }
         var words = string.Join(" ", document.Descendants().Where(node => node.Name.LocalName == "text").Select(node => node.Value)
             .Concat(captions.Select(node => (string)node.Attribute("data-cfx-caption")!)));

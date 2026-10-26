@@ -26,7 +26,7 @@ public sealed class TopologyPreparedSceneRestorationBrowserTests {
                     const b=text.getBoundingClientRect(); return b.width&&b.height&&text.textContent.trim()&&(b.left<frame.left-1||b.top<frame.top-1||b.right>frame.right+1||b.bottom>frame.bottom+1);
                 }).map(text=>text.textContent);
                 const clips=[...svg.querySelectorAll('clipPath rect')].map(rect=>({x:rect.x.baseVal.value,y:rect.y.baseVal.value,width:rect.width.baseVal.value,height:rect.height.baseVal.value}));
-                return {groups,clipped,clips,text:[...svg.querySelectorAll('text')].map(text=>text.textContent),
+                return {groups,clipped,clips,viewBox:{x:svg.viewBox.baseVal.x,y:svg.viewBox.baseVal.y,width:svg.viewBox.baseVal.width,height:svg.viewBox.baseVal.height},text:[...svg.querySelectorAll('text')].map(text=>text.textContent),
                     scripts:svg.querySelectorAll('script,image,foreignObject').length,overflow:document.documentElement.scrollWidth>innerWidth};
             }
             """);
@@ -43,8 +43,15 @@ public sealed class TopologyPreparedSceneRestorationBrowserTests {
         Assert.Equal((double)(float)expected.Width!.Value, group.GetProperty("width").GetDouble()); Assert.Equal((double)(float)expected.Height!.Value, group.GetProperty("height").GetDouble());
         var text = observed.GetProperty("text").EnumerateArray().Select(value => value.GetString()).ToArray();
         foreach (var caption in new[] { "Saved title", "Saved subtitle", "Scope", "Accept", "Build" }) Assert.Contains(caption, text);
-        Assert.Contains(observed.GetProperty("clips").EnumerateArray(), clip => clip.GetProperty("x").GetDouble() == 0 && clip.GetProperty("y").GetDouble() == 0
-            && clip.GetProperty("width").GetDouble() == saved.Width && clip.GetProperty("height").GetDouble() == saved.Height);
+        var viewBox = observed.GetProperty("viewBox");
+        Assert.Equal(0, viewBox.GetProperty("x").GetDouble()); Assert.Equal(0, viewBox.GetProperty("y").GetDouble());
+        Assert.Equal(saved.Width, viewBox.GetProperty("width").GetDouble()); Assert.Equal(saved.Height, viewBox.GetProperty("height").GetDouble());
+        Assert.All(observed.GetProperty("clips").EnumerateArray(), clip => {
+            Assert.InRange(clip.GetProperty("x").GetDouble(), 0, saved.Width!.Value);
+            Assert.InRange(clip.GetProperty("y").GetDouble(), 0, saved.Height!.Value);
+            Assert.True(clip.GetProperty("x").GetDouble() + clip.GetProperty("width").GetDouble() <= saved.Width + .001);
+            Assert.True(clip.GetProperty("y").GetDouble() + clip.GetProperty("height").GetDouble() <= saved.Height + .001);
+        });
         Assert.Empty(observed.GetProperty("clipped").EnumerateArray()); Assert.Equal(0, observed.GetProperty("scripts").GetInt32()); Assert.False(observed.GetProperty("overflow").GetBoolean());
         var host = session.Page.Locator("[data-cfx-html-sizing='preserve-size']");
         if (await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {

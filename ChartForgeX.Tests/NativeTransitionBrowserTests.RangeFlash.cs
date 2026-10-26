@@ -21,7 +21,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValueFlash, 5, peak));
         var name = "range-flash-browser-" + area + "-" + change + "-" + width;
         await using var session = await BrowserProofFonts.OpenAsync(Page(from), width + 24, 680); var page = session.Page;
-        await ReadyAndPauseAsync(page); await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
+        await ReadyAndPauseAsync(page); await BrowserProofCaptions.InstallNativeAsync(page); await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         await page.EvaluateAsync("()=>{window.rangeFlash=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));window.rangeFlashRevision=rangeFlash.sceneRevision;window.rangeFlashEvents=[];rangeFlash.root.addEventListener('cfxupdated',event=>rangeFlashEvents.push(event.detail));}");
         await page.EvaluateAsync("reply=>rangeFlash.update(reply.html,{sceneRevision:rangeFlash.sceneRevision,transition:reply.payload,motion:{duration:1000}})", new { html = to.Html, payload });
         await page.Clock.RunForAsync(500);
@@ -29,7 +29,7 @@ public sealed partial class NativeTransitionBrowserTests {
             ()=>{const accepted=rangeFlash.root.querySelector('.cfx-stage>svg'),frame=rangeFlash.root.querySelector('.cfx-native-motion-frame svg');
                 const tuples=svg=>Array.from(svg.querySelectorAll('[data-cfx-role=point]'),node=>({series:node.dataset.cfxSeriesKey,id:node.dataset.cfxObservationId,lower:node.dataset.cfxLower,upper:node.dataset.cfxUpper}));
                 const paint=svg=>Array.from(svg.querySelectorAll('[data-cfx-role^="range-"]')).filter(node=>node.closest('[data-cfx-role=series]')).map(node=>({series:node.closest('[data-cfx-role=series]').dataset.cfxSeriesKey,id:node.closest('[data-cfx-role=point]')?.dataset.cfxObservationId,role:node.dataset.cfxRole,fill:getComputedStyle(node).fill,stroke:getComputedStyle(node).stroke}));
-                const labels=svg=>Array.from(svg.querySelectorAll('text'),node=>({text:node.textContent,x:node.getAttribute('x'),y:node.getAttribute('y'),fill:getComputedStyle(node).fill}));
+                const labels=svg=>Array.from(svg.querySelectorAll('[data-cfx-caption],text')).filter(node=>!node.parentElement.closest('[data-cfx-caption]') && node.getBoundingClientRect().width>0 && node.getBoundingClientRect().height>0 && getComputedStyle(node).display!=='none').map(node=>{const box=cfxCaptionSvgBox(node);return {text:cfxReferenceLabelText(node),x:String(box.x),y:String(box.y),fill:getComputedStyle(node.querySelector('[data-cfx-native-text-ink]')||node).fill}});
                 return {revisionChanged:rangeFlash.sceneRevision!==rangeFlashRevision,events:rangeFlashEvents,metadata:JSON.parse(rangeFlash.root.dataset.cfxPreparedChart),
                     accepted:tuples(accepted),transient:tuples(frame),acceptedPaint:paint(accepted),transientPaint:paint(frame),labels:labels(accepted),transientLabels:labels(frame),frame:frame.outerHTML}}
             """);
@@ -37,8 +37,12 @@ public sealed partial class NativeTransitionBrowserTests {
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output)
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(output, name + ".browser.png"), FullPage = true });
         Assert.True(observed.GetProperty("revisionChanged").GetBoolean()); Assert.Equal(1, observed.GetProperty("events").GetArrayLength());
-        Assert.Equal(observed.GetProperty("accepted").GetRawText(), observed.GetProperty("transient").GetRawText());
-        Assert.Equal(observed.GetProperty("labels").GetRawText(), observed.GetProperty("transientLabels").GetRawText());
+        static IEnumerable<(string? Series, string? Id, string? Lower, string? Upper)> Tuples(JsonElement values) => values.EnumerateArray()
+            .Select(row => (row.GetProperty("series").GetString(), row.GetProperty("id").GetString(), row.GetProperty("lower").GetString(), row.GetProperty("upper").GetString()));
+        static IEnumerable<(string? Text, string? X, string? Y, string? Fill)> Labels(JsonElement values) => values.EnumerateArray()
+            .Select(row => (row.GetProperty("text").GetString(), row.GetProperty("x").GetString(), row.GetProperty("y").GetString(), row.GetProperty("fill").GetString()));
+        Assert.Equal(Tuples(observed.GetProperty("accepted")), Tuples(observed.GetProperty("transient")));
+        Assert.Equal(Labels(observed.GetProperty("labels")), Labels(observed.GetProperty("transientLabels")));
         var accepted = observed.GetProperty("acceptedPaint").EnumerateArray().ToArray(); var transient = observed.GetProperty("transientPaint").EnumerateArray().ToArray(); Assert.Equal(accepted.Length, transient.Length);
         var sharedChanged = 0; var changedMarkers = 0; var unchangedMarkers = 0;
         for (var index = 0; index < accepted.Length; index++) {
@@ -61,7 +65,7 @@ public sealed partial class NativeTransitionBrowserTests {
             .Select(node => string.Join("|", new[] { "data-cfx-role", "d", "cx", "cy", "rx", "ry", "fill", "stroke", "stroke-width" }.Select(key => (string?)node.Attribute(key))));
         Assert.Equal(NativeMarks(to.WideEmission!.Svg), NativeMarks(exported)); Assert.NotEmpty(NativeMarks(exported));
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce });
+        await ReduceAndFlushMotionAsync(page);
         await page.EvaluateAsync("html=>rangeFlash.update(html,{sceneRevision:rangeFlash.sceneRevision})", from.Html);
         await page.EvaluateAsync("reply=>rangeFlash.update(reply.html,{sceneRevision:rangeFlash.sceneRevision,transition:reply.payload,motion:{duration:1000}})", new { html = to.Html, payload });
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());

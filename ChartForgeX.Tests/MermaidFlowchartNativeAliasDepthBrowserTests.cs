@@ -14,7 +14,7 @@ public sealed class MermaidFlowchartNativeAliasDepthBrowserTests {
     [InlineData(true, 1100)]
     public async Task ExistingNativeSurfacesKeepCaptionsAndRoutesVisibleInStaticHosts(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "flowchart-native-storage-burst.mmd"));
+        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Tests", "Fixtures", "Mermaid", "flowchart-native-storage-burst.mmd"));
         if (dark) source = "%%{init: {'theme':'dark'}}%%\n" + source;
         var rendered = MermaidRenderer.Render(source);
         Assert.Empty(rendered.Diagnostics);

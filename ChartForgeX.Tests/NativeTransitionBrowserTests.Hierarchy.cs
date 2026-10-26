@@ -45,7 +45,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted hierarchy export missing.");
         var exportedText = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exportedText); var exported = System.Xml.Linq.XDocument.Parse(exportedText);
         Assert.Equal("40", exported.Descendants().Single(row => (string?)row.Attribute("data-cfx-node") == "leaf-a").Attribute("data-cfx-authored-value")!.Value);
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
+        await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         await page.EvaluateAsync("()=>hmotion.dispose()"); await page.Clock.RunForAsync(2000); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);
     }
     [BrowserTheory]
@@ -63,7 +63,7 @@ public sealed partial class NativeTransitionBrowserTests {
         await page.EvaluateAsync("()=>{window.hmotion=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));window.hcalls=[];hmotion.connectNative((request,signal)=>new Promise(resolve=>hcalls.push({request,signal,resolve})),{basis:'full-source',axes:null,hierarchy:true,legend:true,motion:{duration:650}})}");
         if (rootChange) await page.EvaluateAsync("()=>hmotion.setHierarchyView({rootId:'branch'})");
         else await page.Locator("[data-cfx-role=legend-item][data-cfx-legend-target-kind=node][data-cfx-legend-target-id=leaf-a]").ClickAsync();
-        await page.WaitForFunctionAsync("()=>hcalls.length===1"); var request = await page.EvaluateAsync<JsonElement>("()=>hcalls[0].request"); var name = "hierarchy-browser-reflow-" + sunburst + "-" + authored + "-" + width;
+        await page.WaitForFunctionAsync("()=>hcalls.length===1"); var request = await page.EvaluateAsync<JsonElement>("()=>hcalls[0].request"); var name = "hierarchy-browser-reflow-" + sunburst + "-" + authored + "-" + width + "-" + rootChange;
         NativeReflowVisibilityTests.Capture(from, to, VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5), forward, name); NativeRadialMotionBeforeControls.Save(name + ".request.json", request.GetRawText());
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(output, name + ".pending.png"), FullPage = true });
         Assert.Equal(rootChange ? "root" : "visibility", request.GetProperty("kind").GetString());

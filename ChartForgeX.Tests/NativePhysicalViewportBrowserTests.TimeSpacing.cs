@@ -105,8 +105,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
 
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svg = XDocument.Load(await svgDownload.PathAsync() ?? throw new InvalidOperationException("No discrete-time SVG download."));
-        Assert.Equal(moved.GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), svg.Descendants()
-            .Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value));
+        Assert.Equal(moved.GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label"));
         Assert.Equal(host.RawInstants, svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point"
             && (string?)node.Attribute("data-cfx-series-key") == "dated").Select(node => double.Parse(node.Attribute("data-cfx-x")!.Value, CultureInfo.InvariantCulture)));
         var pngDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());

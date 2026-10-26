@@ -49,7 +49,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var exported = System.Xml.Linq.XDocument.Parse(await File.ReadAllTextAsync(file));
         Assert.Equal(2, exported.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "point"));
         Assert.DoesNotContain(exported.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "native-transition-opacity");
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
+        await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         await page.EvaluateAsync("()=>reflow.dispose()"); await page.Clock.RunForAsync(2000); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);
     }
     [BrowserTheory] [InlineData("bar", 390, true)] [InlineData("raw", 760, false)]

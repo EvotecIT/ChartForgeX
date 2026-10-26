@@ -61,7 +61,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No Y/XY export.");
         var svg = XDocument.Load(path);
-        Assert.Equal((await SceneAsync(page)).GetProperty("yLabels").EnumerateArray().Select(value => value.GetString()), svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-y-label").Select(node => node.Value));
+        Assert.Equal((await SceneAsync(page)).GetProperty("yLabels").EnumerateArray().Select(value => value.GetString()), await BrowserProofCaptions.ExportedAsync(page, svg, "axis-y-label"));
         await SaveDownloadAsync(download, "cartesian-" + axes + "-" + width + ".svg");
         await page.Locator("[data-cfx-reset]").ClickAsync(); await WaitForChangesAsync(page, 6);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()"), 0, 100);
@@ -108,7 +108,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").First.ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No aligned wide export.");
         var svg = XDocument.Load(path);
-        Assert.Equal((await SceneAsync(page)).GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value));
+        Assert.Equal((await SceneAsync(page)).GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label"));
         await page.Locator("[data-cfx-x-full]").First.ClickAsync(); await WaitForChangesAsync(page, 4);
         var reset = (await page.EvaluateAsync<JsonElement>("()=>chartControllers.map(controller=>controller.getXWindow())")).EnumerateArray().ToArray();
         Assert.All(reset, window => AssertWindow(window, minimum, maximum));

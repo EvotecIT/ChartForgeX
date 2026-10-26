@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Word-cloud source inventory remains descriptive while painted terms own public targets.</summary>
 [Trait("BrowserSuite", "Compatibility")]
-public sealed class WordCloudTargetOwnershipBrowserTests {
+public sealed partial class WordCloudTargetOwnershipBrowserTests {
     [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]

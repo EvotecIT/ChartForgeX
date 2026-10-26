@@ -14,7 +14,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 [Collection(nameof(FontRegistryCollection))]
-public sealed class HtmlOwnedFontDeliveryTests : IDisposable {
+public sealed partial class HtmlOwnedFontDeliveryTests : IDisposable {
     [Theory]
     [InlineData(HtmlChartTextPresentation.Automatic)]
     [InlineData(HtmlChartTextPresentation.NativeContours)]

@@ -13,7 +13,7 @@
     <EmbeddedResource Include="Fixtures\OpenType\*.ttf" />
     <EmbeddedResource Include="Fixtures\Raster\*" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeColorSourceProgram.cs.txt" LogicalName="ChartForgeX.Tests.RecipeColorSourceProgram.cs" WithCulture="false" />
-    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeOrderedFiltersProgram.cs.txt" LogicalName="ChartForgeX.Tests.RecipeOrderedFiltersProgram.cs" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeOrderedFiltersProgram.cs.txt" LogicalName="ChartForgeX.Tests.RecipeOrderedFiltersProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-compact.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-malformed.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\stem-compact.otf" />

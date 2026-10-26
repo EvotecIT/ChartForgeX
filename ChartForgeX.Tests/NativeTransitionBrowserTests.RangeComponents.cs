@@ -38,7 +38,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var point = System.Xml.Linq.XDocument.Parse(exported).Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "point" && (string?)row.Attribute("data-cfx-series-key") == "delivery" && (string?)row.Attribute("data-cfx-observation-id") == "current");
         Assert.Equal("20", point.Attribute("data-cfx-lower")!.Value); Assert.Equal("60", point.Attribute("data-cfx-upper")!.Value);
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce });
+        await ReduceAndFlushMotionAsync(page);
         if (initial) await page.EvaluateAsync("payload=>rangeChart.presentInitial(payload,{sceneRevision:rangeChart.sceneRevision,motion:{duration:1000}})", payload);
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync()); await page.EvaluateAsync("()=>rangeChart.dispose()"); await page.Clock.RunForAsync(1500);
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);

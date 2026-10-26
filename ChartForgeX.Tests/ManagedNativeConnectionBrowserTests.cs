@@ -65,8 +65,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         var note = Assert.Single(exported.Descendants(), node => (string?)node.Attribute("data-cfx-annotation-id") == "note");
         Assert.Equal("6.25", (string?)note.Attribute("data-cfx-source-x"));
         Assert.Equal("Reviewed", (string?)note.Attribute("data-cfx-label"));
-        Assert.Equal(await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), exported.Descendants()
-            .Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value).ToArray());
+        Assert.Equal(await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), await BrowserProofCaptions.ExportedAsync(page, exported, "axis-x-label"));
         Assert.True(await page.EvaluateAsync<bool>("() => pending.every(item=>Object.isFrozen(item.request))"));
         Assert.Empty(await page.EvaluateAsync<string[]>("() => managedErrors.map(error=>error.message)"));
         await CaptureAsync(page, "committed-" + width + "-" + mode);

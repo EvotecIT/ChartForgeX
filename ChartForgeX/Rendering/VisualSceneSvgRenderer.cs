@@ -42,7 +42,7 @@ internal static partial class VisualSceneSvgRenderer {
         var surfaces = effects?.Shadows;
         var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
         resolvedPrefix = prefix;
-        fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, prefix, textImages?.Lines) : null;
+        fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
         string? resourceOwner = null;
         var resourceOwners = maximumCharacters.HasValue ? new Stack<string?>() : null;
         var writer = maximumCharacters.HasValue

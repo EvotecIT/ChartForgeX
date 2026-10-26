@@ -44,7 +44,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal(initial ? 0 : 1, await page.EvaluateAsync<int>("()=>nativeEvents.filter(event=>event.name==='cfxupdated').length"));
         var ink = kind == "progress" ? rows + " [data-cfx-role=progress-fill]" : kind == "circle" ? rows + " [data-cfx-role=circle-value-cap]:first-of-type" : rows + " [data-cfx-role=bullet-value]";
         await NativeValueFrameBrowserProof.AssertAsync(page, ink, "native-browser-ink-" + kind + "-" + effect + "-" + width + "-" + dark);
-        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
+        await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         if (initial) {
             await page.EvaluateAsync("payload=>nativeChart.presentInitial(payload,{sceneRevision:nativeChart.sceneRevision,motion:{duration:1000}})", payload);
             Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
@@ -128,7 +128,15 @@ public sealed partial class NativeTransitionBrowserTests {
     }
     private static string Page(HtmlChartSection section) => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + section.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
     private static async Task ReadyAndPauseAsync(IPage page) {
-        await page.WaitForFunctionAsync("()=>{const root=document.querySelector('.cfx-interactive-chart');return root.dataset.cfxAdaptiveDrawing===(root.getBoundingClientRect().width<Number(root.dataset.cfxAdaptiveBreakpoint)?'narrow':'wide')}");
+        await page.WaitForFunctionAsync("()=>{const root=document.querySelector('.cfx-interactive-chart');return !!ChartForgeXCharts.get(root)&&(root.dataset.cfxResponsiveLayout!=='adaptive'||root.dataset.cfxAdaptiveDrawing===(root.getBoundingClientRect().width<Number(root.dataset.cfxAdaptiveBreakpoint)?'narrow':'wide'))}");
         var start = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc); await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = start }); await page.Clock.PauseAtAsync(start.AddHours(1));
     }
+    private static async Task ReduceAndFlushMotionAsync(IPage page) {
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce });
+        // Media changes dispatch asynchronously outside the paused page clock. Await the
+        // actual cancellation without advancing virtual time to the natural motion endpoint.
+        await page.WaitForFunctionAsync("()=>matchMedia('(prefers-reduced-motion: reduce)').matches&&!document.querySelector('.cfx-native-motion-frame')",
+            null, new PageWaitForFunctionOptions { PollingInterval = 10 });
+    }
+
 }

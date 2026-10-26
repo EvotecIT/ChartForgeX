@@ -52,7 +52,8 @@ public sealed class MermaidXYChartSourceDepthBrowserTests {
         var exported = XDocument.Load(vectorPath);
         Assert.Equal(new[] { "Opened", "Reviewed, ready", "Released" }.OrderBy(text => text), exported.Descendants()
             .Where(node => (string?)node.Attribute("data-cfx-role") == "data-label-source").Select(node => (string)node.Attribute("data-cfx-full-label")!).OrderBy(text => text));
-        CartesianAuthoredAutoLabelTests.AssertVisibleSvgCaptions(exported);
+        Assert.Equal(new[] { "Opened", "Reviewed, ready", "Released" }.OrderBy(text => text),
+            (await BrowserProofCaptions.ExportedAsync(page, exported, "data-label-source")).OrderBy(text => text));
         var pixels = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());
         var pixelPath = await pixels.PathAsync() ?? throw new InvalidOperationException("XY PNG download was not persisted.");
         var image = RasterImageDecoder.Decode(await File.ReadAllBytesAsync(pixelPath)); Assert.Equal(width, image.Width); Assert.Equal(520, image.Height);

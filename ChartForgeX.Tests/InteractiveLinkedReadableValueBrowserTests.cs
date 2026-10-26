@@ -65,8 +65,8 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
         var page = session.Page;
         Assert.True(await page.EvaluateAsync<bool>("""
             async () => {
-                const faces = await document.fonts.load('12px "CFX Proof Carlito"');
                 await document.fonts.ready;
+                const faces = [...document.fonts].filter(face => face.status === 'loaded');
                 const root=document.querySelector('[data-cfx-chart-id=linked-time]'),svg=root.querySelector('.cfx-stage svg');
                 const text=[...svg.querySelectorAll('text')].find(node=>node.textContent==='2026-03-05');
                 if(!faces.length||!text)return false;

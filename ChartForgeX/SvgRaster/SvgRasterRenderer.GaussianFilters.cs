@@ -107,6 +107,10 @@ internal static partial class SvgRasterRenderer {
         List<SvgRasterElement> ancestors, SvgRasterViewport viewport, HashSet<SvgRasterElement> references, int depth, bool root, out string reason) {
         reason = "Only solid native shape/text SourceGraphic, including its existing isolated opacity, without nested filters, transforms, viewports, images or paint servers is supported.";
         if (!style.Displayed) return true;
+        // An empty container contributes no SourceGraphic. Its inert clip or transform
+        // cannot make otherwise supported paint unsupported; a nested filter can still paint.
+        if ((element.Name == "g" || element.Name == "a") && element.Children.Count == 0
+            && !SvgRasterFilterPlan.HasFilter(style.Filter)) return true;
         if (!root && (SvgRasterFilterPlan.HasFilter(style.Filter) || element.Get("transform") != null
             || style.ClipPath != null || ReferenceId(element, "mask") != null)) return false;
         if (style.Fill.IsReference || style.Stroke.IsReference || HasMarkerPaint(element)) return false;

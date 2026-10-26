@@ -44,13 +44,13 @@ public sealed partial class MermaidSequenceParOverTests {
         var observed = await session.Page.EvaluateAsync<JsonElement>("""
             () => {
                 const svg=document.querySelector('svg'), frame=svg.getBoundingClientRect(), clip=[];
-                const labels=[...svg.querySelectorAll('text')].map(text=>[...text.querySelectorAll('tspan')].map(span=>span.textContent).join(' ')||text.textContent);
+                const labels=[...svg.querySelectorAll('[data-cfx-role="frame-heading"],[data-cfx-role="sequence-participant-label"],[data-cfx-role="sequence-label"],[data-cfx-role="sequence-fragment-title"]')].map(window.cfxCaptionText);
                 for(const text of svg.querySelectorAll('text')) {
                     const box=text.getBoundingClientRect();
                     if(box.width&&box.height&&(box.left<frame.left-1.5||box.top<frame.top-1.5||box.right>frame.right+1.5||box.bottom>frame.bottom+1.5)) clip.push(text.textContent);
                 }
                 const host=document.querySelector('[data-cfx-html-sizing="preserve-size"]');
-                return {labels,clip,blocks:svg.querySelectorAll('[data-cfx-role="sequence-block"]').length,
+                return {labels,clip,messages:[...svg.querySelectorAll('[data-cfx-role="sequence-message"]')].map(message=>({number:window.cfxCaptionText(message.querySelector('[data-cfx-role="sequence-number"]')),label:window.cfxCaptionText(message.querySelector('[data-cfx-role="sequence-label"]'))})),blocks:svg.querySelectorAll('[data-cfx-role="sequence-block"]').length,
                     activations:[...svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]')].filter(node=>node.height.baseVal.value>4).length,
                     activationEndings:[...svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]')].filter(node=>node.height.baseVal.value===4).length,
                     activationOwners:[...svg.querySelectorAll('[data-cfx-role="sequence-activation"]')].map(node=>node.getAttribute("data-cfx-source-id")),
@@ -67,7 +67,9 @@ public sealed partial class MermaidSequenceParOverTests {
         Assert.Equal(activationOwners, observed.GetProperty("activationOwners").EnumerateArray().Select(value => value.GetString()));
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.False(observed.GetProperty("pageOverflow").GetBoolean());
         var labels = observed.GetProperty("labels").EnumerateArray().Select(value => value.GetString()).ToArray();
-        foreach (var label in new[] { "3. Alpha request", "4. Forward", "5. Reply", "6. Alpha done", "7. Beta request", "8. Recovery", "9. Beta done", "10. After fragment", "First task note", "Guard note", "Terminal task note", "and  [Second task]", "and  [Notes only]" }) Assert.Contains(label, labels);
+        foreach (var expected in new[] { ("3", "Alpha request"), ("4", "Forward"), ("5", "Reply"), ("6", "Alpha done"), ("7", "Beta request"), ("8", "Recovery"), ("9", "Beta done"), ("10", "After fragment") })
+            Assert.Contains(observed.GetProperty("messages").EnumerateArray(), message => message.GetProperty("number").GetString() == expected.Item1 && message.GetProperty("label").GetString() == expected.Item2);
+        foreach (var label in new[] { "First task note", "Guard note", "Terminal task note", "and [Second task]", "and [Notes only]" }) Assert.Contains(label, labels);
         Assert.DoesNotContain(labels, label => label?.Contains("parover", StringComparison.OrdinalIgnoreCase) == true);
         if (observed.GetProperty("contentWidth").GetInt32() > observed.GetProperty("hostWidth").GetInt32()) {
             await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");

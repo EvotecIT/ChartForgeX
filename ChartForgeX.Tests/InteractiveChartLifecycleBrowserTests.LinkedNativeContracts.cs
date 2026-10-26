@@ -97,14 +97,21 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(true, true)]
     public async Task ReplacementRestorationHonorsSingleSelectionForOrdinaryAndNativeCommits(bool dark, bool native) {
         if (!Enabled) return;
-        var chart = NativeLinkedChart(dark);
+        Chart Model(bool removeFirst = false) {
+            var model = NativeLinkedChart(dark, removeFirst);
+            // Both selected observations must exist inside both native windows.
+            // The old x=10 endpoint was correctly unavailable in the initial [2,8] drawing.
+            if (native) model.Series[0].Points[2] = new ChartPoint(6, 3);
+            return model;
+        }
+        var chart = Model();
         await using var session = await OpenAsync(NativeLinkedPage(NativeLinkedSection(chart, native ? new ChartAxisWindow(2, 8) : null), null, dark), 820, 700);
         var page = session.Page;
         await BindNativeLinkedProbeAsync(page, false);
         var ids = native ? new[] { "middle", "last" } : new[] { "first", "middle", "last" };
         await page.EvaluateAsync("ids=>{chartController.select({observationIds:ids});window.nativeSelectionSnapshot=chartController.getSelection()}", ids);
         Assert.Equal(ids.Length, await page.EvaluateAsync<int>("()=>chartController.getSelection().length"));
-        var replacement = NativeLinkedSection(NativeLinkedChart(dark, removeFirst: !native), native ? new ChartAxisWindow(2.6, 7.4) : null,
+        var replacement = NativeLinkedSection(Model(removeFirst: !native), native ? new ChartAxisWindow(2.6, 7.4) : null,
             ChartSelectionMode.Single);
         if (native) {
             await page.Locator("#native-source [data-cfx-zoom=in]").ClickAsync();

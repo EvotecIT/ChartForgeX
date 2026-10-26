@@ -12,7 +12,7 @@ namespace ChartForgeX.Rendering;
 internal sealed class VisualSvgFontResources {
     private readonly Dictionary<VisualSceneText, Dictionary<int, Face>> _lines = new();
     private readonly List<Face> _faces = new();
-    internal VisualSvgFontResources(VisualScene scene, string prefix, ISet<(VisualSceneText Node, int Line)>? rasterLines = null) {
+    internal VisualSvgFontResources(VisualScene scene, ISet<(VisualSceneText Node, int Line)>? rasterLines = null) {
         foreach (var command in scene.Nodes) {
             if (command is not VisualSceneText node || node.Text.NativeGlyphInk || _lines.ContainsKey(node)) continue;
             var prepared = node.Text; var style = prepared.Style; var font = prepared.Face.Font;
@@ -31,16 +31,18 @@ internal sealed class VisualSvgFontResources {
                 foreach (var existing in _faces) if (existing.Weight == font.Weight && existing.Italic == font.IsItalic
                     && existing.Font.CapturedByteIdentity == font.CapturedByteIdentity && existing.Font.SameCapturedBytes(font)) { face = existing; break; }
                 if (face == null) {
-                    face = new Face(Alias(prefix, font, font.Weight, font.IsItalic), font, font.Weight, font.IsItalic); _faces.Add(face);
+                    face = new Face(Alias(font, font.Weight, font.IsItalic), font, font.Weight, font.IsItalic); _faces.Add(face);
                 }
                 if (!_lines.TryGetValue(node, out var lines)) _lines.Add(node, lines = new Dictionary<int, Face>());
                 lines.Add(lineIndex, face);
             }
         }
     }
-    private static string Alias(string prefix, TrueTypeFont font, int weight, bool italic) {
+    // A face keeps one byte/descriptor identity across captured SVG scopes and frames.
+    // Per-chart registration handles still own its lifetime; SVG resource IDs retain their own prefixes.
+    private static string Alias(TrueTypeFont font, int weight, bool italic) {
         using var hash = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(prefix + "|" + font.CapturedByteIdentity + "|" + weight.ToString(CultureInfo.InvariantCulture) + "|" + (italic ? "italic" : "normal"));
+        var bytes = Encoding.UTF8.GetBytes(font.CapturedByteIdentity + "|" + weight.ToString(CultureInfo.InvariantCulture) + "|" + (italic ? "italic" : "normal"));
         var result = new StringBuilder("cfx-owned-");
         foreach (var value in hash.ComputeHash(bytes)) result.Append(value.ToString("x2", CultureInfo.InvariantCulture));
         return result.ToString();

@@ -19,14 +19,14 @@ public sealed class ZenUmlPresentationBrowserTests {
                 const svg=document.querySelector('svg'),frame=svg.getBoundingClientRect();
                 return {reference:svg.querySelectorAll('[data-cfx-role="sequence-reference"]').length,
                     divider:svg.querySelectorAll('[data-cfx-role="sequence-divider"]').length,
-                    text:[...svg.querySelectorAll('text')].map(t=>t.textContent).join('\n'),
+                    text:window.cfxCaptionText(svg),
                     clips:[...svg.querySelectorAll('text')].filter(t=>{const b=t.getBoundingClientRect();return t.textContent.trim()&&b.width&&b.height&&(b.left<frame.left-1||b.right>frame.right+1||b.top<frame.top-1||b.bottom>frame.bottom+1)}).map(t=>t.textContent),
                     participants:[...svg.querySelectorAll('[data-cfx-role="sequence-participant"]')].map(g=>({label:g.getAttribute('data-label'),width:g.getBBox().width,fill:g.querySelector('rect')?.getAttribute('fill')})),
-                    scripts:svg.querySelectorAll('script,image,foreignObject').length,overflow:document.documentElement.scrollWidth>innerWidth};
+                    scripts:svg.querySelectorAll('script,foreignObject').length,invalidImages:[...svg.querySelectorAll('image')].filter(image=>image.getAttribute('aria-hidden')!=='true'||image.getAttribute('pointer-events')!=='none'||!image.getAttribute('href')?.startsWith('data:image/png;base64,')).length,overflow:document.documentElement.scrollWidth>innerWidth};
             }
             """);
         Assert.True(observed.GetProperty("reference").GetInt32()>0);Assert.True(observed.GetProperty("divider").GetInt32()>0);
-        Assert.Equal(0,observed.GetProperty("scripts").GetInt32());Assert.Empty(observed.GetProperty("clips").EnumerateArray());Assert.False(observed.GetProperty("overflow").GetBoolean());
+        Assert.Equal(0,observed.GetProperty("scripts").GetInt32());Assert.Equal(0,observed.GetProperty("invalidImages").GetInt32());Assert.Empty(observed.GetProperty("clips").EnumerateArray());Assert.False(observed.GetProperty("overflow").GetBoolean());
         var text=observed.GetProperty("text").GetString();Assert.Contains("«Service»",text);Assert.Contains("🚀",text);
         var api=Assert.Single(observed.GetProperty("participants").EnumerateArray(),item=>item.GetProperty("label").GetString()=="API service");
         Assert.True(api.GetProperty("width").GetDouble()>=176);Assert.Equal("#336699",api.GetProperty("fill").GetString());

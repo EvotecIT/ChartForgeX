@@ -52,8 +52,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No committed export was downloaded.");
         var svg = XDocument.Load(path);
-        var exportedX = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label")
-            .Select(node => node.Value).ToArray();
+        var exportedX = await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label");
         Assert.Equal(zoomed.GetProperty("xLabels").EnumerateArray().Select(item => item.GetString()), exportedX);
         Assert.Equal("false", (string?)Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-observation-id") == "sample-0").Attribute("data-cfx-visible"));
         await SaveDownloadAsync(download, "committed-" + width + ".svg");

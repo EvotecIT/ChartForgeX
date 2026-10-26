@@ -14,6 +14,7 @@ internal static class HtmlCapturedFontAssets {
         var payloads = new List<Payload>();
         var roots = new List<(TrueTypeFont Font, string Id)>();
         var faces = new List<(VisualSvgFontResources.Face Face, string Root)>();
+        var aliases = new HashSet<string>(StringComparer.Ordinal);
         long bytes = 0;
         foreach (var plan in plans) {
             if (plan == null) continue;
@@ -26,7 +27,7 @@ internal static class HtmlCapturedFontAssets {
                         || bytes + length > OwnedFontResources.MaximumDistinctBytes) continue; // Automatic keeps this line's native contours.
                     rootId = font.CapturedByteIdentity; roots.Add((font, rootId)); bytes += length;
                 }
-                faces.Add((face, rootId));
+                if (aliases.Add(face.Alias)) faces.Add((face, rootId));
             }
         }
         // Admission precedes every root copy. Repeated aliases/descriptors share one copied root view.

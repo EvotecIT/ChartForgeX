@@ -43,15 +43,16 @@ public sealed class InteractiveNativeCaptionBrowserTests {
         var page = session.Page;
         var regionSelector = gauge ? "[data-cfx-role='gauge']" : "[data-cfx-role='" + (tile ? "tile" : "region") + "-map-region-source'][data-cfx-region='CO']";
         var region = page.Locator(regionSelector);
-        var caption = regionSelector + (gauge ? " [data-cfx-role='gauge-label-source'] text" : " text");
+        var caption = regionSelector + (gauge ? " [data-cfx-role='gauge-label-source']" : "");
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxhover', event => window.nativeCaptionHover = event.detail.target)");
-        await MoveToAsync(page, caption);
-        Assert.True(await page.Locator(caption).EvaluateAsync<bool>("node => { const b = node.getBoundingClientRect(); return node.contains(document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)); }"));
+        await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
+        var paintedPoint = await BrowserProofCaptions.PointAsync(page, page.Locator(caption));
+        Assert.True(await page.Locator(caption).EvaluateAsync<bool>("(node,json) => { const p=JSON.parse(json); return node.contains(document.elementFromPoint(p[0],p[1])); }", JsonSerializer.Serialize(paintedPoint)));
         await WaitForValueAsync();
         var hover = await page.EvaluateAsync<JsonElement>("() => window.nativeCaptionHover");
         Assert.Equal(gauge ? "point" : "region", hover.GetProperty("targetKind").GetString());
         Assert.Equal(gauge ? "coverage:0" : "CO", hover.GetProperty("targetId").GetString());
-        await page.Locator(caption).ClickAsync();
+        await BrowserProofCaptions.ClickAsync(page, page.Locator(caption));
         Assert.Equal("true", await region.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
         await CaptureAsync("caption-pinned");
@@ -60,14 +61,14 @@ public sealed class InteractiveNativeCaptionBrowserTests {
 
         // A hidden native owner cannot acquire a readout merely because its caption has a browser hit box.
         await region.EvaluateAsync("node => node.style.opacity = '0'");
-        await MoveAwayAsync(page); await MoveToAsync(page, caption);
+        await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         await region.EvaluateAsync("node => node.style.removeProperty('opacity')");
-        await MoveAwayAsync(page); await MoveToAsync(page, caption); await WaitForValueAsync();
+        await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption)); await WaitForValueAsync();
 
         // A producer's independently identified nested target remains a boundary, even without its own paint.
-        await page.Locator(caption).EvaluateAsync("node => { const wrapper = node.parentElement; wrapper.dataset.cfxTargetKind = 'annotation'; wrapper.dataset.cfxTargetId = 'independent-caption'; }");
-        await MoveAwayAsync(page); await MoveToAsync(page, caption);
+        await page.Locator(caption).EvaluateAsync("node => { const ink = node.querySelector('[data-cfx-native-text-ink]') || node.querySelector('text'); const wrapper = ink.parentElement; wrapper.dataset.cfxTargetKind = 'annotation'; wrapper.dataset.cfxTargetId = 'independent-caption'; }");
+        await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         AssertNoConsoleErrors(session);
 

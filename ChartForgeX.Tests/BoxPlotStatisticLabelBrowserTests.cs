@@ -35,12 +35,11 @@ public sealed class BoxPlotStatisticLabelBrowserTests {
         var names = new[] { "minimum", "q1", "median", "q3", "maximum" };
         for (var member = 0; member < names.Length; member++) {
             var caption = page.Locator(selector).Nth(member);
-            var bounds = await caption.BoundingBoxAsync() ?? throw new InvalidOperationException("Statistic caption has no layout box");
-            await page.Mouse.MoveAsync(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+            await BrowserProofCaptions.MoveAsync(page, caption);
             Assert.Equal(expectedRows, await RowsAsync(page));
             Assert.Equal("Delivery: Delivery interval summary", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         }
-        await page.Locator(selector).First.ClickAsync(); Assert.Equal("true", await page.Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
+        await BrowserProofCaptions.ClickAsync(page, page.Locator(selector).First); Assert.Equal("true", await page.Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
         using var selected = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(statisticSelections.at(-1))"));
         Assert.Equal("summary:0", selected.RootElement.GetProperty("targetId").GetString());
         Assert.Equal("0", selected.RootElement.GetProperty("sourcePoint").GetString());

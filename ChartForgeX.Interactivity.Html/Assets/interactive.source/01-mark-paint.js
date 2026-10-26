@@ -206,9 +206,23 @@
     const role = (node.dataset || {}).cfxRole;
 
     if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
-    for (const text of node.querySelectorAll('text')) {
-      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
+    for (const text of node.querySelectorAll('text,[data-cfx-native-text-ink]')) {
+      if (!paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
         || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
+      if (text.localName !== 'text') {
+        for (const glyph of text.querySelectorAll('use')) {
+          const href = glyph.getAttribute('href') || '', path = href.startsWith('#') && text.ownerSVGElement.getElementById(href.slice(1));
+          if (!path || path.localName !== 'path' || !path.getAttribute('d') || !paintNodeVisible(glyph, styles)
+            || !paintWithinNativeClips(glyph, glyph, styles)) continue;
+          const box = glyph.getBBox(), style = paintStyle(glyph, styles);
+          if (!(box.width > 0 && box.height > 0)) continue;
+          const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(glyph, style.stroke, style.strokeOpacity, styles) : null;
+          const paint = paintValue(glyph, style.fill, style.fillOpacity, styles) || stroke;
+          if (paint) return { ...paint, textNode: text };
+        }
+        continue;
+      }
+      if (!text.textContent.trim()) continue;
       const style = paintStyle(text, styles);
       if (!(parseFloat(style.fontSize) > 0)) continue;
       const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;

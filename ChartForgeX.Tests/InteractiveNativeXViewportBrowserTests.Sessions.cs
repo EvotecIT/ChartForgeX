@@ -48,7 +48,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No compressed-time SVG export.");
         var exported = XDocument.Load(path);
-        Assert.Equal((await SceneAsync(page)).GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), exported.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value));
+        Assert.Equal((await SceneAsync(page)).GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), await BrowserProofCaptions.ExportedAsync(page, exported, "axis-x-label"));
         await SaveDownloadAsync(download, "sessions-weekend-" + width + ".svg");
         Assert.Equal("TypeError", await page.EvaluateAsync<string>("minimum=>{try{chartController.setXWindow(minimum,minimum+.25);return 'accepted';}catch(error){return error.name;}}", host.Origin + 1));
         Assert.Equal(4, await page.EvaluateAsync<int>("()=>nativeRequests.length"));
