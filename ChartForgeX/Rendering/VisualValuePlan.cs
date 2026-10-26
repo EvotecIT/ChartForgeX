@@ -6,9 +6,12 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Detached value facts shared only by the finite supported native value painters.</summary>
 internal readonly struct VisualValueReading {
-    internal VisualValueReading(string? observationId, double value, double minimum, double maximum, string? seriesKey = null) {
-        SeriesKey = seriesKey; ObservationId = observationId; Value = value; Minimum = minimum; Maximum = maximum;
+    internal VisualValueReading(string? observationId, double value, double minimum, double maximum, string? seriesKey = null)
+        : this(observationId, value, minimum, maximum, seriesKey, null) { }
+    internal VisualValueReading(string? observationId, double value, double minimum, double maximum, string? seriesKey, string? component) {
+        SeriesKey = seriesKey; ObservationId = observationId; Value = value; Minimum = minimum; Maximum = maximum; Component = component;
     }
+    internal string? Component { get; }
     internal string? SeriesKey { get; }
     internal string? ObservationId { get; }
     internal double Value { get; }
@@ -54,7 +57,7 @@ internal static class VisualValuePolicy {
 
     internal static bool SameText(VisualSceneTextFace first, TextStyle a, VisualSceneTextFace second, TextStyle b) {
         var x = a.Font; var y = b.Font;
-        if (a.FontSize != b.FontSize || a.LineHeight != b.LineHeight || !a.Color.Equals(b.Color) || a.Alignment != b.Alignment
+        if (a.FontSize != b.FontSize || a.LineHeight != b.LineHeight || a.LetterSpacing != b.LetterSpacing || !a.Color.Equals(b.Color) || a.Alignment != b.Alignment
             || a.UnderlineStyle != b.UnderlineStyle || a.StrikethroughStyle != b.StrikethroughStyle || a.Baseline != b.Baseline
             || a.TextCase != b.TextCase || a.Hinting != b.Hinting || a.OpenTypeLanguageTag != b.OpenTypeLanguageTag
             || x.Family != y.Family || x.FilePath != y.FilePath || x.CollectionIndex != y.CollectionIndex || x.FaceName != y.FaceName
@@ -66,10 +69,31 @@ internal static class VisualValuePolicy {
 }
 
 /// <summary>Opt-in raw rows remain distinct from native painted/aggregate membership. All geometry stays in the same complete native plan.</summary>
-internal interface IVisualRawValuePlan : IVisualCompleteValuePlan {
+internal interface IVisualSourceValuePlan : IVisualCompleteValuePlan {
     bool CapturesRawSource { get; }
     string StructureKey { get; }
     string SourceKey(PreparedVisual complete);
+}
+
+/// <summary>Typed components retain their true observation and native member identities.</summary>
+internal interface IVisualComponentValuePlan : IVisualSourceValuePlan {
+    string SourceFamily { get; }
+    VisualComponentSizePolicy? SizePolicy { get; }
+}
+
+/// <summary>Only a real native size owner supplies these immutable facts; range components have no size policy.</summary>
+internal sealed class VisualComponentSizePolicy {
+    internal VisualComponentSizePolicy(ChartBubbleSizeScale native) {
+        Minimum = native.MinimumValue; Maximum = native.MaximumValue; Mapping = native.Mapping; Reversed = native.Reversed;
+    }
+    internal double Minimum { get; }
+    internal double Maximum { get; }
+    internal string Mapping { get; }
+    internal bool Reversed { get; }
+}
+
+/// <summary>Radial source slices retain the incumbent raw transport shape.</summary>
+internal interface IVisualRawValuePlan : IVisualSourceValuePlan {
     IReadOnlyList<VisualRawValueSlice> CaptureSlices(PreparedVisual drawing, ChartVisibilityView? view);
 }
 

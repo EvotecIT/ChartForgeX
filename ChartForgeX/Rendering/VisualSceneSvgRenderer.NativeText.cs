@@ -63,7 +63,10 @@ internal static partial class VisualSceneSvgRenderer {
         private bool TryCaptureTiny(VisualSceneText node, VisualSceneTextLine line, int lineIndex, out IReadOnlyList<NativeGlyphReference> references) {
             var prepared = node.Text; var face = prepared.Face; var result = new List<NativeGlyphReference>();
             var cursor = node.LineLeft(line); var boldOffset = face.SynthesizeBold ? RgbaCanvas.EmphasisOffset(prepared.Size) : 0;
+            var tracked = prepared.Style.LetterSpacing == 0 ? null : TinyFont.SpacedGlyphs(line.Text, prepared.Size, prepared.Style.LetterSpacing, cursor);
+            var characterIndex = 0;
             foreach (var character in line.Text) {
+                if (tracked != null) cursor = tracked[characterIndex++].X;
                 var key = (character, prepared.Size, face.SynthesizeItalic, boldOffset);
                 if (!_tinyIds.TryGetValue(key, out var index)) {
                     index = _paths.Count; var path = new SvgPathDataBuilder();

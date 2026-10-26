@@ -40,6 +40,11 @@ public static partial class VisualArtifactRendering {
         } else {
             // Explicit caller-supplied semantics retain the eager portable codec/validation boundary.
             semantics = VisualArtifactInterchangeEnvelope.FromUtf8Json(semanticInterchange.ToUtf8Json());
+            var actualSource = prepared.CapturedTurbulenceSource;
+            var suppliedSource = semantics.Presentation?.TurbulenceSource;
+            if ((actualSource == null) != (suppliedSource == null) ||
+                actualSource != null && !actualSource.SameSourcePolicy(suppliedSource!))
+                throw new ArgumentException("Supplied procedural source facts must match the actual captured native producer.", nameof(semanticInterchange));
             if (semantics.Presentation?.CapturedEffects.Count > 0)
                 throw new ArgumentException("Supplied source semantics must not carry captured effects; actual prepared effect scopes are captured once at export.", nameof(semanticInterchange));
         }

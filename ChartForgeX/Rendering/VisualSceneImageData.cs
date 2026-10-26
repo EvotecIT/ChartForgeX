@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using ChartForgeX.Raster;
 using ChartForgeX.Primitives;
 
@@ -9,17 +10,22 @@ internal sealed class VisualSceneImageData {
     private readonly Lazy<string> _dataUri;
     private readonly object _dataUriGate = new object();
     private string? _encodedDataUri;
-    internal VisualSceneImageData(RgbaImage image) {
+    internal VisualSceneImageData(RgbaImage image, CancellationToken cancellation = default) {
         var valid = new RgbaImage(image.Width, image.Height, image.Pixels);
+        cancellation.ThrowIfCancellationRequested();
         var pixels = new byte[checked(valid.Width * valid.Height * 4)];
         Array.Copy(valid.Pixels, pixels, pixels.Length);
         Image = new RgbaImage(valid.Width, valid.Height, pixels);
         var left = valid.Width; var top = valid.Height; var right = 0; var bottom = 0;
         // Capture an alpha extent once alongside the private pixel snapshot; placements reuse it.
-        for (var y = 0; y < valid.Height; y++) for (var x = 0; x < valid.Width; x++) {
-            if (pixels[(y * valid.Width + x) * 4 + 3] == 0) continue;
-            left = Math.Min(left, x); top = Math.Min(top, y); right = Math.Max(right, x + 1); bottom = Math.Max(bottom, y + 1);
+        for (var y = 0; y < valid.Height; y++) {
+            cancellation.ThrowIfCancellationRequested();
+            for (var x = 0; x < valid.Width; x++) {
+                if (pixels[(y * valid.Width + x) * 4 + 3] == 0) continue;
+                left = Math.Min(left, x); top = Math.Min(top, y); right = Math.Max(right, x + 1); bottom = Math.Max(bottom, y + 1);
+            }
         }
+        cancellation.ThrowIfCancellationRequested();
         AlphaBounds = right > left && bottom > top ? new ChartRect(left, top, right - left, bottom - top) : (ChartRect?)null;
         _dataUri = new Lazy<string>(() => EncodeDataUri(null, null));
     }

@@ -28,11 +28,10 @@ internal sealed partial class VisualTopologyCompiler {
     private void AtOriginalNodeUnits(TopologyNode node, TopologyPreparedNodeBasis basis, Action<TopologyNode> paint) {
         var raw = basis.OriginalNode(node); // Detached one-node value; no producer callback or retained raw graph.
         var priorScale = _scale; var priorX = _offsetX; var priorY = _offsetY;
-        var anchor = Point(new ChartPoint(node.X, node.Y));
+        var origin = basis.OriginalOffset(node, priorScale, new ChartPoint(priorX, priorY));
         try {
             _scale = priorScale * basis.Factor;
-            _offsetX = anchor.X - basis.OriginalBody.X * _scale;
-            _offsetY = anchor.Y - basis.OriginalBody.Y * _scale;
+            _offsetX = origin.X; _offsetY = origin.Y;
             // Raw has no captured basis. Existing BuildNode/UseTextPolicy owns exactly the same surfaces,
             // glyph parser, fitting, paint order, metadata, resolved font callbacks, marks and final-coordinate region.
             paint(raw);

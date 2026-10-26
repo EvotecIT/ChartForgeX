@@ -19,7 +19,7 @@ internal sealed partial class VisualTopologyCompiler {
     private TextStyle TextPolicyStyle(double size, int weight) {
         var style = TopologyTextPolicy.Resolve(_textPolicy, _context.Font, size, weight);
         // Callers have already selected and fitted the logical size. Never reapply the authored preferred size here.
-        style.FontSize = size; return style;
+        style.FontSize = size; style.LetterSpacing *= _scale; return style;
     }
     private TextMetrics MeasurePolicyText(string text, double size, int weight) =>
         _textPolicy == null || !_textPolicy.HasOverrides ? _builder.MeasureText(text, size, weight)

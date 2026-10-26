@@ -254,6 +254,7 @@ internal static partial class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangePresentation? Copy(VisualArtifactInterchangePresentation? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangePresentation {
+            TurbulenceSource = source.TurbulenceSource,
             Theme = Copy(source.Theme),
             MapViewport = Copy(source.MapViewport),
             Legend = Copy(source.Legend), TopologyCaptions = source.TopologyCaptions, Frame = source.Frame?.RequestValues(retainOwnedFonts: true), ContextFont = source.ContextFont,
@@ -354,6 +355,7 @@ internal static partial class VisualArtifactInterchangeSnapshot {
             CaptionTextStyle=source.CaptionTextStyle?.Clone(),
             GlyphScale=source.GlyphScale, CornerRadius=source.CornerRadius,
             PreparedNodeBasis = source.PreparedNodeBasis,
+            SurfaceElementAppearance = source.SurfaceElementAppearance,
             StrokeWidth=source.StrokeWidth,Opacity=source.Opacity,SurfaceOpacity=source.SurfaceOpacity,
             LabelContent = source.LabelContent,
             SubtitleTextStyle = source.SubtitleTextStyle?.Clone(),

@@ -47,6 +47,7 @@ internal static partial class VisualArtifactInterchangeJson {
         MapViewport(writer, presentation.MapViewport);
         Legend(writer, presentation.Legend);
         CapturedEffects(writer, presentation.CapturedEffects);
+        TurbulenceSource(writer, presentation.TurbulenceSource);
         TopologyCaptions(writer, presentation.TopologyCaptions);
         DiagramContext(writer,presentation);
         writer.EndObject();
@@ -150,6 +151,7 @@ internal static partial class VisualArtifactInterchangeJson {
         DetailTextStyle(writer, topology.CaptionTextStyle, "captionTextStyle");
         OptionalString(writer, "borderColor", topology.BorderColor);
         PreparedNodeBasis(writer, topology.PreparedNodeBasis);
+        SurfaceElements(writer, topology.SurfaceElementAppearance);
         SurfacePaint(writer,topology.StrokeWidth,topology.Opacity,topology.SurfaceOpacity,topology.DashPattern);
         CaptionRuns(writer, "labelRuns", topology.LabelContent);
         DetailTextStyle(writer, topology.SubtitleTextStyle, "subtitleTextStyle");
@@ -344,6 +346,7 @@ internal static partial class VisualArtifactInterchangeJson {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "presentation");
         if (item == null) return null;
         var presentation = new VisualArtifactInterchangePresentation {
+            TurbulenceSource = ReadTurbulenceSource(item),
             Theme = ReadTheme(item),
             MapViewport = ReadMapViewport(item),
             Legend = ReadLegend(item), TopologyCaptions = ReadTopologyCaptions(item), Frame = null
@@ -430,6 +433,7 @@ internal static partial class VisualArtifactInterchangeJson {
             CaptionGap = OptionalNumber(item, "captionGap"), GlyphScale = OptionalNumber(item, "glyphScale"), CornerRadius = OptionalNumber(item, "cornerRadius"),
             StrokeWidth=OptionalNumber(item,"strokeWidth"),Opacity=OptionalNumber(item,"opacity"),SurfaceOpacity=OptionalNumber(item,"surfaceOpacity"),
             PreparedNodeBasis = ReadPreparedNodeBasis(item),
+            SurfaceElementAppearance = ReadSurfaceElements(item),
             LabelContent = ReadCaptionRuns(item, "labelRuns"),
             SubtitleTextStyle = ReadDetailTextStyle(item, "subtitleTextStyle"),
             TableContent = ReadTableContent(item),

@@ -58,7 +58,8 @@ public static class MermaidBlockRendering {
             block.Edges[block.Edges.Count - 1].Visible = edge.Visible;
             block.Edges[block.Edges.Count - 1].Stroke = edge.Stroke;
         }
-        return MermaidPresentation.Apply(block, document, options.Presentation);
+        MermaidPresentation.Apply(block, document, options.Presentation);
+        MermaidNativeStyles.ResolveLetterSpacing(block); return block;
     }
 
     /// <summary>

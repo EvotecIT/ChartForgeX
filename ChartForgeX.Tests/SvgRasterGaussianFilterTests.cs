@@ -91,26 +91,23 @@ public sealed class SvgRasterGaussianFilterTests {
             + "<filter id='blur' filterUnits='userSpaceOnUse' primitiveUnits='userSpaceOnUse' color-interpolation-filters='linearRGB' x='0' y='0' width='32' height='32'>"
             + "<feGaussianBlur class='srgb' in='SourceGraphic' stdDeviation='1' edgeMode='none'/></filter></defs>" + Impulse());
         Assert.Empty(Import(valid).Diagnostics);
-        var rejected = valid.Replace("color-interpolation-filters:var(--space)", "color-interpolation-filters:linearRGB!important");
+        var linear = valid.Replace("color-interpolation-filters:var(--space)", "color-interpolation-filters:linearRGB!important");
+        Assert.Empty(Import(linear).Diagnostics);
+        var rejected = linear.Replace("edgeMode='none'", "edgeMode='duplicate'");
         Assert.Contains("SFR002", Assert.Throws<NotSupportedException>(() => Import(rejected)).Message);
     }
 
     [Theory]
     [InlineData("filterUnits='objectBoundingBox'", "filterUnits='userSpaceOnUse'", true)]
     [InlineData("primitiveUnits='objectBoundingBox'", "primitiveUnits='userSpaceOnUse'", true)]
-    [InlineData("color-interpolation-filters='linearRGB'", "color-interpolation-filters='sRGB'", true)]
-    [InlineData("", "color-interpolation-filters='sRGB'", true)]
     [InlineData("stdDeviation='129'", "stdDeviation='1'", true)]
     [InlineData("stdDeviation='-1'", "stdDeviation='1'", true)]
     [InlineData("stdDeviation='NaN'", "stdDeviation='1'", true)]
     [InlineData("stdDeviation='1%'", "stdDeviation='1'", true)]
-    [InlineData("in='SourceAlpha'", "in='SourceGraphic'", true)]
     [InlineData("edgeMode='duplicate'", "edgeMode='none'", true)]
     [InlineData("x='0.5'", "x='0'", true)]
     [InlineData("width='100%'", "width='32'", true)]
-    [InlineData("result='named' in='SourceGraphic'", "in='SourceGraphic'", true)]
-    [InlineData("x='0' in='SourceGraphic'", "in='SourceGraphic'", true)]
-    [InlineData("feOffset", "feGaussianBlur", true)]
+    [InlineData("feDisplacementMap", "feGaussianBlur", true)]
     [InlineData("filter='blur(1px)'", "filter='url(#blur)'", false)]
     [InlineData("filter='url(#blur) url(#blur)'", "filter='url(#blur)'", false)]
     [InlineData("transform='rotate(15)' filter='url(#blur)'", "filter='url(#blur)'", false)]

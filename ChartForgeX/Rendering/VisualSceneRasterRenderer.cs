@@ -126,9 +126,12 @@ if (node is VisualSceneImage image) PaintImage(canvas, image, transform);
                 var boldOffset = prepared.Face.SynthesizeBold ? RgbaCanvas.EmphasisOffset(prepared.Size) : 0;
                 if (prepared.Face.Font != null) prepared.Face.Font.DrawGlyphs(canvas, node.LineLeft(line), y, line.Glyphs,
                     node.Color, prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
-                else if (prepared.NativeGlyphInk) {
+                else if (prepared.NativeGlyphInk || prepared.Style.LetterSpacing != 0) {
                     var cursor = node.LineLeft(line);
+                    var tracked = prepared.Style.LetterSpacing == 0 ? null : TinyFont.SpacedGlyphs(line.Text, prepared.Size, prepared.Style.LetterSpacing, cursor);
+                    var characterIndex = 0;
                     foreach (var character in line.Text) {
+                        if (tracked != null) cursor = tracked[characterIndex++].X;
                         var ink = TinyFont.Ink(character, prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
                         var translated = new List<List<ChartPoint>>(ink.Count);
                         foreach (var contour in ink) {

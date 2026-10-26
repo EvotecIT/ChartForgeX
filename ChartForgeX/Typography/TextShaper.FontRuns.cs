@@ -9,6 +9,7 @@ internal static partial class TextShaper {
     private static readonly string[] CommonSubstitution = { "ccmp", "locl" };
     private static readonly string[] ArabicForms = { "isol", "fina", "init", "medi" };
     private static readonly string[] StandardSubstitution = { "rlig", "rclt", "calt", "liga", "clig" };
+    private static readonly string[] SpacedSubstitution = { "rlig", "rclt", "calt" };
     private static readonly string[] StandardPositioning = { "kern", "dist", "abvm", "blwm", "curs", "mark", "mkmk" };
 
     private static bool TryShapeAscii(TrueTypeFont face, string text, double pixelSize, out ShapedGlyph[] shaped) {
@@ -45,7 +46,7 @@ internal static partial class TextShaper {
             if (!IsIgnorable(cp) || cp == 0x200d || cp == 0x200c) cluster.Output.Add(cp);
         }
     }
-    private static ShapedGlyph[] ShapeFontRuns(List<int> codePoints, List<Cluster> clusters, byte[]? levels, double pixelSize, IReadOnlyList<double>? pixelSizes) {
+    private static ShapedGlyph[] ShapeFontRuns(List<int> codePoints, List<Cluster> clusters, byte[]? levels, double pixelSize, IReadOnlyList<double>? pixelSizes, IReadOnlyList<double>? letterSpacings, int[]? trackingGroups) {
         if (clusters.Count == 0) return Array.Empty<ShapedGlyph>();
         var forms = ArabicShaping.MayJoin(codePoints) ? ArabicShaping.ResolveForms(codePoints) : null;
         var runs = new List<FontRun>(); FontRun? current = null; var script = "DFLT";
@@ -56,7 +57,8 @@ internal static partial class TextShaper {
             if (candidate != "DFLT") script = candidate;
             var level = levels == null ? (byte)0 : levels[cluster.Start];
             if (current == null || !ReferenceEquals(current.Face, cluster.Face) || current.Owner != cluster.Owner || current.Script != script || current.Level != level) {
-                current = new FontRun(cluster.Face!, script, cluster.Owner, level, pixelSizes == null ? pixelSize : NormalizePixelSize(pixelSizes[cluster.Start])); runs.Add(current);
+                current = new FontRun(cluster.Face!, script, cluster.Owner, level, pixelSizes == null ? pixelSize : NormalizePixelSize(pixelSizes[cluster.Start]),
+                    letterSpacings != null && letterSpacings[cluster.Start] != 0, trackingGroups); runs.Add(current);
             }
             foreach (var cp in cluster.Output) {
                 var glyph = new LayoutGlyph(cluster.Face!.MapGlyph(cp), cp, cluster.Start);
@@ -85,7 +87,7 @@ internal static partial class TextShaper {
         if (positioned && !complex) {
             layout.Apply(glyphs, run.Script, CommonSubstitution, required: true, budget: budget);
             if (run.Script == "arab") layout.Apply(glyphs, run.Script, ArabicForms, budget: budget);
-            layout.Apply(glyphs, run.Script, StandardSubstitution, budget: budget);
+            layout.Apply(glyphs, run.Script, run.Spaced ? SpacedSubstitution : StandardSubstitution, budget: budget);
         }
         glyphs.RemoveAll(glyph => glyph.Ignorable);
         foreach (var glyph in glyphs) glyph.XAdvance = complex && (run.Script == "mymr" || run.Script == "sinh") && layout.IsMarkGlyph(glyph) ? 0 : face.AdvanceWidth(glyph.Glyph);
@@ -97,10 +99,11 @@ internal static partial class TextShaper {
         }
         if ((run.Level & 1) != 0) ReverseClusters(glyphs);
         if (positioned) OpenTypeLayout.ResolveAttachments(glyphs);
-        var advanceY = 0.0;
+        var tracking = run.TrackingGroups == null ? null : RunTrackingGroups(glyphs, run.TrackingGroups);
+        var advanceY = 0.0; var outputIndex = 0;
         foreach (var glyph in glyphs) {
             output.Add(new ShapedGlyph(face, glyph.Glyph, glyph.Cluster,
-                positioned ? glyph.XAdvance : null, glyph.XOffset, glyph.YOffset + advanceY));
+                positioned ? glyph.XAdvance : null, glyph.XOffset, glyph.YOffset + advanceY, tracking == null ? -1 : tracking[outputIndex++]));
             advanceY += glyph.YAdvance;
         }
     }
@@ -122,7 +125,11 @@ internal static partial class TextShaper {
         return "DFLT";
     }
     private sealed class FontRun {
-        internal FontRun(TrueTypeFont face, string script, int owner, byte level, double pixelSize) { Face = face; Script = script; Owner = owner; Level = level; PixelSize = pixelSize; }
+        internal FontRun(TrueTypeFont face, string script, int owner, byte level, double pixelSize, bool spaced = false, int[]? trackingGroups = null) {
+            Face = face; Script = script; Owner = owner; Level = level; PixelSize = pixelSize; Spaced = spaced; TrackingGroups = trackingGroups;
+        }
+        internal readonly bool Spaced;
+        internal readonly int[]? TrackingGroups;
         internal readonly TrueTypeFont Face;
         internal readonly string Script;
         internal readonly int Owner;

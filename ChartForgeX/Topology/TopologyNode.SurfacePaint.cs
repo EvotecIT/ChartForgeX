@@ -13,7 +13,7 @@ public sealed partial class TopologyNode {
     /// <remarks>Composites once after overlapping own marks are painted. It does not change logical attachment or hit geometry.</remarks>
     public double? Opacity { get=>_opacity;set{TopologySurfacePaintRules.Opacity(value,nameof(value));_opacity=value;} }
     /// <summary>Gets or sets opacity of each contour surface element, compositing its fill and stroke once; captions, glyphs and details are excluded.</summary>
-    public double? SurfaceOpacity { get=>_surfaceOpacity;set{TopologySurfacePaintRules.Opacity(value,nameof(value));_surfaceOpacity=value;} }
+    public double? SurfaceOpacity { get=>_surfaceOpacity;set{TopologySurfacePaintRules.Opacity(value,nameof(value));InvalidateSurfaceElementAppearance();_surfaceOpacity=value;} }
     /// <summary>Gets alternating contour dash and gap lengths in model units; an empty list retains the ordinary solid outline.</summary>
     public List<double> DashPattern { get; }=new();
 }

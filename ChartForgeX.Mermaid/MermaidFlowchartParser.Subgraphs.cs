@@ -95,6 +95,7 @@ internal static partial class MermaidFlowchartParser {
             MermaidResourceGuard.ReserveElements(placeholder.Classes.Count,placeholder.Span);
             group.Classes.AddRange(placeholder.Classes);
             MermaidStyleParser.Copy(group.Styles,placeholder.Styles,placeholder.Span);
+            group.SurfaceOpacitySpan = placeholder.SurfaceOpacitySpan;
             foreach (var pair in placeholder.Properties) group.Properties[pair.Key] = pair.Value;
             foreach (var pair in placeholder.PropertyTokens) group.PropertyTokens[pair.Key] = pair.Value;
             foreach (var pair in placeholder.PropertyValueSpans) group.PropertyValueSpans[pair.Key] = pair.Value;

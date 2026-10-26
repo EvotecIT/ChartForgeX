@@ -34,9 +34,11 @@ internal sealed partial class TrueTypeFont {
     }
 
     /// <summary>Advance for a visual glyph, including pair kerning when the previous glyph uses the same face.</summary>
-    internal static double GlyphAdvance(ShapedGlyph glyph, ShapedGlyph? previous, double fontSize) =>
-        (glyph.Advance ?? (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && !previous.Value.Advance.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
+    internal static double GlyphAdvance(ShapedGlyph glyph, ShapedGlyph? previous, double fontSize) {
+        var advance = (glyph.Advance ?? (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && !previous.Value.Advance.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
             ? glyph.Face.Kerning(previous.Value.Glyph, glyph.Glyph) : 0))) * glyph.Face.ScaleFor(fontSize);
+        return glyph.TrailingAdvance == 0 ? advance : advance + glyph.TrailingAdvance * glyph.Face.ScaleFor(fontSize);
+    }
 
     /// <summary>A regular fallback retains its advance but receives the requested run's bold ink.</summary>
     private double FallbackBoldOffset(ShapedGlyph glyph, double size) =>

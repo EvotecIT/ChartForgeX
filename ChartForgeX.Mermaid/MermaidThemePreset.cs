@@ -8,21 +8,23 @@ namespace ChartForgeX.Mermaid;
 internal sealed partial class MermaidThemePreset {
     private readonly Dictionary<string,ChartColor> _colors;
     private readonly ChartColor[]? _backgrounds,_borders;
+    private readonly bool _topology;
     internal readonly string? Name;
-    private MermaidThemePreset(string? name,Dictionary<string,ChartColor> colors,ChartColor[]? backgrounds,ChartColor[]? borders){Name=name;_colors=colors;_backgrounds=backgrounds;_borders=borders;}
+    private MermaidThemePreset(string? name,Dictionary<string,ChartColor> colors,ChartColor[]? backgrounds,ChartColor[]? borders,bool topology){Name=name;_colors=colors;_backgrounds=backgrounds;_borders=borders;_topology=topology;}
     internal static bool IsKnown(string? name)=>name is "base" or "default" or "dark" or "forest" or "neutral" or "neo" or "neo-dark" or "redux" or "redux-dark" or "redux-color" or "redux-dark-color";
-    internal static MermaidThemePreset Create(string? name,bool hostTheme,Dictionary<string,Precise> authored,bool darkMode,ChartColor[]? backgrounds,ChartColor[]? borders) {
+    internal static MermaidThemePreset Create(string? name,bool hostTheme,Dictionary<string,Precise> authored,bool darkMode,ChartColor[]? backgrounds,ChartColor[]? borders,bool topology=false) {
         var selected=IsKnown(name)&&!hostTheme?name:null;
         var values=selected!=null?Seed(selected):new Dictionary<string,Precise>(StringComparer.Ordinal);
+        if(topology&&selected!=null)SeedTopologyRoles(selected,values);
         // The default constructor alone eagerly updates its roles before receiving overrides.
-        if(selected=="default")DeriveRoles(selected,values,false);
+        if(selected=="default"){DeriveRoles(selected,values,false);if(topology)DeriveTopologyRoles(selected,values,false);}
         foreach(var pair in authored)values[pair.Key]=pair.Value;
-        if(selected!=null)DeriveRoles(selected,values,darkMode);
+        if(selected!=null){DeriveRoles(selected,values,darkMode);if(topology)DeriveTopologyRoles(selected,values,darkMode);}
         // Upstream calculate replays authored literals after its derived-role assignments.
         foreach(var pair in authored)values[pair.Key]=pair.Value;
         var colors=new Dictionary<string,ChartColor>(StringComparer.Ordinal);foreach(var pair in values)colors[pair.Key]=pair.Value.ToColor();
         var palette=name=="redux-color"||name=="redux-dark-color";
-        return new MermaidThemePreset(name,colors,palette?Clone(backgrounds??DefaultBackgrounds(selected)):null,palette?Clone(borders??DefaultBorders(selected)):null);
+        return new MermaidThemePreset(name,colors,palette?Clone(backgrounds??DefaultBackgrounds(selected)):null,palette?Clone(borders??DefaultBorders(selected)):null,topology);
     }
     internal bool TryGet(string name,out ChartColor value)=>_colors.TryGetValue(name,out value);
     internal ChartColor? AtBackground(int sourceIndex)=>At(_backgrounds,sourceIndex);
@@ -44,6 +46,8 @@ internal sealed partial class MermaidThemePreset {
         if(TryGet("tertiaryColor",out var tertiary))tokens.Neutral2=tertiary;
         if(TryGet("textColor",out var text)){tokens.Foreground=text;tokens.MutedForeground=text;}
         if(TryGet("primaryTextColor",out var primaryText))tokens.Foreground=primaryText;
+        // Topology diagram headings use textColor; node/edge and cluster captions have explicit source roles.
+        if(_topology&&TryGet("textColor",out var topologyText))tokens.Foreground=topologyText;
         if(TryGet("primaryBorderColor",out var border))tokens.Border=border;
         if(TryGet("lineColor",out var line)){tokens.Axis=line;tokens.Grid=line;tokens.Status.Neutral=new VisualTokenColor(line,line);}
     }

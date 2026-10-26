@@ -27,8 +27,7 @@ public sealed class TurbulencePrimaryReferenceObservationTests {
             + "<feTurbulence type='" + (fractal ? "fractalNoise" : "turbulence") + "' baseFrequency='.071 .113' numOctaves='" + octaves
             + "' seed='" + seed.ToString(CultureInfo.InvariantCulture) + "' stitchTiles='" + (stitch ? "stitch" : "noStitch") + "'/></filter></defs>"
             + "<rect width='64' height='48' filter='url(#noise)'/></svg>";
-        Assert.Throws<NotSupportedException>(() => SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions()));
-        var native = SvgRasterizer.Rasterize(source, strict: false, filters: new SvgRasterFilterOptions());
+        var native = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
         await using var session = await BrowserProofFonts.OpenAsync("<main>" + source + "</main><canvas id='probe' width='64' height='48'></canvas>", 320, 200);
         var observed = await session.Page.EvaluateAsync<JsonElement>("""
             async () => {
@@ -46,6 +45,11 @@ public sealed class TurbulencePrimaryReferenceObservationTests {
             return new { x, y, actual = point.GetProperty("pixel").EnumerateArray().Select(value => value.GetInt32()).ToArray(),
                 squareCenter = square.Sample(x + .5, y + .5, .071, .113, octaves, fractal, stitch, linearRgb),
                 diskCenter = disk.Sample(x + .5, y + .5, .071, .113, octaves, fractal, stitch, linearRgb),
+                // Browser phase/readback estimates remain reference observations, separate from native cell centers.
+                nativeSampling = "physical-cell-center; unassociated output; no browser readback roundtrip",
+                squareTrailing = square.Sample(x + 1, y + 1, .071, .113, octaves, fractal, stitch, linearRgb),
+                squareTrailingReadbackEstimate = square.SamplePremultipliedReadbackEstimate(
+                    x + 1, y + 1, .071, .113, octaves, fractal, stitch, linearRgb),
                 squareInteger = square.Sample(x, y, .071, .113, octaves, fractal, stitch, linearRgb),
                 diskInteger = disk.Sample(x, y, .071, .113, octaves, fractal, stitch, linearRgb) };
         }).ToArray();
@@ -60,11 +64,12 @@ public sealed class TurbulencePrimaryReferenceObservationTests {
             File.WriteAllText(stem + ".gradient-comparisons.json", JsonSerializer.Serialize(comparisons));
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = stem + ".browser.png", FullPage = true });
         }
-        // No expected pixel/generator choice is asserted before the actual engine/version receipts are inspected.
+        // Browser reference output reports phase/readback differences; deterministic native vectors are separate.
         Assert.Equal(space, observed.GetProperty("colorSpace").GetString());
         Assert.Equal(5, comparisons.Length);
         Assert.Contains(comparisons, point => !point.squareCenter.SequenceEqual(point.diskCenter));
-        Assert.Contains(native.Diagnostics, diagnostic => diagnostic.Code == "SFR002");
+        // POST native support: unsupported-source observations no longer represent acceptance.
+        Assert.Empty(native.Diagnostics);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 }

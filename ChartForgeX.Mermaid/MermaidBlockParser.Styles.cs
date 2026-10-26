@@ -9,6 +9,7 @@ internal static partial class MermaidBlockParser {
     internal static bool BlockNativeStyle(string property, string value) => property switch {
         "stroke-width" => BlockNumber(value, out var width) && width >= 0 && width <= 1024,
         "font-size" => BlockNumber(value, out var size) && size > 0,
+        "letter-spacing" => ChartForgeX.Typography.TypographyCss.TryLetterSpacing(value, 1, out _),
         "font-weight" => value == "bold" || value == "normal" || int.TryParse(value, out var weight) && weight >= 100 && weight <= 900,
         "font-style" => value == "normal" || value == "italic",
         "stroke-dasharray" => BlockDash(value, out _),

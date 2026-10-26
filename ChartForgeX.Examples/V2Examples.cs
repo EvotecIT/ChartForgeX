@@ -51,6 +51,7 @@ public static partial class V2Examples {
         WriteSequenceSourceDefaults(output, artifacts);
         WriteSequencePresetAppearance(output,artifacts);
         WriteSequenceSurfaceShadows(output, artifacts);
+        WriteOwnedHtmlFonts(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

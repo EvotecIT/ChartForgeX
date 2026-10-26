@@ -37,14 +37,17 @@ internal static partial class Program {
         RetainedSurfaceEffectsContracts();
         RetainedMaskContracts();
         FiniteSourceCompositeContracts();
+        ColorSourceContracts();
         NativeAppearanceContracts();
         RetainedAppearanceContracts();
+        TurbulenceContracts();
         NativeCoordinateDrawings();
         NativeActorSubtitleContracts();
         NativeAdvancedActorContracts();
         NativeDropShadowContracts();
         NativeMaskContracts();
         StandardBlendSourceContracts();
+        OrderedFilterContracts();
         CategoricalInterchangeContracts();
         HierarchySubtreeContracts();
         OrganizationPortraitContracts();

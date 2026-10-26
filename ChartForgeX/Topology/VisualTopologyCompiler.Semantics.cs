@@ -32,6 +32,7 @@ internal sealed partial class VisualTopologyCompiler {
             for(var i=0;i<group.DashPattern.Count;i++)group.DashPattern[i]*=_scale;
         }
         foreach (var node in snapshot.Nodes) {
+            var surfaceElements = TopologySurfaceElementAppearance.Resolve(node);
             var basis = TopologyPreparedNodeBasis.Resolve(node);
             var units = basis?.Factor ?? 1;
             var originalBody = basis?.OriginalBody ?? new ChartRect(node.X, node.Y, node.Width, node.Height);
@@ -41,15 +42,18 @@ internal sealed partial class VisualTopologyCompiler {
                 node.Shape == TopologyNodeShape.ActorIcon ? node.Y + 32 * actorScale : node.Y + node.Height / 2);
             var b = Bounds(node.X, node.Y, node.Width, node.Height);
             var translated = b.X != node.X || b.Y != node.Y;
+            var originalOffset = basis == null ? new ChartPoint(_offsetX, _offsetY)
+                : basis.OriginalOffset(node, _scale, new ChartPoint(_offsetX, _offsetY));
             node.X = b.X; node.Y = b.Y; node.Width = b.Width; node.Height = b.Height;
             node.PreparedNodeBasis = TopologyPreparedNodeBasis.Recognized(node.Shape, mode)
                 && (TopologyPreparedNodeBasis.IsActor(node.Shape)
                     || mode != TopologyNodeDisplayMode.Artwork && TopologyPreparedNodeBasis.Supported(node.Shape, mode)
                     || mode == TopologyNodeDisplayMode.Artwork && TopologyExternalCaption.HasPolicy(node))
                 && (basis != null || units * _scale != 1
-                    || translated && (HasInlineNodeGlyph(node, mode, _options) || node.Shape == TopologyNodeShape.ActorIcon))
+                    || translated && (node.Shape.HasValue || node.CornerRadius.HasValue || HasInlineNodeGlyph(node, mode, _options)))
                 ? new TopologyPreparedNodeBasis(units * _scale, b.Width, b.Height, node.Shape, mode,
-                    node.Kind, node.IconShape, node.IconId, node.Symbol, glyphAnchor.X, glyphAnchor.Y, originalBody, node.ContentPadding, node.MaximumTextWidth, node.CornerRadius * _scale, node.GlyphScale) : null;
+                    node.Kind, node.IconShape, node.IconId, node.Symbol, glyphAnchor.X, glyphAnchor.Y, originalBody, node.ContentPadding, node.MaximumTextWidth, node.CornerRadius * _scale, node.GlyphScale, !TopologyPreparedNodeBasis.IsActor(node.Shape)
+                        ? new TopologyPreparedNodeProjection(originalOffset, new ChartPoint(b.X, b.Y)) : null) : null;
             if (node.PreparedNodeBasis != null) node.DisplayMode = mode;
             if (node.TableContent != null) node.TableContent.CapturedPresentationScale *= _scale;
             PreserveCssClass(node.Metadata, node.CssClass);
@@ -58,6 +62,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (node.CornerRadius.HasValue) node.CornerRadius *= _scale;
             if(node.StrokeWidth.HasValue)node.StrokeWidth*=_scale;
             for(var i=0;i<node.DashPattern.Count;i++)node.DashPattern[i]*=_scale;
+            node.SurfaceElementAppearance = surfaceElements?.RebindAfterCapture(node, mode);
             foreach (var detail in node.Details) {
                 ScaleCapturedFontSize(detail.TextStyle);
                 if (detail.BadgeStyle != null) detail.BadgeStyle = detail.BadgeStyle.Scale(_scale);
@@ -105,6 +110,7 @@ internal sealed partial class VisualTopologyCompiler {
 
     private void ScaleCapturedFontSize(ChartForgeX.Typography.TextStyleOverride? style) {
         if (style?.FontSize is double size) style.FontSize = size * _scale;
+        if (style?.LetterSpacing is double spacing) style.LetterSpacing = spacing * _scale;
     }
 
     private static void PreserveCssClass(System.Collections.Generic.Dictionary<string, string> metadata, string? cssClass) {

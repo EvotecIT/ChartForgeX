@@ -43,5 +43,8 @@ public sealed class VisualCanvasTextLayer : VisualCanvasLayer {
     /// <summary>Gets or sets whether the text should use the emphasized raster/SVG treatment.</summary>
     public bool Emphasized { get; set; }
 
+    /// <summary>Gets or sets optional shared typography resolved over this layer's current font, size and color. Null keeps the legacy path.</summary>
+    public TextStyleOverride? TextStyle { get; set; }
+
     internal ChartColor ResolveColor(ResolvedVisualCanvasStyle theme) => _explicitColor ?? theme.HeroTitleColor;
 }

@@ -6,7 +6,8 @@ public static partial class V2Examples {
                 var compact = variant.StartsWith("compact", StringComparison.Ordinal);
                 WriteNativeDepthModel(output, artifacts, "topology-path-decorations", variant, "topology", "Independent maintenance boundary",
                     "One native path decorates the graph without adding source nodes or relationships", mode,
-                    compact ? 390 : 760, 400, null, compact);
+                    // The wide boundary reaches 331.5 including stroke; keep it unscaled below both gallery headings.
+                    compact ? 390 : 760, variant == "wide" ? 420 : 400, null, compact);
             }
             foreach (var variant in new[] { "wide", "compact" }) {
                 var compact = variant == "compact";

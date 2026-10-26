@@ -8,19 +8,21 @@ internal static partial class TopologyNodeShapeGeometry {
     private static IReadOnlyList<ScenePart> WindowParts(TopologyNode node, bool browser) {
         var parts = new List<ScenePart> { CatalogRounded(node, 10) };
         if (browser) {
-            parts.Add(CatalogOpen(node, 0, .26, 1, .26));
+            parts.Add(CatalogDetail(CatalogOpen(node, 0, .26, 1, .26)));
             for (var index = 0; index < 3; index++)
-                parts.Add(CatalogEllipse(node, .08 + index * .065, .13, Math.Min(2.5, node.Width * .02) / node.Width,
-                    Math.Min(2.5, node.Height * .05) / node.Height, true, false));
+                parts.Add(CatalogDetail(CatalogEllipse(node, .08 + index * .065, .13, Math.Min(2.5, node.Width * .02) / node.Width,
+                    Math.Min(2.5, node.Height * .05) / node.Height, true, false)));
             var address = CatalogRounded(CatalogCell(node, .36, .07, .92, .2), 3);
-            parts.Add(new ScenePart(address.Path, true, false, true, false));
+            parts.Add(new ScenePart(address.Path, true, false, true, false, false, false));
         } else {
             // A native path prompt avoids introducing another font or authored HTML surface.
-            parts.Add(CatalogOpen(node, .08, .08, .14, .15, .08, .22));
-            parts.Add(CatalogOpen(node, .16, .22, .24, .22));
+            parts.Add(CatalogDetail(CatalogOpen(node, .08, .08, .14, .15, .08, .22)));
+            parts.Add(CatalogDetail(CatalogOpen(node, .16, .22, .24, .22)));
         }
         return parts;
     }
+    private static ScenePart CatalogDetail(ScenePart part) =>
+        new(part.Path, part.Close, part.Fill, part.Ink, part.Attachment, part.AccentFill, false);
     private static IReadOnlyList<ScenePart> PersonParts(TopologyNode node) {
         var torso = CatalogRounded(CatalogCell(node, 0, PersonBodyTop(node), 1, 1), Math.Min(node.Width * .16, node.Height * .22));
         var radius = PersonHeadRadius(node);
@@ -42,7 +44,7 @@ internal static partial class TopologyNodeShapeGeometry {
             ChartPathCommand.MoveTo(x, y + rim),
             ChartPathCommand.CubicTo(x, y + rim * 2.3, x + w, y + rim * 2.3, x + w, y + rim)
         }), false, false, true, false);
-        return new[] { body, lip };
+        return new[] { body, CatalogDetail(lip) };
     }
     private static IReadOnlyList<ScenePart> HalfRoundedParts(TopologyNode node) {
         var x = node.X; var y = node.Y; var w = node.Width; var h = node.Height; var r = Math.Min(w * .35, h / 2);
@@ -79,12 +81,12 @@ internal static partial class TopologyNodeShapeGeometry {
         var step = (right - left) / segments;
         for (var index = 0; index < segments; index++) {
             var x = left + index * step;
-            parts.Add(new ScenePart(new ChartPath(new[] { ChartPathCommand.MoveTo(x, y), ChartPathCommand.LineTo(Math.Min(right, x + step / 2), y) }), false, false, true, false));
+            parts.Add(new ScenePart(new ChartPath(new[] { ChartPathCommand.MoveTo(x, y), ChartPathCommand.LineTo(Math.Min(right, x + step / 2), y) }), false, false, true, false, false, false));
         }
         var radius = Math.Min(2.5, Math.Min(node.Width, node.Height) * .04);
         for (var index = -1; index <= 1; index++)
-            parts.Add(CatalogEllipse(node, .5 + index * Math.Min(10, node.Width * .1) / node.Width, .82,
-                radius / node.Width, radius / node.Height, true, false));
+            parts.Add(CatalogDetail(CatalogEllipse(node, .5 + index * Math.Min(10, node.Width * .1) / node.Width, .82,
+                radius / node.Width, radius / node.Height, true, false)));
         return parts;
     }
 }

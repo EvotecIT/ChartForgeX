@@ -47,7 +47,7 @@ internal sealed partial class VisualValueCapture {
         var first = from.Scene.ValueCapture; var last = to.Scene.ValueCapture;
         if ((first == null && from.NativeTextCapture?.SupportsCapturedReplay == false) || (last == null && to.NativeTextCapture?.SupportsCapturedReplay == false))
             throw new NotSupportedException("Native complete value text capture requires covered glyphs and finite, stable captured font/fallback decisions; ordinary rendering remains available.");
-        if (first == null || last == null || (first._last <= first._first && first.Plan is not IVisualRawValuePlan { CapturesRawSource: true }) || (last._last <= last._first && last.Plan is not IVisualRawValuePlan { CapturesRawSource: true }) || !first.Plan.SamePolicy(last.Plan))
+        if (first == null || last == null || (first._last <= first._first && first.Plan is not IVisualSourceValuePlan { CapturesRawSource: true }) || (last._last <= last._first && last.Plan is not IVisualSourceValuePlan { CapturesRawSource: true }) || !first.Plan.SamePolicy(last.Plan))
             throw new NotSupportedException("Native value transitions require matching captured typed rows, authored identities, domains, built-in format and native faces.");
         if (from.CapturedRootEffectIdentity != to.CapturedRootEffectIdentity)
             throw new NotSupportedException("Native value endpoints require the same raw ordered captured appearance policy.");
@@ -58,6 +58,8 @@ internal sealed partial class VisualValueCapture {
                 throw new NotSupportedException("Native value transition readings must be within their captured row domains.");
             if (before[index] != after[index]) changed++;
         }
+        if (oneReading && first.Plan is IVisualComponentValuePlan)
+            throw new NotSupportedException("Typed component values require PrepareNativeTransitionJson and their captured series/observation/component source facts.");
         if (oneReading && first.Plan is IVisualRawValuePlan { CapturesRawSource: true })
             throw new NotSupportedException("Opt-in raw source values require PrepareNativeTransitionJson and its complete native source facts.");
         if (oneReading && changed != 1) throw new NotSupportedException("A native value transition changes exactly one identified row value.");

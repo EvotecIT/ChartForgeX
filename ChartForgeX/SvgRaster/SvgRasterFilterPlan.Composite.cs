@@ -8,7 +8,7 @@ namespace ChartForgeX.SvgRaster;
 internal sealed partial class SvgRasterFilterPlan {
     private SvgRasterFilterPlan(RasterEffectRegion filter, ChartColor flood, VisualCompositeOperator operation) {
         FilterRegion = CaptureRegion = filter;
-        Effect = RasterEffectPlan.FloodComposite(new RasterEffectRegion(0, 0, filter.Width, filter.Height), flood, operation);
+        _effect = RasterEffectPlan.FloodComposite(new RasterEffectRegion(0, 0, filter.Width, filter.Height), flood, operation);
         IsZero = false;
     }
 
@@ -23,15 +23,7 @@ internal sealed partial class SvgRasterFilterPlan {
             composite.Get("result") != null || composite.Get("no-composite") != null ||
             composite.Get("k1") != null || composite.Get("k2") != null || composite.Get("k3") != null || composite.Get("k4") != null)
             return false;
-        VisualCompositeOperator operation;
-        switch (composite.Get("operator") ?? "over") {
-            case "over": operation = VisualCompositeOperator.SourceOver; break;
-            case "in": operation = VisualCompositeOperator.SourceIn; break;
-            case "out": operation = VisualCompositeOperator.SourceOut; break;
-            case "atop": operation = VisualCompositeOperator.SourceAtop; break;
-            case "xor": operation = VisualCompositeOperator.Xor; break;
-            default: return false;
-        }
+        if (!TryCompositeOperator(composite.Get("operator") ?? "over", out var operation)) return false;
         try {
             if (!TryFloodInputs(filter, matrix, definitions, out var region, out var color)) return false;
             plan = new SvgRasterFilterPlan(region, color, operation);
@@ -42,4 +34,17 @@ internal sealed partial class SvgRasterFilterPlan {
             return false;
         }
     }
+    private static bool TryCompositeOperator(string value, out VisualCompositeOperator operation) {
+        operation = default;
+        switch (value) {
+            case "over": operation = VisualCompositeOperator.SourceOver; break;
+            case "in": operation = VisualCompositeOperator.SourceIn; break;
+            case "out": operation = VisualCompositeOperator.SourceOut; break;
+            case "atop": operation = VisualCompositeOperator.SourceAtop; break;
+            case "xor": operation = VisualCompositeOperator.Xor; break;
+            default: return false;
+        }
+        return true;
+    }
+
 }

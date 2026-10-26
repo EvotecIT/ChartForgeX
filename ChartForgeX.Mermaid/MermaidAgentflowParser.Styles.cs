@@ -39,23 +39,26 @@ internal static partial class MermaidAgentflowParser {
                     "Agentflow named-edge style is retained without application; use class or linkStyle for edge paints.",MermaidDiagnosticCodes.UnsupportedStatement);
                 continue;
             }
-            if(flow!=null){Read(flow.Styles,body,false);continue;}
+            if(flow!=null){Read(flow.Styles,body,false,flow);continue;}
             if(node==null) {
                 node=new MermaidAgentflowNode(id,span);nodes.Add(id,node);document.Nodes.Add(node);MermaidResourceGuard.ReserveElements(1,span);
             }
-            Read(node.Styles,body,false);
+            Read(node.Styles,body,false,node);
         }
         return true;
-        void Read(Dictionary<string,string> styles,string declarations,bool edge)=>MermaidStyleParser.Read(styles,declarations,span,result,"Agentflow",edge,
-            nativeProperty:edge?MermaidNativeStyles.SupportsEdge:MermaidNativeStyles.SupportsSurface);
+        void Read(Dictionary<string,string> styles,string declarations,bool edge,MermaidAstNode? target=null)=>MermaidStyleParser.Read(styles,declarations,span,result,"Agentflow",edge,
+            nativeProperty:(property,value)=> {
+                if (!edge && property == "opacity" && target != null) target.SurfaceOpacitySpan = span;
+                return edge ? MermaidNativeStyles.SupportsEdge(property,value) : MermaidTopologySurfaceElements.DeferredSurface(property,value);
+            });
         void Add(List<string> target,List<string> classes){MermaidResourceGuard.ReserveElements(classes.Count,span);target.AddRange(classes);}
         void Error(string message)=>MermaidParserUtilities.Add(result,span,MermaidDiagnosticSeverity.Error,message,MermaidDiagnosticCodes.InvalidStatement);
     }
 
     private static void ApplyStyles(MermaidAgentflowDocument document,List<MermaidFlowchartLinkStyle> links,MermaidParseResult<MermaidDocument> result) {
         var definitions=MermaidStyleParser.Definitions(document.ClassDefinitions);
-        foreach(var node in document.Nodes)Apply(node.Classes,node.Styles,node.Span,true);
-        foreach(var flow in document.Flows)Apply(flow.Classes,flow.Styles,flow.Span,false);
+        foreach(var node in document.Nodes)Apply(node,node.Classes,node.Styles,true,MermaidTopologySurfaceElements.Supports(document,node));
+        foreach(var flow in document.Flows)Apply(flow,flow.Classes,flow.Styles,false,false);
         foreach(var edge in document.Edges) {
             var resolved=MermaidStyleParser.Resolve(definitions,edge.Classes,edge.Styles,edge.Span,includeDefault:false);
             edge.Styles.Clear();MermaidStyleParser.Copy(edge.Styles,resolved);
@@ -69,12 +72,9 @@ internal static partial class MermaidAgentflowParser {
             var edge=document.Edges[index];if(defaults!=null)MermaidStyleParser.Copy(edge.Styles,defaults.Styles,edge.Span);
             if(selected.TryGetValue(index,out var link))MermaidStyleParser.Copy(edge.Styles,link.Styles,edge.Span);
         }
-        void Apply(List<string> classes,Dictionary<string,string> styles,MermaidSourceSpan span,bool defaultsForNode) {
-            var authored=new HashSet<string>(styles.Keys,StringComparer.Ordinal);
-            var resolved=MermaidStyleParser.Resolve(definitions,classes,styles,span,defaultsForNode);styles.Clear();MermaidStyleParser.Copy(styles,resolved);
-            foreach(var item in styles)if(!authored.Contains(item.Key)&&MermaidNativeStyles.UnsupportedSurface(item.Key))
-                MermaidParserUtilities.Add(result,span,MermaidDiagnosticSeverity.Warning,
-                    "Agentflow node/group style '"+item.Key+"' is retained without native application.",MermaidDiagnosticCodes.UnsupportedStatement);
+        void Apply(MermaidAstNode target,List<string> classes,Dictionary<string,string> styles,bool defaultsForNode,bool supported) {
+            var resolved=MermaidStyleParser.Resolve(definitions,classes,styles,target.Span,defaultsForNode);styles.Clear();MermaidStyleParser.Copy(styles,resolved);
+            MermaidTopologySurfaceElements.Diagnose(target,styles,supported,"Agentflow",result);
         }
     }
 }

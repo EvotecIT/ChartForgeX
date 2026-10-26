@@ -9,12 +9,14 @@ internal sealed partial class VisualValueCapture {
     /// <summary>Facts come from actual source readings and native derived groups; derived rows never acquire invented observation IDs.</summary>
     private sealed class FlashSelection {
         internal bool CartesianPointInk { get; }
+        internal bool RangeEnvelopeInk { get; }
         internal readonly HashSet<(string Series, string Id)> Readings = new();
         internal readonly HashSet<(string Series, string Id)> Nodes = new();
         internal readonly HashSet<string> Series = new(StringComparer.Ordinal);
         internal readonly HashSet<string> OtherSeries = new(StringComparer.Ordinal);
         internal FlashSelection(IVisualValuePlan first, IVisualValuePlan last, PreparedVisual from, PreparedVisual to) {
-            CartesianPointInk = first.Kind == "cartesian-value";
+            CartesianPointInk = first.Kind is "cartesian-value" or "cartesian-component-value";
+            RangeEnvelopeInk = first is IVisualComponentValuePlan { SourceFamily: "range-components" };
             var indices = new Dictionary<string, HashSet<int>>(StringComparer.Ordinal); var ordinals = new Dictionary<string, int>(StringComparer.Ordinal);
             for (var index = 0; index < first.Readings.Count; index++) {
                 var row = first.Readings[index]; var key = row.SeriesKey ?? first.SeriesKey; ordinals.TryGetValue(key, out var ordinal); ordinals[key] = ordinal + 1;

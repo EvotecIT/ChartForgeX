@@ -4,12 +4,13 @@ using System.Collections.Generic;
 namespace ChartForgeX.Raster;
 
 /// <summary>One operation batch's conservative preflight, completed before allocating any effect buffers.</summary>
-internal sealed class RasterEffectPreflight {
+internal sealed partial class RasterEffectPreflight {
     internal const long MaximumWorkSamples = 1_000_000_000;
     internal const long MaximumLiveBytes = 256L * 1024 * 1024;
     private readonly RasterEffectPlan[] _plans;
     private readonly RgbaImage[] _sources;
     private readonly bool[] _taken;
+    private readonly bool _sourceFree;
     internal long WorkSamples { get; }
     internal long ConservativeLiveBytes { get; }
 
@@ -20,7 +21,10 @@ internal sealed class RasterEffectPreflight {
         _plans = (RasterEffectPlan[])plans.Clone(); _sources = (RgbaImage[])sources.Clone(); _taken = new bool[plans.Length];
         var borrowed = new HashSet<byte[]>(); long work = additionalWorkSamples, bytes = additionalPixelBytes;
         for (int index = 0; index < plans.Length; index++) {
-            var plan = _plans[index] ?? throw new ArgumentNullException(nameof(plans)); var source = _sources[index];
+            var plan = _plans[index] ?? throw new ArgumentNullException(nameof(plans));
+            if (plan.TurbulenceData != null)
+                throw new ArgumentException("A procedural plan has no SourceGraphic; use the common source-free admission.", nameof(plans));
+            var source = _sources[index];
             if (source.Pixels == null || source.Width <= 0 || source.Height <= 0 || source.Pixels.LongLength < checked((long)source.Width * source.Height * 4))
                 throw new ArgumentException("Effect sources require validated RGBA8 images.", nameof(sources));
             // The entire borrowed allocation counts, not just a clipped region. Duplicate source arrays count once.
@@ -35,6 +39,24 @@ internal sealed class RasterEffectPreflight {
         }
         WorkSamples = work; ConservativeLiveBytes = bytes;
     }
+
+    private RasterEffectPreflight(RasterEffectPlan procedural, long maximumWorkSamples, long maximumLiveBytes,
+        long additionalPixelBytes, long additionalWorkSamples) {
+        if (procedural == null) throw new ArgumentNullException(nameof(procedural));
+        if (procedural.TurbulenceData == null)
+            throw new ArgumentException("Only a represented procedural operation has no SourceGraphic.", nameof(procedural));
+        ValidateCapture(procedural, 0, additionalPixelBytes, additionalWorkSamples, out var work, out var bytes,
+            maximumWorkSamples, maximumLiveBytes);
+        WorkSamples = work; ConservativeLiveBytes = bytes;
+        _plans = new[] { procedural }; _sources = Array.Empty<RgbaImage>(); _taken = new bool[1];
+        _sourceFree = true;
+    }
+
+    /// <summary>Admits the one native procedural source without creating a dummy source image.</summary>
+    internal static RasterEffectPreflight PrepareSourceFree(RasterEffectPlan plan,
+        long maximumWorkSamples = MaximumWorkSamples, long maximumLiveBytes = MaximumLiveBytes,
+        long additionalPixelBytes = 0, long additionalWorkSamples = 0) =>
+        new(plan, maximumWorkSamples, maximumLiveBytes, additionalPixelBytes, additionalWorkSamples);
 
     /// <summary>Checks one planned source capture before its canvas, downsample, effect or private snapshot buffers allocate.</summary>
     /// <remarks>The existing renderer's font/geometry work and encoder allocations remain governed by their own owners;
@@ -69,10 +91,20 @@ internal sealed class RasterEffectPreflight {
         new(plans, sources, maximumWorkSamples, maximumLiveBytes, additionalPixelBytes, additionalWorkSamples);
 
     internal RasterEffectPlan Take(int index, out RgbaImage source) {
+        if (_surfaceMode || _sourceFree) throw new InvalidOperationException("A procedural operation has no SourceGraphic input.");
+        var plan = Claim(index); source = _sources[index]; return plan;
+    }
+
+    internal RasterEffectPlan TakeSourceFree(int index) {
+        if (_surfaceMode || !_sourceFree) throw new InvalidOperationException("A source-bearing operation must retain its actual SourceGraphic.");
+        return Claim(index);
+    }
+
+    private RasterEffectPlan Claim(int index) {
         lock (_taken) {
             if (index < 0 || index >= _plans.Length) throw new ArgumentOutOfRangeException(nameof(index));
             if (_taken[index]) throw new InvalidOperationException("A preflighted effect operation executes at most once.");
-            _taken[index] = true; source = _sources[index]; return _plans[index];
+            _taken[index] = true; return _plans[index];
         }
     }
 }

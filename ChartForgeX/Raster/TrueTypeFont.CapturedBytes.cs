@@ -5,6 +5,9 @@ namespace ChartForgeX.Raster;
 internal sealed partial class TrueTypeFont {
     // Source ownership remains in the existing file/memory reader. No path is reopened to snapshot portable data.
     internal int CapturedByteLength => _root._data.Length;
+    // Browser delivery never guesses a selected member of an sfnt collection.
+    internal bool IsSingleCapturedFace => _root._data.Length >= 4
+        && !(_root._data[0] == (byte)'t' && _root._data[1] == (byte)'t' && _root._data[2] == (byte)'c' && _root._data[3] == (byte)'f');
     internal TrueTypeFont? SelectCapturedFace(int? collectionIndex, string? faceName) => TryLoad(_root._data, collectionIndex, faceName);
     internal byte[] CopyCapturedBytes(int maximumBytes) {
         if (maximumBytes < 0) throw new ArgumentOutOfRangeException(nameof(maximumBytes));

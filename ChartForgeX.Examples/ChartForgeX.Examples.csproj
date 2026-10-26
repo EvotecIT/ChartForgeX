@@ -59,6 +59,12 @@
     <EmbeddedResource Include="Snippets\RecipeNativeJointStackValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeJointStackValueProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeNativeOwnedValueFlashProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeOwnedValueFlashProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeNativeRawValueProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRawValueProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeBubbleComponentProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeBubbleComponentProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeRangeComponentProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRangeComponentProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeErrorComponentProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeErrorComponentProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeFinancialComponentProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeFinancialComponentProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeComponentTimeProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeComponentTimeProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeComponentClipProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeComponentClipProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeNativeRadialMotionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRadialMotionProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeNativeRadialBandsProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeRadialBandsProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeNativeHierarchyMotionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeHierarchyMotionProgram.cs" WithCulture="false" />
@@ -120,5 +126,9 @@
     <EmbeddedResource Include="Snippets\RecipeNativeGlassCompositionProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeGlassCompositionProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="NativeVectorGlassExample.cs" LogicalName="ChartForgeX.Examples.NativeVectorGlassExample.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeNativeVectorGlassProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeVectorGlassProgram.cs" WithCulture="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="NativeTurbulenceExample.cs" LogicalName="ChartForgeX.Examples.NativeTurbulenceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeNativeTurbulenceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeTurbulenceProgram.cs" WithCulture="false" />
   </ItemGroup>
 </Project>

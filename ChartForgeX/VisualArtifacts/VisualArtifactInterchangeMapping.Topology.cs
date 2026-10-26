@@ -112,6 +112,7 @@ public static partial class VisualArtifactInterchangeMapping {
             ShowLabel = native.ShowLabel, MaximumLabelCharacters = native.MaximumLabelCharacters,
             Artwork = RestoreTopologyArtwork(native.Artwork)
         };
+        node.SurfaceElementAppearance = native.SurfaceElementAppearance;
         node.DashPattern.AddRange(native.DashPattern);
         RestoreTopologyMetadata(source.Extensions, node.Metadata);
         foreach (var metric in source.Metrics) node.Metrics.Add(metric.Name, metric.Value);

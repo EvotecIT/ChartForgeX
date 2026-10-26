@@ -25,6 +25,16 @@ public sealed class MapLabelClusterDepthBrowserTests {
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => { window.mapDepth = ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')); }");
         var cluster = page.Locator("[data-cfx-role='dotted-map-cluster-source']"); Assert.Equal(1, await cluster.CountAsync());
+        if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } traceOutput) {
+            Directory.CreateDirectory(traceOutput);
+            await File.WriteAllTextAsync(Path.Combine(traceOutput, "map-native-targets-before-role-" + width + "-" + mode + ".json"),
+                await page.EvaluateAsync<string>("""
+                    ()=>JSON.stringify({features:mapDepth.root.dataset.cfxInteractionFeatures,
+                        sources:[...mapDepth.root.querySelectorAll('[data-cfx-role="dotted-map-cluster-source"],[data-cfx-role="dotted-map-point-source"]')]
+                            .map(node=>({role:node.getAttribute('role'),name:node.getAttribute('aria-label'),tabindex:node.getAttribute('tabindex'),
+                                dataset:{...node.dataset},outerHTML:node.outerHTML})),targets:mapDepth.resolveTargets()})
+                    """));
+        }
         Assert.Equal("button", await cluster.GetAttributeAsync("role"));
         Assert.Equal(5, await page.Locator("[data-cfx-role='dotted-map-point-source']").CountAsync());
         Assert.Equal(3, await page.Locator("[data-cfx-role='dotted-map-point-source'][data-cfx-clustered='true']").CountAsync());

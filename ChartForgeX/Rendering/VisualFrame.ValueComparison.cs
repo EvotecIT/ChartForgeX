@@ -21,6 +21,6 @@ public sealed partial class VisualFrame {
         && SameStyle(_titleStyle, other._titleStyle) && SameStyle(_subtitleStyle, other._subtitleStyle) && SameStyle(_legendStyle, other._legendStyle);
     private static bool SameStyle(TextStyle? a, TextStyle? b) => ReferenceEquals(a, b) || a != null && b != null
         && a.Font.SameRequest(b.Font) && a.FontSize == b.FontSize && a.Color.Equals(b.Color) && a.Alignment == b.Alignment
-        && a.LineHeight == b.LineHeight && a.UnderlineStyle == b.UnderlineStyle && a.StrikethroughStyle == b.StrikethroughStyle
+        && a.LineHeight == b.LineHeight && a.LetterSpacing == b.LetterSpacing && a.UnderlineStyle == b.UnderlineStyle && a.StrikethroughStyle == b.StrikethroughStyle
         && a.Baseline == b.Baseline && a.TextCase == b.TextCase && a.Hinting == b.Hinting && a.OpenTypeLanguageTag == b.OpenTypeLanguageTag;
 }

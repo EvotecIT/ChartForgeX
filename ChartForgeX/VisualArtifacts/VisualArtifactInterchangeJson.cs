@@ -60,6 +60,7 @@ internal static partial class VisualArtifactInterchangeJson {
         .LimitArray("dashPattern", VisualArtifactInterchangeValidation.MaximumDashPatternValues)
         .LimitArray("waypoints", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
         .LimitArray("resolvedRoute", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
+        .LimitObject("surfaceElements", 4)
         .LimitObject("extensions", VisualArtifactInterchangeValidation.MaximumExtensionEntries)
         .LimitDepth(MaximumJsonDepth)
         .RejectDuplicates();

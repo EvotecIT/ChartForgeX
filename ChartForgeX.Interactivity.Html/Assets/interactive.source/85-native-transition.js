@@ -26,21 +26,21 @@
     const suffix = id => {
       if (!id.startsWith(prefix + '-')) throw new TypeError('Native transition: generated ID prefix mismatch.');
       const value = id.slice(prefix.length + 1);
-      if (!/^(?:title|description|(?:node|clip|gradient|pattern-tile|png-glyph|surface-shadow|retained-mask|retained-outline|retained-bloom|retained-shadow|retained-inner-shadow)-(?:0|[1-9]\d*))$/.test(value))
+      if (!/^(?:title|description|(?:node|clip|gradient|pattern-tile|png-glyph|surface-shadow|retained-mask|retained-outline|retained-bloom|retained-shadow|retained-inner-shadow|procedural-turbulence)-(?:0|[1-9]\d*))$/.test(value))
         throw new TypeError('Native transition: unknown generated resource identity.');
       return value;
     };
     const kind = value => value === 'title' ? 'title' : value === 'description' ? 'desc'
       : value.startsWith('clip-') ? 'clipPath' : value.startsWith('gradient-') ? 'linearGradient'
       : value.startsWith('pattern-tile-') ? 'pattern' : value.startsWith('png-glyph-') ? 'path'
-      : value.startsWith('surface-shadow-') || value.startsWith('retained-outline-') || value.startsWith('retained-bloom-') || value.startsWith('retained-shadow-') || value.startsWith('retained-inner-shadow-')
+      : value.startsWith('surface-shadow-') || value.startsWith('retained-outline-') || value.startsWith('retained-bloom-') || value.startsWith('retained-shadow-') || value.startsWith('retained-inner-shadow-') || value.startsWith('procedural-turbulence-')
         ? 'filter' : value.startsWith('retained-mask-') ? 'mask' : null;
     for (const node of [svg, ...svg.querySelectorAll('*')]) if (node.hasAttribute('id')) {
       const id = node.getAttribute('id'), value = suffix(id), expected = kind(value);
       if (ids.has(id) || expected && node.localName !== expected)
         throw new TypeError('Native transition: duplicate or wrong-kind generated identity.');
       let normalized = value;
-      const indexed = /^(node|clip|gradient|surface-shadow|retained-mask|retained-outline|retained-bloom|retained-shadow|retained-inner-shadow)-(0|[1-9]\d*)$/.exec(value);
+      const indexed = /^(node|clip|gradient|surface-shadow|retained-mask|retained-outline|retained-bloom|retained-shadow|retained-inner-shadow|procedural-turbulence)-(0|[1-9]\d*)$/.exec(value);
       if (nodeIndexOffset && indexed) {
         const number = Number(indexed[2]);
         if (!Number.isSafeInteger(number) || number < 1 || indexed[1] === 'node' && !node.getAttribute('data-cfx-source-id'))
@@ -62,7 +62,7 @@
         throw new TypeError('Native transition: invalid native opacity.');
       if (node.hasAttribute('id')) node.setAttribute('id', 'cfx-native-export-check-' + ids.get(node.getAttribute('id')).suffix);
       for (const [attribute, allowed] of [['clip-path', ['clip']], ['fill', ['gradient', 'pattern-tile']], ['stroke', ['gradient', 'pattern-tile']],
-          ['filter', ['surface-shadow', 'retained-outline', 'retained-bloom', 'retained-shadow', 'retained-inner-shadow']], ['mask', ['retained-mask']]]) {
+          ['filter', ['surface-shadow', 'retained-outline', 'retained-bloom', 'retained-shadow', 'retained-inner-shadow', 'procedural-turbulence']], ['mask', ['retained-mask']]]) {
         const value = node.getAttribute(attribute); if (!value?.includes('url(')) continue;
         const match = /^url\(#([^()\s]+)\)$/.exec(value);
         if (!match) throw new TypeError('Native transition: native resource reference shape changed.');
@@ -134,7 +134,7 @@
     const fade = payload.effect === 'initial-fade', legend = joint || sourceReflow || payload.effect === 'legend-visibility', flash = payload.effect === 'value-flash';
     const reflow = !joint && (sourceReflow && payload.sourceKind === 'native-source-reflow' || !sourceReflow && legend && payload.sourceKind === 'native-visibility-reflow');
     const kinds = { 'progress-value': 'progress-row', 'layered-radial-value': 'layered-radial-point', 'circle-value': 'circle-chart',
-      'progress-ring-value': 'progress-ring-point', 'gauge-value': 'gauge', 'bullet-value': 'bullet-row', 'cartesian-value': 'point', 'radial-value': 'radial-point', 'radial-raw-value': 'radial-point', 'hierarchy-value': 'hierarchy-node' };
+      'progress-ring-value': 'progress-ring-point', 'gauge-value': 'gauge', 'bullet-value': 'bullet-row', 'cartesian-value': 'point', 'cartesian-component-value': 'point', 'radial-value': 'radial-point', 'radial-raw-value': 'radial-point', 'hierarchy-value': 'hierarchy-node' };
     const role = kinds[payload.sourceKind], readings = payload.readings;
     if (fade ? payload.sourceKind !== 'native-visual-opacity' || !Array.isArray(readings) || readings.length !== 0 : joint ? payload.sourceKind !== 'cartesian-value' || !payload.visibility || !Array.isArray(readings) || !readings.length : legend ? sourceReflow && (!Array.isArray(readings) || !readings.length) || !['line-bar-visibility', 'native-visibility-reflow', ...(sourceReflow ? ['native-source-reflow'] : [])].includes(payload.sourceKind) || !payload.visibility : !role || !Array.isArray(readings) || !readings.length)
       throw new TypeError('Native transition: unsupported source capture.');
@@ -144,8 +144,10 @@
       const ids = new Set();
       for (const row of readings) {
         const hierarchyValue = payload.sourceKind === 'hierarchy-value';
-        const identity = row && JSON.stringify([row.seriesKey, hierarchyValue ? row.nodeId : row.observationId]);
+        const componentValue = payload.sourceKind === 'cartesian-component-value';
+        const identity = row && JSON.stringify([row.seriesKey, hierarchyValue ? row.nodeId : row.observationId, ...(componentValue ? [row.component] : [])]);
         if (!row || typeof row.seriesKey !== 'string' || !row.seriesKey || (hierarchyValue ? typeof row.nodeId !== 'string' || !row.nodeId || row.observationId !== undefined : typeof row.observationId !== 'string' || !row.observationId || row.nodeId !== undefined)
+            || (componentValue ? !['y', 'size', 'lower', 'upper', 'value', 'x-lower', 'x-upper', 'y-lower', 'y-upper', 'open', 'high', 'low', 'close'].includes(row.component) : row.component !== undefined)
             || ids.has(identity) || ![row.fromValue, row.toValue, row.minimum, row.maximum].every(Number.isFinite) || row.maximum <= row.minimum)
           throw new TypeError('Native transition: ordered authored reading facts required.');
         ids.add(identity);
@@ -164,7 +166,8 @@
         || request.sourceVisibility.labelLayering !== payload.visibility.labelLayering
         || reflow && request.sourceVisibility.hierarchyRootId !== payload.visibility.toHierarchyRootId))
       throw new TypeError('Native transition: requested native visibility changed.');
-    const raw = payload.sourceKind === 'radial-raw-value';
+    const components = payload.sourceKind === 'cartesian-component-value';
+    const raw = components || payload.sourceKind === 'radial-raw-value';
     const rowFor = (svg, fact) => [...svg.querySelectorAll(payload.sourceKind === 'hierarchy-value' ? '[data-cfx-role="hierarchy-series"] [data-cfx-node]' : '[data-cfx-role="' + role + '"]')]
       .find(node => node.dataset.cfxSeriesKey === fact.seriesKey && (payload.sourceKind === 'hierarchy-value' ? node.dataset.cfxNode === fact.nodeId : node.dataset.cfxObservationId === fact.observationId));
     const checkReadings = (svg, endpoint, acceptedValues = false, readingSection = null) => {
@@ -189,7 +192,7 @@
       const drawing = payload.drawings[name], before = snapshot[name], after = actual[name], target = declaredDrawings[name];
       if (!drawing || typeof drawing.capturePngText !== 'boolean' || !Array.isArray(drawing.frames)
           || drawing.frames.length < (flash || reflow ? 3 : 2) || drawing.frames.length > 16
-          || !adaptiveSectionCopy(target).isEqualNode(adaptiveSectionCopy(after)))
+          || !window[Symbol.for('ChartForgeX.nativeTextExport')].observation(adaptiveSectionCopy(target), true).isEqualNode(window[Symbol.for('ChartForgeX.nativeTextExport')].observation(adaptiveSectionCopy(after), false)))
         throw new TypeError('Native transition: exact retained destination and finite frames required.');
       const capturedOpacity = fade || reflow ? drawing.frames.map(frame => frame?.nativeOpacity) : null;
       if (reflow) validateReflowFrameFacts(drawing.frames);
@@ -228,8 +231,9 @@
       else if (!legend && !fade) {
         if (raw) {
           const a = initial ? drawing.frames[0]?.nativeValueSource : nativeRawSource(before), b = nativeRawSource(after);
-          if (!a || !b || a.structureKey !== b.structureKey) throw new TypeError('Native transition: matching captured raw structure required.');
+          if (!a || !b || a.structureKey !== b.structureKey || components && (!['bubble-components', 'range-components', 'error-components', 'financial-components'].includes(a.kind) || b.kind !== a.kind || a.mapping !== b.mapping || a.reversed !== b.reversed)) throw new TypeError('Native transition: matching captured raw structure required.');
           validateRawTransitionReadings(a, readings, 'fromValue'); validateRawTransitionReadings(after, readings, 'toValue');
+          if (components && !initial) validateNativeComponentCoordinateFacts(after, before);
         }
         else { checkReadings(sourceSvg, 'source', false, before); checkReadings(destinationSvg, 'destination', false, after); }
       }
@@ -254,11 +258,13 @@
         const candidate = frameBasis.cloneNode(true);
         candidate.querySelector('.cfx-stage svg').replaceWith(document.importNode(svg, true));
         if (raw) {
-          if (!frame.nativeValueSource || frame.nativeValueSource.structureKey !== JSON.parse(after.dataset.cfxPreparedChart).nativeValueSource?.structureKey)
+          if (!frame.nativeValueSource || frame.nativeValueSource.structureKey !== JSON.parse(after.dataset.cfxPreparedChart).nativeValueSource?.structureKey
+              || components && (frame.nativeValueSource.kind !== nativeRawSource(after).kind || frame.nativeValueSource.mapping !== nativeRawSource(after).mapping || frame.nativeValueSource.reversed !== nativeRawSource(after).reversed))
             throw new TypeError('Native transition: captured raw frame source/policy required.');
           const metadata = JSON.parse(candidate.dataset.cfxPreparedChart); metadata.nativeValueSource = frame.nativeValueSource;
           candidate.dataset.cfxPreparedChart = JSON.stringify(metadata);
           validateRawTransitionReadings(candidate, readings, index === 0 && !flash ? 'fromValue' : index === drawing.frames.length - 1 || flash ? 'toValue' : null);
+          if (components) validateNativeComponentCoordinateFacts(candidate, after);
         } else if (frame.nativeValueSource !== undefined && !reflow) throw new TypeError('Native transition: foreign raw frame facts.');
         readChartSection(candidate, true);
         if (index === 0 && !nativeExportEquals(svg, frame.prefix, flash ? destinationSvg : sourceSvg, flash ? drawing.destinationPrefix : sourcePrefix)

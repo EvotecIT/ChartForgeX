@@ -19,7 +19,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (plan.HasLabel) {
             var authored = node.CaptionTextStyle?.Color ?? node.TextStyle?.Color;
             var color = Highlight(authored ?? Color(node.LabelColor, _colors.Foreground), active);
-            var style = plan.Style.Clone(); style.Color = color; style.FontSize *= _scale;
+            var style = plan.Style.Clone(); style.Color = color; style.FontSize *= _scale; style.LetterSpacing *= _scale;
             var paint = authored.HasValue ? SourcePaint(authored.Value.ToHexRgba(), color, SvgColorRole.Any, HighlightFactor(active), _colors.Foreground)
                 : string.IsNullOrWhiteSpace(node.LabelColor) ? ForegroundPaint(color, HighlightFactor(active))
                 : SourcePaint(node.LabelColor, color, SvgColorRole.Any, HighlightFactor(active), _colors.Foreground);

@@ -186,7 +186,7 @@ internal sealed partial class VisualTopologyCompiler {
                 if (node.Shape.HasValue) {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) {
                         var shape = part.Path.Bounds();
-                        IncludeStroked(shape.Left, shape.Top, shape.Right, shape.Bottom, stroke);
+                        IncludeStroked(shape.Left, shape.Top, shape.Right, shape.Bottom, NodeSurfaceStrokeWidth(node, part.ContourPaint));
                     }
                 }
                 if (!UseEnclosedShapeContent(node, mode, _options) && !string.IsNullOrWhiteSpace(node.Badge)) {

@@ -37,11 +37,29 @@ internal sealed partial class VisualTopologyCompiler {
             }
         }
         else if (node.Shape.HasValue || node.CornerRadius.HasValue) {
-            foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) {
-                if (!part.Ink) continue;
-                var accentFill = part.AccentFill || node.Shape is TopologyNodeShape.SynchronizationBar or TopologyNodeShape.ActorSilhouette;
-                _builder.Path(Transform(part.Path), part.Fill ? accentFill ? accent : fill : null, contour.Color, strokeWidth, role: "topology-node-surface", close: part.Close,
-                    dash:surfaceDash,paint: accentFill ? new VisualScenePaintBinding(accentPaint, contour.Paint) : surfacePaint,opacity:node.SurfaceOpacity??1);
+            var parts = TopologyNodeShapeGeometry.SceneParts(node);
+            var elements = TopologySurfaceElementAppearance.Resolve(node, mode);
+            elements?.ValidateParts(parts);
+            using (elements?.GroupOpacity is double groupOpacity ? _builder.PushGroup(null, null, opacity: groupOpacity) : null) {
+                foreach (var part in parts) {
+                    if (!part.Ink) continue;
+                    var accentFill = part.AccentFill || node.Shape is TopologyNodeShape.SynchronizationBar or TopologyNodeShape.ActorSilhouette;
+                    var partStroke = part.ContourPaint ? contour.Color : accent;
+                    var partStrokePaint = part.ContourPaint ? contour.Paint : accentPaint;
+                    var partWidth = part.ContourPaint ? strokeWidth : NodeSurfaceStrokeWidth(node, false) * _scale;
+                    ChartColor? partFill = part.Fill || elements?.FillContours == true ? (accentFill ? accent : fill) : null;
+                    var partFillPaint = accentFill ? accentPaint : surfacePaint.Fill;
+                    var path = Transform(part.Path);
+                    var partOpacity = part.ContourPaint ? node.SurfaceOpacity ?? 1 : 1;
+                    if (elements?.SeparateFillStroke == true) {
+                        // The same native curve owns both paint partitions; no rough path geometry is retained or synthesized.
+                        _builder.Path(path, partFill, null, 0, role: "topology-node-surface", close: part.Close,
+                            paint: new VisualScenePaintBinding(partFillPaint), opacity: partOpacity);
+                        _builder.Path(path, null, partStroke, partWidth, role: "topology-node-surface", close: part.Close,
+                            dash: surfaceDash, paint: new VisualScenePaintBinding(stroke: partStrokePaint), opacity: partOpacity);
+                    } else _builder.Path(path, partFill, partStroke, partWidth, role: "topology-node-surface", close: part.Close,
+                        dash:part.ContourPaint ? surfaceDash : null,paint:new VisualScenePaintBinding(partFillPaint,partStrokePaint),opacity:partOpacity);
+                }
             }
         } else SurfaceRectangle(bounds,fill,contour.Color,strokeWidth,mode==TopologyNodeDisplayMode.Pill?bounds.Height/2:_context.Theme.BarRadius*_scale,"topology-node-surface",surfaceDash,surfacePaint,node.SurfaceOpacity??1);
     }

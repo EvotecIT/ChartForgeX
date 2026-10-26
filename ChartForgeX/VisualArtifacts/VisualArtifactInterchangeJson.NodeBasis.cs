@@ -17,6 +17,7 @@ internal static partial class VisualArtifactInterchangeJson {
         Number(writer, "originalWidth", basis.OriginalBody.Width); Number(writer, "originalHeight", basis.OriginalBody.Height);
         OptionalNumber(writer, "contentPadding", basis.ContentPadding); OptionalNumber(writer, "maximumTextWidth", basis.MaximumTextWidth);
         OptionalNumber(writer, "cornerRadius", basis.CornerRadius); OptionalNumber(writer, "glyphScale", basis.GlyphScale);
+        PreparedNodeProjection(writer, basis.Projection);
         writer.EndObject();
     }
     private static TopologyPreparedNodeBasis? ReadPreparedNodeBasis(Dictionary<string, GeoJsonValue> node) {
@@ -27,6 +28,6 @@ internal static partial class VisualArtifactInterchangeJson {
             RequiredNumber(basis, "glyphAnchorX"), RequiredNumber(basis, "glyphAnchorY"),
             new ChartRect(RequiredNumber(basis, "originalX"), RequiredNumber(basis, "originalY"), RequiredNumber(basis, "originalWidth"), RequiredNumber(basis, "originalHeight")),
             OptionalNumber(basis, "contentPadding"), OptionalNumber(basis, "maximumTextWidth"),
-            OptionalNumber(basis, "cornerRadius"), OptionalNumber(basis, "glyphScale"));
+            OptionalNumber(basis, "cornerRadius"), OptionalNumber(basis, "glyphScale"), ReadPreparedNodeProjection(basis));
     }
 }

@@ -16,6 +16,7 @@ internal static class ExampleTypography {
 
     internal static void WriteAssets(string output) {
         Register();
+        File.WriteAllText(Path.Combine(output, "cfx-native-text.js"), ChartForgeX.Interactivity.Html.HtmlInteractiveAssetFiles.NativeTextScript.Content);
         var destination = Path.Combine(output, "fonts");
         Directory.CreateDirectory(destination);
         foreach (var file in new[] { "Carlito-Regular.ttf", "Carlito-Bold.ttf", "OFL.txt" })

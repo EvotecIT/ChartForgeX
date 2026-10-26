@@ -85,6 +85,8 @@ public static class MermaidAgentflowRendering {
         }
         MermaidPresentation.Apply(chart,document,options.Presentation);
         document.Configuration.Graph?.Apply(chart,options.Presentation);
+        MermaidTopologySourcePaints.Apply(chart,document,options.Presentation);
+        MermaidTopologySurfaceElements.Apply(chart,document);
         return chart;
     }
     /// <summary>Creates an SVG/PNG/HTML/JSON artifact backed by one native workflow.</summary>

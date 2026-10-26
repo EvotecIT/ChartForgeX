@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Composition;
 
@@ -566,6 +567,9 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
     public double FontSize { get => _fontSize; set { ValidatePositive(value, nameof(value)); _fontSize = value; Height = Math.Max(Height, value * 1.25); } }
     /// <summary>Gets or sets the title alignment.</summary>
     public TextAlignment Alignment { get; set; } = TextAlignment.Center;
+
+    /// <summary>Gets or sets optional shared typography for this headline. Run colors remain unless the style supplies a color.</summary>
+    public TextStyleOverride? TextStyle { get; set; }
 
     internal double FittedFontSize(VisualCanvasTextFace face) {
         var texts = new string[_runs.Count];

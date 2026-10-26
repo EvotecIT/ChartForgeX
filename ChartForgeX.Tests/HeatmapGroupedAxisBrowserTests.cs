@@ -37,7 +37,7 @@ public sealed class HeatmapGroupedAxisBrowserTests {
             """));
         await MoveToAsync(page, First);
         Assert.Contains("North / Core / West", await TooltipTextAsync(page)); Assert.Contains("Morning / Work / A", await TooltipTextAsync(page));
-        await MoveAwayAsync(page); await page.Locator(First).FocusAsync();
+        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(First));
         Assert.Contains(categorical ? "Pass" : "0", await TooltipTextAsync(page));
         await page.Keyboard.PressAsync("Space");
         var selected = Assert.Single((await page.EvaluateAsync<JsonElement>("()=>matrixController.getSelection()")).EnumerateArray());
@@ -50,7 +50,7 @@ public sealed class HeatmapGroupedAxisBrowserTests {
         await page.EvaluateAsync("fragment=>matrixController.update(fragment)", replacement.ToInteractiveHtmlFragmentWithoutAssets(Configure));
         var retained = Assert.Single((await page.EvaluateAsync<JsonElement>("()=>matrixController.getSelection()")).EnumerateArray());
         Assert.Equal("west", retained.GetProperty("seriesKey").GetString()); Assert.Equal("west-a", retained.GetProperty("observationId").GetString());
-        await MoveAwayAsync(page); await page.Locator(First).FocusAsync(); Assert.Contains("Changed North / Core / West", await TooltipTextAsync(page));
+        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(First)); Assert.Contains("Changed North / Core / West", await TooltipTextAsync(page));
         Assert.Equal(0, await page.Locator("[data-cfx-role=heatmap-cell][data-cfx-series-key=west][data-cfx-column='1']").CountAsync());
         await AssertParents(page); Assert.True(await page.EvaluateAsync<bool>("()=>document.documentElement.scrollWidth<=innerWidth+1"));
         AssertNoConsoleErrors(session); await Capture(session, "replaced-reversed", replacement, categorical, dark, width);

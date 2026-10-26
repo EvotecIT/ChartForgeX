@@ -30,6 +30,7 @@ public static partial class VisualArtifactInterchangeMapping {
             GlyphScale=node.GlyphScale,CornerRadius=node.CornerRadius,CaptionTextStyle=node.CaptionTextStyle?.Clone(),
             BorderColor=node.BorderColor,StrokeWidth=node.StrokeWidth,Opacity=node.Opacity,SurfaceOpacity=node.SurfaceOpacity,
             PreparedNodeBasis = TopologyPreparedNodeBasis.Resolve(node),
+            SurfaceElementAppearance = TopologySurfaceElementAppearance.Resolve(node),
             Kind = node.Kind,
             TableContent = MapTableContent(node.TableContent),
             TextStyle = node.TextStyle?.Clone(),

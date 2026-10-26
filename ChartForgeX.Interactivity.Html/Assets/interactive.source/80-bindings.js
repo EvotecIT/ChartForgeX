@@ -292,7 +292,7 @@
         delete root._cfxCancelBrushDrag;
         delete root._cfxCancelPointerHover;
       });
-      listenChart(root, root, 'keydown', event => {
+      listenChart(root, capturedPolarProjection(root) ? root.ownerDocument : root, 'keydown', event => {
         if (event.key !== 'Escape' || drag?.mode !== 'polar-pan') return;
         cancelPointerMove();
         if (stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);

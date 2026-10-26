@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Topology;
 
@@ -8,14 +9,14 @@ public sealed partial class TopologyNode {
 }
 
 /// <summary>One immutable captured unit basis for qualified native figures, external glyphs and captions.</summary>
-internal sealed class TopologyPreparedNodeBasis {
+internal sealed partial class TopologyPreparedNodeBasis {
     internal TopologyPreparedNodeBasis(double factor, double width, double height, TopologyNodeShape? shape,
         TopologyNodeDisplayMode displayMode, TopologyNodeKind kind, TopologyIconShape? iconShape, string? iconId, string? symbol,
-        double glyphAnchorX, double glyphAnchorY, ChartRect originalBody, double? contentPadding = null, double? maximumTextWidth = null, double? cornerRadius = null, double? glyphScale = null) {
+        double glyphAnchorX, double glyphAnchorY, ChartRect originalBody, double? contentPadding = null, double? maximumTextWidth = null, double? cornerRadius = null, double? glyphScale = null, TopologyPreparedNodeProjection? projection = null) {
         Factor = factor; Width = width; Height = height; Shape = shape; DisplayMode = displayMode; Kind = kind;
         IconShape = iconShape; IconId = iconId; Symbol = symbol; GlyphAnchor = new ChartPoint(glyphAnchorX, glyphAnchorY);
         OriginalBody = originalBody; ContentPadding = contentPadding; MaximumTextWidth = maximumTextWidth;
-        CornerRadius = cornerRadius; GlyphScale = glyphScale;
+        CornerRadius = cornerRadius; GlyphScale = glyphScale; Projection = projection;
         Validate();
     }
     internal double Factor { get; }
@@ -33,6 +34,7 @@ internal sealed class TopologyPreparedNodeBasis {
     internal double? MaximumTextWidth { get; }
     internal double? CornerRadius { get; }
     internal double? GlyphScale { get; }
+    internal TopologyPreparedNodeProjection? Projection { get; }
 
     internal bool Matches(TopologyNode node) => node.Width == Width && node.Height == Height && node.Shape == Shape
         && (node.DisplayMode ?? TopologyNodeDisplayMode.Card) == DisplayMode && node.Kind == Kind && SameIconPolicy(node.IconShape, IconShape)
@@ -63,26 +65,36 @@ internal sealed class TopologyPreparedNodeBasis {
         raw.X = OriginalBody.X; raw.Y = OriginalBody.Y; raw.Width = OriginalBody.Width; raw.Height = OriginalBody.Height;
         // These authored role sizes were already projected into portable output units by SemanticSnapshot.
         // Existing raw embedded text-run facts and dimensionless glyph policy keep their own native units.
-        if (raw.TextStyle?.FontSize is double titleSize) raw.TextStyle.FontSize = titleSize / Factor;
-        if (raw.SubtitleTextStyle?.FontSize is double subtitleSize) raw.SubtitleTextStyle.FontSize = subtitleSize / Factor;
-        if (raw.CaptionTextStyle?.FontSize is double captionSize) raw.CaptionTextStyle.FontSize = captionSize / Factor;
+        UnprojectStyle(raw.TextStyle);
+        UnprojectStyle(raw.SubtitleTextStyle);
+        UnprojectStyle(raw.CaptionTextStyle);
         if (raw.CornerRadius.HasValue) raw.CornerRadius /= Factor;
         if (raw.CaptionGap.HasValue) raw.CaptionGap /= Factor;
         if (raw.StrokeWidth.HasValue) raw.StrokeWidth /= Factor;
         for (var index = 0; index < raw.DashPattern.Count; index++) raw.DashPattern[index] /= Factor;
         foreach (var detail in raw.Details) {
-            if (detail.TextStyle?.FontSize is double detailSize) detail.TextStyle.FontSize = detailSize / Factor;
+            UnprojectStyle(detail.TextStyle);
             if (detail.BadgeStyle != null) detail.BadgeStyle = detail.BadgeStyle.Scale(1 / Factor);
         }
         if (raw.TableContent != null) raw.TableContent.CapturedPresentationScale /= Factor;
         return raw;
     }
+    // SemanticSnapshot stores both authored text lengths in output units. Replay
+    // normalizes each once before the existing logical measurement and painter.
+    private void UnprojectStyle(TextStyleOverride? style) {
+        if (style?.FontSize is double size) style.FontSize = size / Factor;
+        if (style?.LetterSpacing is double spacing) style.LetterSpacing = spacing / Factor;
+    }
     internal ChartPoint Project(TopologyNode node, ChartPoint point) {
-        var x = node.X + (point.X - OriginalBody.X) * Factor; var y = node.Y + (point.Y - OriginalBody.Y) * Factor;
+        var origin = Projection?.OffsetFor(node);
+        var x = origin.HasValue ? origin.Value.X + point.X * Factor : node.X + (point.X - OriginalBody.X) * Factor;
+        var y = origin.HasValue ? origin.Value.Y + point.Y * Factor : node.Y + (point.Y - OriginalBody.Y) * Factor;
         Bounded(x); Bounded(y); return new ChartPoint(x, y, point.BreakBefore).WithColorValue(point.ColorValue);
     }
     internal ChartPoint Unproject(TopologyNode node, ChartPoint point) {
-        var x = OriginalBody.X + (point.X - node.X) / Factor; var y = OriginalBody.Y + (point.Y - node.Y) / Factor;
+        var origin = Projection?.OffsetFor(node);
+        var x = origin.HasValue ? (point.X - origin.Value.X) / Factor : OriginalBody.X + (point.X - node.X) / Factor;
+        var y = origin.HasValue ? (point.Y - origin.Value.Y) / Factor : OriginalBody.Y + (point.Y - node.Y) / Factor;
         // A remote toward-point is a direction input, not an authored raw coordinate. It may exceed the raw body domain,
         // but must remain finite for the incumbent intersection owner. Published basis/output coordinates stay bounded.
         if (double.IsNaN(x) || double.IsInfinity(x) || double.IsNaN(y) || double.IsInfinity(y))
@@ -96,6 +108,7 @@ internal sealed class TopologyPreparedNodeBasis {
         node.TextStyle?.FontSize, node.SubtitleTextStyle?.FontSize);
     internal void ValidateDerived(double x, double y, double? padding, double? textWidth, double? titleSize, double? subtitleSize) {
         Bounded(x); Bounded(y); Bounded(x + Width); Bounded(y + Height);
+        Projection?.ValidateAt(x, y, OriginalBody, Factor);
         Bounded(x - 76 * Factor); Bounded(y + 128 * Factor);
         if (padding.HasValue) Bounded(padding.Value * Factor);
         if (textWidth.HasValue) Bounded(textWidth.Value * Factor);
@@ -114,6 +127,7 @@ internal sealed class TopologyPreparedNodeBasis {
         Bounded(OriginalBody.Right); Bounded(OriginalBody.Bottom); Positive(76 * Factor);
         Positive(OriginalBody.Width * Factor); Positive(OriginalBody.Height * Factor);
         DerivedSpan(Width, OriginalBody.Width); DerivedSpan(Height, OriginalBody.Height);
+        Projection?.Validate(OriginalBody, Factor, Width, Height);
         if (ContentPadding.HasValue) { Bounded(ContentPadding.Value * Factor); if (ContentPadding.Value < 0) throw new ArgumentOutOfRangeException(nameof(ContentPadding)); }
         if (MaximumTextWidth.HasValue) Positive(MaximumTextWidth.Value * Factor);
         // Radius is a finite clamped policy, not an unclamped geometry extent. The canonical surface owner clamps it to the body.

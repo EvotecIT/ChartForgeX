@@ -372,6 +372,7 @@ internal static partial class VisualArtifactInterchangeValidation {
     private static void Presentation(VisualArtifactInterchangePresentation? presentation, VisualArtifactInterchangeEnvelope envelope) {
         if (presentation == null) return;
         CapturedEffects(presentation, envelope);
+        TurbulenceSource(presentation, envelope);
         ValidateContextFont(presentation.ContextFont,envelope,presentation.Frame);
         ValidateFrameRequest(presentation.Frame,presentation.ContextFont,envelope);
         if (presentation.TopologyCaptions != null) {
@@ -472,6 +473,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         }
         if (node.Topology != null) {
             ValidatePreparedNodeBasis(node);
+            ValidateSurfaceElements(node);
             var presentationError = TopologyExternalPresentationRules.Error(node.Topology.DisplayMode, node.Topology.Shape, node.Topology.TableContent != null,
                 envelope.Topology?.LayoutMode ?? TopologyLayoutMode.Manual, node.Topology.CaptionPlacement, node.Topology.CaptionSurface,
                 node.Topology.CaptionGap, node.Topology.GlyphScale, node.Topology.CornerRadius, node.Topology.CaptionTextStyle != null);

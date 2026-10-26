@@ -20,7 +20,7 @@ public sealed class NativeTransitionExportFactsTests {
         var actual = export ? section.PreparedVisual.ForInteractivePngExport() : section.PreparedVisual;
         Assert.Equal(wide.Svg, actual.ToSvg(section.SvgOptions));
         var narrowOptions = new VisualSvgOptions(narrow.Prefix, section.SvgOptions.ColorVariables, section.SvgOptions.LinkTarget, section.SvgOptions.Responsive)
-            .WithPatternTiles(section.SvgOptions.PatternTiles);
+            .WithPatternTiles(section.SvgOptions.PatternTiles).WithTextPresentation(section.SvgOptions.TextPresentation);
         var actualNarrow = export ? section.NarrowPreparedVisual!.ForInteractivePngExport() : section.NarrowPreparedVisual!;
         Assert.Equal(narrow.Svg, actualNarrow.ToSvg(narrowOptions));
     }

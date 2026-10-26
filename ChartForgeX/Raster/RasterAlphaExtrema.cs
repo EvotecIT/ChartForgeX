@@ -3,17 +3,27 @@ using System.Threading;
 
 namespace ChartForgeX.Raster;
 
-/// <summary>One monotonic-deque owner for byte alpha dilation/erosion, including legacy text strokes.</summary>
+/// <summary>One monotonic-deque owner for byte alpha and premultiplied16 channel dilation/erosion.</summary>
 internal static class RasterAlphaExtrema {
     internal static byte[] Filter(byte[] source, int width, int height, int stride, int channel, int radiusX, int radiusY,
         bool maximize, CancellationToken cancellation = default) {
+        return FilterChannel(source, width, height, stride, channel, radiusX, radiusY, maximize, cancellation);
+    }
+
+    /// <summary>Uses the same finite deque law for a selected premultiplied16 channel.</summary>
+    internal static ushort[] Filter(ushort[] source, int width, int height, int stride, int channel, int radiusX, int radiusY,
+        bool maximize, CancellationToken cancellation = default) =>
+        FilterChannel(source, width, height, stride, channel, radiusX, radiusY, maximize, cancellation);
+
+    private static T[] FilterChannel<T>(T[] source, int width, int height, int stride, int channel, int radiusX, int radiusY,
+        bool maximize, CancellationToken cancellation) where T : struct, IComparable<T> {
         if (source == null) throw new ArgumentNullException(nameof(source));
         if (width <= 0 || height <= 0 || stride <= 0 || channel < 0 || channel >= stride || radiusX < 0 || radiusY < 0
             || source.LongLength < checked((long)width * height * stride)) throw new ArgumentOutOfRangeException(nameof(width));
         cancellation.ThrowIfCancellationRequested();
-        var horizontal = new byte[checked(width * height)];
+        var horizontal = new T[checked(width * height)];
         cancellation.ThrowIfCancellationRequested();
-        var result = new byte[horizontal.Length];
+        var result = new T[horizontal.Length];
         cancellation.ThrowIfCancellationRequested();
         var deque = new int[Math.Max(width, height)];
         Pass(source, horizontal, width, height, stride, channel, radiusX, maximize, true, deque, cancellation);
@@ -21,8 +31,8 @@ internal static class RasterAlphaExtrema {
         return result;
     }
 
-    private static void Pass(byte[] source, byte[] target, int width, int height, int stride, int channel, int radius,
-        bool maximize, bool horizontal, int[] deque, CancellationToken cancellation) {
+    private static void Pass<T>(T[] source, T[] target, int width, int height, int stride, int channel, int radius,
+        bool maximize, bool horizontal, int[] deque, CancellationToken cancellation) where T : struct, IComparable<T> {
         var lines = horizontal ? height : width; var length = horizontal ? width : height;
         for (var line = 0; line < lines; line++) {
             cancellation.ThrowIfCancellationRequested();
@@ -37,10 +47,11 @@ internal static class RasterAlphaExtrema {
                 }
                 while (tail > head && deque[head] < left) head++;
                 target[At(line, output)] = !maximize && (left < 0 || right >= length)
-                    ? (byte)0 : source[At(line, deque[head]) * stride + channel];
+                    ? default : source[At(line, deque[head]) * stride + channel];
             }
         }
         int At(int line, int sample) => horizontal ? line * width + sample : sample * width + line;
     }
-    private static bool Prefer(byte candidate, byte existing, bool maximize) => maximize ? candidate >= existing : candidate <= existing;
+    private static bool Prefer<T>(T candidate, T existing, bool maximize) where T : struct, IComparable<T> =>
+        maximize ? candidate.CompareTo(existing) >= 0 : candidate.CompareTo(existing) <= 0;
 }

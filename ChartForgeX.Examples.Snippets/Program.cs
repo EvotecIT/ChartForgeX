@@ -9,6 +9,7 @@ var results = new List<RecipeResult>();
 var visited = new HashSet<string>(StringComparer.Ordinal);
 AppearanceSnippetProof.Write(output, results);
 RetainedAppearanceSnippetProof.Write(output, results);
+TurbulenceSnippetProof.Write(output, results);
 foreach (var selection in ExampleRecipes.StandaloneFamilySelections()) RunFamily(selection.Kind, selection.Variant);
 foreach (var entry in ExampleRecipes.OtherRecipes) RunNamed(entry.Key, "wide");
 RunNamed("aligned-difference", "compact", "negative-log", "compact-negative-log", "sym-log", "compact-sym-log", "connect", "compact-connect");

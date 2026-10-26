@@ -17,6 +17,7 @@ internal sealed class VisualScene {
         var copy = new VisualSceneNode[nodes.Count];
         for (var i = 0; i < copy.Length; i++) {
             copy[i] = nodes[i];
+            if (nodes[i] is VisualSceneProceduralSource) HasProceduralSources = true;
             if (nodes[i] is VisualSceneGroup { SurfaceShadow: not null }) HasSurfaceEffects = true;
             if (nodes[i] is VisualSceneGroup { RetainedEffect: not null }) HasRetainedEffects = true;
         }
@@ -30,6 +31,7 @@ internal sealed class VisualScene {
         Regions = Array.AsReadOnly(regionCopy);
     }
 
+    internal bool HasProceduralSources { get; }
     internal bool HasSurfaceEffects { get; }
     internal bool HasRetainedEffects { get; }
     internal VisualValueCapture? ValueCapture { get; }

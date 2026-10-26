@@ -33,7 +33,7 @@ public sealed class RadialAreaEncodingBrowserTests {
         var position = await page.EvaluateAsync<double[]>("point=>{const svg=areaController.root.querySelector('svg');const p=svg.createSVGPoint();p.x=point.x;p.y=point.y;const q=p.matrixTransform(svg.getScreenCTM());return [q.x,q.y];}",
             new { x = mark.Cx + Math.Cos(angle) * radius, y = mark.Cy + Math.Sin(angle) * radius });
         await page.Mouse.MoveAsync((float)position[0], (float)position[1], new MouseMoveOptions { Steps = 3 }); Assert.Contains("25", await TooltipTextAsync(page));
-        await MoveAwayAsync(page); await page.Locator(North).FocusAsync(); await page.Keyboard.PressAsync("Space");
+        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(North)); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(North).GetAttributeAsync("aria-selected"));
         await Capture(page, first.PreparedVisual, width, dark, "selected");
         await page.EvaluateAsync("html=>areaController.update(html)", next.Html);
@@ -41,7 +41,7 @@ public sealed class RadialAreaEncodingBrowserTests {
         Assert.Equal("2", await north.GetAttributeAsync("data-cfx-point")); Assert.Equal("40", await north.GetAttributeAsync("data-cfx-y"));
         Assert.Equal("area", await north.GetAttributeAsync("data-cfx-value-encoding")); Assert.Equal("true", await north.GetAttributeAsync("aria-selected"));
         Assert.True(await north.EvaluateAsync<bool>("node=>document.activeElement===node"));
-        await north.FocusAsync(); Assert.Contains("40", await TooltipTextAsync(page));
+        await FocusWithKeyboardAsync(page, north); Assert.Contains("40", await TooltipTextAsync(page));
         Assert.Equal("north", await page.EvaluateAsync<string>("()=>areaSelections[0].observationId"));
         Assert.Equal("25", await page.EvaluateAsync<string>("()=>areaSelections[0].value"));
         Assert.True(await page.EvaluateAsync<bool>("()=>document.documentElement.scrollWidth<=innerWidth+1"));
@@ -49,7 +49,7 @@ public sealed class RadialAreaEncodingBrowserTests {
         await page.EvaluateAsync("html=>areaController.update(html)", empty.Html); Assert.Equal(0, await page.Locator(North).CountAsync());
         await page.EvaluateAsync("html=>areaController.update(html)", next.Html); Assert.Equal(1, await page.Locator(North).CountAsync());
         Assert.NotEqual("true", await page.Locator(North).GetAttributeAsync("aria-selected"));
-        await page.Locator(North).FocusAsync(); Assert.Contains("40", await TooltipTextAsync(page));
+        await FocusWithKeyboardAsync(page, page.Locator(North)); Assert.Contains("40", await TooltipTextAsync(page));
         await Capture(page, next.PreparedVisual, width, dark, "refilled");
         await page.EvaluateAsync("()=>areaController.dispose()"); AssertNoConsoleErrors(session);
     }

@@ -48,8 +48,13 @@ public sealed class MermaidSequenceLayoutTypographyBrowserTests {
             Assert.All(observed.GetProperty("activationWidths").EnumerateArray(),item=>Assert.Equal(14,item.GetDouble()));
             var host=page.Locator("[data-cfx-html-sizing='preserve-size']");
             if(observed.GetProperty("host").GetProperty("contentWidth").GetInt32()>observed.GetProperty("host").GetProperty("width").GetInt32()) {
-                await host.FocusAsync();await page.Keyboard.PressAsync("ArrowRight");
-                await page.WaitForFunctionAsync("""() => document.querySelector('[data-cfx-html-sizing="preserve-size"]').scrollLeft > 0""");
+                await page.Keyboard.PressAsync("Tab");
+                Assert.True(await host.EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"), "The fresh static artifact host receives native Tab focus.");
+                Assert.True(await host.EvaluateAsync<bool>("node=>node.matches(':focus-visible')"), "The static artifact host has keyboard-visible focus.");
+                try {
+                    await page.Keyboard.DownAsync("ArrowRight");
+                    await page.WaitForFunctionAsync("""() => document.querySelector('[data-cfx-html-sizing="preserve-size"]').scrollLeft > 0""");
+                } finally { await page.Keyboard.UpAsync("ArrowRight"); }
                 Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft")>0);
                 if(!string.IsNullOrWhiteSpace(output))await page.ScreenshotAsync(new PageScreenshotOptions{Path=Path.Combine(output,stem+".scrolled.browser.png"),FullPage=true});
             }

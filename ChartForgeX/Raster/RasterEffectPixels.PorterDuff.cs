@@ -25,6 +25,20 @@ internal static partial class RasterEffectPixels {
     /// <summary>Shares the existing Porter-Duff factors with finite effects that retain 16-bit coverage until final output.</summary>
     internal static void CompositePremultiplied(byte[] target, int output, int sr, int sg, int sb, int sa,
         int dr, int dg, int db, int da, VisualCompositeOperator operation, int x, int y, bool dither) {
+        var pixel = PorterDuffChannels16(new RasterEffectPixel16(sr, sg, sb, sa), new RasterEffectPixel16(dr, dg, db, da), operation);
+        Write(target, output, pixel.R, pixel.G, pixel.B, pixel.A, x, y, dither);
+    }
+
+    internal static RasterEffectPixel16 Composite16(RasterEffectPixel16 source, RasterEffectPixel16 destination, VisualCompositeOperator operation) {
+        if (operation == VisualCompositeOperator.SourceOver) return Blend16(source, destination, VisualBlendMode.Normal);
+        if (operation == VisualCompositeOperator.Copy) return source;
+        if (operation == VisualCompositeOperator.Clear) return default;
+        return PorterDuffChannels16(source, destination, operation);
+    }
+
+    private static RasterEffectPixel16 PorterDuffChannels16(RasterEffectPixel16 source, RasterEffectPixel16 destination, VisualCompositeOperator operation) {
+        var sr = source.R; var sg = source.G; var sb = source.B; var sa = source.A;
+        var dr = destination.R; var dg = destination.G; var db = destination.B; var da = destination.A;
         int sourceFactor, destinationFactor;
         switch (operation) {
             case VisualCompositeOperator.SourceIn: sourceFactor = da; destinationFactor = 0; break;
@@ -39,6 +53,6 @@ internal static partial class RasterEffectPixels {
         int Channel(int source, int destination) =>
             Multiply(source, sourceFactor) + Multiply(destination, destinationFactor);
         var alpha = Multiply(sa, sourceFactor) + Multiply(da, destinationFactor);
-        Write(target, output, Channel(sr, dr), Channel(sg, dg), Channel(sb, db), alpha, x, y, dither);
+        return new RasterEffectPixel16(Channel(sr, dr), Channel(sg, dg), Channel(sb, db), alpha);
     }
 }

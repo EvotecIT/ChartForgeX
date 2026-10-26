@@ -44,10 +44,11 @@ internal static partial class VisualArtifactInterchangeJson {
             writer.Property("runs"); writer.StartArray();
             foreach (var run in capture.Runs) {
                 writer.StartObject(); Number(writer, "size", run.Size); Number(writer, "ascent", run.Ascent); NativeCapturedFace(writer, run.Face);
+                if (run.Style.LetterSpacing != 0) Number(writer, "letterSpacing", run.Style.LetterSpacing);
                 writer.Property("lines"); writer.StartArray();
                 foreach (var line in run.Lines) { writer.StartObject(); String(writer, "text", line.Text); Number(writer, "width", line.Width); writer.Property("glyphs"); writer.StartArray();
                     foreach (var glyph in line.Glyphs) { writer.StartObject(); NativeCapturedFont(writer, glyph.Face); Number(writer, "glyph", glyph.Glyph); Number(writer, "cluster", glyph.SourceIndex);
-                        OptionalNumber(writer, "advance", glyph.Advance); Number(writer, "x", glyph.OffsetX); Number(writer, "y", glyph.OffsetY); writer.EndObject(); }
+                        OptionalNumber(writer, "advance", glyph.Advance); if (glyph.TrailingAdvance != 0) Number(writer, "trackingAdvance", glyph.TrailingAdvance); Number(writer, "x", glyph.OffsetX); Number(writer, "y", glyph.OffsetY); writer.EndObject(); }
                     writer.EndArray(); writer.EndObject(); }
                 writer.EndArray(); writer.EndObject();
             }

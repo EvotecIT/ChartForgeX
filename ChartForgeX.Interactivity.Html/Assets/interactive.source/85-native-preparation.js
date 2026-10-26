@@ -142,7 +142,8 @@
     // Retain reset dismissal.
     if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
-    bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind && !preserveViewport);
+    bindChart(root); window[Symbol.for('ChartForgeX.nativeTextExport')].mount(root, release => ownChartWork(root, release));
+    watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind && !preserveViewport);
     bindAdaptiveLayout(root);
     syncXViewportControls(root);
     restoreNativeNavigationFocus(root, navigationFocus);

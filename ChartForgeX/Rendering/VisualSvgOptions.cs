@@ -7,7 +7,7 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Controls safe SVG host integration and explicit captured-effect representation without repeating layout.</summary>
-public sealed class VisualSvgOptions {
+public sealed partial class VisualSvgOptions {
     private readonly SvgColorVariables? _colorVariables;
     private bool _patternTiles;
     /// <summary>Gets whether native hatch marks serialize as user-space SVG tiles instead of individual clipped lines.</summary>
@@ -15,7 +15,7 @@ public sealed class VisualSvgOptions {
     /// <summary>Returns an export policy with native user-space pattern tiles, retaining the other host settings.</summary>
     /// <param name="enabled">Whether to use tiles. Static exports keep individual native lines by default.</param>
     /// <returns>An independent export policy.</returns>
-    public VisualSvgOptions WithPatternTiles(bool enabled = true) => new VisualSvgOptions(IdPrefix, _colorVariables, LinkTarget, Responsive, EffectProfile, EffectRasterOptions) { _patternTiles = enabled };
+    public VisualSvgOptions WithPatternTiles(bool enabled = true) => new VisualSvgOptions(IdPrefix, _colorVariables, LinkTarget, Responsive, EffectProfile, EffectRasterOptions) { _patternTiles = enabled, _textPresentation = _textPresentation };
 
     /// <summary>Creates a detached SVG export policy.</summary>
     /// <param name="idPrefix">Unique host namespace; null uses a deterministic content namespace.</param>

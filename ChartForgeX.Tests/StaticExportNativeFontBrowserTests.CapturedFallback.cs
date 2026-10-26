@@ -21,7 +21,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         NativeFallbackClusterBeforeControls.Register(); var renderer = new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value) => renderer.PrepareSection(NativeFallbackClusterBeforeControls.Model(donut, true, value).WithSize(width, 420)
             .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? VisualThemeMode.Dark : VisualThemeMode.Light),
-            configure: options => { options.Interaction.ChartId = "native-fallback-motion"; options.Interaction.Enable(ChartInteractionFeatures.Export); });
+            configure: options => { options.TextPresentation = HtmlChartTextPresentation.Browser; options.Interaction.ChartId = "native-fallback-motion"; options.Interaction.Enable(ChartInteractionFeatures.Export); });
         var from = Section(60); var to = Section(80); var payload = renderer.PrepareNativeTransitionJson(from, to,
             new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));
         var name = "fallback-browser-" + donut + "-" + width + "-" + initial;

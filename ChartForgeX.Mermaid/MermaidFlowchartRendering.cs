@@ -176,6 +176,8 @@ public static partial class MermaidFlowchartRendering {
         }
         else document.Configuration.Graph?.Apply(chart,options.Presentation);
         if (document.Kind == MermaidDiagramKind.Flowchart) MermaidFlowchartAssets.Apply(chart, document, options);
+        MermaidTopologySourcePaints.Apply(chart, document, options.Presentation);
+        MermaidTopologySurfaceElements.Apply(chart, document);
         if (fitViewport) ApplyContentFittedViewport(chart, document.Direction, options, padding);
         return chart;
     }

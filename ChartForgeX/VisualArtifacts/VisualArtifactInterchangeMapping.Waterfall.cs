@@ -110,7 +110,7 @@ public static partial class VisualArtifactInterchangeMapping {
     }
 
     private static void CopyWaterfallTextStyle(TextStyleOverride source, TextStyleOverride target) {
-        target.Color = source.Color; target.FontFamily = source.FontFamily; target.FontWeight = source.FontWeight; target.FontSize = source.FontSize;
+        target.Color = source.Color; target.FontFamily = source.FontFamily; target.FontWeight = source.FontWeight; target.FontSize = source.FontSize; target.LetterSpacing = source.LetterSpacing;
         if (source.ItalicOverride.HasValue) target.Italic = source.Italic;
         if (source.UnderlineOverride.HasValue) target.Underline = source.Underline;
         if (source.StrikethroughOverride.HasValue) target.Strikethrough = source.Strikethrough;

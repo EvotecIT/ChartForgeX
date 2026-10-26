@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -15,7 +16,7 @@ internal static partial class SvgRasterRenderer {
             var document = SvgRasterParser.ParseFragment(svgBody, viewBox);
             rgba = RenderDocument(document, preserveAspectRatio, width, height);
             return HasVisiblePixel(rgba);
-        } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
+        } catch (Exception ex) when (ex is not VisualResourceLimitException && (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException)) {
             return false;
         }
     }
@@ -27,7 +28,7 @@ internal static partial class SvgRasterRenderer {
         try {
             rgba = RenderDocument(SvgRasterParser.ParseDocument(svg), preserveAspectRatio, width, height);
             return true;
-        } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
+        } catch (Exception ex) when (ex is not VisualResourceLimitException && (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException)) {
             return false;
         }
     }
@@ -38,7 +39,7 @@ internal static partial class SvgRasterRenderer {
         try {
             rgba = RenderDocument(document, preserveAspectRatio, width, height);
             return true;
-        } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
+        } catch (Exception ex) when (ex is not VisualResourceLimitException && (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException)) {
             return false;
         }
     }
@@ -80,10 +81,10 @@ internal static partial class SvgRasterRenderer {
             var masked = AllocateCanvas(width, height, definitions);
             var mask = AllocateCanvas(width, height, definitions);
             RenderMask(mask, maskDefinition, matrix, definitions, width, height, target.Pixels, viewport, document.Root, rootStyle, ancestors);
-            definitions.Filters?.ReserveWorkSamples(checked((long)width * height * 16));
+            ReserveWorkSamples(definitions, checked((long)width * height * 16));
             masked.DrawImageSvgMasked(0, 0, width, height, target.Pixels, mask.Pixels, maskDefinition.UsesAlpha,
                     string.Equals(maskDefinition.RootStyle.ColorInterpolation, "linearRGB", StringComparison.OrdinalIgnoreCase),
-                    definitions.Filters?.Cancellation ?? default, captured: target.HasCapturedEffectPixels);
+                    definitions.Resources?.Cancellation ?? definitions.Filters?.Cancellation ?? default, captured: target.HasCapturedEffectPixels);
             target = masked;
         }
 
@@ -96,6 +97,7 @@ internal static partial class SvgRasterRenderer {
 
     private static void RenderElement(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         definitions.Filters?.Cancellation.ThrowIfCancellationRequested();
+        definitions.Resources?.CheckCancellation();
         var style = SvgRasterStyle.Resolve(parentStyle, element, definitions.StyleSheet, ancestors);
         if (!style.Displayed) return;
 
@@ -137,10 +139,10 @@ internal static partial class SvgRasterRenderer {
                 var mask = AllocateCanvas(width, height, definitions);
                 RenderMask(mask, maskDefinition, matrix, definitions, width, height, content.Pixels, childViewport, element, style, ancestors);
                 var maskedContent = AllocateCanvas(width, height, definitions);
-                definitions.Filters?.ReserveWorkSamples(checked((long)width * height * 16));
+                ReserveWorkSamples(definitions, checked((long)width * height * 16));
                 maskedContent.DrawImageSvgMasked(0, 0, width, height, content.Pixels, mask.Pixels, maskDefinition.UsesAlpha,
                     string.Equals(maskDefinition.RootStyle.ColorInterpolation, "linearRGB", StringComparison.OrdinalIgnoreCase),
-                    definitions.Filters?.Cancellation ?? default, captured: content.HasCapturedEffectPixels);
+                    definitions.Resources?.Cancellation ?? definitions.Filters?.Cancellation ?? default, captured: content.HasCapturedEffectPixels);
                 content = maskedContent;
             }
 
@@ -236,7 +238,7 @@ internal static partial class SvgRasterRenderer {
         var xAxis = matrix.Transform(new ChartPoint(x + width, y));
         var yAxis = matrix.Transform(new ChartPoint(x, y + height));
         (var localWidth, var localHeight) = ResolveTransformedImageDimensions(origin, xAxis, yAxis, canvas.Width, canvas.Height);
-        if (!TryDecodeImage(element.Get("href"), imageDepth, localWidth, localHeight, element.Get("preserveAspectRatio"), out var image, out var capturedEffectPixels, definitions.Diagnostics, definitions.Filters)) {
+        if (!TryDecodeImage(element.Get("href"), imageDepth, localWidth, localHeight, element.Get("preserveAspectRatio"), out var image, out var capturedEffectPixels, definitions.Diagnostics, definitions.Filters, resources: definitions.Resources)) {
             definitions.Diagnostics?.Report("SFR003", "The embedded image could not be decoded within the supported formats and limits. External image URLs are not fetched.", element);
             return;
         }
@@ -276,7 +278,7 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static byte[] ApplyOpacity(byte[] pixels, double opacity, SvgRasterDefinitions definitions) {
-        definitions.Filters?.ReservePixelArray(pixels.LongLength);
+        ReservePixelArray(definitions, pixels.LongLength);
         var result = new byte[pixels.Length];
         Buffer.BlockCopy(pixels, 0, result, 0, pixels.Length);
         for (var index = 3; index < result.Length; index += 4) result[index] = (byte)Math.Round(result[index] * Math.Max(0, Math.Min(1, opacity)));
@@ -436,37 +438,45 @@ internal static partial class SvgRasterRenderer {
     private static bool TryRenderPatternTile(IReadOnlyList<List<ChartPoint>> contours, SvgRasterMatrix matrix, SvgRasterPattern pattern, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterObjectPaint? objectPaint, out PatternTile tile) {
         tile = default;
         if (pattern.Width <= 0 || pattern.Height <= 0 || pattern.Children.Count == 0) return false;
-        var bounds = objectPaint?.Bounds ?? SvgRasterGradientValues.Bounds(contours);
-        var objectMatrix = objectPaint?.Matrix ?? SvgRasterMatrix.Identity;
-        var objectToCanvas = objectMatrix
-            .Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top))
-            .Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height));
-        var patternToCanvas = pattern.UserSpaceOnUse
-            ? matrix.Multiply(pattern.Transform)
-            : objectToCanvas.Multiply(pattern.Transform);
-        var frame = CreatePatternFrame(pattern, patternToCanvas);
-        if (frame.Width <= 0 || frame.Height <= 0) return false;
-        var tileWidth = Math.Max(1, (int)Math.Ceiling(frame.Width));
-        var tileHeight = Math.Max(1, (int)Math.Ceiling(frame.Height));
-        var tileToCanvas = new SvgRasterMatrix(
-            (frame.Right.X - frame.Origin.X) / tileWidth,
-            (frame.Right.Y - frame.Origin.Y) / tileWidth,
-            (frame.Bottom.X - frame.Origin.X) / tileHeight,
-            (frame.Bottom.Y - frame.Origin.Y) / tileHeight,
-            frame.Origin.X,
-            frame.Origin.Y);
-        if (!tileToCanvas.TryInvert(out var canvasToTile)) return false;
-        ReportUnsupportedFilter(pattern.Element, SvgRasterStyle.ResolveWithAncestors(pattern.Element, definitions.StyleSheet, definitions.AncestorsFor(pattern.Element)), definitions);
-        var tileCanvas = AllocateCanvas(tileWidth, tileHeight, definitions);
-        var contentMatrix = PatternContentMatrix(pattern, matrix, objectMatrix, objectToCanvas, canvasToTile, objectPaint.HasValue, tileWidth, tileHeight);
-        var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
-            ? ViewportFromViewBox(pattern.ViewBox!)
-            : pattern.ContentUserSpaceOnUse ? viewport : new SvgRasterViewport(1, 1);
-        var ancestors = new List<SvgRasterElement>();
-        foreach (var child in pattern.Children) RenderElement(tileCanvas, child, SvgRasterStyle.Default, contentMatrix, definitions, tileWidth, tileHeight, 0, ancestors, contentViewport);
-        if (!HasVisiblePixel(tileCanvas.Pixels)) return false;
-        tile = new PatternTile(tileWidth, tileHeight, tileCanvas.Pixels, canvasToTile);
-        return true;
+        if (!definitions.TryEnterPatternPaint(pattern)) {
+            definitions.Diagnostics?.Report("SFR001", "Cyclic pattern paint or pattern reference depth beyond eight is outside the supported raster subset.", pattern.Element);
+            return false;
+        }
+        try {
+            var bounds = objectPaint?.Bounds ?? SvgRasterGradientValues.Bounds(contours);
+            var objectMatrix = objectPaint?.Matrix ?? SvgRasterMatrix.Identity;
+            var objectToCanvas = objectMatrix
+                .Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top))
+                .Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height));
+            var patternToCanvas = pattern.UserSpaceOnUse
+                ? matrix.Multiply(pattern.Transform)
+                : objectToCanvas.Multiply(pattern.Transform);
+            var frame = CreatePatternFrame(pattern, patternToCanvas);
+            if (frame.Width <= 0 || frame.Height <= 0) return false;
+            var tileWidth = Math.Max(1, (int)Math.Ceiling(frame.Width));
+            var tileHeight = Math.Max(1, (int)Math.Ceiling(frame.Height));
+            var tileToCanvas = new SvgRasterMatrix(
+                (frame.Right.X - frame.Origin.X) / tileWidth,
+                (frame.Right.Y - frame.Origin.Y) / tileWidth,
+                (frame.Bottom.X - frame.Origin.X) / tileHeight,
+                (frame.Bottom.Y - frame.Origin.Y) / tileHeight,
+                frame.Origin.X,
+                frame.Origin.Y);
+            if (!tileToCanvas.TryInvert(out var canvasToTile)) return false;
+            ReportUnsupportedFilter(pattern.Element, SvgRasterStyle.ResolveWithAncestors(pattern.Element, definitions.StyleSheet, definitions.AncestorsFor(pattern.Element)), definitions);
+            var tileCanvas = AllocateCanvas(tileWidth, tileHeight, definitions);
+            var contentMatrix = PatternContentMatrix(pattern, matrix, objectMatrix, objectToCanvas, canvasToTile, objectPaint.HasValue, tileWidth, tileHeight);
+            var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
+                ? ViewportFromViewBox(pattern.ViewBox!)
+                : pattern.ContentUserSpaceOnUse ? viewport : new SvgRasterViewport(1, 1);
+            var ancestors = new List<SvgRasterElement>();
+            foreach (var child in pattern.Children) RenderElement(tileCanvas, child, SvgRasterStyle.Default, contentMatrix, definitions, tileWidth, tileHeight, 0, ancestors, contentViewport);
+            if (!HasVisiblePixel(tileCanvas.Pixels)) return false;
+            tile = new PatternTile(tileWidth, tileHeight, tileCanvas.Pixels, canvasToTile);
+            return true;
+        } finally {
+            definitions.LeavePatternPaint(pattern);
+        }
     }
 
     private static SvgRasterViewport ViewportFromViewBox(string value) {
@@ -495,6 +505,7 @@ internal static partial class SvgRasterRenderer {
         var clipMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(clipPath.Element.Get("transform")));
         var clipViewport = viewport;
         if (!clipPath.UserSpaceOnUse) {
+            definitions.Resources?.ReserveWorkSamples(checked((long)width * height));
             if (!TryVisibleBounds(targetPixels, width, height, matrix, out var paintedBounds)) return;
             var bounds = TryObjectBounds(targetElement, targetStyle, targetAncestors, definitions, viewport, out var objectBounds) ? objectBounds : paintedBounds;
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
@@ -519,6 +530,7 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static void RenderMask(RgbaCanvas mask, SvgRasterMask maskDefinition, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, byte[] targetPixels, SvgRasterViewport viewport, SvgRasterElement targetElement, SvgRasterStyle targetStyle, IReadOnlyList<SvgRasterElement> targetAncestors) {
+        definitions.Resources?.ReserveWorkSamples(checked((long)width * height));
         if (!TryVisibleBounds(targetPixels, width, height, matrix, out var paintedBounds)) return;
         var bounds = TryObjectBounds(targetElement, targetStyle, targetAncestors, definitions, viewport, out var objectBounds) ? objectBounds : paintedBounds;
         var content = AllocateCanvas(width, height, definitions);

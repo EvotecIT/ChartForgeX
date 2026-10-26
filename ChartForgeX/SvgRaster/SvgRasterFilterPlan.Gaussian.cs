@@ -9,7 +9,8 @@ namespace ChartForgeX.SvgRaster;
 internal sealed partial class SvgRasterFilterPlan {
     internal RasterEffectRegion FilterRegion { get; }
     internal RasterEffectRegion CaptureRegion { get; }
-    internal RasterEffectPlan Effect { get; }
+    private readonly RasterEffectPlan? _effect;
+    internal RasterEffectPlan Effect => _effect ?? throw new InvalidOperationException("An ordered filter has per-stage raster operations.");
     internal bool IsZero { get; }
     /// <summary>Nonzero single Gaussian output retains the incumbent image-composition conversion; typed finite operations do not.</summary>
     internal bool UsesGaussianImageComposition { get; }
@@ -19,7 +20,7 @@ internal sealed partial class SvgRasterFilterPlan {
         int haloX = -support.X, haloY = -support.Y;
         CaptureRegion = new RasterEffectRegion(checked(filter.X - haloX), checked(filter.Y - haloY),
             checked(filter.Width + haloX * 2), checked(filter.Height + haloY * 2));
-        Effect = RasterEffectPlan.Blur(new RasterEffectRegion(0, 0, CaptureRegion.Width, CaptureRegion.Height), xQ8, yQ8);
+        _effect = RasterEffectPlan.Blur(new RasterEffectRegion(0, 0, CaptureRegion.Width, CaptureRegion.Height), xQ8, yQ8);
         IsZero = xQ8 == 0 && yQ8 == 0;
         UsesGaussianImageComposition = !IsZero;
     }
@@ -28,16 +29,24 @@ internal sealed partial class SvgRasterFilterPlan {
         out SvgRasterFilterPlan? plan, out string reason) {
         plan = null; reason = "Only one local filter reference is supported.";
         if (!TryLocalReference(reference, out var id) || !definitions.TryGetElement(id, out var filter) || filter.Name != "filter") return false;
-        // Existing single-Gaussian grammar retains its own admission and arithmetic unchanged.
-        if (filter.Children.Count == 1 && filter.Children[0].Name == "feGaussianBlur")
-            return TryGaussian(reference, matrix, definitions, out plan, out reason);
-        if (filter.Children.Count == 2 && filter.Children[0].Name == "feFlood" && filter.Children[1].Name == "feBlend")
-            return TryFloodBlend(filter, matrix, definitions, out plan, out reason);
-        if (filter.Children.Count == 2 && filter.Children[0].Name == "feFlood" && filter.Children[1].Name == "feComposite")
-            return TryFloodComposite(filter, matrix, definitions, out plan, out reason);
-        if (filter.Children.Count == 6 && filter.Children[5].Name == "feComposite")
-            return TryShadow(filter, matrix, definitions, out plan, out reason, innerShadow: true);
-        return TryShadow(filter, matrix, definitions, out plan, out reason);
+        if (filter.Get("filterRes") != null) {
+            reason = "Authored filter resolution is not represented by the native filter frame."; return false;
+        }
+        // Exact existing scalar, Gaussian, procedural and finite recipe paths retain their arithmetic.
+        if (filter.Children.Count > 0 && (filter.Children[0].Name == "feColorMatrix" || filter.Children[0].Name == "feComponentTransfer")
+            && TryColorTransform(filter, matrix, definitions, out plan, out reason)) return true;
+        if (filter.Children.Count == 1 && filter.Children[0].Name == "feGaussianBlur"
+            && TryGaussian(reference, matrix, definitions, out plan, out reason)) return true;
+        if (filter.Children.Count == 1 && filter.Children[0].Name == "feTurbulence"
+            && TryTurbulence(filter, matrix, definitions, out plan, out reason)) return true;
+        if (filter.Children.Count == 2 && filter.Children[0].Name == "feFlood" && filter.Children[1].Name == "feBlend"
+            && TryFloodBlend(filter, matrix, definitions, out plan, out reason)) return true;
+        if (filter.Children.Count == 2 && filter.Children[0].Name == "feFlood" && filter.Children[1].Name == "feComposite"
+            && TryFloodComposite(filter, matrix, definitions, out plan, out reason)) return true;
+        if (filter.Children.Count == 6 && filter.Children[5].Name == "feComposite"
+            && TryShadow(filter, matrix, definitions, out plan, out reason, innerShadow: true)) return true;
+        if (TryShadow(filter, matrix, definitions, out plan, out reason)) return true;
+        return TryOrderedStages(filter, matrix, definitions, out plan, out reason);
     }
 
     private static bool TryGaussian(string reference, SvgRasterMatrix matrix, SvgRasterDefinitions definitions,

@@ -25,6 +25,28 @@ public sealed partial class ChartSeries {
             Interpolation = source.Interpolation, StepPosition = source.Step
         };
         if (source.IsHierarchy) model.RestoreVisibilityHierarchy(source, values);
+        if (source.Kind == ChartSeriesKind.Bubble) model.ReplaceBubbles(selected.Select(index => {
+            var bubble = source.Bubbles[index];
+            return new ChartBubble(bubble.X, values == null ? bubble.Y : values[index * 2], values == null ? bubble.Size : values[index * 2 + 1]).WithColorValue(bubble.ColorValue);
+        }));
+        if (source.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) model.ReplaceRanges(selected.Select(index => {
+            var range = source.Ranges[index];
+            return new ChartRangeBand(range.X, values == null ? range.Lower : values[index * 2], values == null ? range.Upper : values[index * 2 + 1], range.BreakBefore);
+        }));
+        if (source.Kind == ChartSeriesKind.ErrorBar) model.ReplaceErrorBars(selected.Select(index => {
+            var error = source.ErrorBars[index]; if (values == null) return error; var offset = source.ErrorOffsets[index];
+            var y = values[offset++];
+            ChartErrorBounds? xBounds = error.XBounds.HasValue ? new ChartErrorBounds(values[offset++], values[offset++]) : null;
+            ChartErrorBounds? yBounds = error.YBounds.HasValue ? new ChartErrorBounds(values[offset++], values[offset++]) : null;
+            return new ChartErrorBar(error.X, y, xBounds, yBounds);
+        }));
+        if (source.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) {
+            model.ReplaceFinancialValues(selected.Select(index => {
+                var item = source.FinancialValues[index]; var offset = index * 4;
+                return values == null ? item : new ChartCandlestick(item.X, values[offset], values[offset + 1], values[offset + 2], values[offset + 3]);
+            }));
+            model.RestoreVisibilityFinancial(source, selected);
+        }
         if (source.StrokeWidth.HasValue) model.StrokeWidth = source.StrokeWidth.Value;
         model.StackGroup = source.StackGroup; model.NormalizedTo = source.NormalizedTo; model.StackedAreaMissingData = source.StackedAreaMissingData;
         model.RadialBand = source.RadialBand;
@@ -45,16 +67,15 @@ public sealed partial class ChartSeries {
                 foreach (var pair in source.GroupIds) model._boxPlotGroupIds.Add(pair.Key, pair.Value);
             } else model._boxPlots = Array.AsReadOnly(selected.Select(index => source.Boxes[index]).ToArray());
         }
-        // Sparse display policies follow their actual source observation/group into the visible native model.
-        foreach (var index in selected) {
-            model.PointColors.Add(index < source.PointColors.Count ? source.PointColors[index] : null);
-            model.PointFillPatterns.Add(index < source.PointPatterns.Count ? source.PointPatterns[index] : null);
-            model.PointLabels.Add(index < source.PointLabels.Count ? source.PointLabels[index] : null);
-            model.PointDataLabelStyles.Add(source.CopyPointStyle(index));
-            if (ChartSeriesKindTraits.IsPieLikeKind(source.Kind)) {
-                model.PointSliceOffsets.Add(index < source.SliceOffsets.Count ? source.SliceOffsets[index] : 0);
-                model._pointSliceRadiusRatios.Add(index < source.SliceRadiusRatios.Count ? source.SliceRadiusRatios[index] : null);
-            }
+        // The observation-change owner retains the exact authored sparse shape through the same ordinal selection.
+        model.PointColors.AddRange(RemapObservationOverrides(source.PointColors, selected));
+        model.PointFillPatterns.AddRange(RemapObservationOverrides(source.PointPatterns, selected));
+        model.PointLabels.AddRange(RemapObservationOverrides(source.PointLabels, selected));
+        var pointStyles = Enumerable.Range(0, source.PointStyleCount).Select(source.CopyPointStyle).ToArray();
+        model.PointDataLabelStyles.AddRange(RemapObservationOverrides(pointStyles, selected));
+        if (ChartSeriesKindTraits.IsPieLikeKind(source.Kind)) {
+            model.PointSliceOffsets.AddRange(RemapObservationOverrides(source.SliceOffsets, selected));
+            model._pointSliceRadiusRatios.AddRange(RemapObservationOverrides(source.SliceRadiusRatios, selected));
         }
         model.SourcePointCount = source.IsHierarchy ? 0 : source.SourceCount;
         model.SourcePointIndices = source.IsHierarchy || source.Raw ? Array.Empty<int>() : Array.AsReadOnly(selected);

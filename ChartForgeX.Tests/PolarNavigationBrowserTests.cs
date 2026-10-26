@@ -60,9 +60,45 @@ public sealed class PolarNavigationBrowserTests {
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>requests.length")); Assert.Equal(before, await page.EvaluateAsync<string>("()=>polar.sceneRevision"));
         await page.Mouse.UpAsync(); await Pending(page, 1);
         Assert.Equal("pan", await page.EvaluateAsync<string>("()=>requests[0].request.kind"));
-        Assert.Equal(Math.PI / 9, await page.EvaluateAsync<double>("()=>requests[0].request.clockwiseAngleDelta"), 7);
+        await Capture(page, "polar-angular-before-precision-assertion-" + reversed);
+        // Real browser engines can quantize requested mouse positions to physical pixels.
+        // Independently derive the precise pan from the actual trusted, captured stage input.
+        var delivered = await page.EvaluateAsync<JsonElement>("""
+            () => {
+                const captured=row=>({...row,projectionJson:JSON.stringify(row.projection)});
+                return {down:polarGestureEvents.filter(row=>row.type==='pointerdown'&&row.stageOwned).map(captured),
+                    up:polarGestureEvents.filter(row=>row.type==='pointerup'&&row.stageOwned&&row.captured).map(captured)};
+            }
+            """);
+        var deliveredDown = Assert.Single(delivered.GetProperty("down").EnumerateArray());
+        var deliveredUp = Assert.Single(delivered.GetProperty("up").EnumerateArray());
+        Assert.True(deliveredDown.GetProperty("trusted").GetBoolean()); Assert.True(deliveredUp.GetProperty("trusted").GetBoolean());
+        Assert.Equal(deliveredDown.GetProperty("pointerId").GetInt32(), deliveredUp.GetProperty("pointerId").GetInt32());
+        var downMatrix = deliveredDown.GetProperty("matrix"); var upMatrix = deliveredUp.GetProperty("matrix");
+        foreach (var component in new[] { "a", "b", "c", "d", "e", "f" })
+            Assert.Equal(downMatrix.GetProperty(component).GetDouble(), upMatrix.GetProperty(component).GetDouble());
+        var projection = deliveredDown.GetProperty("projection");
+        Assert.Equal(deliveredDown.GetProperty("projectionJson").GetString(), deliveredUp.GetProperty("projectionJson").GetString());
+        var centerX = projection.GetProperty("centerX").GetDouble(); var centerY = projection.GetProperty("centerY").GetDouble();
+        var downLogical = deliveredDown.GetProperty("logical"); var upLogical = deliveredUp.GetProperty("logical");
+        var firstBearing = Math.Atan2(downLogical.GetProperty("y").GetDouble() - centerY, downLogical.GetProperty("x").GetDouble() - centerX);
+        var lastBearing = Math.Atan2(upLogical.GetProperty("y").GetDouble() - centerY, upLogical.GetProperty("x").GetDouble() - centerX);
+        Assert.InRange(firstBearing, Math.PI / 2, Math.PI); Assert.InRange(lastBearing, -Math.PI, -Math.PI / 2);
+        AssertIntendedPointer(deliveredDown, 170 * Math.PI / 180); AssertIntendedPointer(deliveredUp, 190 * Math.PI / 180);
+        var expectedClockwiseDelta = Math.Atan2(Math.Sin(lastBearing - firstBearing), Math.Cos(lastBearing - firstBearing));
+        Assert.True(expectedClockwiseDelta > 0);
+        Assert.Equal(expectedClockwiseDelta, await page.EvaluateAsync<double>("()=>requests[0].request.clockwiseAngleDelta"), 7);
+        void AssertIntendedPointer(JsonElement actual, double bearing) {
+            var matrix = actual.GetProperty("matrix"); var radius = projection.GetProperty("outerRadius").GetDouble() * .8;
+            var x = centerX + Math.Cos(bearing) * radius; var y = centerY + Math.Sin(bearing) * radius;
+            var clientX = matrix.GetProperty("a").GetDouble() * x + matrix.GetProperty("c").GetDouble() * y + matrix.GetProperty("e").GetDouble();
+            var clientY = matrix.GetProperty("b").GetDouble() * x + matrix.GetProperty("d").GetDouble() * y + matrix.GetProperty("f").GetDouble();
+            // This bounds physical input delivery, not the precision of the requested native delta.
+            Assert.InRange(Math.Abs(actual.GetProperty("clientX").GetDouble() - clientX), 0d, 1d);
+            Assert.InRange(Math.Abs(actual.GetProperty("clientY").GetDouble() - clientY), 0d, 1d);
+        }
         await Resolve(page, 0); await Changed(page, 1);
-        var expectedMinimum = 2.6 + (reversed ? 1 : -1) * Math.PI / 9;
+        var expectedMinimum = 2.6 + (reversed ? 1 : -1) * expectedClockwiseDelta;
         Assert.Equal(expectedMinimum, await page.EvaluateAsync<double>("()=>polar.getPolarViewport().angle.minimum"), 7);
         Assert.Equal(20, await page.EvaluateAsync<double>("()=>polar.getPolarViewport().radius.minimum"));
         Assert.Equal(10, await page.EvaluateAsync<double>("()=>polar.getPolarViewport().secondaryRadius.minimum"));
@@ -149,7 +185,9 @@ public sealed class PolarNavigationBrowserTests {
         Assert.Equal(revision, await page.EvaluateAsync<string>("()=>polar.sceneRevision")); Assert.Equal(0, await page.EvaluateAsync<int>("()=>changes.length"));
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         await page.Mouse.MoveAsync(hit.X, hit.Y); await page.Mouse.DownAsync(); await page.Mouse.MoveAsync(hit.X + 10, hit.Y + 3);
-        await page.Keyboard.PressAsync("Escape"); await page.Mouse.UpAsync(); Assert.Equal(1, await page.EvaluateAsync<int>("()=>requests.length"));
+        await page.Keyboard.PressAsync("Escape"); await page.Mouse.UpAsync();
+        await Capture(page, "polar-escape-before-request-count-assertion-" + width);
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>requests.length"));
         await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 2);
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>requests[1].request.basis"));
         await Resolve(page, 1); await Changed(page, 1);
@@ -201,6 +239,7 @@ public sealed class PolarNavigationBrowserTests {
         if (!await page.EvaluateAsync<bool>("()=>typeof preparePolarHost==='function'"))
             await page.ExposeFunctionAsync("preparePolarHost", (JsonElement request) => host.Prepare(request));
         await page.EvaluateAsync("()=>{window.polar=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));window.requests=[];window.changes=[];window.errors=[];polar.root.addEventListener('cfxviewportchange',event=>changes.push(event.detail));polar.root.addEventListener('cfxviewporterror',event=>errors.push(event.detail));polar.connectNative((request,signal)=>new Promise(resolve=>requests.push({request,signal,resolve})),{basis:'initial',coordinateSystem:'polar',axes:" + axes + ",gestures:" + (gestures ? "true" : "false") + "});}");
+        await page.EvaluateAsync(PolarGestureProbe);
     }
     private static Task Pending(IPage page, int count) => page.WaitForFunctionAsync("count=>requests.length===count", count);
     private static Task Changed(IPage page, int count) => page.WaitForFunctionAsync("count=>changes.length===count", count);
@@ -219,9 +258,38 @@ public sealed class PolarNavigationBrowserTests {
     private static async Task Capture(IPage page, string name, IDownload? download = null) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory); await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = true });
-        await File.WriteAllTextAsync(Path.Combine(directory, name + ".json"), await page.EvaluateAsync<string>("()=>JSON.stringify({requests:requests.map(item=>item.request),changes,errors,view:polar.getPolarViewport()},null,2)"));
+        await File.WriteAllTextAsync(Path.Combine(directory, name + ".json"), await page.EvaluateAsync<string>("()=>JSON.stringify({requests:requests.map(item=>item.request),changes,errors,view:polar.getPolarViewport(),gestureEvents:window.polarGestureEvents||[]},null,2)"));
         if (download != null) await download.SaveAsAsync(Path.Combine(directory, name + ".svg"));
     }
+    // Passive physical input trace. Expected precision, cancellation and request assertions are unchanged.
+    private const string PolarGestureProbe = """
+        () => {
+            if(window.polarGestureTraceInstalled)return;window.polarGestureTraceInstalled=true;
+            const root=polar.root,stage=root.querySelector('.cfx-stage'),rows=window.polarGestureEvents=[];
+            const identity=node=>node instanceof Element?{tag:node.tagName,id:node.id,mode:node.dataset.cfxModeButton,
+                role:node.dataset.cfxRole,inside:root.contains(node),focusVisible:node.matches(':focus-visible')}:null;
+            for(const type of ['pointerdown','pointermove','pointerup','pointercancel','gotpointercapture','lostpointercapture','keydown','keyup'])
+                document.addEventListener(type,event=>{
+                    if(type==='pointermove'&&!event.buttons)return;
+                    const svg=root.querySelector('.cfx-stage svg'),matrix=svg?.getScreenCTM(),projection=JSON.parse(root.dataset.cfxPreparedChart).polarProjection;
+                    const point=matrix&&Number.isFinite(event.clientX)&&Number.isFinite(event.clientY)
+                        ?new DOMPoint(event.clientX,event.clientY).matrixTransform(matrix.inverse()):null;
+                    const row={type,time:performance.now(),trusted:event.isTrusted,key:event.key,code:event.code,
+                        stageOwned:stage===event.target||stage.contains(event.composedPath()[0]),
+                        clientX:event.clientX,clientY:event.clientY,pointerId:event.pointerId,buttons:event.buttons,
+                        target:identity(event.composedPath()[0]),active:identity(document.activeElement),documentFocus:document.hasFocus(),
+                        path:event.composedPath().filter(node=>node instanceof Element).slice(0,8).map(identity),
+                        captured:Number.isInteger(event.pointerId)&&stage.hasPointerCapture(event.pointerId),prevented:event.defaultPrevented,
+                        matrix:matrix?{a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d,e:matrix.e,f:matrix.f}:null,
+                        logical:point?{x:point.x,y:point.y,bearing:Math.atan2(point.y-projection.centerY,point.x-projection.centerX),
+                            radius:Math.hypot(point.x-projection.centerX,point.y-projection.centerY)}:null,
+                        projection,requestCount:requests.length};
+                    rows.push(row);queueMicrotask(()=>{row.preventedAfter=event.defaultPrevented;row.requestCountAfter=requests.length;
+                        row.capturedAfter=Number.isInteger(event.pointerId)&&stage.hasPointerCapture(event.pointerId);});
+                },true);
+        }
+        """;
+
     private sealed record Pointer(float X, float Y);
     private sealed class Host {
         private readonly Chart _chart;

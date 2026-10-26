@@ -6,7 +6,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         RequiresVersion2Data(envelope) || (envelope.Topology?.Hierarchy != null && RequiresVersion2Data(envelope.Topology.Hierarchy.Source)) ? 2 : 1;
 
     private static bool RequiresVersion2Data(VisualArtifactInterchangeEnvelope envelope) {
-        if (envelope.Presentation?.CapturedEffects.Count > 0 || envelope.Presentation?.Frame != null || envelope.Presentation?.ContextFont != null) return true;
+        if (envelope.Presentation?.CapturedEffects.Count > 0 || envelope.Presentation?.Frame != null || envelope.Presentation?.ContextFont != null || envelope.Presentation?.TurbulenceSource != null) return true;
         if(envelope.Flow?.ViewportPadding!=null||envelope.Flow?.ExportFormats!=null)return true;
         foreach(var node in envelope.Nodes)if(node?.Flow?.AuthoredWidth!=null||node?.Flow?.AuthoredHeight!=null)return true;
         foreach (var note in envelope.Annotations) if (note?.TopologyDefaultUnits != null || note?.TopologyRoutingViewport != null) return true;
@@ -24,7 +24,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         if (envelope.Presentation?.Theme?.Definition != null || envelope.Presentation?.Theme?.Mode != null) return true;
         if (envelope.Presentation?.Theme?.TitleSize != null || envelope.Presentation?.Theme?.DataLabelSize != null
             || envelope.Presentation?.Theme?.SubtitleSize != null || envelope.Presentation?.Theme?.LegendSize != null) return true;
-        foreach (var node in envelope.Nodes) if (node?.Topology?.PreparedNodeBasis != null) return true;
+        foreach (var node in envelope.Nodes) if (node?.Topology?.PreparedNodeBasis != null || node?.Topology?.SurfaceElementAppearance != null) return true;
         if (envelope.Topology?.PathDecorations.Count > 0 || envelope.Topology?.ViewportPadding != null || envelope.Topology?.ContentClip != null || envelope.Topology?.CrossingPaint != null) return true;
         foreach(var group in envelope.Groups)if(group?.Topology is {} gp&&(gp.StrokeWidth.HasValue||gp.Opacity.HasValue||gp.SurfaceOpacity.HasValue||gp.DashPattern.Count>0))return true;
         foreach(var node in envelope.Nodes)if(node?.Topology is {} np&&(np.StrokeWidth.HasValue||np.Opacity.HasValue||np.SurfaceOpacity.HasValue||np.DashPattern.Count>0))return true;

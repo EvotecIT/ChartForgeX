@@ -16,7 +16,8 @@ public static partial class TextLayoutEngine {
         var displayed = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
         return TextFlowLayout.Layout(TextContent.Plain(displayed), maximumWidth, content => {
             var value = content.PlainText; var glyphs = prepareDisplayed(value); var size = style.EffectiveFontSize;
-            var width = font.MeasureCaptured(value, Math.Max(double.Epsilon, size), face.SynthesizeItalic, glyphs);
+            var width = style.LetterSpacing == 0 ? font.MeasureCaptured(value, Math.Max(double.Epsilon, size), face.SynthesizeItalic, glyphs)
+                : TrueTypeFont.MeasureGlyphs(glyphs, size) + (face.SynthesizeItalic && value.Length > 0 ? TrueTypeFont.ItalicOverhang(size) : 0);
             if (style.Font.Italic && !face.SynthesizeItalic && value.Length > 0) width += TrueTypeFont.ItalicOverhang(size);
             if (face.SynthesizeBold && value.Length > 0 && font.NeedsSyntheticBoldCaptured(value, glyphs)) width += Math.Max(.6, size / 18d);
             return width;

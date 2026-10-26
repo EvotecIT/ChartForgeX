@@ -15,6 +15,7 @@ internal static partial class RasterEffects {
 
     private static RasterEffectResult ExecutePlan(RgbaImage source, RasterEffectPlan plan,
         bool orderedDither, CancellationToken cancellation) {
+        if (plan.SurfaceOperation != RasterSurfaceOperation.None) throw new InvalidOperationException("A represented RGBA16 operation requires its surface permit.");
         if (plan.BackdropBlur != null) return ExecuteBackdrop(source, plan, orderedDither, cancellation);
         if (plan.IsBloom && !HasBrightSamples(source, plan, cancellation))
             return new RasterEffectResult(source, plan.SourceRegion);
@@ -26,12 +27,7 @@ internal static partial class RasterEffects {
         if (plan.IsBloom) CaptureBrightPass(source, plan, first, cancellation);
         else if (plan.SpreadRadius == 0) Capture(source, plan, first, cancellation);
         else CaptureSpreadAlpha(source, plan, first, cancellation);
-        foreach (var radius in plan.HorizontalRadii) if (radius > 0) {
-            BoxPass(first, second, width, height, channels, radius, true, cancellation); Swap(ref first, ref second);
-        }
-        foreach (var radius in plan.VerticalRadii) if (radius > 0) {
-            BoxPass(first, second, width, height, channels, radius, false, cancellation); Swap(ref first, ref second);
-        }
+        Convolve16(ref first, ref second, plan, channels, cancellation);
         cancellation.ThrowIfCancellationRequested();
         var result = plan.ResultRegion;
         var rgba = new byte[checked(result.Width * result.Height * 4)];
@@ -112,6 +108,17 @@ internal static partial class RasterEffects {
                 target[output + 1] = (ushort)RasterEffectPixels.Premultiply(source.Pixels[input + 1], alpha);
                 target[output + 2] = (ushort)RasterEffectPixels.Premultiply(source.Pixels[input + 2], alpha); target[output + 3] = (ushort)alpha;
             }
+        }
+    }
+
+    /// <summary>One convolution sequence shared by existing byte wrappers and retained RGBA16 surfaces.</summary>
+    private static void Convolve16(ref ushort[] first, ref ushort[] second, RasterEffectPlan plan, int channels, CancellationToken cancellation) {
+        var width = plan.OutputRegion.Width; var height = plan.OutputRegion.Height;
+        foreach (var radius in plan.HorizontalRadii) if (radius > 0) {
+            BoxPass(first, second, width, height, channels, radius, true, cancellation); Swap(ref first, ref second);
+        }
+        foreach (var radius in plan.VerticalRadii) if (radius > 0) {
+            BoxPass(first, second, width, height, channels, radius, false, cancellation); Swap(ref first, ref second);
         }
     }
 

@@ -46,6 +46,7 @@ internal static class MermaidPresentation {
             topology.DefaultRenderOptions ??= new TopologyRenderOptions();
             topology.DefaultRenderOptions.FitContentToViewport = sizing == MermaidTopologySizing.FixedViewport;
             topology.Theme = Theme(topology.Theme, document.Configuration, host, defaultFontSize: TopologyDefaultFontSize(document, host));
+            MermaidNativeStyles.ResolveLetterSpacing(topology);
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;

@@ -11,8 +11,8 @@ internal sealed partial class RasterEffectPlan {
     internal const long MaximumPixels = 16_777_216;
     internal RasterEffectRegion SourceRegion { get; }
     internal RasterEffectRegion OutputRegion { get; }
-    internal int OffsetX { get; }
-    internal int OffsetY { get; }
+    internal int OffsetX { get; private set; }
+    internal int OffsetY { get; private set; }
     internal ChartColor? Shadow { get; }
     internal bool CompositeSource { get; }
     internal double ShadowOpacity { get; } = 1;
@@ -30,11 +30,13 @@ internal sealed partial class RasterEffectPlan {
     internal IReadOnlyList<int> VerticalRadii { get; }
     internal long Pixels => (long)OutputRegion.Width * OutputRegion.Height;
     // Includes both 16-bit ping-pong arrays and the final RGBA8 result. No pooling/GC timing is assumed.
-    internal long AllocatedBytes => BackdropBlur != null
+    internal long AllocatedBytes => SurfaceOperation != RasterSurfaceOperation.None ? SurfaceAllocatedBytes
+        : TurbulenceData != null ? checked(Pixels * 4 + TurbulenceData.SetupArrayBytes)
+        : BackdropBlur != null
         ? checked(BackdropBlur.AllocatedBytes + Pixels * 4)
         : PixelOperation != RasterPixelOperation.None ? checked(Pixels * 4)
         : checked(Pixels * Channels * 4L + (long)ResultRegion.Width * ResultRegion.Height * 4 + MorphologyAllocatedBytes);
-    internal long WorkSamples { get; }
+    internal long WorkSamples { get; private set; }
 
     private RasterEffectPlan(RasterEffectRegion source, int sigmaXQ8, int sigmaYQ8, int offsetX, int offsetY, ChartColor? shadow, bool compositeSource = false, bool unionSource = false, int spreadRadius = 0, double shadowOpacity = 1, RasterEffectRegion? shadowClip = null, bool outline = false, int bloomThreshold = -1, int bloomStrength = 65535, bool innerShadow = false) {
         if (source.Width <= 0 || source.Height <= 0) throw new ArgumentOutOfRangeException(nameof(source));

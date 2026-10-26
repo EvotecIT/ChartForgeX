@@ -32,7 +32,6 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("() => pending[0].signal.aborted&&[...managed.root.querySelectorAll('[data-cfx-export],[data-cfx-zoom]')].every(button=>button.disabled)"));
         Assert.True(await page.EvaluateAsync<bool>("() => [...managed.root.querySelectorAll('[data-cfx-x-navigation] input,[data-cfx-x-navigation] button,.cfx-annotation-editor input,.cfx-annotation-editor button,.cfx-annotation-editor select')].every(input=>input.disabled)"));
         Assert.Equal("TypeError", await page.EvaluateAsync<string>("() => {try{managed.applyAnnotationChange({operation:'remove',id:'note'});return 'accepted';}catch(error){return error.name;}}"));
-        await page.EvaluateAsync("() => managed.root.querySelector('[data-cfx-zoom]').dispatchEvent(new MouseEvent('click',{bubbles:true}))");
         Assert.Equal(1, await page.EvaluateAsync<int>("() => pending.length"));
         host.ReplaceProducerOffset(7);
         await ResolveAsync(page, 0); await PendingAsync(page, 2);
@@ -66,11 +65,37 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
 
     private static async Task ConnectLatestWindowAsync(IPage page, NativeHost host) {
         await ConnectAsync(page, host, "x");
+        await page.EvaluateAsync(AdmissionFocusProbe);
         await page.EvaluateAsync("""
             () => {window.admissionRequests=[];managed.root.addEventListener('cfxviewportrequest',event=>admissionRequests.push(event.detail));
                 managed.connectNative(controlledNative,{basis:'initial',axes:['x'],preparationBackpressure:'latest-window'});}
             """);
     }
+
+    // Passive diagnostic for browser-specific disabled-control focus ordering; never changes focus or eligibility.
+    private const string AdmissionFocusProbe = """
+        () => {
+            const root=document.querySelector('.cfx-interactive-chart'),ids=new WeakMap();let next=0;
+            const describe=node=>node instanceof Element?{identity:ids.get(node)||(()=>{const id=++next;ids.set(node,id);return id;})(),
+                tag:node.tagName,id:node.id,dataset:{...node.dataset},disabled:node.disabled,connected:node.isConnected,
+                inside:root.contains(node),focusVisible:node.matches(':focus-visible')}:null;
+            const rows=window.admissionFocusEvents=[];
+            const snapshot=(type,extra={})=>rows.push({type,time:performance.now(),documentFocus:document.hasFocus(),
+                active:describe(document.activeElement),pending:window.pending?.length,revision:window.managed?.sceneRevision,...extra});
+            for(const type of ['pointerdown','click','focusin','focusout','keydown'])document.addEventListener(type,event=>{
+                snapshot(type,{trusted:event.isTrusted,key:event.key,target:describe(event.composedPath()[0]),related:describe(event.relatedTarget),
+                    prevented:event.defaultPrevented});
+                queueMicrotask(()=>snapshot(type+'-microtask',{target:describe(event.composedPath()[0]||event.target)}));
+            },true);
+            new MutationObserver(records=>snapshot('native-control-mutations',{recordCount:records.length,
+                changes:[...new Set(records.map(record=>record.target))].filter(node=>node instanceof Element)
+                    .map(node=>({node:describe(node),attributes:[...new Set(records.filter(record=>record.target===node).map(record=>record.attributeName))]}))}))
+                .observe(root,{attributes:true,subtree:true,attributeFilter:['disabled','aria-busy','hidden']});
+            for(const type of ['cfxviewportrequest','cfxviewportchange','cfxviewporterror','cfxupdated'])root.addEventListener(type,event=>snapshot(type,{detail:event.detail}));
+            window.addEventListener('blur',()=>snapshot('window-blur'));
+            snapshot('probe-installed');
+        }
+        """;
 
     private static async Task CaptureAdmissionAsync(IPage page, NativeHost host, string basis, string name, IEnumerable<string> errors, object consoleLog) {
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(output)) return;
@@ -79,6 +104,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         var observed = await page.EvaluateAsync<JsonElement>("""
             () => ({requests:pending.map(item=>({request:item.request,aborted:item.signal.aborted})),events:window.admissionRequests||[],
                 changes:managedChanges,errors:managedErrors,revision:managed.sceneRevision,viewport:managed.getViewport(),selection:managed.getSelection(),
+                focusEvents:window.admissionFocusEvents||[],
                 active:document.activeElement?{tag:document.activeElement.tagName,control:document.activeElement.dataset?.cfxXControl,disabled:document.activeElement.disabled,connected:document.activeElement.isConnected}:null,
                 controls:[...managed.root.querySelectorAll('[data-cfx-export],[data-cfx-zoom],[data-cfx-reset]')].map(node=>({action:node.dataset.cfxExport||node.dataset.cfxZoom||'reset',disabled:node.disabled,hidden:node.hidden})),
                 marks:[...managed.root.querySelectorAll('g[data-cfx-series-key=readings][data-cfx-source-point][data-cfx-point]')].map(node=>({source:node.dataset.cfxSourcePoint,observation:node.dataset.cfxObservationId,label:node.getAttribute('aria-label'),box:node.getBoundingClientRect().toJSON()}))})

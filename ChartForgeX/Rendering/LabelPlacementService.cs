@@ -48,7 +48,7 @@ public sealed partial class LabelPlacementService {
         var lines = 0;
         foreach (var line in TextLineScanner.Enumerate(text)) {
             var value = line.Read(text);
-            width = Math.Max(width, face.Font == null ? value.Length * style.EffectiveFontSize * (style.Font.Weight >= 600 ? 0.62 : 0.56)
+            width = Math.Max(width, face.Font == null ? TextShaper.EstimateTrackedWidth(value, value.Length * style.EffectiveFontSize * (style.Font.Weight >= 600 ? 0.62 : 0.56), style.LetterSpacing)
                 : TextLayoutEngine.MeasureWidth(value, style, face));
             lines++;
         }
@@ -194,7 +194,7 @@ public sealed partial class LabelPlacementService {
 
     private readonly struct MeasurementKey : IEquatable<MeasurementKey> {
         private readonly string _text, _family, _path, _face, _language;
-        private readonly double _size, _lineHeight;
+        private readonly double _size, _lineHeight, _letterSpacing;
         private readonly int _weight, _index;
         private readonly bool _italic;
         private readonly FontVariationSettings _variations;
@@ -203,13 +203,13 @@ public sealed partial class LabelPlacementService {
         private readonly int _hash;
         public MeasurementKey(string text, TextStyle style) {
             _text = text; _family = style.Font.Family; _path = style.Font.FilePath ?? ""; _face = style.Font.FaceName ?? "";
-            _language = style.OpenTypeLanguageTag ?? ""; _size = style.EffectiveFontSize; _lineHeight = style.LineHeight;
+            _language = style.OpenTypeLanguageTag ?? ""; _size = style.EffectiveFontSize; _lineHeight = style.LineHeight; _letterSpacing = style.LetterSpacing;
             _weight = style.Font.Weight; _index = style.Font.CollectionIndex ?? -1; _italic = style.Font.Italic; _variations = style.Font.Variations;
             _underline = style.UnderlineStyle;
-            unchecked { var hash = _text.GetHashCode(); hash = hash * 31 + _family.GetHashCode(); hash = hash * 31 + _size.GetHashCode(); _hash = hash * 31 + _weight; }
+            unchecked { var hash = _text.GetHashCode(); hash = hash * 31 + _family.GetHashCode(); hash = hash * 31 + _size.GetHashCode(); var ordinary = hash * 31 + _weight; _hash = _letterSpacing == 0 ? ordinary : ordinary * 31 + _letterSpacing.GetHashCode(); }
         }
         public bool Equals(MeasurementKey other) => _text == other._text && _family == other._family && _path == other._path && _face == other._face
-            && _language == other._language && _size == other._size && _lineHeight == other._lineHeight && _weight == other._weight
+            && _language == other._language && _letterSpacing == other._letterSpacing && _size == other._size && _lineHeight == other._lineHeight && _weight == other._weight
             && _index == other._index && _italic == other._italic && _underline == other._underline && _variations.Equals(other._variations);
         public override bool Equals(object? obj) => obj is MeasurementKey key && Equals(key);
         public override int GetHashCode() => _hash;

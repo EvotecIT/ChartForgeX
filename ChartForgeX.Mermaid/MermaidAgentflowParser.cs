@@ -51,6 +51,7 @@ internal static partial class MermaidAgentflowParser {
                 if (document.Flows.Exists(item => item.Id == current!.Id)) { Error("Agentflow flow identities must be unique."); continue; }
                 var item = new MermaidAgentflowFlow(current!.Id, span) { Label = current.Label, ParentId = global ? null : parent };
                 item.Classes.AddRange(current.Classes);MermaidStyleParser.Copy(item.Styles,current.Styles,span);
+                item.SurfaceOpacitySpan = current.SurfaceOpacitySpan;
                 document.Flows.Add(item);
                 MermaidResourceGuard.ReserveElements(1, span);
                 MermaidResourceGuard.CheckDepth(scopes.Count + 1, span);

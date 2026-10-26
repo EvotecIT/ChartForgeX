@@ -40,8 +40,19 @@ public sealed class MermaidEventModelingDepthBrowserTests {
         foreach (var expected in new[] { "String: ABC", "Alex Morgan", "/escaped~1key/~0value", "Boolean: true", "Null: null", "reset" }) Assert.Contains(expected, text);
         var host = session.Page.Locator("[data-cfx-html-sizing=preserve-size]");
         Assert.True(await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth"));
-        await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
-        await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft > 0");
+        await BeginStaticHostKeyTraceAsync(session.Page, host);
+        await session.Page.Keyboard.PressAsync("Tab");
+        await CaptureStaticHostKeyTraceAsync(session.Page, dark, width, "after-native-tab");
+        Assert.True(await host.EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"), "The fresh static artifact host receives native Tab focus.");
+        Assert.True(await host.EvaluateAsync<bool>("node=>node.matches(':focus-visible')"), "The static artifact host has keyboard-visible focus.");
+        try {
+            await session.Page.Keyboard.DownAsync("ArrowRight");
+            await CaptureStaticHostKeyTraceAsync(session.Page, dark, width, "before-scroll-assertion");
+            await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft > 0");
+        } finally {
+            await session.Page.Keyboard.UpAsync("ArrowRight");
+            await CaptureStaticHostKeyTraceAsync(session.Page, dark, width, "after-sustained-arrow-release");
+        }
         Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft") > 0);
         Assert.True(await session.Page.EvaluateAsync<bool>("()=>document.documentElement.scrollWidth<=innerWidth"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
@@ -77,6 +88,58 @@ public sealed class MermaidEventModelingDepthBrowserTests {
             File.WriteAllText(path + ".svg", result.Artifact.ToSvg()); File.WriteAllBytes(path + ".native.png", result.Artifact.ToPng());
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = path + ".browser.png", FullPage = true });
         }
+    }
+
+    // Diagnostic only: actual native input, no focus/scroll assignment or event cancellation.
+    private static async Task BeginStaticHostKeyTraceAsync(IPage page, ILocator host) {
+        Assert.True(await host.EvaluateAsync<bool>("""
+            host => {
+                const candidates=[...document.querySelectorAll('a[href],area[href],button,input,select,textarea,iframe,[tabindex],[contenteditable]')]
+                    .filter(node=>node.tabIndex>=0&&!node.disabled&&node.getClientRects().length
+                        &&getComputedStyle(node).visibility!=='hidden'&&getComputedStyle(node).display!=='none');
+                const identify=node=>node instanceof Element?{tag:node.tagName,id:node.id,role:node.getAttribute('role'),sizing:node.getAttribute('data-cfx-html-sizing')}:null;
+                const proof=window.staticHostKeyProof={events:[],dropped:0,initialActive:identify(document.activeElement),
+                    initialScrollLeft:host.scrollLeft,tabStops:candidates.map(identify),documentFocus:document.hasFocus(),
+                    visibility:document.visibilityState,hidden:document.hidden};
+                for(const kind of ['focus','blur'])window.addEventListener(kind,event=>{
+                    if(proof.events.length>=96){proof.dropped++;return;}
+                    proof.events.push({kind:'window-'+kind,time:performance.now(),trusted:event.isTrusted,
+                        active:identify(document.activeElement),documentFocus:document.hasFocus(),visibility:document.visibilityState});
+                },{passive:true});
+                for(const kind of ['keydown','keyup','focusin','focusout','scroll'])for(const capture of [true,false])
+                    document.addEventListener(kind,event=>{
+                        if(proof.events.length>=96){proof.dropped++;return;}
+                        const row={kind,capture,time:performance.now(),key:event.key??null,code:event.code??null,
+                            trusted:event.isTrusted,defaultPrevented:event.defaultPrevented,target:identify(event.target),
+                            related:identify(event.relatedTarget),active:identify(document.activeElement),scrollLeft:host.scrollLeft,
+                            documentFocus:document.hasFocus(),visibility:document.visibilityState};
+                        proof.events.push(row);
+                        queueMicrotask(()=>{row.defaultPreventedAfter=event.defaultPrevented;row.scrollLeftAfterMicrotask=host.scrollLeft;});
+                    },{capture,passive:true});
+                return candidates.length===1&&candidates[0]===host&&document.activeElement!==host&&host.scrollLeft===0;
+            }
+            """), "The fresh static page has this single native tab stop and starts without host focus or horizontal scrolling.");
+    }
+
+    private static async Task CaptureStaticHostKeyTraceAsync(IPage page, bool dark, int width, string phase) {
+        var directory=Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if(string.IsNullOrWhiteSpace(directory))return;
+        if(!Path.IsPathRooted(directory))throw new InvalidOperationException("Capture output must be an absolute path.");
+        Directory.CreateDirectory(directory);
+        var raw=await page.EvaluateAsync<string>("""
+            () => {
+                const host=document.querySelector('[data-cfx-html-sizing=preserve-size]'),active=document.activeElement;
+                return JSON.stringify({proof:window.staticHostKeyProof,state:{isActive:active===host,
+                    documentFocus:document.hasFocus(),visibility:document.visibilityState,hidden:document.hidden,
+                    userActivation:{active:navigator.userActivation?.isActive,hasBeenActive:navigator.userActivation?.hasBeenActive},
+                    active:active?{tag:active.tagName,id:active.id,role:active.getAttribute('role')}:null,
+                    focusVisible:host.matches(':focus-visible'),scrollLeft:host.scrollLeft,scrollWidth:host.scrollWidth,
+                    clientWidth:host.clientWidth,scrollTop:host.scrollTop,hostRect:host.getBoundingClientRect().toJSON(),
+                    overflowX:getComputedStyle(host).overflowX,scrollBehavior:getComputedStyle(host).scrollBehavior,
+                    scriptCount:document.querySelectorAll('script').length}},null,2);
+            }
+            """);
+        await File.WriteAllTextAsync(Path.Combine(directory,"event-native-tab-"+phase+"-"+width+(dark?"-dark":"-light")+".json"),raw);
     }
 
 }

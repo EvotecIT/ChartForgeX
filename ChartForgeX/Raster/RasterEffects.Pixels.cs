@@ -15,6 +15,10 @@ internal static partial class RasterEffects {
                 var output = (y * region.Width + x) * 4;
                 var sx = (long)region.X + x; var sy = (long)region.Y + y;
                 var input = sx >= 0 && sy >= 0 && sx < source.Width && sy < source.Height ? ((int)sy * source.Width + (int)sx) * 4 : -1;
+                if (plan.PixelOperation == RasterPixelOperation.ColorTransform) {
+                    RasterEffectPixels.TransformColor(pixels, output, source.Pixels, input, plan.ColorTransform!, cancellation);
+                    continue;
+                }
                 var ox = sx - plan.OperandX; var oy = sy - plan.OperandY;
                 var other = operand.HasValue && ox >= 0 && oy >= 0 && ox < operand.Value.Width && oy < operand.Value.Height
                     ? ((int)oy * operand.Value.Width + (int)ox) * 4 : -1;

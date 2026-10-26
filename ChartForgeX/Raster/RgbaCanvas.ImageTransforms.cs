@@ -13,8 +13,8 @@ internal sealed partial class RgbaCanvas {
         double d,
         double e,
         double f,
-        double opacity = 1) {
-        DrawImageTransformedCore(sourceWidth, sourceHeight, rgba, a, b, c, d, e, f, opacity, false);
+        double opacity = 1, double canvasOriginX = 0, double canvasOriginY = 0) {
+        DrawImageTransformedCore(sourceWidth, sourceHeight, rgba, a, b, c, d, e, f, opacity, false, canvasOriginX, canvasOriginY);
     }
 
     /// <summary>Composites completed native objects with the typed effect channel conversion.</summary>
@@ -24,7 +24,7 @@ internal sealed partial class RgbaCanvas {
         DrawImageTransformedCore(sourceWidth, sourceHeight, rgba, a, b, c, d, e, f, opacity, true);
 
     private void DrawImageTransformedCore(int sourceWidth, int sourceHeight, byte[] rgba,
-        double a, double b, double c, double d, double e, double f, double opacity, bool captured) {
+        double a, double b, double c, double d, double e, double f, double opacity, bool captured, double canvasOriginX = 0, double canvasOriginY = 0) {
         if (rgba == null) throw new ArgumentNullException(nameof(rgba));
         if (sourceWidth <= 0 || sourceHeight <= 0 || opacity <= 0) return;
         if (rgba.Length < sourceWidth * sourceHeight * 4) throw new ArgumentException("RGBA buffer is smaller than the requested source dimensions.", nameof(rgba));
@@ -37,14 +37,16 @@ internal sealed partial class RgbaCanvas {
         TransformImagePoint(sourceWidth, 0, a, b, c, d, e, f, out var x1, out var y1);
         TransformImagePoint(0, sourceHeight, a, b, c, d, e, f, out var x2, out var y2);
         TransformImagePoint(sourceWidth, sourceHeight, a, b, c, d, e, f, out var x3, out var y3);
-        var left = Math.Max(0, (int)Math.Floor(Math.Min(Math.Min(x0, x1), Math.Min(x2, x3)) * _scale));
-        var top = Math.Max(0, (int)Math.Floor(Math.Min(Math.Min(y0, y1), Math.Min(y2, y3)) * _scale));
-        var right = Math.Min(_pixelWidth, (int)Math.Ceiling(Math.Max(Math.Max(x0, x1), Math.Max(x2, x3)) * _scale));
-        var bottom = Math.Min(_pixelHeight, (int)Math.Ceiling(Math.Max(Math.Max(y0, y1), Math.Max(y2, y3)) * _scale));
+        var left = Math.Max(0, (int)Math.Floor((Math.Min(Math.Min(x0, x1), Math.Min(x2, x3)) - canvasOriginX) * _scale));
+        var top = Math.Max(0, (int)Math.Floor((Math.Min(Math.Min(y0, y1), Math.Min(y2, y3)) - canvasOriginY) * _scale));
+        var right = Math.Min(_pixelWidth, (int)Math.Ceiling((Math.Max(Math.Max(x0, x1), Math.Max(x2, x3)) - canvasOriginX) * _scale));
+        var bottom = Math.Min(_pixelHeight, (int)Math.Ceiling((Math.Max(Math.Max(y0, y1), Math.Max(y2, y3)) - canvasOriginY) * _scale));
 
         for (var targetY = top; targetY < bottom; targetY++) for (var targetX = left; targetX < right; targetX++) {
-            var canvasX = (targetX + 0.5) / _scale;
-            var canvasY = (targetY + 0.5) / _scale;
+            // A cropped native capture retains the original pixel index BEFORE division. Rebasing
+            // a fractional text/stroke origin would change interpolation rounding by a few ULPs.
+            var canvasX = (targetX + canvasOriginX * _scale + 0.5) / _scale;
+            var canvasY = (targetY + canvasOriginY * _scale + 0.5) / _scale;
             var translatedX = canvasX - e;
             var translatedY = canvasY - f;
             var sourceX = (d * translatedX - c * translatedY) / determinant;

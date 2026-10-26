@@ -12,6 +12,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSceneSvgRenderer {
     private sealed class EffectExportPlan {
+        internal readonly Dictionary<int, VisualProceduralSourcePlan> Procedural = new();
         internal readonly Dictionary<int, VisualSurfaceShadowPlan> Shadows = new();
         internal readonly Dictionary<int, VisualRetainedEffectPlan> BakedMasks = new();
         internal readonly Dictionary<int, VisualSceneRetainedEffect> NativeMasks = new();
@@ -29,13 +30,22 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static EffectExportPlan? EffectPlans(VisualScene scene, VisualSvgOptions? options,
         CancellationToken cancellation) {
-        if (!scene.HasSurfaceEffects && !scene.HasRetainedEffects) return null;
+        if (!scene.HasSurfaceEffects && !scene.HasRetainedEffects && !scene.HasProceduralSources) return null;
         var native = options?.EffectProfile == VisualSvgEffectProfile.NativeFilters;
         var raster = native ? new VisualRenderOptions(1, 1) : options?.EffectRasterOptions ?? new VisualRenderOptions();
         var ends = VisualSceneScopes.Ends(scene);
         var result = new EffectExportPlan();
         for (var index = 0; index < scene.Nodes.Count; index++) {
             cancellation.ThrowIfCancellationRequested();
+            if (scene.Nodes[index] is VisualSceneProceduralSource generated) {
+                var sourcePlan = new VisualProceduralSourcePlan(generated, native ? 1 : checked(raster.Scale * raster.Supersampling));
+                result.Procedural.Add(index, sourcePlan);
+                if (!native) {
+                    result.PixelBytes = checked(result.PixelBytes + sourcePlan.Plan.AllocatedBytes);
+                    result.WorkSamples = checked(result.WorkSamples + sourcePlan.Plan.WorkSamples);
+                    result.Validate();
+                }
+            }
             if (!(scene.Nodes[index] is VisualSceneGroup group)) continue;
             if (group.Opacity == 0 || group.ImageResource != null) {
                 index = ends[index];

@@ -165,8 +165,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
             }
         }
         var prepared = preparedDrawing ?? (requirePolar ? chart.PreparePolar(context, polarViewport) : visibility == null ? chart.Prepare(context, viewport) : chart.PrepareVisibility(context, visibility, viewport));
-        if (options.CaptureNativeValueSource && !VisualValueCapture.TryRawSource(prepared, out _, out _))
-            throw new NotSupportedException("Native raw value capture requires an authored Pie/Donut source and bounded captured formatting/font policy; ordinary preparation remains available.");
+        if (options.CaptureNativeValueSource && !VisualValueCapture.TrySourceValues(prepared, out _, out _))
+            throw new NotSupportedException("Native raw/component value capture requires an admitted authored source and bounded captured formatting/font policy; ordinary preparation remains available.");
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         if (!Enum.IsDefined(typeof(HtmlChartToolbarLayout), options.Toolbar)) throw new ArgumentOutOfRangeException(nameof(options.Toolbar));
         if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));

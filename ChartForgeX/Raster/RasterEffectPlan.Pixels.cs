@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Raster;
 
-internal enum RasterPixelOperation { None, Mask, Blend, FloodBlend, PorterDuff, FloodPorterDuff }
+internal enum RasterPixelOperation { None, Mask, Blend, FloodBlend, PorterDuff, FloodPorterDuff, ColorTransform }
 
 internal sealed partial class RasterEffectPlan {
     internal RasterPixelOperation PixelOperation { get; }
@@ -14,9 +14,9 @@ internal sealed partial class RasterEffectPlan {
     internal VisualMaskMode MaskMode { get; }
     internal int QuantizeOriginX { get; }
     internal int QuantizeOriginY { get; }
-    internal VisualBlendMode BlendMode { get; }
+    internal VisualBlendMode BlendMode { get; private set; }
     internal ChartColor Flood { get; }
-    internal VisualCompositeOperator CompositeOperator { get; }
+    internal VisualCompositeOperator CompositeOperator { get; private set; }
     private RasterEffectPlan(RasterEffectRegion source, RasterPixelOperation operation, RgbaImage? operand, int x, int y,
         VisualMaskMode maskMode, VisualBlendMode blendMode, ChartColor flood, int phaseX = 0, int phaseY = 0,
         VisualCompositeOperator compositeOperator = VisualCompositeOperator.SourceOver) {

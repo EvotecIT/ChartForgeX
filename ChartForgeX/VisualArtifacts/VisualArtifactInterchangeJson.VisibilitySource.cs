@@ -38,8 +38,9 @@ internal static partial class VisualArtifactInterchangeJson {
         var accessibility = source.CopyAccessibility(); writer.Property("accessibility"); writer.StartObject();
         OptionalString(writer, "name", accessibility.Name); OptionalString(writer, "description", accessibility.Description); OptionalString(writer, "language", accessibility.Language);
         Boolean(writer, "decorative", accessibility.IsDecorative); writer.EndObject();
-        VisibilitySourceContext(writer, context, preserveFontPaths: source.Pie == null && source.Hierarchy == null);
+        VisibilitySourceContext(writer, context, preserveFontPaths: source.Pie == null && source.Hierarchy == null && source.CopyBubble() == null && !source.SeriesRows.Any(row => row.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.ErrorBar or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc));
         if (source.Pie != null) VisibilitySourcePie(writer, source, includeDerivedMembership);
+        if (source.CopyBubble() is { } bubble) VisibilitySourceBubble(writer, bubble);
         if (source.Hierarchy != null) VisibilitySourceHierarchy(writer, source.Hierarchy);
         writer.Property("series"); writer.StartArray();
         foreach (var row in source.SeriesRows) VisibilitySourceSeries(writer, row, includeValues);
@@ -75,6 +76,34 @@ internal static partial class VisualArtifactInterchangeJson {
             writer.Property("sliceRadii"); writer.StartArray(); foreach (var value in source.SliceRadiusRatios) { if (value.HasValue) writer.Number(value.Value); else writer.String(null); } writer.EndArray();
             if (source.RadialBand != null) { Number(writer, "bandInner", source.RadialBand.InnerRatio); Number(writer, "bandOuter", source.RadialBand.OuterRatio); }
         }
+        if (source.Kind == ChartSeriesKind.Bubble) {
+            writer.Property("bubbles"); writer.StartArray();
+            foreach (var bubble in source.Bubbles) {
+                writer.StartObject(); Number(writer, "x", bubble.X);
+                if (includeValues) { Number(writer, "y", bubble.Y); Number(writer, "size", bubble.Size); }
+                OptionalNumber(writer, "colorValue", bubble.ColorValue); writer.EndObject();
+            }
+            writer.EndArray();
+        }
+        if (source.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) {
+            writer.Property("ranges"); writer.StartArray();
+            foreach (var range in source.Ranges) {
+                writer.StartObject(); Number(writer, "x", range.X); Boolean(writer, "breakBefore", range.BreakBefore);
+                if (includeValues) { Number(writer, "lower", range.Lower); Number(writer, "upper", range.Upper); }
+                writer.EndObject();
+            }
+            writer.EndArray();
+        }
+        if (source.Kind == ChartSeriesKind.ErrorBar) {
+            writer.Property("errorBars"); writer.StartArray();
+            foreach (var error in source.ErrorBars) {
+                writer.StartObject(); Number(writer, "x", error.X); if (includeValues) Number(writer, "value", error.Y);
+                VisibilitySourceErrorBounds(writer, "xBounds", error.XBounds, includeValues);
+                VisibilitySourceErrorBounds(writer, "yBounds", error.YBounds, includeValues); writer.EndObject();
+            }
+            writer.EndArray();
+        }
+        if (source.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) VisibilitySourceFinancial(writer, source, includeValues);
         if (source.IsHierarchy) VisibilitySourceHierarchySeries(writer, source, includeValues);
         writer.EndObject();
     }

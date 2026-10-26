@@ -48,7 +48,9 @@ internal static partial class MermaidFlowchartParser {
         }
         var styles = new Dictionary<string, string>();
         ReadStyles(styles, body.Substring(split + 1), span, result, edge: false);
-        CopyStyles(GetOrAddNode(document, nodes, nodeId, span).Styles, styles, span);
+        var target = GetOrAddNode(document, nodes, nodeId, span);
+        CopyStyles(target.Styles, styles, span);
+        if (styles.ContainsKey("opacity")) target.SurfaceOpacitySpan = span;
         return true;
     }
 
@@ -80,25 +82,19 @@ internal static partial class MermaidFlowchartParser {
         foreach (var node in document.Nodes) {
             var classes = new List<string>(node.Classes.Count + 1) { "node" };
             classes.AddRange(node.Classes);
-            var authored=new HashSet<string>(node.Styles.Keys,StringComparer.Ordinal);
             var resolved = MermaidStyleParser.Resolve(definitions, classes, node.Styles, node.Span);
             node.Styles.Clear();
             CopyStyles(node.Styles, resolved);
-            DiagnoseNodeProperties(node.Styles,authored,node.Span);
+            MermaidTopologySurfaceElements.Diagnose(node, node.Styles, MermaidTopologySurfaceElements.Supports(document, node), "Flowchart", result);
         }
         foreach(var group in document.Subgraphs) {
-            var authored=new HashSet<string>(group.Styles.Keys,StringComparer.Ordinal);
             var resolved=MermaidStyleParser.Resolve(definitions,group.Classes,group.Styles,group.Span,includeDefault:false);
-            group.Styles.Clear();CopyStyles(group.Styles,resolved);DiagnoseNodeProperties(group.Styles,authored,group.Span);
+            group.Styles.Clear();CopyStyles(group.Styles,resolved);
+            MermaidTopologySurfaceElements.Diagnose(group, group.Styles, MermaidTopologySurfaceElements.SupportsGroups(document), "Flowchart", result);
         }
         foreach(var edge in document.Edges) {
             var resolved=MermaidStyleParser.Resolve(definitions,edge.Classes,edge.Styles,edge.Span,includeDefault:false);
             edge.Styles.Clear();CopyStyles(edge.Styles,resolved);
-        }
-        void DiagnoseNodeProperties(Dictionary<string,string> styles,HashSet<string> authored,MermaidSourceSpan span) {
-            foreach(var item in styles)if(!authored.Contains(item.Key)&&MermaidNativeStyles.UnsupportedSurface(item.Key))
-                MermaidParserUtilities.Add(result,span,MermaidDiagnosticSeverity.Warning,
-                    "Flowchart node/group style '"+item.Key+"' is retained without native application.",MermaidDiagnosticCodes.UnsupportedStatement);
         }
     }
 
@@ -122,7 +118,7 @@ internal static partial class MermaidFlowchartParser {
 
     private static void ReadStyles(Dictionary<string, string> styles, string text, MermaidSourceSpan span,
         MermaidParseResult<MermaidDocument> result, bool edge,bool declaration=false) => MermaidStyleParser.Read(styles, text, span, result, "Flowchart", edge,
-            nativeProperty:edge||declaration?MermaidNativeStyles.SupportsEdge:MermaidNativeStyles.SupportsSurface);
+            nativeProperty:edge||declaration?MermaidNativeStyles.SupportsEdge:MermaidTopologySurfaceElements.DeferredSurface);
 
     private static void CopyStyles(Dictionary<string, string> target, Dictionary<string, string> source, MermaidSourceSpan? span = null) => MermaidStyleParser.Copy(target, source, span);
 }

@@ -9,8 +9,10 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyNodeShapeGeometry {
     internal readonly struct ScenePart {
         internal ScenePart(ChartPath path, bool close, bool fill) : this(path, close, fill, true, true, false) { }
-        internal ScenePart(ChartPath path, bool close, bool fill, bool ink, bool attachment, bool accentFill = false) {
-            Path = path; Close = close; Fill = fill; Ink = ink; Attachment = attachment; AccentFill = accentFill;
+        internal ScenePart(ChartPath path, bool close, bool fill, bool ink, bool attachment, bool accentFill = false)
+            : this(path, close, fill, ink, attachment, accentFill, true) { }
+        internal ScenePart(ChartPath path, bool close, bool fill, bool ink, bool attachment, bool accentFill, bool contourPaint) {
+            Path = path; Close = close; Fill = fill; Ink = ink; Attachment = attachment; AccentFill = accentFill; ContourPaint = contourPaint;
         }
         internal ChartPath Path { get; }
         internal bool Close { get; }
@@ -18,12 +20,14 @@ internal static partial class TopologyNodeShapeGeometry {
         internal bool Ink { get; }
         internal bool Attachment { get; }
         internal bool AccentFill { get; }
+        /// <summary>Whether the node's explicit contour policies apply; fixed shape details retain their own native ink.</summary>
+        internal bool ContourPaint { get; }
     }
 
     internal static IReadOnlyList<ScenePart> SceneParts(TopologyNode node) {
         if (TopologyPreparedNodeBasis.Resolve(node) is {} basis && !IsActor(node)) {
             var captured = SceneParts(basis.OriginalNode(node)); var projected = new List<ScenePart>(captured.Count);
-            foreach (var part in captured) projected.Add(new ScenePart(part.Path.Transform(point => basis.Project(node, point)), part.Close, part.Fill, part.Ink, part.Attachment, part.AccentFill));
+            foreach (var part in captured) projected.Add(new ScenePart(part.Path.Transform(point => basis.Project(node, point)), part.Close, part.Fill, part.Ink, part.Attachment, part.AccentFill, part.ContourPaint));
             return projected;
         }
         if (IsCatalogSurface(node)) return CatalogParts(node);

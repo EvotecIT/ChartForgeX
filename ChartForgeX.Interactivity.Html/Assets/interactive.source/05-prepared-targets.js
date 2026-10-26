@@ -6,6 +6,20 @@
   };
   const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));
 
+  const appendNativeBrowserHitArea = (node, region, minimumSize) => {
+    if (![region.x, region.y, region.width, region.height].every(Number.isFinite)) return;
+    const width = Math.max(minimumSize, region.width), height = Math.max(minimumSize, region.height);
+    const x = region.x + (region.width - width) / 2, y = region.y + (region.height - height) / 2;
+    if (![x, y, width, height, x + width, y + height].every(Number.isFinite) || !(width > 0 && height > 0)
+      || Array.from(node.children).some(child => child.hasAttribute('data-cfx-browser-hit-area'))) return;
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hit.setAttribute('x', x); hit.setAttribute('y', y);
+    hit.setAttribute('width', width); hit.setAttribute('height', height);
+    hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+    hit.setAttribute('data-cfx-browser-hit-area', 'true');
+    node.appendChild(hit);
+  };
+
   const prepareChartTargets = (root) => {
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg || !root.dataset.cfxPreparedChart) return;
@@ -66,6 +80,8 @@
       if (data.cfxRole !== 'legend-entry-omitted') data.cfxRole = 'legend-item';
       data.cfxSeries = String(index);
       const region = regions.get(source);
+      if (series[index] && node.localName === 'g' && data.cfxRole === 'legend-item'
+        && region?.role === 'legend' && isInteractiveTarget(node)) appendNativeBrowserHitArea(node, region, 0);
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
       if (reference && !reflow) {
@@ -157,14 +173,7 @@
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
       if (box.width > 0 && box.height > 0 && !hollowCandle) return;
-      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      const width = Math.max(8, region.width); const height = Math.max(8, region.height);
-      hit.setAttribute('x', region.x + (region.width - width) / 2);
-      hit.setAttribute('y', region.y + (region.height - height) / 2);
-      hit.setAttribute('width', width); hit.setAttribute('height', height);
-      hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
-      hit.setAttribute('data-cfx-browser-hit-area', 'true');
-      node.appendChild(hit);
+      appendNativeBrowserHitArea(node, region, 8);
     });
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {

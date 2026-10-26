@@ -74,6 +74,30 @@ internal sealed class TurbulenceReferenceOracle {
         return output;
     }
 
+    /// <summary>Explanatory byte model for a browser's phase and intermediate color surfaces, never native acceptance.</summary>
+    /// <remarks>Inputs are explicit logical sample coordinates. A selected browser may add a half-cell to its
+    /// already-centered raster coordinates. Gradient quantization, float precision and GPU paths are not modeled.</remarks>
+    internal int[] SamplePremultipliedReadbackEstimate(double x, double y, double fx, double fy, int octaves,
+        bool fractal, bool stitch, bool linearRgb, double tileWidth = 64, double tileHeight = 48) {
+        var raw = Sample(x, y, fx, fy, octaves, fractal, stitch, false, tileWidth, tileHeight);
+        var alpha = Byte(raw[3]);
+        var output = new int[4]; output[3] = alpha;
+        if (alpha == 0) return output;
+        for (var channel = 0; channel < 3; channel++) {
+            // The first surface stores premultiplied working-space bytes before optional transfer.
+            var premultiplied = Byte(raw[channel] * raw[3] / 255);
+            if (linearRgb) {
+                var linear = (double)premultiplied / alpha;
+                var encoded = linear <= .0031308 ? linear * 12.92 : 1.055 * Math.Pow(linear, 1 / 2.4) - .055;
+                premultiplied = Byte(encoded * alpha);
+            }
+            output[channel] = Byte(premultiplied * 255d / alpha);
+        }
+        return output;
+    }
+
+    private static int Byte(double value) => (int)Math.Floor(Math.Max(0, Math.Min(255, value)) + .5);
+
     private static double StitchFrequency(double frequency, double extent) {
         if (frequency == 0) return 0;
         var low = Math.Floor(extent * frequency) / extent;

@@ -20,8 +20,8 @@ public sealed class MermaidSurfacePaintCausalTests {
     }
 
     [Fact]
-    public void SourceOpacityKeepsItsLocatedWarningUntilSurfaceReferenceProofExists() {
-        const string source="flowchart LR\na[Work]\nstyle a opacity:0.5";
+    public void UnrepresentedSourceOpacityKeepsItsLocatedWarning() {
+        const string source="flowchart LR\na@{ shape: browser, label: 'Work' }\nstyle a opacity:0.5";
         var rendered=MermaidRenderer.Render(source);Capture(rendered,"source-opacity-pending-reference");
         Assert.False(rendered.HasErrors);var warning=Assert.Single(rendered.Diagnostics);Assert.Equal(3,warning.Span.Line);
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement,warning.Code);

@@ -14,10 +14,18 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// <param name="options">Immutable effect, observation count and optional explicit native flash paint.</param>
     /// <param name="cancellationToken">Cancellation checked before publishing a complete bounded payload.</param>
     /// <remarks>Values/InitialValues reuse the typed Progress, LayeredRadial, Circle, ProgressRing, Gauge, Bullet and finite detached Line/Bar plans and positive unaggregated single-series Pie/Donut complete native frames with unchanged slice order and captured primary faces or stable finite actual fallback cluster decisions. Unseen/changing fallback repertoires reject before payload capture. ValueFlash retains the typed gauge/progress plans and actual owned Line/Bar, Pie/Donut, Treemap/Sunburst ink; shared Line paths are series-owned and only changed point markers flash.
+    /// Opt-in Bubble Y/Size uses authored component identities, fixed native axes and explicit size domains; raw positive sizes retain native clamping. Component plans use this entry rather than the scalar one-edit API.
+    /// Opt-in RangeBand/RangeArea Lower/Upper uses the same complete component owner. ValueFlash repaints each changed series envelope across its real runs and both native markers of changed tuples; other tuple markers and captions remain unchanged.
+    /// Opt-in ErrorBar values retain actual nullable uncertainty members, fixed native axes and containing guards; flash uses its real complete changed-point ink owner.
+    /// Opt-in Candlestick/OHLC Open/High/Low/Close uses the same typed component owner and native rising/falling/doji policies; changed-point flash retains each complete financial mark.
+    /// Component raw values may cross captured display windows under native clipping while intrinsic Log sign/zero and typed constraints remain strict. Fixed primary time X reuses its captured native axis policy; animated members remain numeric.
     /// One or more identified readings may change. InitialValues never invents zero, log/calendar or hierarchy baselines.
     /// ValueFlash retains accepted values/geometry and alters captured changed value ink, returning to its exact final paint.
     /// LegendVisibility uses Preserve whole-series Line/Bar composites or explicit Reflow Line/Bar observations and supplied/raw BoxPlot groups, and single-series Pie/Donut observations or captured full-source Other groups with native source/destination fades. Preserve enabled-label
     /// partial motion requires explicit GroupWithSeries. Browser playback retains the incumbent acceptance/basis/lifetime owner.
+    /// Automatic owned-font destinations retain exact root identities, declared byte lengths and face-view descriptors;
+    /// repeated binary text in their font-root templates is omitted. The accepted section supplies those immutable bytes.
+    /// Every other destination field and captured SVG endpoint remains exact, under the unchanged one MiB presentation budget.
     /// The existing one-edit API and payload bytes remain unchanged. No universal-family or unlimited-size support is implied.</remarks>
     public string PrepareNativeTransitionJson(HtmlChartSection from, HtmlChartSection to, HtmlNativeTransitionOptions options,
         CancellationToken cancellationToken = default) {
@@ -52,7 +60,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         };
         var json = new StringBuilder("{\"kind\":\"native-transition\",\"effect\":").Append(HtmlJsonString.Encode(effect))
             .Append(",\"sourceKind\":").Append(HtmlJsonString.Encode(sourceReflow ? "native-source-reflow" : joint ? first!.Kind : legend ? reflow ? "native-visibility-reflow" : "line-bar-visibility" : first!.Kind))
-            .Append(",\"destination\":").Append(HtmlJsonString.Encode(to.Html));
+            .Append(",\"destination\":").Append(HtmlJsonString.Encode(to.TransitionHtml));
         if (sourceReflow) {
             VisualValueCapture.TryRawSource(from.PreparedVisual, out var a, out _); VisualValueCapture.TryRawSource(to.PreparedVisual, out var b, out _);
             AppendNativeTransitionReadings(json, a!, b!);

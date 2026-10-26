@@ -51,7 +51,9 @@ public sealed partial class MermaidSequenceParOverTests {
                 }
                 const host=document.querySelector('[data-cfx-html-sizing="preserve-size"]');
                 return {labels,clip,blocks:svg.querySelectorAll('[data-cfx-role="sequence-block"]').length,
-                    activations:svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]').length,
+                    activations:[...svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]')].filter(node=>node.height.baseVal.value>4).length,
+                    activationEndings:[...svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]')].filter(node=>node.height.baseVal.value===4).length,
+                    activationOwners:[...svg.querySelectorAll('[data-cfx-role="sequence-activation"]')].map(node=>node.getAttribute("data-cfx-source-id")),
                     scripts:svg.querySelectorAll('script,foreignObject').length, pageOverflow:document.documentElement.scrollWidth>innerWidth,
                     contentWidth:host.scrollWidth,hostWidth:host.clientWidth};
             }
@@ -59,6 +61,10 @@ public sealed partial class MermaidSequenceParOverTests {
         if (!string.IsNullOrWhiteSpace(output)) File.WriteAllText(Path.Combine(output, name + ".json"), observed.GetRawText());
         Assert.Equal(3, observed.GetProperty("blocks").GetInt32()); Assert.Equal(0, observed.GetProperty("scripts").GetInt32());
         Assert.Equal(2, observed.GetProperty("activations").GetInt32());
+        Assert.Equal(2, observed.GetProperty("activationEndings").GetInt32());
+        var activationOwners = SequencePreparedCompiler.PrepareDefault(Assert.IsType<SequenceArtifact>(artifact.Model)).Regions
+            .Where(region => region.Role == "sequence-activation").Select(region => region.Id);
+        Assert.Equal(activationOwners, observed.GetProperty("activationOwners").EnumerateArray().Select(value => value.GetString()));
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.False(observed.GetProperty("pageOverflow").GetBoolean());
         var labels = observed.GetProperty("labels").EnumerateArray().Select(value => value.GetString()).ToArray();
         foreach (var label in new[] { "3. Alpha request", "4. Forward", "5. Reply", "6. Alpha done", "7. Beta request", "8. Recovery", "9. Beta done", "10. After fragment", "First task note", "Guard note", "Terminal task note", "and  [Second task]", "and  [Notes only]" }) Assert.Contains(label, labels);

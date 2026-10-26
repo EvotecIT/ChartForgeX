@@ -42,6 +42,9 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void RenderLayer(RgbaCanvas canvas, VisualCanvasLayer layer, ResolvedVisualCanvasStyle theme) {
         if (layer is VisualCanvasTextLayer text) {
+            if (VisualCanvasStyledText.Requested(text.TextStyle)) {
+                VisualSceneRasterRenderer.PaintPreparedTextScene(canvas, VisualCanvasStyledText.Plain(text, theme), text.X, text.Y); return;
+            }
             var face = VisualCanvasTextFace.Resolve(theme.FontFamily, text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
             DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.ResolveColor(theme), text.Alignment, face);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
@@ -86,6 +89,9 @@ public sealed class PngVisualCanvasRenderer {
     }
 
     private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero, ResolvedVisualCanvasStyle theme) {
+        if (VisualCanvasStyledText.Requested(hero.TextStyle)) {
+            VisualSceneRasterRenderer.PaintPreparedTextScene(canvas, VisualCanvasStyledText.Hero(hero, theme), hero.X, hero.Y); return;
+        }
         var face = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode);
         var fontSize = hero.FittedFontSize(face);
         var totalWidth = 0.0;

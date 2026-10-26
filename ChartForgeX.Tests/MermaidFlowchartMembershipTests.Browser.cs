@@ -41,8 +41,14 @@ public sealed partial class MermaidFlowchartMembershipTests {
         var labels = observed.GetProperty("labels").EnumerateArray().Select(label => label.GetString()).ToArray(); Assert.Contains("Updated", labels); Assert.Contains("Persist", labels); Assert.DoesNotContain("Original", labels);
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.Equal(0, observed.GetProperty("scripts").GetInt32()); Assert.False(observed.GetProperty("overflow").GetBoolean());
         if (await host.EvaluateAsync<bool>("element=>element.scrollWidth>element.clientWidth")) {
-            await host.FocusAsync(); await session.Page.Keyboard.PressAsync("ArrowRight");
-            await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft>0"); Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft") > 0);
+            await session.Page.Keyboard.PressAsync("Tab");
+            Assert.True(await host.EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"), "The fresh static artifact host receives native Tab focus.");
+            Assert.True(await host.EvaluateAsync<bool>("node=>node.matches(':focus-visible')"), "The static artifact host has keyboard-visible focus.");
+            try {
+                await session.Page.Keyboard.DownAsync("ArrowRight");
+                await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=\"preserve-size\"]').scrollLeft>0");
+            } finally { await session.Page.Keyboard.UpAsync("ArrowRight"); }
+            Assert.True(await host.EvaluateAsync<double>("element=>element.scrollLeft") > 0);
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }

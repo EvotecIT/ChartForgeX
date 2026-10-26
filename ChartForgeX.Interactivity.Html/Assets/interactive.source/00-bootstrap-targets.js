@@ -182,5 +182,9 @@
       if (!kind || !id) return;
       node.setAttribute('data-cfx-target-kind', kind);
       node.setAttribute('data-cfx-target-id', id);
+      if (kind === 'point' && hasFeature(root, 'Selection')) {
+        const focus = targetFocusNode(node);
+        if (!focus.hasAttribute('role') && !focus.matches('a[href],button,input,select,textarea')) focus.setAttribute('role', 'button');
+      }
     });
   };

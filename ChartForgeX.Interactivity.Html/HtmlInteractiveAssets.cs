@@ -14,6 +14,9 @@ internal static class HtmlInteractiveAssets {
     private static readonly Lazy<string> ScriptResource = new Lazy<string>(() =>
         ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-native-text-export.js") + "\n" + ReadResource(ScriptResourceName));
 
+    internal static string AdapterLifetimeScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js");
+    internal static string NativeTextScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-native-text-export.js");
+
     internal static string LocalizationScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-localization.js");
 
     internal static string Style => StyleResource.Value;

@@ -17,7 +17,7 @@ internal static partial class TopologyRenderPrimitives {
         var size = edge.TextStyle?.FontSize ?? chart.Theme.Typography.DataLabelSize * units;
         var content = EdgeCaptionContent(edge, value);
         if (content.IsStructured) {
-            var inlineStyle = TopologyTextPolicy.ResolveStructured(edge.TextStyle, font, size); inlineStyle.FontSize = size * outputScale;
+            var inlineStyle = TopologyTextPolicy.ResolveStructured(edge.TextStyle, font, size); inlineStyle.FontSize = size * outputScale; inlineStyle.LetterSpacing *= outputScale;
             content = TopologyTextLayout.DisplayRows(content, options.AllowMultilineNodeLabels).Transform(inlineStyle.TextCase);
             var metrics = TextLayoutEngine.Measure(content, inlineStyle);
             var maximum = System.Math.Min(System.Math.Max(1, rows), (int)System.Math.Floor(allocation * outputScale / metrics.LineHeight));
@@ -31,7 +31,7 @@ internal static partial class TopologyRenderPrimitives {
                 + VisualSceneTextFace.BaselineOffset(inlineStyle)) / outputScale;
             return new ChartPoint(position.Point.X, position.Point.Y + height / 2 - inlineBaseline);
         }
-        var style = TopologyTextPolicy.Resolve(edge.TextStyle, font, size, 600); style.FontSize = size * outputScale;
+        var style = TopologyTextPolicy.Resolve(edge.TextStyle, font, size, 600); style.FontSize = size * outputScale; style.LetterSpacing *= outputScale;
         var face = new VisualSceneTextFace(style);
         var plan = TopologyTextLayout.Prepare(value, System.Math.Max(0, width - 8 * units) * outputScale, allocation * outputScale, size * outputScale, 600, rows,
             false, DotNodeSymbolFontSize, options, (text, candidate, _) => face.Prepare(text, candidate).Metrics);

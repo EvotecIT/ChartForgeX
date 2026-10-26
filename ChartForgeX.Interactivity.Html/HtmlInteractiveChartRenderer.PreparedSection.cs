@@ -27,8 +27,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     internal static HtmlChartSection BuildPreparedSceneSection(PreparedSceneSectionSource source, HtmlChartInteractionOptions options) {
         var prepared = source.Drawing;
+        var svgOptions = source.SvgOptions.WithTextPresentation(HtmlCapturedFontAssets.Resolve(options.TextPresentation));
         var emission = (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Export)
-            ? prepared.ForInteractivePngExport() : prepared).ExportSvgEmission(source.SvgOptions);
+            ? prepared.ForInteractivePngExport() : prepared).ExportSvgEmission(svgOptions);
         var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         var writer = new HtmlMarkupWriter();
@@ -116,8 +117,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .RawTrusted(narrowSection.Html)
                 .EndElement().Line();
         }
+        var fontPayloads = !source.Narrow ? HtmlCapturedFontAssets.Write(writer, emission.Fonts, narrowSection?.WideEmission?.Fonts) : null;
         writer.EndElement();
-        return new HtmlChartSection(writer.Build(), prepared, narrowSection?.PreparedVisual, source.SvgOptions, emission, narrowSection?.WideEmission);
+        return new HtmlChartSection(writer.Build(), prepared, narrowSection?.PreparedVisual, svgOptions, emission, narrowSection?.WideEmission, fontPayloads);
     }
 
 }

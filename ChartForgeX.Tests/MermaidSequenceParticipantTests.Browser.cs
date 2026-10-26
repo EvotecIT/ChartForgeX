@@ -26,6 +26,7 @@ public sealed partial class MermaidSequenceParticipantTests {
 
     private static async Task ObserveAsync(VisualArtifact artifact, bool dark, int width, string surface) {
         var svg = artifact.ToSvg(); var png = artifact.ToPng();
+        var participants = Assert.IsType<SequenceArtifact>(artifact.Model).Participants;
         var html = artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize });
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 800);
         var host = session.Page.Locator("[data-cfx-html-sizing='preserve-size']");
@@ -51,7 +52,9 @@ public sealed partial class MermaidSequenceParticipantTests {
                 }
                 const host=document.querySelector('[data-cfx-html-sizing="preserve-size"]');
                 return {labels,clip,participants:svg.querySelectorAll('[data-cfx-role="sequence-participant"]').length,
-                    kinds:[...svg.querySelectorAll('[data-cfx-role="sequence-notation"]')].map(node=>node.getAttribute("data-kind")),
+                    kinds:[...svg.querySelectorAll('[data-cfx-role="sequence-participant"] [data-cfx-role="sequence-notation"]')].map(node=>node.getAttribute("data-kind")),
+                    footerKinds:[...svg.querySelectorAll('[data-cfx-role="sequence-participant-footer"] [data-cfx-role="sequence-notation"]')].map(node=>node.getAttribute("data-kind")),
+                    footerIds:[...svg.querySelectorAll('[data-cfx-role="sequence-participant-footer"]')].map(node=>node.getAttribute("data-source-id")),
                     hrefs:[...svg.querySelectorAll("a")].map(node=>node.getAttribute("href")||node.getAttribute("xlink:href")),
                     activationIntervals:[...svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]')].filter(node=>node.height.baseVal.value>4).length,
                     activationEndings:[...svg.querySelectorAll('[data-cfx-role="sequence-activation-bar"]')].filter(node=>node.height.baseVal.value===4).length,
@@ -64,6 +67,10 @@ public sealed partial class MermaidSequenceParticipantTests {
         Assert.Equal(1, observed.GetProperty("activationIntervals").GetInt32());
         Assert.Equal(1, observed.GetProperty("activationEndings").GetInt32());
         Assert.Equal(7, observed.GetProperty("kinds").GetArrayLength());
+        Assert.Equal(observed.GetProperty("kinds").EnumerateArray().Select(value => value.GetString()),
+            observed.GetProperty("footerKinds").EnumerateArray().Select(value => value.GetString()));
+        Assert.Equal(participants.Select(participant => participant.Id),
+            observed.GetProperty("footerIds").EnumerateArray().Select(value => value.GetString()));
         Assert.Equal(new[] { "https://example.test/status" }, observed.GetProperty("hrefs").EnumerateArray().Select(value => value.GetString()));
         Assert.Empty(observed.GetProperty("clip").EnumerateArray()); Assert.False(observed.GetProperty("pageOverflow").GetBoolean());
         var labels = observed.GetProperty("labels").EnumerateArray().Select(value => value.GetString()).ToArray();

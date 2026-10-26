@@ -19,14 +19,21 @@ internal sealed class SvgRasterDefinitions {
     private readonly Dictionary<string, SvgRasterLinearGradient> _linearGradients = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterRadialGradient> _radialGradients = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterPattern> _patterns = new(StringComparer.Ordinal);
+    private readonly HashSet<SvgRasterPattern> _activePatterns = new();
+    // Same bounded resource depth as local use/marker traversal; flat paint references cannot reset it.
+    private const int MaximumPaintReferenceDepth = 8;
+    internal bool TryEnterPatternPaint(SvgRasterPattern pattern) =>
+        _activePatterns.Count < MaximumPaintReferenceDepth && _activePatterns.Add(pattern);
+    internal void LeavePatternPaint(SvgRasterPattern pattern) => _activePatterns.Remove(pattern);
     private readonly List<string> _styleBlocks = new();
 
     private SvgRasterStyleSheet _styleSheet = SvgRasterStyleSheet.Empty;
     public SvgRasterDiagnostics? Diagnostics { get; private set; }
     internal SvgRasterFilterContext? Filters { get; private set; }
+    internal SvgRasterResourceContext? Resources { get; private set; }
 
     public static SvgRasterDefinitions From(SvgRasterDocument document) {
-        var definitions = new SvgRasterDefinitions { Diagnostics = document.Diagnostics, Filters = document.Filters };
+        var definitions = new SvgRasterDefinitions { Diagnostics = document.Diagnostics, Filters = document.Filters, Resources = document.Resources };
         var ancestors = new List<SvgRasterElement> { document.Root };
         foreach (var child in document.Children) definitions.Collect(child, ancestors);
         definitions._styleSheet = SvgRasterStyleSheet.Parse(definitions._styleBlocks);
@@ -80,10 +87,17 @@ internal sealed class SvgRasterDefinitions {
     }
 
     private bool ResolveLinearGradient(string id, HashSet<string> visiting, out SvgRasterLinearGradient gradient) {
+        Filters?.Cancellation.ThrowIfCancellationRequested();
         if (_linearGradients.TryGetValue(id, out gradient!)) return true;
         if (!visiting.Add(id) || !_gradientElements.TryGetValue(id, out var element) || !string.Equals(element.Name, "linearGradient", StringComparison.Ordinal)) {
             gradient = null!;
             return false;
+        }
+
+        if (visiting.Count > MaximumPaintReferenceDepth) {
+            Diagnostics?.Report("SFR001", "The paint-server href ancestry exceeds the bounded reference depth.", element);
+            visiting.Remove(id);
+            gradient = null!; return false;
         }
 
         SvgRasterLinearGradient? inherited = null;
@@ -96,10 +110,17 @@ internal sealed class SvgRasterDefinitions {
     }
 
     private bool ResolveRadialGradient(string id, HashSet<string> visiting, out SvgRasterRadialGradient gradient) {
+        Filters?.Cancellation.ThrowIfCancellationRequested();
         if (_radialGradients.TryGetValue(id, out gradient!)) return true;
         if (!visiting.Add(id) || !_gradientElements.TryGetValue(id, out var element) || !string.Equals(element.Name, "radialGradient", StringComparison.Ordinal)) {
             gradient = null!;
             return false;
+        }
+
+        if (visiting.Count > MaximumPaintReferenceDepth) {
+            Diagnostics?.Report("SFR001", "The paint-server href ancestry exceeds the bounded reference depth.", element);
+            visiting.Remove(id);
+            gradient = null!; return false;
         }
 
         SvgRasterRadialGradient? inherited = null;
@@ -112,10 +133,17 @@ internal sealed class SvgRasterDefinitions {
     }
 
     private bool ResolvePattern(string id, HashSet<string> visiting, out SvgRasterPattern pattern) {
+        Filters?.Cancellation.ThrowIfCancellationRequested();
         if (_patterns.TryGetValue(id, out pattern!)) return true;
         if (!visiting.Add(id) || !_patternElements.TryGetValue(id, out var element)) {
             pattern = null!;
             return false;
+        }
+
+        if (visiting.Count > MaximumPaintReferenceDepth) {
+            Diagnostics?.Report("SFR001", "The paint-server href ancestry exceeds the bounded reference depth.", element);
+            visiting.Remove(id);
+            pattern = null!; return false;
         }
 
         SvgRasterPattern? inherited = null;

@@ -27,9 +27,10 @@ internal sealed partial class VisualTopologyCompiler {
             return;
         }
 
-        var font = TextPolicyStyle(size, 400).Font;
-        var style = detail.TextStyle.Resolve(new TextStyle { Font = font, FontSize = size, Color = color, LineHeight = 1 });
-        style.FontSize *= _scale;
+        var policy = TopologyTextPolicy.Resolve(_textPolicy, _context.Font, size, 400);
+        var style = detail.TextStyle.Resolve(new TextStyle { Font = policy.Font, FontSize = size, Color = color, LineHeight = 1,
+            LetterSpacing = policy.LetterSpacing });
+        style.FontSize *= _scale; style.LetterSpacing *= _scale;
         style.Color = Highlight(style.Color, active);
         TextMetrics Measure(string text, double candidateSize, int weight) {
             var candidate = style.Clone();

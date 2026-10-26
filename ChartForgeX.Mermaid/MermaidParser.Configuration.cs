@@ -143,7 +143,8 @@ public sealed partial class MermaidParser {
         configuration.FontFamily = ReadString("fontFamily");
         var fontSize = configuration.Last("themeVariables.fontSize") ?? (kind == MermaidDiagramKind.Ishikawa ? configuration.Last("fontSize") : null);
         configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
-        configuration.Preset=MermaidThemePresetInputs.Read(configuration,kind==MermaidDiagramKind.Sequence,(setting,message)=>ConfigurationError(result,setting.Span,message));
+        configuration.Preset=MermaidThemePresetInputs.Read(configuration,kind==MermaidDiagramKind.Sequence,(setting,message)=>ConfigurationError(result,setting.Span,message),
+            topology:kind is MermaidDiagramKind.Flowchart or MermaidDiagramKind.Swimlane or MermaidDiagramKind.Agentflow);
         configuration.ThemeColors = MermaidThemeColorSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Cynefin) {
             configuration.Cynefin = MermaidCynefinSettings.Read(configuration,

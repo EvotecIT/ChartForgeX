@@ -1,8 +1,6 @@
 using System;
 using ChartForgeX.Primitives;
-using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
-using ChartForgeX.SvgRaster;
 using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
@@ -14,16 +12,12 @@ internal sealed partial class VisualTopologyCompiler {
         if (artwork == null) return false;
         if (artwork.ImageHref is string href) {
             if (href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {
-                var size = ArtworkSamplingSize(new ChartRect(0, 0, node.Width, node.Height));
-                if (IsEmbeddedRasterResource(href)) {
-                    if (TryCaptureRasterResource(node, href, new ChartRect(0, 0, node.Width, node.Height), artwork.PreserveAspectRatio, out _)) return true;
-                } else if (SvgRasterRenderer.TryDecodeImageResource(href, size.Width, size.Height, artwork.PreserveAspectRatio, out _)) return true;
+                if (TryCaptureArtworkImage(node, href, new ChartRect(0, 0, node.Width, node.Height), artwork.PreserveAspectRatio, out _)) return true;
             } else if (VisualSceneImageResource.IsSafeHref(href)) return true;
         }
         if (!artwork.HasSvgBody) return false;
-        var dimensions = ArtworkSamplingSize(new ChartRect(0, 0, node.Width, node.Height));
-        return SvgRasterRenderer.TryRenderFragment(artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio,
-            dimensions.Width, dimensions.Height, out _);
+        return TryCaptureArtworkFragment(node, artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio,
+            new ChartRect(0, 0, node.Width, node.Height), out _);
     }
 
     private bool BuildArtwork(TopologyNode node, ChartRect bounds, bool selectedOutline = true, double? opacity = null, ChartColor? fallbackColor = null, Action? beforePaint = null) {
@@ -35,16 +29,9 @@ internal sealed partial class VisualTopologyCompiler {
         var imageOpacity = opacity ?? (active || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity);
         if (artwork.ImageHref is string href) {
             if (href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {
-                var dataSize = ArtworkSamplingSize(bounds);
-                if (IsEmbeddedRasterResource(href)) {
-                    if (TryCaptureRasterResource(node, href, bounds, artwork.PreserveAspectRatio, out var resource)) {
-                        beforePaint?.Invoke();
-                        _builder.Image(resource, bounds, "topology-node-artwork", opacity: imageOpacity, preserveAspectRatio: artwork.PreserveAspectRatio);
-                        ArtworkSelection(node, bounds, active, selectedOutline); return true;
-                    }
-                } else if (SvgRasterRenderer.TryDecodeImageResource(href, dataSize.Width, dataSize.Height, artwork.PreserveAspectRatio, out var image)) {
+                if (TryCaptureArtworkImage(node, href, bounds, artwork.PreserveAspectRatio, out var resource)) {
                     beforePaint?.Invoke();
-                        _builder.Image(image, bounds, "topology-node-artwork", opacity: imageOpacity, preserveAspectRatio: artwork.PreserveAspectRatio);
+                    _builder.Image(resource, bounds, "topology-node-artwork", opacity: imageOpacity, preserveAspectRatio: artwork.PreserveAspectRatio);
                     ArtworkSelection(node, bounds, active, selectedOutline); return true;
                 }
             } else if (VisualSceneImageResource.IsSafeHref(href)) {
@@ -60,10 +47,9 @@ internal sealed partial class VisualTopologyCompiler {
             }
         }
         if (artwork.HasSvgBody) {
-            var size = ArtworkSamplingSize(bounds); var width = size.Width; var height = size.Height;
-            if (SvgRasterRenderer.TryRenderFragment(artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio, width, height, out var pixels)) {
+            if (TryCaptureArtworkFragment(node, artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio, bounds, out var resource)) {
                 beforePaint?.Invoke();
-                _builder.Image(new RgbaImage(width, height, pixels), bounds, "topology-node-artwork", opacity: imageOpacity);
+                _builder.Image(resource, bounds, "topology-node-artwork", opacity: imageOpacity);
                 ArtworkSelection(node, bounds, active, selectedOutline); return true;
             }
         }

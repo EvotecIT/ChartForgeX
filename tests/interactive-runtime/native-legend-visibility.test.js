@@ -172,3 +172,67 @@ for (const boundary of ['update', 'reconnect', 'dispose', 'remove']) test('queue
     }
   } finally { f.close(); }
 });
+
+// The native/browser companion uses the actual DottedMap full legend box; JSDOM proves routing/lifetime only.
+function nativeHitRegionView(f, disposition = 'admitted') {
+  const view = f.makeView(), metadata = JSON.parse(view.dataset.cfxPreparedChart);
+  const entry = view.querySelector('[data-cfx-role="legend-entry"]');
+  entry.dataset.cfxSourceId = 'legend-series-0-point-0'; entry.dataset.cfxPoint = '0';
+  entry.dataset.cfxObservationId = 'current'; entry.dataset.cfxValue = '7';
+  entry.innerHTML = '<ellipse data-cfx-role="legend-swatch" cx="29" cy="64.419" rx="4.5" ry="4.5" fill="#dc4650"/>'
+    + '<g data-cfx-role="legend-label"><text x="42" y="67.869" fill="#16181c">Reviewed</text></g>';
+  if (disposition !== 'missing') metadata.regions.push({ id: entry.dataset.cfxSourceId, role: 'legend',
+    x: 24, y: 56.1, width: disposition === 'zero' ? 0 : 59.7890625, height: 19.5, label: 'Reviewed' });
+  metadata.regions.push({ id: 'point-native', role: 'point', x: 40, y: 40, width: 0, height: 0, label: 'Reviewed' });
+  if (disposition === 'omitted') entry.dataset.cfxRole = 'legend-entry-omitted';
+  if (disposition === 'passive') entry.dataset.cfxPassive = 'true';
+  if (disposition === 'hidden') entry.dataset.cfxVisible = 'false';
+  view.dataset.cfxPreparedChart = JSON.stringify(metadata); return view;
+}
+test('native legend hit uses the exact captured bounds across public mount/update/export/dispose while point fallback stays eight pixels', async () => {
+  const f = setup('immediate', {}, false);
+  try {
+    const originalBox = f.window.SVGElement.prototype.getBBox;
+    f.window.SVGElement.prototype.getBBox = function() {
+      return this.matches('[data-cfx-source-id="point-native"]') ? { x: 40, y: 40, width: 0, height: 0 } : originalBox.call(this);
+    };
+    f.controller.update(nativeHitRegionView(f).outerHTML, { basis: 'native-hit' });
+    const entry = () => f.root.querySelector('[data-cfx-role="legend-item"]');
+    const assertHit = () => {
+      const hits = entry().querySelectorAll('[data-cfx-browser-hit-area]'); assert.equal(hits.length, 1);
+      const hit = hits[0];
+      assert.deepEqual(['x', 'y', 'width', 'height'].map(name => Number(hit.getAttribute(name))), [24, 56.1, 59.7890625, 19.5]);
+      assert.equal(hit.getAttribute('fill'), 'transparent'); assert.equal(hit.getAttribute('pointer-events'), 'all');
+      return hit;
+    };
+    const first = assertHit(); assert.equal(f.window.ChartForgeXCharts.mount(f.root), f.controller);
+    f.controller.resize(); assert.equal(assertHit(), first);
+    const point = f.root.querySelector('[data-cfx-source-id="point-native"] [data-cfx-browser-hit-area]');
+    assert.deepEqual(['x', 'y', 'width', 'height'].map(name => Number(point.getAttribute(name))), [36, 36, 8, 8]);
+    assertHit().dispatchEvent(new f.window.MouseEvent('click', { bubbles: true }));
+    assert.equal(entry().getAttribute('data-cfx-muted'), 'true');
+    const blobs = []; f.window.URL.createObjectURL = blob => { blobs.push(blob); return 'blob:legend-proof'; };
+    f.window.URL.revokeObjectURL = () => {}; f.window.HTMLAnchorElement.prototype.click = () => {};
+    f.root.querySelector('[data-cfx-export="svg"]').click(); assert.equal(blobs.length, 1);
+    const exported = await new Promise((resolve, reject) => {
+      const reader = new f.window.FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsText(blobs[0]);
+    });
+    assert.doesNotMatch(exported, /data-cfx-browser-hit-area/); assert.match(exported, /legend-swatch/);
+    f.controller.update(nativeHitRegionView(f).outerHTML, { basis: 'replacement-hit' });
+    assert.notEqual(assertHit(), first); assert.equal(first.isConnected, false);
+    f.controller.dispose(); assert.equal(f.root.querySelectorAll('[data-cfx-browser-hit-area]').length, 0);
+    const remounted = f.window.ChartForgeXCharts.mount(f.root); assert.notEqual(remounted, f.controller);
+    assertHit(); assert.equal(f.window.ChartForgeXCharts.mount(f.root), remounted);
+    assert.deepEqual(f.pageErrors, []);
+  } finally { f.close(); }
+});
+for (const disposition of ['missing', 'omitted', 'passive', 'hidden', 'zero'])
+  test('native legend hit admission does not guess a box for ' + disposition + ' native facts', () => {
+    const f = setup('immediate', {}, false);
+    try {
+      f.controller.update(nativeHitRegionView(f, disposition).outerHTML, { basis: disposition });
+      const entry = f.root.querySelector('[data-cfx-source-id="legend-series-0-point-0"]');
+      assert.equal(entry.querySelectorAll('[data-cfx-browser-hit-area]').length, 0);
+      assert.deepEqual(f.pageErrors, []);
+    } finally { f.close(); }
+  });

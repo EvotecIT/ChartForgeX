@@ -9,11 +9,11 @@ namespace ChartForgeX.Typography;
 
 /// <summary>One glyph of shaped text: the face that draws it and its glyph id, in visual order.</summary>
 internal readonly struct ShapedGlyph {
-    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0, double? advance = null, double offsetX = 0, double offsetY = 0) {
+    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0, double? advance = null, double offsetX = 0, double offsetY = 0, int trackingGroup = -1, double trailingAdvance = 0) {
         Face = face;
         Glyph = glyph;
         SourceIndex = sourceIndex;
-        Advance = advance; OffsetX = offsetX; OffsetY = offsetY;
+        Advance = advance; OffsetX = offsetX; OffsetY = offsetY; TrackingGroup = trackingGroup; TrailingAdvance = trailingAdvance;
     }
 
     public TrueTypeFont Face { get; }
@@ -24,6 +24,10 @@ internal readonly struct ShapedGlyph {
     public double? Advance { get; }
     public double OffsetX { get; }
     public double OffsetY { get; }
+    internal int TrackingGroup { get; }
+    /// <summary>Additional font-unit advance after the complete eligible group, separate from legacy pair kerning.</summary>
+    internal double TrailingAdvance { get; }
+    internal ShapedGlyph WithTrailingAdvance(double value) => new(Face, Glyph, SourceIndex, Advance, OffsetX, OffsetY, TrackingGroup, value);
 }
 
 /// <summary>
@@ -86,13 +90,17 @@ internal static partial class TextShaper {
     }
 
     /// <summary>Shapes one complete text chunk while retaining the primary face of each logical code point.</summary>
-    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners, IReadOnlyList<double>? pixelSizes = null, IReadOnlyList<CapturedClusters?>? styledCaptures = null) =>
-        ShapeCore(faces[0], text, 0, faces, owners, pixelSizes, styledCaptures: styledCaptures);
+    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners, IReadOnlyList<double>? pixelSizes = null, IReadOnlyList<CapturedClusters?>? styledCaptures = null, IReadOnlyList<double>? letterSpacings = null) {
+        var tracked = letterSpacings != null && HasLetterSpacing(letterSpacings);
+        var shaped = ShapeCore(faces[0], text, 0, faces, owners, pixelSizes, styledCaptures: styledCaptures,
+            letterSpacings: tracked ? letterSpacings : null);
+        return tracked ? ApplyLetterSpacing(shaped, pixelSizes!, letterSpacings!) : shaped;
+    }
 
     private static double NormalizePixelSize(double size) => size > 0 && size < 65535.5 ? Math.Floor(size + 0.5) : 0;
 
-    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, double pixelSize, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null, IReadOnlyList<double>? pixelSizes = null, bool strictPrimary = false, CapturedClusters? capturedClusters = null, IReadOnlyList<CapturedClusters?>? styledCaptures = null) {
-        if (faces == null && TryShapeAscii(primary, text, pixelSize, out var simple)) return simple;
+    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, double pixelSize, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null, IReadOnlyList<double>? pixelSizes = null, bool strictPrimary = false, CapturedClusters? capturedClusters = null, IReadOnlyList<CapturedClusters?>? styledCaptures = null, IReadOnlyList<double>? letterSpacings = null) {
+        if (letterSpacings == null && faces == null && TryShapeAscii(primary, text, pixelSize, out var simple)) return simple;
         var codePoints = new List<int>(text.Length);
         for (var index = 0; index < text.Length;) codePoints.Add(TrueTypeFont.ReadCodePoint(text, ref index));
         var clusters = Segment(codePoints, owners);
@@ -119,7 +127,8 @@ internal static partial class TextShaper {
             }
         }
 
-        return ShapeFontRuns(codePoints, clusters, levels, pixelSize, pixelSizes);
+        return ShapeFontRuns(codePoints, clusters, levels, pixelSize, pixelSizes, letterSpacings,
+            letterSpacings == null ? null : SourceTrackingGroups(codePoints, clusters));
     }
 
     // A base character and what attaches to it: marks, joiners and what they join, variation selectors, emoji modifiers, tags.

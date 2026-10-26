@@ -17,6 +17,7 @@ internal static class ChartTextFace {
     internal static double Measure(string text, double size, TextStyleOverride style, ResolvedTypeface face) =>
         TextLayoutEngine.MeasureWidth(text, new TextStyle {
             FontSize = size,
+            LetterSpacing = style.LetterSpacing ?? 0,
             Font = new FontSpec { Italic = style.Italic },
             OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag
         }, face);

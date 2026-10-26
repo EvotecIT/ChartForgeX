@@ -129,6 +129,10 @@ public sealed class VisualArtifactInterchangeSequenceArtifact {
 
 /// <summary>Contains artifact-level presentation semantics that portable hosts may preserve.</summary>
 public sealed class VisualArtifactInterchangePresentation {
+    /// <summary>Gets or sets one immutable complete-root procedural source policy; null omits the field.</summary>
+    /// <remarks>Requires version2 and pure Kind=Unknown/Family=None source admission. Restore through
+    /// PrepareTurbulenceSource with an explicit same-size context; captured frame evidence is not a scene codec.</remarks>
+    public ChartForgeX.Effects.VisualTurbulence? TurbulenceSource { get; set; }
     /// <summary>Gets finite captured presentation steps in source-to-output application order; empty is omitted.</summary>
     /// <remarks>Nonempty effects require version2. Editable-only import rejects them until explicitly cleared
     /// on a detached source copy. ApplyCapturedEffects replays root wrappers; ApplyCapturedLayer replays a terminal capture.</remarks>

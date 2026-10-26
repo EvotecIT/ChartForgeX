@@ -53,4 +53,13 @@
     <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeKanbanProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeKanbanProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\Assets\Mermaid\kanban-source-geometry.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.kanban-source-geometry.mmd" WithCulture="false" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\ChartForgeX.Examples\NativeTurbulenceExample.cs" LogicalName="ChartForgeX.Examples.NativeTurbulenceExample.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeNativeTurbulenceProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeNativeTurbulenceProgram.cs" WithCulture="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RecipeSource)' == ''">
+    <Compile Include="TurbulenceSnippetProof.cs" />
+    <Compile Include="..\ChartForgeX.Examples\NativeTurbulenceExample.cs" Link="NativeTurbulenceExample.cs" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.Turbulence.cs" Link="ExampleRecipeSource.Turbulence.cs" />
+  </ItemGroup>
 </Project>

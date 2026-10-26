@@ -18,7 +18,7 @@ public sealed class NativeTransitionCaptureTests {
             var options = new HtmlNativeTransitionOptions(effect, 3, effect == HtmlNativeTransitionEffect.ValueFlash ? peak : null);
             var payload = renderer.PrepareNativeTransitionJson(from, to, options); using var json = JsonDocument.Parse(payload);
             Capture(kind + "-" + width + "-" + dark + "-" + effect, payload);
-            Assert.Equal("native-transition", json.RootElement.GetProperty("kind").GetString()); Assert.Equal(to.Html, json.RootElement.GetProperty("destination").GetString());
+            Assert.Equal("native-transition", json.RootElement.GetProperty("kind").GetString()); HtmlFontRootObservation.AssertDestination(to.Html, json.RootElement.GetProperty("destination").GetString()!);
             foreach (var drawingName in new[] { "wide", "narrow" }) {
                 var drawing = json.RootElement.GetProperty("drawings").GetProperty(drawingName); var frames = drawing.GetProperty("frames");
                 Assert.Equal(3, frames.GetArrayLength()); Assert.Equal(dark, drawing.GetProperty("capturePngText").GetBoolean());

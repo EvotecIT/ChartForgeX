@@ -63,8 +63,12 @@ public sealed partial class Chart : IVisualRenderable {
             RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
             sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
         var captureHierarchy = Series.Count == 1 && Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst;
+        var captureBubble = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind == ChartSeriesKind.Bubble);
+        var captureRange = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea);
+        var captureError = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind == ChartSeriesKind.ErrorBar);
+        var captureFinancial = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc);
         var captureCompleteCartesian = family == VisualChartFamily.Cartesian && viewport == null && VisualCartesianCompiler.NeedsCompleteCartesianValues(this);
-        var textCapture = context.NativeTextCapture ?? (family == VisualChartFamily.Radial || captureHierarchy || captureCompleteCartesian ? new VisualSceneTextCapture() : null);
+        var textCapture = context.NativeTextCapture ?? (family == VisualChartFamily.Radial || captureHierarchy || captureCompleteCartesian || captureBubble || captureRange || captureError || captureFinancial ? new VisualSceneTextCapture() : null);
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithNativeValueSource(context.CaptureNativeValueSource);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture);
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -81,6 +85,18 @@ public sealed partial class Chart : IVisualRenderable {
                 new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
         if (captureCompleteCartesian && textCapture != null && !textCapture.IsReplay)
             builder.CaptureExistingValue(scene => VisualCartesianCompiler.TryCaptureCompleteValues(this, context, textCapture, scene, projection),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
+        if (captureBubble && textCapture != null)
+            builder.CaptureExistingValue(scene => VisualCartesianCompiler.TryCaptureBubbleValues(this, context, textCapture, scene, projection, bubbleScale!),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
+        if (captureRange && textCapture != null)
+            builder.CaptureExistingValue(scene => VisualCartesianCompiler.TryCaptureRangeValues(this, context, textCapture, scene, projection),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
+        if (captureError && textCapture != null)
+            builder.CaptureExistingValue(scene => VisualCartesianCompiler.TryCaptureErrorValues(this, context, textCapture, scene, projection),
+                new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
+        if (captureFinancial && textCapture != null)
+            builder.CaptureExistingValue(scene => VisualCartesianCompiler.TryCaptureFinancialValues(this, context, textCapture, scene, projection),
                 new VisualSceneBuilder.VisualValueBoundary(0, 0, 0), builder.ValueBoundary());
         builder.CaptureChartIdentity(this, projection);
         var accessibility = Accessibility.Clone();

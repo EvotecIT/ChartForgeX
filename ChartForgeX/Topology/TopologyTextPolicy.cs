@@ -25,7 +25,9 @@ internal static class TopologyTextPolicy {
     }
     internal static double Size(TextStyleOverride? policy, double ordinary, double baseSize) =>
         policy?.FontSize is double authored ? ordinary * authored / baseSize : ordinary;
-    internal static TextMeasurementContext Measurement(TextStyleOverride? policy, TextMeasurementContext measurement, int weight) =>
-        policy == null || !policy.HasOverrides ? measurement
-            : new TextMeasurementContext(Resolve(policy, measurement.Font, 1, weight).Font, measurement.Mode);
+    internal static TextMeasurementContext Measurement(TextStyleOverride? policy, TextMeasurementContext measurement, int weight) {
+        if (policy == null || !policy.HasOverrides) return measurement;
+        var style = Resolve(policy, measurement.Font, 1, weight);
+        return new TextMeasurementContext(style.Font, measurement.Mode, style.LetterSpacing);
+    }
 }

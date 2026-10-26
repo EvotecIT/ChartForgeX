@@ -14,6 +14,7 @@ internal static partial class MermaidExamples {
         WriteZenUmlPresentationExamples(output);
         WriteFlowchartCurveExamples(output);
         WriteFlowchartAssetExamples(output);
+        WriteTopologyPaletteExamples(output);
         WriteSequenceLayoutTypographyExamples(output);
         WriteSequenceParticipantViewsExamples(output);
         WriteSequenceMessagePresentationExamples(output);

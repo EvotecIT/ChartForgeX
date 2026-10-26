@@ -1,0 +1,43 @@
+using System;
+using System.IO;
+using ChartForgeX.Effects;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
+using ChartForgeX.SvgRaster;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+internal static class Program {
+    private static void Main() {
+        Directory.CreateDirectory("ordered-filter-output");
+        var builder = new VisualSceneBuilder(new VisualSize(8, 6), FontSpec.SystemSans());
+        builder.Rect(new ChartRect(2, 2, 3, 2), ChartColor.White);
+        var source = new PreparedVisual(builder.Build());
+        var options = new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters);
+        foreach (var kind in new[] { "outline", "bloom" }) {
+            var root = kind == "outline" ? source.WithOutline(new VisualOutline(ChartColor.FromRgb(0, 0, 255), 1, false))
+                : source.WithBloom(new VisualBloom(1, .1, .7, orderedDither: false));
+            var saved = root.ToArtifact().ToInterchangeJson();
+            var restored = VisualArtifactInterchangeEnvelope.FromJson(saved).ApplyCapturedEffects(source);
+            Write(kind, restored.ToSvg(options));
+            File.WriteAllText(Path.Combine("ordered-filter-output", kind + ".json"), saved);
+        }
+        Write("branch-merge", Wrap("<feFlood flood-color='blue' result='blue'/><feFlood flood-color='red' flood-opacity='.5' result='red'/>"
+            + "<feFlood flood-color='lime' flood-opacity='.5' result='green'/><feMerge><feMergeNode in='blue'/><feMergeNode in='red'/><feMergeNode in='green'/></feMerge>"));
+        Write("arithmetic", Wrap("<feFlood flood-color='red' flood-opacity='.5' result='red'/><feFlood flood-color='blue' flood-opacity='.5' result='blue'/>"
+            + "<feComposite in='red' in2='blue' operator='arithmetic' k2='1' k3='1'/>"));
+        Write("small-channels", Wrap("<feFlood flood-color='rgb(.2490234375,.2490234375,.2490234375)' result='low'/>"
+            + "<feComponentTransfer in='low' result='lift'><feFuncR type='linear' slope='8'/><feFuncG type='linear' slope='8'/><feFuncB type='linear' slope='8'/></feComponentTransfer>"
+            + "<feComponentTransfer in='lift'><feFuncR type='linear' slope='8'/><feFuncG type='linear' slope='8'/><feFuncB type='linear' slope='8'/></feComponentTransfer>"));
+    }
+    private static string Wrap(string nodes) => "<svg xmlns='http://www.w3.org/2000/svg' width='4' height='3'><defs><filter id='f' filterUnits='userSpaceOnUse' primitiveUnits='userSpaceOnUse'"
+        + " x='0' y='0' width='4' height='3' color-interpolation-filters='sRGB'>" + nodes
+        + "</filter></defs><rect width='4' height='3' filter='url(#f)'/></svg>";
+    private static void Write(string name, string source) {
+        var native = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
+        if (native.Diagnostics.Count != 0) throw new InvalidOperationException("Native import reported a loss.");
+        File.WriteAllText(Path.Combine("ordered-filter-output", name + ".source.svg"), source);
+        File.WriteAllBytes(Path.Combine("ordered-filter-output", name + ".native.png"), PngWriter.WriteRgba(native.Image));
+    }
+}

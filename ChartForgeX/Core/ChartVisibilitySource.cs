@@ -18,14 +18,20 @@ internal sealed partial class ChartVisibilitySource {
     private readonly IReadOnlyDictionary<(ChartVisibilityTargetKind Kind, string Series, string? Observation), ChartVisibilityTarget> _targetIndex;
     private readonly IReadOnlyList<ChartAxisLabel> _categoryLabels;
     private readonly PiePolicy? _pie;
+    private readonly ChartBubbleOptions? _bubble;
     private readonly IReadOnlyDictionary<string, IReadOnlyList<int>> _radialOther;
     private readonly IReadOnlyDictionary<string, HashSet<int>> _radialOtherIndex;
     internal ChartVisibilitySource(Chart chart, VisualRenderContext context) : this(chart, context, false) { }
     internal static ChartVisibilitySource CaptureNativeCartesianValues(Chart chart, VisualRenderContext context) => new(chart, context, true);
-    private ChartVisibilitySource(Chart chart, VisualRenderContext context, bool completeCartesianValues) {
-        Validate(chart, completeCartesianValues);
+    internal static ChartVisibilitySource CaptureNativeBubbleValues(Chart chart, VisualRenderContext context) => CaptureNativeComponentValues(chart, context);
+    internal static ChartVisibilitySource CaptureNativeComponentValues(Chart chart, VisualRenderContext context) => new(chart, context, false, true);
+    private ChartVisibilitySource(Chart chart, VisualRenderContext context, bool completeCartesianValues, bool componentValues = false) {
+        Validate(chart, completeCartesianValues, componentValues);
+        _bubble = componentValues && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? chart.Options.Bubble.Clone() : null;
         Context = context.WithNativeTextCapture(null); Title = chart.Title; Subtitle = chart.Subtitle;
         _presentation = VisualArtifactInterchangeMapping.CaptureVisibilityPresentation(chart);
+        // Recompute the fixed category map from copied authored policy; never mutate the prepared source or retain a late mutable chart.
+        if (componentValues && _presentation.XAxis.Scale == ChartScaleKind.Time) _presentation.XAxis.PreparedTimeDomain = null;
         _line = chart.Options.LineVisualStyle.Clone(); _boxes = chart.Options.BoxPlot.Clone(); _accessibility = chart.Accessibility.Clone();
         _series = Array.AsReadOnly(chart.Series.Select(series => series.CaptureVisibilitySource()).ToArray());
         _categoryLabels = Array.AsReadOnly(ChartCartesianOrientation.CategoryLabels(chart).ToArray());
@@ -53,12 +59,13 @@ internal sealed partial class ChartVisibilitySource {
     internal VisualArtifactInterchangeWaterfallArtifact CopyPresentation() => _presentation.Clone();
     internal ChartLineVisualStyle CopyLine() => _line.Clone();
     internal ChartBoxPlotOptions CopyBoxes() => _boxes.Clone();
+    internal ChartBubbleOptions? CopyBubble() => _bubble?.Clone();
     internal VisualAccessibility CopyAccessibility() => _accessibility.Clone();
     internal IReadOnlyList<ChartAxisLabel> CategoryLabels => _categoryLabels;
 
     internal Chart CreateNativeView(ChartVisibilityView? view) => CreateNativeView(view, null);
     internal Chart CreateNativeValueView(double[] values) {
-        if (values.Length != _series.Sum(row => row.IsHierarchy ? row.HierarchyItems.Count(item => item.Value.HasValue) : row.Points.Count)) throw new ArgumentException("Complete native value readings must match their captured source rows.", nameof(values));
+        if (values.Length != _series.Sum(row => row.NativeValueCount)) throw new ArgumentException("Complete native value readings must match their captured source rows.", nameof(values));
         return CreateNativeView(null, values);
     }
     private Chart CreateNativeView(ChartVisibilityView? view, double[]? values) {
@@ -70,11 +77,12 @@ internal sealed partial class ChartVisibilitySource {
         var accessibility = _accessibility;
         chart.ConfigureAccessibility(target => { target.Name = accessibility.Name; target.Description = accessibility.Description; target.Language = accessibility.Language; target.IsDecorative = accessibility.IsDecorative; });
         _pie?.Apply(chart.Options); _hierarchy?.Apply(chart.Options);
+        if (_bubble != null) chart.Options.Bubble = _bubble.Clone();
         if (_hierarchy != null) chart.NativeHierarchyVisibility = view ?? (_hierarchy.Root == null ? null
             : new ChartVisibilityView(Array.Empty<ChartVisibilityTarget>(), ChartVisibilityLayout.Reflow, ChartVisibilityLabelLayering.PreserveOverlay, _hierarchy.Root));
         var offset = 0;
         foreach (var row in _series) {
-            var count = row.IsHierarchy ? row.HierarchyItems.Count(item => item.Value.HasValue) : row.Points.Count;
+            var count = row.NativeValueCount;
             // Single-source plans retain their incumbent array/default path; multiband readings are scoped to their captured series.
             var readings = values == null || _series.Count == 1 ? values : values.Skip(offset).Take(count).ToArray();
             chart.AddSeries(ChartSeries.FromVisibilitySource(row, view, VisibleIndices(row, view), readings));
@@ -83,8 +91,8 @@ internal sealed partial class ChartVisibilitySource {
         return chart;
     }
 
-    private static void Validate(Chart chart, bool completeCartesianValues = false) {
-        if (chart.Series.Count == 0 || chart.Series.Any(series => (completeCartesianValues
+    private static void Validate(Chart chart, bool completeCartesianValues = false, bool componentValues = false) {
+        if (chart.Series.Count == 0 || chart.Series.Any(series => (componentValues ? series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.ErrorBar or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) : completeCartesianValues
             ? !VisualCartesianCompiler.SupportsCompleteValueKind(series.Kind)
             : series.Kind is not (ChartSeriesKind.Line or ChartSeriesKind.Bar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) || series.Id.IsAutomatic))
             throw new NotSupportedException("Native Reflow requires authored Line/Bar, BoxPlot, native Pie/Donut bands, or authored Treemap/Sunburst sources.");
@@ -93,7 +101,7 @@ internal sealed partial class ChartVisibilitySource {
             && Enumerable.Range(0, series.Points.Count).Any(index => !series.ObservationIds.ContainsKey(index))))
             throw new NotSupportedException("Pie/Donut Reflow requires an authored observation identity for every retained source slice and legend row.");
         long values = 0;
-        foreach (var series in chart.Series) values += (long)series.Points.Count + series.HierarchyItems.Count + series.NodeStates.Count + series.PointStrokeColors.Count + series.BoxPlots.Count + series.BoxPlotSourceSamples.Count
+        foreach (var series in chart.Series) values += (long)series.Points.Count + 4L * series.Bubbles.Count + 4L * series.Ranges.Count + 7L * series.ErrorBars.Count + 5L * series.FinancialValues.Count + (series.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? series.FinancialSourceValueCount : 0) + series.HierarchyItems.Count + series.NodeStates.Count + series.PointStrokeColors.Count + series.BoxPlots.Count + series.BoxPlotSourceSamples.Count
             + series.ObservationIds.Count + series.BoxPlotGroupIds.Count + series.PointColors.Count + series.PointFillPatterns.Count
             + series.PointLabels.Count + series.PointDataLabelStyles.Count;
         if (values > VisualArtifactInterchangeEnvelope.MaximumJsonValues)
@@ -107,7 +115,8 @@ internal sealed partial class ChartVisibilitySource {
             throw new NotSupportedException("Native Reflow requires static label words and captured built-in formats; custom callbacks remain available for ordinary rendering.");
         try { _ = options.ValueFormat.PortablePolicy();
         foreach (var axis in new[] { options.XAxis, options.YAxis, options.SecondaryXAxis, options.SecondaryYAxis }) {
-            if (axis.TimeTickLabelFormatter != null || axis.PreparedTimeDomain != null || axis.PreparedViewportWindow != null)
+            var nativeFixedTimeX = componentValues && ReferenceEquals(axis, options.XAxis) && axis.Scale == ChartScaleKind.Time;
+            if (axis.TimeTickLabelFormatter != null || axis.PreparedTimeDomain != null && !nativeFixedTimeX || axis.PreparedViewportWindow != null)
                 throw new NotSupportedException("Native Reflow requires authored axis policy, without custom/prepared axis closures.");
             if (axis.ValueFormat != null) _ = axis.ValueFormat.PortablePolicy();
         }

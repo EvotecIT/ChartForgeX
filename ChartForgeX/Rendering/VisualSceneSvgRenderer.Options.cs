@@ -29,20 +29,26 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static string ExportIdentity(VisualScene scene, string identity, VisualSvgOptions? options) {
         var colorScopes = ColorScopeOptions(scene, options);
-        var effectOptions = (scene.HasSurfaceEffects || scene.HasRetainedEffects) && options != null &&
+        var effectOptions = (scene.HasSurfaceEffects || scene.HasRetainedEffects || scene.HasProceduralSources) && options != null &&
             (options.EffectProfile != VisualSvgEffectProfile.Baked || options.EffectRasterOptions != null);
+        var textRasterOptions = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic && options.EffectRasterOptions != null;
         if (colorScopes == null && (options == null || options.Variables == null &&
             options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive &&
-            !options.PatternTiles && !effectOptions)) return identity;
+            !options.PatternTiles && !effectOptions && !textRasterOptions)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
             writer.Write(identity);
-            if (scene.HasSurfaceEffects || scene.HasRetainedEffects) {
+            if (scene.HasSurfaceEffects || scene.HasRetainedEffects || scene.HasProceduralSources) {
                 writer.Write((int)(options?.EffectProfile ?? VisualSvgEffectProfile.Baked));
                 if (options?.EffectProfile != VisualSvgEffectProfile.NativeFilters && options?.EffectRasterOptions is { } raster) {
                     writer.Write(raster.Scale); writer.Write(raster.Supersampling);
                 }
+            }
+            if (textRasterOptions) {
+                var raster = options!.EffectRasterOptions!;
+                writer.Write("native-text-raster"); writer.Write(raster.Scale); writer.Write(raster.Supersampling);
+                writer.Write(raster.TextHinting.HasValue ? (int)raster.TextHinting.Value : -1);
             }
             writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
             if (options?.Responsive == true) writer.Write("responsive");
@@ -85,7 +91,8 @@ internal static partial class VisualSceneSvgRenderer {
                 stack.Push(current);
                 if (group.ColorScope != null) current = new VisualSvgOptions(colorVariables: group.ColorScope.Variables,
                     linkTarget: options?.LinkTarget ?? VisualSvgLinkTarget.SameContext,
-                    effectProfile: options?.EffectProfile ?? VisualSvgEffectProfile.Baked, effectRasterOptions: options?.EffectRasterOptions);
+                    effectProfile: options?.EffectProfile ?? VisualSvgEffectProfile.Baked, effectRasterOptions: options?.EffectRasterOptions)
+                    .WithTextPresentation(options?.TextPresentation ?? VisualSvgTextPresentation.Browser);
             }
             result[i] = current;
             if (scene.Nodes[i] is VisualSceneEndGroup) current = stack.Pop();

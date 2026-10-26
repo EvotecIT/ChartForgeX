@@ -55,7 +55,7 @@ for (const [name, mutate] of Object.entries(invalid)) test('typed native effect 
   } finally { f.close(); }
 });
 
-for (const kind of ['retained-outline', 'retained-bloom', 'retained-shadow']) {
+for (const kind of ['retained-outline', 'retained-bloom', 'retained-shadow', 'procedural-turbulence']) {
   test(`ordered appearance ${kind} retains the exact generated filter identity behind the captured Reflow wrapper`, () => {
     const f = reflowFixture();
     try {

@@ -28,6 +28,7 @@ internal static partial class TopologyRenderPrimitives {
             ?? (node.TextStyle?.FontSize is double authored ? authored * (9.5 / 11) : options.ResolvedSubtitleChipFontSize);
         var style = TopologyTextPolicy.ResolveRole(node.TextStyle, node.SubtitleTextStyle,
             font ?? options.TextMeasurement?.Font ?? FontSpec.FromFamily(TopologyPaint.Default.FontFamily), 1, 700);
+        style.LetterSpacing *= scale;
         var face = new VisualSceneTextFace(style);
         TextMetrics Measure(double size) => face.Prepare(chip.Text, size * scale).Metrics;
         var ordinary = Measure(preferred);

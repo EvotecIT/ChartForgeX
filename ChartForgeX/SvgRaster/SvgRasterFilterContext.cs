@@ -5,11 +5,15 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.SvgRaster;
 
 /// <summary>Single rasterization's cumulative filter debit; use and embedded-document instances never reset it.</summary>
-internal sealed class SvgRasterFilterContext {
+internal sealed partial class SvgRasterFilterContext {
     private readonly SvgRasterFilterOptions _options;
-    private long _bytes, _work;
+    private readonly RasterCumulativeDebit _debit;
     private int _applications;
-    internal SvgRasterFilterContext(SvgRasterFilterOptions options) { _options = options; }
+    internal SvgRasterFilterContext(SvgRasterFilterOptions options) {
+        _options = options;
+        _debit = new RasterCumulativeDebit(options.MaximumLiveBytes, options.MaximumWorkSamples);
+    }
+    internal RasterCumulativeDebit Budget => _debit;
     internal CancellationToken Cancellation => _options.CancellationToken;
 
     /// <summary>Debits the existing renderer's next ordinary canvas before its pixel array allocates.</summary>
@@ -38,7 +42,7 @@ internal sealed class SvgRasterFilterContext {
         var outputPixels = checked((long)outputWidth * outputHeight);
         var nonKernelBytes = checked(outputPixels * 4);
         var nonKernelWork = checked(sourcePixels * 4 + outputPixels * 4);
-        var priorBytes = _bytes; var priorWork = _work;
+        var priorBytes = _debit.Bytes; var priorWork = _debit.WorkSamples;
         // These exact capture/kernel/one-output arrays are reserved before capture and are not charged by AllocateCanvas.
         // Ordinary surrounding compositors debit their real instances separately. No GC timing is assumed.
         Debit(checked(sourcePixels * 4 + plan.AllocatedBytes + nonKernelBytes), checked(plan.WorkSamples + nonKernelWork));
@@ -47,9 +51,8 @@ internal sealed class SvgRasterFilterContext {
     }
 
     private void Debit(long bytes, long work) {
-        if (bytes < 0 || work < 0 || bytes > _options.MaximumLiveBytes - _bytes || work > _options.MaximumWorkSamples - _work)
+        if (!_debit.TryReserve(bytes, work))
             throw Limit("Native filter import exceeds cumulative declared pixel arrays or sample visits before allocation.");
-        _bytes += bytes; _work += work;
     }
 
     // NotSupportedException passes through the legacy Try-render catch; limits never become an unfiltered fallback.
@@ -57,14 +60,22 @@ internal sealed class SvgRasterFilterContext {
 }
 
 /// <summary>Retains the existing one-use effect preflight and accounts for previously reserved document buffers.</summary>
-internal sealed class SvgRasterFilterPermit {
+internal sealed partial class SvgRasterFilterPermit {
     private readonly RasterEffectPlan _plan;
     private readonly long _additionalBytes, _additionalWork;
     private readonly SvgRasterFilterOptions _options;
     internal SvgRasterFilterPermit(RasterEffectPlan plan, long bytes, long work, SvgRasterFilterOptions options) {
         _plan = plan; _additionalBytes = bytes; _additionalWork = work; _options = options;
     }
+    internal RasterEffectResult ExecuteSourceFree() {
+        ClaimPermit();
+        var preflight = RasterEffectPreflight.PrepareSourceFree(_plan,
+            _options.MaximumWorkSamples, _options.MaximumLiveBytes, _additionalBytes, _additionalWork);
+        return RasterEffects.Generate(preflight, 0, _options.CancellationToken);
+    }
+
     internal RasterEffectResult Execute(RgbaImage source) {
+        ClaimPermit();
         var preflight = RasterEffectPreflight.Prepare(new[] { _plan }, new[] { source },
             _options.MaximumWorkSamples, _options.MaximumLiveBytes, _additionalBytes, _additionalWork);
         // No new quantizer or convolution. False fixes the existing native kernel's final dither policy explicitly.

@@ -29,15 +29,20 @@ public sealed partial class TopologyHierarchyNativeBrowserTests {
         Assert.Equal(5, await page.Locator(".cfx-stage [data-cfx-role=topology-node][data-node-id]").CountAsync());
         await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-node=platform]")); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator("[data-cfx-node=platform]").GetAttributeAsync("aria-selected"));
+        await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-hierarchy-control=toggle][data-cfx-hierarchy-node=engineering]"));
         await CaptureHierarchyBoundary(page, width, dark, "before-collapse");
-        await page.Locator("[data-cfx-hierarchy-control=toggle][data-cfx-hierarchy-node=engineering]").ClickAsync(); await Changes(page, 1);
+        await page.Keyboard.PressAsync("Space"); await Changes(page, 1);
         await CaptureHierarchyBoundary(page, width, dark, "after-collapse-before-focus-assertion");
         Assert.Equal(3, await page.Locator(".cfx-stage [data-cfx-role=topology-node][data-node-id]").CountAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-node=platform],[data-cfx-node=research]").CountAsync());
         Assert.Equal(new[] { "engineering" }, await page.EvaluateAsync<string[]>("()=>org.getHierarchyView().collapsedNodeIds"));
         Assert.Equal(0, await page.Locator("[data-cfx-node][aria-selected=true]").CountAsync());
         Assert.Equal("engineering", await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxHierarchyNode"));
-        Assert.Contains("Owner", await page.Locator("[data-cfx-node=engineering]").TextContentAsync()); Assert.Equal(5, host.SourceCount);
+        var engineering = page.Locator("[data-cfx-role=topology-node][data-node-id=engineering]");
+        Assert.Equal("Owner", await engineering.GetAttributeAsync("data-node-badge"));
+        Assert.Single(await engineering.Locator("[data-cfx-role=topology-node-badge] [data-cfx-native-text-ink]").AllAsync());
+        Assert.True(await engineering.Locator("[data-cfx-role=topology-node-badge] use").CountAsync() > 0);
+        Assert.Equal(5, host.SourceCount);
         await page.EvaluateAsync("""
             ()=>{org.root.dispatchEvent(new CustomEvent('cfx-capture-state',{detail:{sync:false}}));window.orgBookmark=JSON.parse(org.root.dataset.cfxInteractionSnapshot);
                 org.setHierarchyView({nodeOrder:['operations','engineering'],layoutDirection:'LeftToRight'});}
@@ -128,7 +133,8 @@ public sealed partial class TopologyHierarchyNativeBrowserTests {
             """);
         await page.WaitForFunctionAsync("()=>org.root.dataset.cfxAdaptiveDrawing==='wide'");
         const string engineering = "[data-cfx-hierarchy-control=toggle][data-cfx-hierarchy-node=engineering]";
-        await page.Locator(engineering).ClickAsync(); await page.WaitForFunctionAsync("()=>orgPending.length===1");
+        await FocusWithKeyboardAsync(page, page.Locator(engineering));
+        await page.Keyboard.PressAsync("Space"); await page.WaitForFunctionAsync("()=>orgPending.length===1");
         Assert.True(await page.Locator(engineering).IsDisabledAsync());
         // A real, otherwise valid native source section has the wrong requested view.
         await page.EvaluateAsync("html=>orgPending[0].resolve({html,basis:'rejected'})", host.Section(null).Html);
@@ -137,9 +143,11 @@ public sealed partial class TopologyHierarchyNativeBrowserTests {
         Assert.Equal("engineering", await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxHierarchyNode"));
         Assert.False(await page.Locator(engineering).IsDisabledAsync());
         Assert.Empty(await page.EvaluateAsync<string[]>("()=>org.getHierarchyView().collapsedNodeIds"));
-        await page.Locator(engineering).ClickAsync(); await page.WaitForFunctionAsync("()=>orgPending.length===2");
+        await FocusWithKeyboardAsync(page, page.Locator(engineering));
+        await page.Keyboard.PressAsync("Space"); await page.WaitForFunctionAsync("()=>orgPending.length===2");
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>orgPending[1].request.basis"));
-        await page.Locator("#organization-focus-elsewhere").ClickAsync();
+        await FocusWithKeyboardAsync(page, page.Locator("#organization-focus-elsewhere"));
+        await CaptureHierarchyBoundary(page, 1100, false, "outside-focus-before-reply");
         await page.EvaluateAsync("html=>orgPending[1].resolve({html,basis:'accepted'})", host.Section(new TopologyHierarchyView(new[] { "engineering" })).Html);
         await Changes(page, 1); await CaptureHierarchyBoundary(page, 1100, false, "outside-focus-before-assertion");
         Assert.Equal("organization-focus-elsewhere", await page.EvaluateAsync<string>("()=>document.activeElement.id"));

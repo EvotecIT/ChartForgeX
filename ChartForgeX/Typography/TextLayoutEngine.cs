@@ -54,6 +54,7 @@ public static partial class TextLayoutEngine {
     internal static double MeasureWidth(string text, TextStyle style, ResolvedTypeface face) {
         if (style.Font.NativeTextCapture is {} capture) return capture.Bind(style).PrepareDisplayed(text, style.EffectiveFontSize).Metrics.Width;
         face = TypographyFontResolver.WithLanguage(face, style.OpenTypeLanguageTag);
+        if (style.LetterSpacing != 0) return new ChartForgeX.Rendering.VisualSceneTextFace(style, face, false).PrepareDisplayed(text, style.EffectiveFontSize).Metrics.Width;
         var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, face.Font, face.SynthesizeItalic);
         // A real italic face leans past its last advance just as a sheared one does; reserving the same
         // overhang keeps layout independent of which faces the host has installed.

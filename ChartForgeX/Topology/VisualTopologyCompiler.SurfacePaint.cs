@@ -9,7 +9,7 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private void ValidateSurfacePaintHost() {
         if(!_options.EnableHtmlInteractions||!_options.EnableHtmlForceGraphControls)return;
-        if(_source.Nodes.Any(node=>TopologySurfacePaintRules.HasOverrides(node.StrokeWidth,node.Opacity,node.SurfaceOpacity,node.DashPattern))
+        if(_source.Nodes.Any(node=>node.SurfaceElementAppearance!=null||TopologySurfacePaintRules.HasOverrides(node.StrokeWidth,node.Opacity,node.SurfaceOpacity,node.DashPattern))
             ||_source.Groups.Any(group=>TopologySurfacePaintRules.HasOverrides(group.StrokeWidth,group.Opacity,group.SurfaceOpacity,group.DashPattern)))
             throw new NotSupportedException("Typed native surface paints cannot be rewritten by live force graph controls.");
     }
@@ -34,9 +34,8 @@ internal sealed partial class VisualTopologyCompiler {
             var mode=TopologyRenderPrimitives.EffectiveNodeDisplayMode(node,_options);
             if(mode==TopologyNodeDisplayMode.Hidden||mode==TopologyNodeDisplayMode.Artwork&&TopologyRenderPrimitives.ResolveRenderableNodeArtwork(node,_options)!=null&&!HasArtworkSurfacePolicy(node)
                 ||mode==TopologyNodeDisplayMode.Dot&&node.Shape!=TopologyNodeShape.DoubleCircle)continue;
-            var half=NodeSurfaceStrokeWidth(node)/2;
-            if(node.Shape.HasValue)foreach(var part in TopologyNodeShapeGeometry.SceneParts(node)) {if(part.Ink)Include(part.Path.Bounds(),half);}
-            else Include(new ChartRect(node.X,node.Y,node.Width,node.Height),half);
+            if(node.Shape.HasValue)foreach(var part in TopologyNodeShapeGeometry.SceneParts(node)) {if(part.Ink)Include(part.Path.Bounds(),NodeSurfaceStrokeWidth(node,part.ContourPaint)/2);}
+            else Include(new ChartRect(node.X,node.Y,node.Width,node.Height),NodeSurfaceStrokeWidth(node)/2);
         }
         return content;
         void Include(ChartRect bounds,double half) {

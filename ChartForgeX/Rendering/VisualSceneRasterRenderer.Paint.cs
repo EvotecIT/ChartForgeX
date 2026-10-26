@@ -7,18 +7,31 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSceneRasterRenderer {
-    private static void PaintImage(RgbaCanvas canvas, VisualSceneImage node, VisualSceneTransform transform) {
-        var origin = transform.Apply(new ChartPoint(node.Bounds.X, node.Bounds.Y));
-        var scaleX = node.Bounds.Width / node.Image.Width; var scaleY = node.Bounds.Height / node.Image.Height;
-        canvas.DrawImageTransformed(node.Image.Width, node.Image.Height, node.Image.Pixels,
-            transform.A * scaleX, transform.B * scaleX, transform.C * scaleY, transform.D * scaleY, origin.X, origin.Y, node.Opacity);
+    private static void PaintImage(RgbaCanvas canvas, VisualSceneImage node, VisualSceneTransform transform) =>
+        PaintImage(canvas, node.Image, node.Bounds, transform, node.Opacity);
+
+    private static void PaintImage(RgbaCanvas canvas, RgbaImage image, ChartRect bounds, VisualSceneTransform transform, double opacity) {
+        var origin = transform.Apply(new ChartPoint(bounds.X, bounds.Y));
+        var scaleX = bounds.Width / image.Width; var scaleY = bounds.Height / image.Height;
+        canvas.DrawImageTransformed(image.Width, image.Height, image.Pixels,
+            transform.A * scaleX, transform.B * scaleX, transform.C * scaleY, transform.D * scaleY, origin.X, origin.Y, opacity);
+    }
+
+    private static void PaintProcedural(RgbaCanvas canvas, VisualProceduralSourcePlan plan, VisualSceneTransform transform,
+        System.Threading.CancellationToken cancellation) {
+        var image = plan.Capture(cancellation);
+        using (RectangleClip(canvas, plan.Source.Bounds, transform))
+            PaintImage(canvas, image, plan.SamplingBounds, transform, 1);
     }
 
     private static IDisposable? GroupClip(RgbaCanvas canvas, VisualSceneGroup group, VisualSceneTransform transform) {
         if (group.PathClip != null) return canvas.PushContoursClip(transform.Apply(VisualSceneGeometry.Flatten(group.PathClip, canvas.PixelsPerUnit)));
         if (!group.Clip.HasValue) return null;
-        if (transform.IsIdentity) return canvas.PushClipBounds(group.Clip.Value);
-        var bounds = group.Clip.Value;
+        return RectangleClip(canvas, group.Clip.Value, transform);
+    }
+
+    private static IDisposable RectangleClip(RgbaCanvas canvas, ChartRect bounds, VisualSceneTransform transform) {
+        if (transform.IsIdentity) return canvas.PushClipBounds(bounds);
         return canvas.PushContoursClip(transform.Apply(new List<List<ChartPoint>> { RectanglePoints(bounds, 0, canvas.PixelsPerUnit) }));
     }
 
@@ -47,7 +60,7 @@ internal static partial class VisualSceneRasterRenderer {
         StrokeContours(canvas, contours, gradient.Shape);
     }
 
-    private static void PaintTransformedText(RgbaCanvas canvas, VisualSceneText node, VisualSceneTransform transform, Typography.TextHinting? textHinting = null) {
+    private static void PaintTransformedText(RgbaCanvas canvas, VisualSceneText node, VisualSceneTransform transform, Typography.TextHinting? textHinting = null, ChartPoint? canvasOrigin = null) {
         var text = node.Text;
         // Retain shaped glyphs and faces. Only their ink is buffered for rigid rotation; no font lookup or reshaping occurs.
         var margin = TextInkMargin(text) + (node.Stroke.HasValue ? node.StrokeWidth / 2 : 0);
@@ -72,7 +85,8 @@ internal static partial class VisualSceneRasterRenderer {
         var image = buffer.ToImage();
         var origin = transform.Apply(new ChartPoint(left, top));
         canvas.DrawImageTransformed(image.Width, image.Height, image.Pixels,
-            transform.A / density, transform.B / density, transform.C / density, transform.D / density, origin.X, origin.Y);
+            transform.A / density, transform.B / density, transform.C / density, transform.D / density, origin.X, origin.Y,
+            canvasOriginX: canvasOrigin?.X ?? 0, canvasOriginY: canvasOrigin?.Y ?? 0);
     }
 
     private static double TextInkMargin(VisualScenePreparedText text) {

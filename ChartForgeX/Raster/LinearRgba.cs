@@ -14,7 +14,7 @@ internal readonly struct LinearRgba {
     internal LinearRgba Opacity(double amount) => new(R * amount, G * amount, B * amount, A * amount);
     internal ChartColor ToColor(double opacity = 1) => A <= 0 ? new ChartColor(0, 0, 0, 0) :
         new ChartColor(Srgb(R / A), Srgb(G / A), Srgb(B / A), Byte(A * opacity));
-    private static byte Srgb(double value) => Byte(value <= 0.0031308 ? value * 12.92 : 1.055 * Math.Pow(Math.Max(0, value), 1 / 2.4) - 0.055);
+    private static byte Srgb(double value) => Byte(RasterColorTransfer.Encoded(value));
     private static byte Byte(double value) => (byte)Math.Round(Math.Max(0, Math.Min(1, value)) * 255);
     internal static LinearRgba Mix(LinearRgba left, LinearRgba right, double amount) =>
         new(left.R + (right.R - left.R) * amount, left.G + (right.G - left.G) * amount, left.B + (right.B - left.B) * amount, left.A + (right.A - left.A) * amount);

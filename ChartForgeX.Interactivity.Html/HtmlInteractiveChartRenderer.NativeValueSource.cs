@@ -10,6 +10,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// <summary>Transport is thin: ordered raw rows and GetSlices membership come from the same detached complete native value plan.</summary>
     private static string? PreparedNativeValueSource(PreparedVisual drawing, PreparedVisual? valueBasis = null) {
         var basis = valueBasis ?? drawing;
+        if (VisualValueCapture.TrySourceValues(basis, out var captured, out var componentBasis) && captured is IVisualComponentValuePlan components)
+            return PreparedNativeComponentSource(components, componentBasis);
         if (!VisualValueCapture.TryRawSource(basis, out var plan, out var complete)) return null;
         var raw = plan!; var json = new StringBuilder("{\"kind\":\"radial\",\"sourceKey\":").Append(HtmlJsonString.Encode(raw.SourceKey(complete)))
             .Append(",\"structureKey\":").Append(HtmlJsonString.Encode(raw.StructureKey)).Append(",\"readings\":[");

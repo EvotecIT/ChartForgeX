@@ -58,6 +58,10 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         }
         Assert.Equal(1, await page.EvaluateAsync<int>("() => pending.length"));
         Assert.True(await page.EvaluateAsync<bool>("() => pending[0].signal.aborted"));
+        Assert.True(await page.Locator("button[data-cfx-zoom]").First.EvaluateAsync<bool>("node => node.disabled"));
+        await page.EvaluateAsync("() => managed.root.querySelector('[data-cfx-zoom]').dispatchEvent(new MouseEvent('click',{bubbles:true}))");
+        await CaptureAsync(page, "admission-disabled-control-" + width + "-" + dark + "-" + typed);
+        Assert.Equal(1, await page.EvaluateAsync<int>("() => pending.length"));
         host.ReplaceProducerOffset(7);
         await ResolveAsync(page, 0); await PendingAsync(page, 2);
         Assert.Equal("initial", await RequestFieldAsync(page, 1, "basis"));

@@ -46,7 +46,7 @@ internal static partial class VisualSceneRasterRenderer {
         int density = 1, int coverage = 2, long pixelBudget = 64000000, TextHinting? textHinting = null) {
         var plan = PlanOpacity(scene, allocation, effectOptions, density, coverage, pixelBudget, textHinting);
         if (plan == null || plan.RootMask != null ||
-            plan.IsolatedLayers == 0 && plan.Shadows == null && plan.Masks == null) return plan;
+            plan.IsolatedLayers == 0 && plan.Shadows == null && plan.Masks == null && plan.Procedural == null) return plan;
         // One existing safety owner validates source/result, private isolation and borrowed-image arrays before any canvas allocation.
         // Strip only antialias coverage. Dividing by CombinedScale would also strip
         // output density and undercount the real returned RGBA array when Scale > 1.
@@ -64,7 +64,7 @@ internal static partial class VisualSceneRasterRenderer {
         var found = false;
         for (var index = 0; index < scene.Nodes.Count; index++) {
             var node = scene.Nodes[index];
-            if (NodeOpacity(node) != 1 || node is VisualSceneGroup group &&
+            if (node is VisualSceneProceduralSource || NodeOpacity(node) != 1 || node is VisualSceneGroup group &&
                 (group.SurfaceShadow != null || group.RetainedEffect != null)) {
                 found = true;
                 break;
@@ -73,12 +73,22 @@ internal static partial class VisualSceneRasterRenderer {
         if (!found) return null; // No added plan, image, layer or accounting allocation on the default path.
         var ends = VisualSceneScopes.Ends(scene);
         var active = new Stack<bool>(); var depth = 0; var peak = 0; long count = 0;
+        Dictionary<int, VisualProceduralSourcePlan>? procedural = null;
         Dictionary<int, VisualSurfaceShadowPlan>? shadows = null;
         Dictionary<int, VisualRetainedEffectPlan>? masks = null;
         var sourceOptions = effectOptions;
         long effectBytes = 0, effectWork = 0;
         for (var index = 0; index < scene.Nodes.Count; index++) {
             var node = scene.Nodes[index]; var opacity = NodeOpacity(node);
+            if (node is VisualSceneProceduralSource generated) {
+                var densityForCells = checked((effectOptions?.Scale ?? density) * (effectOptions?.Supersampling ?? coverage));
+                var sourcePlan = new VisualProceduralSourcePlan(generated, densityForCells);
+                procedural ??= new Dictionary<int, VisualProceduralSourcePlan>();
+                procedural.Add(index, sourcePlan);
+                effectBytes = checked(effectBytes + sourcePlan.Plan.AllocatedBytes);
+                effectWork = checked(effectWork + sourcePlan.Plan.WorkSamples);
+                RasterEffectPreflight.ValidateCapture(null, 0, effectBytes, effectWork, out _, out _);
+            }
             if (node is VisualSceneGroup) {
                 if (opacity == 0) { index = ends[index]; continue; }
                 if (node is VisualSceneGroup { RetainedEffect: not null } masked) {
@@ -123,7 +133,7 @@ internal static partial class VisualSceneRasterRenderer {
             candidate.Scope.SourceSize.Width == scene.Size.Width && candidate.Scope.SourceSize.Height == scene.Size.Height) {
             rootMask = candidate;
         }
-        return new OpacityPlan(ends, count, peak, bytes, work, shadows, masks, rootMask);
+        return new OpacityPlan(ends, count, peak, bytes, work, shadows, masks, rootMask, procedural);
     }
 
     private static RgbaImage RenderOpacity(VisualScene scene, RasterAllocation allocation, OpacityPlan plan,
@@ -185,6 +195,9 @@ internal static partial class VisualSceneRasterRenderer {
                             PaintShadow(target, index, transform);
                         }
                     } else if (node is VisualSceneEndGroup) { clips.Pop()?.Dispose(); transform = transforms.Pop(); }
+                    else if (node is VisualSceneProceduralSource && plan.Procedural != null && plan.Procedural.TryGetValue(index, out var generated)) {
+                        PaintProcedural(target, generated, transform, cancellation);
+                    }
                     else if (opacity > 0) {
                         if (opacity != 1) {
                             var layer = NewCanvas(); PaintNativeNode(scene, layer, node, index, transform, textHinting);
@@ -197,8 +210,9 @@ internal static partial class VisualSceneRasterRenderer {
     }
 
     private sealed class OpacityPlan {
-        internal OpacityPlan(int[] ends, long layers, int peak, long bytes, long work, Dictionary<int, VisualSurfaceShadowPlan>? shadows, Dictionary<int, VisualRetainedEffectPlan>? masks, VisualRetainedEffectPlan? rootMask) {
-            RootMask = rootMask; Masks = masks; Shadows = shadows; Ends = ends; IsolatedLayers = layers; PeakConcurrentLayers = peak; PixelBytes = bytes; WorkSamples = work; }
+        internal OpacityPlan(int[] ends, long layers, int peak, long bytes, long work, Dictionary<int, VisualSurfaceShadowPlan>? shadows, Dictionary<int, VisualRetainedEffectPlan>? masks, VisualRetainedEffectPlan? rootMask, Dictionary<int, VisualProceduralSourcePlan>? procedural) {
+            Procedural = procedural; RootMask = rootMask; Masks = masks; Shadows = shadows; Ends = ends; IsolatedLayers = layers; PeakConcurrentLayers = peak; PixelBytes = bytes; WorkSamples = work; }
+        internal Dictionary<int, VisualProceduralSourcePlan>? Procedural { get; }
         internal Dictionary<int, VisualSurfaceShadowPlan>? Shadows { get; }
         internal Dictionary<int, VisualRetainedEffectPlan>? Masks { get; }
         internal VisualRetainedEffectPlan? RootMask { get; }

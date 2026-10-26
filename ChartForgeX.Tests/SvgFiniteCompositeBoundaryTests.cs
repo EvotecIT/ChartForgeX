@@ -41,10 +41,10 @@ public sealed class SvgFiniteCompositeBoundaryTests {
     }
 
     [Theory]
-    [InlineData("operator='arithmetic' k1='1'")]
+    [InlineData("operator='arithmetic' k1='NaN'")]
     [InlineData("operator='invalid'")]
     [InlineData("operator='in' k4='0.5'")]
-    public void UnsupportedOperatorsAndArithmeticRemainLocatedStrictDiagnostics(string attributes) {
+    public void UnsupportedOperatorsAndNonFiniteArithmeticRemainLocatedStrictDiagnostics(string attributes) {
         var source = Svg().Replace("operator='in'", attributes, StringComparison.Ordinal);
         var result = SvgRasterizer.Rasterize(source, filters: new SvgRasterFilterOptions());
         Capture("finite-composite-reject-" + attributes.Split('=')[0], source, result);
@@ -65,8 +65,8 @@ public sealed class SvgFiniteCompositeBoundaryTests {
         Capture("finite-composite-inherited-style", inherited, result);
         Assert.Empty(result.Diagnostics);
         Assert.Equal(expected.Image.Pixels, result.Image.Pixels);
-        var unsupported = inherited.Replace("color-interpolation-filters:sRGB", "color-interpolation-filters:linearRGB", StringComparison.Ordinal);
-        Assert.Contains(SvgRasterizer.Rasterize(unsupported, filters: new SvgRasterFilterOptions()).Diagnostics, item => item.Code == "SFR002");
+        var linear = inherited.Replace("color-interpolation-filters:sRGB", "color-interpolation-filters:linearRGB", StringComparison.Ordinal);
+        Assert.Empty(SvgRasterizer.Rasterize(linear, strict: true, filters: new SvgRasterFilterOptions()).Diagnostics);
     }
 
     [Fact]

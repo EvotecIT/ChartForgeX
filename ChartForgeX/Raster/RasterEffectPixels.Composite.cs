@@ -8,7 +8,12 @@ internal static partial class RasterEffectPixels {
     internal static void WriteMasked(byte[] target, int output, byte[] source, int input, int coverage, int x, int y, bool dither) {
         var alpha = Multiply(source[input + 3] * 257, coverage);
         var a = QuantizeMaskAlpha(alpha, x, y, dither);
-        if (a == 0) return; // New result is already transparent black.
+        if (a == 0) {
+            // Most callers target a zeroed result. The affine source clip also uses this
+            // same alpha conversion in place on its newly owned generated pixel array.
+            target[output] = target[output + 1] = target[output + 2] = target[output + 3] = 0;
+            return;
+        }
         target[output] = source[input]; target[output + 1] = source[input + 1]; target[output + 2] = source[input + 2]; target[output + 3] = a;
     }
     /// <summary>One final alpha-only conversion shared by native masks and typed SVG mask materialization.</summary>
@@ -21,21 +26,10 @@ internal static partial class RasterEffectPixels {
     internal static void Composite(byte[] target, int output, byte sr, byte sg, byte sb, byte sa8,
         byte dr, byte dg, byte db, byte da8, VisualBlendMode mode, int x, int y, bool dither) {
         var sa = sa8 * 257; var da = da8 * 257;
-        var a = mode == VisualBlendMode.PlusLighter ? Math.Min(65535, sa + da) : sa + da - Multiply(sa, da);
-        var nonseparable = mode >= VisualBlendMode.Hue
-            ? RasterBlendFunctions.Nonseparable(new RasterBlendFunctions.Rgb(sr / 255.0, sg / 255.0, sb / 255.0),
-                new RasterBlendFunctions.Rgb(dr / 255.0, dg / 255.0, db / 255.0), 24 + (int)mode - (int)VisualBlendMode.Hue)
-            : default;
-        int Channel(byte s, byte d, double combined) {
-            var sp = Premultiply(s, sa); var dp = Premultiply(d, da);
-            if (mode == VisualBlendMode.PlusLighter) return Math.Min(65535, sp + dp);
-            if (mode == VisualBlendMode.Normal) return sp + Multiply(dp, 65535 - sa);
-            var normalized = mode >= VisualBlendMode.Hue ? Math.Max(0, Math.Min(1, combined))
-                : RasterBlendFunctions.Separable(s / 255.0, d / 255.0, SeparableFunction(mode));
-            var blend = (int)Math.Floor(normalized * 65535 + .5);
-            return Math.Min(65535, Multiply(sp, 65535 - da) + Multiply(dp, 65535 - sa) + Multiply(blend, Multiply(sa, da)));
-        }
-        Write(target, output, Channel(sr, dr, nonseparable.R), Channel(sg, dg, nonseparable.G),
-            Channel(sb, db, nonseparable.B), a, x, y, dither);
+        var pixel = BlendChannels16(new RasterEffectPixel16(Premultiply(sr, sa), Premultiply(sg, sa), Premultiply(sb, sa), sa),
+            new RasterEffectPixel16(Premultiply(dr, da), Premultiply(dg, da), Premultiply(db, da), da),
+            new RasterBlendFunctions.Rgb(sr / 255.0, sg / 255.0, sb / 255.0),
+            new RasterBlendFunctions.Rgb(dr / 255.0, dg / 255.0, db / 255.0), mode);
+        Write(target, output, pixel.R, pixel.G, pixel.B, pixel.A, x, y, dither);
     }
 }

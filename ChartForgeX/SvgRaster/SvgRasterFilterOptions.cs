@@ -4,14 +4,16 @@ using ChartForgeX.Raster;
 
 namespace ChartForgeX.SvgRaster;
 
-/// <summary>Explicitly enables the bounded source-sRGB native-filter subset on one rasterization.</summary>
-/// <remarks>Finite two-child flood plus SourceGraphic standard blending or over/in/out/atop/xor reuses the same native compositor.
-/// Standard blend modes operate in explicitly computed sRGB; implicit/linearRGB filter spaces and no-composite remain unsupported.
-/// One explicit user-space SourceGraphic Gaussian or the finite SourceAlpha morphology-shadow chain is supported per filter. The same native
-/// three-box approximation used by raster composition is used; this is not an exact Gaussian or browser-pixel contract.
-/// Solid SourceGraphic descendants may use existing isolated opacity; their actual compositor canvases/copies share the document debit.
-/// Nested filters, transforms, viewports, images and paint-server sources remain outside this finite subset.
-/// A null options argument keeps the existing SFR002 behavior. Limits can tighten, never raise, existing raster ceilings.</remarks>
+/// <summary>Explicitly enables bounded native-filter source memberships on one rasterization.</summary>
+/// <remarks>Ordered SourceGraphic/SourceAlpha and earlier named results support finite color matrices, component transfer,
+/// flood, Gaussian blur, morphology, aligned offset, standard blend, over/in/out/atop/xor/arithmetic composition and ordered merge.
+/// Named results retain premultiplied RGBA16 and their computed sRGB/linearRGB space. Only RGB transfers at consumer space changes;
+/// every primitive clamps, alpha stays coverage, and zero-alpha RGB is discarded. Existing exact byte/scalar/typed recipe paths remain.
+/// Regions require explicit aligned numeric user-space filter lengths and positive axis transforms. Primitive output regions clip results.
+/// The Gaussian reuses the native three-box approximation; this is not an exact Gaussian or browser-byte identity contract.
+/// Solid SourceGraphic descendants may use existing isolated opacity; nested filters, transforms, viewports, images and paint servers retain diagnostics.
+/// Backdrop/paint built-ins, authored filter resolution and unrepresented primitives remain unsupported. Null options retain ordinary SFR002 behavior.
+/// Stage count shares existing source, work, cumulative byte and cancellation limits; one applied sequence is one filter application.</remarks>
 public sealed class SvgRasterFilterOptions {
     /// <summary>Creates immutable, per-document native-filter import limits and a cooperative cancellation token.</summary>
     /// <param name="maximumApplications">Maximum applied instances, including use instances and embedded SVG documents; 1 through 16.</param>

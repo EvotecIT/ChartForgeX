@@ -14,6 +14,8 @@ internal sealed partial class ChartVisibilitySource {
         private readonly TextStyleOverride?[] _pointStyles;
         private readonly IReadOnlyDictionary<int, ChartObservationId> _ids, _groups;
         private readonly ChartBoxPlotStatisticsOptions? _statistics;
+        private readonly ChartFinancialOptions _financial;
+        private readonly IReadOnlyList<ChartFinancialItemOptions?> _financialStyles;
         internal Series(ChartSeries source) {
             Id = source.Id; Name = source.Name; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
             ValueAxis = source.ValueAxis; ShowInLegend = source.ShowInLegend; SemanticRole = source.SemanticRole; Labels = source.ShowDataLabels; Placement = source.DataLabelPlacement;
@@ -22,6 +24,13 @@ internal sealed partial class ChartVisibilitySource {
             _labelStyle = source.DataLabelStyle.Clone(); _markers = source.Markers.Clone();
             CaptureHierarchy(source);
             Points = Array.AsReadOnly(source.Points.ToArray()); Boxes = Array.AsReadOnly(source.BoxPlots.ToArray());
+            Bubbles = Array.AsReadOnly(source.Bubbles.ToArray()); Ranges = Array.AsReadOnly(source.Ranges.ToArray());
+            ErrorBars = Array.AsReadOnly(source.ErrorBars.ToArray());
+            FinancialValues = Array.AsReadOnly(source.FinancialValues.ToArray());
+            _financial = source.Financial.Clone(); _financialStyles = source.CaptureFinancialStyles();
+            var errorOffset = 0; ErrorOffsets = Array.AsReadOnly(ErrorBars.Select(item => {
+                var captured = errorOffset; errorOffset += ErrorValueCount(item); return captured;
+            }).ToArray());
             RawGroups = Array.AsReadOnly(source.BoxPlotSourceGroups.Select(group => new ChartBoxPlotSampleGroup(group.X, group.Samples)).ToArray());
             RawSamples = Array.AsReadOnly(source.BoxPlotSourceSamples.ToArray());
             SliceOffsets = Array.AsReadOnly(source.PointSliceOffsets.ToArray()); SliceRadiusRatios = Array.AsReadOnly(source.PointSliceRadiusRatios.ToArray()); RadialBand = source.RadialBand;
@@ -49,6 +58,15 @@ internal sealed partial class ChartVisibilitySource {
         internal double? NormalizedTo { get; }
         internal ChartStackedAreaMissingDataPolicy StackedAreaMissingData { get; }
         internal IReadOnlyList<ChartPoint> Points { get; }
+        internal IReadOnlyList<ChartBubble> Bubbles { get; }
+        internal IReadOnlyList<ChartRangeBand> Ranges { get; }
+        internal IReadOnlyList<ChartErrorBar> ErrorBars { get; }
+        internal IReadOnlyList<ChartCandlestick> FinancialValues { get; }
+        internal ChartFinancialOptions CopyFinancial() => _financial.Clone();
+        internal IReadOnlyList<ChartFinancialItemOptions?> CopyFinancialStyles() => Array.AsReadOnly(_financialStyles.Select(style => style?.Clone()).ToArray());
+        internal IReadOnlyList<int> ErrorOffsets { get; }
+        private static int ErrorValueCount(ChartErrorBar item) => 1 + (item.XBounds.HasValue ? 2 : 0) + (item.YBounds.HasValue ? 2 : 0);
+        internal int NativeValueCount => IsHierarchy ? HierarchyItems.Count(item => item.Value.HasValue) : Kind == ChartSeriesKind.Bubble ? Bubbles.Count * 2 : Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea ? Ranges.Count * 2 : Kind == ChartSeriesKind.ErrorBar ? ErrorBars.Sum(ErrorValueCount) : Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? FinancialValues.Count * 4 : Points.Count;
         internal IReadOnlyList<ChartBoxPlot> Boxes { get; }
         internal IReadOnlyList<ChartBoxPlotSampleGroup> RawGroups { get; }
         internal IReadOnlyList<double> RawSamples { get; }
@@ -73,7 +91,7 @@ internal sealed partial class ChartVisibilitySource {
             return Array.AsReadOnly(Enumerable.Range(0, DisplayCount).Where(index => view == null || !ids.TryGetValue(index, out var id)
                 || !view.IsHidden(kind, Id, id)).ToArray());
         }
-        internal int SourceCount => Raw ? RawSamples.Count : Kind == ChartSeriesKind.BoxPlot ? Boxes.Count : Points.Count;
-        internal int DisplayCount => IsHierarchy ? HierarchyItems.Count : Raw ? RawGroups.Count : Kind == ChartSeriesKind.BoxPlot ? Boxes.Count : Points.Count;
+        internal int SourceCount => Raw ? RawSamples.Count : Kind == ChartSeriesKind.BoxPlot ? Boxes.Count : Kind == ChartSeriesKind.Bubble ? Bubbles.Count : Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea ? Ranges.Count : Kind == ChartSeriesKind.ErrorBar ? ErrorBars.Count : Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? FinancialValues.Count : Points.Count;
+        internal int DisplayCount => IsHierarchy ? HierarchyItems.Count : Raw ? RawGroups.Count : Kind == ChartSeriesKind.BoxPlot ? Boxes.Count : Kind == ChartSeriesKind.Bubble ? Bubbles.Count : Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea ? Ranges.Count : Kind == ChartSeriesKind.ErrorBar ? ErrorBars.Count : Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? FinancialValues.Count : Points.Count;
     }
 }

@@ -169,6 +169,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         FunnelPresentationRecipe.Create(width == 390 ? "compact-cone" : "cone", mode)
             .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
     private static void Options(HtmlChartInteractionOptions options) {
+        options.TextPresentation = HtmlChartTextPresentation.Browser; // Preserve the incumbent editable-browser/export contract explicitly.
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         options.Interaction.Enable(ChartInteractionFeatures.Export); options.Tooltip.PinOnSelect = false;
     }

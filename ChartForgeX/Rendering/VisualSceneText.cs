@@ -67,8 +67,8 @@ internal sealed class VisualSceneTextFace {
         var lines = new List<VisualSceneTextLine>(); var width = 0d;
         foreach (var slice in TextLineScanner.Enumerate(displayed)) {
             var value = slice.Read(displayed);
-            var glyphs = _face.Font == null ? Array.Empty<ShapedGlyph>() : TextShaper.Shape(_face.Font, value, size, _strictPrimary, _capturedClusters);
-            var measuredWidth = _face.Font == null ? FallbackWidth(value, size) : TrueTypeFont.MeasureGlyphs(glyphs, size);
+            var glyphs = _face.Font == null ? Array.Empty<ShapedGlyph>() : TextShaper.ShapeWithLetterSpacing(_face.Font, value, size, _style.LetterSpacing, _strictPrimary, _capturedClusters);
+            var measuredWidth = _face.Font == null ? FallbackWidth(value, size, _style.LetterSpacing) : TrueTypeFont.MeasureGlyphs(glyphs, size);
             if (style.Font.Italic && value.Length > 0) measuredWidth += TrueTypeFont.ItalicOverhang(size);
             if (_face.SynthesizeBold && value.Length > 0 && (_face.Font == null || _face.Font.NeedsSyntheticBold(glyphs)))
                 measuredWidth += RgbaCanvas.EmphasisOffset(size);
@@ -81,7 +81,8 @@ internal sealed class VisualSceneTextFace {
     }
 
     internal static double FallbackScale(double size) => TinyFont.ScaleForFontSize(size);
-    private static double FallbackWidth(string text, double size) {
+    private static double FallbackWidth(string text, double size, double letterSpacing = 0) {
+        if (letterSpacing != 0) return TinyFont.SpacedWidth(text, size, letterSpacing);
         var width = 0;
         foreach (var c in text) width += TinyFont.AdvanceFor(c);
         return width * FallbackScale(size);

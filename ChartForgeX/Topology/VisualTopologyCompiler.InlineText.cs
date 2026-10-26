@@ -20,6 +20,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (detailPolicy != null) style = detailPolicy.Resolve(style);
         // As with C4's plain resolver, fitted logical size is already selected by the caller.
         style.FontSize = detailPolicy?.FontSize is double authored ? authored * _scale : size;
+        style.LetterSpacing *= _scale;
         style.Color = color; style.Alignment = centered ? TextAlignment.Center : TextAlignment.Left;
         return style;
     }

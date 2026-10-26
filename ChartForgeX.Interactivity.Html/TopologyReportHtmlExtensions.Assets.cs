@@ -82,6 +82,7 @@ public static partial class TopologyReportHtmlExtensions {
                 current = page;
                 picker.value = String(page);
                 content.innerHTML = JSON.parse(pageData.textContent);
+                window[Symbol.for('ChartForgeX.nativeTextExport')].mount(content);
                 const links = content.querySelector('.links');
                 const linkItems = JSON.parse(document.getElementById('links-' + page).textContent);
                 const controls = content.querySelector('.relationship-pages');

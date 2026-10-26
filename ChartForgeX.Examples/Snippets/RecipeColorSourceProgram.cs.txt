@@ -1,0 +1,28 @@
+using System;
+using System.IO;
+using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
+
+var output = args.Length == 0 ? "color-source-output" : args[0];
+Directory.CreateDirectory(output);
+var primitives = new[] {
+    "<feColorMatrix in='SourceGraphic' type='saturate' values='0'/>",
+    "<feColorMatrix in='SourceGraphic' type='hueRotate' values='180'/>",
+    "<feColorMatrix in='SourceGraphic' type='luminanceToAlpha'/>",
+    "<feComponentTransfer in='SourceGraphic'><feFuncR type='gamma' exponent='2'/><feFuncG type='table' tableValues='0 .75 1'/></feComponentTransfer>",
+    "<feComponentTransfer in='SourceGraphic'><feFuncR type='gamma' amplitude='.25' exponent='-1'/></feComponentTransfer>",
+    "<feColorMatrix in='SourceGraphic' type='saturate' values='0' result='gray'/><feComponentTransfer in='gray' result='power'><feFuncR type='gamma' exponent='2'/></feComponentTransfer><feComponentTransfer in='power'><feFuncR type='linear' slope='.5'/></feComponentTransfer>"
+};
+for (var index = 0; index < primitives.Length; index++) {
+    foreach (var space in new[] { "sRGB", "linearRGB" }) {
+        var source = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='96'><defs><filter id='colors' filterUnits='userSpaceOnUse' primitiveUnits='userSpaceOnUse'"
+            + " color-interpolation-filters='" + space + "' x='0' y='0' width='240' height='96'>" + primitives[index] + "</filter></defs>"
+            + "<g filter='url(#colors)'><rect x='8' y='8' width='64' height='80' fill='#4080c0'/><rect x='88' y='8' width='64' height='80' fill='#d08840' fill-opacity='.5'/>"
+            + "<rect x='168' y='8' width='64' height='80' fill='#80c040'/></g></svg>";
+        var result = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
+        var stem = Path.Combine(output, "color-source-" + index + "-" + space);
+        File.WriteAllText(stem + ".svg", source);
+        File.WriteAllBytes(stem + ".png", PngWriter.WriteRgba(result.Image));
+        Console.WriteLine(stem);
+    }
+}

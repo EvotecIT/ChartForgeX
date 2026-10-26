@@ -123,6 +123,7 @@ internal static partial class TopologyLayoutEngine {
             MaximumLabelCharacters = node.MaximumLabelCharacters,
             HasPositionOverride = node.HasPositionOverride
         };
+        copy.SurfaceElementAppearance = TopologySurfaceElementAppearance.Resolve(node);
         copy.DashPattern.AddRange(node.DashPattern);
         foreach (var item in node.Metrics) copy.Metrics[item.Key] = item.Value;
         foreach (var item in node.Metadata) copy.Metadata[item.Key] = item.Value;

@@ -112,7 +112,11 @@
       "provenance": "Authored ChartForgeX configuration merge example; verified with the pinned official Mermaid parsers."
     },
     "fixtures/cynefin-source-semantics.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored Cynefin quoted-string, repeated-domain and self-loop contract from the pinned 12.2.0 grammar/database. The installed 11.17.2 database/parser sources are identical. Proposed outcomes require execution; no reference result is claimed by the scratch packet."
     },
     "fixtures/cynefin-basic.mmd": {
@@ -481,7 +485,11 @@
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
     "fixtures/ishikawa-native-depth.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "mapping": "Typed indentation cause tree, family configuration and measured native Fishbone captions",
       "provenance": "Authored native-depth fixture; expected syntax follows pinned grammar inspection; actual parser/render qualification pending maintained execution."
     },
@@ -502,8 +510,12 @@
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
     "fixtures/kanban-source-geometry.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
-      "provenance": "Authored source-dimension and dense-board fixture from pinned Kanban grammar/configuration; expected syntax states, current official parser/render execution pending. Native padding intentionally uses the existing viewport owner instead of the upstream mindmap-padding lookup."
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.2.0 parse outcomes observed on the retained exact source. Kanban metadata is adjacent to its node, preserving every card and authored property. Syntax observations do not establish rendered pixel parity."
     },
     "fixtures/kanban-basic.mmd": {
       "syntax": {
@@ -758,10 +770,10 @@
     "fixtures/sequence-half-arrows.mmd": {
       "syntax": {
         "10": "rejected",
-        "11": "rejected",
+        "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored 16 half-arrow tokens from the pinned Mermaid 12.2.0 sequence grammar and native marker definitions. Outcomes are qualification declarations until executed."
+      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.2.0 parse outcomes observed on the retained exact source. All sixteen authored half-arrow forms are retained; 11.17.2 and 12.2.0 accept them. Syntax observations do not establish rendered pixel parity."
     },
     "fixtures/sequence-presentation.mmd": {
       "syntax": {
@@ -1478,11 +1490,87 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored source configuration using pinned Mermaid 12.2.0 C4DiagramConfig, C4 element CSSOM typography, c4ShapeAdapter element palettes and shared c4LabelHelper width/padding. Earlier-version syntax expectations are provisional until the maintained pinned parser corpus executes; no rendering or pixel-equivalence result is claimed."
+      "provenance": "Authored C4 configuration and typography regression using quoted named layout operands, matching c4-layout-config-native.mmd. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; no rendering or pixel-equivalence result is claimed."
     },
     "fixtures/wardley-native-overlays.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
-      "provenance": "Authored annotation-box, source paint, sourcing, pipeline label and child-endpoint fixture from pinned Wardley grammar. Expected syntax is source-derived; actual engine qualification remains pending maintained execution."
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.2.0 parse outcomes observed on the retained exact source. The final boundary uses the decimal number required by the pinned Wardley lexer; all overlays and numeric values remain. Syntax observations do not establish rendered pixel parity."
+    },
+    "fixtures/agentflow-family-shapes.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/agentflow-native-surface-paints.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/agentflow-style-settings.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/flowchart-native-shape-catalog-a.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/flowchart-native-shape-catalog-b.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/flowchart-native-shape-catalog-c.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/flowchart-native-shape-catalog-d.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/flowchart-native-surface-paints.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+    },
+    "fixtures/flowchart-style-settings.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
     }
   }
 }

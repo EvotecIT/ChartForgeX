@@ -20,6 +20,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (style == null) return;
         writer.Property(name); writer.StartObject(); font(style.Font); Number(writer, "size", style.FontSize);
         String(writer, "color", style.Color.ToHexRgba()); String(writer, "alignment", style.Alignment.ToString()); Number(writer, "lineHeight", style.LineHeight);
+        if (style.LetterSpacing != 0) Number(writer, "letterSpacing", style.LetterSpacing);
         String(writer, "underline", style.UnderlineStyle.ToString()); String(writer, "strike", style.StrikethroughStyle.ToString()); String(writer, "baseline", style.Baseline.ToString());
         String(writer, "case", style.TextCase.ToString()); String(writer, "hinting", style.Hinting.ToString()); OptionalString(writer, "language", style.OpenTypeLanguageTag); writer.EndObject();
     }
@@ -32,7 +33,7 @@ internal static partial class VisualArtifactInterchangeJson {
         bool Flag(string name)=>OptionalBool(frame,name)??throw new ArgumentException("Frame request requires boolean "+name+".");
         TextStyle? Text(string name) {
             var item=OptionalObject(frame,name);if(item==null)return null;
-            return new TextStyle{Font=roots == null ? ReadFiniteFontValue(item,"font") : ReadFontValue(item,"font",roots),FontSize=RequiredNumber(item,"size"),Color=ReadWaterfallColor(item,"color")??throw new ArgumentException("Frame text requires literal color."),
+            return new TextStyle{Font=roots == null ? ReadFiniteFontValue(item,"font") : ReadFontValue(item,"font",roots),FontSize=RequiredNumber(item,"size"),LetterSpacing=OptionalNumber(item,"letterSpacing")??0,Color=ReadWaterfallColor(item,"color")??throw new ArgumentException("Frame text requires literal color."),
                 Alignment=RequiredEnum<TextAlignment>(item,"alignment"),LineHeight=RequiredNumber(item,"lineHeight"),UnderlineStyle=RequiredEnum<TextDecorationStyle>(item,"underline"),
                 StrikethroughStyle=RequiredEnum<TextDecorationStyle>(item,"strike"),Baseline=RequiredEnum<TextBaseline>(item,"baseline"),TextCase=RequiredEnum<TextCaseTransform>(item,"case"),
                 Hinting=RequiredEnum<TextHinting>(item,"hinting"),OpenTypeLanguageTag=OptionalString(item,"language")};

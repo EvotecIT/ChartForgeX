@@ -19,6 +19,12 @@ internal static class ExampleProgramOptions {
         if (HasArg(args, "--native-complete-cartesian-values-only")) { NativeCompleteCartesianValueExamples.Write(output,args); return true; }
         if (HasArg(args, "--native-joint-stack-values-only")) { NativeJointStackValueExamples.Write(output,args); return true; }
         if (HasArg(args, "--native-owned-flash-only")) { NativeOwnedValueFlashExamples.Write(output,args); return true; }
+        if (HasArg(args, "--native-component-clipping-only")) { NativeComponentClipExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-component-time-only")) { NativeComponentTimeExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-financial-components-only")) { NativeFinancialComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-error-components-only")) { NativeErrorComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-range-components-only")) { NativeRangeComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-bubble-components-only")) { NativeBubbleComponentExamples.Write(output, args); return true; }
         if (HasArg(args, "--native-raw-values-only")) { NativeRawValueExamples.Write(output); return true; }
         if (HasArg(args, "--native-richer-number-only")) { NativeNumberCultureCaseExamples.Write(output, args, richer: true); return true; }
         if (HasArg(args, "--native-value-text-repertoire-only")) { NativeFallbackRadialExamples.Write(output, args, numericValueText: true); return true; }

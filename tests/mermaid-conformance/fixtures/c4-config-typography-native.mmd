@@ -28,7 +28,7 @@ config:
     wrap: true
 ---
 C4Container
-UpdateLayoutConfig(2,1)
+UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 Boundary(platform, "Service platform", "Native boundary") {
   Person(operator, "Operations coordinator", "Coordinates scheduled publication")
   Container(service, "Publication orchestration service", "Managed runtime", "Captures and validates publication requests before delivery")

@@ -18,6 +18,7 @@
       throw new TypeError('Adaptive: invalid breakpoint/drawings.');
     const wide = wideTemplate ? adaptiveSectionCopy(readChartSection(wideTemplate.content.firstElementChild, true)) : adaptiveSectionCopy(root);
     const narrow = adaptiveSectionCopy(readChartSection(narrowTemplate.content.firstElementChild, true));
+    window[Symbol.for('ChartForgeX.nativeTextExport')].copyBindings(root, narrow);
     const source = JSON.stringify(JSON.parse(wide.dataset.cfxPreparedChart).series);
     for (const section of [wide, narrow]) if (section.dataset.cfxChartId !== root.dataset.cfxChartId
       || section.dataset.cfxResponsiveLayout !== 'adaptive'

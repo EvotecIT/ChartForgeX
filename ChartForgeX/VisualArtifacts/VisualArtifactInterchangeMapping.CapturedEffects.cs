@@ -86,6 +86,12 @@ public static partial class VisualArtifactInterchangeMapping {
     }
 
     private static void RequireEditableSourcePresentation(VisualArtifactInterchangeEnvelope envelope) {
+        if (envelope.Presentation?.TurbulenceSource != null || envelope.Topology?.Hierarchy?.Source.Presentation?.TurbulenceSource != null)
+            throw new NotSupportedException("A carried procedural source requires PrepareTurbulenceSource with an explicit same-size context; a diagram importer cannot discard it.");
+        RequireNoCapturedEffectPresentation(envelope);
+    }
+
+    private static void RequireNoCapturedEffectPresentation(VisualArtifactInterchangeEnvelope envelope) {
         if (envelope.Presentation?.CapturedEffects.Count > 0 || envelope.Topology?.Hierarchy?.Source.Presentation?.CapturedEffects.Count > 0)
             throw new NotSupportedException("This envelope carries captured effects. Clear CapturedEffects on a detached source-facts copy before editing; " +
                 "prepare through its existing family owner, then use ApplyCapturedEffects or ApplyCapturedLayer on the original presentation.");

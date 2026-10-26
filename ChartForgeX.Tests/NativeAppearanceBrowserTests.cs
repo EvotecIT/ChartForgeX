@@ -48,6 +48,9 @@ public sealed class NativeAppearanceBrowserTests {
               const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
               return {loaded:svgs.map(s=>({width:s.getBoundingClientRect().width,height:s.getBoundingClientRect().height,images:s.querySelectorAll('image').length})),
                 pixel:[...ctx.getImageData(1,1,1,1).data],scripts:svgs.reduce((n,s)=>n+s.querySelectorAll('script,foreignObject,filter').length,0),
+                profiles:svgs.map(s=>({section:s.closest('section').id,svg:s.outerHTML,
+                  forbidden:[...s.querySelectorAll('script,foreignObject,filter')].map(node=>({tag:node.tagName,outerHTML:node.outerHTML}))})),
+
                 glow:{filters:nativeGlow.querySelectorAll('filter').length,images:nativeGlow.querySelectorAll('image').length,
                   text:nativeGlow.querySelectorAll('text').length,width:nativeGlow.getBoundingClientRect().width,
                   scripts:nativeGlow.querySelectorAll('script,foreignObject').length},

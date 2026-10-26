@@ -71,9 +71,13 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
-    /// <summary>Gets or sets opt-in full authored native Pie/Donut value capture, including zero readings and actual aggregate contributor membership.</summary>
+    /// <summary>Gets or sets opt-in full authored native Pie/Donut raw values or finite Bubble, RangeBand/RangeArea, ErrorBar and Candlestick/OHLC component capture, including actual native domain and membership facts.</summary>
     /// <remarks>False preserves ordinary metadata and finite positive value admission. True requires authored series/observation IDs and representable captured native policy; unsupported capture rejects before a section is returned. Raw source rows do not invent painted targets.</remarks>
     public bool CaptureNativeValueSource { get; set; }
+
+    /// <summary>Gets or sets how HTML supplies prepared text. Automatic delivers eligible owned faces and keeps native contours for unsupported or unavailable browser faces.</summary>
+    /// <remarks>NativeContours retains captured glyph placement. Browser uses the host font system. Native static SVG/PNG defaults are independent.</remarks>
+    public HtmlChartTextPresentation TextPresentation { get; set; } = HtmlChartTextPresentation.Automatic;
 
     /// <summary>Gets the native narrow drawing and container breakpoint used by <see cref="HtmlChartResponsiveLayout.Adaptive"/>.</summary>
     public HtmlChartAdaptiveLayoutOptions Adaptive { get; } = new HtmlChartAdaptiveLayoutOptions();

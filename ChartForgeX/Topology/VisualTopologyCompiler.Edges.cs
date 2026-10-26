@@ -83,8 +83,8 @@ internal sealed partial class VisualTopologyCompiler {
                 }
                 if (dash is { Length: > 0 }) {
                     var layers = ChartLineVisualLayers.Build(color, width, style, units * _scale);
-                    DrawEndpointConnector(route[0], edge.Interpolation.HasValue && logical != null ? Point(logical.AdjacentToEndpoint(true)) : route[1]);
-                    DrawEndpointConnector(route[route.Length - 1], edge.Interpolation.HasValue && logical != null ? Point(logical.AdjacentToEndpoint(false)) : route[route.Length - 2]);
+                    DrawEndpointConnector(route[0], logical != null ? Point(logical.AdjacentToEndpoint(true)) : route[1]);
+                    DrawEndpointConnector(route[route.Length - 1], logical != null ? Point(logical.AdjacentToEndpoint(false)) : route[route.Length - 2]);
 
                     void DrawEndpointConnector(ChartPoint endpoint, ChartPoint adjacent) {
                         var dx = adjacent.X - endpoint.X;

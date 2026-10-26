@@ -5,7 +5,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSceneSvgRenderer {
     /// <summary>Admits the raster URIs actually emitted by this SVG/HTML export before hashing scene pixels.</summary>
-    private static void AdmitSvgImageUris(VisualScene scene, int maximumCharacters) {
+    private static long AdmitSvgImageUris(VisualScene scene, int maximumCharacters) {
         long characters = 0;
         string? owner = null;
         var owners = new Stack<string?>();
@@ -30,6 +30,7 @@ internal static partial class VisualSceneSvgRenderer {
                 characters += uri.Length;
             }
         }
+        return characters;
     }
 
     /// <summary>Counts the exact RGBA array visits made by the incumbent identity stream, including fallback and repeated placements.</summary>

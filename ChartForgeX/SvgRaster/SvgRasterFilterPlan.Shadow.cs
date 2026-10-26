@@ -17,7 +17,7 @@ internal sealed partial class SvgRasterFilterPlan {
         var bottom = Math.Max(checked(filter.Y + filter.Height), checked(filter.Y + filter.Height - offsetY + haloY));
         CaptureRegion = new RasterEffectRegion(left, top, checked(right - left), checked(bottom - top));
         var source = new RasterEffectRegion(0, 0, CaptureRegion.Width, CaptureRegion.Height);
-        Effect = innerShadow
+        _effect = innerShadow
             ? RasterEffectPlan.InnerShadow(source, xQ8, yQ8, offsetX, offsetY, color, -spread)
             : RasterEffectPlan.LayerShadow(source, xQ8, yQ8, offsetX, offsetY, color, spread);
         IsZero = color.A == 0;

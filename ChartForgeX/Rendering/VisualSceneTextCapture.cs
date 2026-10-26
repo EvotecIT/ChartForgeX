@@ -57,12 +57,12 @@ internal sealed partial class VisualSceneTextCapture {
         if (prepared.Face.Font == null) { _strict = false; return; }
         foreach (var line in prepared.Lines) {
             try {
-                var strict = TextShaper.Shape(prepared.Face.Font, line.Text, prepared.Size, strictPrimary: true);
+                var strict = TextShaper.ShapeWithLetterSpacing(prepared.Face.Font, line.Text, prepared.Size, prepared.Style.LetterSpacing, strictPrimary: true);
                 if (strict.Count != line.Glyphs.Count) { _strict = false; continue; }
                 for (var index = 0; index < strict.Count; index++) {
                     var a = strict[index]; var b = line.Glyphs[index];
                     if (!ReferenceEquals(a.Face, b.Face) || a.Glyph != b.Glyph || a.SourceIndex != b.SourceIndex
-                        || a.Advance != b.Advance || a.OffsetX != b.OffsetX || a.OffsetY != b.OffsetY) _strict = false;
+                        || a.Advance != b.Advance || a.OffsetX != b.OffsetX || a.OffsetY != b.OffsetY || a.TrailingAdvance != b.TrailingAdvance) _strict = false;
                 }
             } catch (NotSupportedException) { _strict = false; }
         }

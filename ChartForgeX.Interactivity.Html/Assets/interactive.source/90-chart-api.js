@@ -128,7 +128,7 @@
       dispose: () => { if (!lifetime.disposed) releaseChartLifetime(root); }
     });
     lifetime.controller = controller; chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    try { rememberNativeDrawingSnapshot(root, lifetime, root); prepareAdaptiveRoot(root, lifetime); bindChart(root); bindAdaptiveLayout(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
+    try { rememberNativeDrawingSnapshot(root, lifetime, root); prepareAdaptiveRoot(root, lifetime); bindChart(root); window[Symbol.for('ChartForgeX.nativeTextExport')].mount(root, release => ownChartWork(root, release)); bindAdaptiveLayout(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
     return controller;
   };
 

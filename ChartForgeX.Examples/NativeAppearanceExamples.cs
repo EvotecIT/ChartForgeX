@@ -8,6 +8,7 @@ internal static class NativeAppearanceExamples {
     internal static void Write(string output) {
         NativeVectorGlassExamples.Write(output);
         NativeRetainedAppearanceExamples.Write(output);
+        NativeTurbulenceExamples.Write(output);
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 foreach (var effect in new[] { "outline", "bloom", "glow", "inner" }) {

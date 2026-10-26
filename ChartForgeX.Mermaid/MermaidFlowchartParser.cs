@@ -93,6 +93,7 @@ internal static partial class MermaidFlowchartParser {
         foreach (var property in candidate.PropertyValueSpans) existing.PropertyValueSpans[property.Key] = property.Value;
         foreach (var className in candidate.Classes) existing.Classes.Add(className);
         foreach (var style in candidate.Styles) existing.Styles[style.Key] = style.Value;
+        if (candidate.SurfaceOpacitySpan.HasValue) existing.SurfaceOpacitySpan = candidate.SurfaceOpacitySpan;
     }
 
     private static bool TryParseNode(string text, ref int position, MermaidSourceSpan statementSpan, out MermaidFlowchartNode node) {

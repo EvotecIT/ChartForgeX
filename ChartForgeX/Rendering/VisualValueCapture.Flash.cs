@@ -19,10 +19,16 @@ internal sealed partial class VisualValueCapture {
         "line", "line-ambient-halo", "line-halo", "line" + ChartLineVisualLayer.HighlightSuffix
     };
     private static readonly HashSet<string> SharedAreaFlashRoles = new(StringComparer.Ordinal) { "area", "area-pattern" };
+    // A paired envelope is shared series ink, like the existing Line path. Tuple markers keep their point owner.
+    private static readonly HashSet<string> SharedRangeFlashRoles = new(StringComparer.Ordinal) {
+        "range-band", "range-band-pattern", "range-area", "range-area-pattern", "range-midline",
+        "range-upper", "range-upper-ambient-halo", "range-upper-halo", "range-upper" + ChartLineVisualLayer.HighlightSuffix,
+        "range-lower", "range-lower-ambient-halo", "range-lower-halo", "range-lower" + ChartLineVisualLayer.HighlightSuffix
+    };
     private static readonly HashSet<string> RadialFlashRoles = new(StringComparer.Ordinal) { "pie-slice", "donut-slice", "radial-slice-outline", "radial-fill-pattern" };
     private static readonly HashSet<string> HierarchyFlashRoles = new(StringComparer.Ordinal) { "treemap-group-mark", "treemap-tile-mark", "treemap-pattern", "sunburst-segment-mark", "sunburst-pattern" };
 
-    /// <summary>Repaints actual captured value ink; shared Line ink is series-owned and point markers remain observation-owned.</summary>
+    /// <summary>Repaints actual captured value ink; shared Line/Range ink is series-owned and point markers remain observation-owned.</summary>
     private static PreparedVisual Flash(PreparedVisual source, FlashSelection changed, ChartColor peak, double amount) {
         var scene = source.Scene; var nodes = new VisualSceneNode[scene.Nodes.Count];
         var scopes = new Stack<(string? Series, string? Observation, string? Node, bool Other, bool Point)>();
@@ -42,7 +48,7 @@ internal sealed partial class VisualValueCapture {
             } else if (node is VisualSceneEndGroup) current = scopes.Pop();
             else if (current.Series != null && node.Role != null &&
                 (current.Observation != null && changed.Readings.Contains((current.Series, current.Observation)) && (changed.CartesianPointInk && current.Point && (node is VisualSceneMark or VisualSceneGradient) || FlashRoles.Contains(node.Role) || CartesianPointFlashRoles.Contains(node.Role) || RadialFlashRoles.Contains(node.Role))
-                || changed.Series.Contains(current.Series) && !current.Point && (SharedLineFlashRoles.Contains(node.Role) || SharedAreaFlashRoles.Contains(node.Role))
+                || changed.Series.Contains(current.Series) && !current.Point && (SharedLineFlashRoles.Contains(node.Role) || SharedAreaFlashRoles.Contains(node.Role) || changed.RangeEnvelopeInk && SharedRangeFlashRoles.Contains(node.Role))
                 || current.Node != null && changed.Nodes.Contains((current.Series, current.Node)) && HierarchyFlashRoles.Contains(node.Role)
                 || current.Other && changed.OtherSeries.Contains(current.Series) && RadialFlashRoles.Contains(node.Role))) {
                 nodes[index] = node is VisualSceneGradient gradient

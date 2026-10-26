@@ -28,7 +28,7 @@ public sealed class NativeInitialFadeTests {
         Assert.Empty(frames[0].Regions); Assert.Equal(final.PreparedVisual.Regions, frames[1].Regions);
         using var json = JsonDocument.Parse(payload); Assert.Equal("initial-fade", json.RootElement.GetProperty("effect").GetString());
         Assert.Equal("native-visual-opacity", json.RootElement.GetProperty("sourceKind").GetString()); Assert.Empty(json.RootElement.GetProperty("readings").EnumerateArray());
-        Assert.Equal(final.Html, json.RootElement.GetProperty("destination").GetString());
+        HtmlFontRootObservation.AssertDestination(final.Html, json.RootElement.GetProperty("destination").GetString()!);
         var native = json.RootElement.GetProperty("drawings").GetProperty("wide").GetProperty("frames");
         Assert.Equal(new[] { "0", "0.5", "1" }, native.EnumerateArray().Select(frame => frame.GetProperty("nativeOpacity").GetString()));
     }

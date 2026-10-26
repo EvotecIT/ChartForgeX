@@ -35,7 +35,12 @@ public sealed partial class MermaidC4PresentationDepthTests {
                 var expected=name=="c4-style-shapes-native"?new[]{"Platform","Application","Store","Queue","User","Application tier","Data tier"}:new[]{"Cloud","West","East","Alpha","Bravo","Charlie","Delta","Operator"};
                 foreach(var caption in expected)Assert.Contains(caption,observed.GetProperty("text").GetString());
                 Assert.Empty(observed.GetProperty("clipped").EnumerateArray());Assert.Equal(0,observed.GetProperty("scripts").GetInt32());Assert.False(observed.GetProperty("outerOverflow").GetBoolean());
-                if(observed.GetProperty("scrollable").GetBoolean()){await host.FocusAsync();await session.Page.Keyboard.PressAsync("ArrowRight");await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft>0");Assert.True(await host.EvaluateAsync<double>("node=>node.scrollLeft")>0);}
+                if(observed.GetProperty("scrollable").GetBoolean()){await session.Page.Keyboard.PressAsync("Tab"); Assert.True(await host.EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"), "The fresh static artifact host receives native Tab focus."); Assert.True(await host.EvaluateAsync<bool>("node=>node.matches(':focus-visible')"), "The static artifact host has keyboard-visible focus.");try {
+                        await session.Page.Keyboard.DownAsync("ArrowRight");
+                        await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft>0");
+                    } finally { await session.Page.Keyboard.UpAsync("ArrowRight"); }
+                    Assert.True(await host.EvaluateAsync<double>("node=>node.scrollLeft")>0);
+                }
                 if(name=="c4-style-shapes-native")foreach(var shape in new[]{"Actor","Cylinder","HorizontalCylinder","Subroutine"})Assert.Contains(observed.GetProperty("shapes").EnumerateArray(),item=>item.GetString()==shape);
                 InteractiveChartBrowser.AssertNoConsoleErrors(session);
             }

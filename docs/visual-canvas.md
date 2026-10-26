@@ -407,3 +407,17 @@ var badgeBounds = VisualCanvasPlacement.At(VisualCanvasAnchor.TopRight, 8, 8).Re
 ```
 
 PowerBGInfo-style desktop generation should stay thin: resolve Windows facts in PowerBGInfo, then pass those strings into `VisualCanvas` templates or layers. Keep reusable layout, typography, image, and tile behavior in ChartForgeX so other hosts can reuse the same engine for OpenGraph images, generated documentation, and report covers.
+
+### Letter spacing on text and hero layers
+
+`VisualCanvasTextLayer.TextStyle` and `VisualCanvasHeroTitleLayer.TextStyle` accept the shared `TextStyleOverride`. Null retains the existing canvas typography. An opted-in style uses the common measured/native text owner; hero run colors stay in effect unless the override supplies a color. There is no separate canvas tracking setting.
+
+```csharp
+var title = new VisualCanvasHeroTitleLayer(24, 24, 700, 40, new[] {
+    new VisualCanvasTextRun("Service ", ChartColor.White),
+    new VisualCanvasTextRun("health", ChartColor.FromHex("#4CC9A8"))
+}) { TextStyle = new TextStyleOverride { LetterSpacing = 40 * .06 } };
+canvas.AddLayer(title);
+```
+
+The resolved logical length keeps its value while the font shrinks to fit; uniform canvas output scaling scales both. The common style rules for clusters, signed progression, inheritance and portable-reader support are described in [measured label placement](label-placement.md#authored-letter-spacing).

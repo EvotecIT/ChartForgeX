@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private sealed record ProofArtifact(string Id, string Family, string Title, string Variant, string Theme,
-        int Width, int Height, string[] Diagnostics, int SemanticRegions, string[]? SeriesKinds = null, string[]? DiagnosticMessages = null, bool Compact = false);
+        int Width, int Height, string[] Diagnostics, int SemanticRegions, string[]? SeriesKinds = null, string[]? DiagnosticMessages = null, bool Compact = false, bool HtmlAdapter = false);
 
     private static string Escape(string value) => WebUtility.HtmlEncode(value);
 
@@ -65,8 +65,9 @@ public static partial class V2Examples {
     private static string ExampleKey(ProofArtifact artifact) => artifact.Id.Substring(0, artifact.Id.Length - artifact.Theme.Length - 1);
 
     private static string[] CatalogAssets(IReadOnlyList<ProofArtifact> artifacts) =>
-        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt" }
+        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt", "cfx-native-text.js" }
             .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".gallery.csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
+            .Concat(artifacts.Where(artifact => artifact.HtmlAdapter).Select(artifact => artifact.Id + ".interactive.html"))
             .Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray();
 
     private static IEnumerable<ProofArtifact> PairedArtifacts(IReadOnlyList<ProofArtifact> artifacts, ProofArtifact selected) =>

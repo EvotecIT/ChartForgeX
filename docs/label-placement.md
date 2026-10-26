@@ -53,3 +53,22 @@ var placed = service.Place(
 `Padding` reserves halo or badge space. Optional request `Bounds` constrain a label further than the scene rectangle. `AssociatedMarkId` allows deliberate full containment in the matching obstacle. `Measure` returns font metrics without placing a label. For a fixed font registry, input order and options, results are deterministic.
 
 The `label-placement-*` examples cover bullet targets, funnels, gauges, European routes, Sankey diagrams, topology and composed scorecards in both themes. Their overlap checker re-measures emitted text and compares it against filled and stroked mark contours; intentional full containment is reported separately. Grid panels render at their destination PNG density, so a 2x export preserves the same measured positions with sharper glyphs and marks.
+
+## Authored letter spacing
+
+`TextStyle.LetterSpacing` adds logical pixels between eligible shaped groups. The default is zero. `TextStyleOverride.LetterSpacing` inherits when null; an explicit zero resets inherited tracking. For a 20px style, the resolved equivalent of 0.06em is 1.2 logical pixels:
+
+```csharp
+var style = new TextStyle {
+    Font = FontSpec.FromFamily("Inter, sans-serif"),
+    FontSize = 20,
+    LetterSpacing = 20 * .06
+};
+var measured = TextLayoutEngine.Measure("Service health", style);
+```
+
+Changing FontSize alone keeps this resolved length. Uniform output scaling scales text and its gaps together. There is no leading or trailing gap. Combining sequences, required ligatures and connected cursive groups remain intact; the ordinary standard-substitution path omits optional `liga`/`clig` for nonzero tracking while script-specific shaping stages stay in effect. Signed values must keep eligible-group progression finite and nonnegative. Wrapping, ellipsis, alignment, native ink and decorations use the resulting measured width.
+
+SVG import accepts `normal`, `px`, `em` and SVG user-unit values. Relative lengths resolve after the same element's font-size cascade, then descendants inherit the computed length. Plain SVG and HTML text retain their browser font behavior; native contour and raster exports reuse the captured placements. A later host CSS change does not rewrite an existing native capture.
+
+Portable style JSON carries optional `letterSpacing`; old payloads keep zero/inheritance defaults. Nonzero values require a reader that supports this field. Prepared scenes remain detached from later caller edits.

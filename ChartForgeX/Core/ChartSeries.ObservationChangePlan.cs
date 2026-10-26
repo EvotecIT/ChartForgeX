@@ -52,13 +52,22 @@ public sealed partial class ChartSeries {
     }
 
     private static TValue[] RemapObservationOverrides<TValue, T>(IReadOnlyList<TValue> original,
-        List<ObservationChangeEntry<T>> retained) where T : struct {
+        List<ObservationChangeEntry<T>> retained) where T : struct =>
+        RemapObservationOverrides(original, retained.Count, index => retained[index].OriginalIndex);
+
+    /// <summary>Retains genuinely authored sparse slots, including trailing nulls, through a native selection.</summary>
+    private static TValue[] RemapObservationOverrides<TValue>(IReadOnlyList<TValue> original, IReadOnlyList<int> retained) =>
+        RemapObservationOverrides(original, retained.Count, index => retained[index]);
+
+    private static TValue[] RemapObservationOverrides<TValue>(IReadOnlyList<TValue> original, int count, Func<int, int> sourceAt) {
         var length = 0;
-        for (var index = 0; index < retained.Count; index++)
-            if (retained[index].OriginalIndex >= 0 && retained[index].OriginalIndex < original.Count) length = index + 1;
+        for (var index = 0; index < count; index++) {
+            var source = sourceAt(index);
+            if (source >= 0 && source < original.Count) length = index + 1;
+        }
         var result = new TValue[length];
         for (var index = 0; index < length; index++) {
-            var source = retained[index].OriginalIndex;
+            var source = sourceAt(index);
             result[index] = source >= 0 && source < original.Count ? original[source] : default!;
         }
         return result;

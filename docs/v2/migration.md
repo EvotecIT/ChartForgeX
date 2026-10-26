@@ -569,6 +569,9 @@ Do not move genuine diagrams solely because their current names end in `Block`. 
 
 ## Chart export and presentation changes
 
+Native transition JSON uses a bounded destination observation. With Automatic owned-font delivery, normal section HTML contains the captured font bytes; the transition destination omits only the Base64 text inside its well-formed font-root templates. Root IDs, declared byte lengths, face aliases and weight/style/resource descriptors remain exact. The accepted destination section supplies the immutable bytes, and every other HTML field and captured SVG endpoint stays unchanged. Compare these bounded observations when inspecting transition payloads. The one MiB presentation limit remains in effect; this does not change PNG/SVG bytes or the scalar one-edit transition contract.
+
+
 `chart.ToSvg()`, `chart.ToPng()` and `chart.ToRgbaImage()` resolve the model's size, padding, theme values, visible frame, font request and raster density into the common rendering contracts. HTML hosts and image composition use the same prepared chart output. `SvgChartRenderer`, `PngChartRenderer`, `SvgChartGridRenderer` and `PngChartGridRenderer` are removed; use the model convenience methods or `Prepare(context)`. There is no separate Graphite family renderer.
 
 Use `Prepare(context)` when a host supplies an exact viewport, paired theme, frame and font. The context owns those presentation values; model data, axis configuration and explicit text overrides remain inputs to preparation. `VisualLayoutOptions` accepts uniform padding or `ChartPadding` with independent edges. `VisualFrame` carries measured legend row and height budgets, and omitted legend entries retain their full semantic descriptions.

@@ -304,6 +304,7 @@ public sealed partial class TopologyNode {
         get => _displayMode;
         set {
             if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            if (_displayMode != value) InvalidateSurfaceElementAppearance();
             _displayMode = value;
         }
     }
@@ -421,8 +422,9 @@ public sealed partial class TopologyNode {
     /// <summary>Gets typed label/value detail rows rendered by card-like node surfaces.</summary>
     public List<TopologyNodeDetail> Details { get; } = new();
 
+    private TopologyNodeShape? _shape;
     /// <summary>Gets or sets a diagram surface; null preserves the display-mode card surface.</summary>
-    public TopologyNodeShape? Shape { get; set; }
+    public TopologyNodeShape? Shape { get => _shape; set { if (_shape != value) InvalidateSurfaceElementAppearance(); _shape = value; } }
 
     /// <summary>Gets arbitrary node metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();

@@ -100,6 +100,7 @@ public sealed partial class PreparedVisual {
     internal VisualArtifactInterchangeEnvelope? SemanticInterchange => _semanticInterchange == null ? null : VisualArtifactInterchangeEnvelope.FromJson(_semanticInterchange.Value);
     private PreparedVisual(VisualScene scene, PreparedVisual basis, VisualSvgOptions? svgOptions, bool? capturePngText = null) {
         _scene = scene; _accessibility = basis._accessibility.Clone(); NativeTextCapture = basis.NativeTextCapture;
+        _turbulenceSourceScene = basis._turbulenceSourceScene;
         _capturePngText = capturePngText ?? basis._capturePngText;
         _semanticInterchange = basis._semanticInterchange; _semanticSnapshot = basis._semanticSnapshot; _defaultSvgOptions = svgOptions;
         XProjection = basis.XProjection; YProjection = basis.YProjection;

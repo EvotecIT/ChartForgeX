@@ -39,6 +39,24 @@ Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contr
 
 Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `ConfigureRadar`.
 
+## HTML font delivery
+
+`HtmlChartInteractionOptions.TextPresentation` defaults to `Automatic`. The adapter takes eligible single-face fonts from the prepared native drawing and registers their copied bytes with `FontFace`. It loads no font URL and sends no caller font path. A selected TTC member, mixed fallback run, synthetic style, nondefault variation/palette, explicit OpenType language, or unavailable browser font stays on captured native ink. Supported monochrome runs use the existing glyph contours. Ordinary color or embedded-bitmap text that cannot use that outline transport stays as a bounded native raster image. Its prepared faces, shaping, baseline and bitmap/color paint are retained; it is not vector zoom equivalence. A multiline text node is captured together so overlapping lines and strokes keep their native composition. These non-outline images do not switch to a browser face merely because a font loads.
+
+```csharp
+chart.SaveInteractiveHtml("report.html", options => {
+    options.TextPresentation = HtmlChartTextPresentation.Automatic;
+});
+```
+
+Choose `NativeContours` for supported monochrome captured glyph placement throughout the live SVG, or `Browser` for host-selected editable browser text and the existing native PNG-export capture. Explicit `NativeContours` and structured native captions retain their clear rejection when the outline transport cannot represent a color/bitmap glyph. Browser rasterization and shaping can differ from native output even when the delivered face is the same. `Automatic` and `NativeContours` retain native glyph placement in detached SVG/PNG downloads; browser-only CSS text decoration belongs to `Browser`. Core static SVG/PNG exports keep their existing defaults.
+
+Delivery snapshots admit up to 32 distinct roots, 2 MiB per root and 4 MiB of distinct decoded roots across the wide/narrow pair. An additional view that cannot be delivered retains native contours. These are transport limits; they do not bound all browser memory. `NativeContours` rejects glyphs without that outline transport; `Automatic` uses the captured native image fallback described above. Caller fonts must be licensed for distribution in the generated document.
+
+The existing topology and report adapters use `Automatic`. Explicit `RenderPresentation*` callbacks retain the caller's SVG. Configurable prepared chart and hierarchy sections expose the three choices through `HtmlChartInteractionOptions`. The Website playground uses the same binary registration asset with its existing same-origin shipped-face map. Live registration uses no data/blob font source and requires no CSP relaxation.
+
+Migration: automatic HTML now carries bounded font bindings and native contour fallback resources. Select `Browser` when retaining the previous live browser-text representation is part of the host's contract. Native/static defaults, source IDs, layout, measurements, and portable font admission remain independent.
+
 ## Keyboard navigation
 
 When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
@@ -748,7 +766,7 @@ The live page remains text, so register the chosen faces for native rendering an
 
 Host CSS text decorations, including decorations propagated by SVG ancestors, retain the original browser `<text>` export path so the browser paints underline, overline and line-through styles. These decorated captions retain the existing browser font fallback and are outside the captured-outline font guarantee. Native-authored decorations remain separate native scene marks.
 
-Colour glyphs, embedded bitmap strikes, built-in tiny fallback and synthesized bold currently retain the browser-text export fallback. A custom topology presentation that supplies independent SVG must retain the native capture; a callback that exports its supplied `PreparedTopology` uses the capture automatically. These cases and browser antialiasing or hinting differences do not establish universal native/browser pixel equality. Browser PNG is still separate from native `ToPng`; no font bytes, stylesheet scanning, external font request or CSP change is introduced by the native outline transport. The PNG image input uses an encoded `data:image/svg+xml` resource through the existing Image/canvas path; SVG and PNG download links retain their existing Blob transport.
+In `Browser` mode, colour glyphs, embedded bitmap strikes, built-in tiny fallback and synthesized bold retain the existing browser-text export fallback. `Automatic` uses the captured native representation described above. A custom topology presentation that supplies independent SVG must retain the native capture; a callback that exports its supplied `PreparedTopology` uses the capture automatically. These cases and browser antialiasing or hinting differences do not establish universal native/browser pixel equality. Browser PNG is still separate from native `ToPng`; no font bytes, stylesheet scanning, external font request or CSP change is introduced by the native outline transport. The PNG image input uses an encoded `data:image/svg+xml` resource through the existing Image/canvas path; SVG and PNG download links retain their existing Blob transport.
 
 ## State Bookmarks
 
@@ -1118,7 +1136,7 @@ Compatible fixed ordered `(id, parent, nullable authored-size)` structures suppo
 
 Native hierarchy Reflow uses the same fade-out, zero switch and fade-in plan with source/destination frame basis. Root navigation can carry the same absolute visibility descriptor when native legend preparation is connected. The existing reset channel clears both root and hidden targets, retaining hierarchy reset priority and the single backpressure replacement slot. The browser does not derive geometry, values, subtree membership or formatted captions.
 
-This finite value admission excludes changing parent/ID/nullable-size structure, custom caption/format callbacks, `ValueFlash`, simultaneous Reflow/value morph, and unobserved font/fallback repertoires. Ordinary rendering and endpoint Reflow retain those native policies where otherwise supported. The captured request owner observes latent native caption requests before freeze, so an authored zero can become positive without consulting the registry during replay. Font/fallback repertoires remain bounded; uncaptured formatting repertoires require their own native admission.
+This finite value admission excludes changing parent/ID/nullable-size structure, custom caption/format callbacks, simultaneous Reflow/value morph, and unobserved font/fallback repertoires. Ordinary rendering and endpoint Reflow retain those native policies where otherwise supported. The captured request owner observes latent native caption requests before freeze, so an authored zero can become positive without consulting the registry during replay. Font/fallback repertoires remain bounded; uncaptured formatting repertoires require their own native admission.
 
 `--native-hierarchy-motion-only --primary-font <licensed.ttf-or-otf>` emits 52 standalone Core + HTML adapter programs: three parent/family policies, values/initial/subtree/root intents, compact/wide sizes and light/dark themes, plus four explicit Treemap Ellipsis programs. The supplied font is a host asset; these examples add no production dependency or installed font requirement to Core.
 
@@ -1182,3 +1200,69 @@ Enabled-label joint Line/Bar Preserve motion requires `ChartVisibilityLabelLayer
 Preserve retains all full-source stack contributions. Shared stack totals, their captions and total regions remain global context with the native full-source values for that frame; hiding one series does not subtract its contribution or renormalize the visible series. Only actual series ink and its owned point captions change opacity. Enabled point captions require `GroupWithSeries`; shared total captions keep their existing global placement and paint order. `PreserveOverlay` partial enabled-point-label motion still rejects. Reflow/renormalized hidden-series geometry and topology-changing membership are separate capabilities.
 
 The separate Values and LegendVisibility intents still reject accidental mixed updates; callers select `ValuesAndVisibility` explicitly. Accepted endpoint/default exports, full catalogs, native hits, captured fonts and the existing lifetime/revision/cancellation/backpressure/export rules are retained. `--native-joint-stack-values-only --primary-font <licensed-file>` emits six compact-light/wide-dark public programs and 48 source/native files; each program takes that font file as its sole argument.
+
+
+### Typed Bubble Y/Size native values
+
+Set `HtmlChartInteractionOptions.CaptureNativeValueSource = true` when preparing both Bubble sections, then use `PrepareNativeTransitionJson` with `Values`, an explicit `InitialValues` baseline, or `ValueFlash`. Each reading is the real authored `(series ID, observation ID, component)` tuple. The finite Bubble components are `y` and `size`; sharing an observation ID across series does not merge readings. `PrepareValueTransitionJson` remains the scalar one-edit entry and rejects component plans.
+
+This cohort accepts one or more Bubble series with fixed ordered authored observations and X coordinates, fixed X and used numeric Y domains, and an explicit shared `Bubble.WithSizeDomain`. Raw Size stays strictly positive; values outside that visual size domain retain the native radius clamp. `SquareRootRadius` and `Area`, reversed scales, series marker shapes, fixed ColorValue, captions and readouts use the existing native compiler for every complete frame. A secondary value axis keeps its own domain. Every frame must retain the exact native axes and plot. Export uses the exact accepted endpoint.
+
+The opt-in snapshot owns copied full typed tuples, IDs, paint, options and captured formatter/font requests. Hidden or unpainted facts participate in its source key even when SVG/PNG ink stays unchanged. Replay does not retain a caller chart or query the font registry. Custom or modified-provider formatting, uncaptured fallback decisions, automatic/changing axes or size domains, changing X/ColorValue/identity/presentation, point legends, point-specific marker/outline policies and mixed tuple families reject this finite capture. Ordinary native rendering and default metadata remain available without the opt-in. Size0/negative is already invalid in `ChartBubble`; animation does not create a synthetic observation for it.
+
+Bubble visibility/Reflow/joint value-plus-membership motion, other tuple components and topology changes require their own native membership admissions. This capability is native value geometry interpolation, not a claim that every chart family or arbitrary glyph repertoire supports it. It retains the existing reduced-motion, hidden/export/reset, supersession, cancellation, backpressure, revision and disposal lifetime; no new callback channel or queue is added.
+
+`--native-bubble-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits compact/wide light/dark public programs and captured endpoints for both size encodings and explicit initial baselines. The Core recipe remains adapter-free; the executable program references the existing HTML adapter.
+
+
+### Typed RangeBand/RangeArea native values
+
+The existing `CaptureNativeValueSource` opt-in and `PrepareNativeTransitionJson` support `Values`, explicit `InitialValues`, and `ValueFlash` for authored RangeBand/RangeArea sources. Each observation contributes its real `lower` and `upper` readings, scoped by series and observation IDs. X, BreakBefore, ordering, interpolation, axes, formatting and presentation remain fixed. Raw lower/upper values retain their captured numeric display-domain facts and intrinsic native validity; the native clip policy handles values beyond that window. The native `ChartRangeBand`/`ReplaceRanges` and paired-boundary compiler validate and paint every tuple, curve, envelope, midpoint, caption and region; encoded point slots and derived midlines do not become new observations.
+
+Range uses the same immutable complete component plan and detached full source/font snapshot as Bubble. Its source facts carry no size mapping or reversal fields. All candidate frames pass the same shared native section validator before acceptance, and the accepted endpoint owns export, source, revision, history and hits throughout transient presentation. Ordinary null/default SVG/PNG and existing Bubble component payload paths retain their output.
+
+This admission requires fixed ordered authored identities/X/BreakBefore and captured X/used numeric Y axes. Time-coordinate updates, automatic domain/layout changes, custom or modified-provider formatting, uncaptured font decisions, changing topology/presentation and simultaneous visibility/membership remain unsupported at this admission. The scalar one-edit API rejects component plans. Range `ValueFlash` follows the shared Line ownership law: changing either lower or upper repaints the complete changed series envelope, hatches, both boundaries and their existing line layers across every real disconnected run, plus its RangeArea midline. Both actual endpoint markers and their hatches flash for each changed tuple; unchanged tuple markers, all captions and unrelated series retain their paint. The existing premultiplied sRGB flash law mixes RGBA, including translucent envelope alpha, while geometry, mark opacity, clips, identities, regions and accepted values remain fixed. First and last frames use the exact accepted destination; export always uses that destination.
+
+`--native-range-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits compact/wide light/dark public programs and native endpoints for RangeBand/RangeArea Values and explicit initial baselines, together with a separate captured ValueFlash payload. Each program writes an independent `visual.flash.html` page and its `visual.flash.transition.json` payload using the same public capture entry. The Core-only recipe retains its existing package boundary.
+
+
+### Typed ErrorBar native values
+
+The same `CaptureNativeValueSource` opt-in and complete component plan support ErrorBar `Values`, explicit `InitialValues`, and changed-point `ValueFlash`. A real observation contributes `value` for Y, `x-lower`/`x-upper` only when XBounds exists, and `y-lower`/`y-upper` only when YBounds exists. Absent intervals produce no synthetic mean/bound reading. X, ordered series/observation IDs, nullable interval shape, captured X/numeric member axes and presentation stay captured. X bounds use the actual X domain; Y and Y bounds use their real primary/secondary value domain.
+
+Every frame reconstructs through `ChartErrorBar`, `ChartErrorBounds` and `ReplaceErrorBars`, preserving native order/containing guards, caps, markers, label/readout/region owners and exact export policy. Browser preflight validates the captured nullable shape, complete ordered members, domains and containing facts; it computes no whisker/cap geometry or text. Flash repaints the actual changed point group once, including its whiskers/caps/marker; unchanged observations and labels retain exact paint.
+
+The source snapshot/canonical writer/font replay and accepted-scene scheduler/lifetime are shared with Bubble/Range. No new API, version, controller, queue or formatter is introduced. Ordinary native rendering and default metadata remain unchanged. Changing X/nullable interval presence, automatic axes, time-valued components, uncaptured/custom formatting/font policy and simultaneous visibility/topology changes remain required continuation. Native-invalid intervals still fail in the typed model; they are not animation observations.
+
+`--native-error-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits X-only, Y-only and combined public programs for Values, InitialValues and point flash at compact/wide light/dark sizes.
+
+
+### Typed financial native values
+
+The same `CaptureNativeValueSource` opt-in and native component entry support Candlestick and OHLC `Values`, explicit `InitialValues`, and changed-point `ValueFlash`. Readings are the authored `open`, `high`, `low`, and `close` under their real series/observation identities. X, ordered catalog, captured X/numeric value axes, labels, presentation, both financial direction policies and nullable observation overrides remain captured. Source keys include full prices and all retained paint/dash policies, including a currently unused direction. Old scalar one-edit admission remains strict.
+
+Each frame reconstructs via `ChartCandlestick` and `ReplaceFinancialValues`. The existing financial compiler owns body width, slots, rising/falling/doji paint, hollow wicks, direction and datum dashes, label/readout text, bounds, regions and legend. A rising-to-falling update passes through its real native doji. Browser preflight validates exact OHLC members, domains and native high/low containment; it computes no price geometry or formatting. Flash affects the complete changed native point mark once, leaving other observations and all labels unchanged.
+
+Ordinary null/default rendering is unchanged. This component admission requires captured X/numeric value domains and unchanged X/catalog/presentation. Native clipping owns raw prices beyond the displayed window; fixed temporal X follows the existing native time policy. Changing authored membership and simultaneous tuple/visibility topology require separate admissions. Native-invalid prices reject in `ChartCandlestick` before an observation exists. The finite native tuple contract does not imply universal topology or physical/pixel parity.
+
+`--native-financial-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits both financial forms for Values/InitialValues/flash at compact light and wide dark sizes through public APIs.
+
+
+### Fixed native time categories for components
+
+Opt-in component value plans retain primary-X elapsed, included-session, ordinal and calendar-unit time policy while updating numeric Bubble/Range/ErrorBar/Candlestick/OHLC values. X stays authored and fixed. The immutable source copies time-zone, sessions and spacing; its private copied axis discards only the generated time domain, so the existing native time owner recomputes it for every complete frame. Original prepared axes remain untouched. Exact captured axes, sessions, calendar instants and plot transforms must match after compilation. No baseline, calendar, DST, session or projection arithmetic is recreated in JavaScript.
+
+The source and transition validators compare the actual native axis facts and fixed per-observation X/scale/instant metadata across endpoints and every candidate before acceptance. Only this component branch admits temporal X. Time-valued Y or ErrorBar X interval components, custom time label callbacks, prepared viewport state and changing category coordinates/time policy remain explicit errors. Ordinary rendering keeps its current formatting and time policies.
+
+`--native-component-time-only --primary-font <licensed-font-file> --output <absolute-directory>` emits a bounded set of elapsed/session/ordinal/calendar public programs at compact light and wide dark sizes. Geometry remains the real native family compiler; source capture and lifetime/export policy are shared with numeric components.
+
+
+### Raw component values and native clipping
+
+Captured native component values retain finite authored readings beyond the displayed axis minimum/maximum. The same complete native compiler, tuple guards and captured plot/clip policy own each frame. Exact full/current axes and endpoint exports must still agree. `CaptureNativeValueSource` never invents a clipped observation or sums geometry in the browser. The full catalog, raw values, native regions/readouts and source keys remain captured even when ink lies outside the plot.
+
+Positive raw Bubble Size still follows its native size-domain clamp; zero/negative Size remains invalid. Logarithmic axes retain their intrinsic positive/negative sign and nonzero rules independently of their display window. Native high/low/containing/nullable interval guards remain unchanged. Component-only browser preflight validates those actual facts without projection or formatting.
+
+Fixed Time X, numeric animated members, immutable source/paint/font policy, exact native endpoints, current acceptance/basis/export and the single existing scheduler remain required. Changing authored tuple/catalog topology and genuinely joint membership/value morphology are separate remaining capabilities. Native-invalid domains and arbitrary callbacks are not admitted through clipping.
+
+`--native-component-clipping-only --primary-font <licensed-font-file> --output <absolute-directory>` emits real values entering a fixed native clip for Bubble/RangeArea/ErrorBar/Candlestick/OHLC at compact light and wide dark sizes.

@@ -14,7 +14,7 @@ internal static partial class SvgRasterRenderer {
         if (!SvgRasterFilterPlan.TryCreate(style.Filter!, matrix, definitions, out var plan, out var reason)) {
             ReportNativeFilterUnsupported(element, definitions, reason); return null;
         }
-        if (!CanCaptureNativeFilterSource(element, style, definitions, ancestors, viewport, new HashSet<SvgRasterElement>(), 0, true, out reason)) {
+        if (!plan!.IsProcedural && (plan.Stages == null || plan.RequiresStageSource) && !CanCaptureNativeFilterSource(element, style, definitions, ancestors, viewport, new HashSet<SvgRasterElement>(), 0, true, out reason)) {
             ReportNativeFilterUnsupported(element, definitions, reason); return null;
         }
         // Bounding-box masks/clips and arbitrary mask graphs retain their old path until their source-bound semantics qualify.
@@ -35,8 +35,20 @@ internal static partial class SvgRasterRenderer {
     private static RgbaCanvas RenderFilteredElement(SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix,
         SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors,
         SvgRasterViewport viewport, SvgRasterFilterPlan plan) {
+        if (plan.Stages != null) return RenderFilterStages(element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport, plan);
         var context = definitions.Filters!; context.Cancellation.ThrowIfCancellationRequested();
         var capture = plan.CaptureRegion;
+        if (plan.IsProcedural) {
+            // Reserve the actual coverage canvas and row visits BEFORE the one source-free permit.
+            // The permit's additional debit therefore includes it exactly once with all prior document buffers.
+            if (plan.ProceduralClipContour != null) {
+                context.ReserveCanvas(capture.Width, capture.Height);
+                context.ReserveWorkSamples(checked((long)capture.Width * capture.Height * 16));
+            }
+            var generated = context.Reserve(plan.Effect, 0, 0, width, height).ExecuteSourceFree();
+            if (plan.ProceduralClipContour != null) ClipProceduralRegion(generated, plan, context);
+            return CopyFilterOutput(width, height, plan, capture, generated, context);
+        }
         // Reserve capture, kernel and one output exactly once. The ordinary compositor charges its actual post-operation arrays.
         var permit = context.Reserve(plan.Effect, capture.Width, capture.Height, width, height);
         var source = new RgbaCanvas(capture.Width, capture.Height, 1);
@@ -54,6 +66,12 @@ internal static partial class SvgRasterRenderer {
         RasterEffectResult effect;
         if (plan.IsZero) effect = new RasterEffectResult(source.BorrowDeviceSurfaceForEffects(), new RasterEffectRegion(0, 0, capture.Width, capture.Height));
         else effect = permit.Execute(source.BorrowDeviceSurfaceForEffects());
+        return CopyFilterOutput(width, height, plan, capture, effect, context);
+    }
+
+    /// <summary>One existing device crop/copy for source-bearing and generated finite filters.</summary>
+    private static RgbaCanvas CopyFilterOutput(int width, int height, SvgRasterFilterPlan plan,
+        RasterEffectRegion capture, RasterEffectResult effect, SvgRasterFilterContext context) {
         var output = new RgbaCanvas(width, height, 1);
         int left = Math.Max(0, plan.FilterRegion.X), top = Math.Max(0, plan.FilterRegion.Y);
         int right = Math.Min(width, checked(plan.FilterRegion.X + plan.FilterRegion.Width));

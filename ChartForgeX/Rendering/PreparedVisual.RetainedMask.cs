@@ -15,7 +15,7 @@ public sealed partial class PreparedVisual {
         return WithRootEffect(VisualCapturedEffect.From(mask));
     }
 
-    internal bool HasUnsupportedInterchangePresentation => !TryGetRootEffects(out _);
+    internal bool HasUnsupportedInterchangePresentation => _scene.HasProceduralSources && !HasCapturedTurbulenceSource || !TryGetRootEffects(out _);
 
     internal void RequireSupportedInterchangePresentation() {
         if (HasUnsupportedInterchangePresentation)

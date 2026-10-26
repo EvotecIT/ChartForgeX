@@ -78,7 +78,7 @@ internal static class TopologyExternalCaption {
         internal double? SubtitleTop { get; }
         internal bool Plate { get; }
         internal Plan Project(TopologyPreparedNodeBasis basis, TopologyNode node) {
-            var style = Style.Clone(); style.FontSize *= basis.Factor;
+            var style = Style.Clone(); style.FontSize *= basis.Factor; style.LetterSpacing *= basis.Factor;
             return new Plan(basis.Project(node, Bounds), basis.Project(node, PlateBounds), basis.Project(node, Label), Content, style, Wrap,
                 MaximumLines, HasLabel, SubtitleTop.HasValue ? basis.Project(node, new ChartPoint(basis.OriginalBody.X, SubtitleTop.Value)).Y : (double?)null, Plate);
         }

@@ -55,6 +55,7 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static bool TryPaintSimpleLabel(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix) {
+        if (style.LetterSpacing != 0) return false;
         if (element.Children.Count != 0 || element.Text.IndexOf('\n') >= 0 || Math.Abs(matrix.A - 1) > 0.00001 || Math.Abs(matrix.D - 1) > 0.00001
             || Math.Abs(matrix.B) > 0.00001 || Math.Abs(matrix.C) > 0.00001 || style.Fill.IsReference || style.Stroke.IsReference
             || style.TextDecoration != "none" || style.TextTransform != "none") return false;

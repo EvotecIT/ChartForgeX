@@ -21,12 +21,14 @@ public sealed partial class TopologyHierarchyNativeBrowserTests {
                 org.connectNative((request,signal)=>{orgRequests.push(request);return new Promise(resolve=>orgPending.push({request,signal,resolve}));},
                     {basis:'initial',axes:null,hierarchy:true,preparationBackpressure:'latest-window'});}
             """);
-        await page.Locator("[data-cfx-hierarchy-control=toggle][data-cfx-hierarchy-node=engineering]").FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-hierarchy-control=toggle][data-cfx-hierarchy-node=engineering]"));
         await page.EvaluateAsync("() => org.setHierarchyView({collapsedNodeIds:['engineering']})");
         await page.WaitForFunctionAsync("() => orgPending.length===1");
-        await page.Locator("[data-cfx-reset]").ClickAsync();
+        await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-reset]"));
+        await page.Keyboard.PressAsync("Space");
         // A second Reset still uses the existing hierarchy owner after logical pending was canceled.
-        await page.Locator("[data-cfx-reset]").ClickAsync();
+        await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-reset]"));
+        await page.Keyboard.PressAsync("Space");
         await CaptureHierarchyBoundary(page, width, dark, "admission-native-reset-queued");
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {
