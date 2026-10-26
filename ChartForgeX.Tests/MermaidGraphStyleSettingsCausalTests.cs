@@ -24,7 +24,11 @@ public sealed class MermaidGraphStyleSettingsCausalTests {
         var rendered=MermaidRenderer.Render(source);Capture(rendered,"flowchart-named-edge-style-noop");
         Assert.False(rendered.HasErrors);var warning=Assert.Single(rendered.Diagnostics);
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement,warning.Code);Assert.Equal(3,warning.Span.Line);
-        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);Assert.Equal(2,chart.Nodes.Count);Assert.Null(Assert.Single(chart.Edges).Color);
+        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);Assert.Equal(2,chart.Nodes.Count);var edge=Assert.Single(chart.Edges);
+        // The implicit source preset owns the edge paint; the unsupported statement must not change it.
+        Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex("#333333"),ChartForgeX.Primitives.ChartColor.Parse(edge.Color!));
+        var control=MermaidRenderer.Render(source.Substring(0,source.LastIndexOf('\n')));Assert.Empty(control.Diagnostics);
+        Assert.Equal(control.Artifact!.ToSvg(),rendered.Artifact.ToSvg());Assert.Equal(control.Artifact!.ToPng(),rendered.Artifact.ToPng());
         Assert.True(MermaidRenderer.Render(source,new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject}).HasErrors);
     }
 

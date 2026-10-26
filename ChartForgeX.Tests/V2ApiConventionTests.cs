@@ -29,9 +29,11 @@ public sealed class V2ApiConventionTests {
                 var factory = type == typeof(VisualTheme) && method.IsStatic && method.ReturnType == type && !method.IsSpecialName;
                 var resolve = type == typeof(VisualTheme) && method.Name == "Resolve" && method.ReturnType == typeof(VisualThemeColors);
                 var export = (type == typeof(PreparedVisual) || type == typeof(VisualTheme) || type == typeof(VisualTypography)) && method.Name.StartsWith("To", StringComparison.Ordinal);
-                var copy = (type == typeof(VisualTheme) || type == typeof(VisualTypography)) && !method.IsStatic && method.ReturnType == type
+                var capture = type == typeof(PreparedVisual) && method.Name == nameof(PreparedVisual.CaptureLayer)
+                    && method.ReturnType == typeof(CapturedVisualLayer);
+                var copy = (type == typeof(VisualTheme) || type == typeof(VisualTypography) || type == typeof(PreparedVisual)) && !method.IsStatic && method.ReturnType == type
                     && (method.Name.StartsWith("With", StringComparison.Ordinal) || method.Name == nameof(VisualTheme.Configure));
-                Assert.True(factory || resolve || export || copy,
+                Assert.True(factory || resolve || export || copy || capture,
                     type.Name + "." + method.Name + " needs a reviewed operation role. Immutable render contracts use constructors, factories, and copy operations; theme configuration snapshots its independent builder.");
             }
         }
@@ -188,11 +190,15 @@ public sealed class V2ApiConventionTests {
 
     [Fact]
     public void PreparedToMethods_ReturnInMemoryValuesWithTheResolvedViewport() {
-        foreach (var method in Methods(typeof(PreparedVisual))) {
+        var exports = Methods(typeof(PreparedVisual)).Where(method => method.Name.StartsWith("To", StringComparison.Ordinal)).ToArray();
+        Assert.NotEmpty(exports);
+        foreach (var method in exports) {
             Assert.StartsWith("To", method.Name, StringComparison.Ordinal);
             Assert.Contains(method.ReturnType, new[] { typeof(string), typeof(byte[]), typeof(RgbaImage) });
             Assert.All(method.GetParameters(), parameter => {
-                if (method.Name == nameof(PreparedVisual.ToSvg)) {
+                if (parameter.ParameterType == typeof(CancellationToken)) {
+                    Assert.Equal("cancellationToken", parameter.Name);
+                } else if (method.Name == nameof(PreparedVisual.ToSvg)) {
                     if (parameter.ParameterType == typeof(VisualSvgOptions)) Assert.Equal("options", parameter.Name);
                     else {
                         Assert.Equal("idPrefix", parameter.Name);

@@ -57,7 +57,7 @@ public sealed class MermaidFlowchartFontSizingTests {
         chart.Nodes.Add(node);
         var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 18));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 500)), theme,
-            frame: new VisualFrame(showLegend: false), font: FontSpec.FromFamily(MissingFamily));
+            frame: new VisualFrame(showLegend: false), font: FontSpec.FromFamily(MissingFamily + ", " + BrowserProofFonts.Family));
         var visual = chart.Prepare(context, new TopologyRenderOptions { IncludeLegend = false });
         var labels = visual.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "topology-node-label").ToArray();
         Assert.Equal(label, string.Join("\n", labels.SelectMany(text => text.Text.Lines).Select(line => line.Text)));
@@ -160,9 +160,10 @@ public sealed class MermaidFlowchartFontSizingTests {
     [InlineData(32)]
     [InlineData(256)]
     public void LargeSourceFontsKeepDefaultMermaidConversionAndNaturalGeometryComplete(double fontSize) {
+        var portable = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family } };
         var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Carlito','themeVariables':{'fontSize':"
             + fontSize.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            + "}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend");
+            + "}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend", portable);
         Assert.Empty(result.Diagnostics);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var authoredWidth = chart.Viewport.Width; var authoredHeight = chart.Viewport.Height;

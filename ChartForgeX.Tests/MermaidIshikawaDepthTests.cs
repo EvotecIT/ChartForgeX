@@ -76,8 +76,9 @@ public sealed class MermaidIshikawaDepthTests {
         Assert.Equal(host.Resolve(VisualThemeMode.Light).Surface, block.Options.Theme.Resolve(VisualThemeMode.Light).Surface);
         var invalid = MermaidRenderer.Render(source.Replace("'#e2e8f0'", "'url(https://example.invalid/paint)'", StringComparison.Ordinal));
         Assert.True(invalid.HasErrors); Assert.Null(invalid.Artifact);
-        var other = MermaidRenderer.Render("%%{init:{'themeVariables':{'mainBkg':'#e2e8f0'}}}%%\nflowchart LR\na-->b");
-        Assert.Contains(other.Diagnostics, d => d.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
+        // mainBkg is now a shared topology role; use a genuinely inactive Ishikawa-only setting for this scope guard.
+        var other = MermaidRenderer.Render("%%{init:{'ishikawa':{'diagramPadding':28}}}%%\nflowchart LR\na-->b");
+        Assert.Contains(other.Diagnostics, d => d.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && d.Message.Contains("ishikawa.diagramPadding", StringComparison.Ordinal));
     }
 
     [Fact]

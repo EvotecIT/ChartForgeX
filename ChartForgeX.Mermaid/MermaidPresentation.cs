@@ -62,8 +62,7 @@ internal static class MermaidPresentation {
             block.Options.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) block.Options.ThemeMode = Mode(document.Theme);
             if (host?.ThemeMode != null) block.Options.ThemeMode = host.ThemeMode.Value;
-            block.Options.Theme = Theme(block.Options.Theme, document.Configuration, host,
-                preserveHostTheme: block is JourneyDiagramBlock or TimelineDiagramBlock);
+            block.Options.Theme = Theme(block.Options.Theme, document.Configuration, host);
             // An explicit source preset or canvas requests paint; an unstyled diagram keeps its transparent adapter canvas.
             if (block is JourneyDiagramBlock || block is TimelineDiagramBlock) {
                 var canvasRequested = document.Configuration.ThemeColors?.HasBackground == true
@@ -75,12 +74,11 @@ internal static class MermaidPresentation {
         return model;
     }
 
-    private static VisualTheme Theme(VisualTheme source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, MermaidThemePreset? resolved = null, double? defaultFontSize = null, bool preserveHostTheme = false) {
+    private static VisualTheme Theme(VisualTheme source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, MermaidThemePreset? resolved = null, double? defaultFontSize = null) {
         var preset = resolved ?? configuration.Preset?.Resolve(host?.ThemeMode ?? Mode(configuration.Theme ?? "default"), host?.Theme != null, configuration.Theme);
-        // Journey/Timeline already expose an explicit host/family palette override.
-        // The selected Sequence/preset role precedence does not migrate that incumbent contract.
-        var theme = preserveHostTheme && host?.Theme is VisualTheme explicitTheme
-            ? explicitTheme : preset?.Apply(host?.Theme ?? source) ?? host?.Theme ?? source;
+        // An explicit host owns the base palette. Typed source node, edge and Sequence
+        // role paints remain more specific and are applied by their existing native owners.
+        var theme = host?.Theme ?? preset?.Apply(source) ?? source;
         return theme.WithTypography(Typography(theme.Typography, configuration, host, defaultFontSize));
     }
 

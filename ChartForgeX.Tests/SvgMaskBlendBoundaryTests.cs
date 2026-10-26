@@ -38,9 +38,8 @@ public sealed class SvgMaskBlendBoundaryTests {
     }
 
     [Theory]
-    [InlineData("color-interpolation-filters='linearRGB'", "normal")]
     [InlineData("color-interpolation-filters='sRGB'", "plus-lighter")]
-    public void UnqualifiedFilterSpaceAndSourceOperatorsStillDiagnoseAndReject(string space, string mode) {
+    public void UnqualifiedBlendOperatorsStillDiagnoseAndReject(string space, string mode) {
         var svg = NativeMaskExample.FilterSource("normal").Replace("mode='normal'", "mode='" + mode + "'", StringComparison.Ordinal).Replace("color-interpolation-filters='sRGB'", space, StringComparison.Ordinal);
         var diagnostic = SvgRasterizer.Rasterize(svg, filters: new SvgRasterFilterOptions());
         MaskBlendBeforeFixture.Capture("svg-blend-reject-" + mode + (space.Contains("linearRGB", StringComparison.Ordinal) ? "-linear" : "-sRGB"), svg, diagnostic);

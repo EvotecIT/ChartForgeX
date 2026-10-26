@@ -40,7 +40,10 @@ public sealed class MermaidGraphStyleSettingsRenderingTests {
     public void NamedEdgeStyleIsInertAndRejectableWithoutSyntheticNode(string source) {
         var rendered=MermaidRenderer.Render(source);MermaidGraphStyleSettingsCausalTests.Capture(rendered,"named-edge-style-"+rendered.Document!.Kind);
         Assert.False(rendered.HasErrors);Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement,Assert.Single(rendered.Diagnostics).Code);
-        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);Assert.Equal(2,chart.Nodes.Count);Assert.Null(chart.Edges[0].Color);
+        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);Assert.Equal(2,chart.Nodes.Count);var edge=Assert.Single(chart.Edges);
+        Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex("#333333"),ChartForgeX.Primitives.ChartColor.Parse(edge.Color!));
+        var control=MermaidRenderer.Render(source.Substring(0,source.LastIndexOf('\n')));Assert.Empty(control.Diagnostics);
+        Assert.Equal(control.Artifact!.ToSvg(),rendered.Artifact.ToSvg());Assert.Equal(control.Artifact!.ToPng(),rendered.Artifact.ToPng());
         Assert.True(MermaidRenderer.Render(source,new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject}).HasErrors);
     }
 

@@ -22,7 +22,7 @@ internal static class TopologyPortableFontObservation {
         var glyphs = prepared.Scene.Nodes.OfType<VisualSceneText>().Select(mark => new {
             mark.Id, mark.Role, mark.X, mark.Baseline, mark.Text.Size,
             Lines = mark.Text.Lines.Select(line => new { line.Text, line.Width,
-                Roots = line.Glyphs.Select(glyph => Root(glyph.Face)).DistinctBy(root => root!.Identity).ToArray() }).ToArray()
+                Roots = line.Glyphs.Select(glyph => Root(glyph.Face)).DistinctBy(root => root?.Identity).ToArray() }).ToArray()
         }).ToArray();
         File.WriteAllText(path + ".font-facts.json", JsonSerializer.Serialize(new { Requests = requests, Glyphs = glyphs },
             new JsonSerializerOptions { WriteIndented = true }));

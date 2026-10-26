@@ -18,7 +18,11 @@ public sealed class MermaidBlockTypographyTests {
         var callout = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "wardley-annotation-callout");
         Assert.Same(callout, circle.Parent);
         Assert.Same(callout, number.Parent);
-        Assert.Contains(callout.Elements(), element => element.Name.LocalName == "text" && element.Value.Contains("Improve", StringComparison.Ordinal));
+        // An authored annotations box owns the complete caption; the plotted callout owns its matching number.
+        var legend = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "wardley-annotation-legend-entry"
+            && (string?)element.Attribute("data-annotation-number") == number.Value);
+        Assert.Contains(legend.Descendants(), element => element.Name.LocalName == "text"
+            && element.Value.Contains("Improve automation", StringComparison.Ordinal));
         Assert.Equal("placed", (string?)callout.Attribute("data-cfx-label-status"));
         Assert.Equal((string?)circle.Attribute("transform"), (string?)number.Attribute("transform"));
         var x = double.Parse(number.Attribute("x")!.Value, CultureInfo.InvariantCulture);

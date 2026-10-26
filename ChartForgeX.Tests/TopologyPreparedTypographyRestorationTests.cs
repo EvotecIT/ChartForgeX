@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
@@ -16,14 +17,18 @@ public sealed class TopologyPreparedTypographyRestorationTests {
         var imported = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();
         var authored = imported.Nodes.Select(node => (node.X, node.Y, node.Width, node.Height)).ToArray();
         var options = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = fit };
-        var after = fit
+        var rendered = fit
             ? imported.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 310), 28),
-                frame: new VisualFrame(showLegend: false)), options).SemanticInterchange!
-            : imported.Prepare(options).ToInterchangeEnvelope();
+                frame: new VisualFrame(showLegend: false)), options)
+            : imported.Prepare(options).Visual;
+        var after = rendered.SemanticInterchange!;
+        Capture(fit, saved, rendered);
         if (!fit) {
             Assert.Equal(saved.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)),
                 after.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)));
         } else {
+            var sourceWidth = saved.Nodes.Max(node => node.X!.Value + node.Width!.Value) - saved.Nodes.Min(node => node.X!.Value);
+            Assert.True(sourceWidth > 420 - 2 * 28, "The imported body span requires horizontal fitting in the requested output plot.");
             var scale = after.Nodes[0].Width!.Value / saved.Nodes[0].Width!.Value;
             Assert.InRange(scale, .001, .999);
             for (var index = 0; index < saved.Nodes.Count; index++) {
@@ -34,6 +39,9 @@ public sealed class TopologyPreparedTypographyRestorationTests {
                     actual.X!.Value - after.Nodes[0].X!.Value, 6);
                 Assert.Equal((before.Y!.Value - saved.Nodes[0].Y!.Value) * scale,
                     actual.Y!.Value - after.Nodes[0].Y!.Value, 6);
+                var region = Assert.Single(rendered.Scene.Regions, region => region.Role == "topology-node" && region.Id == actual.Id);
+                Assert.Equal(actual.X!.Value, region.Bounds.X, 6); Assert.Equal(actual.Y!.Value, region.Bounds.Y, 6);
+                Assert.Equal(actual.Width!.Value, region.Bounds.Width, 6); Assert.Equal(actual.Height!.Value, region.Bounds.Height, 6);
             }
             Assert.Equal(420, after.Width); Assert.Equal(310, after.Height);
         }
@@ -77,6 +85,22 @@ public sealed class TopologyPreparedTypographyRestorationTests {
         });
         Assert.Equal(authored, imported.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height,
             node.Label, node.TextStyle!.FontSize, node.MaximumTextWidth, node.ContentPadding)));
+    }
+
+    private static void Capture(bool fit, VisualArtifactInterchangeEnvelope source, PreparedVisual rendered) {
+        if (Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY") is not { Length: > 0 } output) return;
+        Directory.CreateDirectory(output); var stem = Path.Combine(output, "topology-prepared-typography-fit-" + fit);
+        File.WriteAllText(stem + ".source.json", source.ToJson());
+        var facts = rendered.SemanticInterchange!;
+        File.WriteAllText(stem + ".output.json", JsonSerializer.Serialize(new {
+            facts.Width, facts.Height,
+            Nodes = facts.Nodes.Select(node => new { node.Id, node.X, node.Y, node.Width, node.Height, BasisFactor = node.Topology?.PreparedNodeBasis?.Factor })
+        }));
+        File.WriteAllText(stem + ".svg", rendered.ToSvg()); File.WriteAllBytes(stem + ".native.png", rendered.ToPng());
+        File.WriteAllText(stem + ".scene.json", JsonSerializer.Serialize(new {
+            Bodies = rendered.Scene.Regions.Where(region => region.Role == "topology-node").Select(region => new { region.Id, region.Bounds.X, region.Bounds.Y, region.Bounds.Width, region.Bounds.Height }),
+            Surfaces = rendered.Scene.Nodes.OfType<VisualScenePath>().Where(mark => mark.Role == "topology-node-surface").Select(mark => new { mark.Id, mark.Commands })
+        }));
     }
 
     private static TopologyChart Source() {

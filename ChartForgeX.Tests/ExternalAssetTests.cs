@@ -13,7 +13,7 @@ public sealed class ExternalAssetTests {
     public void RenderPage_Default_KeepsRuntimeInline() {
         var html = CreateChart().ToInteractiveHtmlPage();
         Assert.Contains(RuntimeSnippet(HtmlInteractiveAssetFiles.ChartScript), html, StringComparison.Ordinal);
-        Assert.DoesNotContain("src=\"", html, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"<script\b[^>]*\bsrc\s*=", html);
         Assert.DoesNotContain("<link rel=\"stylesheet\"", html, StringComparison.Ordinal);
     }
 

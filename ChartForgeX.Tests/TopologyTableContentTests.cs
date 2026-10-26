@@ -95,6 +95,7 @@ public sealed class TopologyTableContentTests {
     public void NullTableKeepsDefaultVersionOneAndDowngradedTablePayloadCannotBeSilentlyDiscarded() {
         var chart = Source(1000, false); chart.Theme=VisualTheme.Graphite(); chart.Nodes[2].TableContent = null;
         chart.LayoutMode = TopologyLayoutMode.Manual;
+        chart.Title = null; chart.Subtitle = null;
         chart.Viewport.Padding = new TopologyViewport().Padding;
         chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
         var user = chart.Nodes.Single(node => node.Id == "User"); user.X = 80; user.Y = 130;
@@ -105,9 +106,16 @@ public sealed class TopologyTableContentTests {
             Directory.CreateDirectory(capture); var stem = Path.Combine(capture, "table-null-genuine-unit-default-v1");
             File.WriteAllText(stem + ".svg", before.ToSvg()); File.WriteAllBytes(stem + ".native.png", before.ToPng()); File.WriteAllText(stem + ".json", before.ToInterchangeEnvelope().ToJson());
         }
-        Assert.Equal(1, before.ToInterchangeEnvelope().Version);
+        var ordinary = before.ToInterchangeEnvelope();
+        Assert.All(ordinary.Nodes, node => { Assert.Null(node.Topology!.TableContent); Assert.Null(node.Topology.PreparedNodeBasis); Assert.Null(node.Topology.SurfaceElementAppearance); });
+        Assert.Equal(1, ordinary.Version);
         chart.Nodes[2].TableContent = null; var after = chart.Prepare(); Assert.Equal(before.ToSvg(), after.ToSvg()); Assert.Equal(before.ToPng(), after.ToPng());
-        var json = Source(1000, false).ToVisualArtifact().ToInterchangeJson(); Assert.Contains("\"version\":2", json);
+        chart.Nodes[2].TableContent = TopologyTableContentRecipe.CreateTable();
+        var tableEnvelope = chart.Prepare().ToInterchangeEnvelope(); var json = tableEnvelope.ToJson();
+        Assert.NotNull(tableEnvelope.Nodes.Single(node => node.Id == "Details").Topology!.TableContent); Assert.Equal(2, tableEnvelope.Version);
+        var withoutTable = VisualArtifactInterchangeEnvelope.FromJson(json);
+        withoutTable.Nodes.Single(node => node.Id == "Details").Topology!.TableContent = null;
+        Assert.Equal(1, withoutTable.Version); withoutTable.Validate();
         Assert.Throws<NotSupportedException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"version\":2", "\"version\":1", StringComparison.Ordinal)));
     }
     private static TopologyChart Source(int width, bool dark) => TopologyTableContentRecipe.Create(width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)

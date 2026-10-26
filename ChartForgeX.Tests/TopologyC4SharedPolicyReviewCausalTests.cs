@@ -22,7 +22,7 @@ public sealed class TopologyC4SharedPolicyReviewCausalTests {
             MermaidC4ConfigurationDepthTests.Options(false, 390).C4);
         if (sourceId == "b") chart.AddEdge("review-node-route", sourceId, targetId, "Copies");
         var prepared = chart.Prepare();
-        var facts = prepared.ToInterchangeEnvelope();
+        var facts = prepared.Visual.CapturedSemanticSnapshot!;
         Capture(prepared, "c4-review-bounded-route-" + sourceId + "-" + targetId);
         var edge = Assert.Single(facts.Edges, item => item.SourceId == sourceId && item.TargetId == targetId);
         Assert.True(edge.ResolvedRoute.Count >= 2);
@@ -65,7 +65,7 @@ public sealed class TopologyC4SharedPolicyReviewCausalTests {
         Assert.Equal(Math.Max(15, caption.Text.Metrics.LineHeight), plate.Bounds.Height, 6);
         Assert.True(plate.Bounds.Right <= prepared.Width);
         Assert.True(plate.Bounds.Bottom <= prepared.Height);
-        var saved = prepared.ToInterchangeEnvelope();
+        var saved = prepared.Visual.CapturedSemanticSnapshot!;
         Assert.Equal(family, Assert.Single(saved.Nodes).Topology!.TextStyle!.FontFamily);
         chart.Nodes[0].TextStyle!.FontFamily = "Changed after preparation";
         Assert.Equal(family, caption.Text.Style.Font.Family);
@@ -81,8 +81,8 @@ public sealed class TopologyC4SharedPolicyReviewCausalTests {
         Assert.Equal(VisualTheme.Graphite().Typography.DataLabelSize * (10.5 / 11), caption.Text.Size, 6);
         Assert.Equal(ordinary.ToSvg(), empty.ToSvg());
         Assert.Equal(ordinary.ToPng(), empty.ToPng());
-        Assert.Equal(ordinary.ToInterchangeEnvelope().Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)),
-            empty.ToInterchangeEnvelope().Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)));
+        Assert.Equal(ordinary.Visual.CapturedSemanticSnapshot!.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)),
+            empty.Visual.CapturedSemanticSnapshot!.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)));
         Capture(ordinary, "c4-review-icon-default-control");
     }
 
@@ -112,6 +112,8 @@ public sealed class TopologyC4SharedPolicyReviewCausalTests {
         var path = Path.Combine(directory, name);
         File.WriteAllText(path + ".svg", prepared.ToSvg());
         File.WriteAllBytes(path + ".native.png", png);
-        File.WriteAllText(path + ".json", prepared.ToInterchangeEnvelope().ToJson());
+        // This capture records native geometry; wire admission has a separate bounded-font contract.
+        File.WriteAllText(path + ".json", System.Text.Json.JsonSerializer.Serialize(prepared.Analyze()));
+        TopologyPortableFontObservation.Capture(name, prepared.Visual);
     }
 }

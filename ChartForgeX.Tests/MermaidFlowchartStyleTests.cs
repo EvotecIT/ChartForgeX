@@ -71,14 +71,10 @@ public sealed class MermaidFlowchartStyleTests {
     [InlineData("style A fill:hsl(120,100%,50%)", "fill")]
     [InlineData("classDef color stroke-width:4px\nclass A color", "stroke-width")]
     [InlineData("linkStyle 0 color:#123456", "color")]
-    public void UnsupportedStylingIsLocatedAndRetainedWithoutBreakingExports(string statement, string property) {
+    public void QualifiedStylingIsRetainedWithoutWarningsAndKeepsBothExports(string statement, string property) {
         var result = MermaidRenderer.Render("flowchart LR\nA --> B\n" + statement);
         Assert.False(result.HasErrors);
-        var warning = Assert.Single(result.Diagnostics);
-        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, warning.Code);
-        Assert.Equal(MermaidDiagnosticSeverity.Warning, warning.Severity);
-        Assert.Equal(3, warning.Span.Line);
-        Assert.Contains(property, warning.Message);
+        Assert.Empty(result.Diagnostics);
         var document = Assert.IsType<MermaidFlowchartDocument>(result.Document);
         var retained = statement.StartsWith("linkStyle", StringComparison.Ordinal) ? document.Edges[0].Styles : document.Nodes[0].Styles;
         Assert.True(retained.ContainsKey(property));
@@ -88,16 +84,30 @@ public sealed class MermaidFlowchartStyleTests {
     }
 
     [Theory]
+    [InlineData("style A filter:url(#unsupported)")]
+    [InlineData("classDef unsupported filter:url(#unsupported)\nclass A unsupported")]
+    [InlineData("linkStyle 0 filter:url(#unsupported)")]
+    public void UnrepresentedSurfaceFiltersKeepTheirLocatedWarningAndBothNativeExports(string statement) {
+        var rendered = MermaidRenderer.Render("flowchart LR\nA --> B\n" + statement);
+        Assert.False(rendered.HasErrors);
+        var warning = Assert.Single(rendered.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, warning.Code);
+        Assert.Equal(3, warning.Span.Line); Assert.Contains("filter", warning.Message);
+        Assert.NotEmpty(rendered.Artifact!.ToSvg()); Assert.NotEmpty(rendered.Artifact!.ToPng());
+    }
+
+    [Theory]
     [InlineData("none", false)]
     [InlineData("0", false)]
     [InlineData("5 5", true)]
-    public void DashPatternsUseTheNativeLineStyleAndExposeApproximation(string value, bool dashed) {
+    public void DashPatternsKeepTheExactNativeLineStyleWithoutApproximation(string value, bool dashed) {
         var result = MermaidRenderer.Render("flowchart LR\nA -.-> B\nlinkStyle 0 stroke-dasharray:" + value);
         Assert.False(result.HasErrors);
         Assert.Equal(dashed ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid,
             Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Edges).LineStyle);
-        Assert.Equal(dashed ? 1 : 0, result.Diagnostics.Count);
-        if (dashed) Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, result.Diagnostics[0].Code);
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal(dashed ? new[] { 5d, 5d } : Array.Empty<double>(),
+            Assert.Single(Assert.IsType<TopologyChart>(result.Artifact.Model).Edges).DashPattern);
     }
 
     [Theory]

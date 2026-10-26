@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Raster;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -46,7 +48,13 @@ public sealed class MermaidWebsiteSampleTests {
     [InlineData("LR")]
     [InlineData("RL")]
     public void FlowchartDecisionBranchesKeepSeparateRoutesAndLabels(string direction) {
-        var svg = Svg(Pipeline.Replace("flowchart TD", "flowchart " + direction, StringComparison.Ordinal));
+        var rendered = MermaidRenderer.Render(Pipeline.Replace("flowchart TD", "flowchart " + direction, StringComparison.Ordinal));
+        Assert.False(rendered.HasErrors); var artifact = rendered.Artifact!;
+        var sourceSvg = artifact.ToSvg(); var svg = XDocument.Parse(sourceSvg);
+        if (Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY") is { Length: > 0 } capture) {
+            Directory.CreateDirectory(capture); var stem = Path.Combine(capture, "website-decision-branches-" + direction);
+            File.WriteAllText(stem + ".svg", sourceSvg); File.WriteAllBytes(stem + ".native.png", artifact.ToPng());
+        }
         var edges = Edges(svg);
         var yes = edges.Single(edge => edge.Source == "check" && edge.Target == "render");
         var no = edges.Single(edge => edge.Source == "check" && edge.Target == "alert");
@@ -151,9 +159,17 @@ public sealed class MermaidWebsiteSampleTests {
         }
 
         var light = MermaidRenderer.Render(source.Substring(directive.Length)).Artifact!;
-        Assert.Equal(directive.Length > 0, Luminance(Background(svg)) < .2);
-        Assert.True(Corner(result.Artifact.ToPng()) < .2 == directive.Length > 0, "State PNG follows the source theme.");
-        Assert.True(Corner(light.ToPng()) > .8, "A state diagram without a theme renders light PNG.");
+        var nativeLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background;
+        var expected = directive.Length > 0 ? ChartColor.FromHex("#333333") : nativeLight;
+        Assert.Equal(directive.Length > 0 ? VisualThemeMode.Dark : VisualThemeMode.Light, chart.ThemeMode);
+        Assert.Equal(expected, ChartColor.Parse(Background(svg)));
+        Assert.Equal(expected, CornerColor(result.Artifact.ToPng()));
+        Assert.Equal(nativeLight, ChartColor.Parse(Background(XDocument.Parse(light.ToSvg()))));
+        Assert.Equal(nativeLight, CornerColor(light.ToPng()));
+        if (directive.Length > 0) {
+            Assert.NotEqual(nativeLight, expected);
+            Assert.NotEqual(light.ToPng(), result.Artifact.ToPng());
+        }
     }
 
     [Theory]
@@ -224,10 +240,15 @@ public sealed class MermaidWebsiteSampleTests {
         var darkSvg = dark.ToSvg();
         var lightSvg = light.ToSvg();
         Assert.NotEqual(darkSvg, lightSvg);
-        Assert.True(Luminance(Background(XDocument.Parse(lightSvg))) > .8, "A sequence without a theme directive renders light SVG.");
-        Assert.True(Luminance(Background(XDocument.Parse(darkSvg))) < .2, "The dark directive renders dark SVG.");
-        Assert.True(Corner(light.ToPng()) > .8, "A sequence without a theme directive renders light PNG.");
-        Assert.True(Corner(dark.ToPng()) < .2, "The dark directive renders dark PNG.");
+        // The finite dark preset is exactly #333333 (luminance .2), rather than the native Graphite dark canvas.
+        var expectedLight = ChartColor.FromHex("#FFFFFF");
+        var expectedDark = ChartColor.FromHex("#333333");
+        Assert.Equal(expectedLight, ChartColor.Parse(Background(XDocument.Parse(lightSvg))));
+        Assert.Equal(expectedDark, ChartColor.Parse(Background(XDocument.Parse(darkSvg))));
+        var lightPng = light.ToPng(); var darkPng = dark.ToPng();
+        Assert.Equal(expectedLight, CornerColor(lightPng));
+        Assert.Equal(expectedDark, CornerColor(darkPng));
+        Assert.NotEqual(darkPng, lightPng);
     }
 
     private static XDocument Svg(string source) {
@@ -262,10 +283,9 @@ public sealed class MermaidWebsiteSampleTests {
         PathPoints(edge.Descendants().First(element => Role(element) == "topology-edge-line")))).ToList();
 
     private static Point[] PathPoints(XElement path) {
-        // Curve control points join the outline points; they bound the drawn hull closely enough for these checks.
-        var numbers = System.Text.RegularExpressions.Regex.Matches((string)path.Attribute("d")!, @"-?\d+(\.\d+)?")
-            .Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
-        return Enumerable.Range(0, numbers.Length / 2).Select(i => new Point(numbers[i * 2], numbers[i * 2 + 1])).ToArray();
+        // Sample the painted curve, not the off-curve Bezier control polygon.
+        return ChartForgeX.Core.ChartMapPathParser.ParseSubpaths((string)path.Attribute("d")!, pixelsPerUnit: 8)
+            .SelectMany(subpath => subpath.Points).Select(point => new Point(point.X, point.Y)).ToArray();
     }
 
     private static Box Rect(XElement element) => new(Number(element, "x"), Number(element, "y"), Number(element, "width"), Number(element, "height"));
@@ -278,13 +298,20 @@ public sealed class MermaidWebsiteSampleTests {
 
     private static bool Overlaps(Box a, Box b) => a.X < b.X + b.Width && b.X < a.X + a.Width && a.Y < b.Y + b.Height && b.Y < a.Y + a.Height;
 
-    // Routes are orthogonal, so a segment crosses a box when its own bounding box intersects it.
+    // Curved routes are sampled into oblique segments; intersect the segment itself, not its bounding rectangle.
     private static bool Crosses(IReadOnlyList<Point> points, Box box) {
         for (var i = 0; i < points.Count - 1; i++) {
-            var segment = new Box(Math.Min(points[i].X, points[i + 1].X), Math.Min(points[i].Y, points[i + 1].Y), Math.Abs(points[i].X - points[i + 1].X), Math.Abs(points[i].Y - points[i + 1].Y));
-            if (segment.X <= box.X + box.Width && box.X <= segment.X + segment.Width && segment.Y <= box.Y + box.Height && box.Y <= segment.Y + segment.Height) return true;
+            var start = points[i]; var end = points[i + 1]; var enter = 0d; var leave = 1d;
+            bool Clip(double direction, double distance) {
+                if (direction == 0) return distance >= 0;
+                var along = distance / direction;
+                if (direction < 0) { if (along > leave) return false; enter = Math.Max(enter, along); }
+                else { if (along < enter) return false; leave = Math.Min(leave, along); }
+                return true;
+            }
+            if (Clip(start.X - end.X, start.X - box.X) && Clip(end.X - start.X, box.X + box.Width - start.X)
+                && Clip(start.Y - end.Y, start.Y - box.Y) && Clip(end.Y - start.Y, box.Y + box.Height - start.Y)) return true;
         }
-
         return false;
     }
 
@@ -306,15 +333,10 @@ public sealed class MermaidWebsiteSampleTests {
 
     private static string Background(XDocument svg) => (string)svg.Descendants().First(element => Role(element) == "background").Attribute("fill")!;
 
-    private static double Luminance(string hex) {
-        var value = hex.TrimStart('#');
-        return (int.Parse(value.Substring(0, 2), NumberStyles.HexNumber) + int.Parse(value.Substring(2, 2), NumberStyles.HexNumber) + int.Parse(value.Substring(4, 2), NumberStyles.HexNumber)) / (3 * 255d);
-    }
-
-    private static double Corner(byte[] png) {
+    private static ChartColor CornerColor(byte[] png) {
         var image = RasterImageDecoder.Decode(png);
         var offset = (8 * image.Width + 8) * 4;
-        return (image.Pixels[offset] + image.Pixels[offset + 1] + image.Pixels[offset + 2]) / (3 * 255d);
+        return ChartColor.FromRgba(image.Pixels[offset], image.Pixels[offset + 1], image.Pixels[offset + 2], image.Pixels[offset + 3]);
     }
 
     private readonly record struct Point(double X, double Y);

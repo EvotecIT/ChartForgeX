@@ -41,11 +41,12 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
         var chart = TopologyChart.Create().WithTitle("Native default frame").WithLegend(null).WithViewport(320, 240, new TopologyViewport().Padding);
         chart.LayoutMode = TopologyLayoutMode.Manual; chart.WithTheme(VisualTheme.Graphite());
         chart.Nodes.Add(new TopologyNode { Id = "plain", Label = "Native caption", X = 40, Y = 40, Width = 100, Height = 50,
-            Shape = TopologyNodeShape.Rectangle, Kind = TopologyNodeKind.Generic, ShowStatusBadge = false, PreserveDisplayModeSize = true });
+            Kind = TopologyNodeKind.Generic, ShowStatusBadge = false, PreserveDisplayModeSize = true });
         var direct = chart.Prepare(); var svg = direct.ToSvg(); var png = direct.ToPng(); var envelope = direct.ToInterchangeEnvelope(); var json = envelope.ToJson();
         Capture("actor-frame-default-v1-direct", svg, png, json);
         var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); var after = restored.Prepare();
         Capture("actor-frame-default-v1-restored", after.ToSvg(), after.ToPng(), after.ToInterchangeEnvelope().ToJson());
+        Assert.Null(envelope.Nodes.Single().Topology!.PreparedNodeBasis);
         Assert.Null(envelope.Topology!.ViewportPadding); Assert.DoesNotContain("viewportPadding", json, StringComparison.Ordinal); Assert.Equal(1, envelope.Version);
         Assert.Equal(new TopologyViewport().Padding, restored.Viewport.Padding); Assert.Equal(FrameTitle(svg, "Native default frame"), FrameTitle(after.ToSvg(), "Native default frame")); Assert.Equal(png, after.ToPng());
     }

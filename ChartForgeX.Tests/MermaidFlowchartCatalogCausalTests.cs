@@ -66,7 +66,11 @@ public sealed class MermaidFlowchartCatalogCausalTests {
         Assert.Empty(rendered.Diagnostics);
         var document=Assert.IsType<MermaidAgentflowDocument>(rendered.Document);Assert.Equal(2,document.Edges.Count);
         var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);var summary=chart.Nodes.Single(node=>node.Id=="summary");
-        Assert.Equal("CollapsedContainer",summary.Shape.ToString());Assert.Equal("transparent",summary.BackgroundColor);
+        Assert.Equal("CollapsedContainer",summary.Shape.ToString());
+        // A collapsed flow is a visible summary node and inherits the same implicit default surface as ordinary nodes.
+        Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex("#ECECFF"),ChartForgeX.Primitives.ChartColor.Parse(summary.BackgroundColor!));
+        var explicitDefault=MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n"+source);Assert.Empty(explicitDefault.Diagnostics);
+        Assert.Equal(rendered.Artifact!.ToPng(),explicitDefault.Artifact!.ToPng());
         var edge=Assert.Single(chart.Edges);Assert.Equal("summary",edge.SourceNodeId);Assert.Equal("outside",edge.TargetNodeId);
         Assert.Equal("b",edge.Metadata["mermaid.agentflow.source"]);
     }

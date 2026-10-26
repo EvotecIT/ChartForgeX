@@ -116,7 +116,7 @@ internal sealed partial class VisualTopologyCompiler {
             && node.DisplayMode is not (TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Dot)
             && !HasExplicitIconShape(node.IconShape) && string.IsNullOrWhiteSpace(node.IconId) && string.IsNullOrWhiteSpace(node.Symbol));
         var fitResolvedLayout = _options.FitContentToViewport
-            && (_chart.LayoutMode != TopologyLayoutMode.Manual || canFitManualCards || _pathDecorations.Count > 0);
+            && (_chart.UsesPreparedSceneCoordinates || _chart.LayoutMode != TopologyLayoutMode.Manual || canFitManualCards || _pathDecorations.Count > 0);
         var naturalContent = _naturalSize && !_resolvedLayout && !_options.FitContentToViewport;
         var content = IncludeAnnotationBounds(fitResolvedLayout || naturalContent
             ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent) : new ChartRect(padding, padding, width, height));

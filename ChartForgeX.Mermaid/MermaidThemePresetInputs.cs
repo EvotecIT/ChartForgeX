@@ -21,6 +21,7 @@ internal sealed partial class MermaidThemePresetInputs {
         if(IsPalettePath(path)&&!_palettesEffective)return false;
         if(!path.StartsWith("themeVariables.",StringComparison.Ordinal))return false;
         var name=path.Substring(15).Split('.')[0];
+        if(name=="darkMode"&&!_sequence&&!_topology)return false;
         if(IsTopologyOnlyColor(name)&&!_topology)return false;
         if(!_sequence&&Array.IndexOf(new[]{"background","primaryColor","primaryTextColor","primaryBorderColor","secondaryColor","tertiaryColor","lineColor","textColor","darkMode"},name)<0
             &&!(_topology&&(IsTopologyOnlyColor(name)||name=="mainBkg")))return false;
@@ -34,7 +35,7 @@ internal sealed partial class MermaidThemePresetInputs {
         foreach(var name in ColorNames){if(IsTopologyOnlyColor(name)&&!topology)continue;var setting=configuration.Last("themeVariables."+name);if(setting==null)continue;
             if(setting.IsString&&SvgRasterColor.TryParsePrecise(setting.Value,out var color))result._colors[name]=color;
             else Invalid(setting,"must be a supported native color string");}
-        var dark=configuration.Last("themeVariables.darkMode");if(dark!=null){if(!dark.IsString&&bool.TryParse(dark.Value,out var value))result._darkMode=value;else Invalid(dark,"must be a boolean");}
+        var dark=configuration.Last("themeVariables.darkMode");if(dark!=null){if(!dark.IsString&&bool.TryParse(dark.Value,out var value))result._darkMode=(sequence||topology)&&value;else Invalid(dark,"must be a boolean");}
         ReadPalette("bkgColorArray",value=>result._backgrounds=value);ReadPalette("borderColorArray",value=>result._borders=value);return result;
         void ReadPalette(string name,Action<ChartColor[]> assign){var setting=configuration.Last("themeVariables."+name);if(setting==null)return;var items=setting.Palette;
             if(items==null||items.Count>256){Invalid(setting,"must be an array of at most 256 supported color strings");return;}

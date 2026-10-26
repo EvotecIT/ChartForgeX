@@ -43,7 +43,18 @@ public sealed partial class MermaidSequenceParOverTests {
         sequence.Blocks.Last().Kind = SequenceArtifactBlockKind.Par;
         sequence.Branches.Last().ParentKind = SequenceArtifactBlockKind.Par;
         Assert.Equal(before, prepared.ToSvg()); Assert.Equal(snapshotJson, prepared.ToArtifact().ToInterchangeJson());
-        Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Text.Lines.Any(line => line.Text == "par  First task"));
+        var tab = Assert.Single(prepared.Regions, region => region.Id == outer.Id && region.Role == "sequence-fragment-tab");
+        var title = Assert.Single(prepared.Regions, region => region.Id == outer.Id && region.Role == "sequence-fragment-title");
+        Assert.Equal("par", tab.Label); Assert.Equal("First task", title.Label);
+        Assert.True(title.Bounds.Left > tab.Bounds.Right);
+        Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "sequence-fragment-kind"
+            && text.X >= tab.Bounds.Left && text.X <= tab.Bounds.Right
+            && text.Baseline >= tab.Bounds.Top && text.Baseline <= tab.Bounds.Bottom
+            && text.Text.Lines.Any(line => line.Text == "par"));
+        Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "sequence-fragment-title"
+            && text.X >= title.Bounds.Left && text.X <= title.Bounds.Right
+            && text.Baseline >= title.Bounds.Top && text.Baseline <= title.Bounds.Bottom
+            && text.Text.Lines.Any(line => line.Text == "First task"));
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Text.Lines.Any(line => line.Text.Contains("parover", StringComparison.OrdinalIgnoreCase)));
         var intervals = prepared.Regions.Where(region => region.Role == "sequence-activation" && region.Label?.StartsWith("activate ", StringComparison.Ordinal) == true).ToArray();
         var endings = prepared.Regions.Where(region => region.Role == "sequence-activation" && region.Label?.StartsWith("deactivate ", StringComparison.Ordinal) == true).ToArray();

@@ -43,11 +43,14 @@ public sealed class WaterfallInterchangeRejectionTests {
 
     [Fact]
     public void JsonRejectsCheckpointValuesInvalidEnumsDuplicateKeysAndUnsupportedVersions() {
-        var json = Native().ToJson();
+        var envelope = Native(); var json = envelope.ToJson();
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"kind\":\"Total\"", "\"kind\":\"Total\",\"value\":7", StringComparison.Ordinal)));
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"kind\":\"Delta\"", "\"kind\":\"Unknown\"", StringComparison.Ordinal)));
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"typedItems\":true", "\"typedItems\":true,\"typedItems\":false", StringComparison.Ordinal)));
-        Assert.Throws<NotSupportedException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"version\":1", "\"version\":2", StringComparison.Ordinal)));
+        var unsupported = json.Replace("\"version\":" + envelope.Version.ToString(CultureInfo.InvariantCulture),
+            "\"version\":" + (VisualArtifactInterchangeEnvelope.CurrentVersion + 1).ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
+        Assert.NotEqual(json, unsupported);
+        Assert.Throws<NotSupportedException>(() => VisualArtifactInterchangeEnvelope.FromJson(unsupported));
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"family\":\"Waterfall\"", "\"family\":\"FutureWaterfall\"", StringComparison.Ordinal)));
         Assert.Throws<InvalidOperationException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"xAxis\":{", "\"xAxis\":{\"ruleCrossAt\":0,\"crossAt\":0,", StringComparison.Ordinal)));
     }

@@ -50,7 +50,8 @@ internal sealed partial class VisualTopologyCompiler {
                     || mode != TopologyNodeDisplayMode.Artwork && TopologyPreparedNodeBasis.Supported(node.Shape, mode)
                     || mode == TopologyNodeDisplayMode.Artwork && TopologyExternalCaption.HasPolicy(node))
                 && (basis != null || units * _scale != 1
-                    || translated && (node.Shape.HasValue || node.CornerRadius.HasValue || HasInlineNodeGlyph(node, mode, _options)))
+                    || translated && (HasInlineNodeGlyph(node, mode, _options) || node.Shape == TopologyNodeShape.ActorIcon
+                        || !TopologyPreparedNodeBasis.IsActor(node.Shape) && (node.Shape.HasValue || node.CornerRadius.HasValue)))
                 ? new TopologyPreparedNodeBasis(units * _scale, b.Width, b.Height, node.Shape, mode,
                     node.Kind, node.IconShape, node.IconId, node.Symbol, glyphAnchor.X, glyphAnchor.Y, originalBody, node.ContentPadding, node.MaximumTextWidth, node.CornerRadius * _scale, node.GlyphScale, !TopologyPreparedNodeBasis.IsActor(node.Shape)
                         ? new TopologyPreparedNodeProjection(originalOffset, new ChartPoint(b.X, b.Y)) : null) : null;

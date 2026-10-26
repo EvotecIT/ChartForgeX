@@ -149,12 +149,12 @@ public sealed class SvgRasterFiniteShadowTests {
         NativeEffectBeforeCapture.Write("finite-shadow-null-options", source, ImageComposition.FromImage(ordinary.Image).ToPng(), ordinary.Image);
         Assert.Equal(ordinary.Image.Pixels, explicitNull.Image.Pixels); Assert.Contains(ordinary.Diagnostics, item => item.Code == "SFR002");
         Assert.Throws<NotSupportedException>(() => SvgRasterizer.Rasterize(source, strict: true));
+        // Ordered-filter controls separately qualify SourceAlpha, arithmetic, linearRGB,
+        // newest preceding result names and omitted-input fallback. These inputs remain unrepresented.
         foreach (var unsupported in new[] {
             source.Replace("radius='1'", "radius='.5'"), source.Replace("dx='4'", "dx='4.5'"),
-            source.Replace("in='spread'", "in='missing'"), source.Replace("result='soft'", "result='spread'"),
             source.Replace("result='tint'", "result='FillPaint'"),
-            source.Replace("in='SourceGraphic'", "in='SourceAlpha'"), source.Replace("operator='in'", "operator='arithmetic'"),
-            source.Replace("color-interpolation-filters='sRGB'", "color-interpolation-filters='linearRGB'"),
+            source.Replace("in='SourceGraphic'", "in='BackgroundImage'"),
             source.Replace("<feFlood", "<feFlood mask='url(#unsupported)'"), source.Replace("<feMergeNode in='SourceGraphic'", "<feMergeNode opacity='.5' in='SourceGraphic'") }) {
             Assert.Contains(SvgRasterizer.Rasterize(unsupported, filters: new SvgRasterFilterOptions()).Diagnostics, item => item.Code == "SFR002");
             Assert.Throws<NotSupportedException>(() => Import(unsupported));

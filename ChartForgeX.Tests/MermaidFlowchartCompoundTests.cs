@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
@@ -109,7 +108,13 @@ public sealed class MermaidFlowchartCompoundTests {
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions { Flowchart = new MermaidFlowchartRenderOptions { Width = width, Height = 760 } });
         Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!;
-        var svg = XDocument.Parse(artifact.ToSvg());
+        var svgText = artifact.ToSvg(); var png = artifact.ToPng();
+        if (Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
+            Directory.CreateDirectory(output);
+            var stem = Path.Combine(output, "compound-outer-clip-" + width.ToString(CultureInfo.InvariantCulture) + (dark ? "-dark" : "-light"));
+            File.WriteAllText(stem + ".svg", svgText); File.WriteAllBytes(stem + ".native.png", png);
+        }
+        var svg = XDocument.Parse(svgText);
         var entry = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge" && (string?)element.Attribute("data-edge-id") == "mermaid-edge-0");
         var clipUrl = (string)entry.Ancestors().First(element => element.Attribute("clip-path") != null).Attribute("clip-path")!;
         var clipId = clipUrl.Substring(5, clipUrl.Length - 6);
@@ -129,9 +134,16 @@ public sealed class MermaidFlowchartCompoundTests {
             });
         });
         var route = Points(entry.Elements().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line"));
-        var leg = route.Zip(route.Skip(1), (start, end) => (start, end)).Single(segment => segment.start.X == segment.end.X && Math.Abs(segment.start.Y - segment.end.Y) > 20);
-        var raster = PngReader.Decode(artifact.ToPng());
-        var x = (int)Math.Round(leg.start.X); var y = (int)Math.Round((leg.start.Y + leg.end.Y) / 2);
+        // Basis interpolation bows the exterior leg; sample its actual ink rather than cubic control coordinates.
+        var outerX = route.Max(point => point.X);
+        var exterior = route.Where(point => point.X >= outerX - 1).ToArray();
+        Assert.True(exterior.Max(point => point.Y) - exterior.Min(point => point.Y) > 20,
+            "The group-entry route must retain a long exterior leg.");
+        var middleY = (exterior.Min(point => point.Y) + exterior.Max(point => point.Y)) / 2;
+        var sample = exterior.OrderBy(point => Math.Abs(point.Y - middleY)).First();
+        var raster = PngReader.Decode(png);
+        var x = (int)Math.Round(sample.X); var y = (int)Math.Round(sample.Y);
+        Assert.InRange(x, 0, raster.Width - 7); Assert.InRange(y, 0, raster.Height - 1);
         var line = (y * raster.Width + x) * 4;
         var background = (y * raster.Width + x + 6) * 4;
         Assert.True(Enumerable.Range(0, 3).Sum(channel => Math.Abs(raster.Pixels[line + channel] - raster.Pixels[background + channel])) > 10,
@@ -139,9 +151,8 @@ public sealed class MermaidFlowchartCompoundTests {
 
         static double Number(XElement element, string name) => double.Parse((string)element.Attribute(name)!, CultureInfo.InvariantCulture);
         static ChartPoint[] Points(XElement element) {
-            var numbers = Regex.Matches((string)element.Attribute("d")!, @"-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?")
-                .Cast<Match>().Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
-            return Enumerable.Range(0, numbers.Length / 2).Select(index => new ChartPoint(numbers[index * 2], numbers[index * 2 + 1])).ToArray();
+            return ChartForgeX.Core.ChartMapPathParser.ParseSubpaths((string)element.Attribute("d")!, pixelsPerUnit: 8)
+                .SelectMany(subpath => subpath.Points).ToArray();
         }
     }
 

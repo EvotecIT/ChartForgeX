@@ -167,7 +167,7 @@ public sealed class ChartAxis {
     public ChartAxis WithAutomaticLabelAngle() { _labelAngle = 0; _hasExplicitLabelAngle = false; return this; }
 
     /// <summary>Gets or sets how labels follow the axis. The default is a fixed screen orientation.</summary>
-    /// <remarks>Relative orientations are supported by numeric radial bars and columns. Parallel follows the tangent of an angular axis or the spoke of a radius axis; perpendicular uses the other direction. The label angle is added before keeping the text upright. Other chart families reject a nonfixed orientation during preparation.</remarks>
+    /// <remarks>Relative orientations are supported by numeric radial bars and columns, Radar and Polar charts. Parallel follows the tangent of an angular axis or the spoke of a radius axis; perpendicular uses the other direction. The label angle is added before keeping the text upright. Other chart families reject a nonfixed orientation during preparation.</remarks>
     public ChartAxisLabelOrientation LabelOrientation {
         get => _labelOrientation;
         set {

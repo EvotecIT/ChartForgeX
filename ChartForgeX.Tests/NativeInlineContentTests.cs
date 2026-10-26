@@ -162,7 +162,7 @@ public sealed class NativeInlineContentTests : IDisposable {
         var builder = new VisualSceneBuilder(new VisualSize(240, 90), style.Font); builder.InlineText(content, new ChartRect(12, 12, 210, 65), style, TextWrapMode.Word, 3, "rich-caption", "caption"); return new PreparedVisual(builder.Build());
     }
     private static TopologyChart Model() {
-        var model = TopologyChart.Create().WithViewport(400, 240).WithTheme(VisualTheme.Report().WithFontFamily(Family));
+        var model = TopologyChart.Create().WithViewport(400, 240).WithTheme(VisualTheme.Report().WithFontFamily(Family + ", " + BrowserProofFonts.Family));
         model.Nodes.Add(new TopologyNode { Id = "node", Label = "HH", X = 20, Y = 30, Width = 300, Height = 160, ShowStatusBadge = false, PreserveDisplayModeSize = true }); return model;
     }
     private static IEnumerable<VisualSceneText> nodeScene(TopologyChart model) => model.Prepare().Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "inline-text-run" || text.Role == "topology-node-label");

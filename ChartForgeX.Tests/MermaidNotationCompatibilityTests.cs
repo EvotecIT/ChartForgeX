@@ -45,8 +45,11 @@ public sealed class MermaidNotationCompatibilityTests {
         Assert.Equal(new[] { "A", "B", "C" }, document.States.Select(state => state.Id));
         Assert.Equal(2, document.Transitions.Count);
         Assert.Equal("Real title", document.Accessibility.Name);
-        Assert.Equal(note, Assert.Single(document.RawStatements).Text);
-        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, Assert.Single(rendered.Diagnostics).Code);
+        var floating = Assert.Single(document.Notes);
+        Assert.Equal("N", floating.Id); Assert.Null(floating.NodeId); Assert.Equal(text, floating.Text);
+        Assert.Equal(3, floating.Span.Line); Assert.Equal(1, floating.Span.Column);
+        Assert.Equal(note, document.SourceText.Substring(document.SourceText.IndexOf(note, StringComparison.Ordinal), floating.Span.Length));
+        Assert.Empty(document.RawStatements); Assert.Empty(rendered.Diagnostics);
     }
 
     [Theory]

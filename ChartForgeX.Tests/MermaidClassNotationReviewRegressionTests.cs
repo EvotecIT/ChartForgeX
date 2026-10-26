@@ -67,19 +67,22 @@ public sealed class MermaidClassNotationReviewRegressionTests {
     }
 
     [Fact]
-    public void ReopenedNamespaceCaptionWarningsUseTheReplacementDeclarationInDirectAndFencedInput() {
+    public void ReopenedNamespaceCaptionsKeepReplacementInlineContentInDirectAndFencedInput() {
         const string source = "classDiagram\nnamespace N {\n class First\n}\n  namespace N[\"`**Updated**`\"] {\n class Second\n}";
         var result = MermaidRenderer.Render(source);
         Assert.False(result.HasErrors);
-        var warning = Assert.Single(result.Diagnostics);
-        Assert.Equal((MermaidDiagnosticCodes.ApproximateMapping, 5, 3), (warning.Code, warning.Span.Line, warning.Span.Column));
+        Assert.Empty(result.Diagnostics);
         var group = Assert.Single(Assert.IsType<MermaidClassDocument>(result.Document).Namespaces);
         Assert.Equal(2, group.Span.Line);
         Assert.Equal("`**Updated**`", group.Label);
-        Assert.Equal("Updated", Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Groups).Label);
+        var native = Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Groups);
+        Assert.Equal("Updated", native.Label);
+        Assert.Equal(ChartForgeX.Typography.TextInlineEmphasis.Bold, Assert.Single(native.LabelContent.Runs).Emphasis);
         var fence = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\n" + source + "\n```");
         Assert.False(fence.HasErrors);
-        Assert.Equal(8, Assert.Single(fence.Diagnostics).Line);
+        Assert.Empty(fence.Diagnostics);
+        Assert.Equal(result.Artifact.ToSvg(), Assert.Single(fence.Artifacts).ToSvg());
+        Assert.Equal(result.Artifact.ToPng(), fence.Artifacts[0].ToPng());
     }
 
     [Fact]
