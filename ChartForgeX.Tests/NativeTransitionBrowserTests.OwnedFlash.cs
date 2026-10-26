@@ -26,7 +26,21 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.DoesNotContain("native-motion-frame",exported,StringComparison.Ordinal);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame").CountAsync());
         var actual=System.Xml.Linq.XDocument.Parse(exported);var expected=System.Xml.Linq.XDocument.Parse(to.WideEmission!.Svg);var roles=new[]{"line","bar","donut-slice","treemap-tile-mark"};
         var a=actual.Descendants().Where(row=>(string?)row.Attribute("data-cfx-role") is { } role&&roles.Contains(role)).ToArray();var b=expected.Descendants().Where(row=>(string?)row.Attribute("data-cfx-role") is { } role&&roles.Contains(role)).ToArray();Assert.Equal(b.Length,a.Length);Assert.NotEmpty(a);
-        for(var index=0;index<a.Length;index++)Assert.Equal(b[index].Attributes().Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()),a[index].Attributes().Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()));
+        for(var index=0;index<a.Length;index++)Assert.Equal(b[index].Attributes().Where(row=>row.Name.LocalName!="style").Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()),a[index].Attributes().Where(row=>row.Name.LocalName!="style").Select(row=>(row.Name,row.Value)).OrderBy(row=>row.Name.ToString()));
+        // Detached exports materialize computed CSS; retain exact native geometry and compare
+        // that additional paint with the accepted live scene rather than an unstyled source.
+        var paintFaults=await page.EvaluateAsync<string[]>("""
+            xml=>{const roles=['line','bar','donut-slice','treemap-tile-mark'],selector=roles.map(role=>'[data-cfx-role="'+role+'"]').join(',');
+              const source=[...ownedFlash.root.querySelector('.cfx-stage>svg').querySelectorAll(selector)],copy=[...new DOMParser().parseFromString(xml,'image/svg+xml').querySelectorAll(selector)];
+              if(source.length!==copy.length)return ['Exported paint count changed'];
+              const normalize=value=>value.replace(/url\(["']?[^)"']*#([^)"']+)["']?\)/g,'url(#$1)'),faults=[];
+              for(let index=0;index<source.length;index++)for(const property of ['fill','fill-opacity','fill-rule','stroke','stroke-width','stroke-opacity','opacity','filter','clip-path']){
+                const expected=normalize(getComputedStyle(source[index]).getPropertyValue(property)),actual=normalize(copy[index].style.getPropertyValue(property));
+                if(expected!==actual)faults.push(index+': '+property+' expected '+expected+' actual '+actual);
+              }return faults;}
+            """,exported);
+        NativeRadialMotionBeforeControls.Save(name+".export-paint-faults.json",JsonSerializer.Serialize(paintFaults));
+        Assert.Empty(paintFaults);
         await ReduceAndFlushMotionAsync(page);await page.EvaluateAsync("()=>ownedFlash.dispose()");await page.Clock.RunForAsync(1500);Assert.Equal(0,await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync());AssertNoConsoleErrors(session);
     }
 }

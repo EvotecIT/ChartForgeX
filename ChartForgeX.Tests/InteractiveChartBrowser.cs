@@ -40,7 +40,7 @@ internal static partial class InteractiveChartBrowser {
             configurePage?.Invoke(session.Page);
             if (configurePageAsync != null) await configurePageAsync(session.Page);
             await session.Page.SetContentAsync(html);
-            if (waitForOwnedFonts && await session.Page.EvaluateAsync<bool>("()=>isSecureContext&&typeof FontFace==='function'"))
+            if (waitForOwnedFonts && await session.Page.EvaluateAsync<bool>("()=>isSecureContext&&typeof FontFace==='function'&&!!document.querySelector('.cfx-stage [data-cfx-owned-font-text]')"))
                 await session.Page.WaitForFunctionAsync("()=>[...document.querySelectorAll('.cfx-stage [data-cfx-owned-font-text]')].every(node=>!node.hasAttribute('display'))");
             await BrowserProofCaptions.InstallNativeAsync(session.Page);
             return session;

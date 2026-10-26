@@ -26,7 +26,10 @@ public sealed partial class NativeTransitionBrowserTests {
         var observed = await page.EvaluateAsync<JsonElement>("""
             ()=>{const root=ellipsis.root,frame=root.querySelector('.cfx-native-motion-frame'),owner=frame.querySelector('[data-cfx-node=root]'),mark=owner.querySelector(':scope>[data-cfx-role=treemap-group-mark]');
             const labels=[...owner.querySelectorAll('[data-cfx-role=treemap-group-label] text')].filter(text=>text.closest('[data-cfx-node]')===owner);
-            const faults=[];for(const text of labels){const box=text.getBBox(),matrix=mark.getCTM().inverse().multiply(text.getCTM());for(const x of [box.x,box.x+box.width])for(const y of [box.y,box.y+box.height])if(!mark.isPointInFill(new DOMPoint(x,y).matrixTransform(matrix)))faults.push('caption crosses native group');}
+            const faults=[];for(const text of labels){const paint=getComputedStyle(text).display!=='none'?text:text.parentElement.querySelector('[data-cfx-native-text-ink]');
+            if(!paint||getComputedStyle(paint).display==='none')throw Error('Native caption has no visible paint');
+            const box=paint.getBBox(),matrix=mark.getCTM().inverse().multiply(paint.getCTM());if(!(box.width>0&&box.height>0))throw Error('Native caption paint is empty');
+            for(const x of [box.x,box.x+box.width])for(const y of [box.y,box.y+box.height])if(!mark.isPointInFill(new DOMPoint(x,y).matrixTransform(matrix)))faults.push('caption crosses native group');}
             return {texts:labels.map(text=>text.textContent),faults,events:ellipsisEvents,accepted:root.querySelector('.cfx-stage>svg [data-cfx-node=leaf-a]')?.dataset.cfxAuthoredValue,full:owner.dataset.cfxFullLabel,frame:frame.outerHTML};}
             """);
         var name = "ellipsis-browser-" + width + "-" + dark; NativeRadialMotionBeforeControls.Save(name + ".observed.json", observed.GetRawText()); NativeRadialValueMotionTests.Capture(from, to, VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 5, null), payload, name);
