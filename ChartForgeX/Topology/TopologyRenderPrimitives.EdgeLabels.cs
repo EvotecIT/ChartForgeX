@@ -294,7 +294,7 @@ internal static partial class TopologyRenderPrimitives {
         var panelPadding = CanvasSurfaceInset(chart, options);
         var minX = viewport.Padding + width / 2;
         var maxX = Math.Max(minX, viewport.Width - viewport.Padding - width / 2);
-        var minY = viewport.Padding + panelPadding + height / 2;
+        var minY = viewport.Padding + height / 2;
         var maxY = Math.Max(minY, viewport.Height - viewport.Padding - LegendReservedHeight(chart.Legend, viewport) - panelPadding - height / 2);
         return new ChartPoint(Math.Min(maxX, Math.Max(minX, point.X)), Math.Min(maxY, Math.Max(minY, point.Y)));
     }
