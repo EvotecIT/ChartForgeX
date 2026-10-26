@@ -72,7 +72,7 @@ jobs:
           repository: EvotecIT/PSPublishModule
           ref: 77bb1364bd4e21a23200189504c6805f8c13c8dc
           path: Ignore/PowerForgeSource
-      - uses: EvotecIT/.github/actions/setup-dotnet@ec7a94defe85925f23fab68a44b4659ca71c3497
+      - uses: EvotecIT/.github/actions/setup-dotnet@6951a19318dbacbae020a2c1e0d4ffa300a95c6d
         with:
           global-json-file: Ignore/PowerForgeSource/global.json
       - name: Build shared benchmark module without publication
