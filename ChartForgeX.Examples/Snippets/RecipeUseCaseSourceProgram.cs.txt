@@ -12,7 +12,7 @@ var source = {{SOURCE_TEXT}};
 var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
     WarningPolicy = MermaidWarningPolicy.Reject,
     UseCase = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = 620,
-        Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, FontFamily = {{FONT_FAMILY}}, TopologySizing = MermaidTopologySizing.FixedViewport } }
+        Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, FontFamily = {{FONT_FAMILY}}, TopologySizing = MermaidTopologySizing.Natural } }
 });
 if (result.HasErrors || result.Artifact == null)
     throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));

@@ -15,10 +15,11 @@ public sealed class MermaidTopologyTextRoleTests {
         var source = Source(); var options = MermaidTopologyPaletteRoleTests.Options(); if (explicitHost) options.Presentation!.Theme = VisualTheme.Graphite();
         var result = MermaidRenderer.Render(source, options); var artifact = Assert.IsType<VisualArtifact>(result.Artifact); Capture(explicitHost + "-direct", artifact);
         var chart = Assert.IsType<TopologyChart>(artifact.Model); var prepared = chart.Prepare(); var restored = artifact.ToInterchangeEnvelope().ToTopologyChart().Prepare(); Capture(explicitHost + "-restored", restored.Visual.ToArtifact());
-        Assert.Empty(result.Diagnostics); Assert.Equal(ChartColor.FromHex("#123456"), chart.Theme.Resolve(chart.ThemeMode).Foreground);
+        var expectedForeground = options.Presentation!.Theme?.Resolve(chart.ThemeMode).Foreground ?? ChartColor.FromHex("#123456");
+        Assert.Empty(result.Diagnostics); Assert.Equal(expectedForeground, chart.Theme.Resolve(chart.ThemeMode).Foreground);
         Assert.Equal(ChartColor.FromHex("#654321"), ChartColor.Parse(Assert.Single(chart.Nodes, node => node.Id == "work").LabelColor!));
         Assert.Equal(ChartColor.FromHex("#654321"), ChartColor.Parse(Assert.Single(chart.Edges).LabelColor!)); Assert.Equal(ChartColor.FromHex("#2468ac"), ChartColor.Parse(Assert.Single(chart.Groups).LabelColor!));
-        var heading = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneText>(), mark => mark.Text.Lines.Any(line => line.Text == "Source heading")); Assert.Equal(ChartColor.FromHex("#123456"), heading.Color);
+        var heading = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneText>(), mark => mark.Text.Lines.Any(line => line.Text == "Source heading")); Assert.Equal(expectedForeground, heading.Color);
         Assert.Equal(artifact.ToPng(), restored.ToPng());
     }
     [Fact]

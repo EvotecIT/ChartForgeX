@@ -41,7 +41,7 @@ internal sealed partial class MermaidSequenceSettings {
     }
 
     internal void Apply(SequenceArtifact sequence, bool hasAutonumber, MermaidPresentationOptions? host = null, MermaidThemePreset? preset = null, bool neo = false) {
-        ApplyPresentation(sequence,host,neo);
+        ApplyPresentation(sequence,host,neo,hasAutonumber || _showSequenceNumbers==true);
         bool Color(string name,out ChartColor value)=>preset!=null?preset.TryGet(name,out value):_colors.TryGetValue(name,out value);
 
         sequence.Paint.LifelineStroke=new ChartForgeX.Core.ChartStrokeStyle(width:.5,dash:Array.Empty<double>());

@@ -1,9 +1,13 @@
 using System.Text.Json;
+using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Mermaid;
+using ChartForgeX.VisualArtifacts;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
+[Collection(nameof(FontRegistryCollection))]
 public sealed class GallerySvgReadabilityTests {
     [Fact]
     public void DecorativeHairlinesAndLegendGlyphsDoNotHideUnreadableInformation() {
@@ -48,6 +52,40 @@ public sealed class GallerySvgReadabilityTests {
             Assert.Equal(.5, quality.GetProperty("minimumStrokeWidth").GetDouble());
             Assert.Equal(1, quality.GetProperty("tinyMarkerNodes").GetInt32());
             Assert.False(quality.GetProperty("healthy").GetBoolean());
+        } finally { Directory.Delete(output, true); }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("sequence-message-line")]
+    [InlineData("sequence-notation")]
+    public void SourceLifelineGuidesKeepTheirHalfUnitDefaultWhileMessageAndActorInkStayGated(string? unreadableRole) {
+        var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-sequence-readability-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+        try {
+            var rendered = MermaidRenderer.Render("sequenceDiagram\nactor A as Review\nparticipant B as Archive\nA->>B: Save");
+            Assert.Empty(rendered.Diagnostics);
+            var artifact = Assert.IsType<ChartForgeX.VisualArtifacts.VisualArtifact>(rendered.Artifact);
+            var svg = XDocument.Parse(artifact.ToSvg());
+            var lifelines = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "sequence-lifeline").ToArray();
+            Assert.NotEmpty(lifelines);
+            Assert.All(lifelines, element => Assert.Equal("0.5", (string?)element.Attribute("stroke-width")));
+            if (unreadableRole == "sequence-message-line") {
+                var message = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == unreadableRole);
+                message.SetAttributeValue("stroke-width", ".5");
+            } else if (unreadableRole == "sequence-notation") {
+                var actor = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == unreadableRole
+                    && (string?)element.Attribute("data-kind") == "Actor");
+                actor.Descendants().First(element => element.Attribute("stroke-width") != null).SetAttributeValue("stroke-width", ".5");
+            }
+            File.WriteAllText(Path.Combine(output, "sequence.svg"), svg.ToString(SaveOptions.DisableFormatting));
+            File.WriteAllText(Path.Combine(output, "sequence.html"), artifact.ToHtmlPage());
+            File.WriteAllBytes(Path.Combine(output, "sequence.png"), artifact.ToPng());
+            GalleryWriter.Write(output);
+            using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));
+            var quality = document.RootElement.GetProperty("charts")[0].GetProperty("svg");
+            Assert.Equal(unreadableRole == null ? 0 : 1, quality.GetProperty("tinyStrokeNodes").GetInt32());
+            Assert.Equal(unreadableRole == null, quality.GetProperty("healthy").GetBoolean());
         } finally { Directory.Delete(output, true); }
     }
 }

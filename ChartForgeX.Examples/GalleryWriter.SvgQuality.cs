@@ -70,11 +70,11 @@ public static partial class GalleryWriter {
     }
 
     private static bool IsSvgDecorativeStroke(SvgRasterElement element, List<SvgRasterElement> ancestors) {
-        // Context geography, grids and icon artwork may deliberately use hairlines. Node outlines,
-        // relationship routes, arrowheads and data markers still carry information at their actual size.
+        // Context geography, grids, participant lifelines and icon artwork may deliberately use hairlines.
+        // Node outlines, message routes, arrowheads and data markers retain their actual-size gate.
         var role = element.Get("data-cfx-role");
         return role is "topology-map-boundary" or "dotted-map-boundary" or "topology-grid"
-            or "topology-icon-surface" or "topology-node-icon"
+            or "topology-icon-surface" or "topology-node-icon" or "sequence-lifeline"
             || string.IsNullOrEmpty(role) && ancestors.Any(parent => parent.Get("data-cfx-role") == "topology-node-icon");
     }
 

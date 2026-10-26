@@ -8,7 +8,7 @@ internal static partial class MermaidExamples {
                 var artifact = MermaidRemainingCaptionRolesExample.Create(family, variant, mode, ExampleTypography.FontFamily);
                 var stem = Path.Combine(output, "remaining-caption-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant());
                 File.WriteAllText(stem + ".svg", artifact.ToSvg()); File.WriteAllBytes(stem + ".png", artifact.ToPng());
-                File.WriteAllText(stem + ".html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+                File.WriteAllText(stem + ".html", ExampleTypography.EmbedInHtml(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize })));
                 File.WriteAllText(stem + ".json", artifact.ToInterchangeJson());
                 File.WriteAllText(stem + ".csharp.txt", ExampleRecipeSource.EmitRemainingCaptionRoles(family, variant, mode));
                 File.WriteAllText(stem + ".mmd", MermaidRemainingCaptionRolesExample.Source(family));

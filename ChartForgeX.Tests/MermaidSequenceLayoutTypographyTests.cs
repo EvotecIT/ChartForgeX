@@ -28,16 +28,22 @@ public sealed class MermaidSequenceLayoutTypographyTests {
     }
     [Fact]
     public void FamilyAndSharedHostFieldsOverrideOnlyMatchingSourceFontDimensions() {
-        var source=SequenceSourcePolicyFixture.With("{\"actorFontSize\":18,\"actorFontFamily\":\"Georgia, serif\",\"actorFontWeight\":700,\"messageFontSize\":20,\"noteFontSize\":16}");
-        var result=MermaidRenderer.Render(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{FontFamily="Arial, sans-serif",FontSize=22},
-            Sequence=new MermaidSequenceRenderOptions{Presentation=new MermaidPresentationOptions{FontSize=24}}});
+        var source=SequenceSourcePolicyFixture.With("{\"actorFontSize\":18,\"actorFontFamily\":\"Georgia, serif\",\"actorFontWeight\":700,\"messageFontSize\":20,\"noteFontSize\":16}")
+            .Replace("sequenceDiagram\n","sequenceDiagram\nautonumber\n",StringComparison.Ordinal);
+        var options=new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{FontFamily="Arial, sans-serif",FontSize=22},
+            Sequence=new MermaidSequenceRenderOptions{Presentation=new MermaidPresentationOptions{FontSize=24}}};
+        var result=MermaidRenderer.Render(source,options);
         Assert.Empty(result.Diagnostics);var model=Assert.IsType<SequenceArtifact>(result.Artifact!.Model);
         Assert.Equal(24,model.Typography!.Participant!.FontSize);Assert.Equal("Arial, sans-serif",model.Typography!.Participant!.FontFamily);Assert.Equal("700",model.Typography!.Participant!.FontWeight);
         Assert.Equal(24,model.Typography!.Message!.FontSize);Assert.Equal(24,model.Typography!.Note!.FontSize);
+        Assert.Equal("Arial, sans-serif",model.Typography.Number!.FontFamily);Assert.Null(model.Typography.Number.FontSize);
         var prepared=model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200,900)),font:new FontSpec{Family="Courier New, monospace"}));
         SequencePolicyFixture.Capture("sequence-source-host-precedence",prepared);
         var actor=SequencePolicyFixture.Text(prepared,"sequence-participant","Review");Assert.Equal("24",actor.Attribute("font-size")!.Value);Assert.Contains("Arial",actor.Attribute("font-family")!.Value);
+        var number=SequencePolicyFixture.Text(prepared,"sequence-number","1");Assert.Equal("12",number.Attribute("font-size")!.Value);Assert.Contains("Arial",number.Attribute("font-family")!.Value);
         Assert.Equal("18",result.Document!.Configuration.Settings.Last(item=>item.Path=="sequence.actorFontSize").Value);
+        var unnumbered=MermaidRenderer.Render(source.Replace("autonumber\n","",StringComparison.Ordinal),options);
+        Assert.Empty(unnumbered.Diagnostics);Assert.Null(Assert.IsType<SequenceArtifact>(unnumbered.Artifact!.Model).Typography!.Number);
     }
     [Fact]
     public void ExplicitHostPaddingOverridesSourceInsetsWhileOmissionKeepsBothAxes() {

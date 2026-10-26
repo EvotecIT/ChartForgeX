@@ -39,12 +39,18 @@ internal sealed partial class VisualTopologyCompiler {
         ShapeContentLayout? best = null; var retained = -1;
         var maximumTitle = showText ? Math.Max(1, _options.MaxNodeLabelLines) : 1;
         var maximumSubtitle = subtitle && !chip ? Math.Max(1, _options.MaxNodeSubtitleLines) : 1;
+        var detailHeight = showText && node.Details.Count > 0 ? 6 + DetailRowsHeight(node, size * .8, detailLine) : 0;
+        var tableHeight = TableHeight(node, size);
+        detailHeight += tableHeight;
+        // Candidate row allocations repeatedly use the same measured width. Retain
+        // every candidate and its order, but fit each exact title/subtitle cell once.
+        // These caches belong only to this node/font-size evaluation, never a later render.
+        var titleFits = new Dictionary<(double Width, int Rows), (int Count, bool Overflow)>();
+        var subtitleFits = new Dictionary<(double Width, int Rows), (int Count, bool Overflow)>();
+        var detailFits = new Dictionary<double, (int Count, bool Overflow)>();
         for (var titleRows = 1; titleRows <= maximumTitle; titleRows++) for (var subtitleRows = 1; subtitleRows <= maximumSubtitle; subtitleRows++) {
             var titleHeight = titleRows * titleLine;
             var subtitleHeight = subtitle ? subtitleRows * subtitleLine + (chip ? 4 * spacing : 0) : 0;
-            var detailHeight = showText && node.Details.Count > 0 ? 6 + DetailRowsHeight(node, size * .8, detailLine) : 0;
-            var tableHeight = TableHeight(node, size);
-            detailHeight += tableHeight;
             var bodyHeight = Math.Max(titleHeight + subtitleHeight + detailHeight, glyph > 0 ? 26 : 0);
             var totalHeight = bodyHeight + footer + (footer > 0 ? 4 * spacing : 0);
             var bounds = TopologyNodeShapeGeometry.CaptionBounds(node, totalHeight + 2 * padding + 1e-8, spacing);
@@ -57,19 +63,35 @@ internal sealed partial class VisualTopologyCompiler {
             var count = 0;
             var complete = bounds.Height + 1e-8 >= totalHeight && bounds.Width >= footerWidth && width > 0;
             if (showText) {
-                var lines = CaptionLines(node.LabelContent.IsStructured ? NodeCaptionContent(node) : ChartForgeX.Typography.TextContent.Plain(title), width * _scale, size * _scale, 600, titleRows, out var overflow);
-                count += lines.Sum(line => line.Length); complete &= !overflow;
+                var titleKey = (width, titleRows);
+                if (!titleFits.TryGetValue(titleKey, out var titleFit)) {
+                    var lines = CaptionLines(node.LabelContent.IsStructured ? NodeCaptionContent(node) : ChartForgeX.Typography.TextContent.Plain(title), width * _scale, size * _scale, 600, titleRows, out var overflow);
+                    titleFit = (lines.Sum(line => line.Length), overflow);
+                    titleFits.Add(titleKey, titleFit);
+                }
+                count += titleFit.Count; complete &= !titleFit.Overflow;
                 if (subtitle) {
-                    lines = FitTextLines(node.Subtitle!, Math.Max(0, width - (chip ? 12 * spacing : 0)) * _scale, size * .85 * _scale,
-                        chip ? 700 : 400, subtitleRows, false, false, out overflow, node.SubtitleTextStyle);
-                    count += lines.Sum(line => line.Length); complete &= !overflow;
+                    var subtitleKey = (width, subtitleRows);
+                    if (!subtitleFits.TryGetValue(subtitleKey, out var subtitleFit)) {
+                        var lines = FitTextLines(node.Subtitle!, Math.Max(0, width - (chip ? 12 * spacing : 0)) * _scale, size * .85 * _scale,
+                            chip ? 700 : 400, subtitleRows, false, false, out var overflow, node.SubtitleTextStyle);
+                        subtitleFit = (lines.Sum(line => line.Length), overflow);
+                        subtitleFits.Add(subtitleKey, subtitleFit);
+                    }
+                    count += subtitleFit.Count; complete &= !subtitleFit.Overflow;
                 }
-                foreach (var detail in node.Details) {
-                    var reserve = (!string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? 14 : 0) + (detail.BadgeStyle?.HorizontalPadding * 2 ?? 0);
-                    lines = CaptionLines(DetailContent(detail), Math.Max(0, width - reserve) * _scale,
-                        size * .8 * _scale, 400, TopologyTextLayout.AuthoredRowCount(NodeDetailText(detail), _options.AllowMultilineNodeLabels), out overflow, detail.TextStyle);
-                    count += lines.Sum(line => line.Length); complete &= !overflow;
+                if (!detailFits.TryGetValue(width, out var detailFit)) {
+                    var detailCount = 0; var detailOverflow = false;
+                    foreach (var detail in node.Details) {
+                        var reserve = (!string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? 14 : 0) + (detail.BadgeStyle?.HorizontalPadding * 2 ?? 0);
+                        var lines = CaptionLines(DetailContent(detail), Math.Max(0, width - reserve) * _scale,
+                            size * .8 * _scale, 400, TopologyTextLayout.AuthoredRowCount(NodeDetailText(detail), _options.AllowMultilineNodeLabels), out var overflow, detail.TextStyle);
+                        detailCount += lines.Sum(line => line.Length); detailOverflow |= overflow;
+                    }
+                    detailFit = (detailCount, detailOverflow);
+                    detailFits.Add(width, detailFit);
                 }
+                count += detailFit.Count; complete &= !detailFit.Overflow;
             }
             var candidate = new ShapeContentLayout { Bounds = bounds, Size = size, TitleHeight = titleHeight,
                 SubtitleHeight = subtitleHeight, DetailHeight = detailLine, FooterHeight = Math.Min(footer, bounds.Height),

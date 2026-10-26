@@ -304,7 +304,7 @@ internal static partial class MermaidExamples {
                 "mermaid-gantt-today-style" => new MermaidRenderOptions { Gantt = new MermaidGanttRenderOptions { Today = new DateTime(2026, 1, 3) } },
                 "mermaid-gantt-date-anchor" => new MermaidRenderOptions { ParseOptions = new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 1, 1) } },
                 _ when (item.Key.StartsWith("mermaid-c4-source-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-c4-config-", StringComparison.Ordinal)) => new MermaidRenderOptions {
-                    C4 = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 800 }
+                    C4 = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 800, Padding = 32 }
                 },
                 _ when item.Key.StartsWith("mermaid-mindmap-notation-", StringComparison.Ordinal) => new MermaidRenderOptions {
                     MindMap = new MermaidTopologyRenderOptions { Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 1100, Height = 560 }

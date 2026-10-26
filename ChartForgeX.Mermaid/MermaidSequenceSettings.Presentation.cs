@@ -61,7 +61,7 @@ internal sealed partial class MermaidSequenceSettings {
         ApplySourceDefaults(configuration);
     }
     private double? GeometryValue(string name)=>_geometry.TryGetValue(name,out var value)?value:(double?)null;
-    private void ApplyPresentation(SequenceArtifact sequence,MermaidPresentationOptions? host,bool neo) {
+    private void ApplyPresentation(SequenceArtifact sequence,MermaidPresentationOptions? host,bool neo,bool hasNumbering) {
         ChartPadding? padding=null;
         if(GeometryValue("diagramMarginX").HasValue||GeometryValue("diagramMarginY").HasValue)
             padding=new ChartPadding(GeometryValue("diagramMarginX")??sequence.Padding,GeometryValue("diagramMarginY")??sequence.Padding,
@@ -79,7 +79,10 @@ internal sealed partial class MermaidSequenceSettings {
             if(host?.FontSize!=null)style.FontSize=host.FontSize;
             return style;
         }
-        var typography=new SequenceTypography(Merge(_participant),Merge(_message),Merge(_note),Merge(_message));
+        // Keep the source's automatic badge sizes and no-host sans default. An explicit
+        // host font also owns the numbered role, without adding policy to unnumbered input.
+        var number=hasNumbering && host?.FontFamily is { } family ? new TextStyleOverride { FontFamily=family } : null;
+        var typography=new SequenceTypography(Merge(_participant),Merge(_message),Merge(_note),Merge(_message),number);
         if(typography.HasOverrides)sequence.Typography=typography;
     }
 }

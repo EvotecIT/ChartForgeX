@@ -12,7 +12,7 @@ internal static partial class MermaidExamples {
                 if (variant == "compact") source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);
                 var result = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,
                     UseCase = new MermaidFlowchartRenderOptions { Width = variant == "compact" ? 390 : 900, Height = 620,
-                        Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = ExampleTypography.FontFamily, TopologySizing = MermaidTopologySizing.FixedViewport } } });
+                        Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = ExampleTypography.FontFamily, TopologySizing = MermaidTopologySizing.Natural } } });
                 if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
                 var id = "mermaid-usecase-source-depth-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, id + ".mmd"), source);

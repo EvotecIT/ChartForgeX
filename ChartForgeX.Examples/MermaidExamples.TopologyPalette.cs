@@ -8,7 +8,7 @@ internal static partial class MermaidExamples {
                 var artifact = TopologySourcePaletteRecipe.Create(family, variant, mode, ExampleTypography.FontFamily);
                 var name = "mermaid-palette-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, name + ".svg"), artifact.ToSvg()); File.WriteAllBytes(Path.Combine(output, name + ".png"), artifact.ToPng());
-                File.WriteAllText(Path.Combine(output, name + ".html"), artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+                File.WriteAllText(Path.Combine(output, name + ".html"), ExampleTypography.EmbedInHtml(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize })));
                 File.WriteAllText(Path.Combine(output, name + ".json"), artifact.ToInterchangeJson()); File.WriteAllText(Path.Combine(output, name + ".csharp.txt"), ExampleRecipeSource.EmitTopologySourcePalette(family, variant, mode));
             }
     }

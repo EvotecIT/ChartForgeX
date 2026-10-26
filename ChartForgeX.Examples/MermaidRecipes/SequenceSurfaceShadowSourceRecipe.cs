@@ -8,10 +8,10 @@ using ChartForgeX.VisualArtifacts;
 public static class SequenceSurfaceShadowSourceRecipe {
     /// <summary>Uses the validated native source projection; pending URL diagnostics remain visible to the caller.</summary>
     public static MermaidRenderResult Parse(string source, string variant = "wide",
-        VisualThemeMode mode = VisualThemeMode.Light) {
+        VisualThemeMode mode = VisualThemeMode.Light, string? fontFamily = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = mode },
+            Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = fontFamily },
             Sequence = new MermaidSequenceRenderOptions { Width = variant == "compact" ? 390 : 1100, Height = 900 }
         });
         if (result.HasErrors || result.Artifact == null) {

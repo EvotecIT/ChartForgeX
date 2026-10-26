@@ -46,7 +46,11 @@ public sealed class MermaidGalleryTypographyTests {
                         CaptureMismatch(name, first.Artifacts[name], second.Artifacts[name]);
                     Assert.Equal(expected, actual);
                     Assert.Equal(first.Artifacts[name].Png, second.Artifacts[name].Png);
-                    Assert.Contains(svg.Descendants().Attributes("font-family"), attribute => attribute.Value.Split(',')[0].Trim().Trim('\'', '"') == "CFX Proof Carlito");
+                    if (svg.Descendants().Any(element => element.Name.LocalName == "text"))
+                        Assert.Contains(svg.Descendants().Attributes("font-family"), attribute => attribute.Value.Split(',')[0].Trim().Trim('\'', '"') == "CFX Proof Carlito");
+                    else
+                        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-native-text-ink") == "true"
+                            && element.Descendants().Any(child => child.Name.LocalName == "use"));
                     Assert.Contains("@font-face", html, StringComparison.Ordinal);
                     Assert.Contains("data:font/ttf;base64,", html, StringComparison.Ordinal);
                 }
@@ -75,7 +79,10 @@ public sealed class MermaidGalleryTypographyTests {
         var ids = document.Descendants().Attributes("id").Select(attribute => attribute.Value).ToHashSet(StringComparer.Ordinal);
         Assert.Equal(document.Descendants().Attributes("id").Count(), ids.Count);
         foreach (var attribute in document.Descendants().Attributes()) {
-            if (attribute.Name.LocalName == "href" && attribute.Value.StartsWith("#", StringComparison.Ordinal))
+            // Anchor navigation may target the containing document. SVG resources
+            // such as use/image references still have to resolve inside this artifact.
+            if (attribute.Name.LocalName == "href" && attribute.Parent?.Name.LocalName != "a"
+                && attribute.Value.StartsWith("#", StringComparison.Ordinal))
                 Assert.Contains(attribute.Value.Substring(1), ids);
             if (attribute.Name.LocalName is "aria-labelledby" or "aria-describedby")
                 foreach (var id in attribute.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)) Assert.Contains(id, ids);
@@ -102,7 +109,7 @@ public sealed class MermaidGalleryTypographyTests {
         File.WriteAllBytes(Path.Combine(capture, name + "-bold.png"), second.Png);
     }
 
-    private static (double UnpinnedWidth, Dictionary<string, (string Svg, byte[] Png)> Artifacts) Generate(string hostFace, string output) {
+    private (double UnpinnedWidth, Dictionary<string, (string Svg, byte[] Png)> Artifacts) Generate(string hostFace, string output) {
         FontRegistry.Clear();
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-" + hostFace + ".ttf");
         foreach (var family in new[] { "Calibri", "Carlito", "Segoe UI", "Arial", "Inter", "system-ui", "sans-serif" })
@@ -121,6 +128,16 @@ public sealed class MermaidGalleryTypographyTests {
         }
         using var comparison = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));
         var rows = comparison.RootElement.GetProperty("charts").EnumerateArray().ToDictionary(row => row.GetProperty("name").GetString()!);
+        foreach (var row in rows.Values.Where(row => new[] { "svg", "png", "html" }.Any(format => !row.GetProperty(format).GetProperty("healthy").GetBoolean()))) {
+            // Retain every failing family before the temporary gallery is removed, so one
+            // run diagnoses the complete health batch rather than only its first row.
+            _output.WriteLine("Unhealthy gallery artifact: " + row.GetRawText());
+            CaptureGalleryArtifact(row, output, hostFace, "health");
+        }
+        foreach (var row in rows.Values.Where(row => row.GetProperty("name").GetString() is { } name
+            && (name.StartsWith("mermaid-usecase-source-depth-", StringComparison.Ordinal)
+                || name.StartsWith("mermaid-c4-source-rows-", StringComparison.Ordinal))))
+            CaptureGalleryArtifact(row, output, hostFace, "layout");
         var artifacts = new Dictionary<string, (string Svg, byte[] Png)>();
         foreach (var row in rows.Values) {
             var name = row.GetProperty("name").GetString()!;
@@ -133,5 +150,15 @@ public sealed class MermaidGalleryTypographyTests {
         var authoredSize = XDocument.Load(Path.Combine(output, "mermaid-source-font-size-icon-fit.svg"));
         Assert.Contains(authoredSize.Descendants().Attributes("font-family"), attribute => attribute.Value.Contains("Arial", StringComparison.Ordinal));
         return (unpinnedWidth, artifacts);
+    }
+
+    private static void CaptureGalleryArtifact(JsonElement row, string output, string hostFace, string kind) {
+        if (Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT") is not { Length: > 0 } capture) return;
+        Assert.True(Path.IsPathRooted(capture));
+        Directory.CreateDirectory(capture);
+        var name = row.GetProperty("name").GetString()!;
+        File.WriteAllText(Path.Combine(capture, name + "-" + hostFace + "." + kind + ".json"), row.GetRawText());
+        foreach (var format in new[] { "svg", "png", "html" })
+            File.Copy(Path.Combine(output, name + "." + format), Path.Combine(capture, name + "-" + hostFace + "." + format), overwrite: true);
     }
 }

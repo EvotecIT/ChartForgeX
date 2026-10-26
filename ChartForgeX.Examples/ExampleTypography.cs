@@ -9,6 +9,8 @@ internal static class ExampleTypography {
 
     internal static string EmbeddedStyle => Embedded.Value;
 
+    internal static string EmbedInHtml(string html) => html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
+
     internal static void Register() {
         FontRegistry.Register(FontFamily, FontPath("Regular"), 400);
         FontRegistry.Register(FontFamily, FontPath("Bold"), 700);
