@@ -45,7 +45,14 @@ public sealed partial class TopologyAlignmentReviewRepairTests {
                 const bounds=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
                 const groups=[...document.querySelectorAll('[data-cfx-role="topology-group"]')].filter(e=>e.querySelector('[data-cfx-role="topology-group-surface"]')).map(e=>({id:e.dataset.groupId,parent:e.dataset.parentGroupId??null,...bounds(e.querySelector('[data-cfx-role="topology-group-surface"]'))}));
                 const nodes=[...document.querySelectorAll('[data-cfx-role="topology-node"]')].map(e=>({id:e.dataset.nodeId,parent:e.dataset.groupId??null,...bounds(e.querySelector('[data-cfx-role="topology-node-surface"]'))}));
-                const separators=[...document.querySelectorAll('[data-cfx-role="topology-compartment-separator"]')].map(e=>bounds(e));
+                const separators=[...document.querySelectorAll('[data-cfx-role="topology-compartment-separator"]')].map(e=>{
+                    const b=e.getBBox(),matrix=e.getScreenCTM(),style=getComputedStyle(e);
+                    const points=[[b.x,b.y],[b.x+b.width,b.y],[b.x,b.y+b.height],[b.x+b.width,b.y+b.height]]
+                        .map(([x,y])=>new DOMPoint(x,y).matrixTransform(matrix));
+                    const xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+                    return {painted:bounds(e),stroke:style.stroke,strokeWidth:parseFloat(style.strokeWidth),
+                        width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)};
+                });
                 return {groups,nodes,separators,overflow:document.documentElement.scrollWidth>innerWidth};
             }
             """);
@@ -64,6 +71,9 @@ public sealed partial class TopologyAlignmentReviewRepairTests {
                 && child.GetProperty("right").GetDouble() <= parent.GetProperty("right").GetDouble() + .1 && child.GetProperty("bottom").GetDouble() <= parent.GetProperty("bottom").GetDouble() + .1);
         }
         var separator = Assert.Single(observed.GetProperty("separators").EnumerateArray());
+        Assert.NotEqual("none", separator.GetProperty("stroke").GetString());
+        Assert.True(separator.GetProperty("strokeWidth").GetDouble() > 0);
+        Assert.True(separator.GetProperty("painted").GetProperty(kind == TopologyAlignmentKind.Column ? "width" : "height").GetDouble() > 1);
         Assert.True(separator.GetProperty(kind == TopologyAlignmentKind.Column ? "width" : "height").GetDouble() > 1);
         Assert.InRange(separator.GetProperty(kind == TopologyAlignmentKind.Column ? "height" : "width").GetDouble(), 0, .1);
         Assert.False(observed.GetProperty("overflow").GetBoolean()); InteractiveChartBrowser.AssertNoConsoleErrors(session);

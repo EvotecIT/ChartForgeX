@@ -73,8 +73,8 @@ public static partial class V2Examples {
     private static IEnumerable<ProofArtifact> PairedArtifacts(IReadOnlyList<ProofArtifact> artifacts, ProofArtifact selected) =>
         artifacts.Where(artifact => ExampleKey(artifact) == ExampleKey(selected));
 
-    private static string[] ArtifactKinds(ProofArtifact artifact) => artifact.SeriesKinds ?? artifact.Family switch {
+    private static string[] ArtifactKinds(ProofArtifact artifact) => (artifact.SeriesKinds ?? artifact.Family switch {
         "cartesian" => new[] { nameof(ChartSeriesKind.Line), nameof(ChartSeriesKind.Area), nameof(ChartSeriesKind.Bar) },
         "donut" => new[] { nameof(ChartSeriesKind.Donut) }, "pie" => new[] { nameof(ChartSeriesKind.Pie) }, _ => Array.Empty<string>()
-    };
+    }).Where(kind => Enum.IsDefined(typeof(ChartSeriesKind), kind)).ToArray();
 }

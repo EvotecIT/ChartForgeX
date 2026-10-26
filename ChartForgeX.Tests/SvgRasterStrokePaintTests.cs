@@ -39,6 +39,7 @@ public sealed class SvgRasterStrokePaintTests {
     }
 
     [Theory]
+    [Trait("Category", "RasterStress")]
     [InlineData(false)]
     [InlineData(true)]
     public void TiledSvgStrokeRetainsItsTransformedGradientFrame(bool userSpace) {

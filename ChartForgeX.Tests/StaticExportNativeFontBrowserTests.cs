@@ -222,18 +222,30 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         async ({svg,editableSvg,png})=>{
             const documentSvg=new DOMParser().parseFromString(svg,'image/svg+xml'),root=documentSvg.documentElement;
             const width=Math.round(Number(root.getAttribute('width'))),height=Math.round(Number(root.getAttribute('height'))),scale=Math.max(1,Math.ceil(devicePixelRatio||1));
-            const load=source=>new Promise((resolve,reject)=>{const image=new Image();let url=null;
-                image.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=width*scale;canvas.height=height*scale;const context=canvas.getContext('2d');context.setTransform(scale,0,0,scale,0,0);context.drawImage(image,0,0,width,height);resolve(context.getImageData(0,0,canvas.width,canvas.height).data);}catch(error){reject(error);}finally{if(url)URL.revokeObjectURL(url);}};
-                image.onerror=()=>{if(url)URL.revokeObjectURL(url);reject(new Error('Font export image decode failed.'));};image.src=source.startsWith('data:')?source:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(source);});
+            // Both sides cross the PNG codec: Firefox can quantize translucent edge colors
+            // during encoding, even when the source canvas and downloaded PNG are correct.
+            const load=(source,encodePng=false)=>new Promise((resolve,reject)=>{const image=new Image();
+                image.onload=()=>{try{
+                    const canvas=document.createElement('canvas');canvas.width=width*scale;canvas.height=height*scale;
+                    const context=canvas.getContext('2d');context.setTransform(scale,0,0,scale,0,0);context.drawImage(image,0,0,width,height);
+                    if(!encodePng){resolve(context.getImageData(0,0,canvas.width,canvas.height).data);return;}
+                    canvas.toBlob(blob=>{
+                        if(!blob){reject(new Error('Expected PNG comparison encoding.'));return;}
+                        const reader=new FileReader();reader.onerror=()=>reject(reader.error);
+                        reader.onload=()=>load(String(reader.result)).then(resolve,reject);reader.readAsDataURL(blob);
+                    },'image/png');
+                }catch(error){reject(error);}};
+                image.onerror=()=>reject(new Error('Font export image decode failed.'));
+                image.src=source.startsWith('data:')?source:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(source);});
             const different=(a,b)=>{let count=0;for(let i=0;i<a.length;i+=4)if(a[i]!==b[i]||a[i+1]!==b[i+1]||a[i+2]!==b[i+2]||a[i+3]!==b[i+3])count++;return count;};
-            const actual=await load('data:image/png;base64,'+png),same=await load(svg),editable=await load(editableSvg);
+            const actual=await load('data:image/png;base64,'+png),same=await load(svg,true),editable=await load(editableSvg,true);
             const undecorated=source=>{const d=new DOMParser().parseFromString(source,'image/svg+xml');
                 for(const n of [d.documentElement,...d.querySelectorAll('*')])n.style.setProperty('text-decoration','none','important');
                 return new XMLSerializer().serializeToString(d);};
-            const editableNone=await load(undecorated(editableSvg)),pngNone=await load(undecorated(svg));
+            const editableNone=await load(undecorated(editableSvg),true),pngNone=await load(undecorated(svg),true);
             const decorationInk=pixels=>{let count=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i]===17&&pixels[i+1]===203&&pixels[i+2]===177&&pixels[i+3]===255)count++;return count;};
             for(const node of root.querySelectorAll('*'))node.style.setProperty('font-family','monospace','important');
-            const fallback=await load(new XMLSerializer().serializeToString(documentSvg));let ink=0,stroke=0;
+            const fallback=await load(new XMLSerializer().serializeToString(documentSvg),true);let ink=0,stroke=0;
             for(let i=0;i<actual.length;i+=4){if(actual[i]===18&&actual[i+1]===52&&actual[i+2]===86&&actual[i+3]===255)ink++;
                 if(actual[i]===211&&actual[i+1]===17&&actual[i+2]===19&&actual[i+3]===255)stroke++;}
             const nonTranslationGlyphs=Array.from(root.querySelectorAll('use')).filter(node=>{const matrix=node.transform.baseVal.consolidate().matrix;return matrix.a!==1||matrix.b!==0||matrix.c!==0||matrix.d!==1;}).length;

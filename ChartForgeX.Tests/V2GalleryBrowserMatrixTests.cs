@@ -38,6 +38,13 @@ public sealed class V2GalleryBrowserMatrixTests {
                     } catch (error) { throw new Error(file + ': ' + (error?.message || String(error))); }
                 };
                 const manifest = JSON.parse(await fetchAsset('manifest.json'));
+                const expectedKinds = expected.families.map(item => item.kind).sort();
+                if (!Array.isArray(manifest.chartKinds) || manifest.chartKinds.length !== expectedKinds.length
+                    || [...manifest.chartKinds].sort().some((kind, index) => kind !== expectedKinds[index]))
+                    defects.push('The catalog native chart-kind summary must match the complete enum without diagram tags or duplicates.');
+                const nativeKinds = new Set(expectedKinds);
+                if (manifest.artifacts.some(item => !Array.isArray(item.seriesKinds) || item.seriesKinds.some(kind => !nativeKinds.has(kind))))
+                    defects.push('Per-artifact native series kinds must not contain diagram-family tags.');
                 const artifacts = manifest.artifacts.filter(item => (item.id.startsWith('family-') || item.family === 'histogram')
                     && ['light', 'dark'].includes(item.theme));
                 const standard = artifacts.filter(item => item.id.startsWith('family-') && ['wide', 'compact'].includes(item.variant));

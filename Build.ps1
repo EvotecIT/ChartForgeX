@@ -641,8 +641,14 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
     $PSNativeCommandUseErrorActionPreference = $true
 }
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $root 'Build/Invoke-RequiredTestContract.ps1')
 Push-Location $root
 try {
+    if ([string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
+        $TestDiagnosticsDirectory = $null
+    } else {
+        $TestDiagnosticsDirectory = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($TestDiagnosticsDirectory)
+    }
     $solution = Join-Path $root 'ChartForgeX.sln'
     $tests = Join-Path $root 'ChartForgeX.Tests/ChartForgeX.Tests.csproj'
     $examples = Join-Path $root 'ChartForgeX.Examples/ChartForgeX.Examples.csproj'
@@ -674,8 +680,8 @@ try {
     Invoke-NodeCommand -FileName 'node' -Arguments @('Build/Test-GraphRuntime.js') -WorkingDirectory $root -Description 'Bundled graph runtime tests' -TimeoutSeconds $PackageConsumerTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-    # Whole-gallery contracts run with generated examples, retaining their own normal command budget.
-    $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery')
+    # Explicit expensive rendering contracts retain their own normal command budgets.
+    $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery&Category!=RasterStress')
     if (-not [string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
         New-Item -ItemType Directory -Path $TestDiagnosticsDirectory -Force | Out-Null
         $testArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),
@@ -684,6 +690,13 @@ try {
             '--diag', (Join-Path $TestDiagnosticsDirectory 'native.vstest.log'))
     }
     Invoke-DotNetCommand -Arguments $testArguments -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+
+    Write-Host 'Running required raster-stress contracts.'
+    $rasterContractRoot = if ($TestDiagnosticsDirectory) { Join-Path $TestDiagnosticsDirectory 'raster-stress' } else { Join-Path $root "ChartForgeX.Tests/bin/$Configuration/net8.0/raster-stress-contracts" }
+    $contractSettings = if ($TestDiagnosticsDirectory) { Join-Path $root 'Build/native-diagnostics.runsettings' } else { $null }
+    Invoke-RequiredTestContract -Name 'raster-stress' -Project $tests -Configuration $Configuration `
+        -Filter 'Category=RasterStress' -RequiredTestName 'ChartForgeX.Tests.SvgRasterStrokePaintTests.TiledSvgStrokeRetainsItsTransformedGradientFrame' `
+        -RequiredCaseCount 2 -ReportRoot $rasterContractRoot -TimeoutSeconds $DotNetCommandTimeoutSeconds -DiagnosticsSettingsPath $contractSettings
 
     if (-not $SkipAot) {
         $nativeAotRid = Get-NativeAotRuntimeIdentifier
@@ -715,25 +728,10 @@ try {
 
         Write-Host 'Running generated-gallery contracts.'
         $galleryContractRoot = if ($TestDiagnosticsDirectory) { Join-Path $TestDiagnosticsDirectory 'gallery' } else { $exampleOutput.TrimEnd([char[]]@('/', '\')) + '-contracts' }
-        $galleryContractOutput = Join-Path $galleryContractRoot ([Guid]::NewGuid().ToString('N'))
-        $galleryTestArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore',
-            '--filter', 'Category=Gallery', '--logger', 'trx;LogFileName=gallery-contracts.trx',
-            '--results-directory', $galleryContractOutput)
-        if ($TestDiagnosticsDirectory) {
-            $galleryTestArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),
-                '--logger', 'console;verbosity=detailed', '--diag', (Join-Path $galleryContractOutput 'gallery.vstest.log'))
-        }
-        Invoke-DotNetCommand -Arguments $galleryTestArguments -Description 'Generated-gallery contracts' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-        [xml] $galleryContractReport = Get-Content -LiteralPath (Join-Path $galleryContractOutput 'gallery-contracts.trx') -Raw
-        $galleryCounters = $galleryContractReport.TestRun.ResultSummary.Counters
-        if ([int]$galleryCounters.total -eq 0 -or [int]$galleryCounters.executed -ne [int]$galleryCounters.total -or
-            [int]$galleryCounters.passed -ne [int]$galleryCounters.total -or [int]$galleryCounters.notExecuted -ne 0) {
-            throw 'Generated-gallery contracts must execute and pass without skips.'
-        }
         $fontContract = 'ChartForgeX.Tests.MermaidGalleryTypographyTests.PublishedSamplesRetainDefaultGeometryAndAuthoredFontsWhenHostFallbackFacesChange'
-        if (@($galleryContractReport.TestRun.Results.UnitTestResult | Where-Object { $_.testName -eq $fontContract -and $_.outcome -eq 'Passed' }).Count -ne 1) {
-            throw 'Generated-gallery validation is missing its whole-gallery font contract.'
-        }
+        Invoke-RequiredTestContract -Name 'gallery' -Project $tests -Configuration $Configuration `
+            -Filter 'Category=Gallery' -RequiredTestName $fontContract -RequiredCaseCount 1 `
+            -ReportRoot $galleryContractRoot -TimeoutSeconds $DotNetCommandTimeoutSeconds -DiagnosticsSettingsPath $contractSettings
     }
 
     if (-not $SkipPack) {
