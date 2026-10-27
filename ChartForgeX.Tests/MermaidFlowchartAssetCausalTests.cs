@@ -13,6 +13,7 @@ public sealed class MermaidFlowchartAssetCausalTests {
         const string source = "flowchart LR\nserver@{icon: 'common:server', label: 'Server', pos: t}";
         CaptureInput(source, "source-native-icon-caption-top");
         var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions {
+            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family },
             Flowchart = new MermaidFlowchartRenderOptions { IconCatalog = TopologyIconCatalog.Default() }
         });
         var exportFailure = Capture(rendered, "source-native-icon-caption-top");

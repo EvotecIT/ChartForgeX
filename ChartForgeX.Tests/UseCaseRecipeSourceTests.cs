@@ -31,7 +31,7 @@ public sealed class UseCaseRecipeSourceTests {
         Assert.DoesNotContain("MermaidRenderer", coreProgram); Assert.DoesNotContain("ChartForgeX.Mermaid", coreProgram);
         var sourceProgram = ExampleRecipeSource.EmitUseCaseSource(variant, mode);
         var literal = Regex.Match(sourceProgram, @"var source = (.+);"); Assert.True(literal.Success);
-        Assert.Equal(source, JsonSerializer.Deserialize<string>(literal.Groups[1].Value));
+        Assert.Equal(source, JsonSerializer.Deserialize<string>(literal.Groups[1].Value)!.ReplaceLineEndings("\n"));
         Assert.Contains("MermaidRenderer.Render(source", sourceProgram); Assert.DoesNotContain("{{", sourceProgram);
         Assert.Contains("fonts/Carlito-Regular.ttf", ExampleRecipeSource.EmitUseCaseSource(variant, mode, galleryTypography: true));
     }

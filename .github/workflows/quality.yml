@@ -204,7 +204,8 @@ jobs:
   browser-quality:
     name: Required browser contracts (Windows Chromium)
     runs-on: windows-latest
-    timeout-minutes: 40
+    # The complete maintained suite measured 54 minutes before setup/artifact retention.
+    timeout-minutes: 75
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
@@ -239,7 +240,8 @@ jobs:
   browser-compatibility:
     name: Browser compatibility (macOS ${{ matrix.name }})
     runs-on: macos-latest
-    timeout-minutes: 40
+    # Includes setup, the serial maintained Compatibility suite and artifact retention.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:

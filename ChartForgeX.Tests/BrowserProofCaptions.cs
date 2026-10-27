@@ -26,7 +26,9 @@ internal static partial class BrowserProofCaptions {
                 const canvas=document.createElement('canvas'); canvas.width=width; canvas.height=height;
                 const context=canvas.getContext('2d',{willReadFrequently:true}); context.drawImage(image,0,0);
                 const rgba=context.getImageData(0,0,width,height).data;
-                pixels.set(node,{href,width,height,rgba,hasPaint:rgba.some((value,index)=>(index&3)===3&&value!==0)});
+                let left=width,top=height,right=0,bottom=0;
+                for(let index=0;index<width*height;index++)if(rgba[index*4+3]){const x=index%width,y=Math.floor(index/width);left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x+1);bottom=Math.max(bottom,y+1);}
+                pixels.set(node,{href,width,height,rgba,hasPaint:right>left&&bottom>top,bounds:{left,top,right,bottom}});
               }));
               await window.cfxCaptionPrepareRaster(document);
           const normalize = text => text.replace(/\\n/g, ' ').replace(/\s+/g, ' ').trim();
@@ -50,6 +52,7 @@ internal static partial class BrowserProofCaptions {
           };
           window.cfxReferenceCaptionText = root => normalize([...root.querySelectorAll('text,foreignObject,[data-cfx-caption]')].filter(node => { const parent=node.parentElement?.closest('[data-cfx-caption]'); return !parent || !root.contains(parent); }).map(text).join(' '));
           window.cfxReferenceLabelText = text;
+          window.cfxCaptionSourceInk = node => {const copy=node.cloneNode(true);for(const cue of copy.querySelectorAll('[data-cfx-state-outline],[data-cfx-highlight-outline]'))cue.remove();return copy.outerHTML;};
         }
         """);
 }

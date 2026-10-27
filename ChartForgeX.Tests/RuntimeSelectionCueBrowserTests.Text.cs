@@ -30,16 +30,17 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         var target = page.Locator(selector).First;
         var id = await target.GetAttributeAsync("data-cfx-target-id");
         var kind = await target.GetAttributeAsync("data-cfx-target-kind");
-        var text = await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("node=>node.outerHTML");
+        await BrowserProofCaptions.InstallNativeAsync(page);
+        var text = await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("node=>window.cfxCaptionSourceInk(node)");
         Task<string> TextPaint() => target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("""
-            node=>JSON.stringify({text:node.textContent,ink:[...node.querySelectorAll('image,use,path')].map(shape=>[shape.localName,shape.localName==='use'?null:shape.getAttribute('href'),shape.localName==='use'?[...node.ownerSVGElement.querySelectorAll('[id]')].find(glyph=>'#'+glyph.id===shape.getAttribute('href'))?.getAttribute('d'):shape.getAttribute('d')]),paint:['fill','fill-opacity','stroke','stroke-opacity','font-family','font-weight','opacity']
+            node=>JSON.stringify({text:node.textContent,ink:[...node.querySelectorAll('image,use,path')].filter(shape=>!shape.closest('[data-cfx-state-outline],[data-cfx-highlight-outline]')).map(shape=>[shape.localName,shape.localName==='use'?null:shape.getAttribute('href'),shape.localName==='use'?[...node.ownerSVGElement.querySelectorAll('[id]')].find(glyph=>'#'+glyph.id===shape.getAttribute('href'))?.getAttribute('d'):shape.getAttribute('d')]),paint:['fill','fill-opacity','stroke','stroke-opacity','font-family','font-weight','opacity']
                 .map(key=>node.getAttribute(key))})
             """);
         var paint = await TextPaint();
         await page.EvaluateAsync("target=>cueController.select({targets:[target]})", new { targetKind = kind, targetId = id });
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===1");
         Assert.Equal(id, Assert.Single(await page.EvaluateAsync<string[]>("()=>cueController.getSelection().map(t=>t.targetId)")));
-        Assert.Equal(text, await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("node=>node.outerHTML"));
+        Assert.Equal(text, await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("node=>window.cfxCaptionSourceInk(node)"));
         var raster = await target.Locator("[data-cfx-native-raster-text-ink] image[data-cfx-image-alpha-bounds]").CountAsync() > 0;
         if (!raster) Assert.Equal(1, await page.Locator("[data-cfx-state-footprint]").CountAsync());
         var visible = PngReader.Decode(await page.Locator(".cfx-stage svg").ScreenshotAsync());

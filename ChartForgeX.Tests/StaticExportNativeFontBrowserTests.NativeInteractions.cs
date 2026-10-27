@@ -87,4 +87,24 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         Assert.Empty(await page.EvaluateAsync<object[]>("()=>ownedFontViolations"));
         AssertNoConsoleErrors(session);
     }
+    [BrowserTheory]
+    [InlineData("bitmap-1-1-1")]
+    [InlineData("color-cbdt1")]
+    public async Task RasterCaptionCannotReviveAHiddenSunburstObservation(string fixture) {
+        if (!Enabled) return;
+        var label = fixture.StartsWith("bitmap", StringComparison.Ordinal) ? "A" : "😀";
+        var chart = HtmlNativeLineInkTests.Model(fixture).WithAxes(false).WithHeader(false).WithLegend(false).WithDataLabels();
+        chart.ClearSeries();
+        chart.AddSunburst("Items", new[] { new ChartHierarchyItem("root", label),
+            new ChartHierarchyItem("a", label, "root", 60), new ChartHierarchyItem("b", label, "root", 40) });
+        await using var session = await OpenAsync(OwnedPage(chart.ToInteractiveHtmlFragment(OwnedOptions), "window.FontFace=undefined;"), 760, 700);
+        var page = session.Page; var target = page.Locator("[data-cfx-node=a]");
+        Assert.True(await target.Locator("[data-cfx-native-raster-text-ink] image").CountAsync() > 0);
+        await BrowserProofCaptions.MoveAsync(page, target);
+        Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        await page.AddStyleTagAsync(new() { Content = "[data-cfx-node=a] [data-cfx-role=sunburst-segment-mark], [data-cfx-node=a] [data-cfx-role=sunburst-pattern]{opacity:0!important}" });
+        await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, target);
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        AssertNoConsoleErrors(session);
+    }
 }

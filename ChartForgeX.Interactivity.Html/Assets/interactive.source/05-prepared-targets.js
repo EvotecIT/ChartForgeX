@@ -2,6 +2,8 @@
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
     const point = label && label._cfxLabelTarget;
+    const boundary = target instanceof Element ? target.closest('[data-cfx-target-kind]') : null;
+    if (boundary && label?.contains(boundary) && boundary !== point) return null;
     return point && root.contains(label) && root.contains(point) ? point : null;
   };
   const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));

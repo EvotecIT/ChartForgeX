@@ -18,7 +18,7 @@ public sealed class NumericRadialPointLegendBrowserTests {
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithSize(dark ? 360 : 760, dark ? 360 : 480);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), dark ? 390 : 800, 560);
         var page = session.Page; var legend = page.Locator(Legend(0)).First;
-        await legend.HoverAsync(); var tooltip = await TooltipTextAsync(page);
+        await BrowserProofCaptions.MoveAsync(page, legend); var tooltip = await TooltipTextAsync(page);
         var labels = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']"));
         await legend.FocusAsync(); await page.Keyboard.PressAsync("Space");
         var muted = await page.Locator(".cfx-series-muted").CountAsync();

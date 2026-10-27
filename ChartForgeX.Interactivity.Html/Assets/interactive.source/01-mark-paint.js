@@ -217,7 +217,12 @@
       if (!paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
         || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
       if (text.localName !== 'text') {
-        for (const glyph of text.querySelectorAll('use')) {
+        for (const glyph of text.querySelectorAll('use,image[data-cfx-image-alpha-bounds]')) {
+          if (glyph.localName === 'image') {
+            const paint = shapePaint(glyph, styles);
+            if (paint) return { ...paint, textNode: text };
+            continue;
+          }
           const href = glyph.getAttribute('href') || '', path = href.startsWith('#') && text.ownerSVGElement.getElementById(href.slice(1));
           if (!path || path.localName !== 'path' || !path.getAttribute('d') || !paintNodeVisible(glyph, styles)
             || !paintWithinNativeClips(glyph, glyph, styles)) continue;
@@ -245,7 +250,7 @@
     const authoredPattern = (shape) => /-pattern$/.test(shape.dataset.cfxRole || '');
     const patterns = shapes.filter(authoredPattern);
     for (const shape of primary.concat(shapes.filter((shape) => !authoredPattern(shape)))) {
-      if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+      if (shape.closest('[data-cfx-native-text-ink]') || !decoration && shape.closest('[data-cfx-label-decoration]')) continue;
       const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
@@ -253,7 +258,7 @@
     if (text) return text;
 
     for (const shape of patterns) {
-      if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+      if (shape.closest('[data-cfx-native-text-ink]') || !decoration && shape.closest('[data-cfx-label-decoration]')) continue;
       const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }

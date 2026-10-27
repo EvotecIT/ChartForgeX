@@ -123,7 +123,7 @@ public sealed class MermaidRemainingCaptionRolesTests {
     public void UnsupportedActiveCaptionSyntaxStaysLiteralLocatedAndStrictlyRejectable(string family) {
         var source = MermaidRemainingCaptionRolesExample.Source(family).Replace("**scope**", "<b>scope</b>", StringComparison.Ordinal)
             .Replace("**carefully**", "$$carefully$$", StringComparison.Ordinal);
-        var result = MermaidRenderer.Render(source); Assert.False(result.HasErrors);
+        var result = MermaidRenderer.Render(source, Options(900, false)); Assert.False(result.HasErrors);
         Assert.Contains(result.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedStatement && diagnostic.Span.Line > 1 && diagnostic.Span.Column > 0);
         var xml = XDocument.Parse(result.Artifact!.ToSvg()); Assert.DoesNotContain(xml.Descendants(), element => element.Name.LocalName is "script" or "foreignObject" or "image");
         var strict = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject }); Assert.Null(strict.Artifact);

@@ -23,7 +23,17 @@ internal static partial class BrowserProofCaptions {
               };
               window.cfxCaptionText = node => node.hasAttribute('data-cfx-caption') ? window.cfxReferenceLabelText(node) : window.cfxReferenceCaptionText(node);
               window.cfxCaptionBox = node => {
-                const boxes = roots(node).map(element => element.getBoundingClientRect()).filter(box => box.width > 0 && box.height > 0);
+                const boxes = roots(node).flatMap(element => {
+                  const shapes=element.localName==='text'?[element]:[...element.querySelectorAll('use,path,image[data-cfx-image-alpha-bounds]')];
+                  return shapes.filter(shape=>!shape.closest('[data-cfx-state-outline],[data-cfx-highlight-outline]')).map(shape=>{
+                    if(shape.localName!=='image')return shape.getBoundingClientRect();
+                    const source=pixels.get(shape),matrix=shape.getScreenCTM();if(!source?.hasPaint||!matrix)return null;
+                    const b=source.bounds,x=shape.x.baseVal.value,y=shape.y.baseVal.value,w=shape.width.baseVal.value/source.width,h=shape.height.baseVal.value/source.height;
+                    const points=[[b.left,b.top],[b.right,b.top],[b.left,b.bottom],[b.right,b.bottom]].map(([px,py])=>new DOMPoint(x+px*w,y+py*h).matrixTransform(matrix));
+                    const left=Math.min(...points.map(p=>p.x)),right=Math.max(...points.map(p=>p.x)),top=Math.min(...points.map(p=>p.y)),bottom=Math.max(...points.map(p=>p.y));
+                    return {left,right,top,bottom,width:right-left,height:bottom-top};
+                  });
+                }).filter(box => box && box.width > 0 && box.height > 0);
                 if (!boxes.length) throw Error('Native caption has no nonempty painted bounds');
                 const left = Math.min(...boxes.map(box => box.left)), right = Math.max(...boxes.map(box => box.right));
                 const top = Math.min(...boxes.map(box => box.top)), bottom = Math.max(...boxes.map(box => box.bottom));

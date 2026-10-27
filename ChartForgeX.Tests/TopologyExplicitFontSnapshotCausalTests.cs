@@ -19,7 +19,7 @@ public sealed class TopologyExplicitFontSnapshotCausalTests {
             node.Details.Add(new TopologyNodeDetail { Text = "Healthy", TextStyle = new TextStyleOverride { FontSize = 16 } });
         }
         var ordinary = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, HierarchyView = new TopologyHierarchyView() });
-        var fitted = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 300), 16)),
+        var fitted = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 300), 16), theme: chart.Theme),
             new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, HierarchyView = new TopologyHierarchyView() });
         var saved = fitted.ToArtifact().ToInterchangeEnvelope(); var scale = saved.Nodes[0].Width!.Value / ordinary.ToInterchangeEnvelope().Nodes[0].Width!.Value;
         Assert.InRange(scale, .001, .999);

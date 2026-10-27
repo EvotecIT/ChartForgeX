@@ -19,7 +19,7 @@ public sealed class TopologyPreparedTypographyRestorationTests {
         var options = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = fit };
         var rendered = fit
             ? imported.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 310), 28),
-                frame: new VisualFrame(showLegend: false)), options)
+                theme: imported.Theme, frame: new VisualFrame(showLegend: false)), options)
             : imported.Prepare(options).Visual;
         var after = rendered.SemanticInterchange!;
         Capture(fit, saved, rendered);
