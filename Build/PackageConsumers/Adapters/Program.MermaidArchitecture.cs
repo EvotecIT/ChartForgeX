@@ -10,7 +10,7 @@ internal static partial class Program {
         MermaidArchitectureCaptionContracts();
         MermaidArchitectureAlignmentContracts();
         const string source = "architecture-beta\ngroup outer[Outer]\ngroup inner[Inner] in outer\nservice a[A] in inner\nservice b[B]\na{group}:B --> T:b";
-        var direct = MermaidRenderer.Render(source);
+        var direct = RenderFixture(source);
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null, "Packed native architecture source was rejected.");
         var artifact = direct.Artifact ?? throw new InvalidOperationException("Packed architecture artifact was omitted.");
         var document = direct.Document as MermaidArchitectureDocument ?? throw new InvalidOperationException("Packed architecture AST was omitted.");
@@ -25,7 +25,7 @@ internal static partial class Program {
         PackageAssertions.Require(restored.Groups.Single(group => group.Id == "inner").ParentGroupId == "outer" && restored.Edges[0].SourceNodeId == "inner"
             && restored.Edges[0].Metadata["mermaid.source.id"] == "a", "Packed architecture portable round trip lost native/source endpoint meaning.");
         PackageAssertions.Png(artifact.ToPng());
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Count == 1 && fenced.Artifacts[0].ToSvg() == artifact.ToSvg(),
             "Packed architecture fence did not use the canonical native scene.");
     }

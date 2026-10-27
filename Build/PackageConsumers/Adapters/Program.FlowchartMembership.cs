@@ -8,7 +8,7 @@ internal static partial class Program {
     private static void FlowchartMembershipContracts() {
         foreach (var family in new[] { "flowchart", "swimlane-beta" }) {
             var source = family + " LR\nsubgraph Outer[Outer]\nT[Plan]\nX[Work] --> Q\nsubgraph Inner[Inner]\nN[Original]\nQ[Persist] --> N\nend\nX --> N[Updated]\nend\nsubgraph Sibling[Sibling]\nY[Check] --> N\nend\nT --> Y";
-            var direct = MermaidRenderer.Render(source); var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+            var direct = RenderFixture(source); var fence = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
             PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null && !fence.HasErrors && fence.Artifacts.Count == 1,
                 "Packed source membership or its ordinary fence was rejected.");
             var document = direct.Document as MermaidFlowchartDocument ?? throw new InvalidOperationException("Packed source membership AST was lost.");

@@ -14,7 +14,7 @@ internal static partial class Program {
         var options = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,
             UseCase = new MermaidFlowchartRenderOptions { Width = 1000, Height = 680,
                 Presentation = new MermaidPresentationOptions { TopologySizing = MermaidTopologySizing.FixedViewport } } };
-        var direct = MermaidRenderer.Render(source, options); var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source, options); var fence = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Artifact != null && !fence.HasErrors && fence.Artifacts.Count == 1, "Packed UseCase JSON failed direct/fence conversion.");
         var chart = (TopologyChart)direct.Artifact!.Model!; var table = chart.Nodes.Single(node => node.Id == "Details").TableContent!;
         PackageAssertions.Require(table.Rows.Count == 9 && table.Rows[0].Cells[1].DisplayText == "1.00" && table.Rows[4].Metadata["mermaid.data.kind"] == "Null"

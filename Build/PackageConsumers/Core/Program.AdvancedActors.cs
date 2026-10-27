@@ -1,11 +1,12 @@
 using System;
 using System.Linq;
 using ChartForgeX.Topology;
+using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void NativeAdvancedActorContracts() {
-        var chart = TopologyChart.Create().WithId("packed-native-actors").WithViewport(600, 420, 0).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).WithId("packed-native-actors").WithViewport(600, 420, 0).WithLayout(TopologyLayoutMode.Manual)
             .AddNode("business", "Business participant", 40, 50, width: 190, height: 130)
             .AddNode("router", "Native router", 350, 50, width: 190, height: 130).AddEdge("request", "business", "router");
         chart.Nodes[0].Shape = TopologyNodeShape.ActorBusinessHollow; chart.Nodes[1].Shape = TopologyNodeShape.ActorIcon;

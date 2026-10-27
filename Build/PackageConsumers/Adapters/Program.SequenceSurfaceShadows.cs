@@ -9,7 +9,7 @@ internal static partial class Program {
         using var stream = typeof(Program).Assembly.GetManifestResourceStream("PackageProbe.sequence-retained-surface-shadows.mmd")
             ?? throw new InvalidOperationException("Missing retained surface source fixture.");
         using var reader = new StreamReader(stream);
-        var result = MermaidRenderer.Render(reader.ReadToEnd());
+        var result = RenderFixture(reader.ReadToEnd());
         if (result.HasErrors || result.Artifact?.Model is not SequenceArtifact model ||
             model.Participants.Any(participant => participant.SurfaceShadow?.Opacity != .06)) {
             throw new InvalidOperationException("Source glyph shadow did not reach retained native owners.");

@@ -14,8 +14,8 @@ internal static partial class Program {
         var source = reader.ReadToEnd().Replace("xychart-beta\n", "xychart-beta horizontal\n", StringComparison.Ordinal);
         var request = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,
             XYChart = new MermaidXYChartRenderOptions { Width = 390, Height = 520 } };
-        var rendered = MermaidRenderer.Render(source, request);
-        var fenced = new MermaidVisualMarkupParser(request).Parse("```mermaid\n" + source + "\n```");
+        var rendered = RenderFixture(source, request);
+        var fenced = CreateFixtureParser(request).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!rendered.HasErrors && rendered.Artifact != null && rendered.Diagnostics.Count == 0 && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed XY captions/configuration did not reach one native artifact.");
         var chart = (Chart)rendered.Artifact!.Model!;

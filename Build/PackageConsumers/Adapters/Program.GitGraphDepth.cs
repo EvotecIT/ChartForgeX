@@ -8,8 +8,8 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void GitGraphSourcePolicyContracts() {
         const string source = "%%{init: {\"gitGraph\":{\"mainBranchName\":\"trunk\",\"mainBranchOrder\":2,\"parallelCommits\":true,\"showBranches\":false,\"showCommitLabel\":false}}}%%\ngitGraph BT\ncommit id:\"base\"\nbranch work order:1\ncommit id:\"work\"\ncheckout trunk\ncommit id:\"next\"\nmerge work id:\"joined\"";
-        var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
-        var fenced = new MermaidVisualMarkupParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject }).Parse("```mermaid\n" + source + "\n```");
+        var rendered = RenderFixture(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
+        var fenced = CreateFixtureParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject }).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!rendered.HasErrors && rendered.Artifact != null && rendered.Diagnostics.Count == 0 && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed Git graph source settings became warnings or fallback graphs.");
         var graph = (GitGraphBlock)rendered.Artifact!.Model!;

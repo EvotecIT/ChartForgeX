@@ -3,11 +3,12 @@ using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX;
 using ChartForgeX.Topology;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 internal static partial class Program {
     private static void NativeActorSubtitleContracts() {
-        var chart = TopologyChart.Create().WithId("package-actor-caption").WithViewport(700, 520, 24)
+        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).WithId("package-actor-caption").WithViewport(700, 520, 24)
             .WithLayout(TopologyLayoutMode.Layered)
             .AddAutoNode("author", "Release coordinator", width: 180, height: 110, subtitle: "primary actor")
             .AddAutoNode("publish", "Publish documents", width: 180, height: 80)

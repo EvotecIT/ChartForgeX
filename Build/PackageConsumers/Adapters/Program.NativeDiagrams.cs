@@ -82,8 +82,8 @@ internal static partial class Program {
 
     private static VisualArtifact PackedNativeDiagram(string name, string source, bool strict = true) {
         var options = new MermaidRenderOptions { WarningPolicy = strict ? MermaidWarningPolicy.Reject : MermaidWarningPolicy.Allow };
-        var direct = MermaidRenderer.Render(source, options);
-        var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source, options);
+        var fenced = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Artifact != null && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed native diagram failed direct or Markdown rendering: " + name + "; " + string.Join("; ", direct.Diagnostics.Select(item => item.Message)));
         PackageAssertions.Require(direct.Diagnostics.All(item => !strict && item.Code == MermaidDiagnosticCodes.ApproximateMapping),

@@ -13,7 +13,7 @@ internal static partial class Program {
         const string source = "%%{init: {'sequence':{'showSequenceNumbers':true},'themeVariables':{'actorBkg':'#e3efff','signalColor':'#276749'}}}%%\n" +
             "sequenceDiagram\nbox hsla(210,60%,92%,0.5) Services\nparticipant A as Native<br/>API\nparticipant B\nend\n" +
             "par Primary\nA-|/B: Request<br/>record\nand Optional\nNote over A,B: No further message\nend";
-        var direct = MermaidRenderer.Render(source);
+        var direct = RenderFixture(source);
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null,
             "Packed source sequence paint, HSL box, half-arrow, captions or numbering was rejected.");
         var artifact = direct.Artifact ?? throw new InvalidOperationException("Packed sequence depth omitted its artifact.");
@@ -30,14 +30,14 @@ internal static partial class Program {
         PackageAssertions.Require(envelope.Extensions["chartforgex.sequence.paint.participantFill"] == "#E3EFFF"
             && envelope.Nodes[0].Extensions["mermaid.label"] == "Native<br/>API",
             "Packed authored paint or raw source caption was lost in portable interchange.");
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,
             "Packed fenced depth did not retain exact source mappings.");
         PackageAssertions.Png(fenced.Artifacts[0].ToPng());
 
         const string invalid = "%%{init: {'themeVariables':{'actorBkg':'hsl(nope,20%,30%)'}}}%%\nsequenceDiagram\nA->>B: Signal";
-        var invalidDirect = MermaidRenderer.Render(invalid);
-        var invalidFenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + invalid + "\n```");
+        var invalidDirect = RenderFixture(invalid);
+        var invalidFenced = CreateFixtureParser().Parse("```mermaid\n" + invalid + "\n```");
         PackageAssertions.Require(invalidDirect.HasErrors && invalidDirect.Artifact == null && invalidDirect.Diagnostics.Any(item => item.Span.Line == 1)
             && invalidFenced.HasErrors && invalidFenced.Artifacts.Count == 0,
             "Packed invalid authored sequence color escaped located direct/fenced validation.");

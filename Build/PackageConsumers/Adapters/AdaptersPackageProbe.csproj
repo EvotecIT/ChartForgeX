@@ -10,6 +10,7 @@
     <DefineConstants>$(DefineConstants);CFX_PACKAGE_BROWSER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../Fonts/*" Link="Fonts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="sequence-retained-surface-shadows.mmd" LogicalName="PackageProbe.sequence-retained-surface-shadows.mmd" />
     <EmbeddedResource Include="sequence-preset-appearance.mmd" LogicalName="PackageProbe.sequence-preset-appearance.mmd" />
     <EmbeddedResource Include="sequence-source-defaults.mmd" LogicalName="PackageProbe.sequence-source-defaults.mmd" />

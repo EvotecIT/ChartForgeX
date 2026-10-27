@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void MermaidSequenceParOverContracts() {
         const string source = "sequenceDiagram\npar_over First\nA->>B: Request\nand Notes only\nNote over A,B: No reply\nend\nB-->>A: After";
-        var direct = MermaidRenderer.Render(source);
+        var direct = RenderFixture(source);
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null,
             "Packed par_over source was rejected.");
         var document = direct.Document as MermaidSequenceDocument ?? throw new InvalidOperationException("Packed par_over lost its typed document.");
@@ -23,11 +23,11 @@ internal static partial class Program {
         PackageAssertions.Require(envelope.Annotations.Count(annotation => annotation.Sequence?.BlockKind == SequenceArtifactBlockKind.ParOver) == 1
             && envelope.Annotations.Count(annotation => annotation.Sequence?.ParentBlockKind == SequenceArtifactBlockKind.ParOver) == 2,
             "Packed par_over facts were lost in typed portable interchange.");
-        var ordinary = MermaidRenderer.Render(source.Replace("par_over ", "par ", StringComparison.Ordinal));
+        var ordinary = RenderFixture(source.Replace("par_over ", "par ", StringComparison.Ordinal));
         PackageAssertions.Require(!ordinary.HasErrors && ordinary.Artifact != null && artifact.ToSvg() == ordinary.Artifact.ToSvg(),
             "Packed par_over must reuse the measured parallel scene.");
         PackageAssertions.Png(artifact.ToPng());
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Count == 1 && artifact.ToSvg() == fenced.Artifacts[0].ToSvg(),
             "Packed fenced par_over diverged from the shared native scene.");
         PackageAssertions.Png(fenced.Artifacts[0].ToPng());

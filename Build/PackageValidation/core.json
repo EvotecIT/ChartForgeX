@@ -15,7 +15,7 @@
   },
   "Consumers": [
     {
-      "SourceDirectory": "Build/PackageConsumers",
+      "SourceDirectory": "{CompileRoot}",
       "ProjectFile": "Core/CorePackageProbe.csproj",
       "Frameworks": [
         "net8.0",

@@ -11,6 +11,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../Fonts/*" Link="Fonts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../PackageAssertions.cs" Link="PackageAssertions.cs" />
     <PackageReference Include="ChartForgeX" Version="$(PackageVersion)" PrivateAssets="all" />
   </ItemGroup>

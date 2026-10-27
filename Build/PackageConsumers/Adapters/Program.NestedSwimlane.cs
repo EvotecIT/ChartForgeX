@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void NestedSwimlaneContracts() {
         const string source = "swimlane-beta LR\nsubgraph Product[Product]\nP[Plan]\nsubgraph API[API]\nA[Accept] --> B[Build]\nend\nsubgraph Ops[Operations]\nC[Check]\nend\nend\nP --> A\nB --> C";
-        var direct = MermaidRenderer.Render(source); var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source); var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed nested Swimlane source was rejected.");
         var artifact = direct.Artifact ?? throw new InvalidOperationException("Packed nested Swimlane artifact was omitted.");

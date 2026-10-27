@@ -9,7 +9,7 @@ internal static partial class Program {
         const string source = "sequenceDiagram\nA->>B: Before\nrect rgba(200,220,255,0.5)\n" +
             "autonumber 5 0.5\nA->>B: Start\nautonumber off\nB-->>A: Hidden\nautonumber\nA->>B: Resume\nend\n" +
             "autonumber 10\nB-->>A: Reset\nA->>B: Next";
-        var direct = MermaidRenderer.Render(source);
+        var direct = RenderFixture(source);
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null,
             "Packed authored rect/numbering source was rejected.");
         var document = direct.Document as MermaidSequenceDocument ?? throw new InvalidOperationException("Packed sequence lost its typed document.");
@@ -29,7 +29,7 @@ internal static partial class Program {
         PackageAssertions.Require(envelope.Annotations.Single(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceBlock)
             .Extensions.ContainsKey("chartforgex.sequence.background") && envelope.Edges[2].Extensions["mermaid.autonumber.visible"] == "false",
             "Packed background or hidden counter facts were lost in portable interchange.");
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,
             "Packed fenced authored rect/numbering source was rejected.");
         PackageAssertions.Png(fenced.Artifacts[0].ToPng());

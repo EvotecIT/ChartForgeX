@@ -33,7 +33,7 @@
   },
   "Consumers": [
     {
-      "SourceDirectory": "Build/PackageConsumers",
+      "SourceDirectory": "{CompileRoot}",
       "ProjectFile": "Adapters/AdaptersPackageProbe.csproj",
       "Frameworks": [
         "net8.0",

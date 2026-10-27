@@ -11,7 +11,7 @@ internal static partial class Program {
     private static void SankeySourcePaintContracts() {
         const string source = "%%{init: {\"sankey\":{\"linkColor\":\"gradient\",\"labelStyle\":\"outlined\",\"nodeColors\":{\"A].[B\":\"#2864B4\",\"Ready 東京\":\"#BB6428\"}}}}%%\nsankey-beta\nA].[B,Ready 東京,7";
         var options = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject };
-        var rendered = MermaidRenderer.Render(source, options); var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var rendered = RenderFixture(source, options); var fenced = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!rendered.HasErrors && rendered.Artifact != null && rendered.Diagnostics.Count == 0 && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed Sankey paint became a warning or fallback artifact.");
         var chart = (Chart)rendered.Artifact!.Model!;

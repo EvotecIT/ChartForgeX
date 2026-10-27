@@ -8,7 +8,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void MermaidArchitectureAlignmentContracts() {
         const string source = "architecture-beta\nalign row a b\ngroup outer[Outer]\ngroup inner[Inner] in outer\nservice c[C] in outer\nservice b[B] in inner\nservice a[A] in inner\nalign column b c";
-        var direct = MermaidRenderer.Render(source);
+        var direct = RenderFixture(source);
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null, "Packed ordered architecture source was rejected.");
         var artifact = direct.Artifact ?? throw new InvalidOperationException("Packed aligned architecture artifact was omitted.");
         var document = direct.Document as MermaidArchitectureDocument ?? throw new InvalidOperationException("Packed aligned architecture AST was omitted.");
@@ -25,7 +25,7 @@ internal static partial class Program {
             && restored.Alignments[0].NodeIds.SequenceEqual(new[] { "a", "b" }), "Packed typed import lost alignment semantics.");
         var after = restored.ToVisualArtifact().ToInterchangeEnvelope(); PackageAssertions.Require(saved.Nodes.Select(node => (node.Id, node.X, node.Y)).SequenceEqual(after.Nodes.Select(node => (node.Id, node.X, node.Y))),
             "Packed aligned Manual import moved saved scene coordinates.");
-        var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fence = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fence.HasErrors && fence.Artifacts.Count == 1 && fence.Artifacts[0].ToSvg() == artifact.ToSvg(), "Packed aligned fence did not use the native scene owner.");
         PackageAssertions.Png(artifact.ToPng());
         var native = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered).AddAutoNode("first", "First").AddAutoNode("second", "Second");

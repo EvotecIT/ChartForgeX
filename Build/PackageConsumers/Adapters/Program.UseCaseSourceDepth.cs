@@ -15,7 +15,7 @@ internal static partial class Program {
         var options = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,
             UseCase = new MermaidFlowchartRenderOptions { Width = 390, Height = 620,
                 Presentation = new MermaidPresentationOptions { TopologySizing = MermaidTopologySizing.FixedViewport } } };
-        var direct = MermaidRenderer.Render(source, options); var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source, options); var fence = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null && !fence.HasErrors && fence.Artifacts.Count == 1,
             "Packed UseCase notes/stereotypes/association settings did not lower to one native model.");
         var chart = (TopologyChart)direct.Artifact!.Model!; var edge = chart.Edges.Single(item => item.Id == "request");

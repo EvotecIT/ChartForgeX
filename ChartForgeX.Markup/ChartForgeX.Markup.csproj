@@ -41,6 +41,6 @@
 
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" />
-    <None Include="Schemas\chartforgex-markup-v1.schema.json" Pack="true" PackagePath="schemas\" />
+    <None Include="Schemas\chartforgex-markup-v1.schema.json" Pack="true" PackagePath="schemas" />
   </ItemGroup>
 </Project>

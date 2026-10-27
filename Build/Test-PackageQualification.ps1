@@ -43,6 +43,14 @@ try {
         Copy-Item -LiteralPath (Join-Path $sourceRoot "$lane/${lane}PackageProbe.csproj") -Destination $destination
         Get-ChildItem -LiteralPath (Join-Path $sourceRoot $lane) -Filter '*.cs' -File | Copy-Item -Destination $destination
         Get-ChildItem -LiteralPath (Join-Path $sourceRoot $lane) -Filter '*.mmd' -File | Copy-Item -Destination $destination
+        if ($lane -in @('Core', 'Adapters')) {
+            # Native contour/portable probes declare their existing redistributable font inputs.
+            $fonts = Join-Path $laneRoot 'Fonts'
+            New-Item -ItemType Directory -Path $fonts | Out-Null
+            foreach ($name in @('Carlito-Regular.ttf', 'Carlito-Bold.ttf', 'OFL.txt')) {
+                Copy-Item -LiteralPath (Join-Path $repositoryRoot "ChartForgeX.Examples/Fixtures/Fonts/Carlito/$name") -Destination $fonts
+            }
+        }
         $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
         foreach ($package in $contract.Packages.Items) {
             Copy-Item -LiteralPath (Join-Path $packageRootResolved "$($package.Id).$($metadata.Version).nupkg") -Destination $feed

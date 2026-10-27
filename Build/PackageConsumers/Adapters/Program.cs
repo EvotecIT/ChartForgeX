@@ -132,13 +132,13 @@ internal static partial class Program {
         var mermaid = new MermaidParser().ParseFlowchart("---\nconfig:\n  theme: dark\n---\nflowchart LR\n  a[Start] --> b[Done]");
         if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");
         if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
-        var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid" });
+        var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid", Presentation = FixtureOptions().Presentation });
         if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
         PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark
             && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Background.Equals(ChartColor.FromHex("#333333"))
             && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Foreground.Equals(ChartColor.FromHex("#CCCCCC")),
             "Packed Mermaid conversion lost its native dark source preset.");
-        var hostTheme = VisualTheme.Graphite();
+        var hostTheme = VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily);
         var hostArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions {
             Presentation = new MermaidPresentationOptions { Theme = hostTheme, ThemeMode = VisualThemeMode.Dark }
         });
@@ -146,10 +146,10 @@ internal static partial class Program {
             && hostTopology.Theme.ToJson() == hostTheme.ToJson(), "Packed Mermaid conversion did not preserve an explicit paired host theme.");
         var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
         if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");
-        if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
+        if (mermaidClass.Document.ToVisualArtifact(new MermaidTopologyRenderOptions { Presentation = FixtureOptions().Presentation }).Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
         var markupMermaid = new MermaidVisualMarkupParser().Parse("~~~mermaid {#package-flow}\nflowchart LR\n  a --> b\n~~~");
         if (markupMermaid.HasErrors || markupMermaid.Artifacts.Count != 1 || markupMermaid.Artifacts[0].Id != "package-flow") throw new InvalidOperationException("Mermaid markup package parser failed.");
-        var useCase = MermaidRenderer.Render("usecase-beta\nactor User\nUser --> Action(Do work)", new MermaidRenderOptions());
+        var useCase = RenderFixture("usecase-beta\nactor User\nUser --> Action(Do work)", new MermaidRenderOptions());
         if (useCase.HasErrors || useCase.Artifact is null) throw new InvalidOperationException("Mermaid source package renderer failed.");
         if (!useCase.Artifact.ToSvg().Contains("data-node-shape=\"Actor\"", StringComparison.Ordinal) || useCase.Artifact.ToPng().Length <= 64) throw new InvalidOperationException("Mermaid source package SVG/PNG output failed.");
         var useCaseJson = useCase.Artifact.ToInterchangeJson();
@@ -158,7 +158,7 @@ internal static partial class Program {
         var treemapChart = treemap.Document.ToChart();
         if (treemapChart.Series[0].HierarchyItems[1].Value != 1234.5 || !treemapChart.ToSvg().Contains("data-cfx-role=\"treemap-label\"", StringComparison.Ordinal)) throw new InvalidOperationException("Packed treemap values or native captions were lost.");
         PackageAssertions.Png(treemapChart.ToPng());
-        var hiddenTreemap = MermaidRenderer.Render("---\nconfig:\n  treemap:\n    showValues: false\n---\ntreemap-beta\n\"Storage\"\n  \"Documents\": 7\n  \"Media\": 3\n");
+        var hiddenTreemap = RenderFixture("---\nconfig:\n  treemap:\n    showValues: false\n---\ntreemap-beta\n\"Storage\"\n  \"Documents\": 7\n  \"Media\": 3\n");
         if (hiddenTreemap.HasErrors || hiddenTreemap.Artifact?.Model is not ChartForgeX.Core.Chart hiddenChart || hiddenChart.Options.Treemap.ShowValues) throw new InvalidOperationException("Packed treemap source visibility was lost.");
         var hostTreemap = new MermaidParser().ParseTreemap(hiddenTreemap.Document!.SourceText).Document!.ToChart(new MermaidTreemapRenderOptions { ShowValues = true });
         if (!hostTreemap.Options.Treemap.ShowValues || hostTreemap.Series[0].HierarchyItems[1].Value != 7) throw new InvalidOperationException("Packed treemap host visibility or semantic values were lost.");
@@ -174,7 +174,7 @@ internal static partial class Program {
         PackageAssertions.Png(packetBlock.ToPng());
         PackageAssertions.Require(packetBlock.BitWidth == 24 && packetBlock.RowHeight == 40 && packetBlock.FieldGap == 3 && packetBlock.RowGap == 7,
             "Packet geometry settings did not reach the native package model.");
-        var packetMarkup = new MermaidVisualMarkupParser(new MermaidRenderOptions {
+        var packetMarkup = CreateFixtureParser(new MermaidRenderOptions {
             Packet = new MermaidPacketRenderOptions { ShowBitNumbers = true, RowHeight = 28, FieldGap = 0, RowGap = 0 }
         }).Parse("```mermaid\n" + packetSource + "\n```");
         PackageAssertions.Require(!packetMarkup.HasErrors && packetMarkup.Artifacts.Count == 1 &&
@@ -200,7 +200,7 @@ internal static partial class Program {
 
     private static void MermaidSourceDiagnostics() {
         const string flow = "flowchart LR\nclassDef default fill:#dbeafe\nclassDef color,box color:#7c2d12\nA:::color --> B:::box";
-        var rendered = MermaidRenderer.Render(flow);
+        var rendered = RenderFixture(flow);
         PackageAssertions.Require(!rendered.HasErrors && rendered.Diagnostics.Count == 0 && rendered.Artifact != null,
             "Packed flowchart classes no longer reach the native renderer.");
         var artifact = rendered.Artifact ?? throw new InvalidOperationException("Packed flowchart did not produce an artifact.");
@@ -209,13 +209,13 @@ internal static partial class Program {
         PackageAssertions.Require(topology.Nodes.All(node => node.BackgroundColor == "#dbeafe"),
             "Packed default Mermaid classes did not apply to every node.");
         PackageAssertions.Png(artifact.ToPng());
-        var invalid = MermaidRenderer.Render("gitGraph\ncommit type: BAD");
+        var invalid = RenderFixture("gitGraph\ncommit type: BAD");
         PackageAssertions.Require(invalid.HasErrors && invalid.Artifact == null
             && invalid.Diagnostics.All(item => item.Code == MermaidDiagnosticCodes.InvalidStatement),
             "Packed GitGraph accepted an invalid commit type without its stable error code.");
         const string journeySource = "journey\nsection Work\nTask: 4: User";
-        var journey = MermaidRenderer.Render(journeySource, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
-        var fencedJourney = new MermaidVisualMarkupParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject })
+        var journey = RenderFixture(journeySource, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
+        var fencedJourney = CreateFixtureParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject })
             .Parse("Intro\n\n```mermaid\n" + journeySource + "\n```");
         PackageAssertions.Require(!journey.HasErrors && journey.Diagnostics.Count == 0 && journey.Artifact?.Model is JourneyDiagramBlock nativeJourney
             && nativeJourney.Tasks.Count == 1 && nativeJourney.Tasks[0].Score == 4 && nativeJourney.Tasks[0].Actors.SequenceEqual(new[] { "User" })
@@ -339,9 +339,9 @@ internal static partial class Program {
         PackageAssertions.Require(chart.Series[0].Color?.Equals(ChartColor.FromHex("#2563EB")) == true
             && chart.Series[0].Radar.OutlineStroke!.Width == 0 && chart.Options.PolarAxisStroke!.Width == 3,
             "Packed radar theme settings did not reach native owners.");
-        var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var markup = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!markup.HasErrors && markup.Artifacts.Count == 1
-            && markup.Artifacts[0].ToSvg() == parsed.Document!.ToVisualArtifact().ToSvg(), "Packed radar fence changed source paint.");
+            && markup.Artifacts[0].ToSvg() == parsed.Document!.ToVisualArtifact(new MermaidRadarRenderOptions { Presentation = FixtureOptions().Presentation }).ToSvg(), "Packed radar fence changed source paint.");
         PackageAssertions.Png(markup.Artifacts[0].ToPng());
     }
 }

@@ -14,8 +14,8 @@ internal static partial class Program {
             ?? throw new InvalidOperationException("Packed adapter probe omitted its shared Quadrant source fixture.");
         using var reader = new StreamReader(stream);
         var source = reader.ReadToEnd();
-        var direct = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
-        var fenced = new MermaidVisualMarkupParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject }).Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
+        var fenced = CreateFixtureParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject }).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null
             && !fenced.HasErrors && fenced.Artifacts.Count == 1, "Packed direct/fenced Quadrant source mapping was rejected.");
         var artifact = direct.Artifact ?? throw new InvalidOperationException("Packed Quadrant source omitted its native artifact.");

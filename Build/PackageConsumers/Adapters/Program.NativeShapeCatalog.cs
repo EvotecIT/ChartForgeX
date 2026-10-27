@@ -10,7 +10,7 @@ internal static partial class Program {
     private static void NativeShapeCatalogContracts() {
         foreach(var name in Enum.GetNames(typeof(TopologyNodeShape))) {
             var shape=(TopologyNodeShape)Enum.Parse(typeof(TopologyNodeShape),name);if((int)shape<27)continue;
-            var chart=TopologyChart.Create().WithTitle("").WithViewport(380,230,12).WithLegend(null);
+            var chart=TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).WithTitle("").WithViewport(380,230,12).WithLegend(null);
             chart.Nodes.Add(new TopologyNode {Id="node",Label="Native caption",X=30,Y=25,Width=180,Height=110,Shape=shape,ShowStatusBadge=false,PreserveDisplayModeSize=true});
             var artifact=chart.ToVisualArtifact();var facts=artifact.ToInterchangeEnvelope();
             PackageAssertions.Require(facts.Version==2&&facts.Nodes.Single().Topology!.Shape==shape,"Packed native surface identity/version was lost: "+name);
@@ -20,7 +20,7 @@ internal static partial class Program {
         foreach(var item in new[]{("bang","ScallopedBurst"),("h-cyl","HorizontalCylinder"),("datastore","DataStore"),("person","Person"),
             ("text","TextBlock"),("brace","BraceLeft"),("docs","StackedDocument"),("browser","Browser"),("fork","SynchronizationBar")}) {
             var source="flowchart LR\nnode@{ shape: "+item.Item1+", label: \"Native caption\" }";
-            var direct=MermaidRenderer.Render(source);var fenced=new MermaidVisualMarkupParser().Parse("```mermaid\n"+source+"\n```");
+            var direct=RenderFixture(source);var fenced=CreateFixtureParser().Parse("```mermaid\n"+source+"\n```");
             PackageAssertions.Require(!direct.HasErrors&&direct.Diagnostics.Count==0&&direct.Artifact!=null&&!fenced.HasErrors&&fenced.Artifacts.Count==1,"Packed Flowchart surface was rejected: "+item.Item1);
             var chart=(TopologyChart)direct.Artifact!.Model!;
             PackageAssertions.Require(chart.Nodes.Single().Shape.ToString()==item.Item2,"Packed Flowchart surface used a fallback: "+item.Item1);

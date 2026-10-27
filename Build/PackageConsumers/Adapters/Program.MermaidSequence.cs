@@ -17,7 +17,7 @@ internal static partial class Program {
             Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.Dark, FontSize = 15 },
             Sequence = new MermaidSequenceRenderOptions { Title = "Packed lifecycle" }
         };
-        var rendered = MermaidRenderer.Render(source, options);
+        var rendered = RenderFixture(source, options);
         PackageAssertions.Require(!rendered.HasErrors && rendered.Diagnostics.Count == 0 && rendered.Artifact != null,
             "Packed sequence lifecycle did not produce exact native output.");
         var artifact = rendered.Artifact ?? throw new InvalidOperationException("Packed sequence lifecycle omitted its artifact.");
@@ -42,14 +42,14 @@ internal static partial class Program {
             && Math.Abs(double.Parse((string)workerLine.Attribute("y2")!, CultureInfo.InvariantCulture) - footer.Bounds.Top) < .001,
             "Packed mirrored sequence did not end the worker lifeline at its destruction footer before the surviving participant.");
         PackageAssertions.Png(artifact.ToPng());
-        var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var fenced = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,
             "Packed Markdown bridge did not retain the exact sequence lifecycle.");
         PackageAssertions.Png(fenced.Artifacts[0].ToPng());
 
         const string invalid = "sequenceDiagram\nautonumber nope\nA->>B: Invalid number";
-        var invalidDirect = MermaidRenderer.Render(invalid);
-        var invalidFence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + invalid + "\n```");
+        var invalidDirect = RenderFixture(invalid);
+        var invalidFence = CreateFixtureParser().Parse("```mermaid\n" + invalid + "\n```");
         PackageAssertions.Require(invalidDirect.HasErrors && invalidDirect.Artifact == null
             && invalidDirect.Diagnostics.Any(item => item.Code == MermaidDiagnosticCodes.InvalidStatement)
             && invalidFence.HasErrors && invalidFence.Artifacts.Count == 0,
@@ -60,8 +60,8 @@ internal static partial class Program {
         var bounded = new MermaidRenderOptions {
             ParseOptions = new MermaidParseOptions { ResourceLimits = new MermaidResourceLimits { MaximumSourceCharacters = 16 } }
         };
-        var limitedDirect = MermaidRenderer.Render(source, bounded);
-        var limitedFence = new MermaidVisualMarkupParser(bounded).Parse("```mermaid\n" + source + "\n```");
+        var limitedDirect = RenderFixture(source, bounded);
+        var limitedFence = CreateFixtureParser(bounded).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(limitedDirect.HasErrors && limitedDirect.Artifact == null
             && limitedDirect.Diagnostics.Any(item => item.Code == MermaidDiagnosticCodes.ResourceLimitExceeded)
             && limitedFence.HasErrors && limitedFence.Artifacts.Count == 0,

@@ -9,6 +9,7 @@ internal static partial class Program {
         var parsed = new MermaidParser().Parse(source);
         PackageAssertions.Require(!parsed.HasErrors && parsed.Diagnostics.Count == 0, "Packed Cynefin source fonts were not consumed.");
         var chart = ((MermaidCynefinDocument)parsed.Document!).ToTopologyChart();
+        chart.Theme = chart.Theme.WithFontFamily(PackageAssertions.OutlineFontFamily);
         var artifact = chart.ToVisualArtifact(); var saved = artifact.ToInterchangeEnvelope();
         var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();
         PackageAssertions.Require(saved.Version == 2 && restored.PathDecorations.Count == 8, "Packed Cynefin paths were not restored.");

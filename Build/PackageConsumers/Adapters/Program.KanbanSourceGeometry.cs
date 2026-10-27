@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void KanbanSourceGeometryContracts() {
         const string source = "---\nconfig:\n  kanban:\n    padding: 32\n    sectionWidth: 260\n---\nkanban\nqueue[Queue]\n  review[Review] @{assigned: 'Avery Quinn', priority: 'High', ticket: 'CFX-18'}\nempty[Empty]\n";
-        var result = MermaidRenderer.Render(source, new MermaidRenderOptions { Kanban = new MermaidTopologyRenderOptions { Width = 390, Height = 400 } });
+        var result = RenderFixture(source, new MermaidRenderOptions { Kanban = new MermaidTopologyRenderOptions { Width = 390, Height = 400 } });
         PackageAssertions.Require(!result.HasErrors && result.Artifact != null, "Packed Kanban source dimensions failed ordinary rendering.");
         var artifact = result.Artifact!;
         var chart = artifact.Model as TopologyChart ?? throw new InvalidOperationException("Packed Kanban omitted its native topology model.");

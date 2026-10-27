@@ -13,7 +13,7 @@ internal static partial class Program {
         var options = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,
             UseCase = new MermaidFlowchartRenderOptions { Width = 390, Height = 1160,
                 Presentation = new MermaidPresentationOptions { TopologySizing = MermaidTopologySizing.FixedViewport } } };
-        var direct = MermaidRenderer.Render(source, options); var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source, options); var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Diagnostics.Count == 0 && direct.Artifact != null && !fence.HasErrors && fence.Artifacts.Count == 1,
             "Packed finite actor source did not lower through direct and fence owners.");
         var chart = (TopologyChart)direct.Artifact!.Model!; var captured = chart.Prepare(); var svg = captured.ToSvg(); var png = captured.ToPng();
