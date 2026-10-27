@@ -4,7 +4,7 @@ This is the active product roadmap. The [README](README.md) introduces the libra
 
 ## Current position
 
-Assessment refreshed on 20 October 2026. The shared native renderer and package separation are implemented. The unified authoring contracts use the coordinated 3.0.0 package family. Source acceptance, public package availability and installed-host qualification remain separate gates.
+Assessment refreshed on 27 October 2026. The shared native renderer and package separation are implemented. The unified authoring contracts share one coordinated package family. Source acceptance, public package availability and installed-host qualification remain separate gates.
 
 Calendar and Gantt correctness work preserves measured caption gaps, authored tick ceilings, regular calendar grids and culture-neutral compact dates. Cartesian stack totals and outside bar captions use separate lanes from axis captions, including lower value edges under reversal. The remaining narrow-axis cases are tracked below.
 

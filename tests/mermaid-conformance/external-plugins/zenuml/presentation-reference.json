@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "reference": "mermaid-zenuml-1.0.1",
+  "method": "external-plugin-browser-render",
+  "observedUtc": "2026-10-27T00:05:48.203290+00:00",
+  "package": {
+    "name": "@mermaid-js/mermaid-zenuml",
+    "version": "1.0.1",
+    "license": "MIT",
+    "integrity": "sha512-O5DiRODoFVNgugOVloxcDXmd+bXe/sbGlDh3onnzuE4EWtgTWwaAlWuPPOXbU9QESsztnD4Gtnu7dr+tYLFE0A==",
+    "archiveSha256": "ba11f6923af6cbb73d0048d18d4ce30ff748057e43c9e8641b7b5e051f26fe3a",
+    "standaloneEntrySha256": "1ff708cc8e31658d528903621f045f0983975d11a118cc5bc04956ab126e5450"
+  },
+  "runtime": {
+    "mermaid": "12.2.0",
+    "plugin": "1.0.1",
+    "browser": "Chromium153.0.8010.12",
+    "testOnly": true,
+    "parseIsSemanticEvidence": false
+  },
+  "sourceBoundary": {
+    "head": "f5e1fac1c71661ca1e70128001f90c1d858fc8b7",
+    "trackedInputs": 20215,
+    "laterHeadOrBodyEqualityClaimed": false
+  },
+  "result": {
+    "observedPoses": 8,
+    "renderedOrderFixturePoses": 4,
+    "rejectedLiteralUnicodeFixturePoses": 4,
+    "aggregateBuildExitCode": 0,
+    "aggregateRenderExitCode": -6,
+    "acceptedWholeSuite": false,
+    "semanticQualificationComplete": false,
+    "observedRejection": "Pinned plugin reports no viable alternative at literal lock Unicode in Store participant declaration. Page/network/foreign-request errors are empty; parser console errors remain retained.",
+    "renderedOrderBoundary": "Reference/divider/call order, alias, Service stereotype, rocket shortcode and #336699 paint visible at four poses. Upstream also paints an extra participant-labelled box; authored participant width/pixel equivalence is not established.",
+    "rootPhysicallyViewed": [
+      "order640light",
+      "order1100dark"
+    ]
+  },
+  "artifacts": {
+    "executionReceiptSha256": "f6925d8e073719deccc9959e98b6919d49425681859a5a5ad4348329fcd06ed2",
+    "rowsSha256": "bca96333cab21268873c826134d28c034cf81a70ad99e88eb842d0fdbf3a6e96",
+    "coordinatorReceiptSha256": "4682503970b2effa5d54aff731bb175295d55aaba4f0a7b16c069dcf342ca64a"
+  },
+  "fixtures": [
+    {
+      "source": "external-plugins/zenuml/zenuml-native-presentation.mmd",
+      "sourceSha256": "7202fe63fa3b9fea3c298bf5289de2ca73647be283a8f250c842e9537102992c",
+      "observations": [
+        {
+          "width": 640,
+          "dark": false,
+          "rendered": false,
+          "errorRetained": true
+        },
+        {
+          "width": 640,
+          "dark": true,
+          "rendered": false,
+          "errorRetained": true
+        },
+        {
+          "width": 1100,
+          "dark": false,
+          "rendered": false,
+          "errorRetained": true
+        },
+        {
+          "width": 1100,
+          "dark": true,
+          "rendered": false,
+          "errorRetained": true
+        }
+      ]
+    },
+    {
+      "source": "external-plugins/zenuml/zenuml-native-presentation-order.mmd",
+      "sourceSha256": "97cd445597e754f80db191120deccbf8914c628d80043e2f23b8a11ed0d23060",
+      "observations": [
+        {
+          "width": 640,
+          "dark": false,
+          "rendered": true,
+          "errorRetained": false
+        },
+        {
+          "width": 640,
+          "dark": true,
+          "rendered": true,
+          "errorRetained": false
+        },
+        {
+          "width": 1100,
+          "dark": false,
+          "rendered": true,
+          "errorRetained": false
+        },
+        {
+          "width": 1100,
+          "dark": true,
+          "rendered": true,
+          "errorRetained": false
+        }
+      ]
+    }
+  ]
+}

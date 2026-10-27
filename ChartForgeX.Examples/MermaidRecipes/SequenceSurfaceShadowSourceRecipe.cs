@@ -19,4 +19,15 @@ public static class SequenceSurfaceShadowSourceRecipe {
         }
         return result;
     }
+    /// <summary>Captures native filter output in the completed convenience frame, preserving authored participant widths and padding.</summary>
+    public static ChartForgeX.Rendering.PreparedVisual PrepareCapture(MermaidRenderResult result) {
+        if (result.Artifact?.Model is not SequenceArtifact model) throw new ArgumentException("A native sequence result is required.", nameof(result));
+        var frame = System.Xml.Linq.XElement.Parse(result.Artifact.ToSvg()).Attribute("viewBox")?.Value
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? throw new InvalidOperationException("Native SVG has no completed frame.");
+        var size = new ChartForgeX.Rendering.VisualSize(double.Parse(frame[2], System.Globalization.CultureInfo.InvariantCulture),
+            double.Parse(frame[3], System.Globalization.CultureInfo.InvariantCulture));
+        var padding = model.Layout?.CanvasPadding ?? ChartForgeX.Primitives.ChartPadding.All(model.Padding);
+        return model.Prepare(new ChartForgeX.Rendering.VisualRenderContext(new ChartForgeX.Rendering.VisualLayoutOptions(size, padding),
+            model.Theme, model.ThemeMode, frame: new ChartForgeX.Rendering.VisualFrame(showLegend: false)));
+    }
 }

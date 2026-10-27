@@ -127,7 +127,15 @@
         "reference targets and span over API and Store after the nested call returns",
         "divider and following message preserve source order",
         "compact and wide light and dark rendering retains complete text and scrollable paint"
-      ]
+      ],
+      "observation": {
+        "status": "source-rejected",
+        "method": "external-plugin-browser-render",
+        "sourceSha256": "7202fe63fa3b9fea3c298bf5289de2ca73647be283a8f250c842e9537102992c",
+        "packageVersion": "1.0.1",
+        "path": "external-plugins/zenuml/presentation-reference.json",
+        "semanticQualificationComplete": false
+      }
     },
     "external-plugins/zenuml/zenuml-native-presentation-order.mmd": {
       "reference": "mermaid-zenuml-1.0.1",
@@ -163,7 +171,15 @@
         "divider and outside reference follow the call return in source order",
         "following message stays after the outside reference",
         "compact and wide light and dark rendering retains complete text and scrollable paint"
-      ]
+      ],
+      "observation": {
+        "status": "rendered-with-reference-differences",
+        "method": "external-plugin-browser-render",
+        "sourceSha256": "97cd445597e754f80db191120deccbf8914c628d80043e2f23b8a11ed0d23060",
+        "packageVersion": "1.0.1",
+        "path": "external-plugins/zenuml/presentation-reference.json",
+        "semanticQualificationComplete": false
+      }
     }
   }
 }
