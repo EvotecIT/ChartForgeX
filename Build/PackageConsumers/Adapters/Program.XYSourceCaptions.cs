@@ -11,7 +11,7 @@ internal static partial class Program {
         using var stream = typeof(Program).Assembly.GetManifestResourceStream("XYSourceDepth.mmd")
             ?? throw new InvalidOperationException("Packed adapter probe omitted its shared XY source fixture.");
         using var reader = new StreamReader(stream);
-        var source = reader.ReadToEnd().Replace("xychart-beta\n", "xychart-beta horizontal\n", StringComparison.Ordinal);
+        var source = reader.ReadToEnd().Replace("xychart-beta", "xychart-beta horizontal", StringComparison.Ordinal);
         var request = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,
             XYChart = new MermaidXYChartRenderOptions { Width = 390, Height = 520 } };
         var rendered = RenderFixture(source, request);
