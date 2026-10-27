@@ -28,6 +28,11 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
         Assert.Equal(svg, before.ToSvg()); Assert.Equal(png, before.ToPng());
         Assert.Equal(svg, before.ToSvg(new VisualSvgOptions().WithTextPresentation(VisualSvgTextPresentation.Browser)));
         Assert.Contains(pixels.Pixels.Chunk(4), pixel => pixel[3] > 0);
+        Assert.Equal(text, image.Parent!.Parent!.Attribute("data-cfx-caption")?.Value);
+        var painted = Enumerable.Range(0, pixels.Width * pixels.Height).Where(index => pixels.Pixels[index * 4 + 3] != 0).ToArray();
+        var left = painted.Min(index => index % pixels.Width); var top = painted.Min(index => index / pixels.Width);
+        var right = painted.Max(index => index % pixels.Width) + 1; var bottom = painted.Max(index => index / pixels.Width) + 1;
+        Assert.Equal($"{left} {top} {right-left} {bottom-top} {pixels.Width} {pixels.Height}", image.Attribute("data-cfx-image-alpha-bounds")?.Value);
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void OverlappingMultilineInkAndItsSingleStrokeMaskRetainNativeComposition(bool stroke) {

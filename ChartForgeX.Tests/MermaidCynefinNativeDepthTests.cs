@@ -11,7 +11,7 @@ public sealed class MermaidCynefinNativeDepthTests {
 
     [Fact]
     public void OrganicSceneKeepsAllDomainItemsAndTheNativeWidthFloor() {
-        var result = MermaidRenderer.Render(Body);
+        var result = MermaidRenderer.Render(Body, BrowserProofFonts.MermaidOptions());
         Assert.Empty(result.Diagnostics);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         Assert.Equal(5, chart.Nodes.Count); Assert.Single(chart.Edges); Assert.Equal(8, chart.PathDecorations.Count);
@@ -23,7 +23,7 @@ public sealed class MermaidCynefinNativeDepthTests {
         Assert.Contains("Discover demand", svg); Assert.Contains("Disorder", svg); Assert.DoesNotContain("<script", svg);
         Assert.NotEmpty(result.Artifact.ToPng());
         Assert.Equal(8, result.Artifact.ToInterchangeEnvelope().Topology!.PathDecorations.Count);
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + Body + "```\n");
+        var fenced = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("```mermaid\n" + Body + "```\n");
         Assert.False(fenced.HasErrors);
         Assert.Equal(svg, Assert.Single(fenced.Artifacts).ToSvg());
     }

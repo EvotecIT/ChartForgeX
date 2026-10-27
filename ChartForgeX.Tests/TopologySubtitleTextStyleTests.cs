@@ -33,7 +33,7 @@ public sealed class TopologySubtitleTextStyleTests {
     }
 
     [Fact]
-    public void NullAndClearedSubtitleRoleKeepOrdinarySvgPngAndVersionOneBytes() {
+    public void NullAndClearedSubtitleRoleKeepOrdinarySvgPngAndCapturedWireVersion() {
         var chart = Source(); chart.Nodes[0].TextStyle=null; var original = chart.Prepare();
         var svg = original.ToSvg(); var png = original.ToPng(); var json = original.ToInterchangeEnvelope().ToJson();
         chart.Nodes[0].SubtitleTextStyle = new TextStyleOverride { FontSize = 25, Color = ChartColor.FromHex("#123456") };
@@ -41,12 +41,12 @@ public sealed class TopologySubtitleTextStyleTests {
         chart.Nodes[0].SubtitleTextStyle = null;
         var cleared = chart.Prepare();
         Assert.Equal(svg, cleared.ToSvg()); Assert.Equal(png, cleared.ToPng()); Assert.Equal(json, cleared.ToInterchangeEnvelope().ToJson());
-        Assert.Equal(1, cleared.ToInterchangeEnvelope().Version);
+        Assert.Equal(original.ToInterchangeEnvelope().Version, cleared.ToInterchangeEnvelope().Version);
         Assert.Equal(25, frozen.ToInterchangeEnvelope().Nodes[0].Topology!.SubtitleTextStyle!.FontSize);
     }
 
     private static TopologyChart Source() {
-        var chart = TopologyChart.Create().WithId("subtitle-role").WithViewport(760, 480, 24).WithLegend(null)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("subtitle-role").WithViewport(760, 480, 24).WithLegend(null)
             .AddNode("service", "Service", 40, 60, width: 560, height: 300);
         chart.Nodes[0].Subtitle = "Resilient service"; chart.Nodes[0].ShowStatusBadge = false;
         chart.Nodes[0].PreserveDisplayModeSize = true;

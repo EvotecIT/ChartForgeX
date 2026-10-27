@@ -69,7 +69,7 @@ public sealed class MermaidUseCaseAdvancedActorTests {
     [InlineData("fa:user")] [InlineData(" ")]
     public void UnknownExactIconRetainsLocatedSourceFactsAndFrameWithoutGuessedGlyphAndCannotBypassRejectPolicy(string iconId) {
         var source = "usecase-beta\nactor A @{icon:'" + iconId + "'} <<system>>";
-        var result = MermaidRenderer.Render(source); Assert.False(result.HasErrors);
+        var result = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); Assert.False(result.HasErrors);
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement && item.Span.Line == 2 && item.Span.Column > 1);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Assert.Equal(iconId, chart.Nodes[0].IconId); Assert.Null(chart.Nodes[0].IconShape);
         Assert.Equal(TopologyNodeShape.ActorIcon, chart.Nodes[0].Shape);

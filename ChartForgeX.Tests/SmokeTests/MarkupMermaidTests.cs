@@ -222,11 +222,13 @@ participant P10";
         if (wideArtifact.Model is not SequenceArtifact wideSequence)
             throw new InvalidOperationException("A wide Mermaid sequence artifact must retain its native SequenceArtifact model.");
         var sourcePadding = wideSequence.Layout?.CanvasPadding ?? ChartForgeX.Primitives.ChartPadding.All(wideSequence.Padding);
-        var prepared = wideSequence.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(resolvedWidth, resolvedHeight),sourcePadding),
+        // Serialized SVG dimensions are rounded; ceil them before supplying a strict explicit viewport.
+        var strictWidth = Math.Ceiling(resolvedWidth); var strictHeight = Math.Ceiling(resolvedHeight);
+        var prepared = wideSequence.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(strictWidth, strictHeight),sourcePadding),
             wideSequence.Theme,wideSequence.ThemeMode,frame: new VisualFrame(showLegend: false)));
         var preparedEnvelope = prepared.ToArtifact("wide-sequence", VisualArtifactKind.Sequence).ToInterchangeEnvelope();
-        Assert(resolvedWidth > 320 && preparedEnvelope.Width == resolvedWidth && preparedEnvelope.Height == resolvedHeight,
-            "Explicitly prepared Mermaid sequence handoff should retain the measured viewport used by static exports.");
+        Assert(resolvedWidth > 320 && preparedEnvelope.Width == strictWidth && preparedEnvelope.Height == strictHeight,
+            "Explicitly prepared Mermaid sequence handoff should retain its integral viewport enclosing the measured static export.");
     }
 
     private static void MermaidVisualMarkupParserMapsPieFencesToArtifacts() {

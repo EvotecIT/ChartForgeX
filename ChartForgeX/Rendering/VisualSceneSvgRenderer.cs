@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using ChartForgeX.Primitives;
@@ -242,16 +243,21 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options, PngTextResources? pngText, bool capturePngText, VisualSvgFontResources? fonts, NativeLineInkResources? textImages) {
         var prepared = node.Text; var style = prepared.Style;
-        writer.StartElement("g"); Semantics(writer, node, prefix, index); writer.EndStartElement();
+        writer.StartElement("g"); Semantics(writer, node, prefix, index);
         if (textImages?.ForNode(node) is {} capturedImage) {
+            var caption = string.Join("\n", prepared.Lines.Select(line => line.Text));
+            writer.Attribute("aria-label", caption).Attribute("data-cfx-caption", caption).EndStartElement();
             writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
                 .Attribute("data-cfx-native-raster-text-ink", "true").EndStartElement();
             writer.StartElement("image").Attribute("x", capturedImage.Bounds.X).Attribute("y", capturedImage.Bounds.Y)
                 .Attribute("width", capturedImage.Bounds.Width).Attribute("height", capturedImage.Bounds.Height)
-                .Attribute("preserveAspectRatio", "none").Attribute("href", capturedImage.Uri).EndEmptyElement();
+                .Attribute("preserveAspectRatio", "none").Attribute("href", capturedImage.Uri);
+            WriteImageAlphaBounds(writer, capturedImage.Data.AlphaBounds, capturedImage.Data.Image.Width, capturedImage.Data.Image.Height);
+            writer.EndEmptyElement();
             writer.EndElement();
             writer.EndElement(); return;
         }
+        writer.EndStartElement();
         for (var i = 0; i < prepared.Lines.Count; i++) {
             var line = prepared.Lines[i];
             var delivered = fonts?.ForLine(node, i);

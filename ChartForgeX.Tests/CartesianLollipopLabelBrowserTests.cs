@@ -22,8 +22,9 @@ public sealed class CartesianLollipopLabelBrowserTests {
         var hover = await TooltipTextAsync(page);
         await page.Mouse.ClickAsync((float)(marker.X + marker.Width / 2), (float)(marker.Y + marker.Height / 2));
         var selected = await point.GetAttributeAsync("aria-selected");
+        await BrowserProofCaptions.InstallNativeAsync(page);
         var direction = await point.EvaluateAsync<JsonElement>("""
-            node=>{const stem=node.querySelector('[data-cfx-role="lollipop-stem"]'),label=node.ownerSVGElement.querySelector('[data-cfx-role="data-label"] text'),box=label.getBBox();
+            node=>{const stem=node.querySelector('[data-cfx-role="lollipop-stem"]'),label=node.ownerSVGElement.querySelector('[data-cfx-role="data-label"]'),box=window.cfxCaptionSvgBox(label);
               return {baseline:Number(stem.getAttribute('y1')),endpoint:Number(stem.getAttribute('y2')),labelTop:box.y,labelBottom:box.y+box.height,source:node.dataset.cfxValue};}
             """);
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

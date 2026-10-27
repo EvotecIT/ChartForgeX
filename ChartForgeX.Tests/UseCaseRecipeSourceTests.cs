@@ -14,6 +14,7 @@ public sealed class UseCaseRecipeSourceTests {
     [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
     public void NativeCoreAndParsedSourceRecipesExposeTheSameAuthoredGraphFactsThroughSeparatePublicConsumers(string variant, VisualThemeMode mode) {
         var native = UseCaseSourceDepthRecipe.Create(variant, mode);
+        native.WithTheme(native.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
         var source = UseCaseSourceDepthFixture.Read(variant == "compact");
         var parsed = new MermaidParser().ParseFlowchart(source).Document!.ToTopologyChart();
         Assert.Equal(parsed.Nodes.Select(node => (node.Id, node.Label, node.Subtitle, node.Shape, node.GroupId)),

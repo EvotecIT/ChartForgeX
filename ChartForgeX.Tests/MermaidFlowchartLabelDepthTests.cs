@@ -12,7 +12,7 @@ public sealed class MermaidFlowchartLabelDepthTests {
     public void MultilineAndMarkdownLabelsKeepContentLocationsAndNativeNodeRuns() {
         var source = File.ReadAllText(Fixture("flowchart-multiline-markdown.mmd"));
         using var expected = JsonDocument.Parse(File.ReadAllText(Fixture("flowchart-multiline-markdown.expected.json")));
-        var direct = MermaidRenderer.Render(source);
+        var direct = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions());
         Assert.False(direct.HasErrors);
         var document = Assert.IsType<MermaidFlowchartDocument>(direct.Document);
         Assert.Equal(new[] { 2, 3, 4, 5 }, document.Nodes.Select(node => node.Span.Line));
@@ -29,7 +29,7 @@ public sealed class MermaidFlowchartLabelDepthTests {
         Assert.Equal("`**Review** the\n*request*`", document.Nodes[0].Text);
         Assert.Contains(chart.Nodes[0].LabelContent.Runs, run => run.Text == "Review" && run.Emphasis == TextInlineEmphasis.Bold);
         Assert.Contains(chart.Nodes[0].LabelContent.Runs, run => run.Text == "request" && run.Emphasis == TextInlineEmphasis.Italic);
-        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\n" + source + "\n```");
+        var fenced = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("Intro\n\n```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
         Assert.Equal(direct.Diagnostics.Select(d => d.Span.Line + 3), fenced.Diagnostics.Select(d => d.Line));
         var artifact = Assert.Single(fenced.Artifacts);
@@ -74,7 +74,7 @@ public sealed class MermaidFlowchartLabelDepthTests {
         string declaration, string label, string code, int column, int length) {
         var source = "flowchart LR\n  A --> B\n" + declaration + "\n  A --> C";
         var parsed = new MermaidParser().Parse(source);
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions());
         foreach (var result in new[] { (parsed.Document, parsed.Diagnostics, parsed.HasErrors), (rendered.Document, rendered.Diagnostics, rendered.HasErrors) }) {
             Assert.False(result.HasErrors);
             var document = Assert.IsType<MermaidFlowchartDocument>(result.Document);
@@ -86,7 +86,7 @@ public sealed class MermaidFlowchartLabelDepthTests {
             Assert.Equal((3, column, length), (diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
         }
 
-        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\n" + source + "\n```");
+        var fenced = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("Intro\n\n```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
         Assert.Single(fenced.Artifacts);
         var mapped = Assert.Single(fenced.Diagnostics);
@@ -97,14 +97,14 @@ public sealed class MermaidFlowchartLabelDepthTests {
     [Fact]
     public void RepeatedMultilineMetadataLabelsUseTheFinalScalarLocationInDirectAndFencedDiagnostics() {
         const string source = "flowchart LR\nA[\"`**First**`\"] --> B\nA@{ label: \"`**Second**`\" }\nA[\"Old\ncaption\"]@{ label: \"`**Final**\ncaption`\" }\nA --> C";
-        var direct = MermaidRenderer.Render(source);
+        var direct = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions());
         Assert.False(direct.HasErrors);
         var node = Assert.IsType<MermaidFlowchartDocument>(direct.Document).Nodes.Single(item => item.Id == "A");
         Assert.Equal("`**Final**\ncaption`", node.Text);
         Assert.Equal(2, node.Span.Line);
         Assert.Empty(direct.Diagnostics);
         Assert.Equal("Final\ncaption", Assert.IsType<TopologyChart>(direct.Artifact!.Model).Nodes.Single(item => item.Id == "A").LabelContent.PlainText);
-        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n```mermaid\n" + source + "\n```");
+        var fenced = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("Intro\n```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
         Assert.Empty(fenced.Diagnostics);
         Assert.Equal(direct.Artifact!.ToSvg(), Assert.Single(fenced.Artifacts).ToSvg());
@@ -114,7 +114,7 @@ public sealed class MermaidFlowchartLabelDepthTests {
         var diagnostic = Assert.Single(located.Diagnostics);
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, diagnostic.Code);
         Assert.Equal((5, 20, 24), (diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
-        var locatedFence = new MermaidVisualMarkupParser().Parse("Intro\n```mermaid\n" + locatedSource + "\n```");
+        var locatedFence = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("Intro\n```mermaid\n" + locatedSource + "\n```");
         var mapped = Assert.Single(locatedFence.Diagnostics);
         Assert.Equal(diagnostic.Code, mapped.Code); Assert.Equal((7, 20), (mapped.Line, mapped.Column));
     }
@@ -122,11 +122,11 @@ public sealed class MermaidFlowchartLabelDepthTests {
     [Fact]
     public void TrailingErrorsAfterMultilineCaptionsKeepTheirPhysicalLineAndColumn() {
         const string source = "---\nconfig:\n  theme: dark\n---\nflowchart LR\nA[\"First\nsecond\"] --> B:::";
-        var direct = MermaidRenderer.Render(source);
+        var direct = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions());
         Assert.Null(direct.Artifact);
         var error = Assert.Single(direct.Diagnostics);
         Assert.Equal((7, 15, 3), (error.Span.Line, error.Span.Column, error.Span.Length));
-        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n```mermaid\n" + source + "\n```");
+        var fenced = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("Intro\n```mermaid\n" + source + "\n```");
         Assert.Empty(fenced.Artifacts);
         Assert.Equal(9, Assert.Single(fenced.Diagnostics).Line);
     }

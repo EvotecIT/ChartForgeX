@@ -42,7 +42,7 @@ public sealed class MermaidCynefinNativeDepthBrowserTests {
     public async Task SavedCynefinInkAndAuthoredFontPaintUseTheSameNativeSceneAtEachHostSize(int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
         var source = "%%{init: {'theme':'" + (dark ? "dark" : "default") + "','themeVariables':{'cynefin':{'domainFontSize':22,'itemFontSize':15,'labelColor':'#653412','textColor':'#123456'}}}}%%\n" + MermaidCynefinNativeDepthTests.Body;
-        var result = MermaidRenderer.Render(source); Assert.Empty(result.Diagnostics);
+        var result = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); Assert.Empty(result.Diagnostics);
         var saved = result.Artifact!.ToInterchangeEnvelope();
         var restored = VisualArtifactInterchangeEnvelope.FromUtf8Json(saved.ToUtf8Json()).ToTopologyChart().ToVisualArtifact();
         await using var session = await BrowserProofFonts.OpenAsync(restored.ToHtmlPage(), width, 800);

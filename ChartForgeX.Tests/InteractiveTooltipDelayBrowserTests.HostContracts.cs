@@ -54,14 +54,13 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await MountFragmentAsync(page, "closed");
         await RecordHostExpiryAsync(page);
         var selector = legend ? Legend(0) : "[data-cfx-label-for='series-0-point-0']";
+        await BrowserProofCaptions.InstallNativeAsync(page);
         var position = await page.EvaluateAsync<double[]>("""
-            selector => {
-                const node=window.hostedChart.querySelector(selector), text=node.querySelector('text'), tree=node.getRootNode();
-                for(let i=0;i<text.getNumberOfChars();i++) {
-                    const b=text.getExtentOfChar(i), p=new DOMPoint(b.x+b.width/2,b.y+b.height/2).matrixTransform(text.getScreenCTM());
-                    if(tree.elementFromPoint(p.x,p.y)?.closest(selector)===node) return [p.x,p.y];
-                }
-                throw new Error('Missing native caption or legend paint');
+            async selector => {
+                const node=window.hostedChart.querySelector(selector);
+                await window.cfxCaptionPrepareRaster(node);
+                const point=window.cfxCaptionPoint(node);
+                return [point.x,point.y];
             }
             """, selector);
         await page.Mouse.MoveAsync((float)position[0], (float)position[1]);

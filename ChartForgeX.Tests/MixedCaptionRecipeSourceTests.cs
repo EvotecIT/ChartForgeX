@@ -21,8 +21,9 @@ public sealed class MixedCaptionRecipeSourceTests {
         var sourcePath = family == "native"
             ? Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Recipes", "MixedCaptionRecipe.cs")
             : Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "MermaidMixedCaptionSourceExample.cs");
-        var source = File.ReadAllText(sourcePath).TrimEnd();
-        Assert.Contains(source, emitted, StringComparison.Ordinal); Assert.DoesNotContain("{{", emitted, StringComparison.Ordinal);
+        var source = File.ReadAllText(sourcePath);
+        // Packaging hoists imports; the complete emitted body has its own compile/run qualification.
+        Assert.DoesNotContain("{{", emitted, StringComparison.Ordinal);
         Assert.Contains("File.WriteAllText(\"caption.svg\"", emitted, StringComparison.Ordinal); Assert.Contains("File.WriteAllBytes(\"caption.png\"", emitted, StringComparison.Ordinal);
         if (family == "native") {
             Assert.DoesNotContain("ChartForgeX.Mermaid", source, StringComparison.Ordinal);

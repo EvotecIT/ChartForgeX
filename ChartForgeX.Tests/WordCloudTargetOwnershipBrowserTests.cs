@@ -28,7 +28,7 @@ public sealed partial class WordCloudTargetOwnershipBrowserTests {
                 window.wordRoot=document.querySelector('.cfx-interactive-chart');
                 window.wordController=ChartForgeXCharts.get(wordRoot);
                 window.wordTargets=wordController.resolveTargets();
-                window.wordNativeText=[...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] text')].map(node=>node.outerHTML);
+                window.wordNativeText=[...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] [data-cfx-native-text-ink], [data-cfx-role=word-cloud-term] text')].map(node=>node.outerHTML);
                 return wordTargets;
             }
             """);
@@ -50,7 +50,7 @@ public sealed partial class WordCloudTargetOwnershipBrowserTests {
         if (single) Assert.Equal(targets[1].GetProperty("targetId").GetString(), Assert.Single(selection).GetProperty("targetId").GetString());
         else Assert.Equal(targets.Select(target => target.GetProperty("targetId").GetString()),
             selection.Select(target => target.GetProperty("targetId").GetString()));
-        Assert.True(await page.EvaluateAsync<bool>("()=>JSON.stringify(wordNativeText)===JSON.stringify([...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] text')].map(node=>node.outerHTML))"));
+        Assert.True(await page.EvaluateAsync<bool>("()=>JSON.stringify(wordNativeText)===JSON.stringify([...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] [data-cfx-native-text-ink], [data-cfx-role=word-cloud-term] text')].map(node=>node.outerHTML))"));
         await page.EvaluateAsync("()=>wordController.clearSelection()");
         await AssertSelectionAsync(page, 0);
         AssertNoConsoleErrors(session);

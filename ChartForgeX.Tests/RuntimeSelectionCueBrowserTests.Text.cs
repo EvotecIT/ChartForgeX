@@ -30,28 +30,30 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         var target = page.Locator(selector).First;
         var id = await target.GetAttributeAsync("data-cfx-target-id");
         var kind = await target.GetAttributeAsync("data-cfx-target-kind");
-        var text = await target.Locator("text").First.EvaluateAsync<string>("node=>node.outerHTML");
-        Task<string> TextPaint() => target.Locator("text").First.EvaluateAsync<string>("""
-            node=>JSON.stringify({text:node.textContent,paint:['fill','fill-opacity','stroke','stroke-opacity','font-family','font-weight','opacity']
+        var text = await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("node=>node.outerHTML");
+        Task<string> TextPaint() => target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("""
+            node=>JSON.stringify({text:node.textContent,ink:[...node.querySelectorAll('image,use,path')].map(shape=>[shape.localName,shape.localName==='use'?null:shape.getAttribute('href'),shape.localName==='use'?[...node.ownerSVGElement.querySelectorAll('[id]')].find(glyph=>'#'+glyph.id===shape.getAttribute('href'))?.getAttribute('d'):shape.getAttribute('d')]),paint:['fill','fill-opacity','stroke','stroke-opacity','font-family','font-weight','opacity']
                 .map(key=>node.getAttribute(key))})
             """);
         var paint = await TextPaint();
         await page.EvaluateAsync("target=>cueController.select({targets:[target]})", new { targetKind = kind, targetId = id });
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===1");
         Assert.Equal(id, Assert.Single(await page.EvaluateAsync<string[]>("()=>cueController.getSelection().map(t=>t.targetId)")));
-        Assert.Equal(text, await target.Locator("text").First.EvaluateAsync<string>("node=>node.outerHTML"));
-        Assert.Equal(1, await page.Locator("[data-cfx-state-footprint]").CountAsync());
+        Assert.Equal(text, await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync<string>("node=>node.outerHTML"));
+        var raster = await target.Locator("[data-cfx-native-raster-text-ink] image[data-cfx-image-alpha-bounds]").CountAsync() > 0;
+        if (!raster) Assert.Equal(1, await page.Locator("[data-cfx-state-footprint]").CountAsync());
         var visible = PngReader.Decode(await page.Locator(".cfx-stage svg").ScreenshotAsync());
         await page.Locator("[data-cfx-state-outline]").EvaluateAsync("node=>node.style.visibility='hidden'");
         var hidden = PngReader.Decode(await page.Locator(".cfx-stage svg").ScreenshotAsync());
         Assert.True(ChangedPixels(visible, hidden) > 8);
         await page.Locator("[data-cfx-state-outline]").EvaluateAsync("node=>node.style.removeProperty('visibility')");
         var svg = await DownloadSvg(page);
-        Assert.Contains("data-cfx-state-footprint", svg, StringComparison.Ordinal);
+        Assert.Contains(raster ? "data-cfx-image-alpha-bounds" : "data-cfx-state-footprint", svg, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-state-outline", svg, StringComparison.Ordinal);
         await Capture(session, "selection-cue-text-" + annotation);
-        await target.Locator("text").First.EvaluateAsync("node=>{node.dataset.cueOldStyle=node.getAttribute('style')??'';node.style.opacity='0';}");
+        await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync("node=>{node.dataset.cueOldStyle=node.getAttribute('style')??'';node.style.opacity='0';}");
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===0");
-        await target.Locator("text").First.EvaluateAsync("node=>{const style=node.dataset.cueOldStyle;delete node.dataset.cueOldStyle;if(style)node.setAttribute('style',style);else node.removeAttribute('style');}");
+        await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync("node=>{const style=node.dataset.cueOldStyle;delete node.dataset.cueOldStyle;if(style)node.setAttribute('style',style);else node.removeAttribute('style');}");
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===1");
         await page.SetViewportSizeAsync(820, 680);
         // The resize commits a new native drawing asynchronously. Establish keyboard input

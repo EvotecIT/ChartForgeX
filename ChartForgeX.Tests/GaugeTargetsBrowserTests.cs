@@ -75,8 +75,8 @@ public sealed class GaugeTargetsBrowserTests {
         if (form == ChartGaugeForm.Linear && customFormatter) {
             var scale = page.Locator("[data-cfx-role='gauge-min-label'],[data-cfx-role='gauge-max-label'],[data-cfx-role^='gauge-tick-label-']:not([data-cfx-role$='-source'])");
             var expectedScale = new[] { 0d, 25, 50, 75, 100 }.Select(number => "Reading " + number.ToString("0.00", culture));
-            var scaleCaptions = await scale.AllTextContentsAsync();
-            Assert.InRange(scaleCaptions.Count, 2, 3);
+            var scaleCaptions = await BrowserProofCaptions.TextsAsync(scale);
+            Assert.InRange(scaleCaptions.Length, 2, 3);
             Assert.All(scaleCaptions, text => Assert.Contains(text, expectedScale));
             Assert.True(await scale.EvaluateAllAsync<bool>("""
                 nodes => {

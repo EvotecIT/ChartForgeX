@@ -10,7 +10,7 @@ public sealed class NativeTopologyDetailTypographyTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DetailOverridesUseNativeMeasuredTextAndDetachedClonesForOrdinaryAndFittedShapes(bool fitted) {
-        var chart = TopologyChart.Create().WithViewport(480, 280, 16).WithLegend(null)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(480, 280, 16).WithLegend(null)
             .AddNode("item", "Item", 40, 40, width: 320, height: 170);
         var node = chart.Nodes[0];
         node.Shape = TopologyNodeShape.Rectangle;
@@ -42,7 +42,7 @@ public sealed class NativeTopologyDetailTypographyTests {
 
     [Fact]
     public void AnEmptyDetailOverridePreservesTheDefaultSvgAndPngExactly() {
-        var chart = TopologyChart.Create().WithViewport(440, 240, 16).WithLegend(null)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(440, 240, 16).WithLegend(null)
             .AddNode("item", "Item", 40, 40, width: 280, height: 140)
             .AddNodeDetail("item", "Status", "Ready");
         var originalSvg = chart.ToSvg(); var originalPng = chart.ToPng();

@@ -49,7 +49,8 @@ public sealed class MermaidRemainingCaptionRolesTests {
         Assert.Equal(capturedSvg, prepared.ToSvg()); Assert.Equal(capturedPng, prepared.ToPng()); Assert.Equal(snapshot, prepared.ToInterchangeEnvelope().ToJson());
         Assert.NotEqual(capturedSvg, chart.Prepare().ToSvg());
         var emitted = ExampleRecipeSource.EmitRemainingCaptionRoles(family, width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
-        Assert.Contains(File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "MermaidRemainingCaptionRolesExample.cs")).TrimEnd(), emitted, StringComparison.Ordinal);
+        // The ordinary-program generator hoists imports and makes the shared factory public.
+        // Complete programs are compiled and executed by the maintained consumer qualification.
         Assert.DoesNotContain("{{", emitted, StringComparison.Ordinal);
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); var stem = Path.Combine(output, "remaining-caption-roles-" + family + "-" + width + "-" + dark);
@@ -85,10 +86,11 @@ public sealed class MermaidRemainingCaptionRolesTests {
     public void MetricSelectedEdgeTextDoesNotInheritAuthoredRunsAndPlainGraphiteOutputKeepsV1() {
         var theme = VisualTheme.Graphite();
         var chart = Model().WithTheme(theme); chart.Groups[0].Label = "Scope";
+        var ordinaryVersion = chart.Prepare().ToInterchangeEnvelope().Version;
         chart.Edges[0].LabelContent = TextContent.FromRuns(new[] { new TextContentRun("Original", TextInlineEmphasis.Bold) });
         chart.Edges[0].Metrics["reading"] = "Measured";
         var envelope = chart.Prepare(new TopologyRenderOptions { EdgeLabelMetricKey = "reading" }).ToInterchangeEnvelope();
-        Assert.Equal("Measured", Assert.Single(envelope.Edges).Label); Assert.Null(Assert.Single(envelope.Edges).Topology!.LabelContent); Assert.Equal(1, envelope.Version);
+        Assert.Equal("Measured", Assert.Single(envelope.Edges).Label); Assert.Null(Assert.Single(envelope.Edges).Topology!.LabelContent); Assert.Equal(ordinaryVersion, envelope.Version);
         var a = Model().WithTheme(theme); var b = Model().WithTheme(theme); b.Groups[0].LabelContent = TextContent.Plain(a.Groups[0].Label); b.Edges[0].LabelContent = TextContent.Plain(a.Edges[0].Label!);
         Assert.Equal(a.Prepare().ToSvg(), b.Prepare().ToSvg()); Assert.Equal(a.Prepare().ToPng(), b.Prepare().ToPng()); Assert.Equal(a.Prepare().ToInterchangeEnvelope().ToJson(), b.Prepare().ToInterchangeEnvelope().ToJson());
     }

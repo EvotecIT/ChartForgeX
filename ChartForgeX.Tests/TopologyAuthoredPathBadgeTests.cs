@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class TopologyAuthoredPathBadgeTests {
     private static TopologyChart Ordinary() {
-        var chart = TopologyChart.Create().WithId("handoff").WithViewport(720, 420, 24);
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("handoff").WithViewport(720, 420, 24);
         chart.AddNode("gateway", "Gateway", 60, 70, width: 200, height: 160);
         chart.AddNode("worker", "Worker", 450, 70, width: 200, height: 160);
         chart.AddEdge("dispatch", "gateway", "worker", "Dispatch", direction: VisualLinkDirection.Forward);
@@ -48,14 +48,14 @@ public sealed class TopologyAuthoredPathBadgeTests {
     }
 
     [Fact]
-    public void NullGeometryAndBadgeKeepExactOrdinarySvgPngAndVersionOneWire() {
+    public void NullGeometryAndBadgeKeepExactOrdinarySvgPngAndCapturedWireVersion() {
         var chart = Ordinary(); chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "Queued" });
         var beforeSvg = chart.ToSvg(); var beforePng = chart.ToPng(); var beforeJson = chart.ToVisualArtifact().ToInterchangeJson();
         chart.Edges[0].PathGeometry = new TopologyPathGeometry("M 260 150 C 320 40 390 40 450 150");
         chart.Nodes[0].Details[0].BadgeStyle = new TopologyDetailBadgeStyle();
         chart.Edges[0].PathGeometry = null; chart.Nodes[0].Details[0].BadgeStyle = null;
         Assert.Equal(beforeSvg, chart.ToSvg()); Assert.Equal(beforePng, chart.ToPng()); Assert.Equal(beforeJson, chart.ToVisualArtifact().ToInterchangeJson());
-        Assert.Equal(1, chart.ToVisualArtifact().ToInterchangeEnvelope().Version);
+        Assert.Equal(VisualArtifactInterchangeEnvelope.FromJson(beforeJson).Version, chart.ToVisualArtifact().ToInterchangeEnvelope().Version);
     }
 
     [Fact]

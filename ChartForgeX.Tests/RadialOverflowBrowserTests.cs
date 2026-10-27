@@ -77,11 +77,12 @@ public sealed class RadialOverflowBrowserTests {
     }
 
     private static async Task AssertLegendColumnsAsync(IPage page) {
+        await BrowserProofCaptions.InstallNativeAsync(page);
         var rows = await page.Locator("[data-cfx-role=legend-item]").EvaluateAllAsync<JsonElement>("""
             entries=>entries.map(entry=>{
                 const box=role=>{const node=entry.querySelector('[data-cfx-role='+role+']');if(!node)return null;
                     const rect=node.getBoundingClientRect(),style=getComputedStyle(node);
-                    return {text:node.textContent,left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,font:style.font,fontFamily:style.fontFamily};};
+                    return {text:window.cfxCaptionText(node),left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,font:style.font,fontFamily:style.fontFamily};};
                 return {label:box('legend-label'),value:box('legend-value'),percent:box('legend-percentage')};
             })
             """);

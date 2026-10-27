@@ -66,7 +66,7 @@ public sealed class TopologyAdvancedActorPortableTests {
 
     [Fact]
     public void ExplicitGlyphWithoutIconIdOverridesKindAndCatalogShapeWhileNullRetainsInference() {
-        var chart = TopologyChart.Create().WithId("native-glyph-policy").WithViewport(480, 320, 0).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("native-glyph-policy").WithViewport(480, 320, 0).WithLayout(TopologyLayoutMode.Manual)
             .AddNode("router", "Native router", 100, 60, width: 170, height: 140);
         var node = chart.Nodes[0]; node.Kind = TopologyNodeKind.Database; node.IconShape = TopologyIconShape.Router;
         node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Icon; node.PreserveDisplayModeSize = true; node.Color = "#2563EB";
@@ -86,7 +86,7 @@ public sealed class TopologyAdvancedActorPortableTests {
     [InlineData(TopologyNodeShape.ActorHollow)] [InlineData(TopologyNodeShape.ActorBusiness)]
     [InlineData(TopologyNodeShape.ActorBusinessHollow)] [InlineData(TopologyNodeShape.ActorSilhouette)] [InlineData(TopologyNodeShape.ActorIcon)]
     public void ActorVariantsUseMeasuredExternalRolesAndAttachEdgesToTheFigureRatherThanItsWideCaptionFrame(TopologyNodeShape shape) {
-        var chart = TopologyChart.Create().WithId("actor-ports").WithViewport(640, 400, 0).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("actor-ports").WithViewport(640, 400, 0).WithLayout(TopologyLayoutMode.Manual)
             .AddNode("actor", "External participant", 50, 60, width: 220, height: 140)
             .AddNode("action", "Submit request", 390, 60, width: 180, height: 90)
             .AddEdge("submit", "actor", "action", routing: TopologyEdgeRouting.Straight);
@@ -125,7 +125,7 @@ public sealed class TopologyAdvancedActorPortableTests {
 
     [Fact]
     public void InvalidExplicitGlyphPolicyRejectsNativeAndTypedPortableDataAndVersionOneCannotSilentlyLoseIt() {
-        var chart = TopologyChart.Create().WithViewport(300, 200).AddNode("node", "Node", 30, 30);
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(300, 200).AddNode("node", "Node", 30, 30);
         chart.Nodes[0].IconShape = (TopologyIconShape)999; var validation = new TopologyChartValidator().Validate(chart);
         Assert.Contains(validation.Errors, error => error.Code == "node-icon-shape");
         chart.Nodes[0].IconShape = TopologyIconShape.Router; var envelope = chart.Prepare().ToInterchangeEnvelope();

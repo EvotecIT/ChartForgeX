@@ -48,7 +48,7 @@ public sealed class TopologyActorPreparedBasisCausalTests {
 
     internal static TopologyChart Chart(TopologyIconShape glyph, bool shrink,
         TopologyNodeShape shape = TopologyNodeShape.ActorIcon, TopologyNodeDisplayMode mode = TopologyNodeDisplayMode.Card) {
-        var chart = TopologyChart.Create().WithId("actor-prepared-basis").WithViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("actor-prepared-basis").WithViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0)
             .WithLayout(TopologyLayoutMode.Layered).AddNode("actor", "Native participant", 40, 30, width: shrink ? 920 : 220, height: shrink ? 720 : 140);
         var node = chart.Nodes[0]; node.Shape = shape; node.IconShape = shape == TopologyNodeShape.ActorIcon ? glyph : null;
         node.Kind = TopologyNodeKind.Generic; node.DisplayMode = mode; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;

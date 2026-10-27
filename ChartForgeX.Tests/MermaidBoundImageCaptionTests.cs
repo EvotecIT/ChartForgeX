@@ -44,7 +44,7 @@ public sealed class MermaidBoundImageCaptionTests {
     [Theory] [InlineData("fill")] [InlineData("stroke")]
     public void UnsupportedAssetPaintStaysLocatedAndInertThroughTheExistingColorResolver(string property) {
         var source="flowchart LR\nserver@{icon:'common:server',label:'Server'}\nstyle server "+property+":url(https://example.invalid/paint)";
-        var result=MermaidRenderer.Render(source,new MermaidRenderOptions{Flowchart=new MermaidFlowchartRenderOptions{Width=480,Height=320,FitContent=false}});Capture(source,result,"inert-asset-paint-"+property);
+        var result=MermaidRenderer.Render(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family},Flowchart=new MermaidFlowchartRenderOptions{Width=480,Height=320,FitContent=false}});Capture(source,result,"inert-asset-paint-"+property);
         Assert.False(result.HasErrors);var warning=Assert.Single(result.Diagnostics);Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement,warning.Code);Assert.Equal(3,warning.Span.Line);
         var node=Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes);Assert.Equal("url(https://example.invalid/paint)",node.Metadata["mermaid.style."+property]);
         var paints=System.Xml.Linq.XDocument.Parse(result.Artifact.ToSvg()).Descendants().Attributes().Where(value=>value.Name.LocalName is "fill" or "stroke");Assert.DoesNotContain(paints,value=>value.Value.StartsWith("url(",StringComparison.OrdinalIgnoreCase));

@@ -37,7 +37,7 @@ public sealed class DottedMapPointLegendBrowserTests {
             """);
 
         Assert.Equal(new[] { "North", "South", "Offscreen" },
-            await page.Locator("[data-cfx-role='legend-label']").AllTextContentsAsync());
+            await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']")));
         foreach (var id in new[] { "north", "south", "offscreen" }) {
             var legend = page.Locator(Key(id));
             Assert.Equal(1, await legend.CountAsync());

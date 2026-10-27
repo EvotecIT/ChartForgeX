@@ -28,7 +28,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
     public void EveryPinnedElementTypeUsesItsOwnPaletteAndCapturedFont(string call,string type) {
         var family=BrowserProofFonts.Family;
         var source="%%{init: {'c4':{'"+type+"FontFamily':'"+family+"','"+type+"FontSize':'18px','"+type+"FontWeight':500,'"+type+"_bg_color':'#123456','"+type+"_border_color':'#654321'}}}%%\nC4Context\n"+call+"(item, \"Observed caption\")";
-        var chart=Parse(source).ToTopologyChart();var node=Assert.Single(chart.Nodes);
+        var chart=Parse(source).ToTopologyChart();chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var node=Assert.Single(chart.Nodes);
         Assert.Equal("#123456",node.BackgroundColor);Assert.Equal("#654321",node.Color);
         Assert.Equal(family,node.TextStyle!.FontFamily);Assert.Equal(18,node.TextStyle.FontSize);Assert.Equal("500",node.TextStyle.FontWeight);
         var prepared=chart.Prepare();var labels=prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text=>text.Role=="topology-node-label").ToArray();
@@ -39,13 +39,13 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
     public void ExplicitElementStylesAndHostFontOverridesWinFamilyDefaults() {
         var source="%%{init: {'c4':{'containerFontFamily':'Source font','containerFontSize':18,'container_bg_color':'#123456','container_border_color':'#654321'}}}%%\nC4Container\nContainer(api, \"API\")\nUpdateElementStyle(api,$bgColor=\"#abcdef\",$borderColor=\"#fedcba\")";
         var host=new MermaidPresentationOptions {FontFamily=BrowserProofFonts.Family,FontSize=22};
-        var chart=Parse(source).ToTopologyChart(new MermaidTopologyRenderOptions {Presentation=host});var node=Assert.Single(chart.Nodes);
+        var chart=Parse(source).ToTopologyChart(new MermaidTopologyRenderOptions {Presentation=host});chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var node=Assert.Single(chart.Nodes);
         Assert.Equal("#abcdef",node.BackgroundColor);Assert.Equal("#fedcba",node.Color);Assert.Equal(host.FontFamily,node.TextStyle!.FontFamily);Assert.Equal(22,node.TextStyle.FontSize);
     }
     [Fact]
     public void SourceGridSpacingUsesTheGenericImmutablePlannerAndExistingSourceRowLimits() {
         var source="%%{init: {'c4':{'c4ShapeMargin':30,'nextLinePaddingX':12,'diagramMarginX':16,'diagramMarginY':20}}}%%\nC4Context\nSystem(a,\"A\")\nSystem(b,\"B\")\nSystem(c,\"C\")\nUpdateLayoutConfig(2,1)";
-        var chart=Parse(source).ToTopologyChart();var policy=chart.GridLayout!;
+        var chart=Parse(source).ToTopologyChart();chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var policy=chart.GridLayout!;
         Assert.Equal(2,policy.MaximumNodesPerRow);Assert.Equal(1,policy.MaximumGroupsPerRow);Assert.Equal(30,policy.HorizontalSpacing);Assert.Equal(60,policy.VerticalSpacing);Assert.Equal(12,policy.RowIndent);
         var facts=chart.Prepare().ToInterchangeEnvelope();var a=facts.Nodes.Single(n=>n.Id=="a");var b=facts.Nodes.Single(n=>n.Id=="b");var c=facts.Nodes.Single(n=>n.Id=="c");
         Assert.Equal(a.Y,b.Y);Assert.True(c.Y>a.Y);Assert.Equal(30,b.X!.Value-a.X!.Value-a.Width!.Value,6);Assert.Equal(12,c.X!.Value-a.X!.Value,6);
@@ -65,7 +65,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
         var family=BrowserProofFonts.Family;
         var source="%%{init: {'c4':{'containerFontFamily':'"+family+"','containerFontSize':18,'width':200,'c4ShapePadding':20,'wrap':true}}}%%\nC4Container\nContainer(api,\"Complete measured publication caption\",\"Managed runtime\",\"Every source word is retained across native measured rows\")";
         var options=new MermaidTopologyRenderOptions {Width=390,Height=700,Presentation=new MermaidPresentationOptions {TopologySizing=fixedFrame?MermaidTopologySizing.FixedViewport:MermaidTopologySizing.Natural}};
-        var chart=Parse(source).ToTopologyChart(options);var original=chart.Nodes.Select(node=>(node.Width,node.Height)).ToArray();var prepared=chart.Prepare();
+        var chart=Parse(source).ToTopologyChart(options);chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var original=chart.Nodes.Select(node=>(node.Width,node.Height)).ToArray();var prepared=chart.Prepare();
         Assert.Equal(original,chart.Nodes.Select(node=>(node.Width,node.Height)).ToArray());
         var rows=prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text=>text.Role is "topology-node-label" or "topology-node-subtitle").ToArray();
         Assert.True(rows.Length>2);var text=string.Join(" ",rows.SelectMany(row=>row.Text.Lines).Select(line=>line.Text));
@@ -87,7 +87,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
     }
     [Fact]
     public void PreparedNodeHeaderAndRelationshipTypographyAndPortablePoliciesAreDetached() {
-        var family=BrowserProofFonts.Family;var chart=Parse(Fixture()).ToTopologyChart();
+        var family=BrowserProofFonts.Family;var chart=Parse(Fixture()).ToTopologyChart();chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));
         Assert.All(chart.Groups,group=>Assert.Equal(family,group.TextStyle!.FontFamily));Assert.All(chart.Edges,edge=>Assert.Equal(15,edge.TextStyle!.FontSize));
         var prepared=chart.Prepare();var svg=prepared.ToSvg();var png=prepared.ToPng();var facts=prepared.ToInterchangeEnvelope();
         foreach(var node in chart.Nodes)if(node.TextStyle!=null){node.TextStyle.FontFamily="Missing later face";node.TextStyle.FontSize=90;}
@@ -132,6 +132,6 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
     }
     internal static MermaidC4Document Parse(string source) {var result=new MermaidParser().ParseC4(source);Assert.False(result.HasErrors,string.Join("; ",result.Diagnostics.Select(item=>item.Message)));return result.Document!;}
     internal static string Fixture() {DirectoryInfo? root=new(AppContext.BaseDirectory);while(root!=null&&!File.Exists(Path.Combine(root.FullName,"ChartForgeX.sln")))root=root.Parent;return File.ReadAllText(Path.Combine(root!.FullName,"tests","mermaid-conformance","fixtures","c4-config-typography-native.mmd")).Replace("Carlito",BrowserProofFonts.Family,StringComparison.Ordinal);}
-    internal static MermaidRenderOptions Options(bool dark,int width)=>new(){C4=new MermaidTopologyRenderOptions{Width=width,Height=850},Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light}};
+    internal static MermaidRenderOptions Options(bool dark,int width)=>new(){C4=new MermaidTopologyRenderOptions{Width=width,Height=850},Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family,ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light}};
     internal static void Capture(VisualArtifact artifact,string name) {var root=Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");if(string.IsNullOrWhiteSpace(root))return;if(!Path.IsPathRooted(root))throw new InvalidOperationException("Capture root must be absolute.");Directory.CreateDirectory(root);var stem=Path.Combine(root,name);File.WriteAllText(stem+".svg",artifact.ToSvg());File.WriteAllBytes(stem+".png",artifact.ToPng());File.WriteAllText(stem+".json",artifact.ToInterchangeJson());}
 }

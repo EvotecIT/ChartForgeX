@@ -104,7 +104,7 @@ public sealed class TopologyPreparedTypographyRestorationTests {
     }
 
     private static TopologyChart Source() {
-        var chart = TopologyChart.Create().WithViewport(1100, 700, 28).WithLegend(null)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(1100, 700, 28).WithLegend(null)
             .WithLayout(TopologyLayoutMode.GroupGrid)
             .AddAutoNode("first", "Publication preparation preserves every complete source word", width: 200, height: 76)
             .AddAutoNode("second", "Delivery coordination retains the complete measured caption", width: 200, height: 76);

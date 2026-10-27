@@ -55,7 +55,9 @@ public sealed class MermaidSequenceMessagePresentationTests {
     [Theory]
     [InlineData("compact",VisualThemeMode.Light)] [InlineData("compact",VisualThemeMode.Dark)] [InlineData("wide",VisualThemeMode.Light)] [InlineData("wide",VisualThemeMode.Dark)]
     public void CompleteNativeAndAdapterProgramsRemainInTheirActualCompileOwners(string variant,VisualThemeMode mode) {
-        var model=SequenceMessagePresentationRecipe.Create(variant,mode);var width=variant=="compact"?390:1000;var prepared=model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width,820)),themeMode:mode));SequenceMessageFixture.Capture("sequence-message-recipe-"+variant+"-"+mode,prepared);SequenceMessageFixture.AssertBadgeContainsInk(prepared);
+        var model=SequenceMessagePresentationRecipe.Create(variant,mode);var width=variant=="compact"?390:1000;
+        // Ordinary exports grow the authored minimum frame; explicit Prepare(context) is deliberately strict.
+        var prepared=SequencePreparedCompiler.PrepareDefault(model);SequenceMessageFixture.Capture("sequence-message-recipe-"+variant+"-"+mode,prepared);SequenceMessageFixture.AssertBadgeContainsInk(prepared);
         var native=ExampleRecipeSource.Emit(ExampleRecipes.Named("sequence-message-presentation"),variant,"Message presentation","Aligned captions",mode,width,820,false,"Sequence");var adapter=ExampleRecipeSource.EmitSequenceMessagePresentation(variant,mode);
         Assert.DoesNotContain("ChartForgeX.Mermaid",native);Assert.Contains("public static class SequenceMessagePresentationRecipe",native);Assert.DoesNotContain("{{",native);
         Assert.Contains("ChartForgeX.Mermaid",adapter);Assert.Contains("public static class SequenceMessagePresentationSourceRecipe",adapter);Assert.DoesNotContain("{{",adapter);

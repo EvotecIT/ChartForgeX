@@ -95,7 +95,9 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     public async Task WordCloudUsesActualTextPaintAndHonoursChildVisibilityOverrides() {
         if (!Enabled) return;
         var chart = Frame(false).AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 100) });
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ExactFeatures), 950, 720);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            ExactFeatures(options); options.TextPresentation = HtmlChartTextPresentation.Browser;
+        }), 950, 720);
         var page = session.Page;
         var target = page.Locator(Term);
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = Term + " { visibility:hidden!important; } " + Term + " text { visibility:visible!important; fill:none!important; stroke:#ef4444!important; stroke-width:1px!important; }" });
@@ -183,7 +185,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Equal(0, await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft"));
         await CaptureContractAsync(page, "paint-caption-only-annotation-" + layout + "-compact-dark", new { BandOpacity = 0, Caption = true, Layout = layout.ToString(), ScrollLeft = 0, PointerAndKeyboardPins = true });
         await page.Locator("[data-cfx-reset]").ClickAsync();
-        await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = Legend(0) + " :is(rect,circle,ellipse,line,polyline,path,polygon) { opacity:0!important; }" });
+        await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = Legend(0) + " :is(rect,circle,ellipse,line,polyline,path,polygon):not([data-cfx-native-text-ink] *) { opacity:0!important; }" });
         await MoveToNativeTextAsync(page, Legend(0));
         try {
             await page.WaitForFunctionAsync("""
@@ -197,9 +199,9 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
                 Layout = layout.ToString(), Stage = "Fresh native caption move after reset; requested legend tooltip did not settle",
                 NativeCaption = await page.Locator(Legend(0)).EvaluateAsync<JsonElement>("""
                     n => {
-                        const t = n.querySelector('text'), b = t.getExtentOfChar(Math.floor(t.textContent.length / 2)), p = new DOMPoint(b.x + b.width / 2, b.y + b.height / 2).matrixTransform(t.getScreenCTM());
+                        const p=window.cfxCaptionPoint(n);
                         const hit = document.elementFromPoint(p.x, p.y), root = n.closest('.cfx-interactive-chart');
-                        return { targetId:n.dataset.cfxTargetId, text:t.textContent, position:[p.x,p.y], hitInside:n.contains(hit), hitRole:hit?.dataset.cfxRole || hit?.tagName,
+                        return { targetId:n.dataset.cfxTargetId, text:window.cfxCaptionText(n), position:[p.x,p.y], hitInside:n.contains(hit), hitRole:hit?.dataset.cfxRole || hit?.tagName,
                             pointerReadoutSuspended:root._cfxPointerReadoutSuspended === true, activeTarget:document.activeElement?.dataset?.cfxTargetId || null };
                     }
                     """)
@@ -249,7 +251,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     }
 
     private static async Task<double[]> NativeTextPositionAsync(IPage page, string selector) {
-        var position = await page.Locator(selector).EvaluateAsync<double[]>("n => { const t = n.querySelector('text'), b = t.getExtentOfChar(Math.floor(t.textContent.length / 2)), p = new DOMPoint(b.x + b.width / 2, b.y + b.height / 2).matrixTransform(t.getScreenCTM()); return [p.x,p.y]; }");
+        var native = await BrowserProofCaptions.PointAsync(page, page.Locator(selector), scrollIntoView: false);
+        var position = new[] { (double)native[0], (double)native[1] };
         Assert.True(await page.Locator(selector).EvaluateAsync<bool>("(n,p) => n.contains(document.elementFromPoint(p[0],p[1]))", position));
         return position;
     }

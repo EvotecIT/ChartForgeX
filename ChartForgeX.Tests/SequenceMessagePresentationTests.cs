@@ -61,7 +61,8 @@ public sealed class SequenceMessagePresentationTests {
         Assert.Equal(message.SourceId,edge.SourceId);Assert.Equal(message.TargetId,edge.TargetId);Assert.Equal(pose=="self"?4:2,edge.ResolvedRoute.Count);
         var source=facts.Nodes.Single(item=>item.Id==message.SourceId);var target=facts.Nodes.Single(item=>item.Id==message.TargetId);var origin=pose=="reverse-half"?target:source;var x=origin.X!.Value+origin.Width!.Value/2;
         if(pose=="backward"||pose=="reverse-half")Assert.True(badge.Bounds.Right<x);else Assert.True(badge.Bounds.Left>x);
-        if(pose=="self")Assert.True(edge.ResolvedRoute[edge.ResolvedRoute.Count-1].Y-edge.ResolvedRoute[0].Y>=badge.Bounds.Height+8);
+        // Subtracting the two translated Y coordinates can lose a few ulps of the exact eight-pixel gap.
+        if(pose=="self")Assert.True(Math.Round(edge.ResolvedRoute[edge.ResolvedRoute.Count-1].Y-edge.ResolvedRoute[0].Y-badge.Bounds.Height,9)>=8);
     }
     [Fact]
     public void PartialNumberTypographyOverridesMatchingFieldsAndRemainsDynamicAfterPreparationAndRestore() {

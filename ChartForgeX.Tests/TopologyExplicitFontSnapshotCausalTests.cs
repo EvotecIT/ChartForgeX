@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyExplicitFontSnapshotCausalTests {
     [Fact]
     public void FittedSnapshotScalesExplicitCaptionRolesWhileRawHierarchySourceRetainsAuthoredSizes() {
-        var chart = TopologyChart.Create().WithId("font-snapshot").WithViewport(1200, 800).WithLegend(null).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("font-snapshot").WithViewport(1200, 800).WithLegend(null).AddHierarchy(new[] {
             new TopologyHierarchyItem("lead", "Avery Quinn"), new TopologyHierarchyItem("team", "Engineering", "lead") });
         foreach (var node in chart.Nodes) {
             node.Width = 420; node.Height = 200; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;

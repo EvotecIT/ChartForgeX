@@ -326,13 +326,16 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     }
 
     private static Task WaitForChangesAsync(IPage page, int count) => page.WaitForFunctionAsync("count=>nativeChanges.length===count", count);
-    private static Task<JsonElement> SceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> SceneAsync(IPage page) {
+        await BrowserProofCaptions.InstallNativeAsync(page);
+        return await page.EvaluateAsync<JsonElement>("""
         () => {const root=chartController.root;return {
             revision:chartController.sceneRevision,projection:JSON.parse(root.dataset.cfxPreparedChart).xProjection,
-            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>node.textContent),
-            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>node.textContent)
+            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>window.cfxCaptionText(node)),
+            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>window.cfxCaptionText(node))
         };}
         """);
+    }
     private static async Task CaptureAsync(IPage page, string name, object? evidence = null) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;

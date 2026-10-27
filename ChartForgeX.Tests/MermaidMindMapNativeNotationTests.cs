@@ -47,7 +47,7 @@ public sealed class MermaidMindMapNativeNotationTests {
     public void MultilineQuotedMarkdownKeepsLiteralModifiersCommentsAndPhysicalSourceSpan() {
         const string statement = "  root[\"`**Line**\r\nliteral :::tag ::icon(common:database) %% keep`\"]";
         var source = "mindmap\r\n" + statement + "\r\n    leaf[Leaf]";
-        var result = MermaidRenderer.Render(source); Assert.False(result.HasErrors);
+        var result = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); Assert.False(result.HasErrors);
         var document = Assert.IsType<MermaidMindMapDocument>(result.Document); Assert.Equal(2, document.Nodes.Count);
         var root = document.Nodes[0]; Assert.Equal("root", root.SourceId); Assert.Empty(root.Classes); Assert.Empty(root.Icons);
         Assert.Equal((2, 3, statement.Length - 2), (root.Span.Line, root.Span.Column, root.Span.Length));
@@ -63,7 +63,7 @@ public sealed class MermaidMindMapNativeNotationTests {
     [Fact]
     public void ExternalClassesAndIconsRemainLocatedInertFactsAndQualifiedIconsNeverGuessFromNames() {
         const string source = "mindmap\n  database[Database]:::external\n    ::icon(fa fa-database)\n    server[Server]::icon(database)\n    router[Router]::icon(unknown:router)\n    explicit[Explicit]::icon(common:database)::icon(network:router)";
-        var result = MermaidRenderer.Render(source); Assert.False(result.HasErrors);
+        var result = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); Assert.False(result.HasErrors);
         Assert.Equal(5, result.Diagnostics.Count);
         Assert.Equal(4, result.Diagnostics.Count(item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement));
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ApproximateMapping && item.Span.Line == 6);
@@ -93,10 +93,10 @@ public sealed class MermaidMindMapNativeNotationTests {
     [InlineData("root[Label]::icon()")]
     public void MalformedNotationIsLocatedAndProducesNoPartialDirectOrFenceArtifact(string statement) {
         var source = "mindmap\n  " + statement;
-        var rendered = MermaidRenderer.Render(source); Assert.True(rendered.HasErrors); Assert.Null(rendered.Artifact);
+        var rendered = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); Assert.True(rendered.HasErrors); Assert.Null(rendered.Artifact);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidStatement && item.Span.Line == 2 && item.Span.Column == 3);
         var document = Assert.IsType<MermaidMindMapDocument>(rendered.Document); Assert.NotEmpty(document.RawStatements);
-        var fence = new MermaidVisualMarkupParser().Parse("Text\n\n```mermaid\n" + source + "\n```");
+        var fence = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("Text\n\n```mermaid\n" + source + "\n```");
         Assert.True(fence.HasErrors); Assert.Empty(fence.Artifacts); Assert.Contains(fence.Diagnostics, item => item.Line == 5);
     }
 
@@ -143,14 +143,14 @@ public sealed class MermaidMindMapNativeNotationTests {
     [Fact]
     public void QuotedContinuationWordsCannotBecomeSourceConfigurationAccessibilityOrModifiers() {
         const string source = "mindmap\naccTitle: Outside\nroot[\"`Literal\naccTitle: Inside\naccDescr: Inside description\n%%{init: {'theme':'dark'}}%%\n::icon(common:database)\n:::highlight\n`\"]\n  child[Child]";
-        var result = MermaidRenderer.Render(source); Assert.False(result.HasErrors);
+        var result = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); Assert.False(result.HasErrors);
         var document = Assert.IsType<MermaidMindMapDocument>(result.Document); Assert.Equal(2, document.Nodes.Count);
         Assert.Equal("Outside", document.Accessibility.Name); Assert.Null(document.Accessibility.Description); Assert.Null(document.Configuration.Theme);
         Assert.Empty(document.Directives); Assert.Empty(document.Nodes[0].Classes); Assert.Empty(document.Nodes[0].Icons);
         Assert.Contains("accTitle: Inside", document.Nodes[0].Text, StringComparison.Ordinal);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Assert.Contains("%%{init:", chart.Nodes[0].Label, StringComparison.Ordinal);
         Assert.Null(chart.Nodes[0].IconId); Assert.Empty(chart.DefaultRenderOptions!.SelectedNodeIds);
-        var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```"); Assert.False(fence.HasErrors);
+        var fence = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("```mermaid\n" + source + "\n```"); Assert.False(fence.HasErrors);
         Assert.Equal(result.Artifact.ToSvg(), Assert.Single(fence.Artifacts).ToSvg()); Assert.NotEmpty(result.Artifact.ToPng());
     }
 

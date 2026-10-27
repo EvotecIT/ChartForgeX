@@ -12,7 +12,7 @@ public sealed class MermaidCynefinFontPaintDepthTests {
     [Fact]
     public void AuthoredFamilyFontsAndIndependentSubtitlePaintReachNativeMeasuredRolesWithoutConfigurationWarnings() {
         var parsed = new MermaidParser().Parse(Init + MermaidCynefinNativeDepthTests.Body); Assert.Empty(parsed.Diagnostics);
-        var document = Assert.IsType<MermaidCynefinDocument>(parsed.Document); var chart = document.ToTopologyChart();
+        var document = Assert.IsType<MermaidCynefinDocument>(parsed.Document); var chart = document.ToTopologyChart();chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));
         Assert.Equal(24, chart.Theme.Typography.TitleSize);
         Assert.All(chart.Nodes, node => {
             Assert.Equal(22, node.TextStyle!.FontSize); Assert.Equal(14, node.SubtitleTextStyle!.FontSize);

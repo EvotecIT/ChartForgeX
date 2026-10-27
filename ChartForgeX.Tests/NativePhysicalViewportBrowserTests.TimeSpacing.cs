@@ -134,15 +134,18 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         var projection = scene.GetProperty("projection");
         return projection.GetProperty("transformedMaximum").GetDouble() - projection.GetProperty("transformedMinimum").GetDouble();
     }
-    private static Task<JsonElement> TimeSpacingScene(IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> TimeSpacingScene(IPage page) {
+        await BrowserProofCaptions.InstallNativeAsync(page);
+        return await page.EvaluateAsync<JsonElement>("""
         ()=>{const root=timeController.root;return{
             projection:JSON.parse(root.dataset.cfxPreparedChart).xProjection,
-            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>node.textContent),
-            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>node.textContent),
-            secondaryYLabels:[...root.querySelectorAll('[data-cfx-role=axis-secondary-y-label]')].map(node=>node.textContent),
+            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>window.cfxCaptionText(node)),
+            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>window.cfxCaptionText(node)),
+            secondaryYLabels:[...root.querySelectorAll('[data-cfx-role=axis-secondary-y-label]')].map(node=>window.cfxCaptionText(node)),
             rawInstants:[...root.querySelectorAll('[data-cfx-role=point][data-cfx-series-key=dated]')].map(node=>Number(node.dataset.cfxX)),
             requests:timeRequests,changes:timeChanges,brush:timeBrush,errors:timeErrors};}
         """);
+    }
     private static async Task CaptureTimeSpacing(IPage page, TimeSpacingHost host, string state, IDownload? svg = null, IDownload? png = null) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;

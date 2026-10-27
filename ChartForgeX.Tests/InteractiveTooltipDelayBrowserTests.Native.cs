@@ -84,15 +84,13 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         }), 950, 760);
         var page = session.Page;
         await TraceAsync(page);
+        await BrowserProofCaptions.InstallNativeAsync(page);
         var positions = await page.Locator(selector).EvaluateAsync<double[]>("""
-            node => {
-                const text=node.querySelector('text'), positions=[];
-                for(let i=0;i<text.getNumberOfChars();i++) {
-                    const b=text.getExtentOfChar(i), p=new DOMPoint(b.x+b.width/2,b.y+b.height/2).matrixTransform(text.getScreenCTM());
-                    if(document.elementFromPoint(p.x,p.y)?.closest('[data-cfx-target-kind]')===node) positions.push(p.x,p.y);
-                }
-                if(positions.length<4) throw new Error('No distinct native text positions');
-                return [positions[0],positions[1],positions[positions.length-2],positions[positions.length-1]];
+            async node => {
+                await window.cfxCaptionPrepareRaster(node);
+                const first=window.cfxCaptionPoint(node),last=window.cfxCaptionPoint(node,true);
+                if(Math.hypot(first.x-last.x,first.y-last.y)<1) throw Error('No distinct native caption paint positions');
+                return [first.x,first.y,last.x,last.y];
             }
             """);
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]);

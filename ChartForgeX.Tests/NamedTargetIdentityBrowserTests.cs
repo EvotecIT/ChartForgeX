@@ -80,7 +80,9 @@ public sealed class NamedTargetIdentityBrowserTests {
         Assert.Single(existingPeer.GetProperty("reveals").EnumerateArray());
 
         var targetNode = roots.Nth(0).Locator(selector);
-        await targetNode.Locator(kind == "node" ? "[data-cfx-role=sankey-node-mark]" : "[data-cfx-role=sankey-ribbon]").HoverAsync();
+        var nativeMark = await targetNode.Locator(kind == "node" ? "[data-cfx-role=sankey-node-mark]" : "[data-cfx-role=sankey-ribbon]").BoundingBoxAsync()
+            ?? throw new InvalidOperationException("The named native mark has no painted bounds.");
+        await page.Mouse.MoveAsync((float)(nativeMark.X + nativeMark.Width / 2), (float)(nativeMark.Y + nativeMark.Height / 2));
         await AssertLinkedNativeState(page, selector);
         var preservedPeer = await PeerNativeState(roots.Nth(2), unrelatedSelector);
         Assert.Equal(existingPeer.GetRawText(), preservedPeer.GetRawText());

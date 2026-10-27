@@ -14,12 +14,14 @@ public sealed class TopologyExternalCaptionRoutingTests {
     public void ObstacleRoutingAndDiagnosticsReserveTheActualCaptionAboveOrBelowItsBody(bool top) {
         var chart=Source(top);var direct=chart.Prepare();var envelope=direct.ToInterchangeEnvelope();var json=envelope.ToJson();Capture(top?"caption-top-route":"caption-bottom-route",direct);
         var observation=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();var node=observation.Nodes.Single(item=>item.Id=="captioned");
-        var caption=TopologyExternalCaption.Prepare(node,observation.ResolveRenderOptions(null))!;var points=envelope.Edges[0].ResolvedRoute;var collisions=new List<int>();
-        for(var index=1;index<points.Count;index++)if(CrossesInterior(caption.Bounds,new ChartPoint(points[index-1].X,points[index-1].Y),new ChartPoint(points[index].X,points[index].Y)))collisions.Add(index-1);
-        Write("caption-"+top+".route-observation.json",JsonSerializer.Serialize(new{caption=caption.Bounds,collisions,points=points.Select(point=>new{point.X,point.Y})}));
+        // Resolve the captured native font/units through preparation before measuring the restored caption.
+        var restored=observation.Prepare();var report=TopologyLayoutDiagnostics.Analyze(observation);var diagnosticNode=report.Nodes.Single(item=>item.Id=="captioned");
+        var caption=diagnosticNode.CaptionBounds!.Value;var points=restored.ToInterchangeEnvelope().Edges[0].ResolvedRoute;var collisions=new List<int>();
+        for(var index=1;index<points.Count;index++)if(CrossesInterior(caption,new ChartPoint(points[index-1].X,points[index-1].Y),new ChartPoint(points[index].X,points[index].Y)))collisions.Add(index-1);
+        Write("caption-"+top+".route-observation.json",JsonSerializer.Serialize(new{caption,collisions,points=points.Select(point=>new{point.X,point.Y})}));
         Assert.NotEmpty(points);Assert.Empty(collisions);Assert.Equal(TopologyEdgeRouting.ObstacleAvoidingOrthogonal,chart.Edges[0].Routing);
         Assert.Equal(direct.ToPng(),observation.ToPng());Assert.Equal(top?TopologyCaptionPlacement.Top:TopologyCaptionPlacement.Bottom,node.CaptionPlacement);
-        var report=TopologyLayoutDiagnostics.Analyze(chart);var diagnosticNode=report.Nodes.Single(item=>item.Id=="captioned");var reported=diagnosticNode.CaptionBounds;Assert.NotNull(reported);
+        var reported=diagnosticNode.CaptionBounds;Assert.NotNull(reported);
         Assert.True(top?reported!.Value.Bottom<=diagnosticNode.Bounds.Top-8+.001:reported!.Value.Top>=diagnosticNode.Bounds.Bottom+8-.001);
     }
 

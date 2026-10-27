@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyActorSubtitleRoleCompositionTests {
     [Fact]
     public void ActorSubtitleUsesItsExplicitSharedRoleWhileTheTitleKeepsItsBasePolicy() {
-        var chart = TopologyChart.Create().WithViewport(700, 500, 24).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(700, 500, 24).WithLayout(TopologyLayoutMode.Manual)
             .AddNode("actor", "Coordinator", 200, 50, width: 220, height: 120);
         var node = chart.Nodes[0]; node.Shape = TopologyNodeShape.Actor; node.Subtitle = "Primary reviewer";
         node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true;

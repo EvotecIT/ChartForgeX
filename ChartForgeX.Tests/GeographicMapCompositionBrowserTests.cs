@@ -30,9 +30,9 @@ public sealed class GeographicMapCompositionBrowserTests {
         Assert.Equal(2, await page.Locator("[data-cfx-role='map-color-scale-source']").CountAsync());
         Assert.Equal(1, await page.Locator("[data-cfx-role='map-size-key-1']").CountAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-role='map-color-scale-source'] [data-cfx-target-kind], [data-cfx-role='map-size-key-1'] [data-cfx-target-kind]").CountAsync());
-        Assert.Equal(new[] { "0 trips", "100 trips" }, await page.Locator("[data-cfx-role='map-size-key-1-label']").AllTextContentsAsync());
+        Assert.Equal(new[] { "0 trips", "100 trips" }, await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='map-size-key-1-label']")));
         Assert.Equal(new[] { "West gateway 0 trips", "North gateway 100 trips" },
-            await page.Locator("[data-cfx-role='dotted-map-data-label']").AllTextContentsAsync());
+            await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='dotted-map-data-label']")));
         await MoveToAsync(page, Mark("west") + " [data-cfx-role='dotted-map-point']");
         Assert.Equal("0 trips", await Row(page, "Traffic")); Assert.Equal("-10 min", await Row(page, "Delay"));
         Assert.Equal("0", await page.Locator(Mark("west")).GetAttributeAsync("data-cfx-value"));

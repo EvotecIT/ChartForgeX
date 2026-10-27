@@ -5,7 +5,7 @@ namespace ChartForgeX.Tests;
 
 internal static class UseCaseAdvancedActorFixture {
     internal static string Read(bool compact = false) {
-        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "Build", "PackageConsumers", "Adapters", "usecase-advanced-actors.mmd"));
+        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "Build", "PackageConsumers", "Adapters", "usecase-advanced-actors.mmd")).ReplaceLineEndings("\n");
         return compact ? source.Replace("direction TB", "direction LR", StringComparison.Ordinal) : source;
     }
     internal static MermaidRenderOptions Options(int width, bool dark) => new() {

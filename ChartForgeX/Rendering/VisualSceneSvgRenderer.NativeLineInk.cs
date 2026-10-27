@@ -59,14 +59,15 @@ internal static partial class VisualSceneSvgRenderer {
                         observed => new VisualResourceLimitException("MaximumOutputBytes", maximumCharacters.Value, checked(before + observed * count), entry.Node.Id))
                     : image.DataUri;
                 cancellation.ThrowIfCancellationRequested(); characters = checked(characters + (long)uri.Length * count);
-                result._images.Add(entry.Node, new Image(entry.Plan.Bounds, uri));
+                result._images.Add(entry.Node, new Image(entry.Plan.Bounds, uri, image));
             }
             return result;
         }
         internal sealed class Image {
-            internal Image(ChartRect bounds, string uri) { Bounds = bounds; Uri = uri; }
+            internal Image(ChartRect bounds, string uri, VisualSceneImageData data) { Bounds = bounds; Uri = uri; Data = data; }
             internal ChartRect Bounds { get; }
             internal string Uri { get; }
+            internal VisualSceneImageData Data { get; }
         }
     }
 }

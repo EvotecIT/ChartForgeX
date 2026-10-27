@@ -25,7 +25,7 @@ public sealed class MermaidFlowchartAssetCausalTests {
     public void IconMetadataWithoutARealLabelDoesNotInventAnIdentityCaption() {
         const string source = "flowchart LR\nserver@{icon: 'common:server'}";
         CaptureInput(source, "source-icon-without-label");
-        var rendered = MermaidRenderer.Render(source); var exportFailure = Capture(rendered, "source-icon-without-label");
+        var rendered = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); var exportFailure = Capture(rendered, "source-icon-without-label");
         Assert.Null(exportFailure); Assert.Empty(rendered.Diagnostics);
         var node = Assert.Single(Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Nodes);
         Assert.False(node.ShowLabel); Assert.Equal("server", node.Label); Assert.Equal(source, rendered.Document!.SourceText);
@@ -35,7 +35,7 @@ public sealed class MermaidFlowchartAssetCausalTests {
     public void UnboundImageReferencesRemainInertLocatedAndRejectable() {
         const string source = "flowchart LR\npicture@{img: 'https://unbound.invalid/picture.png'}";
         CaptureInput(source, "unbound-image-reference-control");
-        var rendered = MermaidRenderer.Render(source); var exportFailure = Capture(rendered, "unbound-image-reference-control");
+        var rendered = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); var exportFailure = Capture(rendered, "unbound-image-reference-control");
         var strict = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
         Capture(strict, "unbound-image-reference-strict-control");
         Assert.Null(exportFailure); Assert.False(rendered.HasErrors);
@@ -56,7 +56,7 @@ public sealed class MermaidFlowchartAssetCausalTests {
             failures.Add(CaptureArtifact(chart.ToVisualArtifact(), "ordinary-null-caption-glyph-" + mode));
         }
         const string source = "flowchart LR\na[Plan] --> b[Deliver]"; CaptureInput(source, "ordinary-source-before-assets");
-        var ordinary = MermaidRenderer.Render(source); failures.Add(Capture(ordinary, "ordinary-source-before-assets"));
+        var ordinary = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions()); failures.Add(Capture(ordinary, "ordinary-source-before-assets"));
         Assert.All(failures, Assert.Null); Assert.Empty(ordinary.Diagnostics);
         Assert.Equal(new[] { "a", "b" }, Assert.IsType<MermaidFlowchartDocument>(ordinary.Document).Nodes.Select(node => node.Id));
     }

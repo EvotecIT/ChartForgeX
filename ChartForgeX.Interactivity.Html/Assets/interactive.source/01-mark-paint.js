@@ -164,7 +164,14 @@
     let x=b.x+b.width*a[0]/a[4],y=b.y+b.height*a[1]/a[5],right=x+b.width*a[2]/a[4],bottom=y+b.height*a[3]/a[5];
     const matrix=node.getScreenCTM(),clips=nativePaintClips(node);if(!matrix||!clips||![matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f].every(Number.isFinite)||matrix.a*matrix.d===matrix.b*matrix.c)return null;
     for(const clip of clips){const m=matrix.inverse().multiply(clip.matrix),r=clip.rect;
-      if(![m.a,m.b,m.c,m.d,m.e,m.f].every(Number.isFinite)||m.b||m.c)return null;
+      if(![m.a,m.b,m.c,m.d,m.e,m.f].every(Number.isFinite))return null;
+      if(m.b||m.c){
+        // A wholly contained rotated alpha extent needs no clipping approximation.
+        const toClip=clip.matrix.inverse().multiply(matrix);
+        const corners=[[x,y],[right,y],[x,bottom],[right,bottom]].map(([px,py])=>new DOMPoint(px,py).matrixTransform(toClip));
+        if(corners.some(p=>![p.x,p.y].every(Number.isFinite)||p.x<r.x||p.y<r.y||p.x>r.x+r.width||p.y>r.y+r.height))return null;
+        continue;
+      }
       const x1=m.a*r.x+m.e,x2=m.a*(r.x+r.width)+m.e,y1=m.d*r.y+m.f,y2=m.d*(r.y+r.height)+m.f;
       x=Math.max(x,Math.min(x1,x2));right=Math.min(right,Math.max(x1,x2));y=Math.max(y,Math.min(y1,y2));bottom=Math.min(bottom,Math.max(y1,y2));
     }
