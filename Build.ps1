@@ -872,6 +872,9 @@ try {
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       </PropertyGroup>
+      <ItemGroup>
+        <None Update="Fonts/*" CopyToOutputDirectory="PreserveNewest" />
+      </ItemGroup>
     </Project>
 '@ | Set-Content -Path (Join-Path $consumerRoot 'PackageConsumer.csproj') -Encoding UTF8
                     @"
@@ -905,6 +908,11 @@ try {
                     Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion, '--package-directory', $consumerPackageCache) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                     Get-ChildItem -LiteralPath (Join-Path $root 'Build/PackageConsumers/Adapters') -Filter '*.cs' -File | Copy-Item -Destination $consumerRoot
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/PackageAssertions.cs') -Destination $consumerRoot
+                    $consumerFonts = Join-Path $consumerRoot 'Fonts'
+                    New-Item -ItemType Directory -Path $consumerFonts | Out-Null
+                    foreach ($fontName in @('Carlito-Regular.ttf', 'Carlito-Bold.ttf', 'OFL.txt')) {
+                        Copy-Item -LiteralPath (Join-Path $root "ChartForgeX.Examples/Fixtures/Fonts/Carlito/$fontName") -Destination $consumerFonts
+                    }
                     # The quick consumer runs the same adapter contracts; retain their declared source fixtures.
                     $adapterSourceRoot = Join-Path $root 'Build/PackageConsumers/Adapters'
                     [xml] $adapterProject = Get-Content -LiteralPath (Join-Path $adapterSourceRoot 'AdaptersPackageProbe.csproj') -Raw
