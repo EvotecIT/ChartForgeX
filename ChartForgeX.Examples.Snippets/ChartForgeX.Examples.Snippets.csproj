@@ -33,6 +33,7 @@
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(RecipeSource)' == ''">
+    <EmbeddedResource Include="..\ChartForgeX.Examples\ExampleRecipeImports.cs" LogicalName="ChartForgeX.Examples.ExampleRecipeImports.cs" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\NativeMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskExample.cs" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeMaskProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeMaskProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="..\ChartForgeX.Examples\NativeDropShadowExample.cs" LogicalName="ChartForgeX.Examples.NativeDropShadowExample.cs" WithCulture="false" />

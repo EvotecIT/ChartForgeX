@@ -107,13 +107,28 @@ public static partial class ExampleRecipeSource {
 
     private static string Package(ExampleRecipe recipe, string template, Dictionary<string, string> tokens) => Package(recipe.Factory, template, tokens);
     private static string Package(string factory, string template, Dictionary<string, string> tokens, string? sourceResource = null) {
-        tokens["{{SOURCE}}"] = ReadResource(sourceResource ?? "ChartForgeX.Examples.Recipes." + factory + ".cs").TrimEnd();
-        return Template(template, tokens);
+        var recipeSource = ReadResource(sourceResource ?? "ChartForgeX.Examples.Recipes." + factory + ".cs").TrimEnd();
+        // A compiled recipe may own imports; standalone top-level statements must follow every import.
+        var imports = Regex.Match(recipeSource, @"\A(?:using [^\r\n;]+;[ \t]*\r?\n)+");
+        tokens["{{SOURCE}}"] = recipeSource.Substring(imports.Length);
+        return PrependImports(Template(template, tokens), imports.Value.Split('\n', StringSplitOptions.RemoveEmptyEntries));
     }
 
     private static string Template(string template, Dictionary<string, string> tokens) {
         var source = Regex.Replace(ReadResource("ChartForgeX.Examples." + template + ".cs"), @"\{\{[A-Z_]+\}\}", match => tokens[match.Value]);
-        return source.Replace("\r\n", "\n").TrimEnd() + "\n";
+        var program = source.Replace("\r\n", "\n").TrimEnd() + "\n";
+        // Use the exact import owner that compiles these factories, including Core-only consumers.
+        var imports = ReadResource("ChartForgeX.Examples.ExampleRecipeImports.cs").Split('\n')
+            .Where(line => line.StartsWith("global using ", StringComparison.Ordinal))
+            .Select(line => line.Substring("global ".Length));
+        return PrependImports(program, imports);
+    }
+
+    private static string PrependImports(string program, IEnumerable<string> imports) {
+        var prefix = string.Join("\n", imports.Select(line => line.Trim()).Where(line => line.Length > 0)
+            .Distinct(StringComparer.Ordinal)
+            .Where(line => !Regex.IsMatch(program, "^" + Regex.Escape(line) + @"\r?$", RegexOptions.Multiline)));
+        return prefix.Length == 0 ? program : prefix + "\n" + program;
     }
 
     private static string ReadResource(string name) {

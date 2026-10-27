@@ -27,7 +27,7 @@ internal static partial class Program {
             .AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 2.5) });
         var fallbackSvg = fallback.ToSvg(); var fallbackPng = fallback.ToPng();
         fallback.WithPictorialArtwork(ChartPictorialArtwork.FromSvg("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 1'><rect width='2' height='1' fill='#2468AC'/></svg>", 16, 8));
-        PackageAssertions.Require(fallback.ToSvg().Contains("data-cfx-image-artwork", StringComparison.Ordinal), "Packed strict SVG artwork did not reach native rendering.");
+        PackageAssertions.Require(PackageAssertions.Contains(fallback.ToSvg(), "data-cfx-image-artwork"), "Packed strict SVG artwork did not reach native rendering.");
         fallback.WithPictorialArtwork(null);
         PackageAssertions.Require(fallback.ToSvg() == fallbackSvg && fallback.ToPng().SequenceEqual(fallbackPng),
             "Clearing packed pictorial artwork changed the retained custom contour or its default direction.");

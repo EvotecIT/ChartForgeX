@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="ExampleRecipeImports.cs" LogicalName="ChartForgeX.Examples.ExampleRecipeImports.cs" WithCulture="false" />
     <EmbeddedResource Include="Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="NativeMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskExample.cs" WithCulture="false" />
     <EmbeddedResource Include="NativeMaskBlendCompositionExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskBlendCompositionExample.cs" WithCulture="false" />

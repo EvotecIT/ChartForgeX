@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using ChartForgeX.Raster;
+using ChartForgeX;
 using ChartForgeX.SvgRaster;
 
 var output = args.Length == 0 ? "color-source-output" : args[0];
@@ -22,7 +22,7 @@ for (var index = 0; index < primitives.Length; index++) {
         var result = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
         var stem = Path.Combine(output, "color-source-" + index + "-" + space);
         File.WriteAllText(stem + ".svg", source);
-        File.WriteAllBytes(stem + ".png", PngWriter.WriteRgba(result.Image));
+        File.WriteAllBytes(stem + ".png", result.Image.ToPng());
         Console.WriteLine(stem);
     }
 }

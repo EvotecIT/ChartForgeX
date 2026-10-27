@@ -47,6 +47,62 @@
       ],
       "WorkingDirectory": "{CompileRoot}",
       "TimeoutSeconds": 600
+    },
+    {
+      "Name": "Compile complete ordered filters example against Core package",
+      "FileName": "dotnet",
+      "Arguments": [
+        "build",
+        "{CompileRoot}/Core/CorePackageProbe.csproj",
+        "--framework",
+        "net8.0",
+        "--configuration",
+        "Release",
+        "--nologo",
+        "-p:PackageVersion={Version}",
+        "-p:RestoreConfigFile={CompileRoot}/NuGet.Config",
+        "-p:RestorePackagesPath={CompileRoot}/packages",
+        "-p:RecipeSource={ProjectRoot}/ChartForgeX.Examples/Snippets/RecipeOrderedFiltersProgram.cs.txt"
+      ],
+      "WorkingDirectory": "{CompileRoot}",
+      "TimeoutSeconds": 600
+    },
+    {
+      "Name": "Run complete ordered filters package example",
+      "FileName": "dotnet",
+      "Arguments": [
+        "{CompileRoot}/Core/bin/Release/net8.0/CorePackageProbe.dll"
+      ],
+      "WorkingDirectory": "{CompileRoot}",
+      "TimeoutSeconds": 600
+    },
+    {
+      "Name": "Compile complete color source example against Core package",
+      "FileName": "dotnet",
+      "Arguments": [
+        "build",
+        "{CompileRoot}/Core/CorePackageProbe.csproj",
+        "--framework",
+        "net8.0",
+        "--configuration",
+        "Release",
+        "--nologo",
+        "-p:PackageVersion={Version}",
+        "-p:RestoreConfigFile={CompileRoot}/NuGet.Config",
+        "-p:RestorePackagesPath={CompileRoot}/packages",
+        "-p:RecipeSource={ProjectRoot}/ChartForgeX.Examples/Snippets/RecipeColorSourceProgram.cs.txt"
+      ],
+      "WorkingDirectory": "{CompileRoot}",
+      "TimeoutSeconds": 600
+    },
+    {
+      "Name": "Run complete color source package example",
+      "FileName": "dotnet",
+      "Arguments": [
+        "{CompileRoot}/Core/bin/Release/net8.0/CorePackageProbe.dll"
+      ],
+      "WorkingDirectory": "{CompileRoot}",
+      "TimeoutSeconds": 600
     }
   ]
 }

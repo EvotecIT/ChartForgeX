@@ -3,7 +3,7 @@ using System.IO;
 using ChartForgeX.Effects;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
-using ChartForgeX.Raster;
+using ChartForgeX;
 using ChartForgeX.Rendering;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
@@ -40,6 +40,6 @@ internal static class Program {
         var native = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
         if (native.Diagnostics.Count != 0) throw new InvalidOperationException("Native import reported a loss.");
         File.WriteAllText(Path.Combine("ordered-filter-output", name + ".source.svg"), source);
-        File.WriteAllBytes(Path.Combine("ordered-filter-output", name + ".native.png"), PngWriter.WriteRgba(native.Image));
+        File.WriteAllBytes(Path.Combine("ordered-filter-output", name + ".native.png"), native.Image.ToPng());
     }
 }
