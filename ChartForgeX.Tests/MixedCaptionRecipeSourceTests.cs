@@ -9,6 +9,9 @@ namespace ChartForgeX.Tests;
 public sealed class MixedCaptionRecipeSourceTests {
     [Theory]
     [InlineData("native", "compact", VisualThemeMode.Light)]
+    [InlineData("native", "compact", VisualThemeMode.Dark)]
+    [InlineData("native", "wide", VisualThemeMode.Light)]
+    [InlineData("native", "wide", VisualThemeMode.Dark)]
     [InlineData("flowchart", "wide", VisualThemeMode.Dark)]
     [InlineData("requirement", "compact", VisualThemeMode.Light)]
     [InlineData("requirement", "compact", VisualThemeMode.Dark)]
@@ -25,6 +28,10 @@ public sealed class MixedCaptionRecipeSourceTests {
             Assert.DoesNotContain("ChartForgeX.Mermaid", source, StringComparison.Ordinal);
             Assert.DoesNotContain("ChartForgeX.Mermaid", emitted, StringComparison.Ordinal);
             Assert.Contains("using ChartForgeX.Typography;", emitted, StringComparison.Ordinal);
+            Assert.Contains("fonts/Carlito-Regular.ttf", emitted, StringComparison.Ordinal);
+            Assert.Contains("fonts/Carlito-Bold.ttf", emitted, StringComparison.Ordinal);
+            Assert.Contains("FontRegistry.Register(captionFamily", emitted, StringComparison.Ordinal);
+            Assert.Contains("VisualThemeMode." + mode + ", captionFamily)", emitted, StringComparison.Ordinal);
         } else {
             Assert.Contains("ChartForgeX.Mermaid.MermaidRenderer.Render", source, StringComparison.Ordinal);
             Assert.Contains("MermaidMixedCaptionSourceExample.Create", emitted, StringComparison.Ordinal);
