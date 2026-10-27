@@ -51,14 +51,15 @@ internal static partial class InteractiveChartBrowser {
     }
 
     // The maintained gallery supplies a real loopback origin for crypto-backed owned fonts.
-    // SetContent installs the test's exact HTML after navigation; no gallery markup is reused.
+    // Use a small same-origin document before installing the exact test HTML.
+    // The gallery manifest can be large and is unrelated to these font-origin fixtures.
     private static string OriginPage() {
         var gallery = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
         if (string.IsNullOrWhiteSpace(gallery)) return "about:blank";
         if (!Uri.TryCreate(gallery, UriKind.Absolute, out var address) || !address.IsLoopback
             || address.Scheme != Uri.UriSchemeHttp && address.Scheme != Uri.UriSchemeHttps)
             throw new InvalidOperationException("CFX_V2_GALLERY_URL must identify the owned loopback gallery.");
-        return new Uri(address, "manifest.json").AbsoluteUri;
+        return new Uri(address, "__cfx_browser_origin.html").AbsoluteUri;
     }
 
     /// <summary>The approved "Checks over a week" interaction example: quiet, warning, and danger lines.</summary>

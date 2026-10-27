@@ -17,18 +17,29 @@ internal static partial class InteractiveChartBrowser {
     }
 
     /// <summary>Checks the active target's native two-pixel focus outline and its visible screenshot paint.</summary>
-    internal static async Task AssertNativeKeyboardFocusAsync(IPage page) {
+    internal static async Task AssertNativeKeyboardFocusAsync(IPage page, bool nativeCaption = false) {
+        if (nativeCaption) await BrowserProofCaptions.InstallNativeAsync(page);
         var sample = await page.Locator("[data-cfx-focus-ink]").EvaluateAsync<JsonElement>("""
-            node=>{
+            (node,nativeCaption)=>{
                 const box=node.getBBox(),point=new DOMPoint(box.x+box.width/2,box.y).matrixTransform(node.getScreenCTM()),
                     active=node.getRootNode().activeElement,target=active.closest('[data-cfx-target-kind]')||active.querySelector('[data-cfx-target-kind]')||active,
                     region=target._cfxNativeRegion,bounds=target.getBoundingClientRect(),
-                    center=region?new DOMPoint(region.x+region.width/2,region.y+region.height/2).matrixTransform(target.getScreenCTM())
+                    caption=nativeCaption?window.cfxCaptionBox(target):null,
+                    center=caption?{x:(caption.left+caption.right)/2,y:(caption.top+caption.bottom)/2}:region?new DOMPoint(region.x+region.width/2,region.y+region.height/2).matrixTransform(target.getScreenCTM())
                         :{x:(bounds.left+bounds.right)/2,y:(bounds.top+bounds.bottom)/2},ring=node.getBoundingClientRect(),style=getComputedStyle(node);
                 return {x:point.x,y:point.y,stroke:style.stroke,width:style.strokeWidth,length:node.getTotalLength(),
+                    targetBounds:bounds.toJSON(),ringBounds:ring.toJSON(),center,region,caption,
                     ownsFocus:active.matches(':focus-visible')&&center.x>=ring.left-1&&center.x<=ring.right+1&&center.y>=ring.top-1&&center.y<=ring.bottom+1};
             }
-            """);
+            """, nativeCaption);
+        if (!sample.GetProperty("ownsFocus").GetBoolean()
+            && Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } diagnostic) {
+            Directory.CreateDirectory(diagnostic);
+            var stem = Path.Combine(diagnostic, "focus-region-failure-" + Guid.NewGuid().ToString("N"));
+            await File.WriteAllTextAsync(stem + ".json", sample.GetRawText());
+            await File.WriteAllTextAsync(stem + ".svg", await page.Locator(".cfx-stage svg").EvaluateAsync<string>("node=>node.outerHTML"));
+            await page.ScreenshotAsync(new() { Path = stem + ".png" });
+        }
         Assert.True(sample.GetProperty("length").GetDouble() > 0, "The keyboard indicator has native SVG stroke geometry.");
         Assert.Equal("2px", sample.GetProperty("width").GetString());
         Assert.True(sample.GetProperty("ownsFocus").GetBoolean(), "The native indicator surrounds the current keyboard target.");

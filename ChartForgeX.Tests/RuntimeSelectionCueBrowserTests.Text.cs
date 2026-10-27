@@ -10,16 +10,22 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class RuntimeSelectionCueBrowserTests {
     [BrowserTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task NativeTextOnlySelectionKeepsItsPaintedCueAndIdentityWithoutFilters(bool annotation) {
+    [InlineData(false, null)]
+    [InlineData(true, null)]
+    [InlineData(true, "bitmap-1-1-1")]
+    [InlineData(true, "color-cbdt1")]
+    public async Task NativeTextOnlySelectionKeepsItsPaintedCueAndIdentityWithoutFilters(bool annotation, string? fixture) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Native text selection")
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        var chart = fixture is null
+            ? Chart.Create().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+            : HtmlNativeLineInkTests.Model(fixture);
+        chart.WithSize(640, 360).WithTitle("Native text selection");
+        if (fixture is not null) chart.ClearSeries();
+        var caption = fixture is null ? "Authored caption" : fixture.StartsWith("bitmap", StringComparison.Ordinal) ? "A" : "😀";
         var selector = "[data-cfx-role=word-cloud-term][data-cfx-point='0']";
         if (annotation) {
             chart.AddBar("Readings", new[] { new ChartPoint(1, 4), new ChartPoint(2, 10) });
-            chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, "Authored caption", ChartColor.FromHex("#ef4444"), 0));
+            chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, caption, ChartColor.FromHex("#ef4444"), 0));
             selector = "[data-cfx-role=annotation]";
         } else chart.AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 100), new ChartWordCloudItem("Companion", 50) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => Options(options, false, true)), 390, 680);
@@ -51,7 +57,7 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         var svg = await DownloadSvg(page);
         Assert.Contains(raster ? "data-cfx-image-alpha-bounds" : "data-cfx-state-footprint", svg, StringComparison.Ordinal);
         Assert.Contains("data-cfx-state-outline", svg, StringComparison.Ordinal);
-        await Capture(session, "selection-cue-text-" + annotation);
+        await Capture(session, "selection-cue-text-" + annotation + "-" + (fixture ?? "host"));
         await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync("node=>{node.dataset.cueOldStyle=node.getAttribute('style')??'';node.style.opacity='0';}");
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===0");
         await target.Locator("[data-cfx-native-text-ink]:visible,text:visible").First.EvaluateAsync("node=>{const style=node.dataset.cueOldStyle;delete node.dataset.cueOldStyle;if(style)node.setAttribute('style',style);else node.removeAttribute('style');}");
@@ -63,7 +69,8 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         Assert.Equal(id, await target.GetAttributeAsync("data-cfx-target-id"));
         Assert.Equal(kind, await target.GetAttributeAsync("data-cfx-target-kind"));
         await FocusWithKeyboardAsync(page, target);
-        await AssertNativeKeyboardFocusAsync(page);
+        // A text-only annotation can retain an unpainted band much wider than its real caption.
+        await AssertNativeKeyboardFocusAsync(page, nativeCaption: true);
         await page.EvaluateAsync("()=>cueController.clearSelection()");
         Assert.Equal(0, await page.Locator("[data-cfx-state-outline]").CountAsync());
         Assert.Equal(paint, await TextPaint());

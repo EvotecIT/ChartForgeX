@@ -14,7 +14,7 @@ jobs:
   build-test-pack:
     name: Build, test, examples, pack (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 40
+    timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
@@ -158,7 +158,7 @@ jobs:
 
       - name: Run quality loop
         shell: pwsh
-        run: ./Build.ps1 -Configuration Release -QualifyPackages:($env:RUNNER_OS -eq 'Windows') -TestDiagnosticsDirectory (Join-Path $env:RUNNER_TEMP 'chartforgex-native-results')
+        run: ./Build.ps1 -Configuration Release -DotNetCommandTimeoutSeconds 1800 -QualifyPackages:($env:RUNNER_OS -eq 'Windows') -TestDiagnosticsDirectory (Join-Path $env:RUNNER_TEMP 'chartforgex-native-results')
 
       - name: Retain native test diagnostics
         if: always()
@@ -241,7 +241,7 @@ jobs:
     name: Browser compatibility (macOS ${{ matrix.name }})
     runs-on: macos-latest
     # Includes setup, the serial maintained Compatibility suite and artifact retention.
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:

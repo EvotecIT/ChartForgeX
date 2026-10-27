@@ -27,7 +27,7 @@ public sealed class NativePolarCoordinateBrowserTests {
         const string observationSelector = "[data-cfx-point],[data-cfx-target-kind=node]";
         var target = page.Locator("[data-cfx-coordinate-system='polar']").Locator(observationSelector).First;
         var expected = await target.GetAttributeAsync("data-cfx-target-id");
-        var painted = await target.EvaluateAsync<double[]>("node => { const box=node.getBoundingClientRect(); for(let y=1;y<20;y++) for(let x=1;x<20;x++) { const px=box.left+box.width*x/20, py=box.top+box.height*y/20; const hit=document.elementFromPoint(px,py); if(hit && hit.closest('[data-cfx-point],[data-cfx-target-kind=node]')===node) { const nativeInk=!hit.hasAttribute('data-cfx-browser-hit-area')||[...node.querySelectorAll('circle,ellipse,rect,path,polygon')].some(mark=>{ if(mark.hasAttribute('data-cfx-browser-hit-area')||mark.classList.contains('cfx-prepared-point-marker'))return false; const m=mark.getScreenCTM(),style=getComputedStyle(mark);if(!m||style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false; const point=new DOMPoint(px,py).matrixTransform(m.inverse()); return style.fill!=='none'&&style.fill!=='transparent'&&Number(style.fillOpacity)>0&&mark.isPointInFill(point) ||style.stroke!=='none'&&Number(style.strokeOpacity)>0&&mark.isPointInStroke(point); }); if(nativeInk)return [px,py]; } } throw new Error('No native painted observation'); }");
+        var painted = await NativePaintedPointAsync(target);
         await page.Mouse.MoveAsync((float)painted[0], (float)painted[1]);
         Assert.Equal(expected, await page.Locator(".cfx-hovered:is(" + observationSelector + ")").GetAttributeAsync("data-cfx-target-id"));
         Assert.NotEqual(string.Empty, await TooltipTextAsync(page));
@@ -48,6 +48,44 @@ public sealed class NativePolarCoordinateBrowserTests {
         var circle = Chart.Create().AddCircle("Scalar", 80).Prepare(VisualExportRequest.ForChart(Chart.Create()).Context).Scene;
         Assert.DoesNotContain(circle.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.ContainsKey("data-cfx-point"));
     }
+
+    // Sample the actual native geometry before the broad owner box. Small circular markers
+    // can fall between a screen-space grid's samples on a different font/layout host.
+    private static Task<double[]> NativePaintedPointAsync(Microsoft.Playwright.ILocator target) => target.EvaluateAsync<double[]>("""
+        node => {
+            const marks=[...node.querySelectorAll('circle,ellipse,rect,path,polygon')].filter(mark=>
+                !mark.hasAttribute('data-cfx-browser-hit-area')&&!mark.classList.contains('cfx-prepared-point-marker'));
+            const candidates=[],box=node.getBoundingClientRect();
+            for(const mark of marks.filter(()=>['radar','polar'].includes(node.dataset.cfxKind))){
+                const matrix=mark.getScreenCTM(),box=mark.getBBox(),screen=mark.getBoundingClientRect();if(!matrix)continue;
+                candidates.push({x:(screen.left+screen.right)/2,y:(screen.top+screen.bottom)/2});
+                candidates.push(new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(matrix));
+                if(typeof mark.getTotalLength==='function'){
+                    const length=mark.getTotalLength();
+                    for(let i=0;i<64;i++)candidates.push(mark.getPointAtLength(length*i/64).matrixTransform(matrix));
+                }
+            }
+            for(let y=1;y<20;y++)for(let x=1;x<20;x++)candidates.push({x:box.left+box.width*x/20,y:box.top+box.height*y/20});
+            for(const {x,y} of candidates){
+                const hit=document.elementFromPoint(x,y);
+                if(!hit||hit.closest('[data-cfx-point],[data-cfx-target-kind=node]')!==node)continue;
+                const painted=marks.some(mark=>{
+                    const matrix=mark.getScreenCTM(),style=getComputedStyle(mark);
+                    if(!matrix||style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+                    // A direct native SVG hit is already the browser's physical painted geometry.
+                    if(hit===mark)return style.fill!=='none'&&style.fill!=='transparent'&&Number(style.fillOpacity)>0
+                        ||style.stroke!=='none'&&Number(style.strokeOpacity)>0;
+                    const point=new DOMPoint(x,y).matrixTransform(matrix.inverse());
+                    return style.fill!=='none'&&style.fill!=='transparent'&&Number(style.fillOpacity)>0&&mark.isPointInFill(point)
+                        ||style.stroke!=='none'&&Number(style.strokeOpacity)>0&&mark.isPointInStroke(point);
+                });
+                if(painted)return [x,y];
+            }
+            throw Error('No native painted observation: '+JSON.stringify({owner:node.outerHTML.slice(0,6000),box:box.toJSON(),
+                viewport:{width:innerWidth,height:innerHeight},marks:marks.map(mark=>({box:mark.getBoundingClientRect().toJSON(),
+                    fill:getComputedStyle(mark).fill,stroke:getComputedStyle(mark).stroke}))}));
+        }
+        """);
 
     private static Chart Fixture(ChartSeriesKind kind) {
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false).WithXLabels("North", "South", "East", "West");

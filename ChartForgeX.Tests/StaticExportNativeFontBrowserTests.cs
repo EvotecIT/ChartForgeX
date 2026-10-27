@@ -165,6 +165,37 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PngComparisonRejectsChangedOutputPixelsAndDimensions(bool wrongDimensions) {
+        if (!Enabled) return;
+        await using var session = await BrowserProofFonts.OpenAsync(Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(Options), 824, 850);
+        var page = session.Page;
+        // Corrupt exactly one encoder output at the real download boundary. The reference
+        // renderer retains its original encoder, so this proves the oracle detects bad output.
+        await page.EvaluateAsync("""
+            wrongDimensions=>{
+                const encode=HTMLCanvasElement.prototype.toBlob;
+                HTMLCanvasElement.prototype.toBlob=function(...args){
+                    HTMLCanvasElement.prototype.toBlob=encode;
+                    if(wrongDimensions)this.width+=1;
+                    else{const context=this.getContext('2d');context.fillStyle='#ff00ff';context.fillRect(0,0,1,1);}
+                    return encode.apply(this,args);
+                };
+            }
+            """, wrongDimensions);
+        var name = "native-font-oracle-negative-" + wrongDimensions;
+        if (wrongDimensions) await Assert.ThrowsAsync<Xunit.Sdk.EqualException>(() => CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name));
+        else {
+            var exported = await CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name);
+            Assert.True(exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32() > 0);
+            Assert.True(File.Exists(CapturePath(name + ".comparison-actual.png")));
+            Assert.True(File.Exists(CapturePath(name + ".comparison-expected.png")));
+        }
+        AssertNoConsoleErrors(session);
+    }
+
     private static Chart Model(int width, VisualThemeMode mode) =>
         FunnelPresentationRecipe.Create(width == 390 ? "compact-cone" : "cone", mode)
             .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
@@ -215,6 +246,18 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var raw = await page.EvaluateAsync<string>(ComparePixels, new { svg = composition, editableSvg = svg, png = Convert.ToBase64String(png) });
         await File.WriteAllTextAsync(stem + ".json", raw);
         using var report = JsonDocument.Parse(raw);
+        var expectedWidth = checked(report.RootElement.GetProperty("width").GetInt32() * report.RootElement.GetProperty("scale").GetInt32());
+        var expectedHeight = checked(report.RootElement.GetProperty("height").GetInt32() * report.RootElement.GetProperty("scale").GetInt32());
+        if (report.RootElement.GetProperty("pixelMismatchDiagnostic") is { ValueKind: JsonValueKind.Object } diagnostic) {
+            foreach (var side in new[] { "actual", "expected" }) {
+                var bytes = diagnostic.GetProperty(side + "RgbaBase64").GetString();
+                if (bytes != null) await File.WriteAllBytesAsync(stem + ".comparison-" + side + ".png",
+                    ChartForgeX.Raster.PngWriter.WriteRgba(new ChartForgeX.Raster.RgbaImage(expectedWidth, expectedHeight, Convert.FromBase64String(bytes))));
+            }
+        }
+        var downloaded = ChartForgeX.Raster.PngReader.Decode(png);
+        Assert.Equal(expectedWidth, downloaded.Width);
+        Assert.Equal(expectedHeight, downloaded.Height);
         return new Exported(svg, Convert.ToBase64String(png), composition, report.RootElement.Clone());
     }
 
@@ -248,8 +291,18 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             const fallback=await load(new XMLSerializer().serializeToString(documentSvg),true);let ink=0,stroke=0;
             for(let i=0;i<actual.length;i+=4){if(actual[i]===18&&actual[i+1]===52&&actual[i+2]===86&&actual[i+3]===255)ink++;
                 if(actual[i]===211&&actual[i+1]===17&&actual[i+2]===19&&actual[i+3]===255)stroke++;}
+            const mismatch=different(actual,same);
+            const encodeDiagnostic=bytes=>{
+                if(bytes.length>67108864)return null;
+                let value='';for(let i=0;i<bytes.length;i+=32768)value+=String.fromCharCode(...bytes.subarray(i,i+32768));
+                return btoa(value);
+            };
+            const firstDifferences=[];
+            if(mismatch)for(let i=0;i<actual.length&&firstDifferences.length<32;i+=4)
+                if(actual.slice(i,i+4).some((value,index)=>value!==same[i+index]))firstDifferences.push({x:(i/4)%(width*scale),y:Math.floor(i/4/(width*scale)),actual:[...actual.slice(i,i+4)],expected:[...same.slice(i,i+4)]});
+            const pixelMismatchDiagnostic=mismatch?{firstDifferences,actualRgbaBase64:encodeDiagnostic(actual),expectedRgbaBase64:encodeDiagnostic(same)}:null;
             const nonTranslationGlyphs=Array.from(root.querySelectorAll('use')).filter(node=>{const matrix=node.transform.baseVal.consolidate().matrix;return matrix.a!==1||matrix.b!==0||matrix.c!==0||matrix.d!==1;}).length;
-            return JSON.stringify({width,height,scale,resourcePaths:root.querySelectorAll('defs path[id]').length,uses:root.querySelectorAll('use').length,
+            return JSON.stringify({pixelMismatchDiagnostic,width,height,scale,resourcePaths:root.querySelectorAll('defs path[id]').length,uses:root.querySelectorAll('use').length,
                 decorationInkPixels:decorationInk(actual),editableSvgDecorationInkPixels:decorationInk(editable),
                 editableSvgDecorationDifferentPixels:different(editable,editableNone),pngDecorationDifferentPixels:different(actual,pngNone),
                 pngVersusCompletedCompositionDifferentPixels:different(actual,same),pngVersusForcedMonospaceDifferentPixels:different(actual,fallback),authoredTextInkPixels:ink,authoredStrokeInkPixels:stroke,nonTranslationGlyphs});
