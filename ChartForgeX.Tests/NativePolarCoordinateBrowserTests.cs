@@ -25,9 +25,8 @@ public sealed class NativePolarCoordinateBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         const string observationSelector = "[data-cfx-point],[data-cfx-target-kind=node]";
-        var target = page.Locator("[data-cfx-coordinate-system='polar']").Locator(observationSelector).First;
+        var (target, painted) = await NativePaintedObservationAsync(page);
         var expected = await target.GetAttributeAsync("data-cfx-target-id");
-        var painted = await NativePaintedPointAsync(target);
         await page.Mouse.MoveAsync((float)painted[0], (float)painted[1]);
         Assert.Equal(expected, await page.Locator(".cfx-hovered:is(" + observationSelector + ")").GetAttributeAsync("data-cfx-target-id"));
         Assert.NotEqual(string.Empty, await TooltipTextAsync(page));
@@ -40,6 +39,41 @@ public sealed class NativePolarCoordinateBrowserTests {
         await page.Mouse.ClickAsync((float)painted[0], (float)painted[1]);
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
+    [Trait("Category", "Browser")]
+    [InlineData(ChartSeriesKind.Radar)]
+    [InlineData(ChartSeriesKind.Polar)]
+    public async Task PaintedObservationRequiresAnUnoccludedNativeMark(ChartSeriesKind kind) {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(Fixture(kind).ToInteractiveHtmlPage());
+        var page = session.Page;
+        var (first, _) = await NativePaintedObservationAsync(page);
+        var firstId = await first.GetAttributeAsync("data-cfx-target-id");
+        // A host overlay can cover a native vertex. Its semantic metadata does not make it a painted hit.
+        await first.EvaluateAsync("node => { const box=node.getBoundingClientRect(), cover=document.createElement('div'); cover.id='proof-occluder'; cover.style.cssText='position:fixed;z-index:2147483647;background:white;left:'+(box.left-2)+'px;top:'+(box.top-2)+'px;width:'+(box.width+4)+'px;height:'+(box.height+4)+'px'; document.body.appendChild(cover); }");
+        Assert.Empty(await NativePaintedPointAsync(first));
+        var (visible, _) = await NativePaintedObservationAsync(page);
+        Assert.NotEqual(firstId, await visible.GetAttributeAsync("data-cfx-target-id"));
+        await page.EvaluateAsync("() => { const cover=document.getElementById('proof-occluder'); cover.style.cssText='position:fixed;z-index:2147483647;background:white;inset:0'; }");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativePaintedObservationAsync(page));
+        await page.Locator("#proof-occluder").EvaluateAsync("node => node.remove()");
+        Assert.NotEmpty(await NativePaintedPointAsync(first));
+        AssertNoConsoleErrors(session);
+    }
+
+    // Axis captions and host overlays can occlude a vertex on a different font/layout host.
+    // The family contract requires a real visible observation, not a particular metadata ordinal.
+    private static async Task<(Microsoft.Playwright.ILocator Target, double[] Point)> NativePaintedObservationAsync(Microsoft.Playwright.IPage page) {
+        var observations = page.Locator("[data-cfx-coordinate-system='polar']").Locator("[data-cfx-point],[data-cfx-target-kind=node]");
+        for (var index = 0; index < await observations.CountAsync(); index++) {
+            var target = observations.Nth(index);
+            var point = await NativePaintedPointAsync(target);
+            if (point.Length == 2) return (target, point);
+        }
+        var detail = await observations.EvaluateAllAsync<string>("nodes => JSON.stringify(nodes.map(node=>({owner:node.outerHTML.slice(0,6000),box:node.getBoundingClientRect().toJSON()})))");
+        throw new InvalidOperationException("No unoccluded native painted observation: " + detail);
     }
 
     [Fact]
@@ -81,9 +115,7 @@ public sealed class NativePolarCoordinateBrowserTests {
                 });
                 if(painted)return [x,y];
             }
-            throw Error('No native painted observation: '+JSON.stringify({owner:node.outerHTML.slice(0,6000),box:box.toJSON(),
-                viewport:{width:innerWidth,height:innerHeight},marks:marks.map(mark=>({box:mark.getBoundingClientRect().toJSON(),
-                    fill:getComputedStyle(mark).fill,stroke:getComputedStyle(mark).stroke}))}));
+            return [];
         }
         """);
 
