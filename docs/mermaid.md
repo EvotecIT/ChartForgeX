@@ -1921,6 +1921,15 @@ Hosts that already parse Markdown can pass discovered `VisualMarkupBlock` instan
 var result = new MermaidVisualMarkupParser().ParseBlocks(blocks);
 ```
 
+A host can supply a page fallback before Mermaid captures native appearance:
+
+```csharp
+var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions(), VisualThemeMode.Dark);
+var result = parser.Parse(markdown);
+```
+
+The fallback applies only to fences without an authored theme. Source palettes still win, and a host default is not recorded as an authored source theme. Existing constructors retain native defaults.
+
 That flow keeps Mermaid syntax handling inside ChartForgeX while avoiding a second Markdown scan in native IX or OfficeIMO-backed pipelines.
 
 Use `MermaidRenderOptions` when a host wants shared defaults for several diagram families:

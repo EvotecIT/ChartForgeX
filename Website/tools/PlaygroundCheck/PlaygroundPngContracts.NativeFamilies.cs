@@ -21,6 +21,7 @@ internal static partial class PlaygroundPngContracts {
             (Id: "railroad-ir-native", Family: "railroad", Text: new[] { "Expression grammar", "expression", "term" }),
             (Id: "railroad-ebnf-native", Family: "railroad", Text: new[] { "Identifier grammar", "identifier", "keyword" }),
             (Id: "railroad-abnf-native", Family: "railroad", Text: new[] { "Address grammar", "address", "local-part" }),
+            (Id: "railroad-abnf-case-sensitive", Family: "railroad", Text: new[] { "Case-sensitive grammar", "literal", "\"Exact\"" }),
             (Id: "railroad-peg-native", Family: "railroad", Text: new[] { "Identifier grammar", "identifier", "keyword" })
         };
         foreach (var fixture in fixtures) {
@@ -35,6 +36,11 @@ internal static partial class PlaygroundPngContracts {
                     try {
                         var svg = Render(route.Language, route.Source, theme);
                         RequireOk(svg);
+                        if (output != null) {
+                            var observed = Path.Combine(output, fixture.Id + "-" + theme + "-" + route.Id);
+                            File.WriteAllText(observed + ".reply.json", svg.GetRawText());
+                            File.WriteAllText(observed + ".observed.svg", svg.GetProperty("downloadSvg").GetString());
+                        }
                         if (svg.GetProperty("artifactCount").GetInt32() != 1 || !svg.GetProperty("themed").GetBoolean())
                             throw new InvalidOperationException("The native family lost its single artifact or unowned page-theme selection.");
                         if (route.Language == "mermaid" && svg.GetProperty("diagramType").GetString() != fixture.Family)
@@ -87,7 +93,7 @@ internal static partial class PlaygroundPngContracts {
         var cases = new[] {
             (Id: "agentflow-unclosed-metadata", Source: "agentflow-beta\n  a@{ policy: { retries: 2 }"),
             (Id: "zenuml-unsupported-declaration", Source: "zenuml\n  participant Alice unsupported"),
-            (Id: "railroad-unsupported-literal-prefix", Source: "railroad-abnf-beta\n  rule = %s\"x\" ;")
+            (Id: "railroad-malformed-case-sensitive-literal", Source: "railroad-abnf-beta\n  rule = %s 'x' ;")
         };
         foreach (var item in cases) foreach (var route in Routes(item.Source)) foreach (var format in new[] { "svg", "png" }) {
             var result = Render(route.Language, route.Source, "light", format);

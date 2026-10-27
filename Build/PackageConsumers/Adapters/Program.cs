@@ -50,6 +50,7 @@ internal static partial class Program {
         UseCaseSourceDepthContracts();
         AdvancedActorContracts();
         NativeRailroadContracts();
+        NativeMermaidThemeFallbackContracts();
         IshikawaNaturalCauseContracts();
         TypedChordMarkupContracts();
         NativeStagePresentationAdapterContract();

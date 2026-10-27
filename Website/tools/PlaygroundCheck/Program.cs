@@ -81,7 +81,7 @@ ExpectFailure("empty source", "mermaid", "   ", "light", false);
 ExpectFailure("oversized source", "mermaid", "flowchart LR\n" + new string('%', PlaygroundEngine.MaxSourceLength), "light", false);
 ExpectFailure("unknown mermaid type", "mermaid", "notADiagram\n  a --> b", "light", true);
 ExpectFailure("mermaid syntax error", "mermaid", "sequenceDiagram\n  Alice->>Bob: hi\n  this is not valid ->>", "light", true);
-ExpectFailure("unsupported railroad literal prefix", "mermaid", "railroad-abnf-beta\n  rule = %s\"x\" ;", "light", true);
+ExpectFailure("malformed railroad case-sensitive literal", "mermaid", "railroad-abnf-beta\n  rule = %s 'x' ;", "light", true);
 ExpectFailure("markup without fence", "chartforgex", "type bar\nvalues 1 2 3", "light", true);
 ExpectFailure("markup bad version", "chartforgex", "```chartforgex chart v2\nvalues 1 2\n```", "light", true);
 ExpectFailure("markup bad option", "chartforgex", "```chartforgex chart v1\ntype bar\nvalues 1 2\noption legend maybe\n```", "dark", true);
