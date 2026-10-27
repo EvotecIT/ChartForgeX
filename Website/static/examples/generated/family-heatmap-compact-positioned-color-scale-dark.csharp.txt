@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HeatmapPositionedColorScaleRecipe.Create("compact-positioned-color-scale", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Temperature across service areas").WithSubtitle("Absolute color anchors use uneven numeric intervals").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Temperature across service areas", "Absolute color anchors use uneven numeric intervals", showLegend: null, showSurface: false));

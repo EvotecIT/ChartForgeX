@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = DottedMapRecipe.Create("options", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Service routes across Europe").WithSubtitle("Location keys retain coordinates and optional weights").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Service routes across Europe", "Location keys retain coordinates and optional weights", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

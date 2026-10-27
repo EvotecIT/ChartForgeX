@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = BubblePlotRegionsRecipe.Create("compact-plot-regions", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Capacity and delay").WithSubtitle("Bounded operating guidance leaves source values and bubble sizes independent").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Capacity and delay", "Bounded operating guidance leaves source values and bubble sizes independent", showLegend: null, showSurface: false));

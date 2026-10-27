@@ -1,0 +1,382 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Retained vector surface shadows &#183; Sequence</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Sequence</p><h1>Retained vector surface shadows</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="sequence-expanded-light.html" data-theme-link data-light-href="sequence-expanded-light.html" data-dark-href="sequence-expanded-dark.html">Detailed</a></span><span><a href="sequence-layout-typography-wide-light.html" data-theme-link data-light-href="sequence-layout-typography-wide-light.html" data-dark-href="sequence-layout-typography-wide-dark.html">Standard &#183; Measured review sequence</a></span><span><a href="sequence-participant-views-wide-light.html" data-theme-link data-light-href="sequence-participant-views-wide-light.html" data-dark-href="sequence-participant-views-wide-dark.html">Standard &#183; Participant views</a></span><span><a href="sequence-message-presentation-wide-light.html" data-theme-link data-light-href="sequence-message-presentation-wide-light.html" data-dark-href="sequence-message-presentation-wide-dark.html">Standard &#183; Message presentation</a></span><span><a href="sequence-self-routes-wide-light.html" data-theme-link data-light-href="sequence-self-routes-wide-light.html" data-dark-href="sequence-self-routes-wide-dark.html">Standard &#183; Self routes</a></span><span><a href="sequence-navigation-wide-light.html" data-theme-link data-light-href="sequence-navigation-wide-light.html" data-dark-href="sequence-navigation-wide-dark.html">Standard &#183; Participant navigation</a></span><span><a href="sequence-source-defaults-wide-light.html" data-theme-link data-light-href="sequence-source-defaults-wide-light.html" data-dark-href="sequence-source-defaults-wide-dark.html">Standard &#183; Sequence source defaults</a></span><span><a href="sequence-preset-appearance-wide-light.html" data-theme-link data-light-href="sequence-preset-appearance-wide-light.html" data-dark-href="sequence-preset-appearance-wide-dark.html">Standard &#183; Measured participant bands</a></span><span><a href="sequence-surface-shadows-wide-light.html" data-theme-link data-light-href="sequence-surface-shadows-wide-light.html" data-dark-href="sequence-surface-shadows-wide-dark.html">Standard &#183; Retained vector surface shadows</a></span><span><a href="sequence-layout-typography-compact-light.html" data-theme-link data-light-href="sequence-layout-typography-compact-light.html" data-dark-href="sequence-layout-typography-compact-dark.html">Compact &#183; Measured review sequence</a></span><span><a href="sequence-participant-views-compact-light.html" data-theme-link data-light-href="sequence-participant-views-compact-light.html" data-dark-href="sequence-participant-views-compact-dark.html">Compact &#183; Participant views</a></span><span><a href="sequence-message-presentation-compact-light.html" data-theme-link data-light-href="sequence-message-presentation-compact-light.html" data-dark-href="sequence-message-presentation-compact-dark.html">Compact &#183; Message presentation</a></span><span><a href="sequence-self-routes-compact-light.html" data-theme-link data-light-href="sequence-self-routes-compact-light.html" data-dark-href="sequence-self-routes-compact-dark.html">Compact &#183; Self routes</a></span><span><a href="sequence-navigation-compact-light.html" data-theme-link data-light-href="sequence-navigation-compact-light.html" data-dark-href="sequence-navigation-compact-dark.html">Compact &#183; Participant navigation</a></span><span><a href="sequence-source-defaults-compact-light.html" data-theme-link data-light-href="sequence-source-defaults-compact-light.html" data-dark-href="sequence-source-defaults-compact-dark.html">Compact &#183; Sequence source defaults</a></span><span><a href="sequence-preset-appearance-compact-light.html" data-theme-link data-light-href="sequence-preset-appearance-compact-light.html" data-dark-href="sequence-preset-appearance-compact-dark.html">Compact &#183; Measured participant bands</a></span><span class="current-variant"><a href="sequence-surface-shadows-compact-light.html" data-theme-link data-light-href="sequence-surface-shadows-compact-light.html" data-dark-href="sequence-surface-shadows-compact-dark.html" aria-current="page">Compact &#183; Retained vector surface shadows</a></span><span><a href="sequence-feasibility-light.html" data-theme-link data-light-href="sequence-feasibility-light.html" data-dark-href="sequence-feasibility-dark.html">Simple</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:390px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="390" height="900" viewBox="0 0 390 900" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Retained vector surface shadows" aria-labelledby="sequence-surface-shadows-compact-light-title" aria-describedby="sequence-surface-shadows-compact-light-description"><title id="sequence-surface-shadows-compact-light-title">Retained vector surface shadows</title><desc id="sequence-surface-shadows-compact-light-description">Native shadows behind vector glyphs, captions and safe links</desc><defs><clipPath id="sequence-surface-shadows-compact-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="342" height="852"/></clipPath></defs><rect x="0" y="0" width="390" height="900" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#sequence-surface-shadows-compact-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Retained vector surface shadows</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Native shadows behind vector glyphs, captions and safe links</text></g></g></g><g id="sequence-surface-shadows-compact-light-node-9" data-cfx-source-id="block-1" data-cfx-role="sequence-block" data-label="Audit"><rect x="36" y="184.298" width="318" height="188.297" rx="0" data-cfx-role="sequence-fragment-frame" fill="none" stroke="#E2E4E7" stroke-width="1"/><g><image x="32" y="181" width="60" height="46" preserveAspectRatio="none" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAAuCAYAAAB04nriAAACqElEQVR4nO2aeVPCMBDFF0E8QBG87wNxvO8TD/z+n8p95i2GUhH/S9pm5hnqtJn88nZTho3IcCtlrB/ZStREBlTylNrsxopqUjWlqqqm+TmW3uYNhjI1BG6uTvLBmmpetUA1vc+hXzc49xpZDLwPbPQGi5sXVWuqDdVWRNqkVskAlhlxUTshXsMFwmBOtcSHD1RHqmPVSST9Med8QAaw1Mlmef39p0x3G3S1rTpXXavuqPsI+lvVjepMdahaFxfm02TsN1zA+pZqmyuGh59VXdVrJMJcnzj3E7K0yNbPY3N4Vlzc73GFHjjIB9WLpH8T5zYYdsWFteWxGHCFwEsERjg/8mEM9BmJepzzIxn2yAS2kQ4ngXvegKH3PrA5DLbcOVyRP3I4Voffxe0/acBiwHlwOL85LFI4nLkcLt7DucrhvDhcvIez7nB+c1ikcDhzOVy8h3OVw3lxuHgPZ93hTOaw/WppDlsOD+zSItly+JXAp6od+cfv0rE5bPn7Iq76gLIL6kwotA1UHmLPYR/W3L0QV19CUQ31stTaUqw5nIS9UnXEFdOa8rNDA1gMOCaH02C7hL0UVz3clsHK4VB9OMYctlcQcvaesB3CggOhjNMA9oVjABj/nOGN2MpPOUiXK/gRWG8hjOomSqWISJRHN8lQ/w3WgK1ciphH7CMsUBt+4KDPXMkQeuiJc7umOdigNjh/HHWo/gZrrcwVQUEcO9u+uG0du91VgLokKIxBRK7JzwY1dKYj2exAS5Wr0+IAOwRHqLQD6tucF0Dh6jKNSsKOPKdlYT1FaBwTQC6siHM8NK1wfpgn8hVfLOzVM9aBNOHNgLazWTVqjoOG0tc5LzhqZ7LKkjilM07zT+FhADugFpoqngx0bFeTwMneFqAU0LUvf75FS2tf7WrBp1C1WV4AAAAASUVORK5CYII=" aria-hidden="true" pointer-events="none"/><path d="M 36 184.298 L 86 184.298 L 86 212.298 L 78 219.298 L 36 219.298 Z" data-cfx-role="sequence-fragment-tab" fill="#F8F9FA" stroke="#E2E4E7" stroke-width="1" fill-rule="evenodd"/></g><g data-cfx-role="sequence-fragment-kind"><text x="50.143" y="201.724" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">loop</text></g><g data-cfx-role="sequence-fragment-title"><text x="206.837" y="205.9" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Audit</text></g></g><line x1="132.5" y1="160.298" x2="132.5" y2="388.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#E2E4E7" stroke-width="1" stroke-dasharray="6 5"/><line x1="257.5" y1="160.298" x2="257.5" y2="388.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#E2E4E7" stroke-width="1" stroke-dasharray="6 5"/><g id="sequence-surface-shadows-compact-light-node-19" data-cfx-source-id="A" data-cfx-role="sequence-participant" data-label="Review"><a href="#guide" tabindex="0"><g data-cfx-role="sequence-participant-glyph" data-source-id="A"><g transform="translate(0 3)"><g data-cfx-role="sequence-notation" data-kind="Actor"><ellipse cx="132.5" cy="99.65" rx="6" ry="6" fill="#F8F9FA" stroke="#11776F" stroke-width="1"/><line x1="132.5" y1="105.65" x2="132.5" y2="120.65" fill="none" stroke="#11776F" stroke-width="1"/><line x1="120.5" y1="110.65" x2="144.5" y2="110.65" fill="none" stroke="#11776F" stroke-width="1"/><line x1="132.5" y1="120.65" x2="121.5" y2="130.65" fill="none" stroke="#11776F" stroke-width="1"/><line x1="132.5" y1="120.65" x2="143.5" y2="130.65" fill="none" stroke="#11776F" stroke-width="1"/></g></g></g><g data-cfx-role="sequence-participant-label"><text x="115.06" y="151.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Review</text></g></a></g><g id="sequence-surface-shadows-compact-light-node-35" data-cfx-source-id="B" data-cfx-role="sequence-participant" data-label="Archive"><g data-cfx-role="sequence-participant-glyph" data-source-id="B"><g><image x="247" y="105" width="29" height="34" preserveAspectRatio="none" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAiCAYAAACjv9J3AAABFklEQVR4nN1Xiw6DIAyszrci/v/XTiIstRYQU1i2Sy4NY9v1WiYdwI/htXMuLah2diUF19KC/+0QrKCGw6km69VGjo8OW4+EYjTiIxxVqRFvw/XPfNmWGJX9fBI6xsWWuNaQ0P/ugbNQjAo3TLYSbEKi7kRKOnUHjMUQyZbrWcr+QAUrm420QxxXq/NBG8lSii0WHTM6xHHCogtce5JjvWBR+sZcUXOiJfhdp4rpAaXEvsKicyGnp7uVu1Vy8PTwrws5vVzoE9MDyfXpwUDd5jq13rGlJ9lJsfcJGlS2DJJO2bJyoP29+zukr90WdMClftLDYElDcP/MUvo3w4Px0yduxg03zdOJYLH7ImI+mANXAxk/7uIN5M8jDWAXDwQAAAAASUVORK5CYII=" aria-hidden="true" pointer-events="none"/><g transform="translate(0 8)"><g data-cfx-role="sequence-notation" data-kind="Control"><ellipse cx="257.5" cy="112.65" rx="13" ry="13" fill="#F8F9FA" stroke="#11776F" stroke-width="1"/><line x1="253.5" y1="99.65" x2="267.5" y2="99.65" fill="none" stroke="#11776F" stroke-width="1"/><line x1="253.5" y1="99.65" x2="258.5" y2="94.65" fill="none" stroke="#11776F" stroke-width="1"/><line x1="253.5" y1="99.65" x2="258.5" y2="104.65" fill="none" stroke="#11776F" stroke-width="1"/></g></g></g></g><g data-cfx-role="sequence-participant-label"><text x="239.321" y="151.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Archive</text></g></g><g id="sequence-surface-shadows-compact-light-node-50" data-cfx-source-id="message-1" data-cfx-role="sequence-message" data-kind="Call" data-label="Save" data-source="A" data-target="B"><path d="M 132.5 245.947 L 257.5 245.947" data-cfx-role="sequence-message-line" fill="none" stroke="#11776F" stroke-width="2"/><path d="M 257.5 245.947 L 248.5 240.947 L 248.5 250.947 Z" data-cfx-role="sequence-call-arrow" fill="#11776F" stroke="none" stroke-width="1" fill-rule="evenodd"/><g data-cfx-role="sequence-label"><text x="183.832" y="230.724" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Save</text></g></g><g id="sequence-surface-shadows-compact-light-node-55" data-cfx-source-id="message-2" data-cfx-role="sequence-message" data-kind="Call" data-label="Stored" data-source="B" data-target="A"><path d="M 257.5 344.595 L 132.5 344.595" data-cfx-role="sequence-message-line" fill="none" stroke="#11776F" stroke-width="2"/><path d="M 132.5 344.595 L 141.5 339.595 L 141.5 349.595 Z" data-cfx-role="sequence-call-arrow" fill="#11776F" stroke="none" stroke-width="1" fill-rule="evenodd"/><g data-cfx-role="sequence-label"><text x="178.978" y="329.373" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Stored</text></g></g><g id="sequence-surface-shadows-compact-light-node-60" data-cfx-source-id="note-1" data-cfx-role="sequence-note" data-label="Retain audit facts"><g><image x="96" y="270" width="200" height="47" preserveAspectRatio="none" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAAvCAYAAACmGYWkAAADbklEQVR4nO2daVNTMRhGUwouICq4Oy4Vd9FxxQUQ/f+/ypxJYtPSBgpfuLfnzpx5KLm9/fI+8yRN500IXl5eC1+DSkX6wLmv8pCVzDCzWjGco447flHHodT0ucwyyA/hwZciVyJXI+uRjazrvvZ1x15Tw5cja2FsljOZpJgDY1yL3IxsR25n7qhqx/RWSDV8I6SaLkZZ2CTcPMwP2MwPfhB5EhlFnqlqBxUeRx6GZBqMQqIsbBJuXM1v3s4PfB55E3mf+aCqHdPdyNvIy8jTyL2QZkYLm2SQ30AMEU048F3kc2Qv8n2KHzP+57jjF22c2v0a+RSSUahrZkZbIa1PTm0SbmBhvpkf8CLyMX/QQeQw8ltVO6YHGer4S0iJwsyomOTUSVIS5Hp+86uQ0mM/chT5I9JRqF8M8zOkNMEkO2HBJCkJgkFYf2AQHLdffdBfVe2oYhISpTbJdJJQ/3NNshLGBikJUgxylD9EpIvUJjlzkpgg6jLorCTBJPdD+naLPUC+zR2EKZPgmukEqdcgf0V6AEYpSfIrJJPwbe0ocjekL6nKVGviMkHUZdI6SQiC1yFtKJb1CJvmJyaIaxDpI7VJSBL2S9hUZI+EPUB+x8VaZMIgJoi6jEqKMNViz4/ddnbamWaVxfr/ixeuQWTZoLapcWqdmqf28QBeMEHUpdfaIKxDikFOlSCuQaTvFINQ69Q84WCCqGoYG4TfatUJwk/iXYOIhGQUE0RV56hrEJEGrkFUtaGzEsQ1iEjGBFHVhroGEWlggqhqQ90HEWmAUUwQVZ2jrkFEGrgGUdWGug8i0sAEUdWGugYRaWCCqGpD3QcRaYBRFk4QDEKHBwxCx4dW8+qTGls77vhFHqeryaymDTMThH/S8oQ2jPXxBzzgUKSHML2iLxa1Ts1T+6W74rEEwSA0zaIF4yiklowcPLIXxofoqGqf9FtI6cHhOqOQGsdxiBT9eScSpBzBRodr2i8yF6PTHEewYZRdkR5CbbM43wmp5kvr0dLAeuKiH2k5ZYpzCpmPPQrpbDcYVX/Xr6fVcce7Ms4htfTkZWrFwbXlJFzS49gUi3+u5hu4ka+7tvIbRfoKNU6tb4Tx8QcT06ty1SZZyzdDOYxdVfuoQCgwe2IWVcwx86SpcnDISmYosiSUaVXznEJVXXaduP4BERHLhs3oIiAAAAAASUVORK5CYII=" aria-hidden="true" pointer-events="none"/><path d="M 100.5 273.947 L 280.5 273.947 L 289.5 282.947 L 289.5 309.947 L 100.5 309.947 Z" fill="#F8F9FA" stroke="#11776F" stroke-width="1" fill-rule="evenodd"/><line x1="280.5" y1="273.947" x2="280.5" y2="282.947" fill="none" stroke="#11776F" stroke-width="1"/><line x1="280.5" y1="282.947" x2="289.5" y2="282.947" fill="none" stroke="#11776F" stroke-width="1"/></g><g data-cfx-role="sequence-label"><text x="110.5" y="293.373" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Retain audit facts</text></g></g></svg></div><div class="full" style="--example-width:390px" data-visual-theme="light" data-output-format="png"><img src="sequence-surface-shadows-compact-light.png" width="390" height="900" alt="Retained vector surface shadows" loading="lazy" decoding="async"></div><div class="full" style="--example-width:390px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="390" height="900" viewBox="0 0 390 900" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Retained vector surface shadows" aria-labelledby="sequence-surface-shadows-compact-dark-title" aria-describedby="sequence-surface-shadows-compact-dark-description"><title id="sequence-surface-shadows-compact-dark-title">Retained vector surface shadows</title><desc id="sequence-surface-shadows-compact-dark-description">Native shadows behind vector glyphs, captions and safe links</desc><defs><clipPath id="sequence-surface-shadows-compact-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="342" height="852"/></clipPath></defs><rect x="0" y="0" width="390" height="900" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#sequence-surface-shadows-compact-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Retained vector surface shadows</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Native shadows behind vector glyphs, captions and safe links</text></g></g></g><g id="sequence-surface-shadows-compact-dark-node-9" data-cfx-source-id="block-1" data-cfx-role="sequence-block" data-label="Audit"><rect x="36" y="184.298" width="318" height="188.297" rx="0" data-cfx-role="sequence-fragment-frame" fill="none" stroke="#272A30" stroke-width="1"/><g><image x="32" y="181" width="60" height="46" preserveAspectRatio="none" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAAuCAYAAAB04nriAAACqElEQVR4nO2aeVPCMBDFF0E8QBG87wNxvO8TD/z+n8p95i2GUhH/S9pm5hnqtJn88nZTho3IcCtlrB/ZStREBlTylNrsxopqUjWlqqqm+TmW3uYNhjI1BG6uTvLBmmpetUA1vc+hXzc49xpZDLwPbPQGi5sXVWuqDdVWRNqkVskAlhlxUTshXsMFwmBOtcSHD1RHqmPVSST9Med8QAaw1Mlmef39p0x3G3S1rTpXXavuqPsI+lvVjepMdahaFxfm02TsN1zA+pZqmyuGh59VXdVrJMJcnzj3E7K0yNbPY3N4Vlzc73GFHjjIB9WLpH8T5zYYdsWFteWxGHCFwEsERjg/8mEM9BmJepzzIxn2yAS2kQ4ngXvegKH3PrA5DLbcOVyRP3I4Voffxe0/acBiwHlwOL85LFI4nLkcLt7DucrhvDhcvIez7nB+c1ikcDhzOVy8h3OVw3lxuHgPZ93hTOaw/WppDlsOD+zSItly+JXAp6od+cfv0rE5bPn7Iq76gLIL6kwotA1UHmLPYR/W3L0QV19CUQ31stTaUqw5nIS9UnXEFdOa8rNDA1gMOCaH02C7hL0UVz3clsHK4VB9OMYctlcQcvaesB3CggOhjNMA9oVjABj/nOGN2MpPOUiXK/gRWG8hjOomSqWISJRHN8lQ/w3WgK1ciphH7CMsUBt+4KDPXMkQeuiJc7umOdigNjh/HHWo/gZrrcwVQUEcO9u+uG0du91VgLokKIxBRK7JzwY1dKYj2exAS5Wr0+IAOwRHqLQD6tucF0Dh6jKNSsKOPKdlYT1FaBwTQC6siHM8NK1wfpgn8hVfLOzVM9aBNOHNgLazWTVqjoOG0tc5LzhqZ7LKkjilM07zT+FhADugFpoqngx0bFeTwMneFqAU0LUvf75FS2tf7WrBp1C1WV4AAAAASUVORK5CYII=" aria-hidden="true" pointer-events="none"/><path d="M 36 184.298 L 86 184.298 L 86 212.298 L 78 219.298 L 36 219.298 Z" data-cfx-role="sequence-fragment-tab" fill="#111317" stroke="#272A30" stroke-width="1" fill-rule="evenodd"/></g><g data-cfx-role="sequence-fragment-kind"><text x="50.143" y="201.724" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">loop</text></g><g data-cfx-role="sequence-fragment-title"><text x="206.837" y="205.9" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Audit</text></g></g><line x1="132.5" y1="160.298" x2="132.5" y2="388.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#272A30" stroke-width="1" stroke-dasharray="6 5"/><line x1="257.5" y1="160.298" x2="257.5" y2="388.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#272A30" stroke-width="1" stroke-dasharray="6 5"/><g id="sequence-surface-shadows-compact-dark-node-19" data-cfx-source-id="A" data-cfx-role="sequence-participant" data-label="Review"><a href="#guide" tabindex="0"><g data-cfx-role="sequence-participant-glyph" data-source-id="A"><g transform="translate(0 3)"><g data-cfx-role="sequence-notation" data-kind="Actor"><ellipse cx="132.5" cy="99.65" rx="6" ry="6" fill="#111317" stroke="#37C9B8" stroke-width="1"/><line x1="132.5" y1="105.65" x2="132.5" y2="120.65" fill="none" stroke="#37C9B8" stroke-width="1"/><line x1="120.5" y1="110.65" x2="144.5" y2="110.65" fill="none" stroke="#37C9B8" stroke-width="1"/><line x1="132.5" y1="120.65" x2="121.5" y2="130.65" fill="none" stroke="#37C9B8" stroke-width="1"/><line x1="132.5" y1="120.65" x2="143.5" y2="130.65" fill="none" stroke="#37C9B8" stroke-width="1"/></g></g></g><g data-cfx-role="sequence-participant-label"><text x="115.06" y="151.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Review</text></g></a></g><g id="sequence-surface-shadows-compact-dark-node-35" data-cfx-source-id="B" data-cfx-role="sequence-participant" data-label="Archive"><g data-cfx-role="sequence-participant-glyph" data-source-id="B"><g><image x="247" y="105" width="29" height="34" preserveAspectRatio="none" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAiCAYAAACjv9J3AAABHUlEQVR4nN2Xiw6DIAxFZb5f4P//rKNLTbrKq1NYNpKmQdDD7cWIVfVLbd/32sZcGrja6EoCdWngHytEKAANKjWsrzG7Qr7Z7E09AcUC4CNW5XGEBFYT2CbMcF8tVdc5VGzCvkn2H4FSZaEcBtsJTaJ30mhCUB1Y8ZWsfcAhslqXZ5LxgQMVqrxbIc3wfEWhbSYvebQUOmZUSPNEoYvDkxz9hUL5xFzZuKDZ4+tKV4cHPO4YXyl0LqR0plDXVyVHdBT6KKT0/YNuL0wRj672p4o3ojbLrj2pJOA+k5e9E4hQhWW+U+m5rB449zf1PeTX0oCeUn/iob+kEfDrz0zoH8yXHT8DcDjOHKd5fiJYcPw6LLAI2HDwiqn47HN7AipUgRFxDLUuAAAAAElFTkSuQmCC" aria-hidden="true" pointer-events="none"/><g transform="translate(0 8)"><g data-cfx-role="sequence-notation" data-kind="Control"><ellipse cx="257.5" cy="112.65" rx="13" ry="13" fill="#111317" stroke="#37C9B8" stroke-width="1"/><line x1="253.5" y1="99.65" x2="267.5" y2="99.65" fill="none" stroke="#37C9B8" stroke-width="1"/><line x1="253.5" y1="99.65" x2="258.5" y2="94.65" fill="none" stroke="#37C9B8" stroke-width="1"/><line x1="253.5" y1="99.65" x2="258.5" y2="104.65" fill="none" stroke="#37C9B8" stroke-width="1"/></g></g></g></g><g data-cfx-role="sequence-participant-label"><text x="239.321" y="151.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Archive</text></g></g><g id="sequence-surface-shadows-compact-dark-node-50" data-cfx-source-id="message-1" data-cfx-role="sequence-message" data-kind="Call" data-label="Save" data-source="A" data-target="B"><path d="M 132.5 245.947 L 257.5 245.947" data-cfx-role="sequence-message-line" fill="none" stroke="#37C9B8" stroke-width="2"/><path d="M 257.5 245.947 L 248.5 240.947 L 248.5 250.947 Z" data-cfx-role="sequence-call-arrow" fill="#37C9B8" stroke="none" stroke-width="1" fill-rule="evenodd"/><g data-cfx-role="sequence-label"><text x="183.832" y="230.724" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Save</text></g></g><g id="sequence-surface-shadows-compact-dark-node-55" data-cfx-source-id="message-2" data-cfx-role="sequence-message" data-kind="Call" data-label="Stored" data-source="B" data-target="A"><path d="M 257.5 344.595 L 132.5 344.595" data-cfx-role="sequence-message-line" fill="none" stroke="#37C9B8" stroke-width="2"/><path d="M 132.5 344.595 L 141.5 339.595 L 141.5 349.595 Z" data-cfx-role="sequence-call-arrow" fill="#37C9B8" stroke="none" stroke-width="1" fill-rule="evenodd"/><g data-cfx-role="sequence-label"><text x="178.978" y="329.373" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Stored</text></g></g><g id="sequence-surface-shadows-compact-dark-node-60" data-cfx-source-id="note-1" data-cfx-role="sequence-note" data-label="Retain audit facts"><g><image x="96" y="270" width="200" height="47" preserveAspectRatio="none" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAAvCAYAAACmGYWkAAADbklEQVR4nO2daVNTMRhGUwouICq4Oy4Vd9FxxQUQ/f+/ypxJYtPSBgpfuLfnzpx5KLm9/fI+8yRN500IXl5eC1+DSkX6wLmv8pCVzDCzWjGco447flHHodT0ucwyyA/hwZciVyJXI+uRjazrvvZ1x15Tw5cja2FsljOZpJgDY1yL3IxsR25n7qhqx/RWSDV8I6SaLkZZ2CTcPMwP2MwPfhB5EhlFnqlqBxUeRx6GZBqMQqIsbBJuXM1v3s4PfB55E3mf+aCqHdPdyNvIy8jTyL2QZkYLm2SQ30AMEU048F3kc2Qv8n2KHzP+57jjF22c2v0a+RSSUahrZkZbIa1PTm0SbmBhvpkf8CLyMX/QQeQw8ltVO6YHGer4S0iJwsyomOTUSVIS5Hp+86uQ0mM/chT5I9JRqF8M8zOkNMEkO2HBJCkJgkFYf2AQHLdffdBfVe2oYhISpTbJdJJQ/3NNshLGBikJUgxylD9EpIvUJjlzkpgg6jLorCTBJPdD+naLPUC+zR2EKZPgmukEqdcgf0V6AEYpSfIrJJPwbe0ocjekL6nKVGviMkHUZdI6SQiC1yFtKJb1CJvmJyaIaxDpI7VJSBL2S9hUZI+EPUB+x8VaZMIgJoi6jEqKMNViz4/ddnbamWaVxfr/ixeuQWTZoLapcWqdmqf28QBeMEHUpdfaIKxDikFOlSCuQaTvFINQ69Q84WCCqGoYG4TfatUJwk/iXYOIhGQUE0RV56hrEJEGrkFUtaGzEsQ1iEjGBFHVhroGEWlggqhqQ90HEWmAUUwQVZ2jrkFEGrgGUdWGug8i0sAEUdWGugYRaWCCqGpD3QcRaYBRFk4QDEKHBwxCx4dW8+qTGls77vhFHqeryaymDTMThH/S8oQ2jPXxBzzgUKSHML2iLxa1Ts1T+6W74rEEwSA0zaIF4yiklowcPLIXxofoqGqf9FtI6cHhOqOQGsdxiBT9eScSpBzBRodr2i8yF6PTHEewYZRdkR5CbbM43wmp5kvr0dLAeuKiH2k5ZYpzCpmPPQrpbDcYVX/Xr6fVcce7Ms4htfTkZWrFwbXlJFzS49gUi3+u5hu4ka+7tvIbRfoKNU6tb4Tx8QcT06ty1SZZyzdDOYxdVfuoQCgwe2IWVcwx86SpcnDISmYosiSUaVXznEJVXXaduP4BERHLhs3oIiAAAAAASUVORK5CYII=" aria-hidden="true" pointer-events="none"/><path d="M 100.5 273.947 L 280.5 273.947 L 289.5 282.947 L 289.5 309.947 L 100.5 309.947 Z" fill="#111317" stroke="#37C9B8" stroke-width="1" fill-rule="evenodd"/><line x1="280.5" y1="273.947" x2="280.5" y2="282.947" fill="none" stroke="#37C9B8" stroke-width="1"/><line x1="280.5" y1="282.947" x2="289.5" y2="282.947" fill="none" stroke="#37C9B8" stroke-width="1"/></g><g data-cfx-role="sequence-label"><text x="110.5" y="293.373" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Retain audit facts</text></g></g></svg></div><div class="full" style="--example-width:390px" data-visual-theme="dark" data-output-format="png"><img src="sequence-surface-shadows-compact-dark.png" width="390" height="900" alt="Retained vector surface shadows" loading="lazy" decoding="async"></div></section><div class="export-row"><span>390 × 900 pixels</span><nav aria-label="Download outputs"><a href="sequence-surface-shadows-compact-light.svg" data-theme-link data-light-href="sequence-surface-shadows-compact-light.svg" data-dark-href="sequence-surface-shadows-compact-dark.svg" download>Download SVG</a><a href="sequence-surface-shadows-compact-light.png" data-theme-link data-light-href="sequence-surface-shadows-compact-light.png" data-dark-href="sequence-surface-shadows-compact-dark.png" download>Download PNG</a><a href="sequence-surface-shadows-compact-light.csharp.txt" data-theme-link data-light-href="sequence-surface-shadows-compact-light.csharp.txt" data-dark-href="sequence-surface-shadows-compact-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="sequence-surface-shadows-compact-light.gallery.csharp.txt" data-theme-link data-light-href="sequence-surface-shadows-compact-light.gallery.csharp.txt" data-dark-href="sequence-surface-shadows-compact-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = SequenceSurfaceShadowRecipe.Create(&quot;compact&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Retained vector surface shadows&quot;).WithSubtitle(&quot;Native shadows behind vector glyphs, captions and safe links&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 900)), theme, mode,
+    new VisualFrame(&quot;Retained vector surface shadows&quot;, &quot;Native shadows behind vector glyphs, captions and safe links&quot;, showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Sequence).ToHtmlPage());
+
+/// &lt;summary&gt;Authors retained vector surfaces with native shadows, editable source facts and explicit SVG output profiles.&lt;/summary&gt;
+public static class SequenceSurfaceShadowRecipe {
+    /// &lt;summary&gt;Creates a compact or wide native sequence without a source parser or external assets.&lt;/summary&gt;
+    public static SequenceArtifact Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;compact&quot; or &quot;wide&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == &quot;compact&quot;;
+        var dark = mode == VisualThemeMode.Dark;
+        var model = SequenceArtifact.Create(&quot;sequence-surface-shadows&quot;).WithSize(compact ? 390 : 1100, 900)
+            .AddParticipant(&quot;A&quot;, &quot;Review&quot;, SequenceArtifactParticipantKind.Actor)
+            .AddParticipant(&quot;B&quot;, &quot;Archive&quot;, SequenceArtifactParticipantKind.Control)
+            .AddMessage(&quot;A&quot;, &quot;B&quot;, &quot;Save&quot;).AddMessage(&quot;B&quot;, &quot;A&quot;, &quot;Stored&quot;);
+        model.ThemeMode = mode;
+        model.Layout = new SequenceLayoutPolicy(participantBands: new SequenceParticipantBands(),
+            participantMinimumWidth: compact ? 64 : 150, participantSpacing: compact ? 8 : 50,
+            fragmentTabMinimumWidth: 50, fragmentTabMinimumHeight: 35);
+        model.Participants[0].Href = &quot;#guide&quot;;
+        model.Participants[1].SurfaceShadow = new ChartForgeX.Effects.VisualDropShadow(
+            dark ? ChartColor.White : ChartColor.Black, 4, 4, 0, opacity: .06,
+            relativeRegion: new ChartRect(-.1, -.1, 1.3, 1.3));
+        var style = new ChartForgeX.Effects.VisualDropShadow(ChartColor.Black, 1, 2, 2, opacity: .25);
+        model.Paint.NoteShadow = style;
+        model.Paint.FragmentTabShadow = style;
+        model.Paint.BackgroundShadow = style;
+        model.AddNote(SequenceArtifactNotePlacement.Over, new[] { &quot;A&quot;, &quot;B&quot; }, &quot;Retain audit facts&quot;);
+        model.Notes[0].StepIndex = 1;
+        model.AddBlock(SequenceArtifactBlockKind.Loop, &quot;Audit&quot;, 0, 1);
+        return model;
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = SequenceSurfaceShadowRecipe.Create(&quot;compact&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Retained vector surface shadows&quot;).WithSubtitle(&quot;Native shadows behind vector glyphs, captions and safe links&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 900)), theme, mode,
+    new VisualFrame(&quot;Retained vector surface shadows&quot;, &quot;Native shadows behind vector glyphs, captions and safe links&quot;, showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Sequence).ToHtmlPage());
+
+/// &lt;summary&gt;Authors retained vector surfaces with native shadows, editable source facts and explicit SVG output profiles.&lt;/summary&gt;
+public static class SequenceSurfaceShadowRecipe {
+    /// &lt;summary&gt;Creates a compact or wide native sequence without a source parser or external assets.&lt;/summary&gt;
+    public static SequenceArtifact Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;compact&quot; or &quot;wide&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == &quot;compact&quot;;
+        var dark = mode == VisualThemeMode.Dark;
+        var model = SequenceArtifact.Create(&quot;sequence-surface-shadows&quot;).WithSize(compact ? 390 : 1100, 900)
+            .AddParticipant(&quot;A&quot;, &quot;Review&quot;, SequenceArtifactParticipantKind.Actor)
+            .AddParticipant(&quot;B&quot;, &quot;Archive&quot;, SequenceArtifactParticipantKind.Control)
+            .AddMessage(&quot;A&quot;, &quot;B&quot;, &quot;Save&quot;).AddMessage(&quot;B&quot;, &quot;A&quot;, &quot;Stored&quot;);
+        model.ThemeMode = mode;
+        model.Layout = new SequenceLayoutPolicy(participantBands: new SequenceParticipantBands(),
+            participantMinimumWidth: compact ? 64 : 150, participantSpacing: compact ? 8 : 50,
+            fragmentTabMinimumWidth: 50, fragmentTabMinimumHeight: 35);
+        model.Participants[0].Href = &quot;#guide&quot;;
+        model.Participants[1].SurfaceShadow = new ChartForgeX.Effects.VisualDropShadow(
+            dark ? ChartColor.White : ChartColor.Black, 4, 4, 0, opacity: .06,
+            relativeRegion: new ChartRect(-.1, -.1, 1.3, 1.3));
+        var style = new ChartForgeX.Effects.VisualDropShadow(ChartColor.Black, 1, 2, 2, opacity: .25);
+        model.Paint.NoteShadow = style;
+        model.Paint.FragmentTabShadow = style;
+        model.Paint.BackgroundShadow = style;
+        model.AddNote(SequenceArtifactNotePlacement.Over, new[] { &quot;A&quot;, &quot;B&quot; }, &quot;Retain audit facts&quot;);
+        model.Notes[0].StepIndex = 1;
+        model.AddBlock(SequenceArtifactBlockKind.Loop, &quot;Audit&quot;, 0, 1);
+        return model;
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

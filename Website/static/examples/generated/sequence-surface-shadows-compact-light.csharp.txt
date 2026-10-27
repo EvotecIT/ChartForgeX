@@ -1,0 +1,61 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = SequenceSurfaceShadowRecipe.Create("compact", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Retained vector surface shadows").WithSubtitle("Native shadows behind vector glyphs, captions and safe links").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 900)), theme, mode,
+    new VisualFrame("Retained vector surface shadows", "Native shadows behind vector glyphs, captions and safe links", showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Sequence).ToHtmlPage());
+
+/// <summary>Authors retained vector surfaces with native shadows, editable source facts and explicit SVG output profiles.</summary>
+public static class SequenceSurfaceShadowRecipe {
+    /// <summary>Creates a compact or wide native sequence without a source parser or external assets.</summary>
+    public static SequenceArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == "compact";
+        var dark = mode == VisualThemeMode.Dark;
+        var model = SequenceArtifact.Create("sequence-surface-shadows").WithSize(compact ? 390 : 1100, 900)
+            .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
+            .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)
+            .AddMessage("A", "B", "Save").AddMessage("B", "A", "Stored");
+        model.ThemeMode = mode;
+        model.Layout = new SequenceLayoutPolicy(participantBands: new SequenceParticipantBands(),
+            participantMinimumWidth: compact ? 64 : 150, participantSpacing: compact ? 8 : 50,
+            fragmentTabMinimumWidth: 50, fragmentTabMinimumHeight: 35);
+        model.Participants[0].Href = "#guide";
+        model.Participants[1].SurfaceShadow = new ChartForgeX.Effects.VisualDropShadow(
+            dark ? ChartColor.White : ChartColor.Black, 4, 4, 0, opacity: .06,
+            relativeRegion: new ChartRect(-.1, -.1, 1.3, 1.3));
+        var style = new ChartForgeX.Effects.VisualDropShadow(ChartColor.Black, 1, 2, 2, opacity: .25);
+        model.Paint.NoteShadow = style;
+        model.Paint.FragmentTabShadow = style;
+        model.Paint.BackgroundShadow = style;
+        model.AddNote(SequenceArtifactNotePlacement.Over, new[] { "A", "B" }, "Retain audit facts");
+        model.Notes[0].StepIndex = 1;
+        model.AddBlock(SequenceArtifactBlockKind.Loop, "Audit", 0, 1);
+        return model;
+    }
+}

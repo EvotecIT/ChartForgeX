@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ChartGridRecipe.Create("wide", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Requests and capacity").WithSubtitle("Three panels share the same axis domains").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(960, 700)), theme, mode,
     new VisualFrame("Requests and capacity", "Three panels share the same axis domains", showLegend: true, showSurface: false));

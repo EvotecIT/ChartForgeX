@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = RadialBarScalesRecipe.Create("compact-dual-axes", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Requests and resolution rate").WithSubtitle("Request counts and percentages use independent scales").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Requests and resolution rate", "Request counts and percentages use independent scales", showLegend: true, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

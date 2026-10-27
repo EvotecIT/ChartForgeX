@@ -1,0 +1,71 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = AlignedDifferenceRecipe.Create("wide", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Independent source comparison").WithSubtitle("Exact shared coordinates retain both complete inputs and nonlinear native crossing geometry").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 520)), theme, mode,
+    new VisualFrame("Independent source comparison", "Exact shared coordinates retain both complete inputs and nonlinear native crossing geometry", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Compares exact shared coordinates while retaining both independent raw sources and selected nonlinear scales.</summary>
+public static class AlignedDifferenceRecipe {
+    /// <summary>Creates a complete comparison. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "negative-log" or "compact-negative-log" or "sym-log" or "compact-sym-log" or "connect" or "compact-connect"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal);
+        var negative = variant.EndsWith("negative-log", StringComparison.Ordinal);
+        var symmetric = variant.EndsWith("sym-log", StringComparison.Ordinal);
+        var connect = variant.EndsWith("connect", StringComparison.Ordinal);
+        var actualValues = symmetric ? new[] { -40d, -20, 30, -10, 80 } : negative ? new[] { -120d, -90, -4, -80, -3 } : new[] { 2d, 4, 80, 5, 120 };
+        var forecastValues = symmetric ? new[] { -25d, -10, 20, 50, -5 } : negative ? new[] { -30d, -75, -8, -10, -50 } : new[] { 20d, 18, 10, 50, 8 };
+        var actual = ChartSeries.CreateLine(new ChartSeriesId("actual-source"), "Actual", new[] {
+            new ChartPoint(1, actualValues[0]), new ChartPoint(2, actualValues[1]), new ChartPoint(4, actualValues[2]),
+            new ChartPoint(8, actualValues[3]), new ChartPoint(16, actualValues[4]) })
+            .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("actual-" + index)));
+        var forecast = ChartSeries.CreateLine(new ChartSeriesId("forecast-source"), "Forecast", new[] {
+            new ChartPoint(1, forecastValues[0]), new ChartPoint(3, forecastValues[1]), new ChartPoint(4, forecastValues[2]),
+            new ChartPoint(8, forecastValues[3]), new ChartPoint(16, forecastValues[4]) })
+            .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("forecast-" + index)));
+        var alignment = ChartDifferencePoints.Align(actual, forecast, connect ? ChartMissingDataPolicy.Connect : ChartMissingDataPolicy.Gap);
+        var comparison = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("comparison"), "Actual against forecast", alignment)
+            // Reuse actual authored first-source IDs explicitly; Align never invents a destination key.
+            .WithObservationIds(alignment.FirstSourceIndices.Select(index => alignment.FirstObservationIds[index]))
+            .ConfigureMarkers(options => options.Radius = 3)
+            .ConfigureDifferenceArea(options => {
+                options.PositiveFill = ChartColor.FromHex("#2F8199"); options.NegativeFill = ChartColor.FromHex("#C7703C");
+                options.PositiveFillOpacity = .38; options.NegativeFillOpacity = .38;
+            });
+        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 500 : 520).WithTheme(VisualTheme.Graphite(), mode)
+            .WithTitle("Observed and forecast at shared coordinates")
+            .WithSubtitle(connect ? "Unmatched source slots remain captured; surviving pairs connect" : "Unmatched source slots remain captured and break the filled path")
+            .WithXAxis("Authored coordinate").WithYAxis("Requests").AddSeries(comparison)
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        if (symmetric) { chart.Options.YAxis.Scale = ChartScaleKind.SymmetricLogarithmic; chart.Options.YAxis.SymmetricLogarithmThreshold = 1; }
+        else chart.Options.YAxis.WithLogarithmicScale(domain: negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive);
+        return chart;
+    }
+}

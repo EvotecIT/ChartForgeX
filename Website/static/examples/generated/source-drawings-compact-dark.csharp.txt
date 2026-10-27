@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SourceDrawingsRecipe.Create("compact", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Review a measured trend").WithSubtitle("Independent source drawings retain their coordinates in every export").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 520)), theme, mode,
     new VisualFrame("Review a measured trend", "Independent source drawings retain their coordinates in every export", showLegend: false, showSurface: false));

@@ -1,0 +1,86 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = TopologyTableContentRecipe.Create("compact", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Approve a captured release").WithSubtitle("The source table remains part of its graph vertex").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 1000)), theme, mode,
+    new VisualFrame("Approve a captured release", "The source table remains part of its graph vertex", showLegend: false, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+
+/// <summary>Authors an ordinary native graph with finite, keyed table content inside its real vertex.</summary>
+/// <remarks>The separate UseCase source example exercises parsing; this recipe needs only the Core package.</remarks>
+public static class TopologyTableContentRecipe {
+    /// <summary>Creates a complete native example in compact/wide and both theme modes.</summary>
+    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == "compact";
+        var chart = TopologyChart.Create().WithId("linked-table-content").WithTitle("Approve a captured release")
+            .WithSubtitle("The source table remains part of its graph vertex")
+            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24)
+            .WithLayout(TopologyLayoutMode.Layered, compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
+        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
+        chart.AddAutoNode("User", "Release coordinator", width: 180, height: 90);
+        chart.AddAutoNode("Publish", "Approve release", width: 180, height: 70);
+        chart.AddAutoNode("Details", "Details", width: 220, height: 130);
+        foreach (var node in chart.Nodes) {
+            node.Kind = TopologyNodeKind.Generic; node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true;
+            node.DisplayMode = TopologyNodeDisplayMode.Card; node.FitLabelToContent = true;
+            node.Shape = node.Id == "User" ? TopologyNodeShape.Actor : node.Id == "Publish" ? TopologyNodeShape.Ellipse : TopologyNodeShape.Rectangle;
+        }
+        chart.Nodes[0].FitLabelToContent = false;
+        // This authored participant keeps its complete caption; wrapping/fitting still uses the shared Actor owner.
+        chart.Nodes[0].MaximumLabelCharacters = chart.Nodes[0].Label.Length;
+        chart.Nodes[2].TableContent = CreateTable();
+        chart.AddEdge("request", "User", "Publish", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
+        chart.AddEdge("inspect", "Publish", "Details", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
+        chart.Annotations.Add(new TopologyAnnotation("table-note", "Captured source facts stay linked", "Details"));
+        return chart;
+    }
+    /// <summary>Loads a saved native graph, edits a detached keyed value, and returns the ordinary editable owner.</summary>
+    public static TopologyChart LoadAndEdit(string json) {
+        var loaded = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();
+        var table = loaded.Nodes.Single(node => node.Id == "Details").TableContent!;
+        table.Rows.Single(row => row.Key == "/version").Cells[1].DisplayText = "2.00";
+        return loaded;
+    }
+    /// <summary>Creates keyed source facts; null, false, zero and empty strings remain distinct text/type facts.</summary>
+    public static TableArtifact CreateTable() {
+        var table = TableArtifact.Create("Details").AddColumn("property", "Property").AddColumn("value", "Value");
+        Add("/version", "version", "1.00", "Number"); Add("/active", "active", "false", "Boolean"); Add("/memo", "memo", "", "String");
+        Add("/owner/name", "owner.name", "Aster", "String"); Add("/owner/missing", "owner.missing", "null", "Null");
+        Add("/tags/0", "tags", "ready", "String"); Add("/tags/1", "", "signed", "String");
+        Add("/path~1~0", "path/~", "kept", "String"); Add("/empty", "empty", "[]", "Array");
+        return table;
+        void Add(string pointer, string key, string text, string kind) {
+            table.AddRow(pointer, key, text); var row = table.Rows[table.Rows.Count - 1];
+            row.Metadata["mermaid.data.pointer"] = pointer; row.Metadata["mermaid.data.kind"] = kind;
+            row.Cells[1].Metadata["mermaid.data.kind"] = kind;
+        }
+    }
+}

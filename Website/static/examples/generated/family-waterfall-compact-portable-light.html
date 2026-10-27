@@ -1,0 +1,410 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Changes in available capacity &#183; Waterfall</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Waterfall</p><h1>Changes in available capacity</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-waterfall-wide-light.html" data-theme-link data-light-href="family-waterfall-wide-light.html" data-dark-href="family-waterfall-wide-dark.html">Standard</a></span><span><a href="family-waterfall-compact-light.html" data-theme-link data-light-href="family-waterfall-compact-light.html" data-dark-href="family-waterfall-compact-dark.html">Compact</a></span><span><a href="family-waterfall-compact-horizontal-light.html" data-theme-link data-light-href="family-waterfall-compact-horizontal-light.html" data-dark-href="family-waterfall-compact-horizontal-dark.html">Compact Horizontal</a></span><span><a href="family-waterfall-compact-options-light.html" data-theme-link data-light-href="family-waterfall-compact-options-light.html" data-dark-href="family-waterfall-compact-options-dark.html">Compact options</a></span><span class="current-variant"><a href="family-waterfall-compact-portable-light.html" data-theme-link data-light-href="family-waterfall-compact-portable-light.html" data-dark-href="family-waterfall-compact-portable-dark.html" aria-current="page">Compact Portable</a></span><span><a href="family-waterfall-compact-portable-horizontal-light.html" data-theme-link data-light-href="family-waterfall-compact-portable-horizontal-light.html" data-dark-href="family-waterfall-compact-portable-horizontal-dark.html">Compact Portable Horizontal</a></span><span><a href="family-waterfall-horizontal-light.html" data-theme-link data-light-href="family-waterfall-horizontal-light.html" data-dark-href="family-waterfall-horizontal-dark.html">Horizontal</a></span><span><a href="family-waterfall-options-light.html" data-theme-link data-light-href="family-waterfall-options-light.html" data-dark-href="family-waterfall-options-dark.html">Configured options</a></span><span><a href="family-waterfall-portable-light.html" data-theme-link data-light-href="family-waterfall-portable-light.html" data-dark-href="family-waterfall-portable-dark.html">Portable</a></span><span><a href="family-waterfall-portable-horizontal-light.html" data-theme-link data-light-href="family-waterfall-portable-horizontal-light.html" data-dark-href="family-waterfall-portable-horizontal-dark.html">Portable Horizontal</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Changes in available capacity" aria-labelledby="family-waterfall-compact-portable-light-title" aria-describedby="family-waterfall-compact-portable-light-description"><title id="family-waterfall-compact-portable-light-title">Changes in available capacity</title><desc id="family-waterfall-compact-portable-light-description">Editable imported waterfall with 1 data series: Movement.</desc><defs><clipPath id="family-waterfall-compact-portable-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-waterfall-compact-portable-light-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="260.35"/></clipPath><clipPath id="family-waterfall-compact-portable-light-clip-24" clipPathUnits="userSpaceOnUse"><rect x="54.246" y="105.228" width="262.263" height="183.616"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-waterfall-compact-portable-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Changes in available capacity</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-waterfall-compact-portable-light-clip-9)"><line x1="54.246" y1="143.618" x2="316.509" y2="143.618" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="54.246" y1="198.462" x2="316.509" y2="198.462" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="54.246" y1="253.305" x2="316.509" y2="253.305" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="54.246" y1="288.844" x2="316.509" y2="288.844" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="284.513" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Open</text></g><g data-cfx-role="axis-x-label"><text x="209.516" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Stage</text></g><g data-cfx-role="axis-x-label"><text x="137.259" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Cost</text><text x="137.259" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">sum</text></g><g data-cfx-role="axis-x-label"><text x="53.916" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Balance</text></g><line x1="54.246" y1="105.228" x2="54.246" y2="288.844" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="36.164" y="146.255" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="30.082" y="201.099" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g><g data-cfx-role="axis-y-label"><text x="24" y="255.942" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">100</text></g><g data-cfx-role="axis-y-title"><text x="54.246" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Running balance</text></g></g><g clip-path="url(#family-waterfall-compact-portable-light-clip-24)"><g id="family-waterfall-compact-portable-light-node-25" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Movement" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Waterfall" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-name="Movement" data-cfx-series-scope="shared" data-cfx-source-points="4" data-cfx-state="none"><g id="family-waterfall-compact-portable-light-node-26" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Movement: Open 120 start=0 end=120 Opening balance=120" data-cfx-category-label="Open" data-cfx-derived-total="false" data-cfx-display-label="Open" data-cfx-end="120" data-cfx-formatted-end="120" data-cfx-formatted-start="0" data-cfx-formatted-value="120" data-cfx-formatted-x="Open" data-cfx-label="120" data-cfx-label-waterfall-value="Opening balance" data-cfx-observation-index="0" data-cfx-orientation="vertical" data-cfx-point="0" data-cfx-range-label="0 – 120" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-start="0" data-cfx-value="120" data-cfx-waterfall-kind="opening-balance" data-cfx-x="1"><rect x="286.911" y="143.618" width="21.73" height="131.624" rx="3" data-cfx-role="waterfall-bar" fill="#C78404" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-light-node-29" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Movement: Adjust -30 start=120 end=90 Change=-30" data-cfx-category-label="Adjust" data-cfx-delta="-30" data-cfx-derived-total="false" data-cfx-display-label="Adjust" data-cfx-end="90" data-cfx-formatted-delta="-30" data-cfx-formatted-end="90" data-cfx-formatted-start="120" data-cfx-formatted-value="-30" data-cfx-formatted-x="Adjust" data-cfx-label="-30" data-cfx-label-waterfall-value="Change" data-cfx-observation-index="1" data-cfx-orientation="vertical" data-cfx-point="1" data-cfx-range-label="120 – 90" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-start="120" data-cfx-value="-30" data-cfx-waterfall-kind="delta" data-cfx-x="2"><line x1="286.911" y1="275.243" x2="271.175" y2="275.243" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(77,82,91,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="249.444" y="242.337" width="21.73" height="32.906" rx="3" data-cfx-role="waterfall-bar" fill="#D4302F" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-light-node-33" data-cfx-source-id="series-0-point-2" data-cfx-role="waterfall-subtotal" aria-label="Movement: Stage -30 start=120 end=90 Subtotal=-30" data-cfx-category-label="Stage" data-cfx-derived="waterfall-subtotal" data-cfx-derived-identity="subtotal:3:sources:1" data-cfx-derived-total="false" data-cfx-display-label="Stage" data-cfx-end="90" data-cfx-formatted-end="90" data-cfx-formatted-start="120" data-cfx-formatted-value="-30" data-cfx-formatted-x="Stage" data-cfx-label="-30" data-cfx-label-waterfall-value="Subtotal" data-cfx-observation-index="2" data-cfx-orientation="vertical" data-cfx-point="2" data-cfx-range-label="120 – 90" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-points="1" data-cfx-start="120" data-cfx-value="-30" data-cfx-waterfall-kind="subtotal" data-cfx-x="3"><line x1="249.444" y1="242.337" x2="233.709" y2="242.337" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(77,82,91,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="211.978" y="242.337" width="21.73" height="32.906" rx="3" data-cfx-role="waterfall-bar" fill="#C78404" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-light-node-37" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Movement: Costs -125 start=90 end=-35 Change=-125" data-cfx-category-label="Costs" data-cfx-delta="-125" data-cfx-derived-total="false" data-cfx-display-label="Costs" data-cfx-end="-35" data-cfx-formatted-delta="-125" data-cfx-formatted-end="-35" data-cfx-formatted-start="90" data-cfx-formatted-value="-125" data-cfx-formatted-x="Costs" data-cfx-label="-125" data-cfx-label-waterfall-value="Change" data-cfx-observation-id="cost-change" data-cfx-observation-index="3" data-cfx-orientation="vertical" data-cfx-point="3" data-cfx-range-label="90 – -35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-start="90" data-cfx-value="-125" data-cfx-waterfall-kind="delta" data-cfx-x="4"><line x1="211.978" y1="242.337" x2="196.243" y2="242.337" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(77,82,91,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="174.512" y="105.228" width="21.73" height="137.108" rx="3" data-cfx-role="waterfall-bar" fill="#D4302F" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-light-node-41" data-cfx-source-id="series-0-point-4" data-cfx-role="waterfall-subtotal" aria-label="Movement: Cost sum -125 start=90 end=-35 Subtotal=-125" data-cfx-category-label="Cost sum" data-cfx-derived="waterfall-subtotal" data-cfx-derived-identity="subtotal:5:sources:2" data-cfx-derived-total="false" data-cfx-display-label="Cost sum" data-cfx-end="-35" data-cfx-formatted-end="-35" data-cfx-formatted-start="90" data-cfx-formatted-value="-125" data-cfx-formatted-x="Cost sum" data-cfx-label="-125" data-cfx-label-waterfall-value="Subtotal" data-cfx-observation-id="cost-checkpoint" data-cfx-observation-index="4" data-cfx-orientation="vertical" data-cfx-point="4" data-cfx-range-label="90 – -35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-points="2" data-cfx-start="90" data-cfx-value="-125" data-cfx-waterfall-kind="subtotal" data-cfx-x="5"><line x1="174.512" y1="105.228" x2="158.777" y2="105.228" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(77,82,91,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="137.046" y="105.228" width="21.73" height="137.108" rx="3" data-cfx-role="waterfall-bar" fill="#A5358A" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-light-node-45" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Movement: Recover +70 start=-35 end=35 Change=70" data-cfx-category-label="Recover" data-cfx-delta="70" data-cfx-derived-total="false" data-cfx-display-label="Recover" data-cfx-end="35" data-cfx-formatted-delta="70" data-cfx-formatted-end="35" data-cfx-formatted-start="-35" data-cfx-formatted-value="70" data-cfx-formatted-x="Recover" data-cfx-label="+70" data-cfx-label-waterfall-value="Change" data-cfx-observation-index="5" data-cfx-orientation="vertical" data-cfx-point="5" data-cfx-range-label="-35 – 35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="3" data-cfx-start="-35" data-cfx-value="70" data-cfx-waterfall-kind="delta" data-cfx-x="6"><line x1="137.046" y1="105.228" x2="121.31" y2="105.228" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(77,82,91,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="99.58" y="105.228" width="21.73" height="76.781" rx="3" data-cfx-role="waterfall-bar" fill="#1D8A52" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-light-node-49" data-cfx-source-id="series-0-point-6" data-cfx-role="waterfall-total" aria-label="Movement: Balance 35 start=0 end=35 Total=35" data-cfx-category-label="Balance" data-cfx-derived="waterfall-total" data-cfx-derived-identity="total:7:sources:0,1,2,3" data-cfx-derived-total="true" data-cfx-display-label="Balance" data-cfx-end="35" data-cfx-formatted-end="35" data-cfx-formatted-start="0" data-cfx-formatted-value="35" data-cfx-formatted-x="Balance" data-cfx-label="35" data-cfx-label-waterfall-value="Total" data-cfx-observation-index="6" data-cfx-orientation="vertical" data-cfx-point="6" data-cfx-range-label="0 – 35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="4" data-cfx-source-points="0,1,2,3" data-cfx-start="0" data-cfx-value="35" data-cfx-waterfall-kind="total" data-cfx-x="7"><rect x="62.114" y="143.618" width="21.73" height="38.39" rx="3" data-cfx-role="waterfall-bar" fill="#C78404" stroke="none" stroke-width="1"/></g></g></g><g id="family-waterfall-compact-portable-light-node-54" data-cfx-source-id="series-0-point-0-label-source" data-cfx-role="data-label-source" data-cfx-full-label="120" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-waterfall-compact-portable-light-node-55" data-cfx-source-id="series-0-point-0-label" data-cfx-role="data-label"><text x="288.653" y="212.067" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">120</text></g></g><g id="family-waterfall-compact-portable-light-node-57" data-cfx-source-id="series-0-point-1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-30" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-waterfall-compact-portable-light-node-58" data-cfx-source-id="series-0-point-1-label" data-cfx-role="data-label"><text x="252.391" y="224.184" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-30</text></g></g><g id="family-waterfall-compact-portable-light-node-60" data-cfx-source-id="series-0-point-2-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-30" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-2"><g id="family-waterfall-compact-portable-light-node-61" data-cfx-source-id="series-0-point-2-label" data-cfx-role="data-label"><text x="214.925" y="224.184" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-30</text></g></g><g id="family-waterfall-compact-portable-light-node-63" data-cfx-source-id="series-0-point-3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-125" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-3"><g id="family-waterfall-compact-portable-light-node-64" data-cfx-source-id="series-0-point-3-label" data-cfx-role="data-label"><text x="174.417" y="265.762" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-125</text></g></g><g id="family-waterfall-compact-portable-light-node-66" data-cfx-source-id="series-0-point-4-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-125" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-4"><g id="family-waterfall-compact-portable-light-node-67" data-cfx-source-id="series-0-point-4-label" data-cfx-role="data-label"><text x="136.951" y="265.762" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-125</text></g></g><g id="family-waterfall-compact-portable-light-node-69" data-cfx-source-id="series-0-point-5-label-source" data-cfx-role="data-label-source" data-cfx-full-label="+70" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-5"><g id="family-waterfall-compact-portable-light-node-70" data-cfx-source-id="series-0-point-5-label" data-cfx-role="data-label"><text x="101.375" y="205.435" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">+70</text></g></g><g id="family-waterfall-compact-portable-light-node-72" data-cfx-source-id="series-0-point-6-label-source" data-cfx-role="data-label-source" data-cfx-full-label="35" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-6"><g id="family-waterfall-compact-portable-light-node-73" data-cfx-source-id="series-0-point-6-label" data-cfx-role="data-label"><text x="66.897" y="205.435" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">35</text></g></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="png"><img src="family-waterfall-compact-portable-light.png" width="360" height="360" alt="Changes in available capacity" loading="lazy" decoding="async"></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Changes in available capacity" aria-labelledby="family-waterfall-compact-portable-dark-title" aria-describedby="family-waterfall-compact-portable-dark-description"><title id="family-waterfall-compact-portable-dark-title">Changes in available capacity</title><desc id="family-waterfall-compact-portable-dark-description">Editable imported waterfall with 1 data series: Movement.</desc><defs><clipPath id="family-waterfall-compact-portable-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-waterfall-compact-portable-dark-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="260.35"/></clipPath><clipPath id="family-waterfall-compact-portable-dark-clip-24" clipPathUnits="userSpaceOnUse"><rect x="54.246" y="105.228" width="262.263" height="183.616"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-waterfall-compact-portable-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Changes in available capacity</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-waterfall-compact-portable-dark-clip-9)"><line x1="54.246" y1="143.618" x2="316.509" y2="143.618" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="54.246" y1="198.462" x2="316.509" y2="198.462" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="54.246" y1="253.305" x2="316.509" y2="253.305" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="54.246" y1="288.844" x2="316.509" y2="288.844" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="284.513" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Open</text></g><g data-cfx-role="axis-x-label"><text x="209.516" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Stage</text></g><g data-cfx-role="axis-x-label"><text x="137.259" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Cost</text><text x="137.259" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">sum</text></g><g data-cfx-role="axis-x-label"><text x="53.916" y="312.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Balance</text></g><line x1="54.246" y1="105.228" x2="54.246" y2="288.844" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="36.164" y="146.255" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="30.082" y="201.099" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g><g data-cfx-role="axis-y-label"><text x="24" y="255.942" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">100</text></g><g data-cfx-role="axis-y-title"><text x="54.246" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Running balance</text></g></g><g clip-path="url(#family-waterfall-compact-portable-dark-clip-24)"><g id="family-waterfall-compact-portable-dark-node-25" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Movement" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Waterfall" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-name="Movement" data-cfx-series-scope="shared" data-cfx-source-points="4" data-cfx-state="none"><g id="family-waterfall-compact-portable-dark-node-26" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Movement: Open 120 start=0 end=120 Opening balance=120" data-cfx-category-label="Open" data-cfx-derived-total="false" data-cfx-display-label="Open" data-cfx-end="120" data-cfx-formatted-end="120" data-cfx-formatted-start="0" data-cfx-formatted-value="120" data-cfx-formatted-x="Open" data-cfx-label="120" data-cfx-label-waterfall-value="Opening balance" data-cfx-observation-index="0" data-cfx-orientation="vertical" data-cfx-point="0" data-cfx-range-label="0 – 120" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-start="0" data-cfx-value="120" data-cfx-waterfall-kind="opening-balance" data-cfx-x="1"><rect x="286.911" y="143.618" width="21.73" height="131.624" rx="3" data-cfx-role="waterfall-bar" fill="#EEB640" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-dark-node-29" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Movement: Adjust -30 start=120 end=90 Change=-30" data-cfx-category-label="Adjust" data-cfx-delta="-30" data-cfx-derived-total="false" data-cfx-display-label="Adjust" data-cfx-end="90" data-cfx-formatted-delta="-30" data-cfx-formatted-end="90" data-cfx-formatted-start="120" data-cfx-formatted-value="-30" data-cfx-formatted-x="Adjust" data-cfx-label="-30" data-cfx-label-waterfall-value="Change" data-cfx-observation-index="1" data-cfx-orientation="vertical" data-cfx-point="1" data-cfx-range-label="120 – 90" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-start="120" data-cfx-value="-30" data-cfx-waterfall-kind="delta" data-cfx-x="2"><line x1="286.911" y1="275.243" x2="271.175" y2="275.243" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(176,180,188,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="249.444" y="242.337" width="21.73" height="32.906" rx="3" data-cfx-role="waterfall-bar" fill="#F47171" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-dark-node-33" data-cfx-source-id="series-0-point-2" data-cfx-role="waterfall-subtotal" aria-label="Movement: Stage -30 start=120 end=90 Subtotal=-30" data-cfx-category-label="Stage" data-cfx-derived="waterfall-subtotal" data-cfx-derived-identity="subtotal:3:sources:1" data-cfx-derived-total="false" data-cfx-display-label="Stage" data-cfx-end="90" data-cfx-formatted-end="90" data-cfx-formatted-start="120" data-cfx-formatted-value="-30" data-cfx-formatted-x="Stage" data-cfx-label="-30" data-cfx-label-waterfall-value="Subtotal" data-cfx-observation-index="2" data-cfx-orientation="vertical" data-cfx-point="2" data-cfx-range-label="120 – 90" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-points="1" data-cfx-start="120" data-cfx-value="-30" data-cfx-waterfall-kind="subtotal" data-cfx-x="3"><line x1="249.444" y1="242.337" x2="233.709" y2="242.337" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(176,180,188,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="211.978" y="242.337" width="21.73" height="32.906" rx="3" data-cfx-role="waterfall-bar" fill="#EEB640" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-dark-node-37" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Movement: Costs -125 start=90 end=-35 Change=-125" data-cfx-category-label="Costs" data-cfx-delta="-125" data-cfx-derived-total="false" data-cfx-display-label="Costs" data-cfx-end="-35" data-cfx-formatted-delta="-125" data-cfx-formatted-end="-35" data-cfx-formatted-start="90" data-cfx-formatted-value="-125" data-cfx-formatted-x="Costs" data-cfx-label="-125" data-cfx-label-waterfall-value="Change" data-cfx-observation-id="cost-change" data-cfx-observation-index="3" data-cfx-orientation="vertical" data-cfx-point="3" data-cfx-range-label="90 – -35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-start="90" data-cfx-value="-125" data-cfx-waterfall-kind="delta" data-cfx-x="4"><line x1="211.978" y1="242.337" x2="196.243" y2="242.337" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(176,180,188,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="174.512" y="105.228" width="21.73" height="137.108" rx="3" data-cfx-role="waterfall-bar" fill="#F47171" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-dark-node-41" data-cfx-source-id="series-0-point-4" data-cfx-role="waterfall-subtotal" aria-label="Movement: Cost sum -125 start=90 end=-35 Subtotal=-125" data-cfx-category-label="Cost sum" data-cfx-derived="waterfall-subtotal" data-cfx-derived-identity="subtotal:5:sources:2" data-cfx-derived-total="false" data-cfx-display-label="Cost sum" data-cfx-end="-35" data-cfx-formatted-end="-35" data-cfx-formatted-start="90" data-cfx-formatted-value="-125" data-cfx-formatted-x="Cost sum" data-cfx-label="-125" data-cfx-label-waterfall-value="Subtotal" data-cfx-observation-id="cost-checkpoint" data-cfx-observation-index="4" data-cfx-orientation="vertical" data-cfx-point="4" data-cfx-range-label="90 – -35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-points="2" data-cfx-start="90" data-cfx-value="-125" data-cfx-waterfall-kind="subtotal" data-cfx-x="5"><line x1="174.512" y1="105.228" x2="158.777" y2="105.228" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(176,180,188,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="137.046" y="105.228" width="21.73" height="137.108" rx="3" data-cfx-role="waterfall-bar" fill="#A5358A" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-dark-node-45" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Movement: Recover +70 start=-35 end=35 Change=70" data-cfx-category-label="Recover" data-cfx-delta="70" data-cfx-derived-total="false" data-cfx-display-label="Recover" data-cfx-end="35" data-cfx-formatted-delta="70" data-cfx-formatted-end="35" data-cfx-formatted-start="-35" data-cfx-formatted-value="70" data-cfx-formatted-x="Recover" data-cfx-label="+70" data-cfx-label-waterfall-value="Change" data-cfx-observation-index="5" data-cfx-orientation="vertical" data-cfx-point="5" data-cfx-range-label="-35 – 35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="3" data-cfx-start="-35" data-cfx-value="70" data-cfx-waterfall-kind="delta" data-cfx-x="6"><line x1="137.046" y1="105.228" x2="121.31" y2="105.228" data-cfx-role="waterfall-connector" fill="none" stroke="rgba(176,180,188,0.58)" stroke-width="1.2" stroke-dasharray="4 4"/><rect x="99.58" y="105.228" width="21.73" height="76.781" rx="3" data-cfx-role="waterfall-bar" fill="#4CC78A" stroke="none" stroke-width="1"/></g><g id="family-waterfall-compact-portable-dark-node-49" data-cfx-source-id="series-0-point-6" data-cfx-role="waterfall-total" aria-label="Movement: Balance 35 start=0 end=35 Total=35" data-cfx-category-label="Balance" data-cfx-derived="waterfall-total" data-cfx-derived-identity="total:7:sources:0,1,2,3" data-cfx-derived-total="true" data-cfx-display-label="Balance" data-cfx-end="35" data-cfx-formatted-end="35" data-cfx-formatted-start="0" data-cfx-formatted-value="35" data-cfx-formatted-x="Balance" data-cfx-label="35" data-cfx-label-waterfall-value="Total" data-cfx-observation-index="6" data-cfx-orientation="vertical" data-cfx-point="6" data-cfx-range-label="0 – 35" data-cfx-series="0" data-cfx-series-key="movement" data-cfx-series-scope="shared" data-cfx-source-count="4" data-cfx-source-points="0,1,2,3" data-cfx-start="0" data-cfx-value="35" data-cfx-waterfall-kind="total" data-cfx-x="7"><rect x="62.114" y="143.618" width="21.73" height="38.39" rx="3" data-cfx-role="waterfall-bar" fill="#EEB640" stroke="none" stroke-width="1"/></g></g></g><g id="family-waterfall-compact-portable-dark-node-54" data-cfx-source-id="series-0-point-0-label-source" data-cfx-role="data-label-source" data-cfx-full-label="120" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-waterfall-compact-portable-dark-node-55" data-cfx-source-id="series-0-point-0-label" data-cfx-role="data-label"><text x="288.653" y="212.067" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">120</text></g></g><g id="family-waterfall-compact-portable-dark-node-57" data-cfx-source-id="series-0-point-1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-30" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-waterfall-compact-portable-dark-node-58" data-cfx-source-id="series-0-point-1-label" data-cfx-role="data-label"><text x="252.391" y="224.184" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-30</text></g></g><g id="family-waterfall-compact-portable-dark-node-60" data-cfx-source-id="series-0-point-2-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-30" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-2"><g id="family-waterfall-compact-portable-dark-node-61" data-cfx-source-id="series-0-point-2-label" data-cfx-role="data-label"><text x="214.925" y="224.184" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-30</text></g></g><g id="family-waterfall-compact-portable-dark-node-63" data-cfx-source-id="series-0-point-3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-125" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-3"><g id="family-waterfall-compact-portable-dark-node-64" data-cfx-source-id="series-0-point-3-label" data-cfx-role="data-label"><text x="174.417" y="265.762" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-125</text></g></g><g id="family-waterfall-compact-portable-dark-node-66" data-cfx-source-id="series-0-point-4-label-source" data-cfx-role="data-label-source" data-cfx-full-label="-125" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-4"><g id="family-waterfall-compact-portable-dark-node-67" data-cfx-source-id="series-0-point-4-label" data-cfx-role="data-label"><text x="136.951" y="265.762" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">-125</text></g></g><g id="family-waterfall-compact-portable-dark-node-69" data-cfx-source-id="series-0-point-5-label-source" data-cfx-role="data-label-source" data-cfx-full-label="+70" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-5"><g id="family-waterfall-compact-portable-dark-node-70" data-cfx-source-id="series-0-point-5-label" data-cfx-role="data-label"><text x="101.375" y="205.435" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">+70</text></g></g><g id="family-waterfall-compact-portable-dark-node-72" data-cfx-source-id="series-0-point-6-label-source" data-cfx-role="data-label-source" data-cfx-full-label="35" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-6"><g id="family-waterfall-compact-portable-dark-node-73" data-cfx-source-id="series-0-point-6-label" data-cfx-role="data-label"><text x="66.897" y="205.435" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">35</text></g></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="png"><img src="family-waterfall-compact-portable-dark.png" width="360" height="360" alt="Changes in available capacity" loading="lazy" decoding="async"></div></section><div class="export-row"><span>360 × 360 pixels</span><nav aria-label="Download outputs"><a href="family-waterfall-compact-portable-light.svg" data-theme-link data-light-href="family-waterfall-compact-portable-light.svg" data-dark-href="family-waterfall-compact-portable-dark.svg" download>Download SVG</a><a href="family-waterfall-compact-portable-light.png" data-theme-link data-light-href="family-waterfall-compact-portable-light.png" data-dark-href="family-waterfall-compact-portable-dark.png" download>Download PNG</a><a href="family-waterfall-compact-portable-light.csharp.txt" data-theme-link data-light-href="family-waterfall-compact-portable-light.csharp.txt" data-dark-href="family-waterfall-compact-portable-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="family-waterfall-compact-portable-light.gallery.csharp.txt" data-theme-link data-light-href="family-waterfall-compact-portable-light.gallery.csharp.txt" data-dark-href="family-waterfall-compact-portable-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = WaterfallRecipe.Create(&quot;compact-portable&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Changes in available capacity&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame(&quot;Changes in available capacity&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Builds running-balance waterfalls with signed changes and explicit checkpoints.&lt;/summary&gt;
+public static class WaterfallRecipe {
+    /// &lt;summary&gt;Creates the selected waterfall example and its orientation.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;) {
+            var horizontalPortable = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
+            var authored = Create(horizontalPortable ? &quot;horizontal&quot; : &quot;options&quot;, mode)
+                .WithTitle(&quot;Editable imported waterfall&quot;).WithTheme(VisualTheme.Graphite(), mode);
+            var bytes = authored.ToVisualArtifact(&quot;portable-movement&quot;).ToInterchangeUtf8Json();
+            var imported = VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart();
+            // An imported delta remains authored; totals and checkpoint contributors are recalculated by the native owner.
+            imported.Series[0].UpdateWaterfallItem(3, ChartWaterfallItem.Delta(4, -125));
+            return imported;
+        }
+        var chart = Chart.Create();
+        if (variant is &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;) {
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var movement = ChartSeries.CreateWaterfall(new ChartSeriesId(&quot;movement&quot;), &quot;Movement&quot;, new[] {
+                ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                ChartWaterfallItem.Total(7)
+            }).WithObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
+                .WithObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
+                .WithPointColor(4, &quot;#A5358A&quot;);
+            chart.WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
+                .ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
+            else chart.WithYAxis(&quot;Running balance&quot;);
+            chart.Options.XAxis.WithReversal(!horizontal || variant == &quot;compact-horizontal&quot;);
+            chart.Options.YAxis.WithReversal();
+            chart.WithDataLabels();
+        }
+        else {
+            var changes = new ChartSeries(new ChartSeriesId(&quot;changes&quot;), &quot;Changes&quot;, ChartSeriesKind.Waterfall, new[] {
+                new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12)
+            });
+            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;).AddSeries(changes);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = WaterfallRecipe.Create(&quot;compact-portable&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Changes in available capacity&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame(&quot;Changes in available capacity&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Builds running-balance waterfalls with signed changes and explicit checkpoints.&lt;/summary&gt;
+public static class WaterfallRecipe {
+    /// &lt;summary&gt;Creates the selected waterfall example and its orientation.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;) {
+            var horizontalPortable = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
+            var authored = Create(horizontalPortable ? &quot;horizontal&quot; : &quot;options&quot;, mode)
+                .WithTitle(&quot;Editable imported waterfall&quot;).WithTheme(VisualTheme.Graphite(), mode);
+            var bytes = authored.ToVisualArtifact(&quot;portable-movement&quot;).ToInterchangeUtf8Json();
+            var imported = VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart();
+            // An imported delta remains authored; totals and checkpoint contributors are recalculated by the native owner.
+            imported.Series[0].UpdateWaterfallItem(3, ChartWaterfallItem.Delta(4, -125));
+            return imported;
+        }
+        var chart = Chart.Create();
+        if (variant is &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;) {
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var movement = ChartSeries.CreateWaterfall(new ChartSeriesId(&quot;movement&quot;), &quot;Movement&quot;, new[] {
+                ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                ChartWaterfallItem.Total(7)
+            }).WithObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
+                .WithObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
+                .WithPointColor(4, &quot;#A5358A&quot;);
+            chart.WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
+                .ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
+            else chart.WithYAxis(&quot;Running balance&quot;);
+            chart.Options.XAxis.WithReversal(!horizontal || variant == &quot;compact-horizontal&quot;);
+            chart.Options.YAxis.WithReversal();
+            chart.WithDataLabels();
+        }
+        else {
+            var changes = new ChartSeries(new ChartSeriesId(&quot;changes&quot;), &quot;Changes&quot;, ChartSeriesKind.Waterfall, new[] {
+                new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12)
+            });
+            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;).AddSeries(changes);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

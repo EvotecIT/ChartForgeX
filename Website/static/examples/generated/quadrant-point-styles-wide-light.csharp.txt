@@ -1,0 +1,71 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = QuadrantPointStylesRecipe.Create("wide", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Native point marker authoring").WithSubtitle("One native source series retains independent markers and located axis captions").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 500)), theme, mode,
+    new VisualFrame("Native point marker authoring", "One native source series retains independent markers and located axis captions", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Native Core authoring for independent quadrant captions and source-owned Scatter marker styles.</summary>
+public static class QuadrantPointStylesRecipe {
+    /// <summary>Creates the native example. The separately shared Mermaid fixture proves parsed-source mapping.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var observations = ChartSeries.CreateScatter(new ChartSeriesId("proposed-work"), "Proposed work", new[] {
+            new ChartPoint(.22, .74), new ChartPoint(.76, .72), new ChartPoint(.28, .26), new ChartPoint(.72, .24)
+        });
+        var labels = new[] { "Opportunity", "Investment", "Experiment", "Review" };
+        for (var index = 0; index < labels.Length; index++)
+            observations.WithObservationId(index, new ChartObservationId(labels[index].ToLowerInvariant())).WithPointLabel(index, labels[index]);
+        observations.ConfigureMarkers(marker => { marker.Radius = 5; marker.StrokeWidth = 0; });
+        observations.ConfigurePointMarkers(0, marker => {
+            marker.Radius = 9; marker.Fill = ChartColor.FromHex("#B45309");
+            marker.Stroke = ChartColor.FromHex("#7C2D12"); marker.StrokeWidth = 2;
+        });
+        observations.ConfigurePointMarkers(1, marker => {
+            marker.Radius = 7; marker.Fill = ChartColor.FromHex("#0369A1");
+            marker.Stroke = ChartColor.FromHex("#075985"); marker.StrokeWidth = 1;
+        });
+        observations.ConfigurePointMarkers(2, marker => { marker.Radius = 6; marker.Fill = ChartColor.FromHex("#7C3AED"); });
+        var chart = Chart.Create().WithSize(variant == "compact" ? 390 : 800, 500)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Native work priorities")
+            .WithSubtitle("One source series, independent marker options and endpoint captions")
+            .WithLegend(false).WithGrid(false).WithDataLabels().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
+            .AddSeries(observations);
+        chart.ConfigureXAxis(axis => { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, "Low effort")); axis.Labels.Add(new ChartAxisLabel(.75, "High effort")); });
+        chart.ConfigureYAxis(axis => { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, "Low impact")); axis.Labels.Add(new ChartAxisLabel(.75, "High impact")); });
+        chart.AddPlotRegion(new ChartPlotRegion(0, xMinimum: .5, yMinimum: .5, label: "Plan"))
+            .AddPlotRegion(new ChartPlotRegion(1, xMaximum: .5, yMinimum: .5, label: "Prioritize"))
+            .AddPlotRegion(new ChartPlotRegion(2, xMaximum: .5, yMaximum: .5, label: "Consider"))
+            .AddPlotRegion(new ChartPlotRegion(3, xMinimum: .5, yMaximum: .5, label: "Reassess"));
+        // Keyed value replacement preserves Investment's authored radius, paint and identity.
+        observations.ApplyPointChanges(new[] {
+            ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("investment"), new ChartPoint(.78, .76))
+        });
+        return chart;
+    }
+}

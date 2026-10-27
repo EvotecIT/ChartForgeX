@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = PictorialArtworkRecipe.Create("wide", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Completed assessments by team").WithSubtitle("Captured self-contained artwork and explicit fractional clipping retain the complete source counts").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 460)), theme, mode,
+    new VisualFrame("Completed assessments by team", "Captured self-contained artwork and explicit fractional clipping retain the complete source counts", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Captures self-contained artwork and retains fractional counts through the shared pictorial clip owner.</summary>
+public static class PictorialArtworkRecipe {
+    /// <summary>Creates ordinary native SVG, PNG and HTML output without files or network resources.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "right" or "bottom" or "top" or "image" or "contour"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var series = new ChartSeries(new ChartSeriesId("assessments"), "Completed assessments", ChartSeriesKind.Pictorial,
+            new[] { new ChartPoint(1, 2.5), new ChartPoint(2, 1.25), new ChartPoint(3, .75) })
+            .WithObservationId(0, new ChartObservationId("team-a")).WithObservationId(1, new ChartObservationId("team-b"))
+            .WithObservationId(2, new ChartObservationId("team-c"));
+        var chart = Chart.Create().WithSize(variant == "compact" ? 390 : 900, 460).WithTheme(VisualTheme.Graphite(), mode)
+            .WithTitle("Completed assessments by team").WithLegend(false).WithAxes(false).WithGrid(false)
+            .WithXLabels("Team A", "Team B", "Team C").WithPictorialColumns(4).WithPictorialValuePerSymbol(1)
+            .WithPictorialSvgPath("M1 1H23V23H1Z M8 8V16H16V8Z").WithPictorialEmptyOpacity(.16)
+            .WithValueFormat(ChartValueFormat.Number("0.##' units'", CultureInfo.InvariantCulture)).AddSeries(series);
+        if (variant != "contour") {
+            chart.WithPictorialArtwork(variant == "image" ? ChartPictorialArtwork.FromImage(Image()) : ChartPictorialArtwork.FromSvg(
+                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'><rect x='1' y='1' width='22' height='14' rx='3' fill='#347B59'/><path d='M5 8L10 12L19 4' fill='none' stroke='#FFFFFF' stroke-width='2'/></svg>", 96, 64));
+        }
+        return chart.WithPictorialFillDirection(variant switch {
+            "right" => ChartPictorialFillDirection.RightToLeft,
+            "bottom" or "contour" => ChartPictorialFillDirection.BottomToTop,
+            "top" => ChartPictorialFillDirection.TopToBottom,
+            _ => ChartPictorialFillDirection.LeftToRight
+        });
+    }
+
+    private static ChartForgeX.Raster.RgbaImage Image() {
+        var pixels = new byte[12 * 8 * 4];
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 12; x++) {
+            var offset = (y * 12 + x) * 4;
+            pixels[offset] = x < 6 ? (byte)36 : (byte)201;
+            pixels[offset + 1] = y < 4 ? (byte)105 : (byte)164;
+            pixels[offset + 2] = 153; pixels[offset + 3] = 255;
+        }
+        return new ChartForgeX.Raster.RgbaImage(12, 8, pixels);
+    }
+}

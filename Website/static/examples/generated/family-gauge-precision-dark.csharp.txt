@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = GaugeRecipe.Create("precision", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Measured tolerance").WithSubtitle("Close bounds, measurement and target retain distinct captions").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Measured tolerance", "Close bounds, measurement and target retain distinct captions", showLegend: null, showSurface: false));

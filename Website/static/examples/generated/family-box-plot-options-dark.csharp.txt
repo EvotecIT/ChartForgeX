@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = BoxPlotRecipe.Create("options", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Delivery time by service level").WithSubtitle("Configured chart geometry").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Delivery time by service level", "Configured chart geometry", showLegend: null, showSurface: false));
@@ -27,10 +34,12 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 public static class BoxPlotRecipe {
     /// <summary>Creates the selected box-plot example and its orientation.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"))
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"
+            or "statistic-labels" or "compact-statistic-labels" or "horizontal-statistic-labels" or "compact-horizontal-statistic-labels"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
-        if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal") {
+        if (variant.Contains("statistic-labels")) chart = StatisticLabels(variant, mode);
+        else if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal") {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var expected = ChartSeries.CreateBoxPlot(new ChartSeriesId("expected"), "Expected", new[] {
                 new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
@@ -54,5 +63,26 @@ public static class BoxPlotRecipe {
             chart.WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(delivery);
         }
         return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart StatisticLabels(string variant, VisualThemeMode mode) {
+        var horizontal = variant.Contains("horizontal");
+        var chart = Chart.Create().WithTitle("Five-number delivery summaries").WithXLabels("Standard", "Express")
+            .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), "Delivery time", new[] {
+                new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
+            }).WithPointLabel(0, "Standard delivery summary"))
+            .ConfigureBoxPlot(options => {
+                options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+                options.LabelContent = ChartBoxPlotLabelContent.Statistics;
+                foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
+                    label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
+                    label.Style.WithFontSize(10);
+                }
+                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f");
+                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000");
+                options.MedianLabel.Style.WithFontSize(12).WithWeight("700");
+            }).WithDataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);
+        return horizontal ? chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service") : chart.WithYAxis("Delivery time (minutes)");
     }
 }

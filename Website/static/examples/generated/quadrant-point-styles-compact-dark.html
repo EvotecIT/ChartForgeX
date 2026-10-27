@@ -1,0 +1,402 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="dark" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Native point marker authoring &#183; Scatter</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Scatter</p><h1>Native point marker authoring</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-scatter-wide-light.html" data-theme-link data-light-href="family-scatter-wide-light.html" data-dark-href="family-scatter-wide-dark.html">Standard &#183; Processing time by workload</a></span><span><a href="quadrant-point-styles-wide-light.html" data-theme-link data-light-href="quadrant-point-styles-wide-light.html" data-dark-href="quadrant-point-styles-wide-dark.html">Standard &#183; Native point marker authoring</a></span><span><a href="family-scatter-color-dimension-light.html" data-theme-link data-light-href="family-scatter-color-dimension-light.html" data-dark-href="family-scatter-color-dimension-dark.html">Color Dimension</a></span><span><a href="family-scatter-color-scale-light.html" data-theme-link data-light-href="family-scatter-color-scale-light.html" data-dark-href="family-scatter-color-scale-dark.html">Color Scale</a></span><span><a href="family-scatter-compact-light.html" data-theme-link data-light-href="family-scatter-compact-light.html" data-dark-href="family-scatter-compact-dark.html">Compact &#183; Processing time by workload</a></span><span class="current-variant"><a href="quadrant-point-styles-compact-light.html" data-theme-link data-light-href="quadrant-point-styles-compact-light.html" data-dark-href="quadrant-point-styles-compact-dark.html" aria-current="page">Compact &#183; Native point marker authoring</a></span><span><a href="family-scatter-compact-color-dimension-light.html" data-theme-link data-light-href="family-scatter-compact-color-dimension-light.html" data-dark-href="family-scatter-compact-color-dimension-dark.html">Compact Color Dimension</a></span><span><a href="family-scatter-compact-color-scale-light.html" data-theme-link data-light-href="family-scatter-compact-color-scale-light.html" data-dark-href="family-scatter-compact-color-scale-dark.html">Compact Color Scale</a></span><span><a href="family-scatter-compact-gradient-color-legend-light.html" data-theme-link data-light-href="family-scatter-compact-gradient-color-legend-light.html" data-dark-href="family-scatter-compact-gradient-color-legend-dark.html">Compact Gradient Color Legend</a></span><span><a href="family-scatter-compact-interior-quadrants-light.html" data-theme-link data-light-href="family-scatter-compact-interior-quadrants-light.html" data-dark-href="family-scatter-compact-interior-quadrants-dark.html">Compact Interior Quadrants</a></span><span><a href="family-scatter-compact-options-light.html" data-theme-link data-light-href="family-scatter-compact-options-light.html" data-dark-href="family-scatter-compact-options-dark.html">Compact options</a></span><span><a href="family-scatter-compact-partial-color-range-light.html" data-theme-link data-light-href="family-scatter-compact-partial-color-range-light.html" data-dark-href="family-scatter-compact-partial-color-range-dark.html">Compact Partial Color Range</a></span><span><a href="family-scatter-compact-pivot-quadrants-light.html" data-theme-link data-light-href="family-scatter-compact-pivot-quadrants-light.html" data-dark-href="family-scatter-compact-pivot-quadrants-dark.html">Compact Pivot Quadrants</a></span><span><a href="family-scatter-compact-positioned-color-scale-light.html" data-theme-link data-light-href="family-scatter-compact-positioned-color-scale-light.html" data-dark-href="family-scatter-compact-positioned-color-scale-dark.html">Compact Positioned Color Scale</a></span><span><a href="family-scatter-compact-quadrants-light.html" data-theme-link data-light-href="family-scatter-compact-quadrants-light.html" data-dark-href="family-scatter-compact-quadrants-dark.html">Compact Quadrants</a></span><span><a href="family-scatter-compact-swatch-color-legend-light.html" data-theme-link data-light-href="family-scatter-compact-swatch-color-legend-light.html" data-dark-href="family-scatter-compact-swatch-color-legend-dark.html">Compact Swatch Color Legend</a></span><span><a href="family-scatter-gradient-color-legend-light.html" data-theme-link data-light-href="family-scatter-gradient-color-legend-light.html" data-dark-href="family-scatter-gradient-color-legend-dark.html">Gradient Color Legend</a></span><span><a href="family-scatter-interior-quadrants-light.html" data-theme-link data-light-href="family-scatter-interior-quadrants-light.html" data-dark-href="family-scatter-interior-quadrants-dark.html">Interior Quadrants</a></span><span><a href="family-scatter-options-light.html" data-theme-link data-light-href="family-scatter-options-light.html" data-dark-href="family-scatter-options-dark.html">Configured options</a></span><span><a href="family-scatter-partial-color-range-light.html" data-theme-link data-light-href="family-scatter-partial-color-range-light.html" data-dark-href="family-scatter-partial-color-range-dark.html">Partial Color Range</a></span><span><a href="family-scatter-pivot-quadrants-light.html" data-theme-link data-light-href="family-scatter-pivot-quadrants-light.html" data-dark-href="family-scatter-pivot-quadrants-dark.html">Pivot Quadrants</a></span><span><a href="family-scatter-positioned-color-scale-light.html" data-theme-link data-light-href="family-scatter-positioned-color-scale-light.html" data-dark-href="family-scatter-positioned-color-scale-dark.html">Positioned Color Scale</a></span><span><a href="family-scatter-quadrants-light.html" data-theme-link data-light-href="family-scatter-quadrants-light.html" data-dark-href="family-scatter-quadrants-dark.html">Quadrants</a></span><span><a href="family-scatter-swatch-color-legend-light.html" data-theme-link data-light-href="family-scatter-swatch-color-legend-light.html" data-dark-href="family-scatter-swatch-color-legend-dark.html">Swatch Color Legend</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:390px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="390" height="500" viewBox="0 0 390 500" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Native point marker authoring" aria-labelledby="quadrant-point-styles-compact-light-title" aria-describedby="quadrant-point-styles-compact-light-description"><title id="quadrant-point-styles-compact-light-title">Native point marker authoring</title><desc id="quadrant-point-styles-compact-light-description">Native work priorities with 1 data series: Proposed work. Plot regions: Plan, Prioritize, Consider, Reassess.</desc><defs><clipPath id="quadrant-point-styles-compact-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="342" height="452"/></clipPath><clipPath id="quadrant-point-styles-compact-light-clip-22" clipPathUnits="userSpaceOnUse"><rect x="24" y="93.2" width="342" height="382.8"/></clipPath></defs><rect x="0" y="0" width="390" height="500" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#quadrant-point-styles-compact-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Native point marker authoring</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">One native source series retains independent markers and</text></g><g data-cfx-role="frame-heading-continuation"><text x="24" y="78.504" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">located axis captions</text></g></g></g><g id="quadrant-point-styles-compact-light-node-10" data-cfx-source-id="plot-region-0" data-cfx-role="plot-region" aria-label="Plan" data-cfx-label="Plan" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="217.181" y="101.989" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(42,120,214,0.141)" stroke="none" stroke-width="1"/></g><g id="quadrant-point-styles-compact-light-node-13" data-cfx-source-id="plot-region-1" data-cfx-role="plot-region" aria-label="Prioritize" data-cfx-label="Prioritize" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="94.383" y="101.989" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(15,159,140,0.141)" stroke="none" stroke-width="1"/></g><g id="quadrant-point-styles-compact-light-node-16" data-cfx-source-id="plot-region-2" data-cfx-role="plot-region" aria-label="Consider" data-cfx-label="Consider" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="94.383" y="274.205" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(123,97,232,0.141)" stroke="none" stroke-width="1"/></g><g id="quadrant-point-styles-compact-light-node-19" data-cfx-source-id="plot-region-3" data-cfx-role="plot-region" aria-label="Reassess" data-cfx-label="Reassess" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="217.181" y="274.205" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(194,79,168,0.141)" stroke="none" stroke-width="1"/></g><g clip-path="url(#quadrant-point-styles-compact-light-clip-22)"><line x1="94.383" y1="446.422" x2="339.979" y2="446.422" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="130.9" y="469.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Low effort</text></g><g data-cfx-role="axis-x-label"><text x="252.558" y="469.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">High effort</text></g><line x1="94.383" y1="101.989" x2="94.383" y2="446.422" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="76.301" y="449.059" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="26.279" y="362.95" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Low impact</text></g><g data-cfx-role="axis-y-label"><text x="24" y="190.734" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">High impact</text></g><g data-cfx-role="axis-y-label"><text x="76.301" y="104.626" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1</text></g></g><g id="quadrant-point-styles-compact-light-node-32" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Proposed work" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Scatter" data-cfx-pin-state-colors="false" data-cfx-rendered-points="4" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-name="Proposed work" data-cfx-series-scope="shared" data-cfx-source-points="4" data-cfx-state="none"><g id="quadrant-point-styles-compact-light-node-33" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Proposed work: Opportunity (0.22, 0.74)" data-cfx-authored-label="Opportunity" data-cfx-axis="primary" data-cfx-display-label="0.22" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.74" data-cfx-formatted-x="0.22" data-cfx-label="Opportunity" data-cfx-observation-id="opportunity" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="0.22" data-cfx-y="0.73999999999999999"><ellipse cx="148.414" cy="191.542" rx="9" ry="9" data-cfx-role="marker" fill="#B45309" stroke="#7C2D12" stroke-width="2"/></g><g id="quadrant-point-styles-compact-light-node-36" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Proposed work: Investment (0.78, 0.76)" data-cfx-authored-label="Investment" data-cfx-axis="primary" data-cfx-display-label="0.78" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.76" data-cfx-formatted-x="0.78" data-cfx-label="Investment" data-cfx-observation-id="investment" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="0.78000000000000003" data-cfx-y="0.76000000000000001"><ellipse cx="285.947" cy="184.653" rx="7" ry="7" data-cfx-role="marker" fill="#0369A1" stroke="#075985" stroke-width="1"/></g><g id="quadrant-point-styles-compact-light-node-39" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Proposed work: Experiment (0.28, 0.26)" data-cfx-authored-label="Experiment" data-cfx-axis="primary" data-cfx-display-label="0.28" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.26" data-cfx-formatted-x="0.28" data-cfx-label="Experiment" data-cfx-observation-id="experiment" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="0.28000000000000003" data-cfx-y="0.26000000000000001"><ellipse cx="163.15" cy="356.869" rx="6" ry="6" data-cfx-role="marker" fill="#7C3AED" stroke="none" stroke-width="0"/></g><g id="quadrant-point-styles-compact-light-node-42" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Proposed work: Review (0.72, 0.24)" data-cfx-authored-label="Review" data-cfx-axis="primary" data-cfx-display-label="0.72" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.24" data-cfx-formatted-x="0.72" data-cfx-label="Review" data-cfx-observation-id="review" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="3" data-cfx-state="none" data-cfx-x="0.71999999999999997" data-cfx-y="0.23999999999999999"><ellipse cx="271.212" cy="363.758" rx="5" ry="5" data-cfx-role="marker" fill="#0F9F8C" stroke="none" stroke-width="0"/></g></g><g id="quadrant-point-styles-compact-light-node-46" data-cfx-source-id="plot-region-0-caption" data-cfx-role="plot-region-caption" aria-label="Plan" data-cfx-label="Plan" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="217.181" y="101.989" width="29.006" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#DFEAF6" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="221.181" y="117.415" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Plan</text></g></g><g id="quadrant-point-styles-compact-light-node-50" data-cfx-source-id="plot-region-1-caption" data-cfx-role="plot-region-caption" aria-label="Prioritize" data-cfx-label="Prioritize" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="94.383" y="101.989" width="51.529" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#DCEEED" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="98.383" y="117.415" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Prioritize</text></g></g><g id="quadrant-point-styles-compact-light-node-54" data-cfx-source-id="plot-region-2-caption" data-cfx-role="plot-region-caption" aria-label="Consider" data-cfx-label="Consider" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="94.383" y="274.205" width="50.938" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#E9E7F8" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="98.383" y="289.631" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Consider</text></g></g><g id="quadrant-point-styles-compact-light-node-58" data-cfx-source-id="plot-region-3-caption" data-cfx-role="plot-region-caption" aria-label="Reassess" data-cfx-label="Reassess" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="217.181" y="274.205" width="50.768" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#F2E5F0" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="221.181" y="289.631" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Reassess</text></g></g><g id="quadrant-point-styles-compact-light-node-62" data-cfx-source-id="series-0-point-0-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Opportunity" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="quadrant-point-styles-compact-light-node-63" data-cfx-source-id="series-0-point-0-label" data-cfx-role="data-label"><text x="118.464" y="173.389" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" stroke="#F8F9FA" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Opportunity</text></g></g><g id="quadrant-point-styles-compact-light-node-65" data-cfx-source-id="series-0-point-1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Investment" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="quadrant-point-styles-compact-light-node-66" data-cfx-source-id="series-0-point-1-label" data-cfx-role="data-label"><text x="258.572" y="166.501" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" stroke="#F8F9FA" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Investment</text></g></g><g id="quadrant-point-styles-compact-light-node-68" data-cfx-source-id="series-0-point-2-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Experiment" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-2"><g id="quadrant-point-styles-compact-light-node-69" data-cfx-source-id="series-0-point-2-label" data-cfx-role="data-label"><text x="135.13" y="338.717" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" stroke="#F8F9FA" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Experiment</text></g></g><g id="quadrant-point-styles-compact-light-node-71" data-cfx-source-id="series-0-point-3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Review" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-3"><g id="quadrant-point-styles-compact-light-node-72" data-cfx-source-id="series-0-point-3-label" data-cfx-role="data-label"><text x="253.771" y="345.606" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" stroke="#F8F9FA" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Review</text></g></g></svg></div><div class="full" style="--example-width:390px" data-visual-theme="light" data-output-format="png"><img src="quadrant-point-styles-compact-light.png" width="390" height="500" alt="Native point marker authoring" loading="lazy" decoding="async"></div><div class="full" style="--example-width:390px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="390" height="500" viewBox="0 0 390 500" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Native point marker authoring" aria-labelledby="quadrant-point-styles-compact-dark-title" aria-describedby="quadrant-point-styles-compact-dark-description"><title id="quadrant-point-styles-compact-dark-title">Native point marker authoring</title><desc id="quadrant-point-styles-compact-dark-description">Native work priorities with 1 data series: Proposed work. Plot regions: Plan, Prioritize, Consider, Reassess.</desc><defs><clipPath id="quadrant-point-styles-compact-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="342" height="452"/></clipPath><clipPath id="quadrant-point-styles-compact-dark-clip-22" clipPathUnits="userSpaceOnUse"><rect x="24" y="93.2" width="342" height="382.8"/></clipPath></defs><rect x="0" y="0" width="390" height="500" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#quadrant-point-styles-compact-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Native point marker authoring</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">One native source series retains independent markers and</text></g><g data-cfx-role="frame-heading-continuation"><text x="24" y="78.504" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">located axis captions</text></g></g></g><g id="quadrant-point-styles-compact-dark-node-10" data-cfx-source-id="plot-region-0" data-cfx-role="plot-region" aria-label="Plan" data-cfx-label="Plan" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="217.181" y="101.989" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(57,135,229,0.141)" stroke="none" stroke-width="1"/></g><g id="quadrant-point-styles-compact-dark-node-13" data-cfx-source-id="plot-region-1" data-cfx-role="plot-region" aria-label="Prioritize" data-cfx-label="Prioritize" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="94.383" y="101.989" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(23,156,137,0.141)" stroke="none" stroke-width="1"/></g><g id="quadrant-point-styles-compact-dark-node-16" data-cfx-source-id="plot-region-2" data-cfx-role="plot-region" aria-label="Consider" data-cfx-label="Consider" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="94.383" y="274.205" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(138,116,238,0.141)" stroke="none" stroke-width="1"/></g><g id="quadrant-point-styles-compact-dark-node-19" data-cfx-source-id="plot-region-3" data-cfx-role="plot-region" aria-label="Reassess" data-cfx-label="Reassess" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="217.181" y="274.205" width="122.798" height="172.216" rx="0" data-cfx-role="plot-region-fill" fill="rgba(201,87,159,0.141)" stroke="none" stroke-width="1"/></g><g clip-path="url(#quadrant-point-styles-compact-dark-clip-22)"><line x1="94.383" y1="446.422" x2="339.979" y2="446.422" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="130.9" y="469.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Low effort</text></g><g data-cfx-role="axis-x-label"><text x="252.558" y="469.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">High effort</text></g><line x1="94.383" y1="101.989" x2="94.383" y2="446.422" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="76.301" y="449.059" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="26.279" y="362.95" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Low impact</text></g><g data-cfx-role="axis-y-label"><text x="24" y="190.734" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">High impact</text></g><g data-cfx-role="axis-y-label"><text x="76.301" y="104.626" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1</text></g></g><g id="quadrant-point-styles-compact-dark-node-32" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Proposed work" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Scatter" data-cfx-pin-state-colors="false" data-cfx-rendered-points="4" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-name="Proposed work" data-cfx-series-scope="shared" data-cfx-source-points="4" data-cfx-state="none"><g id="quadrant-point-styles-compact-dark-node-33" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Proposed work: Opportunity (0.22, 0.74)" data-cfx-authored-label="Opportunity" data-cfx-axis="primary" data-cfx-display-label="0.22" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.74" data-cfx-formatted-x="0.22" data-cfx-label="Opportunity" data-cfx-observation-id="opportunity" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="0.22" data-cfx-y="0.73999999999999999"><ellipse cx="148.414" cy="191.542" rx="9" ry="9" data-cfx-role="marker" fill="#B45309" stroke="#7C2D12" stroke-width="2"/></g><g id="quadrant-point-styles-compact-dark-node-36" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Proposed work: Investment (0.78, 0.76)" data-cfx-authored-label="Investment" data-cfx-axis="primary" data-cfx-display-label="0.78" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.76" data-cfx-formatted-x="0.78" data-cfx-label="Investment" data-cfx-observation-id="investment" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="0.78000000000000003" data-cfx-y="0.76000000000000001"><ellipse cx="285.947" cy="184.653" rx="7" ry="7" data-cfx-role="marker" fill="#0369A1" stroke="#075985" stroke-width="1"/></g><g id="quadrant-point-styles-compact-dark-node-39" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Proposed work: Experiment (0.28, 0.26)" data-cfx-authored-label="Experiment" data-cfx-axis="primary" data-cfx-display-label="0.28" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.26" data-cfx-formatted-x="0.28" data-cfx-label="Experiment" data-cfx-observation-id="experiment" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="0.28000000000000003" data-cfx-y="0.26000000000000001"><ellipse cx="163.15" cy="356.869" rx="6" ry="6" data-cfx-role="marker" fill="#7C3AED" stroke="none" stroke-width="0"/></g><g id="quadrant-point-styles-compact-dark-node-42" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Proposed work: Review (0.72, 0.24)" data-cfx-authored-label="Review" data-cfx-axis="primary" data-cfx-display-label="0.72" data-cfx-fill-pattern="None" data-cfx-formatted-value="0.24" data-cfx-formatted-x="0.72" data-cfx-label="Review" data-cfx-observation-id="review" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="proposed-work" data-cfx-series-scope="shared" data-cfx-source-point="3" data-cfx-state="none" data-cfx-x="0.71999999999999997" data-cfx-y="0.23999999999999999"><ellipse cx="271.212" cy="363.758" rx="5" ry="5" data-cfx-role="marker" fill="#179C89" stroke="none" stroke-width="0"/></g></g><g id="quadrant-point-styles-compact-dark-node-46" data-cfx-source-id="plot-region-0-caption" data-cfx-role="plot-region-caption" aria-label="Plan" data-cfx-label="Plan" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="217.181" y="101.989" width="29.006" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#162130" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="221.181" y="117.415" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#FFFFFF" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Plan</text></g></g><g id="quadrant-point-styles-compact-dark-node-50" data-cfx-source-id="plot-region-1-caption" data-cfx-role="plot-region-caption" aria-label="Prioritize" data-cfx-label="Prioritize" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="" data-cfx-y-minimum="0.5"><rect x="94.383" y="101.989" width="51.529" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#122325" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="98.383" y="117.415" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#FFFFFF" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Prioritize</text></g></g><g id="quadrant-point-styles-compact-dark-node-54" data-cfx-source-id="plot-region-2-caption" data-cfx-role="plot-region-caption" aria-label="Consider" data-cfx-label="Consider" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="0.5" data-cfx-x-minimum="" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="94.383" y="274.205" width="50.938" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#201F31" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="98.383" y="289.631" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#FFFFFF" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Consider</text></g></g><g id="quadrant-point-styles-compact-dark-node-58" data-cfx-source-id="plot-region-3-caption" data-cfx-role="plot-region-caption" aria-label="Reassess" data-cfx-label="Reassess" data-cfx-passive="true" data-cfx-show-label="true" data-cfx-x-maximum="" data-cfx-x-minimum="0.5" data-cfx-y-axis="primary" data-cfx-y-maximum="0.5" data-cfx-y-minimum=""><rect x="217.181" y="274.205" width="50.768" height="25.578" rx="3" data-cfx-role="plot-region-label-backplate" fill="#271B27" stroke="none" stroke-width="1"/><g data-cfx-role="plot-region-label"><text x="221.181" y="289.631" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#FFFFFF" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Reassess</text></g></g><g id="quadrant-point-styles-compact-dark-node-62" data-cfx-source-id="series-0-point-0-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Opportunity" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="quadrant-point-styles-compact-dark-node-63" data-cfx-source-id="series-0-point-0-label" data-cfx-role="data-label"><text x="118.464" y="173.389" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" stroke="#111317" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Opportunity</text></g></g><g id="quadrant-point-styles-compact-dark-node-65" data-cfx-source-id="series-0-point-1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Investment" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="quadrant-point-styles-compact-dark-node-66" data-cfx-source-id="series-0-point-1-label" data-cfx-role="data-label"><text x="258.572" y="166.501" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" stroke="#111317" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Investment</text></g></g><g id="quadrant-point-styles-compact-dark-node-68" data-cfx-source-id="series-0-point-2-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Experiment" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-2"><g id="quadrant-point-styles-compact-dark-node-69" data-cfx-source-id="series-0-point-2-label" data-cfx-role="data-label"><text x="135.13" y="338.717" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" stroke="#111317" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Experiment</text></g></g><g id="quadrant-point-styles-compact-dark-node-71" data-cfx-source-id="series-0-point-3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="Review" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-3"><g id="quadrant-point-styles-compact-dark-node-72" data-cfx-source-id="series-0-point-3-label" data-cfx-role="data-label"><text x="253.771" y="345.606" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" stroke="#111317" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke" style="white-space:pre;font-language-override:normal;font-palette:normal">Review</text></g></g></svg></div><div class="full" style="--example-width:390px" data-visual-theme="dark" data-output-format="png"><img src="quadrant-point-styles-compact-dark.png" width="390" height="500" alt="Native point marker authoring" loading="lazy" decoding="async"></div></section><div class="export-row"><span>390 × 500 pixels</span><nav aria-label="Download outputs"><a href="quadrant-point-styles-compact-dark.svg" data-theme-link data-light-href="quadrant-point-styles-compact-light.svg" data-dark-href="quadrant-point-styles-compact-dark.svg" download>Download SVG</a><a href="quadrant-point-styles-compact-dark.png" data-theme-link data-light-href="quadrant-point-styles-compact-light.png" data-dark-href="quadrant-point-styles-compact-dark.png" download>Download PNG</a><a href="quadrant-point-styles-compact-dark.csharp.txt" data-theme-link data-light-href="quadrant-point-styles-compact-light.csharp.txt" data-dark-href="quadrant-point-styles-compact-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="quadrant-point-styles-compact-dark.gallery.csharp.txt" data-theme-link data-light-href="quadrant-point-styles-compact-light.gallery.csharp.txt" data-dark-href="quadrant-point-styles-compact-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = QuadrantPointStylesRecipe.Create(&quot;compact&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Native point marker authoring&quot;).WithSubtitle(&quot;One native source series retains independent markers and located axis captions&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 500)), theme, mode,
+    new VisualFrame(&quot;Native point marker authoring&quot;, &quot;One native source series retains independent markers and located axis captions&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Native Core authoring for independent quadrant captions and source-owned Scatter marker styles.&lt;/summary&gt;
+public static class QuadrantPointStylesRecipe {
+    /// &lt;summary&gt;Creates the native example. The separately shared Mermaid fixture proves parsed-source mapping.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var observations = ChartSeries.CreateScatter(new ChartSeriesId(&quot;proposed-work&quot;), &quot;Proposed work&quot;, new[] {
+            new ChartPoint(.22, .74), new ChartPoint(.76, .72), new ChartPoint(.28, .26), new ChartPoint(.72, .24)
+        });
+        var labels = new[] { &quot;Opportunity&quot;, &quot;Investment&quot;, &quot;Experiment&quot;, &quot;Review&quot; };
+        for (var index = 0; index &lt; labels.Length; index++)
+            observations.WithObservationId(index, new ChartObservationId(labels[index].ToLowerInvariant())).WithPointLabel(index, labels[index]);
+        observations.ConfigureMarkers(marker =&gt; { marker.Radius = 5; marker.StrokeWidth = 0; });
+        observations.ConfigurePointMarkers(0, marker =&gt; {
+            marker.Radius = 9; marker.Fill = ChartColor.FromHex(&quot;#B45309&quot;);
+            marker.Stroke = ChartColor.FromHex(&quot;#7C2D12&quot;); marker.StrokeWidth = 2;
+        });
+        observations.ConfigurePointMarkers(1, marker =&gt; {
+            marker.Radius = 7; marker.Fill = ChartColor.FromHex(&quot;#0369A1&quot;);
+            marker.Stroke = ChartColor.FromHex(&quot;#075985&quot;); marker.StrokeWidth = 1;
+        });
+        observations.ConfigurePointMarkers(2, marker =&gt; { marker.Radius = 6; marker.Fill = ChartColor.FromHex(&quot;#7C3AED&quot;); });
+        var chart = Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 800, 500)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Native work priorities&quot;)
+            .WithSubtitle(&quot;One source series, independent marker options and endpoint captions&quot;)
+            .WithLegend(false).WithGrid(false).WithDataLabels().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
+            .AddSeries(observations);
+        chart.ConfigureXAxis(axis =&gt; { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, &quot;Low effort&quot;)); axis.Labels.Add(new ChartAxisLabel(.75, &quot;High effort&quot;)); });
+        chart.ConfigureYAxis(axis =&gt; { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, &quot;Low impact&quot;)); axis.Labels.Add(new ChartAxisLabel(.75, &quot;High impact&quot;)); });
+        chart.AddPlotRegion(new ChartPlotRegion(0, xMinimum: .5, yMinimum: .5, label: &quot;Plan&quot;))
+            .AddPlotRegion(new ChartPlotRegion(1, xMaximum: .5, yMinimum: .5, label: &quot;Prioritize&quot;))
+            .AddPlotRegion(new ChartPlotRegion(2, xMaximum: .5, yMaximum: .5, label: &quot;Consider&quot;))
+            .AddPlotRegion(new ChartPlotRegion(3, xMinimum: .5, yMaximum: .5, label: &quot;Reassess&quot;));
+        // Keyed value replacement preserves Investment&#39;s authored radius, paint and identity.
+        observations.ApplyPointChanges(new[] {
+            ChartObservationChange&lt;ChartPoint&gt;.Replace(new ChartObservationId(&quot;investment&quot;), new ChartPoint(.78, .76))
+        });
+        return chart;
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = QuadrantPointStylesRecipe.Create(&quot;compact&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Native point marker authoring&quot;).WithSubtitle(&quot;One native source series retains independent markers and located axis captions&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 500)), theme, mode,
+    new VisualFrame(&quot;Native point marker authoring&quot;, &quot;One native source series retains independent markers and located axis captions&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Native Core authoring for independent quadrant captions and source-owned Scatter marker styles.&lt;/summary&gt;
+public static class QuadrantPointStylesRecipe {
+    /// &lt;summary&gt;Creates the native example. The separately shared Mermaid fixture proves parsed-source mapping.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var observations = ChartSeries.CreateScatter(new ChartSeriesId(&quot;proposed-work&quot;), &quot;Proposed work&quot;, new[] {
+            new ChartPoint(.22, .74), new ChartPoint(.76, .72), new ChartPoint(.28, .26), new ChartPoint(.72, .24)
+        });
+        var labels = new[] { &quot;Opportunity&quot;, &quot;Investment&quot;, &quot;Experiment&quot;, &quot;Review&quot; };
+        for (var index = 0; index &lt; labels.Length; index++)
+            observations.WithObservationId(index, new ChartObservationId(labels[index].ToLowerInvariant())).WithPointLabel(index, labels[index]);
+        observations.ConfigureMarkers(marker =&gt; { marker.Radius = 5; marker.StrokeWidth = 0; });
+        observations.ConfigurePointMarkers(0, marker =&gt; {
+            marker.Radius = 9; marker.Fill = ChartColor.FromHex(&quot;#B45309&quot;);
+            marker.Stroke = ChartColor.FromHex(&quot;#7C2D12&quot;); marker.StrokeWidth = 2;
+        });
+        observations.ConfigurePointMarkers(1, marker =&gt; {
+            marker.Radius = 7; marker.Fill = ChartColor.FromHex(&quot;#0369A1&quot;);
+            marker.Stroke = ChartColor.FromHex(&quot;#075985&quot;); marker.StrokeWidth = 1;
+        });
+        observations.ConfigurePointMarkers(2, marker =&gt; { marker.Radius = 6; marker.Fill = ChartColor.FromHex(&quot;#7C3AED&quot;); });
+        var chart = Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 800, 500)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Native work priorities&quot;)
+            .WithSubtitle(&quot;One source series, independent marker options and endpoint captions&quot;)
+            .WithLegend(false).WithGrid(false).WithDataLabels().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
+            .AddSeries(observations);
+        chart.ConfigureXAxis(axis =&gt; { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, &quot;Low effort&quot;)); axis.Labels.Add(new ChartAxisLabel(.75, &quot;High effort&quot;)); });
+        chart.ConfigureYAxis(axis =&gt; { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, &quot;Low impact&quot;)); axis.Labels.Add(new ChartAxisLabel(.75, &quot;High impact&quot;)); });
+        chart.AddPlotRegion(new ChartPlotRegion(0, xMinimum: .5, yMinimum: .5, label: &quot;Plan&quot;))
+            .AddPlotRegion(new ChartPlotRegion(1, xMaximum: .5, yMinimum: .5, label: &quot;Prioritize&quot;))
+            .AddPlotRegion(new ChartPlotRegion(2, xMaximum: .5, yMaximum: .5, label: &quot;Consider&quot;))
+            .AddPlotRegion(new ChartPlotRegion(3, xMinimum: .5, yMaximum: .5, label: &quot;Reassess&quot;));
+        // Keyed value replacement preserves Investment&#39;s authored radius, paint and identity.
+        observations.ApplyPointChanges(new[] {
+            ChartObservationChange&lt;ChartPoint&gt;.Replace(new ChartObservationId(&quot;investment&quot;), new ChartPoint(.78, .76))
+        });
+        return chart;
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

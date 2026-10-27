@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TileMapColorDimensionRecipe.Create("compact-swatch-color-legend", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Temperature by state").WithSubtitle("A sampled key keeps the continuous measurement and its color domain").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Temperature by state", "A sampled key keeps the continuous measurement and its color domain", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

@@ -1,0 +1,24 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.Interactivity.Html;
+FontRegistry.Register("Report text","fonts/Carlito-Regular.ttf",400);
+FontRegistry.Register("Report text","fonts/Carlito-Bold.ttf",700);
+var chart=HtmlOwnedFontRecipe.Create("wide",VisualThemeMode.Light,"Report text");
+Directory.CreateDirectory("output");File.WriteAllText("output/report.svg",chart.ToSvg());File.WriteAllBytes("output/report.png",chart.ToPng());
+File.WriteAllText("output/report.html",chart.ToInteractiveHtmlPage(options=>options.TextPresentation=HtmlChartTextPresentation.Automatic));
+/// <summary>A native report chart whose HTML adapter can deliver the caller's registered face.</summary>
+public static class HtmlOwnedFontRecipe {
+    /// <summary>Creates the same native chart for static exports and configurable HTML text.</summary>
+    public static Chart Create(string variant, VisualThemeMode mode, string? family = null) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentException("Unknown font report size.", nameof(variant));
+        var theme = VisualTheme.Graphite(); if (family != null) theme = theme.WithFontFamily(family);
+        return Chart.Create().WithSize(variant == "compact" ? 390 : 760, 440).WithTheme(theme, mode)
+            .WithTitle("Review progress").WithSubtitle("One prepared chart across report formats").WithXLabels("Received", "Checked", "Approved")
+            .WithDataLabels(true).AddBar("Requests", new[] { new ChartPoint(1, 32), new ChartPoint(2, 26), new ChartPoint(3, 21) });
+    }
+}

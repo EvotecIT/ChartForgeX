@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = DifferenceAreaRecipe.Create("step-start", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Actual and forecast requests").WithSubtitle("Paired values change at the preceding observation; missing sections stay open").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Actual and forecast requests", "Paired values change at the preceding observation; missing sections stay open", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
@@ -31,8 +38,19 @@ public static class DifferenceAreaRecipe {
     /// <summary>Creates the selected difference-area example from paired authored observations.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dated-gaps" or "compact-dated-gaps"
-            or "step-start" or "step-middle" or "step-end" or "compact-step-middle" or "singleton" or "compact-singleton" or "dense" or "compact-dense"))
+            or "step-start" or "step-middle" or "step-end" or "compact-step-middle" or "singleton" or "compact-singleton" or "dense" or "compact-dense" or "smooth-boundaries" or "compact-smooth-boundaries"))
             throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "smooth-boundaries" or "compact-smooth-boundaries") {
+            var smoothPairs = ChartDifferencePoints.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+                new double?[] { 42, 68, 48, null, 74, 46, 62, 55 }, new double?[] { 56, 54, 60, 60, 58, 64, 50, 68 });
+            var smoothComparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", smoothPairs)
+                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .WithObservationId(3, new ChartObservationId("resumed-comparison"))
+                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+                .ConfigureMarkers(markers => markers.Radius = 3);
+            return Chart.Create().WithTitle("Smooth actual and held forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+                .AddSeries(smoothComparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        }
         if (variant is "singleton" or "compact-singleton") return Chart.Create().WithTitle("One observed comparison")
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", new[] { new ChartDifferencePoint(0, 0, 7) })
                 .WithObservationId(0, new ChartObservationId("only-comparison"))

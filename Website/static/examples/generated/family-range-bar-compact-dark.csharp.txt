@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = RangeBarRecipe.Create("compact", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Minimum and maximum delivery times").WithSubtitle("The same data in a compact view").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Minimum and maximum delivery times", "The same data in a compact view", showLegend: null, showSurface: false));
@@ -29,6 +36,7 @@ public static class RangeBarRecipe {
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"
             or "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels"
+            or "independent-endpoint-labels" or "compact-independent-endpoint-labels" or "horizontal-independent-endpoint-labels" or "compact-horizontal-independent-endpoint-labels"
             or "dense" or "compact-dense" or "dense-horizontal" or "compact-dense-horizontal" or "sparse-catalog" or "compact-sparse-catalog"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         Chart chart;
@@ -47,8 +55,9 @@ public static class RangeBarRecipe {
                 .WithXLabels(Enumerable.Range(1, 8).Select(index => "Region " + index).ToArray()).WithDataLabels()
                 .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Delivery range",
                     new[] { new ChartInterval(1, -7, -1), new ChartInterval(4, 0, 0), new ChartInterval(8, 4, -4) }));
-        else if (variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels")
-            chart = EndpointLabels(variant);
+        else if (variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels"
+            or "independent-endpoint-labels" or "compact-independent-endpoint-labels" or "horizontal-independent-endpoint-labels" or "compact-horizontal-independent-endpoint-labels")
+            chart = EndpointLabels(variant, mode);
         else if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal")
             chart = GroupedIntervals(variant);
         else {
@@ -76,7 +85,7 @@ public static class RangeBarRecipe {
         return chart;
     }
 
-    private static Chart EndpointLabels(string variant) {
+    private static Chart EndpointLabels(string variant, VisualThemeMode mode) {
         var horizontal = variant.Contains("horizontal");
         var expected = ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] {
             new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50)
@@ -89,6 +98,12 @@ public static class RangeBarRecipe {
                 options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
+                if (variant.Contains("independent")) {
+                    options.StartLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
+                    options.EndLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
+                    options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
+                    options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
+                }
             }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 70);
         if (horizontal) {

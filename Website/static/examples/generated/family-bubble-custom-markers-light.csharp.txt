@@ -1,0 +1,65 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = BubbleMarkerOptionsRecipe.Create("custom-markers", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Workload, time and request volume").WithSubtitle("Explore the data, then download the chart").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Workload, time and request volume", "Explore the data, then download the chart", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Compares standard and priority observations with independent bubble markers.</summary>
+public static class BubbleMarkerOptionsRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("options" or "compact-options" or "custom-markers" or "compact-custom-markers"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        return MarkerOptions(variant.EndsWith("custom-markers", StringComparison.Ordinal), mode)
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart MarkerOptions(bool custom, VisualThemeMode mode) {
+        var standard = ChartSeries.CreateBubble(new ChartSeriesId("standard"), "Standard", new[] {
+            new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
+        }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Circle);
+        var priority = ChartSeries.CreateBubble(new ChartSeriesId("priority"), "Priority", new[] {
+            new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200)
+        }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
+        if (custom) priority.ConfigureMarkers(markers => {
+            markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
+                .CubicTo(-1, 1, -1, -1, 0, -1);
+            var outline = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
+            markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
+            markers.StrokeDashOffset = 1;
+        });
+        return Chart.Create().WithXAxis("Workload batches").WithYAxis("Time (minutes)")
+            .AddSeries(standard).AddSeries(priority)
+            .ConfigureBubble(bubble => {
+                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+                bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
+                bubble.SizeDimension.Name = "Requests"; bubble.SizeDimension.ShowLegend = true;
+            });
+    }
+}

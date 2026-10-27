@@ -15,6 +15,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = StackedAreaRecipe.Create("compact-options", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Requests and follow-ups over time").WithSubtitle("A normalized stack with middle-step boundaries").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Requests and follow-ups over time", "A normalized stack with middle-step boundaries", showLegend: null, showSurface: false));
@@ -27,10 +34,22 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 public static class StackedAreaRecipe {
     /// <summary>Creates the selected stacked-area example.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "missing-zero" or "compact-missing-zero" or "missing-gap" or "compact-missing-gap"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
-        if (variant is "options" or "compact-options") {
+        if (variant is "missing-zero" or "compact-missing-zero" or "missing-gap" or "compact-missing-gap") {
+            var policy = variant.EndsWith("gap", StringComparison.Ordinal) ? ChartStackedAreaMissingDataPolicy.Gap : ChartStackedAreaMissingDataPolicy.Zero;
+            var received = new ChartSeries(new ChartSeriesId("received"), "Received", ChartSeriesKind.StackedArea,
+                new[] { new ChartPoint(1, 18), new ChartPoint(2, 25), new ChartPoint(4, 0), new ChartPoint(5, 20), new ChartPoint(6, 28) })
+                .WithStackedAreaMissingData(policy).WithObservationId(2, new ChartObservationId("observed-zero"));
+            var processed = new ChartSeries(new ChartSeriesId("processed"), "Processed", ChartSeriesKind.StackedArea,
+                new[] { new ChartPoint(1, 12), new ChartPoint(2, 14), new ChartPoint(3, 16), new ChartPoint(4, 9), new ChartPoint(5, 11), new ChartPoint(6, 15) })
+                .WithStackedAreaMissingData(policy);
+            chart.WithTitle(policy == ChartStackedAreaMissingDataPolicy.Gap ? "Missing contribution cuts the stack" : "Missing contribution has zero height")
+                .WithXLabels("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday").WithYAxis("Requests")
+                .AddSeries(received).AddSeries(processed);
+        }
+        else if (variant is "options" or "compact-options") {
             var completed = new ChartSeries(new ChartSeriesId("completed"), "Completed", ChartSeriesKind.StackedArea,
                 new[] { 45d, 70, 80, 55, 90 }.Select((value, point) => new ChartPoint(point + 1, value)))
                 .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);

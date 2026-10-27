@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = RangeAreaRecipe.Create("options", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Expected operating range").WithSubtitle("Lower, middle and upper bounds share middle-step transitions").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Expected operating range", "Lower, middle and upper bounds share middle-step transitions", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
@@ -30,10 +37,18 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 public static class RangeAreaRecipe {
     /// <summary>Creates the selected range-area example from typed lower and upper limits.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "singleton" or "compact-singleton"))
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "singleton" or "compact-singleton" or "independent-boundaries" or "compact-independent-boundaries"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
-        if (variant is "singleton" or "compact-singleton") {
+        if (variant is "independent-boundaries" or "compact-independent-boundaries") {
+            var ranges = ChartRangeBands.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+                new double?[] { 12, 22, 16, null, 25, 15, 20, 18 }, new double?[] { 32, 46, 38, 40, 48, 41, 52, 44 });
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range", ranges)
+                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .WithObservationId(3, new ChartObservationId("resumed-range"));
+            chart.WithTitle("Smooth lower and held upper limits").WithXAxis("Observation").WithYAxis("Expected level").AddSeries(expected);
+        }
+        else if (variant is "singleton" or "compact-singleton") {
             chart.WithTitle("One observed range").AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range",
                 new[] { new ChartRangeBand(0, 0, 7) }).WithObservationId(0, new ChartObservationId("only-range")));
         }
