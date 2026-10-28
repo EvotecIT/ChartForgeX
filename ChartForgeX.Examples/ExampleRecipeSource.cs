@@ -25,7 +25,16 @@ public static partial class ExampleRecipeSource {
             ["{{LEGEND}}"] = legend.HasValue ? legend.Value ? "true" : "false" : "null",
             ["{{SURFACE}}"] = surface ? "true" : "false",
             ["{{VIEWPORT}}"] = viewport ? ", new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))" : "",
-            ["{{ARTIFACT_KIND}}"] = artifactKind
+            ["{{ARTIFACT_KIND}}"] = artifactKind,
+            // Only natural-size topology keeps its own canvas; every other download stays a plain prepare-and-save program.
+            ["{{NATURAL}}"] = recipe.Create(variant, mode) is TopologyChart { DefaultRenderOptions.FitContentToViewport: false }
+                ? "if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {\n" +
+                    "    var natural = topology.WithTitle(" + JsonSerializer.Serialize(title) + ").WithSubtitle(" + JsonSerializer.Serialize(subtitle) + ")" +
+                    ".WithTheme(theme" + (galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : "") + ", mode).ToVisualArtifact();\n" +
+                    "    File.WriteAllText(\"visual.svg\", natural.ToSvg());\n" +
+                    "    File.WriteAllBytes(\"visual.png\", natural.ToPng());\n" +
+                    "    File.WriteAllText(\"visual.html\", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));\n" +
+                    "    return;\n}\n" : ""
         };
         return Package(recipe, "RecipeProgram", tokens);
     }

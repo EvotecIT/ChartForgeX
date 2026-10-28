@@ -1,0 +1,46 @@
+/// <summary>Shows 24 hours of availability for nine targets in three sites, with the available share per lane.</summary>
+public static class AvailabilityLanesRecipe {
+    /// <summary>Creates grouped availability lanes; the compact variant keeps the same data.</summary>
+    public static Chart Create(string variant = "availability", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("availability" or "compact-availability")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
+        var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc)
+            .WithStateCategories(new ChartStateCategory("up", "Up", colors.Status.Pass.Fill),
+                new ChartStateCategory("degraded", "Degraded", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+                new ChartStateCategory("down", "Down", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
+        chart.Options.LaneSummaryHeader = "Available";
+        var targets = new[] {
+            ("Warsaw", "dc1.ad.evotec.xyz", "No response to LDAP bind"), ("Warsaw", "dc2.ad.evotec.xyz", "No response to LDAP bind"),
+            ("Warsaw", "dns.ad.evotec.xyz", "No DNS response"), ("Krakow", "dc3.ad.evotec.xyz", "No response to LDAP bind"),
+            ("Krakow", "dc4.ad.evotec.xyz", "No response to LDAP bind"), ("Krakow", "adfs.ad.evotec.xyz", "No HTTPS response"),
+            ("Frankfurt", "dc5.ad.evotec.xyz", "No response to LDAP bind"), ("Frankfurt", "1.1.1.1", "No DNS response"), ("Frankfurt", "8.8.8.8", "No DNS response")
+        };
+        for (var index = 0; index < targets.Length; index++) {
+            var (site, name, outage) = targets[index];
+            var segments = new List<ChartStateTimelineSegment>();
+            var cursor = start; var down = 0d;
+            foreach (var (hour, minutes, state) in Problems(index)) {
+                var from = start.AddHours(hour);
+                segments.Add(new ChartStateTimelineSegment(cursor, from, "up"));
+                segments.Add(new ChartStateTimelineSegment(from, from.AddMinutes(minutes), state,
+                    state == "down" ? outage : "Response time above 250 ms"));
+                if (state == "down") down += minutes;
+                cursor = from.AddMinutes(minutes);
+            }
+            segments.Add(new ChartStateTimelineSegment(cursor, start.AddHours(24), "up"));
+            var available = 1 - down / (24 * 60);
+            chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("target-" + index.ToString(CultureInfo.InvariantCulture)), name, segments,
+                available.ToString("0.0%", CultureInfo.InvariantCulture), site));
+        }
+        return chart;
+    }
+
+    // Each target has at most two short problems at a fixed time of day, so the gallery stays reproducible.
+    private static (int Hour, int Minutes, string State)[] Problems(int target) => (target % 4) switch {
+        0 => new[] { (3, 25, "degraded"), (14, 40, "down") },
+        1 => Array.Empty<(int, int, string)>(),
+        2 => new[] { (9, 90, "degraded") },
+        _ => new[] { (6 + target, 15, "down") }
+    };
+}

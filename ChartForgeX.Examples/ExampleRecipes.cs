@@ -184,6 +184,12 @@ public static partial class ExampleRecipes {
         Add(ChartSeriesKind.Sunburst, nameof(SunburstCurvedLabelsRecipe), SunburstCurvedLabelsRecipe.Create, "curved-labels");
         Add(ChartSeriesKind.Treemap, nameof(TreemapCaptionPoliciesRecipe), TreemapCaptionPoliciesRecipe.Create, "caption-policies");
         Add(ChartSeriesKind.Treemap, nameof(TreemapColorDimensionRecipe), TreemapColorDimensionRecipe.Create, "color-dimension");
+        // Product-shaped scenarios: the data and labels a monitoring, certificate or licence report would show.
+        Add(ChartSeriesKind.Line, nameof(LatencyWeekRecipe), LatencyWeekRecipe.Create, "latency-week");
+        Add(ChartSeriesKind.StateTimeline, nameof(AvailabilityLanesRecipe), AvailabilityLanesRecipe.Create, "availability");
+        Add(ChartSeriesKind.Heatmap, nameof(AvailabilityHeatmapRecipe), AvailabilityHeatmapRecipe.Create, "availability");
+        Add(ChartSeriesKind.Bar, nameof(CertificatesByIssuerRecipe), CertificatesByIssuerRecipe.Create, "issuers");
+        Add(ChartSeriesKind.Waterfall, nameof(LicenceWasteRecipe), LicenceWasteRecipe.Create, "licence-waste");
         return new ReadOnlyDictionary<(ChartSeriesKind, string), ExampleRecipe>(recipes);
     }
 }

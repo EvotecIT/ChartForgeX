@@ -88,7 +88,11 @@ public static partial class V2Examples {
                         : kind == ChartSeriesKind.Heatmap ? "Signed measurements share a fixed color domain"
                         : kind == ChartSeriesKind.HexbinHeatmap ? "Named numeric intervals keep their exact boundaries" : "Every observed value shares one scale; missing days stay distinct"
                     : variant is "options" or "compact-options" && ExampleRecipes.HasGeometryOptions(kind) ? GeometrySubtitle(kind)
-                    : variant switch { "sparse" => "Missing observations remain visible as gaps", "options" => "Explore configured marks, scales and labels", "compact" => "The same data in a compact view", _ => "Explore the data, then download the chart" };
+                    : variant == "sparse" ? "Missing observations remain visible as gaps" : string.Empty;
+                // Product scenarios describe their own data; the title already names what the chart shows.
+                if (Scenario(kind, variant) is { } scenario) { title = scenario.Title; subtitle = scenario.Subtitle; }
+                if (kind == ChartSeriesKind.StateTimeline && variant is "availability" or "compact-availability") height = compact ? 480 : 520;
+                if (kind == ChartSeriesKind.Heatmap && variant == "compact-availability") height = 480;
                 WriteModel(output, artifacts, chart, id, family, title, variant, subtitle, mode, width, height, legend,
                     selection.Recipe, chart.Series.Select(series => series.Kind.ToString()).Distinct().ToArray(), compact: compact);
             }
@@ -125,6 +129,15 @@ public static partial class V2Examples {
                 ExampleRecipes.Named("radial-bar-scales"), new[] { "RadialBar" }, compact: compact);
         }
     }
+
+    private static (string Title, string Subtitle)? Scenario(ChartSeriesKind kind, string variant) => (variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant) switch {
+        "latency-week" => ("Domain controller round-trip time", "Hourly ping from the monitoring host, 19–25 October 2026 (UTC)"),
+        "availability" when kind == ChartSeriesKind.Heatmap => ("Daily availability per target", "14–27 October 2026; empty cells are days without measurements"),
+        "availability" => ("Target availability by site", "27 October 2026 (UTC); the right column is the available share"),
+        "issuers" => ("Certificates issued per month", "Stacked by issuing authority, November 2025 to October 2026"),
+        "licence-waste" => ("Where Microsoft 365 licences go", "Purchased seats to licences effectively in use; inactive means no sign-in for 90 days"),
+        _ => null
+    };
 
     private static string GeometrySubtitle(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Line => "Step transitions and three configured marker shapes",

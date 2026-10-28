@@ -62,6 +62,10 @@ public static partial class ExampleRecipes {
         if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter) {
             variants.Add("partial-color-range"); variants.Add("compact-partial-color-range");
         }
+        if (kind == ChartSeriesKind.Line) variants.AddRange(new[] { "latency-week", "compact-latency-week" });
+        if (kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.Heatmap) variants.AddRange(new[] { "availability", "compact-availability" });
+        if (kind == ChartSeriesKind.Bar) variants.AddRange(new[] { "issuers", "compact-issuers" });
+        if (kind == ChartSeriesKind.Waterfall) variants.AddRange(new[] { "licence-waste", "compact-licence-waste" });
         if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
         if (kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea) {
             variants.Add("angular-reversal"); variants.Add("compact-angular-reversal");
