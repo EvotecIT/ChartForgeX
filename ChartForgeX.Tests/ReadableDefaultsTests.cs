@@ -4,6 +4,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -175,6 +176,24 @@ public sealed class ReadableDefaultsTests {
         var point = ByRole(XDocument.Parse(chart.ToSvg()), "point").First();
 
         Assert.EndsWith("52.7 ms (52.734 ms)", (string?)point.Attribute("aria-label"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ValueUnit_BlankSetThroughOptionsMeansNoUnit(string unit) {
+        var line = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").AddLine("dc1", new[] { new ChartPoint(1, 12), new ChartPoint(2, 30) });
+        line.Options.ValueUnit = unit;
+        var heatmap = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").AddHeatmapRow("dc1", new double?[] { 99.5, 100 });
+        heatmap.Options.ValueUnit = unit;
+        var waterfall = WaterfallInterchangeTests.Model();
+        waterfall.Options.ValueUnit = unit;
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(waterfall.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+
+        var point = ByRole(XDocument.Parse(line.ToSvg()), "point").First();
+        Assert.Equal("12", (string?)point.Attribute("data-cfx-formatted-value") ?? "12");
+        Assert.Equal("dc1, Mon: 99.5", (string?)ByRole(XDocument.Parse(heatmap.ToSvg()), "heatmap-cell").First().Attribute("aria-label"));
+        Assert.NotEmpty(restored.ToSvg());
     }
 
     [Fact]

@@ -59,7 +59,10 @@ public sealed partial class ChartOptions {
 
     internal static string AppendUnit(string formatted, string? unit) {
         // A value format that already writes the unit ("12.5 ms") keeps a single copy.
-        if (unit == null || formatted.Length == 0 || EndsWithUnit(formatted.TrimEnd(), unit)) return formatted;
+        // ValueUnit is a public setter and portable data can carry it, so a blank unit means no unit here too.
+        if (string.IsNullOrWhiteSpace(unit) || formatted.Length == 0) return formatted;
+        unit = unit!.Trim();
+        if (EndsWithUnit(formatted.TrimEnd(), unit)) return formatted;
         return formatted + (unit.Length == 1 && !char.IsLetterOrDigit(unit[0]) ? unit : " " + unit);
     }
 }
