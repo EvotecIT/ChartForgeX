@@ -45,6 +45,13 @@
         const clip=id && svg.getElementById(id);if(clip)for(const child of clip.querySelectorAll('*'))bars.set(child,box);
       }
     }
+    // Headings and the clip that frames them keep their left inset when a drawing has no plot band.
+    const headings=new Set();
+    for(const heading of svg.querySelectorAll('[data-cfx-role^="frame-heading"]')){
+      for(const node of heading.querySelectorAll('*'))headings.add(node);
+      const id=heading.closest('[clip-path]')?.getAttribute('clip-path').match(/url\(#([^)]*)\)/)?.[1],clip=id&&svg.getElementById(id);
+      if(clip)for(const child of clip.querySelectorAll('*'))headings.add(child);
+    }
     const recipes=[];
     for(const node of nodes){
       if(node.closest('pattern,marker') || excluded.has(node))continue;
@@ -52,7 +59,7 @@
       for(const name of ['x','y','cx','cy','x1','y1','x2','y2','width','height','d','points','transform']){
         const value=node.getAttribute(name);if(value!=null && !value.includes('%'))attributes[name]=value;
       }
-      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node),heading:!!node.closest('[data-cfx-role="frame-heading"]')});
+      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node),heading:headings.has(node)||!!node.closest('[data-cfx-role^="frame-heading"]')});
     }
     const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"],[data-cfx-role="heatmap-column-label"],[data-cfx-role="schedule-tick-label"]')]
       .filter(group=>!group.matches('[data-cfx-role="heatmap-column-label"]') || !group.closest('[transform*="rotate("]')).map(group=>{

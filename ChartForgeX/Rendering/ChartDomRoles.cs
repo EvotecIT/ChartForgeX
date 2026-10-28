@@ -18,7 +18,7 @@ public static class ChartDomRoles {
     /// <summary>The attribute that carries a group name on schedule group headers and on the rows inside that group.</summary>
     public const string LaneGroupAttribute = "data-cfx-lane-group";
 
-    /// <summary>A group wrapping one schedule lane's label and summary text.</summary>
+    /// <summary>A group wrapping one schedule lane's label and summary text. It identifies the lane but is not an interaction target.</summary>
     public const string ScheduleRow = "schedule-row";
 
     /// <summary>The label text of a state-timeline or Gantt-lane row.</summary>
@@ -32,6 +32,9 @@ public static class ChartDomRoles {
 
     /// <summary>A group header above the lanes of a Gantt-lane chart.</summary>
     public const string GanttLaneGroup = "gantt-lane-group";
+
+    /// <summary>A group header in a mixed schedule that combines state lanes, Gantt lanes or ranges.</summary>
+    public const string ScheduleGroup = "schedule-group";
 
     /// <summary>A state-timeline segment target; carries the state, start, end and source metadata.</summary>
     public const string StateTimelineSegment = "state-timeline-segment";

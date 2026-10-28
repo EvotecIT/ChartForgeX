@@ -24,6 +24,11 @@ public sealed class ChartDomContractTests {
         .WithStateCategories(new ChartStateCategory("planned", "Planned", ChartColor.FromHex("#2563eb")))
         .AddGanttLane("Patching", new[] { new ChartGanttLaneItem(Day, Day.AddHours(4), "planned", "Window") }, group: "Operations", id: new ChartSeriesId("lane-patching"));
 
+    private static Chart MixedSchedule() => Chart.Create().WithSize(720, 260)
+        .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+        .AddStateTimelineLane("DC1", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(12), "up") }, group: "Warsaw", id: new ChartSeriesId("dc/DC1"))
+        .AddGanttLane("Patching", new[] { new ChartGanttLaneItem(Day, Day.AddHours(4), "up", "Window") }, group: "Operations", id: new ChartSeriesId("lane-patching"));
+
     private static XElement[] ByRole(XDocument svg, string role) =>
         svg.Descendants().Where(element => (string?)element.Attribute(ChartDomRoles.RoleAttribute) == role).ToArray();
 
@@ -36,6 +41,8 @@ public sealed class ChartDomContractTests {
         Assert.Equal(new[] { "Warsaw", "Warsaw", null }, rows.Select(row => (string?)row.Attribute(ChartDomRoles.LaneGroupAttribute)).ToArray());
         Assert.All(rows, row => Assert.Single(row.Descendants(), element => (string?)element.Attribute(ChartDomRoles.RoleAttribute) == ChartDomRoles.ScheduleRowLabel));
         Assert.All(rows, row => Assert.Single(row.Descendants(), element => (string?)element.Attribute(ChartDomRoles.RoleAttribute) == ChartDomRoles.LaneSummary));
+        // Rows identify lanes for hosts but must not become interaction targets.
+        Assert.All(rows, row => Assert.Null(row.Attribute("data-cfx-series")));
 
         var segments = ByRole(svg, ChartDomRoles.StateTimelineSegment);
         Assert.Equal(new[] { "dc/DC1.ad.evotec.pl", "dc/DC1.ad.evotec.pl", "dc/DC2.ad.evotec.pl", "host/1.1.1.1" },
@@ -59,12 +66,23 @@ public sealed class ChartDomContractTests {
     }
 
     [Fact]
+    public void MixedSchedule_RowsAndGroupHeaders_CarryLaneIdAndGroup() {
+        var svg = XDocument.Parse(MixedSchedule().ToSvg());
+        var rows = ByRole(svg, ChartDomRoles.ScheduleRow);
+        Assert.Equal(new[] { "dc/DC1", "lane-patching" }, rows.Select(row => (string?)row.Attribute(ChartDomRoles.LaneIdAttribute)).ToArray());
+        Assert.Equal(new[] { "Warsaw", "Operations" }, rows.Select(row => (string?)row.Attribute(ChartDomRoles.LaneGroupAttribute)).ToArray());
+        var headers = ByRole(svg, ChartDomRoles.ScheduleGroup);
+        Assert.Equal(new[] { "Warsaw", "Operations" }, headers.Select(header => header.Value).ToArray());
+        Assert.All(headers, header => Assert.Contains(header.Ancestors(), element => (string?)element.Attribute(ChartDomRoles.LaneGroupAttribute) == header.Value));
+    }
+
+    [Fact]
     public void ContractRoles_AreAllEmittedByRepresentativeCharts() {
         var line = Chart.Create().WithSize(640, 320).WithLegend(true)
             .AddLine("Latency", new[] { new ChartPoint(1, 20), new ChartPoint(2, 35), new ChartPoint(3, 28) })
             .AddLine("Baseline", new[] { new ChartPoint(1, 18), new ChartPoint(2, 22), new ChartPoint(3, 24) });
         var topology = TopologyChart.Create().WithViewport(640, 360).AddAutoNode("A", "Receive").AddAutoNode("B", "Store").AddEdge("link", "A", "B");
-        var emitted = new[] { line.ToSvg(), StateTimeline().ToSvg(), GanttLanes().ToSvg(), topology.ToSvg() }
+        var emitted = new[] { line.ToSvg(), StateTimeline().ToSvg(), GanttLanes().ToSvg(), MixedSchedule().ToSvg(), topology.ToSvg() }
             .SelectMany(svg => XDocument.Parse(svg).Descendants())
             .Select(element => (string?)element.Attribute(ChartDomRoles.RoleAttribute))
             .Where(role => role != null).ToHashSet(StringComparer.Ordinal);

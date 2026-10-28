@@ -70,7 +70,7 @@ internal static partial class VisualScheduleCompiler {
                     Math.Min(ChartStateTimelineModel.LaneBandMaximum, row.Value.Height * .72))) : Math.Max(0, model.LaneBand(plot));
                 var top = row.HasValue ? row.Value.Top + (row.Value.Height - band) / 2 : model.LaneTop(plot, laneIndex);
                 if (frame == null) builder.AddRegion(new VisualSemanticRegion("schedule-lane-" + lane.SeriesIndex, "schedule-lane", new ChartRect(plot.Left, top, plot.Width, band), lane.Name));
-                if (frame == null) LaneText(chart, context, builder, viewport, layout, lane.Name, lane.Summary, top, band, lane.SeriesIndex, lane.Group);
+                if (frame == null) LaneText(chart, context, builder, viewport, layout, lane.Name, lane.Summary, top, band, lane.SeriesIndex, lane.Group, model.LaneSlot(plot));
                 foreach (var segment in lane.Segments) {
                     var visible = model.TrySegmentSpan(segment, frame?.Projection ?? plot, out var left, out var width);
                     var bounds = visible ? new ChartRect(left, top, Math.Max(0, Math.Min(width, plot.Right - left)), band) : new ChartRect(plot.Left, top, 0, band);
@@ -171,10 +171,10 @@ internal static partial class VisualScheduleCompiler {
     }
 
     // The lane identity is the series identifier, so hosts that set ChartSeriesId can link lanes by their own keys.
-    private static Dictionary<string, string> LaneMetadata(Chart chart, int seriesIndex, string? group) {
+    internal static Dictionary<string, string> LaneMetadata(Chart chart, int seriesIndex, string? group) {
         var metadata = new Dictionary<string, string> {
-            [ChartDomRoles.LaneIdAttribute] = chart.Series[seriesIndex].InteractionIdentityKey,
-            ["data-cfx-series"] = seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            // No data-cfx-series here: the row is a label group, not an interaction target.
+            [ChartDomRoles.LaneIdAttribute] = chart.Series[seriesIndex].InteractionIdentityKey
         };
         if (!string.IsNullOrEmpty(group)) metadata[ChartDomRoles.LaneGroupAttribute] = group!;
         return metadata;

@@ -2,7 +2,7 @@
 
 Rendered SVG and HTML carry many `data-cfx-*` attributes. Most of them are renderer details and can change between releases. The names on this page are the supported contract for hosts such as HtmlForgeX, CanopyX and report composers. They are published as constants in `ChartForgeX.Rendering.ChartDomRoles`, and `ChartDomContractTests` fails when one of them stops being emitted.
 
-Select these names in host scripts and styles. Don't select other roles, element order or generated ids.
+Select these names in host scripts and styles. Don't select other roles, element order or generated ids. Text roles sit on a `<g>` that wraps the `<text>`, so select `[data-cfx-role="schedule-row-label"] text` rather than `text[data-cfx-role=…]`.
 
 ## Attributes
 
@@ -16,11 +16,12 @@ Select these names in host scripts and styles. Don't select other roles, element
 
 | Role | Element | Notes |
 |---|---|---|
-| `schedule-row` | `<g>` around one lane's label and summary | Carries `data-cfx-lane-id`, `data-cfx-series` and, when grouped, `data-cfx-lane-group`. Wrap or decorate this group to make a lane clickable. |
-| `schedule-row-label` | `<text>` lane label | The complete name is in the chart's semantic regions when the drawn text is shortened. |
-| `lane-summary` | `<text>` right-hand lane summary | Present only when a lane has a summary. |
-| `state-timeline-group` | `<text>` group header in a state timeline | An enclosing `<g>` carries `data-cfx-lane-group`. |
-| `gantt-lane-group` | `<text>` group header in Gantt lanes | An enclosing `<g>` carries `data-cfx-lane-group`. |
+| `schedule-row` | `<g>` around one lane's label and summary | Carries `data-cfx-lane-id` and, when grouped, `data-cfx-lane-group`. It identifies the lane; it is not a chart interaction target. Wrap or decorate this group to make a lane clickable. |
+| `schedule-row-label` | `<g>` wrapping the lane label `<text>` | The complete name is in the chart's semantic regions when the drawn text is shortened. |
+| `lane-summary` | `<g>` wrapping the right-hand lane summary `<text>` | Present only when a lane has a summary. |
+| `state-timeline-group` | `<g>` wrapping a group header in a state timeline | An enclosing `<g>` carries `data-cfx-lane-group`. |
+| `gantt-lane-group` | `<g>` wrapping a group header in Gantt lanes | An enclosing `<g>` carries `data-cfx-lane-group`. |
+| `schedule-group` | `<g>` wrapping a group header in a mixed schedule | An enclosing `<g>` carries `data-cfx-lane-group`. |
 | `state-timeline-segment` | `<g>` segment target | Carries `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-series`, `data-cfx-point` and `data-cfx-lane-id`. |
 | `state-timeline-segment-shape` | Painted shape inside a segment | |
 | `gantt-lane-item` | `<g>` Gantt-lane item target | Carries the same identity attributes as a segment. |

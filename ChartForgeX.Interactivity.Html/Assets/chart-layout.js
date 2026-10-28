@@ -58,7 +58,7 @@
     // Headings and lane captions keep their size and truncate with an ellipsis; the complete text stays in a <title>.
     let captions;
     function fitText(width){
-      captions ||= [...svg.querySelectorAll('[data-cfx-role="frame-heading"] text,[data-cfx-role="schedule-row-label"] text,[data-cfx-role="lane-summary"] text,[data-cfx-role="state-timeline-group"] text,[data-cfx-role="gantt-lane-group"] text')]
+      captions ||= [...svg.querySelectorAll('[data-cfx-role^="frame-heading"] text,[data-cfx-role="schedule-row-label"] text,[data-cfx-role="lane-summary"] text,[data-cfx-role="state-timeline-group"] text,[data-cfx-role="gantt-lane-group"] text')]
         .map(text=>({text,full:text.textContent,clip:clipRect(text),right:!!text.closest('[data-cfx-role="schedule-row-label"],[data-cfx-role="lane-summary"]')}));
       for(const caption of captions){
         const {text,full,clip,right}=caption;
@@ -66,7 +66,7 @@
         // Native right alignment is baked with server metrics; re-anchor it so the browser's own font stays aligned.
         if(right && clip){text.setAttribute('text-anchor','end');text.setAttribute('x',Number(clip.getAttribute('x'))+Number(clip.getAttribute('width'))-1);}
         const anchor=text.getAttribute('text-anchor')||getComputedStyle(text).textAnchor;
-        const x=Number(text.getAttribute('x'))||0, clipRight=clip ? Number(clip.getAttribute('x'))+Number(clip.getAttribute('width')) : width-Math.max(0,spec.spacing||8);
+        const x=Number(text.getAttribute('x'))||0, clipRight=Math.min(width-Math.max(0,spec.spacing||8),clip ? Number(clip.getAttribute('x'))+Number(clip.getAttribute('width')) : Infinity);
         // Glyph boxes extend slightly past their advance, so keep two pixels of slack inside the clip.
         const limit=(anchor==='end' ? (clip ? Number(clip.getAttribute('width')) : x) : anchor==='middle' ? 2*Math.min(x,width-x) : clipRight-x)-2;
         if(limit<=0 || text.getComputedTextLength()<=limit+.5)continue;

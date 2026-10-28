@@ -41,16 +41,18 @@ internal static partial class VisualScheduleCompiler {
         using (builder.PushGroup("schedule-composition", "schedule-composition", Window(model.Min, model.Max))) {
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick,
                 minimum: model.Min, maximum: model.Max);
-            var tops = model.RowTops(plot);
+            var tops = model.RowTops(plot); string? currentGroup = null;
             for (var index = 0; index < model.Rows.Count; index++) {
                 var row = model.Rows[index]; var bounds = model.RowBounds(plot, index, tops);
                 if (row.IsGroup) {
-                    if (chart.Options.ShowAxes && chart.Options.YAxis.Visible) VisualStateSceneTools.Text(builder, row.Name,
-                        new ChartRect(viewport.Left, bounds.Top, plot.Right - viewport.Left, bounds.Height),
-                        VisualStateSceneTools.TickStyle(chart, context), "schedule-group", "schedule-group-" + index);
+                    currentGroup = row.Name.Length == 0 ? null : row.Name;
+                    if (chart.Options.ShowAxes && chart.Options.YAxis.Visible)
+                        using (builder.PushGroup(null, null, currentGroup == null ? null : new Dictionary<string, string> { [ChartDomRoles.LaneGroupAttribute] = currentGroup }))
+                            GroupHeader(chart, context, builder, row.Name, viewport.Left, plot.Right - viewport.Left, bounds.Top, bounds.Height,
+                                ChartDomRoles.ScheduleGroup, "schedule-group-" + index);
                     continue;
                 }
-                LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, bounds.Top, bounds.Height, row.SeriesIndex);
+                LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, bounds.Top, bounds.Height, row.SeriesIndex, currentGroup);
                 builder.AddRegion(new VisualSemanticRegion("schedule-lane-" + row.SeriesIndex, "schedule-lane", bounds, row.Name));
             }
             if (chart.Series.Any(series => series.Kind == ChartSeriesKind.StateTimeline)) StateLanes(chart, context, builder, viewport, frame);

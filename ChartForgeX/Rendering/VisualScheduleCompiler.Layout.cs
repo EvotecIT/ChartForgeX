@@ -81,7 +81,7 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private static void LaneText(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,
-        string name, string? summary, double top, double height, int index, string? group = null) {
+        string name, string? summary, double top, double height, int index, string? group = null, double pitch = 0) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var plot = layout.Plot; var gap = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle();
@@ -99,12 +99,12 @@ internal static partial class VisualScheduleCompiler {
             var fittedName = ChartTextFitting.TrimEnd(name, labelStyle.EffectiveFontSize, labelWidth,
                 (text, _) => builder.MeasureText(text, labelStyle).Width);
             if (fittedName.Length == 0) fittedName = name;
-            VisualStateSceneTools.Text(builder, name, LaneTextBounds(builder, labelStyle, fittedName, viewport.Left, labelWidth, top, height), labelStyle,
+            VisualStateSceneTools.Text(builder, name, LaneTextBounds(builder, labelStyle, fittedName, viewport.Left, labelWidth, top, height, pitch), labelStyle,
                 ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
         }
         if (layout.HasSummary && summary != null) {
             var summaryStyle = LaneLabelStyle(builder, style, summary, height, Math.Max(0, viewport.Right - layout.SummaryLeft));
-            VisualStateSceneTools.Text(builder, summary, LaneTextBounds(builder, summaryStyle, summary, layout.SummaryLeft, Math.Max(0, viewport.Right - layout.SummaryLeft), top, height), summaryStyle,
+            VisualStateSceneTools.Text(builder, summary, LaneTextBounds(builder, summaryStyle, summary, layout.SummaryLeft, Math.Max(0, viewport.Right - layout.SummaryLeft), top, height, pitch), summaryStyle,
                 ChartDomRoles.LaneSummary, "schedule-summary-" + index, TextAlignment.Right);
         }
     }
@@ -113,7 +113,7 @@ internal static partial class VisualScheduleCompiler {
         string role, string id) {
         var style = LaneLabelStyle(builder, VisualStateSceneTools.TickStyle(chart, context), name, height, width).Clone();
         style.Font = style.Font.Clone(); style.Font.Weight = Math.Max(style.Font.Weight, 600);
-        VisualStateSceneTools.Text(builder, name, LaneTextBounds(builder, style, name, left, width, top, height), style, role, id);
+        VisualStateSceneTools.Text(builder, name, LaneTextBounds(builder, style, name, left, width, top, height, height), style, role, id);
     }
 
     private static void Now(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ScheduleLayout layout, double x, double now) {
@@ -169,6 +169,9 @@ internal static partial class VisualScheduleCompiler {
     /// <summary>The smallest lane text size. Long names are truncated, never shrunk below this.</summary>
     internal const double MinimumLaneFontSize = 10;
 
+    // Ascender-to-descender height of ordinary UI faces relative to the font size.
+    private const double GlyphHeightRatio = 1.2;
+
     // Lane text may shrink toward the row height but never below the readable floor. Ordinary-sized text keeps one size
     // across lanes and truncates to the gutter; only oversized authored text also shrinks toward the gutter width.
     private static TextStyle LaneLabelStyle(VisualSceneBuilder builder, TextStyle style, string text, double height, double width = 0) {
@@ -182,11 +185,14 @@ internal static partial class VisualScheduleCompiler {
         return fitted;
     }
 
-    // Lane text is centred on its band and may use the row's spacing above and below the band, so it is never omitted
-    // merely because the painted band is thinner than a line of text.
-    private static ChartRect LaneTextBounds(VisualSceneBuilder builder, TextStyle style, string text, double left, double width, double top, double height) {
+    // Lane text is centred on its band and may use the row's spacing (pitch) above and below the band, so it is not
+    // omitted merely because the painted band is thinner than a line of text. Text taller than the row pitch is hidden
+    // rather than drawn over its neighbours; its complete value stays in the semantic regions.
+    private static ChartRect LaneTextBounds(VisualSceneBuilder builder, TextStyle style, string text, double left, double width, double top, double height, double pitch = 0) {
         var textHeight = builder.MeasureText(text.Length == 0 ? "Mg" : text, style).Height;
-        var rowHeight = Math.Max(height, textHeight);
+        // The measured line box includes generous leading; neighbours collide only when the glyphs themselves do not fit.
+        var fits = pitch <= 0 || pitch >= style.EffectiveFontSize * GlyphHeightRatio;
+        var rowHeight = fits ? Math.Max(height, textHeight) : Math.Max(height, pitch);
         return new ChartRect(left, top + (height - rowHeight) / 2, width, rowHeight);
     }
 

@@ -20,13 +20,16 @@ internal static class HtmlChartLayoutSpecification {
         var svg = prepared.ToSvg(options);
         // A declared plot band stretches with the container while gutters before it stay fixed and gutters after it move
         // with the right edge. Drawings without a plot band stay centred; only their heading keeps its left inset.
-        var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot" or "schedule-plot");
+        // Only state timelines stretch their schedule plot: Gantt marks (open ends, milestones, item captions) are not yet
+        // safe to scale horizontally, so other schedules keep the centred projection.
+        var stateLanes = chart.Series.Count > 0 && chart.Series.All(series => series.Kind == ChartSeriesKind.StateTimeline);
+        var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot" || stateLanes && item.Role == "schedule-plot");
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
         var output = new StringBuilder("{\"schema\":\"chartforgex/layout-1\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
-            .Append(LaneGutter(prepared.Regions, plot))
+            .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()))

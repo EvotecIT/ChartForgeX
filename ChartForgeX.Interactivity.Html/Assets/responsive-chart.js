@@ -28,7 +28,7 @@
     if(!host.isConnected){delete host.cfxResponsiveReady;return;}
     await document.fonts?.ready;
     if(!host.isConnected){delete host.cfxResponsiveReady;return;}
-    let drawing;
+    const fallback=host.querySelector(':scope > svg');let drawing;
     try{drawing=window.ChartForgeXLayout.create(host,spec);}catch{return unavailable(host,'the layout data does not match this drawing.');}
     let timer=0,disposed=false,printing=matchMedia('print').matches;
     host.style.minWidth=printing?'0':spec.minimum+'px';
@@ -40,7 +40,8 @@
     const media=matchMedia('print'),changed=event=>event.matches?print():afterPrint();
     addEventListener('beforeprint',print);addEventListener('afterprint',afterPrint);media.addEventListener('change',changed);
     host.cfxResponsive={layout,dispose:()=>{disposed=true;clearTimeout(timer);observer.disconnect();removeEventListener('beforeprint',print);removeEventListener('afterprint',afterPrint);media.removeEventListener('change',changed);delete host.cfxResponsive;delete host.cfxResponsiveReady;}};
-    layout();
+    // A specification that parses but cannot be laid out restores the static drawing instead of rejecting.
+    try{layout();}catch{host.cfxResponsive.dispose();if(fallback)drawing.svg.replaceWith(fallback);return unavailable(host,'the layout data could not be applied.');}
     document.fonts?.ready.then(()=>{if(!disposed)layout();});
   }
   function hosts(scope){if(!scope?.querySelectorAll)return[];return[...(scope.matches?.('[data-cfx-responsive-chart]')?[scope]:[]),...scope.querySelectorAll('[data-cfx-responsive-chart]')];}

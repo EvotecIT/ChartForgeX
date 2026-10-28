@@ -27,7 +27,8 @@ public sealed class ResponsiveScheduleLayoutBrowserTests {
             labels:svg.querySelectorAll('[data-cfx-role="schedule-row-label"] text').length,
             groups:svg.querySelectorAll('[data-cfx-role="state-timeline-group"] text').length,
             summaries:svg.querySelectorAll('[data-cfx-role="lane-summary"] text').length,
-            truncatedWithTitle:[...svg.querySelectorAll('text')].filter(text=>text.textContent.includes('…')).every(text=>!!text.querySelector('title'))
+            truncated:[...svg.querySelectorAll('text')].filter(text=>text.firstChild?.textContent.includes('…')).length,
+            truncatedWithTitle:[...svg.querySelectorAll('text')].filter(text=>text.firstChild?.textContent.includes('…')).every(text=>!!text.querySelector('title'))
           };
         }
         """;
@@ -41,6 +42,7 @@ public sealed class ResponsiveScheduleLayoutBrowserTests {
         public int Labels { get; set; }
         public int Groups { get; set; }
         public int Summaries { get; set; }
+        public int Truncated { get; set; }
         public bool TruncatedWithTitle { get; set; }
     }
 
@@ -65,6 +67,7 @@ public sealed class ResponsiveScheduleLayoutBrowserTests {
         Assert.Equal(12, result.Labels);
         Assert.Equal(3, result.Groups);
         Assert.Equal(12, result.Summaries);
+        if (width <= 390) Assert.True(result.Truncated > 0, "Long lane names and the heading should truncate at " + width + " px.");
         Assert.True(result.TruncatedWithTitle, "Every truncated caption must expose its complete text.");
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
