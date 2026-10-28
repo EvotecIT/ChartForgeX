@@ -25,8 +25,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var exported = await CaptureExports(session.Page, "[data-cfx-topology-export=svg]", "[data-cfx-topology-export=png]", "mixed-caption-" + width + "-" + mode);
         NativeInlineContentTests.AssertResources(exported.Svg); NativeInlineContentTests.AssertResources(exported.PngComposition);
         Assert.DoesNotContain("data-cfx-png-text-resources", exported.Svg, StringComparison.Ordinal);
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         Assert.Equal(before, await root.EvaluateAsync<string>("node=>node.outerHTML"));
         Assert.Contains(XDocument.Parse(exported.Svg).Descendants(), node => (string?)node.Attribute("data-cfx-caption") == "Regular bold italic\nComplete native caption");
         AssertNoConsoleErrors(session);

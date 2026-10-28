@@ -78,7 +78,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var svg = XDocument.Parse(exported.Svg);
         Assert.Contains(svg.Descendants(), node => node.Name.LocalName == "image" && node.Attribute("data-cfx-image-alpha-bounds") != null);
         Assert.Contains(label, BrowserProofCaptions.ReadXml(svg.Root!), StringComparison.Ordinal);
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
         await page.EvaluateAsync("html=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).update(html)",
             chart.ToInteractiveHtmlFragmentWithoutAssets(Configure));
         Assert.Equal(id, await target.GetAttributeAsync("data-cfx-target-id"));

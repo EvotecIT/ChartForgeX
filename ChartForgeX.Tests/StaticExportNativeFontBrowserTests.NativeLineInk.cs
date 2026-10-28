@@ -23,8 +23,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         Assert.Empty(observed.GetProperty("violations").EnumerateArray());
         Assert.Contains(observed.GetProperty("ink").EnumerateArray(), item => item.GetProperty("display").GetString() != "none" && item.GetProperty("images").GetInt32() == 1 && item.GetProperty("text").GetInt32() == 0);
         Assert.Contains(XDocument.Parse(exported.Svg).Descendants(), node => node.Name.LocalName == "image" && node.Parent?.Attribute("data-cfx-native-raster-text-ink") != null);
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         AssertNoConsoleErrors(session);
     }
 }

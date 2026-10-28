@@ -50,7 +50,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         await BrowserProofCaptions.AssertExportInkAsync(page, XDocument.Parse(exported.Svg));
         Assert.Equal("80", XDocument.Parse(exported.Svg).Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "radial-point" && (string?)row.Attribute("data-cfx-observation-id") == "primary").Attribute("data-cfx-value")!.Value);
         Assert.True(exported.Report.GetProperty("resourcePaths").GetInt32() >= 3); Assert.True(exported.Report.GetProperty("uses").GetInt32() > 0);
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32()); Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32()); Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); await page.EvaluateAsync("()=>fallbackChart.dispose()");
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);
     }

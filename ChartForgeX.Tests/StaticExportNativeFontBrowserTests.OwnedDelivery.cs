@@ -24,8 +24,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         Assert.DoesNotContain(observed.GetProperty("resources").EnumerateArray(),row=>row.GetString()!.StartsWith("data:font",StringComparison.Ordinal)||row.GetString()!.StartsWith("blob:",StringComparison.Ordinal));
         Assert.DoesNotContain(XDocument.Parse(exported.Svg).Descendants(),node=>node.Attribute("data-cfx-owned-font-text")!=null);
         Assert.Contains(XDocument.Parse(exported.Svg).Descendants(),node=>node.Name.LocalName=="use");
-        Assert.Equal(0,exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0,exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());AssertNoConsoleErrors(session);
+        Assert.Equal(0,exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0,exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());AssertNoConsoleErrors(session);
     }
     [BrowserTheory] [InlineData(false)] [InlineData(true)]
     public async Task UnsupportedOrRejectedBinaryFontLoadingKeepsTheAcceptedNativeContourFallback(bool rejected) {

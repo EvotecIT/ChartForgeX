@@ -43,7 +43,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             var exported = await CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name + "-accepted"); var svg = XDocument.Parse(exported.Svg);
             var point = svg.Descendants().Single(row => kind == "treemap" ? (string?)row.Attribute("data-cfx-node") == "first" : (string?)row.Attribute("data-cfx-role") == "radial-point" && (string?)row.Attribute("data-cfx-observation-id") == "primary");
             Assert.Equal(readings.Last.ToString("R", CultureInfo.InvariantCulture), point.Attribute(kind == "treemap" ? "data-cfx-authored-value" : "data-cfx-value")!.Value);
-            Assert.True(exported.Report.GetProperty("uses").GetInt32() > 0); Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32()); Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+            Assert.True(exported.Report.GetProperty("uses").GetInt32() > 0); Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32()); Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
             await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce }); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync()); await page.EvaluateAsync("()=>numberChart.dispose()"); AssertNoConsoleErrors(session);
         } finally { FontRegistry.Clear(); _ = BrowserProofFonts.Family; }
     }

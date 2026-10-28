@@ -20,8 +20,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var root = session.Page.Locator(".cfx-topology-viewport > svg[role=img]"); var before = await root.EvaluateAsync<string>("node=>node.outerHTML");
         var export = await CaptureExports(session.Page, "[data-cfx-topology-export=svg]", "[data-cfx-topology-export=png]", "remaining-caption-browser-" + family + "-" + width + "-" + dark);
         NativeInlineContentTests.AssertResources(export.Svg); NativeInlineContentTests.AssertResources(export.PngComposition);
-        Assert.Equal(0, export.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, export.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, export.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, export.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         var xml = XDocument.Parse(export.Svg);
         Assert.Contains(xml.Descendants(), element => element.Attribute("data-cfx-caption") != null);
         if (family != "requirement") {

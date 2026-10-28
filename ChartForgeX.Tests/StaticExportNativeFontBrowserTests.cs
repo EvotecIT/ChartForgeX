@@ -35,8 +35,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         AssertTextSvg(exported.Svg, "Received", "Reviewed", "Qualified");
         Assert.Contains(XDocument.Parse(exported.PngComposition).Descendants(), node => node.Name.LocalName == "use");
         Assert.DoesNotContain(XDocument.Parse(exported.PngComposition).Descendants(), node => node.Name.LocalName == "text");
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         Assert.True(exported.Report.GetProperty("resourcePaths").GetInt32() < exported.Report.GetProperty("uses").GetInt32());
         AssertNoConsoleErrors(session);
     }
@@ -58,8 +58,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         Assert.NotEqual(first.Png, second.Png);
         AssertTextSvg(second.Svg, "A new accepted caption", "Captured one", "Captured two", "Captured three");
         Assert.DoesNotContain(XDocument.Parse(second.PngComposition).Descendants(), node => node.Name.LocalName == "text");
-        Assert.Equal(0, second.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, second.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, second.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, second.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         Assert.Contains("rgb(18, 52, 86)", second.PngComposition, StringComparison.Ordinal);
         Assert.True(second.Report.GetProperty("authoredTextInkPixels").GetInt32() > 0);
         Assert.True(second.Report.GetProperty("authoredStrokeInkPixels").GetInt32() > 0);
@@ -81,8 +81,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var exported = await CaptureExports(session.Page, "[data-cfx-topology-export=svg]", "[data-cfx-topology-export=png]", "native-font-topology-callback");
         Assert.Equal(1, calls); AssertTextSvg(exported.Svg, "Received Reviewed");
         Assert.DoesNotContain(XDocument.Parse(exported.PngComposition).Descendants(), node => node.Name.LocalName == "text");
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         AssertNoConsoleErrors(session);
     }
 
@@ -96,8 +96,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         await using var session = await OpenAsync(html, 824, 850);
         var exported = await CaptureExports(session.Page, "[data-cfx-export=svg]", "[data-cfx-export=png]", "native-font-strict-csp");
         Assert.DoesNotContain(XDocument.Parse(exported.PngComposition).Descendants(), node => node.Name.LocalName == "text");
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusForcedMonospaceDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        Assert.Equal(0, exported.Report.GetProperty("compositionVersusForcedMonospaceDifferentPixels").GetInt32());
         Assert.Equal("[]", await session.Page.EvaluateAsync<string>("() => JSON.stringify(fontPolicyViolations)"));
         Assert.Equal(0, await session.Page.EvaluateAsync<int>("() => document.fonts.size"));
         AssertNoConsoleErrors(session);
@@ -115,9 +115,9 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (topology) {
             var chart = TopologyChart.Create().WithViewport(800, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
             chart.Title = "Decoration captured font";
-            chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Received Reviewed", X = 60, Y = 90, Width = 260, Height = 90 });
+            chart.Nodes.Add(new TopologyNode { Id = "node", Label = DecorationCorridorCaption, X = 60, Y = 90, Width = 260, Height = 90 });
             html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { EnableHtmlExportControls = true });
-        } else html = Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(Options);
+        } else html = Model(800, VisualThemeMode.Light).WithTitle(DecorationCorridorCaption).WithSubtitle(string.Empty).ToInteractiveHtmlFragment(Options);
         await using var session = await BrowserProofFonts.OpenAsync(html, 824, 850);
         await session.Page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "svg " + (ancestor ? "g" : "text")
             + "{text-decoration-line:" + lines + ";text-decoration-style:" + style + ";text-decoration-color:rgb(17,203,177);text-decoration-thickness:3px}" });
@@ -142,8 +142,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var exported = await CaptureExports(session.Page, "[" + prefix + "=svg]", "[" + prefix + "=png]",
             "native-font-decoration-" + topology + "-" + ancestor + "-" + style);
         Assert.True(exported.Report.GetProperty("editableSvgDecorationDifferentPixels").GetInt32() > 0, "The existing editable SVG text path must paint the authored decoration.");
-        Assert.True(exported.Report.GetProperty("pngDecorationDifferentPixels").GetInt32() > 0, "Native-glyph materialization must not silently drop supported host text decoration paint.");
-        Assert.Equal(0, exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32());
+        Assert.True(exported.Report.GetProperty("compositionDecorationDifferentPixels").GetInt32() > 0, "Native-glyph materialization must not silently drop supported host text decoration paint.");
+        Assert.Equal(0, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
         Assert.Contains(XDocument.Parse(exported.PngComposition).Descendants(), node => node.Name.LocalName == "text");
         Assert.Equal(before, await liveSvg.EvaluateAsync<string>("node=>node.outerHTML"));
         var editableText = XDocument.Parse(exported.Svg).Descendants().Where(node => node.Name.LocalName == "text").ToArray();
@@ -162,6 +162,12 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             }
             if (source.GetProperty("boundary").GetString() == "zero-advance") Assert.Equal(0, advance);
         }
+        var corridor = await CaptureDecorationCorridorAsync(liveSvg);
+        await session.Page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "svg,svg *{text-decoration:none!important}" });
+        var undecorated = await CaptureExports(session.Page, "[" + prefix + "=svg]", "[" + prefix + "=png]",
+            "native-font-decoration-control-" + topology + "-" + ancestor + "-" + style);
+        Assert.Equal(0, undecorated.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+        AssertDecorationCorridor(exported, undecorated, corridor, "native-font-decoration-" + topology + "-" + ancestor + "-" + style);
         AssertNoConsoleErrors(session);
     }
 
@@ -172,24 +178,18 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (!Enabled) return;
         await using var session = await BrowserProofFonts.OpenAsync(Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(Options), 824, 850);
         var page = session.Page;
-        // Corrupt exactly one encoder output at the real download boundary. The reference
-        // renderer retains its original encoder, so this proves the oracle detects bad output.
-        await page.EvaluateAsync("""
-            wrongDimensions=>{
-                const encode=HTMLCanvasElement.prototype.toBlob;
-                HTMLCanvasElement.prototype.toBlob=function(...args){
-                    HTMLCanvasElement.prototype.toBlob=encode;
-                    if(wrongDimensions)this.width+=1;
-                    else{const context=this.getContext('2d');context.fillStyle='#ff00ff';context.fillRect(0,0,1,1);}
-                    return encode.apply(this,args);
-                };
-            }
-            """, wrongDimensions);
+        // First prove an unmodified download, then corrupt one real encoder output after
+        // its pristine bitmap snapshot. Neither unrelated paint nor a frame resize may pass.
+        var control = await CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", "native-font-oracle-control-" + wrongDimensions);
+        Assert.Equal(0, control.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
         var name = "native-font-oracle-negative-" + wrongDimensions;
-        if (wrongDimensions) await Assert.ThrowsAsync<Xunit.Sdk.EqualException>(() => CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name));
+        if (wrongDimensions) await Assert.ThrowsAsync<Xunit.Sdk.EqualException>(() => CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name, wrongDimensions));
         else {
-            var exported = await CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name);
-            Assert.True(exported.Report.GetProperty("pngVersusCompletedCompositionDifferentPixels").GetInt32() > 0);
+            var exported = await CaptureExports(page, "[data-cfx-export=svg]", "[data-cfx-export=png]", name, wrongDimensions);
+            Assert.Equal(1, exported.Report.GetProperty("pngVersusCapturedRasterDifferentPixels").GetInt32());
+            var changed = exported.Report.GetProperty("downloadPixelDifferences")[0];
+            Assert.Equal(0, changed.GetProperty("x").GetInt32()); Assert.Equal(0, changed.GetProperty("y").GetInt32());
+            Assert.Equal(new[] { 255, 0, 255, 255 }, changed.GetProperty("actual").EnumerateArray().Select(channel => channel.GetInt32()));
             Assert.True(File.Exists(CapturePath(name + ".comparison-actual.png")));
             Assert.True(File.Exists(CapturePath(name + ".comparison-expected.png")));
         }
@@ -211,101 +211,4 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         foreach (var caption in captions) Assert.Contains(document.Descendants(), node => node.Name.LocalName == "text" && node.Value == caption);
     }
     private sealed record Exported(string Svg, string Png, string PngComposition, JsonElement Report);
-    private static async Task<Exported> CaptureExports(IPage page, string svgButton, string pngButton, string name) {
-        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        if (string.IsNullOrWhiteSpace(output) || !Path.IsPathRooted(output)) throw new InvalidOperationException("Font proof requires an absolute capture path.");
-        Directory.CreateDirectory(output); var stem = Path.Combine(output, name);
-        await page.EvaluateAsync("""
-            () => {
-                window.nativeFontPngInputs=[];
-                window.nativeFontObjectUrlOwner=URL.createObjectURL;
-                URL.createObjectURL=function(blob){if(blob.type.startsWith('image/svg+xml'))nativeFontPngInputs.push(blob.text());return nativeFontObjectUrlOwner.call(URL,blob);};
-                window.nativeFontImageSrcOwner=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
-                Object.defineProperty(HTMLImageElement.prototype,'src',{...nativeFontImageSrcOwner,set(value){
-                    const prefix='data:image/svg+xml;charset=utf-8,';
-                    if(String(value).startsWith(prefix))nativeFontPngInputs.push(Promise.resolve(decodeURIComponent(String(value).slice(prefix.length))));
-                    return nativeFontImageSrcOwner.set.call(this,value);
-                }});
-            }
-            """);
-        string svg; byte[] png; string composition;
-        try {
-            var vector = await page.RunAndWaitForDownloadAsync(() => page.Locator(svgButton).ClickAsync());
-            svg = await File.ReadAllTextAsync(await vector.PathAsync() ?? throw new InvalidOperationException("Missing SVG download."));
-            await vector.SaveAsAsync(stem + ".svg");
-            await page.EvaluateAsync("() => { nativeFontPngInputs.length=0; }");
-            var raster = await page.RunAndWaitForDownloadAsync(() => page.Locator(pngButton).ClickAsync());
-            png = await File.ReadAllBytesAsync(await raster.PathAsync() ?? throw new InvalidOperationException("Missing PNG download."));
-            await raster.SaveAsAsync(stem + ".png");
-            composition = await page.EvaluateAsync<string>("async () => { const inputs=await Promise.all(nativeFontPngInputs);if(inputs.length!==1)throw new Error('Expected one completed PNG SVG input.');return inputs[0]; }");
-            await File.WriteAllTextAsync(stem + ".png-composition.svg", composition);
-            await page.ScreenshotAsync(new PageScreenshotOptions { Path = stem + ".browser.png", FullPage = true });
-        } finally {
-            await page.EvaluateAsync("() => { URL.createObjectURL=window.nativeFontObjectUrlOwner;delete window.nativeFontObjectUrlOwner;Object.defineProperty(HTMLImageElement.prototype,'src',nativeFontImageSrcOwner);delete window.nativeFontImageSrcOwner; }");
-        }
-        var raw = await page.EvaluateAsync<string>(ComparePixels, new { svg = composition, editableSvg = svg, png = Convert.ToBase64String(png) });
-        await File.WriteAllTextAsync(stem + ".json", raw);
-        using var report = JsonDocument.Parse(raw);
-        var expectedWidth = checked(report.RootElement.GetProperty("width").GetInt32() * report.RootElement.GetProperty("scale").GetInt32());
-        var expectedHeight = checked(report.RootElement.GetProperty("height").GetInt32() * report.RootElement.GetProperty("scale").GetInt32());
-        if (report.RootElement.GetProperty("pixelMismatchDiagnostic") is { ValueKind: JsonValueKind.Object } diagnostic) {
-            foreach (var side in new[] { "actual", "expected" }) {
-                var bytes = diagnostic.GetProperty(side + "RgbaBase64").GetString();
-                if (bytes != null) await File.WriteAllBytesAsync(stem + ".comparison-" + side + ".png",
-                    ChartForgeX.Raster.PngWriter.WriteRgba(new ChartForgeX.Raster.RgbaImage(expectedWidth, expectedHeight, Convert.FromBase64String(bytes))));
-            }
-        }
-        var downloaded = ChartForgeX.Raster.PngReader.Decode(png);
-        Assert.Equal(expectedWidth, downloaded.Width);
-        Assert.Equal(expectedHeight, downloaded.Height);
-        return new Exported(svg, Convert.ToBase64String(png), composition, report.RootElement.Clone());
-    }
-
-    private const string ComparePixels = """
-        async ({svg,editableSvg,png})=>{
-            const documentSvg=new DOMParser().parseFromString(svg,'image/svg+xml'),root=documentSvg.documentElement;
-            const width=Math.round(Number(root.getAttribute('width'))),height=Math.round(Number(root.getAttribute('height'))),scale=Math.max(1,Math.ceil(devicePixelRatio||1));
-            // Both sides cross the PNG codec: Firefox can quantize translucent edge colors
-            // during encoding, even when the source canvas and downloaded PNG are correct.
-            const load=(source,encodePng=false)=>new Promise((resolve,reject)=>{const image=new Image();
-                image.onload=()=>{try{
-                    const canvas=document.createElement('canvas');canvas.width=width*scale;canvas.height=height*scale;
-                    const context=canvas.getContext('2d');context.setTransform(scale,0,0,scale,0,0);context.drawImage(image,0,0,width,height);
-                    if(!encodePng){resolve(context.getImageData(0,0,canvas.width,canvas.height).data);return;}
-                    canvas.toBlob(blob=>{
-                        if(!blob){reject(new Error('Expected PNG comparison encoding.'));return;}
-                        const reader=new FileReader();reader.onerror=()=>reject(reader.error);
-                        reader.onload=()=>load(String(reader.result)).then(resolve,reject);reader.readAsDataURL(blob);
-                    },'image/png');
-                }catch(error){reject(error);}};
-                image.onerror=()=>reject(new Error('Font export image decode failed.'));
-                image.src=source.startsWith('data:')?source:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(source);});
-            const different=(a,b)=>{let count=0;for(let i=0;i<a.length;i+=4)if(a[i]!==b[i]||a[i+1]!==b[i+1]||a[i+2]!==b[i+2]||a[i+3]!==b[i+3])count++;return count;};
-            const actual=await load('data:image/png;base64,'+png),same=await load(svg,true),editable=await load(editableSvg,true);
-            const undecorated=source=>{const d=new DOMParser().parseFromString(source,'image/svg+xml');
-                for(const n of [d.documentElement,...d.querySelectorAll('*')])n.style.setProperty('text-decoration','none','important');
-                return new XMLSerializer().serializeToString(d);};
-            const editableNone=await load(undecorated(editableSvg),true),pngNone=await load(undecorated(svg),true);
-            const decorationInk=pixels=>{let count=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i]===17&&pixels[i+1]===203&&pixels[i+2]===177&&pixels[i+3]===255)count++;return count;};
-            for(const node of root.querySelectorAll('*'))node.style.setProperty('font-family','monospace','important');
-            const fallback=await load(new XMLSerializer().serializeToString(documentSvg),true);let ink=0,stroke=0;
-            for(let i=0;i<actual.length;i+=4){if(actual[i]===18&&actual[i+1]===52&&actual[i+2]===86&&actual[i+3]===255)ink++;
-                if(actual[i]===211&&actual[i+1]===17&&actual[i+2]===19&&actual[i+3]===255)stroke++;}
-            const mismatch=different(actual,same);
-            const encodeDiagnostic=bytes=>{
-                if(bytes.length>67108864)return null;
-                let value='';for(let i=0;i<bytes.length;i+=32768)value+=String.fromCharCode(...bytes.subarray(i,i+32768));
-                return btoa(value);
-            };
-            const firstDifferences=[];
-            if(mismatch)for(let i=0;i<actual.length&&firstDifferences.length<32;i+=4)
-                if(actual.slice(i,i+4).some((value,index)=>value!==same[i+index]))firstDifferences.push({x:(i/4)%(width*scale),y:Math.floor(i/4/(width*scale)),actual:[...actual.slice(i,i+4)],expected:[...same.slice(i,i+4)]});
-            const pixelMismatchDiagnostic=mismatch?{firstDifferences,actualRgbaBase64:encodeDiagnostic(actual),expectedRgbaBase64:encodeDiagnostic(same)}:null;
-            const nonTranslationGlyphs=Array.from(root.querySelectorAll('use')).filter(node=>{const matrix=node.transform.baseVal.consolidate().matrix;return matrix.a!==1||matrix.b!==0||matrix.c!==0||matrix.d!==1;}).length;
-            return JSON.stringify({pixelMismatchDiagnostic,width,height,scale,resourcePaths:root.querySelectorAll('defs path[id]').length,uses:root.querySelectorAll('use').length,
-                decorationInkPixels:decorationInk(actual),editableSvgDecorationInkPixels:decorationInk(editable),
-                editableSvgDecorationDifferentPixels:different(editable,editableNone),pngDecorationDifferentPixels:different(actual,pngNone),
-                pngVersusCompletedCompositionDifferentPixels:different(actual,same),pngVersusForcedMonospaceDifferentPixels:different(actual,fallback),authoredTextInkPixels:ink,authoredStrokeInkPixels:stroke,nonTranslationGlyphs});
-        }
-        """;
 }

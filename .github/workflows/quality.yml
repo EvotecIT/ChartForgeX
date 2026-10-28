@@ -240,8 +240,9 @@ jobs:
   browser-compatibility:
     name: Browser compatibility (macOS ${{ matrix.name }})
     runs-on: macos-latest
-    # Includes setup, the serial maintained Compatibility suite and artifact retention.
-    timeout-minutes: 90
+    # Includes setup, all 950 serial Compatibility rows and artifact retention.
+    # Firefox was still producing captures when the previous 90-minute envelope expired.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
