@@ -93,13 +93,21 @@ public sealed class WaterfallInterchangeTests {
     }
 
     [Fact]
-    public void PortableTimeCultureTravelsByNameAndRetainsExplicitInvariantCulture() {
+    public void PortableTimeCultureKeepsCustomizedPatternsAndRetainsExplicitInvariantCulture() {
         var modified = (CultureInfo)CultureInfo.GetCultureInfo("de-DE").Clone();
-        modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
+        modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd"; modified.DateTimeFormat.AbbreviatedMonthNames =
+            new[] { "J1", "F2", "M3", "A4", "M5", "J6", "J7", "A8", "S9", "O10", "N11", "D12", "" };
         var custom = Model().WithCulture(modified);
-        // User overrides (common for the Windows current culture) must not break export; the view uses the standard named culture.
+        // User overrides and authored patterns travel with the culture, so the restored view formats time labels identically.
         var portable = VisualArtifactInterchangeEnvelope.FromJson(custom.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
-        Assert.Equal("de-DE", portable.Options.XAxis.Culture!.Name);
+        var restoredCulture = portable.Options.XAxis.Culture!;
+        Assert.Equal("de-DE", restoredCulture.Name);
+        Assert.Equal("yyyy/MM/dd", restoredCulture.DateTimeFormat.ShortDatePattern);
+        Assert.Equal(modified.DateTimeFormat.AbbreviatedMonthNames, restoredCulture.DateTimeFormat.AbbreviatedMonthNames);
+        Assert.Equal(CultureInfo.GetCultureInfo("de-DE").DateTimeFormat.LongTimePattern, restoredCulture.DateTimeFormat.LongTimePattern);
+        var instant = new DateTime(2026, 10, 21);
+        Assert.Equal(instant.ToString("d", modified), instant.ToString("d", restoredCulture));
+        Assert.Equal(instant.ToString("dd MMM", modified), instant.ToString("dd MMM", restoredCulture));
         var invariant = Model(); invariant.Options.XAxis.Culture = CultureInfo.InvariantCulture;
         var restored = VisualArtifactInterchangeEnvelope.FromJson(invariant.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
         Assert.NotNull(restored.Options.XAxis.Culture);
