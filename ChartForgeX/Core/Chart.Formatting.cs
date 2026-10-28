@@ -53,9 +53,13 @@ public sealed partial class ChartOptions {
     /// <summary>Appends <see cref="ValueUnit"/> to a formatted value: "%" and other symbols attach directly, words follow a space; a value that already ends with the unit is unchanged.</summary>
     internal string WithUnit(string formatted) => AppendUnit(formatted, ValueUnit);
 
+    // The unit must stand on its own: "12 ms" ends with "ms" but not with the unit "s".
+    private static bool EndsWithUnit(string text, string unit) =>
+        text.EndsWith(unit, StringComparison.Ordinal) && (text.Length == unit.Length || !char.IsLetter(unit[0]) || !char.IsLetter(text[text.Length - unit.Length - 1]));
+
     internal static string AppendUnit(string formatted, string? unit) {
         // A value format that already writes the unit ("12.5 ms") keeps a single copy.
-        if (unit == null || formatted.Length == 0 || formatted.TrimEnd().EndsWith(unit, StringComparison.Ordinal)) return formatted;
+        if (unit == null || formatted.Length == 0 || EndsWithUnit(formatted.TrimEnd(), unit)) return formatted;
         return formatted + (unit.Length == 1 && !char.IsLetterOrDigit(unit[0]) ? unit : " " + unit);
     }
 }

@@ -152,6 +152,31 @@ public sealed class ReadableDefaultsTests {
         Assert.Null(cell.Attribute("data-cfx-formatted-value"));
     }
 
+    [Theory]
+    [InlineData("0.0 'ms'", "s", "12.0 ms s")]
+    [InlineData("0.0 's'", "s", "12.0 s")]
+    [InlineData("0.0", "s", "12.0 s")]
+    public void WithValueUnit_OnlyAWholeMatchingUnitCountsAsAlreadyWritten(string format, string unit, string expected) {
+        var chart = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").WithValueUnit(unit)
+            .WithValueFormat(ChartValueFormat.Number(format, CultureInfo.InvariantCulture))
+            .AddLine("dc1", new[] { new ChartPoint(1, 12), new ChartPoint(2, 30) });
+
+        var point = XDocument.Parse(chart.ToSvg()).Descendants().First(element => (string?)element.Attribute("data-cfx-formatted-value") != null);
+
+        Assert.Equal(expected, (string?)point.Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
+    public void WithValueUnit_RoundedTimeReadoutKeepsTheExactValueInItsAccessibleName() {
+        var chart = Chart.Create().WithSize(600, 300).WithXAxisTimeScale(TimeZoneInfo.Utc).WithValueUnit("ms")
+            .WithValueFormat(ChartValueFormat.Number("0.0", CultureInfo.InvariantCulture))
+            .AddLine("dc-03", new[] { new ChartPoint(Start, 52.734), new ChartPoint(Start.AddHours(1), 40) });
+
+        var point = ByRole(XDocument.Parse(chart.ToSvg()), "point").First();
+
+        Assert.EndsWith("52.7 ms (52.734 ms)", (string?)point.Attribute("aria-label"));
+    }
+
     [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());

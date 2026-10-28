@@ -106,10 +106,13 @@ internal sealed partial class VisualSceneBuilder {
         var caption = current.Substring(seriesName.Length + 2, current.Length - seriesName.Length - 2 - raw.Length);
         var formatted = metadata.TryGetValue("data-cfx-formatted-value", out var value) ? value : string.Empty;
         var exactWithUnit = ChartOptions.AppendUnit(exact, unit);
-        var amount = formatted.Length > 0 && (caption.Length == 0 || formatted == ChartOptions.AppendUnit(caption, unit)) ? formatted
-            : caption == exact || caption.Length == 0 ? exactWithUnit : caption + " (" + exactWithUnit + ")";
-        if (metadata.TryGetValue("data-cfx-formatted-instant", out var instant) && instant.Length > 0)
+        var numeric = formatted.Length > 0 && (caption.Length == 0 || formatted == ChartOptions.AppendUnit(caption, unit));
+        var amount = numeric ? formatted : caption == exact || caption.Length == 0 ? exactWithUnit : caption + " (" + exactWithUnit + ")";
+        if (metadata.TryGetValue("data-cfx-formatted-instant", out var instant) && instant.Length > 0) {
+            // Time-axis names have no raw coordinates left, so a rounded or compact readout keeps the exact value beside it.
+            if (numeric && formatted != exactWithUnit) amount += " (" + exactWithUnit + ")";
             return string.Join(", ", new[] { seriesName, instant, amount }.Where(part => part.Length > 0));
+        }
         if (unit == null) return null;
         return seriesName + ": " + amount + raw;
     }
