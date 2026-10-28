@@ -97,13 +97,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = PieSliceRadiusRecipe.Create(&quot;compact-variable-radius&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Service shares with authored radii&quot;).WithSubtitle(&quot;Values determine angles; explicit fractions determine band thickness&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 480)), theme, mode,
     new VisualFrame(&quot;Service shares with authored radii&quot;, &quot;Values determine angles; explicit fractions determine band thickness&quot;, showLegend: null, showSurface: false));
@@ -144,13 +137,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = PieSliceRadiusRecipe.Create(&quot;compact-variable-radius&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Service shares with authored radii&quot;).WithSubtitle(&quot;Values determine angles; explicit fractions determine band thickness&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 480)), theme, mode,
     new VisualFrame(&quot;Service shares with authored radii&quot;, &quot;Values determine angles; explicit fractions determine band thickness&quot;, showLegend: null, showSurface: false));

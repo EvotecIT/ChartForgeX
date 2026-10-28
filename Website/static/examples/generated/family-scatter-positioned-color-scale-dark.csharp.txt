@@ -15,13 +15,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ScatterPositionedColorScaleRecipe.Create("positioned-color-scale", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Processing time by workload").WithSubtitle("Absolute color anchors use uneven numeric intervals").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Processing time by workload", "Absolute color anchors use uneven numeric intervals", showLegend: null, showSurface: false));

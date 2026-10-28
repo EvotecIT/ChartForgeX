@@ -18,13 +18,6 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceSurfaceShadowRecipe.Create("wide", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Retained vector surface shadows").WithSubtitle("Native shadows behind vector glyphs, captions and safe links").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(1100, 900)), theme, mode,
     new VisualFrame("Retained vector surface shadows", "Native shadows behind vector glyphs, captions and safe links", showLegend: false, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

@@ -15,16 +15,9 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = RangeBarRecipe.Create("dense-horizontal", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Minimum and maximum delivery times").WithSubtitle("Explore the data, then download the chart").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(760, 440)), theme, mode,
-    new VisualFrame("Minimum and maximum delivery times", "Explore the data, then download the chart", showLegend: null, showSurface: false));
+    new VisualFrame("Minimum and maximum delivery times", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());

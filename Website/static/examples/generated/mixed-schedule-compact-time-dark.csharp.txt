@@ -15,13 +15,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = MixedScheduleRecipe.Create("compact-time", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Shared schedule evidence").WithSubtitle("Source-ordered ranges, tasks, state intervals and packed resource items retain one native time axis").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 660)), theme, mode,
     new VisualFrame("Shared schedule evidence", "Source-ordered ranges, tasks, state intervals and packed resource items retain one native time axis", showLegend: null, showSurface: false));

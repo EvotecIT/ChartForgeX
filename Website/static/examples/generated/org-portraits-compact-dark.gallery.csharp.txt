@@ -18,13 +18,6 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = OrgPortraitsRecipe.Create("compact", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("People in the example studio").WithSubtitle("Embedded fictional portrait artwork follows the native hierarchy and crop policy").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 480)), theme, mode,
     new VisualFrame("People in the example studio", "Embedded fictional portrait artwork follows the native hierarchy and crop policy", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

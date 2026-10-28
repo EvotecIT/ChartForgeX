@@ -15,13 +15,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = MultiRingCalloutsRecipe.Create("compact-automatic", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Independent periods with inner captions").WithSubtitle("Exact displaced sectors share one frame; source-owned overlay leaders retain every ring association").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 580)), theme, mode,
     new VisualFrame("Independent periods with inner captions", "Exact displaced sectors share one frame; source-owned overlay leaders retain every ring association", showLegend: null, showSurface: false));

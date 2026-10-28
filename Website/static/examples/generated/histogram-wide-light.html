@@ -97,13 +97,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create(&quot;wide&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Measurements across intervals&quot;).WithSubtitle(&quot;Observation counts in unequal measurement intervals&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame(&quot;Measurements across intervals&quot;, &quot;Observation counts in unequal measurement intervals&quot;, showLegend: false, showSurface: false));
@@ -171,13 +164,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create(&quot;wide&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Measurements across intervals&quot;).WithSubtitle(&quot;Observation counts in unequal measurement intervals&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame(&quot;Measurements across intervals&quot;, &quot;Observation counts in unequal measurement intervals&quot;, showLegend: false, showSurface: false));

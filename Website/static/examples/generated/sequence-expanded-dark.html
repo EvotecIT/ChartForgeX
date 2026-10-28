@@ -97,13 +97,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceRecipe.Create(&quot;expanded&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Request processing sequence&quot;).WithSubtitle(&quot;Participant notation, self calls, fragments and activation&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(960, 760)), theme, mode,
     new VisualFrame(&quot;Request processing sequence&quot;, &quot;Participant notation, self calls, fragments and activation&quot;, showLegend: false, showSurface: false));
@@ -157,13 +150,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequenceRecipe.Create(&quot;expanded&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Request processing sequence&quot;).WithSubtitle(&quot;Participant notation, self calls, fragments and activation&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(960, 760)), theme, mode,
     new VisualFrame(&quot;Request processing sequence&quot;, &quot;Participant notation, self calls, fragments and activation&quot;, showLegend: false, showSurface: false));

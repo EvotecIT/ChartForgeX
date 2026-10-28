@@ -18,13 +18,6 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = RangeBarRecipe.Create("horizontal-endpoint-labels", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Minimum and maximum delivery times").WithSubtitle("Start and end captions retain the authored interval order").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Minimum and maximum delivery times", "Start and end captions retain the authored interval order", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

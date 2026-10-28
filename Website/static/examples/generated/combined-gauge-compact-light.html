@@ -97,13 +97,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = CombinedGaugeRecipe.Create(&quot;compact&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Pressure against operating bands&quot;).WithSubtitle(&quot;Arc, needle and independently painted semantic bands&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 360)), theme, mode,
     new VisualFrame(&quot;Pressure against operating bands&quot;, &quot;Arc, needle and independently painted semantic bands&quot;, showLegend: null, showSurface: false));
@@ -149,13 +142,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = CombinedGaugeRecipe.Create(&quot;compact&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Pressure against operating bands&quot;).WithSubtitle(&quot;Arc, needle and independently painted semantic bands&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 360)), theme, mode,
     new VisualFrame(&quot;Pressure against operating bands&quot;, &quot;Arc, needle and independently painted semantic bands&quot;, showLegend: null, showSurface: false));

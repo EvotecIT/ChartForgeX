@@ -97,13 +97,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = FlowRecipe.Create(&quot;expanded&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Assessment workflow&quot;).WithSubtitle(&quot;Typed lanes, decisions and branched routes&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(900, 600)), theme, mode,
     new VisualFrame(&quot;Assessment workflow&quot;, &quot;Typed lanes, decisions and branched routes&quot;, showLegend: false, showSurface: false));
@@ -151,13 +144,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = FlowRecipe.Create(&quot;expanded&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Assessment workflow&quot;).WithSubtitle(&quot;Typed lanes, decisions and branched routes&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(900, 600)), theme, mode,
     new VisualFrame(&quot;Assessment workflow&quot;, &quot;Typed lanes, decisions and branched routes&quot;, showLegend: false, showSurface: false));

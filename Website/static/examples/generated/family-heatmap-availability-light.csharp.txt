@@ -1,0 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = AvailabilityHeatmapRecipe.Create("availability", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Daily availability per target", "14\u201327 October 2026; empty cells are days without measurements", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Shows two weeks of daily availability for ten targets, with days that have no measurements left empty.</summary>
+public static class AvailabilityHeatmapRecipe {
+    /// <summary>Creates the availability heatmap; the compact variant keeps the same data.</summary>
+    public static Chart Create(string variant = "availability", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("availability" or "compact-availability")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var start = new DateTime(2026, 10, 14);
+        var chart = Chart.Create().ConfigureLabels(labels => labels.NoData = "No measurements")
+            .WithXLabels(Enumerable.Range(0, 14).Select(day => start.AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)).ToArray())
+            .WithHeatmapCellGap(2).WithValueUnit("%").WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
+        var targets = new[] { "dc1", "dc2", "dc3", "dc4", "dc5", "adfs", "dns", "exchange", "1.1.1.1", "8.8.8.8" };
+        for (var row = 0; row < targets.Length; row++) {
+            var days = new double?[14];
+            for (var day = 0; day < days.Length; day++) {
+                // Most days are complete; a few lose minutes or hours, and a new probe has no history yet.
+                var loss = (row * 7 + day * 3) % 23 == 0 ? 6.5 : (row + day) % 11 == 0 ? 1.2 : (row * day) % 17 == 5 ? .4 : 0;
+                days[day] = row == 7 && day < 3 ? null : Math.Round(100 - loss, 1);
+            }
+            chart.AddHeatmapRow(targets[row], days, id: new ChartSeriesId("availability-" + targets[row]));
+        }
+        // Named bands read faster than a gradient: a complete day, a short loss, and an outage.
+        return chart.WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+            new ChartColorBand(95, colors.Status.Critical.Fill, "Outage"),
+            new ChartColorBand(100, colors.Status.Medium.Fill, "Short loss"),
+            new ChartColorBand(null, colors.Status.Pass.Fill, "Complete")
+        }).WithNoDataColor(colors.Border));
+    }
+}

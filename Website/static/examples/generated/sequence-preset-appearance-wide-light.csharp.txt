@@ -15,13 +15,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequencePresetAppearanceRecipe.Create("wide", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Measured participant bands").WithSubtitle("Independent participant and activation paint with portable native edit facts").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(1100, 860)), theme, mode,
     new VisualFrame("Measured participant bands", "Independent participant and activation paint with portable native edit facts", showLegend: false, showSurface: false));

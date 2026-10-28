@@ -18,13 +18,6 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = WaterfallRecipe.Create("compact-horizontal", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Changes in available capacity").WithSubtitle("Horizontal changes and checkpoints share a cumulative value axis").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Changes in available capacity", "Horizontal changes and checkpoints share a cumulative value axis", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

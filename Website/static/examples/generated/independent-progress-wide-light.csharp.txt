@@ -15,13 +15,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = IndependentProgressRecipe.Create("wide", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Progress in each row\u0027s units").WithSubtitle("Retained row domains preserve fraction, count and signed measurements").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(760, 340)), theme, mode,
     new VisualFrame("Progress in each row\u0027s units", "Retained row domains preserve fraction, count and signed measurements", showLegend: null, showSurface: false));

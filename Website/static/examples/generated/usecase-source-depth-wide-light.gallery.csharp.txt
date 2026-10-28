@@ -18,13 +18,6 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = UseCaseSourceDepthRecipe.Create("wide", mode);
-if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Native actor and use case captions").WithSubtitle("Native stereotypes, attached approval notes and independently styled named associations").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
-    File.WriteAllBytes("visual.png", natural.ToPng());
-    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(900, 520)), theme, mode,
     new VisualFrame("Native actor and use case captions", "Native stereotypes, attached approval notes and independently styled named associations", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));

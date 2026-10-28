@@ -1,0 +1,50 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = LatencyWeekRecipe.Create("compact-latency-week", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Domain controller round-trip time", "Hourly ping from the monitoring host, 19\u201325 October 2026 (UTC)", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds a week of hourly ping latency for three domain controllers, as a monitoring report shows it.</summary>
+public static class LatencyWeekRecipe {
+    /// <summary>Creates the latency week; the compact variant keeps the same data.</summary>
+    public static Chart Create(string variant = "latency-week", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("latency-week" or "compact-latency-week")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var start = new DateTime(2026, 10, 19, 0, 0, 0, DateTimeKind.Utc);
+        var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc).WithYAxis("Round-trip time (ms)").WithValueUnit("ms")
+            .WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
+        var controllers = new[] { ("dc-01", 18d), ("dc-02", 27d), ("dc-03", 41d) };
+        for (var controller = 0; controller < controllers.Length; controller++) {
+            var (name, baseline) = controllers[controller];
+            var points = new List<ChartPoint>();
+            for (var hour = 0; hour < 7 * 24; hour++) {
+                // Working hours add load; a fixed pseudo-random jitter stands in for measurement noise.
+                var load = hour % 24 is >= 8 and < 18 && hour / 24 % 7 < 5 ? 9 : 0;
+                var noise = Math.Sin(hour * 12.9898 + controller * 78.233) * 43758.5453;
+                var ripple = (noise - Math.Floor(noise)) * 6;
+                var incident = controller == 2 && hour is >= 98 and < 102 ? 46 : 0;
+                points.Add(new ChartPoint(start.AddHours(hour), Math.Round(baseline + load + ripple + incident, 1)));
+            }
+            chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId(name), name, points));
+        }
+        return chart;
+    }
+}

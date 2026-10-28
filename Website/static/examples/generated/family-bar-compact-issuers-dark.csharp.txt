@@ -1,0 +1,42 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = CertificatesByIssuerRecipe.Create("compact-issuers", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Certificates issued per month", "Stacked by issuing authority, November 2025 to October 2026", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds certificates issued per month by issuer over the last year, as a certificate report shows it.</summary>
+public static class CertificatesByIssuerRecipe {
+    /// <summary>Creates stacked monthly issuance; the compact variant keeps the same data.</summary>
+    public static Chart Create(string variant = "issuers", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("issuers" or "compact-issuers")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var months = Enumerable.Range(0, 12).Select(month => new DateTime(2025, 11, 1).AddMonths(month).ToString("MMM", CultureInfo.InvariantCulture)).ToArray();
+        var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis("Certificates")
+            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        var issuers = new[] { ("lets-encrypt", "Let's Encrypt", 64), ("digicert", "DigiCert", 18), ("sectigo", "Sectigo", 11), ("internal-ca", "Internal CA", 7) };
+        foreach (var (id, name, typical) in issuers) {
+            // Renewals cluster every third month; the values are deterministic so the gallery stays reproducible.
+            var values = Enumerable.Range(0, 12).Select(month => new ChartPoint(month + 1, typical + (month % 3 == 0 ? typical / 3 : 0) - month % 4));
+            chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId(id), name, values));
+        }
+        return chart;
+    }
+}

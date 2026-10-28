@@ -1,32 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-90c41306" width="760" height="300" viewBox="0 0 760 300" role="img" aria-labelledby="cfx-visual-90c41306-title cfx-visual-90c41306-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-90c41306-title">Packages</title>
-<desc id="cfx-visual-90c41306-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-0e8c0ec1" width="760" height="300" viewBox="0 0 760 300" role="img" aria-labelledby="cfx-visual-0e8c0ec1-title cfx-visual-0e8c0ec1-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-0e8c0ec1-title">Packages</title>
+<desc id="cfx-visual-0e8c0ec1-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-90c41306 .cfx-guide-stroke,#cfx-visual-90c41306 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-90c41306 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-90c41306-visualCardClip"><rect x="0" y="0" width="760" height="300" rx="3"/></clipPath>
+<style>#cfx-visual-0e8c0ec1 .cfx-guide-stroke,#cfx-visual-0e8c0ec1 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-0e8c0ec1 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-0e8c0ec1-visualCardClip"><rect x="0" y="0" width="760" height="300" rx="3"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-background" width="100%" height="100%" fill="#F2F3F4"/>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="299" rx="3" fill="#FFFFFF" stroke="#E2E4E7"/>
-<text data-cfx-role="visual-title" x="18" y="32.187" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700">Packages</text>
-<rect data-cfx-role="table-header" class="cfx-guide-stroke" x="18" y="51.752" width="724" height="32" rx="3" fill="#F8F9FA" stroke="#E2E4E7"/>
-<text data-cfx-role="visual-text" x="27" y="72.872" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Package</text>
-<text data-cfx-role="visual-text" x="268.333" y="72.872" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Adds</text>
-<text data-cfx-role="visual-text" x="509.667" y="72.872" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Status</text>
-<text data-cfx-role="visual-text" x="27" y="108.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX</text>
-<text data-cfx-role="visual-text" x="268.333" y="108.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Charts, grids, topology, SVG, PNG, HTML</text>
-<text data-cfx-role="visual-text" x="509.667" y="108.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Core</text>
-<rect data-cfx-role="table-row" x="18" y="118.752" width="724" height="31" rx="4" fill="rgba(248,249,250,0.431)"/>
-<text data-cfx-role="visual-text" x="27" y="139.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Visuals</text>
-<text data-cfx-role="visual-text" x="268.333" y="139.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Visual blocks, canvases, image composition</text>
-<text data-cfx-role="visual-text" x="509.667" y="139.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
-<text data-cfx-role="visual-text" x="27" y="170.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Interactivity.Html</text>
-<text data-cfx-role="visual-text" x="268.333" y="170.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Self-contained interactive pages</text>
-<text data-cfx-role="visual-text" x="509.667" y="170.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
-<rect data-cfx-role="table-row" x="18" y="180.752" width="724" height="31" rx="4" fill="rgba(248,249,250,0.431)"/>
-<text data-cfx-role="visual-text" x="27" y="201.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Markup</text>
-<text data-cfx-role="visual-text" x="268.333" y="201.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Charts and diagrams from Markdown fences</text>
-<text data-cfx-role="visual-text" x="509.667" y="201.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
-<text data-cfx-role="visual-text" x="27" y="232.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Mermaid</text>
-<text data-cfx-role="visual-text" x="268.333" y="232.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Native Mermaid diagrams</text>
-<text data-cfx-role="visual-text" x="509.667" y="232.212" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
+<text data-cfx-role="visual-title" x="18" y="28.75" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700">Packages</text>
+<rect data-cfx-role="table-header" class="cfx-guide-stroke" x="18" y="48" width="724" height="32" rx="3" fill="#F8F9FA" stroke="#E2E4E7"/>
+<text data-cfx-role="visual-text" x="27" y="69.12" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Package</text>
+<text data-cfx-role="visual-text" x="268.333" y="69.12" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Adds</text>
+<text data-cfx-role="visual-text" x="509.667" y="69.12" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Status</text>
+<text data-cfx-role="visual-text" x="27" y="104.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX</text>
+<text data-cfx-role="visual-text" x="268.333" y="104.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Charts, grids, topology, SVG, PNG, HTML</text>
+<text data-cfx-role="visual-text" x="509.667" y="104.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Core</text>
+<rect data-cfx-role="table-row" x="18" y="115" width="724" height="31" rx="4" fill="rgba(248,249,250,0.431)"/>
+<text data-cfx-role="visual-text" x="27" y="135.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Visuals</text>
+<text data-cfx-role="visual-text" x="268.333" y="135.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Visual blocks, canvases, image composition</text>
+<text data-cfx-role="visual-text" x="509.667" y="135.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
+<text data-cfx-role="visual-text" x="27" y="166.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Interactivity.Html</text>
+<text data-cfx-role="visual-text" x="268.333" y="166.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Self-contained interactive pages</text>
+<text data-cfx-role="visual-text" x="509.667" y="166.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
+<rect data-cfx-role="table-row" x="18" y="177" width="724" height="31" rx="4" fill="rgba(248,249,250,0.431)"/>
+<text data-cfx-role="visual-text" x="27" y="197.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Markup</text>
+<text data-cfx-role="visual-text" x="268.333" y="197.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Charts and diagrams from Markdown fences</text>
+<text data-cfx-role="visual-text" x="509.667" y="197.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
+<text data-cfx-role="visual-text" x="27" y="228.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">ChartForgeX.Mermaid</text>
+<text data-cfx-role="visual-text" x="268.333" y="228.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Native Mermaid diagrams</text>
+<text data-cfx-role="visual-text" x="509.667" y="228.46" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="11.5" font-weight="400">Optional</text>
 </svg>

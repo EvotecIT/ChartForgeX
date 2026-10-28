@@ -97,13 +97,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = FunnelPresentationRecipe.Create(&quot;horizontal&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Independent stage and connection presentation&quot;).WithSubtitle(&quot;Measured component captions and source-owned connection paint retain every ordered stage&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 620)), theme, mode,
     new VisualFrame(&quot;Independent stage and connection presentation&quot;, &quot;Measured component captions and source-owned connection paint retain every ordered stage&quot;, showLegend: null, showSurface: false));
@@ -165,13 +158,6 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = FunnelPresentationRecipe.Create(&quot;horizontal&quot;, mode);
-if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle(&quot;Independent stage and connection presentation&quot;).WithSubtitle(&quot;Measured component captions and source-owned connection paint retain every ordered stage&quot;).WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
-    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
-    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
-    return;
-}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 620)), theme, mode,
     new VisualFrame(&quot;Independent stage and connection presentation&quot;, &quot;Measured component captions and source-owned connection paint retain every ordered stage&quot;, showLegend: null, showSurface: false));
