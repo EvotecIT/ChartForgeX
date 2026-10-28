@@ -33,23 +33,10 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.EndArray(); writer.EndObject();
     }
 
-    // Portable axes retain named, unmodified cultures; silently dropping custom date patterns would change captions.
-    private static string PortableTimeCulture(CultureInfo culture) {
-        if (culture.GetType() != typeof(CultureInfo)) throw new NotSupportedException("Portable time axes require standard named cultures.");
-        var reference = CultureInfo.GetCultureInfo(culture.Name);
-        var actual = culture.DateTimeFormat; var expected = reference.DateTimeFormat;
-        if (culture.NumberFormat.NumberDecimalSeparator != reference.NumberFormat.NumberDecimalSeparator
-            || actual.ShortDatePattern != expected.ShortDatePattern || actual.MonthDayPattern != expected.MonthDayPattern
-            || actual.ShortTimePattern != expected.ShortTimePattern || actual.LongTimePattern != expected.LongTimePattern
-            || actual.DateSeparator != expected.DateSeparator || actual.TimeSeparator != expected.TimeSeparator
-            || actual.AMDesignator != expected.AMDesignator || actual.PMDesignator != expected.PMDesignator
-            || actual.Calendar.GetType() != expected.Calendar.GetType() || actual.Calendar.TwoDigitYearMax != expected.Calendar.TwoDigitYearMax
-            || !actual.MonthNames.SequenceEqual(expected.MonthNames) || !actual.AbbreviatedMonthNames.SequenceEqual(expected.AbbreviatedMonthNames)
-            || !actual.MonthGenitiveNames.SequenceEqual(expected.MonthGenitiveNames) || !actual.AbbreviatedMonthGenitiveNames.SequenceEqual(expected.AbbreviatedMonthGenitiveNames)
-            || !actual.DayNames.SequenceEqual(expected.DayNames) || !actual.AbbreviatedDayNames.SequenceEqual(expected.AbbreviatedDayNames))
-            throw new NotSupportedException("Modified time cultures cannot be serialized as portable chart data.");
-        return culture.Name;
-    }
+    // Portable axes carry the culture by name. A culture with user overrides (common for the current culture on Windows)
+    // travels as its standard named culture, so a restored view keeps the language and conventions without failing export.
+    // The invariant culture travels as its empty name, so an explicit invariant axis stays explicit.
+    private static string PortableTimeCulture(CultureInfo culture) => culture.Name;
 
     private static ChartAxis ReadWaterfallAxis(Dictionary<string, GeoJsonValue> source, string name) {
         var fields = OptionalObject(source, name); if (fields == null) return new ChartAxis();

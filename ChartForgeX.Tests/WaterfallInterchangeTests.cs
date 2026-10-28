@@ -93,11 +93,13 @@ public sealed class WaterfallInterchangeTests {
     }
 
     [Fact]
-    public void PortableTimeCultureRejectsCustomPatternsAndRetainsExplicitInvariantCulture() {
+    public void PortableTimeCultureTravelsByNameAndRetainsExplicitInvariantCulture() {
         var modified = (CultureInfo)CultureInfo.GetCultureInfo("de-DE").Clone();
         modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
         var custom = Model().WithCulture(modified);
-        Assert.Throws<NotSupportedException>(() => custom.ToVisualArtifact().ToInterchangeJson());
+        // User overrides (common for the Windows current culture) must not break export; the view uses the standard named culture.
+        var portable = VisualArtifactInterchangeEnvelope.FromJson(custom.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        Assert.Equal("de-DE", portable.Options.XAxis.Culture!.Name);
         var invariant = Model(); invariant.Options.XAxis.Culture = CultureInfo.InvariantCulture;
         var restored = VisualArtifactInterchangeEnvelope.FromJson(invariant.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
         Assert.NotNull(restored.Options.XAxis.Culture);
