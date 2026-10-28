@@ -9,8 +9,8 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
-    // An authored colour-dimension format carries its own unit; otherwise the key uses the chart's value unit.
-    private static string? KeyUnit(Chart chart, ChartColorPresentation presentation) => presentation.HasFormat ? null : chart.Options.ValueUnit;
+    // The key uses the chart's value unit, like the cell readouts; a format that already writes it keeps one copy.
+    private static string? KeyUnit(Chart chart, ChartColorPresentation presentation) => chart.Options.ValueUnit;
 
     private static TextStyle ColorScaleStyle(Chart chart, VisualRenderContext context) =>
         context.Frame.LegendStyle ?? VisualStateSceneTools.TickStyle(chart, context);
