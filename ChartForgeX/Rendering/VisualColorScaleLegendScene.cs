@@ -22,6 +22,46 @@ internal static partial class VisualColorScaleLegendScene {
             style, prefix + "-title", prefix + "-title");
     }
 
+    // Bands read as a key: a square swatch with its caption beside it, rather than long bars with captions underneath.
+    private const double BandSwatch = 12;
+
+    private static double BandRow(double row) => Math.Max(BandSwatch, row);
+
+    /// <summary>The natural width of each key entry: a swatch, a gap and its caption; the no-data entry comes last.</summary>
+    private static double[] BandItems(VisualSceneBuilder builder, IReadOnlyList<string> captions, ChartLabels labels, TextStyle style, double gap, bool missing) {
+        var row = builder.MeasureText("Mg", style).Height;
+        var widths = captions.Select(caption => BandSwatch + gap / 2 + builder.MeasureText(caption, style).Width).ToList();
+        if (missing) widths.Add(row + builder.MeasureText(labels.NoData, style).Width);
+        return widths.ToArray();
+    }
+
+    /// <summary>Lays key entries out like a series legend: natural widths, left to right, wrapping only when a row is full.</summary>
+    private static (double Left, int Row, double Width)[] BandFlow(double[] items, double gap, double width) {
+        var placed = new (double Left, int Row, double Width)[items.Length];
+        var spacing = gap * 3; var x = 0d; var row = 0;
+        for (var index = 0; index < items.Length; index++) {
+            var item = Math.Min(items[index], width);
+            if (x > 0 && x + item > width + .000001) { row++; x = 0; }
+            placed[index] = (x, row, item);
+            x += item + spacing;
+        }
+        return placed;
+    }
+
+    private static double BandFlowHeight((double Left, int Row, double Width)[] flow, double row, double gap) =>
+        (flow.Length == 0 ? 0 : (flow.Max(item => item.Row) + 1) * (BandRow(row) + gap)) + gap;
+
+    /// <summary>Whether the no-data entry moves beside the key heading because it would otherwise cost a row of its own.</summary>
+    private static bool BandMissingInHeading(VisualSceneBuilder builder, IReadOnlyList<string> captions, ChartLabels labels, TextStyle style,
+        double gap, double width, double headingHeight, string? heading) {
+        var row = builder.MeasureText("Mg", style).Height;
+        if (heading == null || headingHeight + .000001 < row) return false;
+        var rows = BandFlow(BandItems(builder, captions, labels, style, gap, false), gap, width).Max(item => item.Row);
+        var withMissing = BandFlow(BandItems(builder, captions, labels, style, gap, true), gap, width).Max(item => item.Row);
+        var missingWidth = row + builder.MeasureText(labels.NoData, style).Width + gap / 2;
+        return withMissing > rows && width - missingWidth - gap >= builder.MeasureText("…", style).Width;
+    }
+
     private static int Columns(VisualSceneBuilder builder, TextStyle style, double width, double gap, string[]? captions) {
         if (captions == null) return 1;
         var widest = captions.Max(text => builder.MeasureText(text, style).Width);
@@ -32,14 +72,18 @@ internal static partial class VisualColorScaleLegendScene {
     internal static double Height(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
         double gap, double width, double maximum, bool missing, Func<IReadOnlyList<double>, string[]> formatValues, bool hasDomain = true,
         bool compact = false, double min = 0, double max = 0, bool inlineMissing = false, string? heading = null,
-        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto) {
+        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null) {
         if (scale.Captions.Count > 0) return CaptionedHeight(builder, scale, labels, style, gap, width, maximum, missing,
             formatValues, hasDomain, min, max, inlineMissing, heading, legendStyle);
         var row = builder.MeasureText("Mg", style).Height;
         var headingHeight = Math.Max(0, Math.Min(maximum, HeadingHeight(builder, style, gap, heading)));
         maximum = Math.Max(0, maximum - headingHeight);
         if (!hasDomain) return headingHeight + (inlineMissing ? 0 : Math.Max(0, Math.Min(maximum, row + gap)));
-        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues) : null;
+        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
+        if (captions != null) {
+            var flowMissing = missing && !inlineMissing && !BandMissingInHeading(builder, captions, labels, style, gap, width, headingHeight, heading);
+            return headingHeight + Math.Max(0, Math.Min(maximum, BandFlowHeight(BandFlow(BandItems(builder, captions, labels, style, gap, flowMissing), gap, width), row, gap)));
+        }
         var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, width, min, max, formatValues, legendStyle);
         var plan = PlanLegacyLayout(builder, labels, style, gap, width, headingHeight, maximum, captions,
             scale.MidpointLabel != null && !inlineMidpoint, missing && !inlineMissing, heading);
@@ -51,7 +95,7 @@ internal static partial class VisualColorScaleLegendScene {
         ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
         bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
-        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto) {
+        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null) {
         if (scale.Captions.Count > 0) {
             DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingBlend, formatValues,
                 diagnosticCode, hasDomain, missingBounds, heading, valueName, legendStyle);
@@ -61,26 +105,26 @@ internal static partial class VisualColorScaleLegendScene {
         var fullBounds = bounds;
         var headingHeight = Math.Max(0, Math.Min(bounds.Height, HeadingHeight(builder, style, gap, heading)));
         if (heading != null) bounds = new ChartRect(bounds.Left, bounds.Top + headingHeight, bounds.Width, Math.Max(0, bounds.Height - headingHeight));
-        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues) : null;
+        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
         var inlineMidpoint = hasDomain && compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
         var plan = PlanLegacyLayout(builder, labels, style, gap, bounds.Width, headingHeight, bounds.Height, captions,
             scale.MidpointLabel != null && !inlineMidpoint, hasDomain && missing && !missingBounds.HasValue, heading);
         var columns = plan.Columns; var rows = plan.Rows;
         var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !missingBounds.HasValue ? row + gap : 0);
-        var missingPlacement = plan.Missing;
+        // A band key places its no-data entry in its own flow, so it never moves to the heading lane or a grid cell.
+        var headingMissing = captions != null && hasDomain && missing && !missingBounds.HasValue
+            && BandMissingInHeading(builder, captions, labels, style, gap, bounds.Width, headingHeight, heading);
+        var missingPlacement = captions == null ? plan.Missing
+            : headingMissing ? new LegacyMissingPlacement(row + builder.MeasureText(labels.NoData, style).Width + gap / 2) : default;
         var missingHeadingWidth = missingPlacement.HeadingWidth;
+        var flowMissing = captions != null && hasDomain && missing && !missingBounds.HasValue && !headingMissing;
+        var flow = captions != null ? BandFlow(BandItems(builder, captions, labels, style, gap, flowMissing), gap, bounds.Width) : null;
+        if (flow != null && hasDomain && BandFlowHeight(flow, row, gap) > bounds.Height + .000001)
+            builder.AddDiagnostic(new VisualDiagnostic(diagnosticCode, "The numeric color key does not fit the viewport; complete scale values and captions remain in descriptive regions."));
         if (missingPlacement.Inline) extra -= row + gap;
         var available = Math.Max(0, bounds.Height - gap - extra);
-        if (hasDomain && rows * (12 + row + gap) > available + .000001) {
-            // Fit more bands in each row before sacrificing caption height. Complete intervals remain in regions.
-            if (captions != null && !missingPlacement.Cell.HasValue) {
-                var capacity = Math.Max(1, (int)Math.Floor(available / (12 + row + gap)));
-                columns = Math.Max(columns, (int)Math.Ceiling(captions.Length / (double)capacity));
-                rows = (int)Math.Ceiling(captions.Length / (double)columns);
-            }
-            if (rows * (12 + row + gap) > available + .000001)
-                builder.AddDiagnostic(new VisualDiagnostic(diagnosticCode, "The numeric color key does not fit the viewport; complete scale values and captions remain in descriptive regions."));
-        }
+        if (captions == null && hasDomain && rows * (12 + row + gap) > available + .000001)
+            builder.AddDiagnostic(new VisualDiagnostic(diagnosticCode, "The numeric color key does not fit the viewport; complete scale values and captions remain in descriptive regions."));
         var pitchY = available / rows; var swatchHeight = Math.Min(12, Math.Max(0, pitchY - row - gap));
         var y = bounds.Top + gap; var midpointX = bounds.Left + bounds.Width / 2;
         var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };
@@ -107,10 +151,15 @@ internal static partial class VisualColorScaleLegendScene {
                     if (!missingBounds.HasValue) Missing(bounds.Top);
                     return;
                 }
-                if (captions != null) {
-                    var width = bounds.Width / columns;
-                    for (var index = 0; index < captions.Length; index++) {
-                        var band = scale.Bands[index]; var left = bounds.Left + index % columns * width; var top = y + index / columns * pitchY;
+                if (captions != null && flow != null) {
+                    var line = BandRow(row);
+                    for (var index = 0; index < flow.Length; index++) {
+                        var left = bounds.Left + flow[index].Left; var top = y + flow[index].Row * (line + gap); var width = flow[index].Width;
+                        if (index == captions.Length) {
+                            Missing(top + (line - row) / 2, new ChartRect(left, top + (line - row) / 2, width, row));
+                            continue;
+                        }
+                        var band = scale.Bands[index];
                         var source = new Dictionary<string, string> {
                             ["data-cfx-band"] = index.ToString(System.Globalization.CultureInfo.InvariantCulture),
                             ["data-cfx-label"] = captions[index],
@@ -119,16 +168,14 @@ internal static partial class VisualColorScaleLegendScene {
                             ["data-cfx-lower-inclusive"] = "true", ["data-cfx-upper-exclusive"] = "true"
                         };
                         if (band.Label != null) source["data-cfx-band-label"] = band.Label;
-                        Tile(index, new ChartRect(left, top, Math.Max(0, width - gap / 2), swatchHeight),
+                        Tile(index, new ChartRect(left, top + (line - BandSwatch) / 2, BandSwatch, BandSwatch),
                             ChartColorBlend.Solid(band.Color, SvgColorRole.Ramp), captions[index], source);
-                        Caption(captions[index], new ChartRect(left, top + swatchHeight + gap / 2, Math.Max(0, width - gap / 2), row), "band-" + index, TextAlignment.Center);
+                        Caption(captions[index], new ChartRect(left + BandSwatch + gap / 2, top + (line - row) / 2, Math.Max(0, width - BandSwatch - gap / 2), row),
+                            "band-" + index, TextAlignment.Left);
                     }
-                    if (missingPlacement.Cell.HasValue) {
-                        var index = missingPlacement.Cell.Value;
-                        var top = y + index / columns * pitchY + (pitchY - row) / 2;
-                        Missing(top, new ChartRect(bounds.Left + index % columns * width, top, Math.Max(0, width - gap / 2), row));
-                    }
-                } else {
+                    return;
+                }
+                {
                     var steps = ChartColorScaleLegend.Steps(scale, min, max); var width = bounds.Width / steps.Length;
                     if (scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min))
                         midpointX = legendStyle == ChartColorLegendStyle.Gradient ? bounds.Left + bounds.Width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
@@ -169,8 +216,18 @@ internal static partial class VisualColorScaleLegendScene {
             var lane = target ?? bounds;
             var box = new ChartRect(lane.Left, top + row * .15, row * .7, row * .7);
             using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
-                new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
-                builder.Rect(box, blend.Color, radius: 1, role: prefix + "-missing-swatch", paint: VisualChartPaint.Fill(blend.Paint));
+                new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
+                // A pale fill alone disappears on both themes, so the no-data key also gets an outline and a hatch.
+                builder.Rect(box, blend.Color, style.Color, .75, radius: 1, role: prefix + "-missing-swatch", paint: VisualChartPaint.Fill(blend.Paint));
+                using (builder.PushClip(box)) {
+                    // Lines sit symmetrically about the centre, which stays clear, so the swatch's own fill is still readable.
+                    var hatch = ChartColorMath.WithOpacity(style.Color, .55); const double spacing = 5;
+                    var centre = (box.Width - box.Height) / 2;
+                    for (var step = spacing / 2; centre - step > -box.Height || centre + step < box.Width; step += spacing)
+                        foreach (var offset in new[] { centre - step, centre + step })
+                            builder.Line(box.Left + offset, box.Bottom, box.Left + offset + box.Height, box.Top, hatch, .75, role: prefix + "-missing-hatch");
+                }
+            }
             Caption(labels.NoData, new ChartRect(lane.Left + row, top, Math.Max(0, lane.Width - row), row), "missing", TextAlignment.Left);
         }
 

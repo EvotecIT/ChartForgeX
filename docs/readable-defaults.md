@@ -53,6 +53,15 @@ Each series with an explicit `ChartSeriesId` then derives its palette slot from 
 
 Waterfall changes carry a direction: increases use the positive status colour and decreases the negative one. Opening balances, subtotals and totals are levels rather than changes, so they take the series colour (the accent for the first series) instead of a warning colour.
 
+## Colour keys with named bands
+
+A discrete colour scale reads as a key.
+
+- **Layout:** each band is a square swatch with a short caption beside it. Entries sit left to right at their natural width and wrap only when a row is full, like a series legend.
+- **Captions:** they read as the band name followed by its interval, for example "Outage < 95%", "Short loss 95–100%" and "Complete ≥ 100%". Each band includes its lower bound and excludes its upper bound; the neighbouring captions and the band metadata keep that exact.
+- **Units:** heatmaps add the chart's value unit unless the colour dimension has its own format.
+- **No data:** the entry has an outline and a hatch, so it stays visible on light and dark surfaces. When adding it would cost a row of its own, it moves beside the key's heading.
+
 ## Units
 
 ```csharp
