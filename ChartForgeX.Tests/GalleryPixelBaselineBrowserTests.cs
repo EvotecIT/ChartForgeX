@@ -25,6 +25,22 @@ public sealed class GalleryPixelBaselineBrowserTests {
         Assert.NotNull(PixelBaseline.Compare("line-vs-dark", line, dark).Failure);
     }
 
+    [Fact]
+    public void CommittedGallery_HasABaselineForEveryCuratedFamilyImage() {
+        // The browser comparison visits committed images; this closes the other direction, so a new gallery variant
+        // cannot ship without its baseline. The selections are the same ones the curated gallery generates.
+        var committed = new HashSet<string>(Directory.GetFiles(BaselineRoot, "family-*.png").Select(Path.GetFileNameWithoutExtension)!, StringComparer.Ordinal);
+        var missing = ExampleRecipes.ChartFamilies.Select(family => family.Key)
+            .SelectMany(kind => ExampleRecipes.FamilySelections(kind, curated: true).SelectMany(selection => new[] { "light", "dark" }
+                .Select(mode => "family-" + FamilyName(kind) + "-" + selection.Variant + "-" + mode)))
+            .Where(name => !committed.Contains(name)).ToArray();
+        Assert.True(missing.Length == 0, missing.Length + " curated family image(s) have no committed baseline. Run Website/build/Sync-GeneratedExamples.ps1 after regenerating the gallery."
+            + Environment.NewLine + string.Join(Environment.NewLine, missing.Take(40)));
+    }
+
+    private static string FamilyName(ChartForgeX.Core.ChartSeriesKind kind) =>
+        System.Text.RegularExpressions.Regex.Replace(kind.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
+
     [BrowserFact(RequiresGallery = true)]
     public async Task GeneratedFamilyImages_MatchTheCommittedGallery() {
         var url = BrowserTestPrerequisites.RequireGalleryUrl();
