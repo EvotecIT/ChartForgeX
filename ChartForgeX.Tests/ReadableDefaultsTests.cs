@@ -85,6 +85,21 @@ public sealed class ReadableDefaultsTests {
         Assert.Equal("99.5%", (string?)cell.Attribute("data-cfx-formatted-value"));
     }
 
+    [Theory]
+    // An appended word unit uses a non-breaking space; a format that writes the unit keeps its own spacing.
+    [InlineData("0.0", "12.5\u00A0ms")]
+    [InlineData("0.0 'ms'", "12.5 ms")]
+    public void WithValueUnit_HeatmapColorDimensionFormatsKeepOneUnit(string format, string expected) {
+        var chart = Chart.Create().WithSize(600, 300).WithXLabels("14 Oct", "15 Oct").WithValueUnit("ms")
+            .AddHeatmapRow("dc1", new double?[] { 12.5, 30 })
+            .ConfigureHeatmapColorDimension(options => options.ValueFormat = ChartValueFormat.Number(format, CultureInfo.InvariantCulture));
+
+        var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
+
+        Assert.Equal("dc1, 14 Oct: " + expected, (string?)cell.Attribute("aria-label"));
+        Assert.Equal(expected, (string?)cell.Attribute("data-cfx-formatted-value"));
+    }
+
     [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
