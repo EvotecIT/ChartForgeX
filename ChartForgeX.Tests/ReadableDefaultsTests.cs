@@ -141,6 +141,18 @@ public sealed class ReadableDefaultsTests {
     }
 
     [Fact]
+    public void WithValueUnit_CategoricalHeatmapCellsNameTheirStateWithoutAUnit() {
+        var chart = Chart.Create().WithSize(600, 300).WithXLabels("14 Oct", "15 Oct").WithValueUnit("%")
+            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+            .AddHeatmapCategoryRow("dc1", new ChartHeatmapCell?[] { new ChartHeatmapCell("up"), new ChartHeatmapCell("up") });
+
+        var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
+
+        Assert.Equal("dc1, 14 Oct: Up", (string?)cell.Attribute("aria-label"));
+        Assert.Null(cell.Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
         var point = ByRole(svg, "point")[1];
