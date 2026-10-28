@@ -42,7 +42,12 @@ chart.WithValueUnit("ms");
 
 The unit follows values in tooltips, readouts and accessible names ("52.7 ms"). Single symbols such as `%` attach directly ("99.8%"). A value format that already writes the unit keeps a single copy. Axis tick labels stay unit-free; put the unit in the axis title instead.
 
-Today this covers point marks on line, bar, area, scatter and bubble charts, plus heatmap and calendar heatmap cells. Structured marks with their own descriptions (waterfall steps, ranges, comparisons and schedules) and pie, gauge, radial, map and hierarchy readouts don't add the unit yet.
+Today this covers:
+
+- **Cartesian charts:** every mark's formatted tooltip values, such as a waterfall step's value, start and end. Accessible names carry the unit on point marks (line, bar, area, scatter and bubble); structured marks with their own descriptions (waterfall steps, ranges and comparisons) keep unit-free accessible names for now.
+- **Heatmaps and calendar heatmaps:** cell tooltips and accessible names.
+
+Schedules and pie, gauge, radial, map and hierarchy readouts don't add the unit yet.
 
 ## Locale
 

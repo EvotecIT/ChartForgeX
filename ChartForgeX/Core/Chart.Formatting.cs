@@ -28,7 +28,8 @@ public sealed partial class Chart {
     /// <summary>
     /// Sets the unit shown after values in tooltips, readouts and accessible names, for example "ms" or "%".
     /// </summary>
-    /// <remarks>Applies to point marks on line, bar, area, scatter and bubble charts, and to heatmap and calendar heatmap cells.
+    /// <remarks>Applies to formatted tooltip values of cartesian marks, to accessible names of cartesian point marks,
+    /// and to heatmap and calendar heatmap cells.
     /// A value format that already writes the unit keeps a single copy.
     /// Axis tick labels stay unit-free; put the unit in the axis title instead. An empty or null unit removes it.</remarks>
     public Chart WithValueUnit(string? unit) {

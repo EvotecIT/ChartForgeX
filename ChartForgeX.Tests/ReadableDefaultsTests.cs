@@ -128,6 +128,19 @@ public sealed class ReadableDefaultsTests {
     }
 
     [Fact]
+    public void WithValueUnit_WaterfallTooltipValuesCarryTheUnitWhileTheirAccessibleNamesStayAsDescribed() {
+        var chart = Chart.Create().WithSize(600, 300).WithXLabels("Open", "Change", "Total").WithValueUnit("ms")
+            .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("w"), "Budget",
+                new[] { ChartWaterfallItem.OpeningBalance(1, 100), ChartWaterfallItem.Delta(2, -20), ChartWaterfallItem.Total(3) }));
+
+        var change = XDocument.Parse(chart.ToSvg()).Descendants().First(element => (string?)element.Attribute("data-cfx-formatted-delta") != null);
+
+        Assert.Equal("-20\u00A0ms", (string?)change.Attribute("data-cfx-formatted-delta"));
+        Assert.Equal("80\u00A0ms", (string?)change.Attribute("data-cfx-formatted-end"));
+        Assert.Equal("Budget: Change -20 start=100 end=80 Change=-20", (string?)change.Attribute("aria-label"));
+    }
+
+    [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
         var point = ByRole(svg, "point")[1];
