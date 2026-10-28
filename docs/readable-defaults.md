@@ -22,6 +22,18 @@ Lane labels, lane summaries, group headers and heatmap row labels share one poli
 
 Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `WithHeatmapCellRadius` still sets an exact radius.
 
+## Series colours
+
+Series without an explicit colour take theme palette colours in series order, so the first series is always the theme accent and every chart family starts from the same colour. Neighbouring series don't repeat a colour until the palette wraps.
+
+Linked dashboards that need a series to keep its colour when others are added, removed or filtered can opt in to identity colours:
+
+```csharp
+chart.WithSeriesColorAssignment(ChartSeriesColorAssignment.Identity);
+```
+
+Each series with an explicit `ChartSeriesId` then derives its palette slot from that identifier. Two series can share a colour in that mode; `WithColor` sets an exact colour when it matters.
+
 ## Units
 
 ```csharp

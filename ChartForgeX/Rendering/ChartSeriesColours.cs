@@ -61,11 +61,13 @@ internal static class ChartSeriesColours {
         };
     }
 
-    /// <summary>Explicit identities select deterministic palette slots; chart-local anonymous helpers retain ordinal paint.</summary>
-    /// <remarks>Hashing never depends on the current series set, so adding or removing another series cannot recolor an existing ID.
-    /// A finite palette can repeat. An explicit series color remains the way to guarantee a distinct authored color.</remarks>
+    /// <summary>Series take palette colours in series order, so the first series is always the theme accent.</summary>
+    /// <remarks>With <see cref="ChartSeriesColorAssignment.Identity"/>, explicit identities select deterministic palette slots instead:
+    /// hashing never depends on the current series set, so adding or removing another series cannot recolor an existing ID.
+    /// A finite palette can then repeat; an explicit series color remains the way to guarantee a distinct authored color.</remarks>
     private static int PaletteIndex(ChartSeries series, int index, int count) {
-        if (series.AutomaticIdentityOwner != null || !series.HasIdentity) return index % count;
+        if (series.Owner?.Options.SeriesColorAssignment != ChartSeriesColorAssignment.Identity
+            || series.AutomaticIdentityOwner != null || !series.HasIdentity) return index % count;
         // FNV-1a over UTF-16 code units is stable across runtimes and platforms, unlike string.GetHashCode().
         var hash = 2166136261u;
         foreach (var value in series.Id.Value) hash = unchecked((hash ^ value) * 16777619u);
