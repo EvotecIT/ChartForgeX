@@ -62,6 +62,17 @@ public sealed class StateTimelineLabelPolicyTests {
             Assert.True(labels[index].Y - labels[index - 1].Y >= labels[index].Size, "Lane labels overlap at y=" + labels[index].Y.ToString(CultureInfo.InvariantCulture));
     }
 
+    [Theory]
+    [InlineData("Arial")]
+    [InlineData("ChartForgeX Missing Test Face")]
+    public void ToSvg_OversizedTickFont_StillDrawsTheLaneLabelWithInstalledOrFallbackMetrics(string font) {
+        var chart = Chart.Create().WithSize(360, 360).WithPngFont(font).WithLegend(false)
+            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "99%", "Services");
+        chart.Options.TickLabelStyle.FontSize = 256;
+        var labels = Texts(XDocument.Parse(chart.ToSvg()), ChartDomRoles.ScheduleRowLabel);
+        Assert.Equal("API", Assert.Single(labels).Value);
+    }
+
     [Fact]
     public void ToSvg_NarrowStaticLanes_TruncatesLongNamesInsteadOfShrinkingThem() {
         var svg = XDocument.Parse(DenseLanes(420, 450).ToSvg());

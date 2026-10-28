@@ -27,10 +27,6 @@ public sealed partial class ChartValueFormat {
         return new ChartValueFormat(Notation.Number, format, culture);
     }
 
-    /// <summary>Uses the automatic value captions (grouped digits, compact k/M/B for large values) in the given culture.</summary>
-    /// <remarks>This is the default policy; pass a culture to localise decimal and group separators.</remarks>
-    public static ChartValueFormat Automatic(CultureInfo? culture = null) => culture == null ? ExistingValue : new(Notation.ExistingValue, "0.##", culture);
-
     /// <summary>Uses compact k, M and B suffixes, invariant by default.</summary>
     public static ChartValueFormat Compact(CultureInfo? culture = null) => new(Notation.Compact, "0.##", culture);
 
@@ -100,12 +96,11 @@ public sealed partial class ChartValueFormat {
             if (format != "0.##") throw new ArgumentException("Compact policies require their canonical numeric format.");
             return Compact(named);
         }
-        if (notation == "ExistingValue" && format == "0.##") return culture.Length == 0 ? ExistingValue : Automatic(named);
+        if (notation == "ExistingValue" && format == "0.##" && culture.Length == 0) return ExistingValue;
         throw new ArgumentException("Unknown or contradictory portable numeric policy.");
     }
 
     internal static ChartValueFormat ExistingValue { get; } = new(Notation.ExistingValue, "0.##", null);
-    internal bool IsAutomatic => _notation == Notation.ExistingValue && _formatter == null;
     internal static ChartValueFormat InvariantCompact { get; } = Compact();
     // Automatic value and axis policies share this bounded fallback; authored formats remain exact policies.
     internal static string FormatSignificant(double value) => value.ToString("G6", CultureInfo.InvariantCulture);

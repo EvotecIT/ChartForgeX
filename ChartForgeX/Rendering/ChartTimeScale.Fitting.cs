@@ -90,11 +90,7 @@ internal static partial class ChartTimeScale {
     /// <summary>Retains the broad calendar rhythm ceiling while measured spacing chooses the compact pitch.</summary>
     internal static int AutomaticTickCount(ChartAxis axis) => axis.LabelDensity == ChartLabelDensity.Dense ? 100 : 8;
 
-    /// <summary>Lets wide time axes ask for about one caption per 120 px instead of a fixed eight; measured captions still decide.</summary>
-    internal static int AutomaticTickCount(ChartAxis axis, double length) =>
-        axis.LabelDensity == ChartLabelDensity.Dense ? 100 : Math.Max(8, (int)Math.Floor(length / WideTimeTickPitch) + 1);
 
-    private const double WideTimeTickPitch = 120;
 
     /// <summary>Leaves room between automatic calendar captions rather than merely avoiding overlap.</summary>
     internal static double ComfortableLabelGap(double firstExtent, double secondExtent, double ordinaryGap, double length, double fontSize,

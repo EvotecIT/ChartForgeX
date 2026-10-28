@@ -24,9 +24,10 @@ internal static class ChartRowText {
         var fitted = style.Clone();
         var metrics = builder.MeasureText(text, fitted);
         var ratio = metrics.Height > height + .001 ? height / Math.Max(.001, metrics.Height) : 1;
-        // Ordinary-sized text keeps one size across rows; only oversized authored text also shrinks toward the width.
+        // Ordinary-sized text keeps one size across rows and truncates; only oversized authored text also shrinks toward
+        // the gutter width, never below the readable floor.
         if (width > 0 && metrics.Width > width + .001 && fitted.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize)
-            ratio = Math.Min(ratio, Math.Max(VisualTextFitting.MaximumOrdinaryFontSize / fitted.EffectiveFontSize, width / Math.Max(.001, metrics.Width)));
+            ratio = Math.Min(ratio, width / Math.Max(.001, metrics.Width));
         if (ratio < 1) fitted.FontSize = Math.Max(MinimumFontSize, fitted.EffectiveFontSize * ratio);
         return fitted;
     }

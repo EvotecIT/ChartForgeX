@@ -65,7 +65,7 @@ internal static partial class VisualMatrixCompiler {
                     metadata["data-cfx-observation-index"] = sourceIndices[date][0].ToString(CultureInfo.InvariantCulture);
                 }
                 using (VisualStateSceneTools.Mark(builder, id, "calendar-cell", bounds, label, metadata))
-                using (builder.PushClip(area)) builder.Rect(bounds, blend.Color, radius: Math.Min(grid.Radius, context.Theme.BarRadius), role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));
+                using (builder.PushClip(area)) builder.Rect(bounds, blend.Color, radius: Math.Min(grid.Radius, Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * MaximumThemeCellRounding)), role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));
             }
             if (axes && chart.Options.YAxis.Visible) {
                 for (var row = 0; row < 7; row++) {

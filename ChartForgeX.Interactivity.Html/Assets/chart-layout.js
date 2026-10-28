@@ -34,11 +34,10 @@
       for(const label of source.labels)label.group.style.display='';
       const projection=window.ChartForgeXLayoutGeometry.project(source,spec,width,plot);
       // Tick captions are measured in their token font at the actual width and thin at one regular stride from the
-      // first caption, with at least 1.5 em between neighbours. The last caption stays only when it falls on the stride.
-      const labels=source.labels.map(label=>({...label,center:projection.x(label.center),width:label.text.getComputedTextLength(),
-        gap:Math.max(8,1.5*(parseFloat(getComputedStyle(label.text).fontSize)||0))}));
+      // first caption, keeping the native caption gap. The last caption stays only when it falls on the stride.
+      const labels=source.labels.map(label=>({...label,center:projection.x(label.center),width:label.text.getComputedTextLength()}));
       let keep=labels.map((_,i)=>i);
-      const fits=indices=>indices.every((i,n)=>!n || labels[i].center-labels[i].width/2>=labels[indices[n-1]].center+labels[indices[n-1]].width/2+labels[i].gap);
+      const fits=indices=>indices.every((i,n)=>!n || labels[i].center-labels[i].width/2>=labels[indices[n-1]].center+labels[indices[n-1]].width/2+8);
       for(let stride=2;!fits(keep) && stride<=labels.length;stride++)keep=labels.map((_,i)=>i).filter(i=>i%stride===0);
       const shown=new Set(keep);
       labels.forEach((label,index)=>{
@@ -54,7 +53,7 @@
     let captions;
     function fitText(width){
       captions ||= [...svg.querySelectorAll('[data-cfx-role^="frame-heading"] text,[data-cfx-role="schedule-row-label"] text,[data-cfx-role="lane-summary"] text,[data-cfx-role="state-timeline-group"] text,[data-cfx-role="gantt-lane-group"] text')]
-        .map(text=>({text,full:text.textContent,clip:clipRect(text),right:!!text.closest('[data-cfx-role="schedule-row-label"],[data-cfx-role="lane-summary"]')}));
+        .map(text=>({text,full:nativeTitle(text) ?? text.textContent,clip:clipRect(text),right:!!text.closest('[data-cfx-role="schedule-row-label"],[data-cfx-role="lane-summary"]')}));
       for(const caption of captions){
         const {text,full,clip,right}=caption;
         if(text.textContent!==full)text.textContent=full;
@@ -70,6 +69,14 @@
         text.textContent=low>0 ? full.slice(0,low).trimEnd()+'…' : '';
         const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=full;text.appendChild(title);
       }
+    }
+    // Text the server already shortened carries its complete value in an enclosing native tooltip.
+    function nativeTitle(text){
+      // The tooltip wraps the caption's clip and role groups, so it sits at most three levels up.
+      for(let node=text.parentElement,depth=0;node && node!==svg && depth<4;node=node.parentElement,depth++){
+        const title=node.querySelector(':scope > title');if(title)return title.textContent;
+      }
+      return null;
     }
     function clipRect(node){
       for(let current=node;current && current!==svg;current=current.parentElement){

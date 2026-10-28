@@ -37,10 +37,12 @@ internal static partial class VisualCartesianCompiler {
         private readonly double[] _ticks;
         private readonly string _axisKey;
         private readonly IReadOnlyDictionary<double, string> _readoutFacts;
+        private readonly string? _unit;
         internal CartesianValueSeries(string key, string name, ChartSeriesKind kind, ChartAxisSide side, ChartInterpolation interpolation, ChartStepPosition step,
-            ChartMapper map, double baseline, ChartAxis axis, Func<double, string> readout, double[] ticks, IReadOnlyDictionary<double, string> readoutFacts, string axisKey, CartesianValuePoint[] points) {
+            ChartMapper map, double baseline, ChartAxis axis, Func<double, string> readout, double[] ticks, IReadOnlyDictionary<double, string> readoutFacts, string axisKey, CartesianValuePoint[] points,
+            string? unit = null) {
             Key = key; Name = name; Kind = kind; Side = side; Interpolation = interpolation; Step = step; Map = map; Baseline = baseline;
-            _axis = axis; _readout = readout; _ticks = ticks; _readoutFacts = readoutFacts; _axisKey = axisKey; Points = points;
+            _axis = axis; _readout = readout; _ticks = ticks; _readoutFacts = readoutFacts; _axisKey = axisKey; Points = points; _unit = unit;
         }
         internal string Key { get; }
         internal string Name { get; }
@@ -52,9 +54,10 @@ internal static partial class VisualCartesianCompiler {
         internal double Baseline { get; }
         internal CartesianValuePoint[] Points { get; }
         internal double Direction(double value, double endpoint) => MappedBarDirection(_axis, value, Baseline, endpoint);
-        internal string Readout(double value, string? numericCaption) => numericCaption != null && _axis.ValueFormat == null
-            && ChartAxisValueFormatter.FindExplicitLabel(_axis.Labels, value) == null ? numericCaption : _readout(value);
-        internal bool Same(CartesianValueSeries other) => Key == other.Key && Name == other.Name && Kind == other.Kind
+        // Frames carry the same value unit as the prepared readouts they interpolate between.
+        internal string Readout(double value, string? numericCaption) => ChartOptions.AppendUnit(numericCaption != null && _axis.ValueFormat == null
+            && ChartAxisValueFormatter.FindExplicitLabel(_axis.Labels, value) == null ? numericCaption : _readout(value), _unit);
+        internal bool Same(CartesianValueSeries other) => Key == other.Key && Name == other.Name && Kind == other.Kind && _unit == other._unit
             && Side == other.Side && Interpolation == other.Interpolation && Step == other.Step && Baseline == other.Baseline && _axisKey == other._axisKey
             && _ticks.SequenceEqual(other._ticks) && _readoutFacts.Count == other._readoutFacts.Count
             && _readoutFacts.All(pair => other._readoutFacts.TryGetValue(pair.Key, out var text) && text == pair.Value) && Points.Length == other.Points.Length

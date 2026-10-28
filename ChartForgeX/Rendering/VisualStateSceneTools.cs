@@ -106,6 +106,8 @@ internal static class VisualStateSceneTools {
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - height) / 2 + builder.TextAscent(style);
+        // Shortened text keeps its complete value as an SVG tooltip; responsive hosts read it from there too.
+        using (fit != text ? builder.PushTooltip(text) : null)
         using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint ?? VisualChartPaint.Text(style), stroke, strokeWidth, strokePaint);
     }
 

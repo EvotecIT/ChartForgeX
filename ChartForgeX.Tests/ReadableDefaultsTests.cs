@@ -77,9 +77,32 @@ public sealed class ReadableDefaultsTests {
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
         var point = ByRole(svg, "point")[1];
-        Assert.Equal("51.5 ms", (string?)point.Attribute("data-cfx-formatted-value"));
-        Assert.EndsWith("51.5 ms", (string)point.Attribute("aria-label")!, StringComparison.Ordinal);
+        Assert.Equal("51.5\u00A0ms", (string?)point.Attribute("data-cfx-formatted-value"));
+        Assert.EndsWith("51.5\u00A0ms", (string)point.Attribute("aria-label")!, StringComparison.Ordinal);
         Assert.DoesNotContain(ByRole(svg, "axis-y-label"), tick => tick.Value.Contains("ms", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WithValueUnit_TransitionFramesMatchThePreparedReadoutsAndNames(bool time) {
+        Chart Build(double value) => NativeCartesianValueBeforeControls.Model(false, time ? "elapsed-time" : "linear", value).WithValueUnit("ms");
+        var renderer = new ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer();
+        var from = renderer.PrepareSection(Build(20)); var to = renderer.PrepareSection(Build(80)); var middle = renderer.PrepareSection(Build(50));
+        var frames = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3);
+        Assert.Equal(middle.PreparedVisual.ToSvg("unit-middle"), frames[1].ToSvg("unit-middle"));
+        Assert.Contains("50\u00A0ms", frames[1].ToSvg("unit-middle"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToSvg_OverfullHeatmap_HidesRowLabelsRatherThanOverlappingThem() {
+        var chart = Chart.Create().WithSize(600, 260).WithLegend(false);
+        for (var row = 0; row < 30; row++) chart.AddHeatmapRow($"target-{row:00}", Enumerable.Range(0, 10).Select(day => new ChartPoint(day, row + day)));
+        var labels = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-row-label").SelectMany(label => label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text"))
+            .Select(label => (Y: double.Parse((string)label.Attribute("y")!, CultureInfo.InvariantCulture), Size: double.Parse((string)label.Attribute("font-size")!, CultureInfo.InvariantCulture)))
+            .OrderBy(label => label.Y).ToArray();
+        Assert.All(labels, label => Assert.True(label.Size >= 10));
+        for (var index = 1; index < labels.Length; index++) Assert.True(labels[index].Y - labels[index - 1].Y >= labels[index].Size);
     }
 
     [Fact]
@@ -95,21 +118,42 @@ public sealed class ReadableDefaultsTests {
     }
 
     [Theory]
-    [InlineData("de-DE", "Okt", "51,5")]
-    [InlineData("pl-PL", "paź", "51,5")]
-    [InlineData("en-US", "Oct", "51.5")]
-    public void WithCulture_LocalisesDayLabelsAndNumbers(string name, string month, string value) {
+    [InlineData("de-DE", "Okt")]
+    [InlineData("pl-PL", "paź")]
+    [InlineData("en-US", "Oct")]
+    public void WithCulture_LocalisesDayLabelsAndKeepsNumbersAndCompactTicks(string name, string month) {
         var chart = Chart.Create().WithSize(900, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
-            .AddLine("dc-03", Enumerable.Range(0, 8).Select(index => new ChartPoint(Start.AddDays(index), 50 + index * 1.5)))
+            .AddLine("Requests", Enumerable.Range(0, 8).Select(index => new ChartPoint(Start.AddDays(index), 1000 + index * 700)))
             .WithCulture(CultureInfo.GetCultureInfo(name));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(ByRole(svg, "axis-x-label"), tick => tick.Value.Contains(month, StringComparison.OrdinalIgnoreCase));
-        Assert.Equal(value, (string?)ByRole(svg, "point")[1].Attribute("data-cfx-formatted-value"));
+        // The default value policy, including compact value ticks, is unchanged by a date culture.
+        var invariant = XDocument.Parse(Chart.Create().WithSize(900, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+            .AddLine("Requests", Enumerable.Range(0, 8).Select(index => new ChartPoint(Start.AddDays(index), 1000 + index * 700))).ToSvg());
+        Assert.Equal(ByRole(invariant, "axis-y-label").Select(tick => tick.Value), ByRole(svg, "axis-y-label").Select(tick => tick.Value));
+        Assert.Equal((string?)ByRole(invariant, "point")[1].Attribute("data-cfx-formatted-value"), (string?)ByRole(svg, "point")[1].Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
+    public void WithCulture_YearlyTicksKeepTheirYear() {
+        var chart = Chart.Create().WithSize(900, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+            .AddLine("Certificates", Enumerable.Range(0, 5).Select(index => new ChartPoint(new DateTime(2022 + index, 1, 1, 0, 0, 0, DateTimeKind.Utc), index)))
+            .WithCulture(CultureInfo.GetCultureInfo("en-GB"));
+        var ticks = ByRole(XDocument.Parse(chart.ToSvg()), "axis-x-label").Select(tick => tick.Value).ToArray();
+        Assert.Equal(ticks.Length, ticks.Distinct().Count());
+        Assert.Contains(ticks, tick => tick.Contains("2023", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void WithCulture_InvariantRestoresIsoDates() {
+        var ticks = ByRole(XDocument.Parse(Latency().WithCulture(CultureInfo.GetCultureInfo("de-DE")).WithCulture(CultureInfo.InvariantCulture).ToSvg()), "axis-x-label")
+            .Select(tick => tick.Value).ToArray();
+        Assert.Contains(ticks, tick => tick.StartsWith("2026-10-2", StringComparison.Ordinal));
     }
 
     [Fact]
     public void WithCulture_KeepsAnAuthoredValueFormat() {
-        var chart = Latency().WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).WithCulture(CultureInfo.GetCultureInfo("de-DE"));
-        Assert.Equal("51.50", (string?)ByRole(XDocument.Parse(chart.ToSvg()), "point")[1].Attribute("data-cfx-formatted-value"));
+        var chart = Latency().WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.GetCultureInfo("de-DE"))).WithCulture(CultureInfo.GetCultureInfo("de-DE"));
+        Assert.Equal("51,50", (string?)ByRole(XDocument.Parse(chart.ToSvg()), "point")[1].Attribute("data-cfx-formatted-value"));
     }
 }

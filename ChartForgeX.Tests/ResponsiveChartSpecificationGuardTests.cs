@@ -54,6 +54,38 @@ public sealed class ResponsiveChartSpecificationGuardTests {
     }
 
     [BrowserFact]
+    public async Task Initialize_ValidSpecificationAppendedAfterAnInvalidOne_MountsChart() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        string source = Fragment(false);
+        string specification = SpecificationScript.Match(source).Value;
+        await using var session = await InteractiveChartBrowser.OpenAsync(Page(SpecificationScript.Replace(source, "<script type=\"application/json\" data-cfx-spec>undefined</script>")));
+        await session.Page.EvaluateAsync("()=>document.querySelector('[data-cfx-responsive-chart]').cfxResponsiveReady");
+        await session.Page.EvaluateAsync("html=>document.querySelector('[data-cfx-responsive-chart]').insertAdjacentHTML('beforeend',html)", specification);
+        await session.Page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-responsive-chart]').cfxResponsive");
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task Initialize_SpecificationThatFailsLayout_RestoresTheStaticDrawing() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        string source = Fragment(false);
+        // Valid JSON with the right schema and drawing, but no bar slots: layout itself throws.
+        string broken = SpecificationScript.Replace(source, match => match.Value.Replace(",\"bars\":[", ",\"unusedBars\":[", StringComparison.Ordinal));
+        Assert.NotEqual(source, broken);
+        var pageErrors = new List<string>();
+        await using var session = await InteractiveChartBrowser.OpenAsync(Page(broken),
+            configurePage: page => page.PageError += (_, error) => pageErrors.Add(error));
+        await session.Page.EvaluateAsync("()=>document.querySelector('[data-cfx-responsive-chart]').cfxResponsiveReady");
+        // A later resize must not escape the fallback either.
+        await session.Page.EvaluateAsync("()=>{document.body.style.width='300px';return new Promise(resolve=>setTimeout(resolve,150));}");
+
+        Assert.Empty(pageErrors);
+        Assert.False(await session.Page.EvaluateAsync<bool>("()=>!!document.querySelector('[data-cfx-responsive-chart]').cfxResponsive"));
+        Assert.False(await session.Page.EvaluateAsync<bool>("()=>!!document.querySelector('[data-cfx-responsive-chart] svg[id^=\"cfx-live\"], [data-cfx-responsive-chart] svg [id^=\"cfx-live\"]')"));
+        Assert.Single(session.ConsoleLog, entry => entry.Type == HtmlConsoleMessageType.Warning && entry.Text.Contains("could not be applied", StringComparison.Ordinal));
+    }
+
+    [BrowserFact]
     public async Task Initialize_SpecificationAddedLater_MountsChart() {
         if (!InteractiveChartBrowser.Enabled) return;
         string source = Fragment(false);

@@ -32,17 +32,17 @@ The unit follows values in tooltips, readouts and accessible names ("52.7 ms"). 
 
 ## Locale
 
-Charts default to invariant output: ISO dates (`2026-10-27`, `14:00`) and `.` as the decimal separator. To localise a chart:
+Charts default to invariant output: ISO dates (`2026-10-27`, `14:00`) and `.` as the decimal separator. To localise dates and times:
 
 ```csharp
 chart.WithCulture(CultureInfo.GetCultureInfo("pl-PL"));
 ```
 
-- Day labels use the culture's short month-day form ("27 paź", "27. Okt.", "Oct 27"); when a range crosses years, its short date pattern.
+- Day labels use the culture's short month-day form ("27 paź", "27. Okt.", "Oct 27"). The first day of a year and ranges that cross years include the year.
 - Times use the culture's short time pattern; full instants in tooltips and accessible names use its short date and time.
-- The automatic value format uses the culture's separators. An explicit `WithValueFormat` keeps its own culture.
+- `WithCulture(CultureInfo.InvariantCulture)` restores ISO dates.
 
-A single axis can also be localised with `ChartAxis.Culture`.
+Numbers keep their value format. Pass the culture there too, for example `WithValueFormat(ChartValueFormat.Number("0.#", culture))`. A single axis can also be localised with `ChartAxis.Culture`.
 
 ## Accessible names
 

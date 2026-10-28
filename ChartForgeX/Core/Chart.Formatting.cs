@@ -11,19 +11,17 @@ public sealed partial class Chart {
     }
 
     /// <summary>
-    /// Localises the chart's dates and numbers: time-axis labels, tooltips and accessible names use the culture's date and
-    /// time patterns, and the automatic value format uses its separators.
+    /// Localises the chart's dates and times: time-axis labels, tooltips and accessible names use the culture's date and
+    /// time patterns. The invariant culture restores ISO dates.
     /// </summary>
     /// <remarks>
-    /// Charts default to invariant ISO dates and invariant numbers. An explicit <see cref="WithValueFormat"/> policy keeps its
-    /// own culture; call this before or after it, the authored format wins.
+    /// Numbers keep their value format; pass the culture to it as well, for example
+    /// <c>WithValueFormat(ChartValueFormat.Number("0.#", culture))</c>.
     /// </remarks>
     public Chart WithCulture(CultureInfo culture) {
         if (culture == null) throw new ArgumentNullException(nameof(culture));
-        var copy = CultureInfo.ReadOnly((CultureInfo)culture.Clone());
+        var copy = culture.Name.Length == 0 ? null : CultureInfo.ReadOnly((CultureInfo)culture.Clone());
         foreach (var axis in new[] { Options.XAxis, Options.YAxis, Options.SecondaryXAxis, Options.SecondaryYAxis }) axis.Culture = copy;
-        if (ReferenceEquals(Options.ValueFormat, ChartValueFormat.ExistingValue) || Options.ValueFormat.IsAutomatic)
-            Options.ValueFormat = ChartValueFormat.Automatic(copy);
         return this;
     }
 
@@ -50,8 +48,10 @@ public sealed partial class ChartOptions {
     public string? ValueUnit { get; set; }
 
     /// <summary>Appends <see cref="ValueUnit"/> to a formatted value: "%" and other symbols attach directly, words follow a space.</summary>
-    internal string WithUnit(string formatted) {
-        if (ValueUnit == null || formatted.Length == 0) return formatted;
-        return formatted + (ValueUnit.Length == 1 && !char.IsLetterOrDigit(ValueUnit[0]) ? ValueUnit : " " + ValueUnit);
+    internal string WithUnit(string formatted) => AppendUnit(formatted, ValueUnit);
+
+    internal static string AppendUnit(string formatted, string? unit) {
+        if (unit == null || formatted.Length == 0) return formatted;
+        return formatted + (unit.Length == 1 && !char.IsLetterOrDigit(unit[0]) ? unit : " " + unit);
     }
 }

@@ -34,7 +34,7 @@ internal static partial class VisualCartesianCompiler {
                 && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels,
                     comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount),
             allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations,
-            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis, length)) is { } timeTicks) {
+            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis)) is { } timeTicks) {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
