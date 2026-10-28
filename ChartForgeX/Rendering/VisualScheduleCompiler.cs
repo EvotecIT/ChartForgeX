@@ -60,8 +60,9 @@ internal static partial class VisualScheduleCompiler {
         using (builder.PushGroup("state-timeline", "state-timeline", Window(model.Min, model.Max))) {
             if (frame == null) Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, plot), model.FormatTick);
             if (frame == null && chart.Options.ShowAxes && chart.Options.YAxis.Visible) foreach (var group in model.Groups)
-                VisualStateSceneTools.Text(builder, group.Name, new ChartRect(viewport.Left, model.GroupTop(plot, group), plot.Right - viewport.Left, model.GroupHeight(plot, group)),
-                    VisualStateSceneTools.TickStyle(chart, context), "state-timeline-group", "state-group-" + VisualStateSceneTools.Number(group.Offset));
+                using (builder.PushGroup(null, null, group.Name.Length == 0 ? null : new Dictionary<string, string> { [ChartDomRoles.LaneGroupAttribute] = group.Name }))
+                    GroupHeader(chart, context, builder, group.Name, viewport.Left, plot.Right - viewport.Left, model.GroupTop(plot, group), model.GroupHeight(plot, group),
+                        ChartDomRoles.StateTimelineGroup, "state-group-" + VisualStateSceneTools.Number(group.Offset));
             for (var laneIndex = 0; laneIndex < model.Lanes.Count; laneIndex++) {
                 var lane = model.Lanes[laneIndex]; var series = chart.Series[lane.SeriesIndex];
                 var row = frame?.Row(lane.SeriesIndex);
@@ -69,14 +70,14 @@ internal static partial class VisualScheduleCompiler {
                     Math.Min(ChartStateTimelineModel.LaneBandMaximum, row.Value.Height * .72))) : Math.Max(0, model.LaneBand(plot));
                 var top = row.HasValue ? row.Value.Top + (row.Value.Height - band) / 2 : model.LaneTop(plot, laneIndex);
                 if (frame == null) builder.AddRegion(new VisualSemanticRegion("schedule-lane-" + lane.SeriesIndex, "schedule-lane", new ChartRect(plot.Left, top, plot.Width, band), lane.Name));
-                if (frame == null) LaneText(chart, context, builder, viewport, layout, lane.Name, lane.Summary, top, band, lane.SeriesIndex);
+                if (frame == null) LaneText(chart, context, builder, viewport, layout, lane.Name, lane.Summary, top, band, lane.SeriesIndex, lane.Group);
                 foreach (var segment in lane.Segments) {
                     var visible = model.TrySegmentSpan(segment, frame?.Projection ?? plot, out var left, out var width);
                     var bounds = visible ? new ChartRect(left, top, Math.Max(0, Math.Min(width, plot.Right - left)), band) : new ChartRect(plot.Left, top, 0, band);
                     if (visible) frame?.MarkSurfaces.Add(bounds);
                     var metadata = VisualStateSceneTools.StateMetadata(chart, segment.State);
                     metadata["data-cfx-series"] = lane.SeriesIndex.ToString(); metadata["data-cfx-point"] = segment.PointIndex.ToString();
-                    metadata["data-cfx-series-key"] = series.InteractionIdentityKey;
+                    metadata["data-cfx-series-key"] = series.InteractionIdentityKey; metadata[ChartDomRoles.LaneIdAttribute] = series.InteractionIdentityKey;
                     metadata["data-cfx-start"] = VisualStateSceneTools.Number(segment.Start); metadata["data-cfx-end"] = VisualStateSceneTools.Number(segment.End);
                     metadata["data-cfx-label"] = lane.Name + " · " + segment.State.Label;
                     metadata["data-cfx-meta-start"] = model.FormatInstant(segment.Start); metadata["data-cfx-meta-end"] = model.FormatInstant(segment.End);
@@ -85,9 +86,9 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-source-points"] = string.Join(",", segment.SourceIndices);
                     metadata["data-cfx-derived"] = "timeline-run";
                     var id = VisualStateSceneTools.SourceId(lane.SeriesIndex, segment.PointIndex);
-                    using (VisualStateSceneTools.Mark(builder, id, "state-timeline-segment", bounds, model.SegmentSummary(lane, segment), metadata)) {
+                    using (VisualStateSceneTools.Mark(builder, id, ChartDomRoles.StateTimelineSegment, bounds, model.SegmentSummary(lane, segment), metadata)) {
                         if (!visible) continue;
-                        using (builder.PushClip(plot)) VisualStateSceneTools.StateRect(builder, bounds, ChartStateMark.For(segment.State, backdrop), ChartStateTimelineModel.SegmentRadius, "state-timeline-segment-shape");
+                        using (builder.PushClip(plot)) VisualStateSceneTools.StateRect(builder, bounds, ChartStateMark.For(segment.State, backdrop), ChartStateTimelineModel.SegmentRadius, ChartDomRoles.StateTimelineSegmentShape);
                     }
                 }
             }
@@ -119,16 +120,19 @@ internal static partial class VisualScheduleCompiler {
         }
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
             if (frame == null) Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick);
+            string? currentGroup = null;
             for (var rowIndex = 0; rowIndex < model.Rows.Count; rowIndex++) {
                 var row = model.Rows[rowIndex]; var rowBounds = model.RowBounds(plot, rowIndex, tops);
                 if (row.IsGroup) {
-                    if (frame == null && chart.Options.ShowAxes && chart.Options.YAxis.Visible) VisualStateSceneTools.Text(builder, row.Name,
-                        new ChartRect(viewport.Left, rowBounds.Top, plot.Right - viewport.Left, rowBounds.Height),
-                        VisualStateSceneTools.TickStyle(chart, context), "gantt-lane-group", "gantt-lane-group-" + rowIndex);
+                    currentGroup = row.Name.Length == 0 ? null : row.Name;
+                    if (frame == null && chart.Options.ShowAxes && chart.Options.YAxis.Visible)
+                        using (builder.PushGroup(null, null, currentGroup == null ? null : new Dictionary<string, string> { [ChartDomRoles.LaneGroupAttribute] = currentGroup }))
+                            GroupHeader(chart, context, builder, row.Name, viewport.Left, plot.Right - viewport.Left, rowBounds.Top, rowBounds.Height,
+                                ChartDomRoles.GanttLaneGroup, "gantt-lane-group-" + rowIndex);
                     continue;
                 }
                 if (chart.Series[row.SeriesIndex].Kind != ChartSeriesKind.GanttLane) continue;
-                if (frame == null) LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, rowBounds.Top, rowBounds.Height, row.SeriesIndex);
+                if (frame == null) LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, rowBounds.Top, rowBounds.Height, row.SeriesIndex, currentGroup);
                 var series = chart.Series[row.SeriesIndex];
                 foreach (var placed in row.Items) {
                     var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);
@@ -136,14 +140,14 @@ internal static partial class VisualScheduleCompiler {
                     if (item.Visible) frame?.MarkSurfaces.Add(bounds);
                     var metadata = VisualStateSceneTools.StateMetadata(chart, placed.Category);
                     metadata["data-cfx-series"] = row.SeriesIndex.ToString(); metadata["data-cfx-point"] = placed.PointIndex.ToString();
-                    metadata["data-cfx-series-key"] = series.InteractionIdentityKey;
+                    metadata["data-cfx-series-key"] = series.InteractionIdentityKey; metadata[ChartDomRoles.LaneIdAttribute] = series.InteractionIdentityKey;
                     metadata["data-cfx-start"] = VisualStateSceneTools.Number(placed.Item.Start); metadata["data-cfx-end"] = VisualStateSceneTools.Number(placed.End);
                     metadata["data-cfx-meta-start"] = ChartTimeScale.FormatInstant(chart.Options.XAxis, placed.Item.Start);
                     metadata["data-cfx-meta-end"] = ChartTimeScale.FormatInstant(chart.Options.XAxis, placed.End);
                     metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(placed.End - placed.Item.Start);
                     if (!string.IsNullOrWhiteSpace(placed.Item.Detail)) metadata["data-cfx-meta-detail"] = placed.Item.Detail!;
                     metadata["data-cfx-open"] = placed.Item.IsOpen ? "true" : "false"; metadata["data-cfx-sub-row"] = placed.SubRow.ToString();
-                    using (VisualStateSceneTools.Mark(builder, id, "gantt-lane-item", bounds, model.ItemSummary(row, placed), metadata)) {
+                    using (VisualStateSceneTools.Mark(builder, id, ChartDomRoles.GanttLaneItem, bounds, model.ItemSummary(row, placed), metadata)) {
                         if (!item.Visible) continue;
                         var mark = ChartStateMark.For(placed.Category, backdrop);
                         using (builder.PushClip(plot)) {
@@ -164,6 +168,16 @@ internal static partial class VisualScheduleCompiler {
             if (frame == null && model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, projection), model.Now.Value);
         }
         builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
+    }
+
+    // The lane identity is the series identifier, so hosts that set ChartSeriesId can link lanes by their own keys.
+    private static Dictionary<string, string> LaneMetadata(Chart chart, int seriesIndex, string? group) {
+        var metadata = new Dictionary<string, string> {
+            [ChartDomRoles.LaneIdAttribute] = chart.Series[seriesIndex].InteractionIdentityKey,
+            ["data-cfx-series"] = seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+        if (!string.IsNullOrEmpty(group)) metadata[ChartDomRoles.LaneGroupAttribute] = group!;
+        return metadata;
     }
 
     private static Dictionary<string, string> Window(double min, double max) => new() {
