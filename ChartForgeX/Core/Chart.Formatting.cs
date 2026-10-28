@@ -28,7 +28,8 @@ public sealed partial class Chart {
     /// <summary>
     /// Sets the unit shown after values in tooltips, readouts and accessible names, for example "ms" or "%".
     /// </summary>
-    /// <remarks>Axis tick labels stay unit-free; put the unit in the axis title instead. An empty or null unit removes it.</remarks>
+    /// <remarks>Applies to cartesian, schedule and heatmap charts. A value format that already writes the unit keeps a single copy.
+    /// Axis tick labels stay unit-free; put the unit in the axis title instead. An empty or null unit removes it.</remarks>
     public Chart WithValueUnit(string? unit) {
         Options.ValueUnit = string.IsNullOrWhiteSpace(unit) ? null : unit!.Trim();
         return this;
@@ -47,11 +48,12 @@ public sealed partial class ChartOptions {
     /// <summary>Gets or sets the unit appended to values in tooltips, readouts and accessible names, or null for none.</summary>
     public string? ValueUnit { get; set; }
 
-    /// <summary>Appends <see cref="ValueUnit"/> to a formatted value: "%" and other symbols attach directly, words follow a space.</summary>
+    /// <summary>Appends <see cref="ValueUnit"/> to a formatted value: "%" and other symbols attach directly, words follow a space; a value that already ends with the unit is unchanged.</summary>
     internal string WithUnit(string formatted) => AppendUnit(formatted, ValueUnit);
 
     internal static string AppendUnit(string formatted, string? unit) {
-        if (unit == null || formatted.Length == 0) return formatted;
+        // A value format that already writes the unit ("12.5 ms") keeps a single copy.
+        if (unit == null || formatted.Length == 0 || formatted.TrimEnd().EndsWith(unit, StringComparison.Ordinal)) return formatted;
         return formatted + (unit.Length == 1 && !char.IsLetterOrDigit(unit[0]) ? unit : " " + unit);
     }
 }

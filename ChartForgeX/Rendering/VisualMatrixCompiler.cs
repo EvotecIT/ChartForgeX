@@ -13,9 +13,6 @@ internal static partial class VisualMatrixCompiler {
     // Largest theme corner radius as a share of a heatmap cell's shorter side.
     private const double MaximumThemeCellRounding = .2;
 
-    private static string ReadoutWithUnit(string formatted, string? unit) =>
-        unit == null || formatted.TrimEnd().EndsWith(unit, StringComparison.Ordinal) ? formatted : ChartOptions.AppendUnit(formatted, unit);
-
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
         chart.Options.ShowHeatmapCategoryLegend && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
             ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray()
@@ -113,7 +110,7 @@ internal static partial class VisualMatrixCompiler {
                         var fill = stateMark?.Surface ?? blend.Color;
                         var column = formatColumn(point.X);
                         // Readouts carry the chart's value unit; a format that already writes the unit ("0.0 'ms'") keeps a single copy.
-                        var readout = ReadoutWithUnit(presentation.Value(point.Y), chart.Options.ValueUnit);
+                        var readout = ChartOptions.AppendUnit(presentation.Value(point.Y), chart.Options.ValueUnit);
                         var label = categoryGroups == null ? series.Name + ", " + column + ": " + (state?.Label ?? readout)
                             : categoryGroups.Describe(rowIndex, columnIndex, series.Name, column) + ": " + (state?.Label ?? readout);
                         if (!string.IsNullOrWhiteSpace(cell?.Tooltip)) label += ". " + cell!.Value.Tooltip;

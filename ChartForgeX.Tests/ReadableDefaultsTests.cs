@@ -100,6 +100,33 @@ public sealed class ReadableDefaultsTests {
         Assert.Equal(expected, (string?)cell.Attribute("data-cfx-formatted-value"));
     }
 
+    [Theory]
+    [InlineData("0.0", "12.5 ms")]
+    [InlineData("0.0 'ms'", "12.5 ms")]
+    public void WithValueUnit_CalendarReadoutsKeepOneUnit(string format, string expected) {
+        var chart = Chart.Create().WithSize(600, 300).WithValueUnit("ms")
+            .AddCalendarHeatmap("Latency", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 10, 1), 12.5) })
+            .WithValueFormat(ChartValueFormat.Number(format, CultureInfo.InvariantCulture));
+
+        var day = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-cell").First(cell => (string?)cell.Attribute("data-cfx-empty") == "false");
+
+        Assert.EndsWith(": " + expected, (string?)day.Attribute("aria-label"));
+        Assert.Equal(expected, (string?)day.Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
+    public void WithValueUnit_CartesianFormatThatWritesTheUnitKeepsOneCopy() {
+        var chart = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").WithValueUnit("ms")
+            .WithValueFormat(ChartValueFormat.Number("0.0 'ms'", CultureInfo.InvariantCulture))
+            .AddLine("dc1", new[] { new ChartPoint(1, 12.5), new ChartPoint(2, 30) });
+
+        var svg = chart.ToSvg();
+
+        Assert.Contains("12.5 ms", svg);
+        Assert.DoesNotContain("ms ms", svg);
+        Assert.DoesNotContain("ms ms", svg);
+    }
+
     [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
