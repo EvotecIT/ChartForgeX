@@ -113,7 +113,9 @@ internal static partial class SmokeTests {
                     (int)System.Math.Floor(bounds.Width), (int)System.Math.Floor(bounds.Height), expected.R, expected.G, expected.B, 8) > 0,
                     "Native PNG must paint the contrasting contained caption.");
                 if (style == ChartBarStyle.Flat) {
-                    var role = paint == "series" || paint == "point" && label.Id!.Contains("-point-") ? SvgColorRole.Series : SvgColorRole.Status;
+                    // A derived total is a level, so it takes the series role; changes keep their status role unless painted.
+                    var role = paint == "series" || region.Role == "waterfall-total" || paint == "point" && label.Id!.Contains("-point-")
+                        ? SvgColorRole.Series : SvgColorRole.Status;
                     var variables = new SvgColorVariables().AddInk("--drawn-ink", fill, expected, role);
                     var svg = System.Xml.Linq.XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: variables)));
                     var text = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-source-id") == label.Id).Descendants()
