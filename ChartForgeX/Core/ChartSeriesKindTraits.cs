@@ -41,6 +41,12 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.PolarArea
     };
 
+    internal static bool IsSchedule(ChartSeriesKind kind) => kind is ChartSeriesKind.Timeline or ChartSeriesKind.Gantt
+        or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane;
+
+    internal static bool IsMixedSchedule(Chart chart) => chart.Series.Count > 1 && chart.Series.All(series => IsSchedule(series.Kind))
+        && chart.Series.Select(series => series.Kind).Distinct().Skip(1).Any();
+
     public static bool IsExclusive(ChartSeriesKind kind) => Array.IndexOf(ExclusiveKinds, kind) >= 0;
 
     /// <summary>Identifies the bounded category-angle/numeric-radius composition.</summary>

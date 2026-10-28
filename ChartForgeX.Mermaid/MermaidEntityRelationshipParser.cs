@@ -38,7 +38,7 @@ internal static partial class MermaidEntityRelationshipParser {
                 else subgraphs.Peek().Direction = direction;
                 continue;
             }
-            if (TryGroup(document, trimmed, span, subgraphs, result)) continue;
+            if (TryGroup(document, entities, trimmed, span, subgraphs, result)) continue;
             if (trimmed == "end") {
                 if (subgraphs.Count > 0) {
                     subgraphs.Pop();
@@ -52,7 +52,7 @@ internal static partial class MermaidEntityRelationshipParser {
             if (TryStyle(document, entities, trimmed, span, result)) continue;
 
             if (trimmed.EndsWith("{", StringComparison.Ordinal)) {
-                activeEntity = EnsureEntity(document, entities, trimmed.Substring(0, trimmed.Length - 1).Trim(), span, result);
+                activeEntity = EnsureEntity(document, entities, trimmed.Substring(0, trimmed.Length - 1).Trim(), span, result, allowGroupEndpoint: false);
                 GroupMember(activeEntity, subgraphs);
                 activeEntityOpening = span;
                 continue;
@@ -78,6 +78,12 @@ internal static partial class MermaidEntityRelationshipParser {
         ResolveGroupEndpoints(document, result);
         if (document.Entities.Count == 0 && document.Relationships.Count == 0 && document.Groups.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid ER diagrams require at least one entity, group or relationship.");
         ApplyStyles(document);
+        foreach (var node in document.Entities) {
+            MermaidInlineCaption.Diagnose(node.Label ?? node.Id, document.CaptionSpans.TryGetValue(node.Id, out var replaced) ? replaced : node.Span, result, "ER", markdownByDefault: true);
+            foreach (var attribute in node.Attributes) if (attribute.Comment != null) MermaidInlineCaption.Diagnose(attribute.Comment, attribute.Span, result, "ER", markdownByDefault: true);
+        }
+        foreach (var group in document.Groups) MermaidInlineCaption.Diagnose(group.Label, group.Span, result, "ER", markdownByDefault: true);
+        foreach (var relationship in document.Relationships) MermaidInlineCaption.Diagnose(relationship.Label, relationship.Span, result, "ER", markdownByDefault: true);
     }
 
     private static bool TryParseRelationship(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
@@ -126,7 +132,7 @@ internal static partial class MermaidEntityRelationshipParser {
         entity.Attributes.Add(new MermaidEntityAttribute(type, name, key, comment, span));
     }
 
-    private static MermaidEntityNode? EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static MermaidEntityNode? EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, bool allowGroupEndpoint = true) {
         var original = id;
         var missingAliasIdentity = id.TrimStart().StartsWith("[", StringComparison.Ordinal);
         id = ReadInlineClasses(id, out var classes);
@@ -146,13 +152,20 @@ internal static partial class MermaidEntityRelationshipParser {
                 "ER declarations require an identity before aliases or inline classes.", MermaidDiagnosticCodes.InvalidStatement);
             return null;
         }
+        var group = document.Groups.Find(candidate => candidate.Id == id);
+        if (allowGroupEndpoint && group != null && label == null) {
+            MermaidResourceGuard.ReserveElements(classes.Count, span);
+            group.Classes.AddRange(classes);
+            return null;
+        }
         if (entities.TryGetValue(id, out var existing)) {
-            if (label != null) existing.Label = label;
+            if (label != null) { existing.Label = label; document.CaptionSpans[id] = span; }
             existing.Classes.AddRange(classes);
             return existing;
         }
         var entity = new MermaidEntityNode(id, span);
         entity.Label = label;
+        if (label != null) document.CaptionSpans[id] = span;
         entity.Classes.AddRange(classes);
         entities.Add(id, entity);
         document.Entities.Add(entity);

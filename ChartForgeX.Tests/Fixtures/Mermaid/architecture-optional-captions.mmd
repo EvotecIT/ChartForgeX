@@ -1,0 +1,11 @@
+architecture-beta
+group root(cloud)
+group inner(server) in root
+group facts(database)[Facts] in inner
+service web(server) in root
+service worker(cloud) in inner
+service store(database)[Orders] in facts
+service plain[Plain]
+web:R --> L:worker
+worker:B --> T:store
+store{group}:R --> L:plain

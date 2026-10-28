@@ -5,11 +5,22 @@ namespace ChartForgeX.VisualArtifacts;
 
 internal static partial class VisualArtifactInterchangeJson {
     private static void ArtifactSemantics(VisualArtifactInterchangeJsonWriter writer, VisualArtifactInterchangeEnvelope envelope) {
+        Railroad(writer, envelope.Railroad);
+        TreeView(writer, envelope.TreeView);
+        Journey(writer, envelope.Journey);
+        Timeline(writer, envelope.Timeline);
+        Waterfall(writer, envelope.Waterfall);
         if (envelope.Topology != null) {
             writer.Property("topology");
             writer.StartObject();
             String(writer, "layoutMode", envelope.Topology.LayoutMode.ToString());
             String(writer, "layoutDirection", envelope.Topology.LayoutDirection.ToString());
+            ViewportPadding(writer, envelope.Topology.ViewportPadding);
+            ContentClip(writer, envelope.Topology.ContentClip);
+            TopologyHierarchy(writer, envelope.Topology.Hierarchy);
+            TopologyAlignments(writer, envelope.Topology.Alignments);
+            TopologyPaths(writer, envelope.Topology.PathDecorations);
+            CrossingPaint(writer, envelope.Topology.CrossingPaint);
             writer.EndObject();
         }
         if (envelope.Flow != null) {
@@ -17,11 +28,13 @@ internal static partial class VisualArtifactInterchangeJson {
             writer.StartObject();
             String(writer, "layoutMode", envelope.Flow.LayoutMode.ToString());
             String(writer, "layoutDirection", envelope.Flow.LayoutDirection.ToString());
+            ViewportPadding(writer,envelope.Flow.ViewportPadding);OptionalNumber(writer,"exportFormats",envelope.Flow.ExportFormats.HasValue?(int)envelope.Flow.ExportFormats.Value:(int?)null);
             writer.EndObject();
         }
         if (envelope.Sequence != null) {
             writer.Property("sequence");
             writer.StartObject();
+            SequencePresentation(writer, envelope.Sequence);
             writer.EndObject();
         }
     }
@@ -33,6 +46,10 @@ internal static partial class VisualArtifactInterchangeJson {
         Theme(writer, presentation.Theme);
         MapViewport(writer, presentation.MapViewport);
         Legend(writer, presentation.Legend);
+        CapturedEffects(writer, presentation.CapturedEffects);
+        TurbulenceSource(writer, presentation.TurbulenceSource);
+        TopologyCaptions(writer, presentation.TopologyCaptions);
+        DiagramContext(writer,presentation);
         writer.EndObject();
     }
 
@@ -53,6 +70,12 @@ internal static partial class VisualArtifactInterchangeJson {
         String(writer, "unknown", theme.Unknown);
         String(writer, "disabled", theme.Disabled);
         String(writer, "fontFamily", theme.FontFamily);
+        OptionalNumber(writer, "titleSize", theme.TitleSize);
+        OptionalNumber(writer, "dataLabelSize", theme.DataLabelSize);
+        OptionalNumber(writer, "subtitleSize", theme.SubtitleSize);
+        OptionalNumber(writer, "legendSize", theme.LegendSize);
+        if (theme.Definition != null) String(writer, "themeJson", theme.Definition.ToJson());
+        if (theme.Mode.HasValue) String(writer, "themeMode", theme.Mode.Value.ToString());
         writer.EndObject();
     }
 
@@ -98,7 +121,11 @@ internal static partial class VisualArtifactInterchangeJson {
         if (topology == null) return;
         writer.Property("topology");
         writer.StartObject();
+        SurfacePaint(writer,topology.StrokeWidth,topology.Opacity,topology.SurfaceOpacity,topology.DashPattern);
+        CaptionRuns(writer, "labelRuns", topology.LabelContent);
+        DetailTextStyle(writer, topology.TextStyle);
         OptionalString(writer, "parentGroupId", topology.ParentGroupId);
+        if (!topology.ShowLabel) Boolean(writer, "showLabel", false);
         if (topology.Presentation != ChartForgeX.Topology.TopologyGroupPresentation.Container)
             String(writer, "presentation", topology.Presentation.ToString());
         OptionalString(writer, "layoutDirection", topology.LayoutDirection?.ToString());
@@ -116,18 +143,35 @@ internal static partial class VisualArtifactInterchangeJson {
         if (topology == null) return;
         writer.Property("topology");
         writer.StartObject();
+        OptionalEnum(writer, "captionPlacement", topology.CaptionPlacement);
+        OptionalEnum(writer, "captionSurface", topology.CaptionSurface);
+        OptionalNumber(writer, "captionGap", topology.CaptionGap);
+        OptionalNumber(writer, "glyphScale", topology.GlyphScale);
+        OptionalNumber(writer, "cornerRadius", topology.CornerRadius);
+        DetailTextStyle(writer, topology.CaptionTextStyle, "captionTextStyle");
+        OptionalString(writer, "borderColor", topology.BorderColor);
+        PreparedNodeBasis(writer, topology.PreparedNodeBasis);
+        SurfaceElements(writer, topology.SurfaceElementAppearance);
+        SurfacePaint(writer,topology.StrokeWidth,topology.Opacity,topology.SurfaceOpacity,topology.DashPattern);
+        CaptionRuns(writer, "labelRuns", topology.LabelContent);
+        DetailTextStyle(writer, topology.SubtitleTextStyle, "subtitleTextStyle");
+        DetailTextStyle(writer, topology.TextStyle);
         String(writer, "kind", topology.Kind.ToString());
         OptionalNumber(writer, "paletteIndex", topology.PaletteIndex);
         String(writer, "status", topology.Status.ToString());
         String(writer, "displayMode", topology.DisplayMode.ToString());
         OptionalString(writer, "shape", topology.Shape?.ToString());
+        OptionalString(writer, "iconShape", topology.IconShape?.ToString());
         if (topology.FitLabelToContent) Boolean(writer, "fitLabelToContent", true);
         OptionalNumber(writer, "longitude", topology.Longitude);
         OptionalNumber(writer, "latitude", topology.Latitude);
         Boolean(writer, "showStatusBadge", topology.ShowStatusBadge);
         if (!topology.ShowLabel) Boolean(writer, "showLabel", false);
         OptionalNumber(writer, "maximumLabelCharacters", topology.MaximumLabelCharacters);
+        OptionalNumber(writer, "maximumTextWidth", topology.MaximumTextWidth);
+        OptionalNumber(writer, "contentPadding", topology.ContentPadding);
         Artwork(writer, topology.Artwork);
+        TableContent(writer, topology.TableContent);
         writer.EndObject();
     }
 
@@ -149,6 +193,14 @@ internal static partial class VisualArtifactInterchangeJson {
         if (topology == null) return;
         writer.Property("topology");
         writer.StartObject();
+        OptionalString(writer, "labelBackgroundColor", topology.LabelBackgroundColor);
+        CaptionRuns(writer, "labelRuns", topology.LabelContent);
+        DetailTextStyle(writer, topology.TextStyle);
+        PathGeometry(writer, topology.PathGeometry);
+        OptionalEnum(writer, "interpolation", topology.Interpolation); OptionalNumber(writer, "interpolationCornerBlendLength", topology.InterpolationCornerBlendLength);
+        PreparedEdgePlan(writer, topology.PreparedEdgePlan);
+        LabelPosition(writer, topology.LabelPosition);
+        MarkerStyle(writer, "sourceMarkerStyle", topology.SourceMarkerStyle); MarkerStyle(writer, "targetMarkerStyle", topology.TargetMarkerStyle);
         String(writer, "kind", topology.Kind.ToString());
         OptionalNumber(writer, "paletteIndex", topology.PaletteIndex);
         String(writer, "status", topology.Status.ToString());
@@ -199,6 +251,7 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.StartObject();
         String(writer, "kind", flow.Kind.ToString());
         Boolean(writer, "fitLabelToContent", flow.FitLabelToContent);
+        OptionalNumber(writer,"authoredWidth",flow.AuthoredWidth);OptionalNumber(writer,"authoredHeight",flow.AuthoredHeight);
         writer.EndObject();
     }
 
@@ -215,8 +268,13 @@ internal static partial class VisualArtifactInterchangeJson {
         if (sequence == null) return;
         writer.Property("sequence");
         writer.StartObject();
+        OptionalString(writer,"stereotype",sequence.Stereotype);OptionalString(writer,"symbol",sequence.Symbol);
+        OptionalNumber(writer,"minimumWidth",sequence.MinimumWidth);OptionalString(writer,"fill",sequence.Fill);
+        DropShadow(writer,"surfaceShadow",sequence.SurfaceShadow);
+        OptionalString(writer,"border",sequence.Border);OptionalString(writer,"activationFill",sequence.ActivationFill);OptionalString(writer,"activationBorder",sequence.ActivationBorder);
         String(writer, "kind", sequence.Kind.ToString());
         Number(writer, "order", sequence.Order);
+        SequenceNavigation(writer,sequence.NavigationLinks);
         Boolean(writer, "implicit", sequence.IsImplicit);
         OptionalNumber(writer, "createdAtMessageIndex", sequence.CreatedAtMessageIndex);
         OptionalNumber(writer, "destroyedAtMessageIndex", sequence.DestroyedAtMessageIndex);
@@ -250,42 +308,65 @@ internal static partial class VisualArtifactInterchangeJson {
 
     private static VisualArtifactInterchangeTopologyArtifact? ReadTopologyArtifact(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "topology");
-        return item == null ? null : new VisualArtifactInterchangeTopologyArtifact {
+        if (item == null) return null;
+        var result = new VisualArtifactInterchangeTopologyArtifact {
             LayoutMode = RequiredEnum<ChartForgeX.Topology.TopologyLayoutMode>(item, "layoutMode"),
-            LayoutDirection = RequiredEnum<ChartForgeX.Topology.TopologyLayoutDirection>(item, "layoutDirection")
+            LayoutDirection = RequiredEnum<ChartForgeX.Topology.TopologyLayoutDirection>(item, "layoutDirection"),
+            ViewportPadding = ReadViewportPadding(item),
+            ContentClip = ReadContentClip(item),
+            Hierarchy = ReadTopologyHierarchy(item),
+            CrossingPaint = ReadCrossingPaint(item)
         };
+        ReadTopologyAlignments(item, result.Alignments);
+        ReadTopologyPaths(item, result.PathDecorations);
+        return result;
     }
 
     private static VisualArtifactInterchangeFlowArtifact? ReadFlowArtifact(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "flow");
         return item == null ? null : new VisualArtifactInterchangeFlowArtifact {
             LayoutMode = RequiredEnum<FlowArtifactLayoutMode>(item, "layoutMode"),
-            LayoutDirection = RequiredEnum<FlowArtifactDirection>(item, "layoutDirection")
+            LayoutDirection = RequiredEnum<FlowArtifactDirection>(item, "layoutDirection"), ViewportPadding=ReadViewportPadding(item),
+            ExportFormats=OptionalInt(item,"exportFormats") is int formats?(VisualArtifactExportFormat)formats:null
         };
     }
 
-    private static VisualArtifactInterchangeSequenceArtifact? ReadSequenceArtifact(Dictionary<string, GeoJsonValue> root) =>
-        OptionalObject(root, "sequence") == null ? null : new VisualArtifactInterchangeSequenceArtifact();
+    private static VisualArtifactInterchangeSequenceArtifact? ReadSequenceArtifact(Dictionary<string, GeoJsonValue> root) {
+        var item = OptionalObject(root, "sequence");
+        return item == null ? null : new VisualArtifactInterchangeSequenceArtifact {
+            LifelineStroke=ReadSequenceLifelineStroke(item),
+            NoteShadow = ReadDropShadow(item,"noteShadow"),
+            FragmentTabShadow = ReadDropShadow(item,"fragmentTabShadow"),
+            BackgroundShadow = ReadDropShadow(item,"backgroundShadow"), Layout = ReadSequenceLayout(item), Typography = ReadSequenceTypography(item),
+            Theme = OptionalString(item,"themeJson") is string theme ? ChartForgeX.Themes.VisualTheme.FromJson(theme) : null,
+            ThemeMode = OptionalEnum<ChartForgeX.Themes.VisualThemeMode>(item,"themeMode") };
+    }
 
     private static VisualArtifactInterchangePresentation? ReadPresentation(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "presentation");
         if (item == null) return null;
-        return new VisualArtifactInterchangePresentation {
+        var presentation = new VisualArtifactInterchangePresentation {
+            TurbulenceSource = ReadTurbulenceSource(item),
             Theme = ReadTheme(item),
             MapViewport = ReadMapViewport(item),
-            Legend = ReadLegend(item)
+            Legend = ReadLegend(item), TopologyCaptions = ReadTopologyCaptions(item), Frame = null
         };
+        ReadDiagramContext(item,presentation);
+        ReadCapturedEffects(item, presentation.CapturedEffects);
+        return presentation;
     }
 
     private static VisualArtifactInterchangeTheme? ReadTheme(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "theme");
         if (item == null) return null;
         return new VisualArtifactInterchangeTheme {
+            Definition = OptionalString(item, "themeJson") is string definition ? ChartForgeX.Themes.VisualTheme.FromJson(definition) : null,
+            Mode = OptionalEnum<ChartForgeX.Themes.VisualThemeMode>(item, "themeMode"),
             Background = RequiredString(item, "background"), Foreground = RequiredString(item, "foreground"),
             MutedForeground = RequiredString(item, "mutedForeground"), Card = RequiredString(item, "card"),
             Surface = RequiredString(item, "surface"), Border = RequiredString(item, "border"), Accent = RequiredString(item, "accent"),
             Healthy = RequiredString(item, "healthy"), Warning = RequiredString(item, "warning"), Critical = RequiredString(item, "critical"),
-            Unknown = RequiredString(item, "unknown"), Disabled = RequiredString(item, "disabled"), FontFamily = RequiredString(item, "fontFamily")
+            Unknown = RequiredString(item, "unknown"), Disabled = RequiredString(item, "disabled"), FontFamily = RequiredString(item, "fontFamily"), TitleSize = OptionalNumber(item, "titleSize"), DataLabelSize = OptionalNumber(item, "dataLabelSize"), SubtitleSize = OptionalNumber(item, "subtitleSize"), LegendSize = OptionalNumber(item, "legendSize")
         };
     }
 
@@ -324,8 +405,12 @@ internal static partial class VisualArtifactInterchangeJson {
     private static VisualArtifactInterchangeTopologyGroup? ReadTopologyGroup(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "topology");
         if (item == null) return null;
-        return new VisualArtifactInterchangeTopologyGroup {
+        var result=new VisualArtifactInterchangeTopologyGroup {
+            StrokeWidth=OptionalNumber(item,"strokeWidth"),Opacity=OptionalNumber(item,"opacity"),SurfaceOpacity=OptionalNumber(item,"surfaceOpacity"),
+            LabelContent = ReadCaptionRuns(item, "labelRuns"),
+            TextStyle = ReadDetailTextStyle(item),
             ParentGroupId = OptionalString(item, "parentGroupId"),
+            ShowLabel = OptionalBool(item, "showLabel") ?? true,
             Presentation = OptionalEnum<ChartForgeX.Topology.TopologyGroupPresentation>(item, "presentation") ?? ChartForgeX.Topology.TopologyGroupPresentation.Container,
             LayoutDirection = OptionalEnum<ChartForgeX.Topology.TopologyLayoutDirection>(item, "layoutDirection"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
@@ -334,23 +419,38 @@ internal static partial class VisualArtifactInterchangeJson {
             Longitude = OptionalNumber(item, "longitude"), Latitude = OptionalNumber(item, "latitude"),
             IconId = OptionalString(item, "iconId"), Symbol = OptionalString(item, "symbol")
         };
+        ReadSurfaceDash(item,result.DashPattern);return result;
     }
 
     private static VisualArtifactInterchangeTopologyNode? ReadTopologyNode(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "topology");
         if (item == null) return null;
-        return new VisualArtifactInterchangeTopologyNode {
+        var result=new VisualArtifactInterchangeTopologyNode {
+            CaptionPlacement = OptionalEnum<ChartForgeX.Topology.TopologyCaptionPlacement>(item, "captionPlacement"),
+            CaptionSurface = OptionalEnum<ChartForgeX.Topology.TopologyCaptionSurface>(item, "captionSurface"),
+            BorderColor = OptionalString(item, "borderColor"),
+            CaptionTextStyle = ReadDetailTextStyle(item, "captionTextStyle"),
+            CaptionGap = OptionalNumber(item, "captionGap"), GlyphScale = OptionalNumber(item, "glyphScale"), CornerRadius = OptionalNumber(item, "cornerRadius"),
+            StrokeWidth=OptionalNumber(item,"strokeWidth"),Opacity=OptionalNumber(item,"opacity"),SurfaceOpacity=OptionalNumber(item,"surfaceOpacity"),
+            PreparedNodeBasis = ReadPreparedNodeBasis(item),
+            SurfaceElementAppearance = ReadSurfaceElements(item),
+            LabelContent = ReadCaptionRuns(item, "labelRuns"),
+            SubtitleTextStyle = ReadDetailTextStyle(item, "subtitleTextStyle"),
+            TableContent = ReadTableContent(item),
+            TextStyle = ReadDetailTextStyle(item),
             Kind = RequiredEnum<ChartForgeX.Topology.TopologyNodeKind>(item, "kind"),
             PaletteIndex = OptionalInt(item, "paletteIndex"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
             DisplayMode = RequiredEnum<ChartForgeX.Topology.TopologyNodeDisplayMode>(item, "displayMode"),
             Shape = OptionalEnum<ChartForgeX.Topology.TopologyNodeShape>(item, "shape"),
+            IconShape = OptionalEnum<ChartForgeX.Topology.TopologyIconShape>(item, "iconShape"),
             FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? false,
             Longitude = OptionalNumber(item, "longitude"), Latitude = OptionalNumber(item, "latitude"),
             ShowStatusBadge = OptionalBool(item, "showStatusBadge") ?? true,
             ShowLabel = OptionalBool(item, "showLabel") ?? true,
-            MaximumLabelCharacters = OptionalInt(item, "maximumLabelCharacters"), Artwork = ReadArtwork(item)
+            MaximumLabelCharacters = OptionalInt(item, "maximumLabelCharacters"), MaximumTextWidth = OptionalNumber(item, "maximumTextWidth"), ContentPadding = OptionalNumber(item, "contentPadding"), Artwork = ReadArtwork(item)
         };
+        ReadSurfaceDash(item,result.DashPattern);return result;
     }
 
     private static VisualArtifactInterchangeArtwork? ReadArtwork(Dictionary<string, GeoJsonValue> root) {
@@ -368,6 +468,13 @@ internal static partial class VisualArtifactInterchangeJson {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "topology");
         if (item == null) return null;
         var result = new VisualArtifactInterchangeTopologyEdge {
+            LabelBackgroundColor = OptionalString(item, "labelBackgroundColor"),
+            PathGeometry = ReadPathGeometry(item), PreparedEdgePlan = ReadPreparedEdgePlan(item),
+            Interpolation = OptionalEnum<ChartForgeX.Topology.TopologyEdgeInterpolation>(item, "interpolation"), InterpolationCornerBlendLength = OptionalNumber(item, "interpolationCornerBlendLength"),
+            LabelPosition = ReadLabelPosition(item),
+            SourceMarkerStyle = ReadMarkerStyle(item, "sourceMarkerStyle"), TargetMarkerStyle = ReadMarkerStyle(item, "targetMarkerStyle"),
+            LabelContent = ReadCaptionRuns(item, "labelRuns"),
+            TextStyle = ReadDetailTextStyle(item),
             Kind = RequiredEnum<ChartForgeX.Topology.TopologyEdgeKind>(item, "kind"),
             PaletteIndex = OptionalInt(item, "paletteIndex"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
@@ -401,7 +508,8 @@ internal static partial class VisualArtifactInterchangeJson {
     private static VisualArtifactInterchangeFlowNode? ReadFlowNode(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "flow");
         return item == null ? null : new VisualArtifactInterchangeFlowNode {
-            Kind = RequiredEnum<FlowArtifactStepKind>(item, "kind"), FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? true
+            Kind = RequiredEnum<FlowArtifactStepKind>(item, "kind"), FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? true,
+            AuthoredWidth=OptionalNumber(item,"authoredWidth"),AuthoredHeight=OptionalNumber(item,"authoredHeight")
         };
     }
 
@@ -415,13 +523,18 @@ internal static partial class VisualArtifactInterchangeJson {
 
     private static VisualArtifactInterchangeSequenceNode? ReadSequenceNode(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "sequence");
-        return item == null ? null : new VisualArtifactInterchangeSequenceNode {
+        if(item==null)return null;
+        var node=new VisualArtifactInterchangeSequenceNode {
+            Stereotype=OptionalString(item,"stereotype"),Symbol=OptionalString(item,"symbol"),MinimumWidth=OptionalNumber(item,"minimumWidth"),Fill=OptionalString(item,"fill"),
+            SurfaceShadow = ReadDropShadow(item,"surfaceShadow"),Border=OptionalString(item,"border"),ActivationFill=OptionalString(item,"activationFill"),ActivationBorder=OptionalString(item,"activationBorder"),
             Kind = RequiredEnum<SequenceArtifactParticipantKind>(item, "kind"),
             Order = OptionalInt(item, "order") ?? 0,
             IsImplicit = OptionalBool(item, "implicit") ?? false,
             CreatedAtMessageIndex = OptionalInt(item, "createdAtMessageIndex"),
             DestroyedAtMessageIndex = OptionalInt(item, "destroyedAtMessageIndex")
         };
+        ReadSequenceNavigation(item,node.NavigationLinks);
+        return node;
     }
 
     private static VisualArtifactInterchangeSequenceEdge? ReadSequenceEdge(Dictionary<string, GeoJsonValue> root) {

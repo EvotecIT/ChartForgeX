@@ -12,8 +12,9 @@ internal static class VisualChartCompiler {
     internal static VisualChartFamily Family(Chart chart) {
         if (chart.Series.All(series => VisualCartesianCompiler.Supports(series.Kind))) return VisualChartFamily.Cartesian;
         if (ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart)) return VisualChartFamily.NumericRadial;
-        if (chart.Series.All(series => ChartMapComposition.IsGeographic(series.Kind))) return VisualChartFamily.Map;
+        if (chart.Series.All(series => ChartMapComposition.IsMap(series.Kind))) return VisualChartFamily.Map;
         if (chart.Series.All(series => ChartSeriesKindTraits.IsPieLikeKind(series.Kind))) return VisualChartFamily.Radial;
+        if (ChartSeriesKindTraits.IsMixedSchedule(chart)) return VisualChartFamily.Schedule;
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("These chart families cannot share one coordinate system.");
         return kind switch {
@@ -71,7 +72,7 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.Schedule: VisualScheduleCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map, mapLegendInset, colorScales); break;
             case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content, colorScales); break;
-            case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content, colorScales); break;
             case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content, colorScales); break;
             default: VisualSpecialtyCompiler.Build(chart, context, builder, content); break;
         }

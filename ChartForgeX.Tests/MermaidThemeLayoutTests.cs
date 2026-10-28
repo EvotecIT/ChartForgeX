@@ -25,26 +25,30 @@ public sealed class MermaidThemeLayoutTests {
     [InlineData(true, "dark", VisualThemeMode.Dark)]
     [InlineData(true, "DARK", VisualThemeMode.Dark)]
     [InlineData(true, "unknown", VisualThemeMode.Light)]
-    public void SourceThemeKeepsThePairedGraphiteThemeAndEmittedLayout(bool packet, string sourceTheme, VisualThemeMode expectedMode) {
+    public void SourceThemeKeepsNativePaletteAndEmittedLayoutWhileSelectingFiniteColorRoles(bool packet, string sourceTheme, VisualThemeMode expectedMode) {
         var body = packet ? Packet : Timeline;
         var baseline = Render(body);
         var rendered = Render("%%{init: {'theme':'" + sourceTheme + "'}}%%\n" + body, sourceTheme == "unknown");
         var (baselineTheme, _) = Presentation(baseline, packet);
         var (theme, mode) = Presentation(rendered, packet);
-        var expected = VisualTheme.Graphite().Resolve(expectedMode);
-
-        Assert.Equal(baselineTheme.ToJson(), theme.ToJson());
-        Assert.Equal(VisualTheme.Graphite().ToJson(), theme.ToJson());
+        var native = VisualTheme.Graphite().Resolve(expectedMode);
+        // Literal named presets materialize their finite common color roles; legacy native-mode
+        // aliases and unknown names retain their existing fallback palette and diagnostics.
+        var named = sourceTheme is "default" or "dark";
+        var background = named ? ChartForgeX.Primitives.ChartColor.FromHex(sourceTheme == "dark" ? "#333333" : "#FFFFFF") : native.Background;
+        var foreground = named ? ChartForgeX.Primitives.ChartColor.FromHex(sourceTheme == "dark" ? "#E0DFDF" : "#131300") : native.Foreground;
+        if (!named) Assert.Equal(baselineTheme.ToJson(), theme.ToJson());
         Assert.Equal(expectedMode, mode);
-        Assert.Equal(expected.Background, theme.Resolve(mode).Background);
-        Assert.Equal(expected.Foreground, theme.Resolve(mode).Foreground);
-        Assert.Equal(expected.Palette, theme.Resolve(mode).Palette);
+        Assert.Equal(background, theme.Resolve(mode).Background);
+        Assert.Equal(foreground, theme.Resolve(mode).Foreground);
+        Assert.Equal(native.Palette, theme.Resolve(mode).Palette);
 
         var baselineSvg = XDocument.Parse(baseline.ToSvg());
         var svg = XDocument.Parse(rendered.ToSvg());
         Assert.Equal(Geometry(baselineSvg), Geometry(svg));
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" &&
-            element.Attribute("fill")?.Value == expected.Foreground.ToHex());
+            element.Attribute("fill")?.Value == foreground.ToHex());
+        if (!packet) Assert.Equal(named, svg.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "visual-background"));
     }
 
     private static VisualArtifact Render(string source, bool unsupported = false) {
@@ -69,7 +73,9 @@ public sealed class MermaidThemeLayoutTests {
         return (timeline.Options.Theme, timeline.Options.ThemeMode);
     }
 
-    private static string[] Geometry(XDocument svg) => svg.Root!.DescendantsAndSelf().Select(element =>
+    // A requested source canvas adds one paint-only background; all content/frame/text geometry stays exact.
+    private static string[] Geometry(XDocument svg) => svg.Root!.DescendantsAndSelf()
+        .Where(element => (string?)element.Attribute("data-cfx-role") != "visual-background").Select(element =>
         element.Name.LocalName + "|" + string.Join("|", element.Attributes()
             .Where(attribute => GeometryAttributes.Contains(attribute.Name.LocalName))
             .OrderBy(attribute => attribute.Name.LocalName, StringComparer.Ordinal)

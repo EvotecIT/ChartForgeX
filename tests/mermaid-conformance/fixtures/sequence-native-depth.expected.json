@@ -1,0 +1,47 @@
+{
+  "participants": [
+    "API",
+    "DB",
+    "Client"
+  ],
+  "messages": [
+    [
+      "Client",
+      "API",
+      "Submit<br/>request"
+    ],
+    [
+      "API",
+      "DB",
+      "Read policy"
+    ],
+    [
+      "DB",
+      "API",
+      "Policy"
+    ],
+    [
+      "API",
+      "Client",
+      "Complete"
+    ]
+  ],
+  "configuration": {
+    "sequence.showSequenceNumbers": true,
+    "themeVariables.actorBkg": "#e3efff",
+    "themeVariables.signalColor": "#276749"
+  },
+  "peerVisibleText": [
+    "Native",
+    "API",
+    "Data store",
+    "Delivery path",
+    "Read policy",
+    "Cache fallback",
+    "Receipt path",
+    "cached policy",
+    "for receipt",
+    "Stored",
+    "record"
+  ]
+}

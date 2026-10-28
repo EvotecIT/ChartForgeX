@@ -6,8 +6,12 @@ namespace ChartForgeX.VisualArtifacts;
 /// <summary>Maps topology presentation semantics into the reusable visual artifact interchange contract.</summary>
 public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTopologyGroup MapGroupPresentation(TopologyGroup group) {
-        return new VisualArtifactInterchangeTopologyGroup {
+        var mapped=new VisualArtifactInterchangeTopologyGroup {
+            StrokeWidth=group.StrokeWidth,Opacity=group.Opacity,SurfaceOpacity=group.SurfaceOpacity,
+            LabelContent = group.LabelContent.IsStructured ? group.LabelContent : null,
             Status = group.Status,
+            TextStyle = group.TextStyle?.Clone(),
+            ShowLabel = group.ShowLabel,
             Presentation = group.Presentation,
             LayoutDirection = group.LayoutDirection,
             IconId = group.IconId,
@@ -17,15 +21,27 @@ public static partial class VisualArtifactInterchangeMapping {
             Longitude = group.Longitude,
             Latitude = group.Latitude
         };
+        mapped.DashPattern.AddRange(group.DashPattern);return mapped;
     }
 
     private static VisualArtifactInterchangeTopologyNode MapNodePresentation(TopologyNode node, TopologyNodeDisplayMode displayMode, bool showStatusBadge) {
-        return new VisualArtifactInterchangeTopologyNode {
+        var mapped=new VisualArtifactInterchangeTopologyNode {
+            CaptionPlacement=node.CaptionPlacement,CaptionSurface=node.CaptionSurface,CaptionGap=node.CaptionGap,
+            GlyphScale=node.GlyphScale,CornerRadius=node.CornerRadius,CaptionTextStyle=node.CaptionTextStyle?.Clone(),
+            BorderColor=node.BorderColor,StrokeWidth=node.StrokeWidth,Opacity=node.Opacity,SurfaceOpacity=node.SurfaceOpacity,
+            PreparedNodeBasis = TopologyPreparedNodeBasis.Resolve(node),
+            SurfaceElementAppearance = TopologySurfaceElementAppearance.Resolve(node),
             Kind = node.Kind,
+            TableContent = MapTableContent(node.TableContent),
+            TextStyle = node.TextStyle?.Clone(),
+            SubtitleTextStyle = node.SubtitleTextStyle?.Clone(),
+            LabelContent = node.LabelContent.IsStructured ? node.LabelContent : null,
+            MaximumTextWidth = node.MaximumTextWidth,
+            ContentPadding = node.ContentPadding,
             PaletteIndex = node.PaletteIndex,
             Status = node.Status,
             DisplayMode = displayMode,
-            Shape = node.Shape,
+            Shape = node.Shape, IconShape = node.IconShape,
             FitLabelToContent = node.FitLabelToContent,
             Artwork = MapArtwork(node.Artwork),
             Longitude = node.Longitude,
@@ -34,11 +50,18 @@ public static partial class VisualArtifactInterchangeMapping {
             ShowLabel = node.ShowLabel,
             MaximumLabelCharacters = node.MaximumLabelCharacters
         };
+        mapped.DashPattern.AddRange(node.DashPattern);return mapped;
     }
 
     private static VisualArtifactInterchangeTopologyEdge MapEdgePresentation(TopologyEdge edge, InterchangeIdScope ids) {
         var mapped = new VisualArtifactInterchangeTopologyEdge {
+            LabelBackgroundColor = edge.LabelBackgroundColor,
+            LabelContent = edge.LabelContent?.IsStructured == true ? edge.LabelContent : null,
             Kind = edge.Kind,
+            PathGeometry = edge.PathGeometry, Interpolation = edge.Interpolation, InterpolationCornerBlendLength = edge.InterpolationCornerBlendLength, PreparedEdgePlan = edge.PreparedEdgePlan,
+            LabelPosition = edge.LabelPosition,
+            SourceMarkerStyle = edge.SourceMarkerStyle?.Clone(), TargetMarkerStyle = edge.TargetMarkerStyle?.Clone(),
+            TextStyle = edge.TextStyle?.Clone(),
             PaletteIndex = edge.PaletteIndex,
             Status = edge.Status,
             Direction = edge.Direction,
@@ -128,7 +151,7 @@ public static partial class VisualArtifactInterchangeMapping {
         };
     }
 
-    private static VisualArtifactInterchangeTheme MapTheme(TopologyPaint theme) {
+    private static VisualArtifactInterchangeTheme MapTheme(TopologyPaint theme, double titleSize) {
         return new VisualArtifactInterchangeTheme {
             Background = theme.Background,
             Foreground = theme.Foreground,
@@ -142,6 +165,10 @@ public static partial class VisualArtifactInterchangeMapping {
             Critical = theme.Critical,
             Unknown = theme.Unknown,
             Disabled = theme.Disabled,
+            TitleSize = titleSize == ChartForgeX.Themes.VisualTheme.Graphite().Typography.TitleSize ? (double?)null : titleSize,
+            DataLabelSize = theme.Typography.DataLabelSize == ChartForgeX.Themes.VisualTheme.Graphite().Typography.DataLabelSize ? (double?)null : theme.Typography.DataLabelSize,
+            SubtitleSize = theme.Typography.SubtitleSize == ChartForgeX.Themes.VisualTheme.Graphite().Typography.SubtitleSize ? (double?)null : theme.Typography.SubtitleSize,
+            LegendSize = theme.Typography.LegendSize == ChartForgeX.Themes.VisualTheme.Graphite().Typography.LegendSize ? (double?)null : theme.Typography.LegendSize,
             FontFamily = theme.FontFamily
         };
     }

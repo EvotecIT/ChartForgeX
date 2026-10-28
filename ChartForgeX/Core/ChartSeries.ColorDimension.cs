@@ -3,7 +3,7 @@ using System;
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
-    /// <summary>Gets the independent color measurement's name and number display policy for Scatter, Bubble and geographic map datasets.</summary>
+    /// <summary>Gets the independent color measurement's name and number display policy for Scatter, Bubble and map datasets (TileMap overrides require an inset).</summary>
     public ChartColorDimensionOptions ColorDimension { get; private set; } = new();
 
     /// <summary>Configures this numeric color dataset's existing presentation options.</summary>
@@ -11,7 +11,7 @@ public sealed partial class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries ConfigureColorDimension(Action<ChartColorDimensionOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        if (!SupportsNumericColor) throw new InvalidOperationException("Series '" + Name + "' requires Scatter, Bubble, DottedMap or RegionMap for color presentation.");
+        if (!SupportsNumericColor) throw new InvalidOperationException("Series '" + Name + "' requires Scatter, Bubble, DottedMap, RegionMap or inset TileMap for color presentation.");
         ColorDimension = ChartOptionConfiguration.Configure(ColorDimension, configure, options => options.Clone()); return this;
     }
 }

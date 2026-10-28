@@ -1,0 +1,28 @@
+/// <summary>Builds triangular allocation partitions with independent category/value captions and source-owned borders.</summary>
+public static class PyramidPresentationRecipe {
+    /// <summary>Creates the full allocation example. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "horizontal" or "compact-horizontal" or "reversed" or "compact-reversed")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal);
+        var horizontal = variant.EndsWith("horizontal", StringComparison.Ordinal);
+        var reversed = variant.EndsWith("reversed", StringComparison.Ordinal);
+        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 500 : 560)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Allocation by service")
+            .WithSubtitle("Partition area encodes values; caption placement and borders preserve source order")
+            .WithLegend(false).WithDataLabels().WithXLabels("Services", "Platform", "Support", "Unassigned");
+        var series = new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid,
+            new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
+            .WithObservationIds(new[] { new ChartObservationId("services"), new ChartObservationId("platform"), new ChartObservationId("support"), new ChartObservationId("unassigned") })
+            .WithPointColor(0, "#357BA4").WithPointColor(1, "#C18B3D").WithPointColor(2, "#4D947D")
+            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward).WithPointStrokeColor(1, ChartColor.FromHex("#8D3E69"));
+        chart.AddSeries(series).ConfigurePyramid(options => {
+            options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = reversed;
+            options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+            options.LabelContent = ChartStageLabelContent.Separate;
+            options.CategoryLabel.Style.FontSize = 12; options.ValueLabel.Style.FontSize = 13;
+            options.PartitionOutline = new ChartStrokeStyle(width: 2, dash: new[] { 6d, 2d });
+            options.PartitionOutlineDashOffset = -1;
+        });
+        return chart.WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+    }
+}

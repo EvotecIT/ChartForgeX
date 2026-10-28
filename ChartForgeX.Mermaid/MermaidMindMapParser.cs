@@ -1,108 +1,83 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidMindMapParser {
+internal static partial class MermaidMindMapParser {
     public static void ParseStatements(MermaidMindMapDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var stack = new List<MermaidMindMapNode>();
         var indents = new List<int>();
+        var nativeIconNodes = new HashSet<MermaidMindMapNode>();
+        var starts = MermaidParserUtilities.OriginalLineStarts(document.SourceText);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             MermaidResourceGuard.Checkpoint();
-            var raw = lines[line - 1];
-            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
-            if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
-            var indent = MermaidParserUtilities.LeadingWhitespace(raw);
-            var span = new MermaidSourceSpan(line, indent + 1, trimmed.Length);
-
+            var first = line;
+            var indent = MermaidParserUtilities.LeadingWhitespace(lines[line - 1]);
+            var text = ReadStatement(lines, ref line, indent, out var closed);
+            if (MermaidParserUtilities.IsSkippable(text)) continue;
+            var length = starts[line - 1] + LastPhysicalLength(lines[line - 1], text) - starts[first - 1] - indent;
+            var span = new MermaidSourceSpan(first, indent + 1, Math.Max(0, length));
+            if (!closed) {
+                Invalid(span, result, "Mindmap quoted captions must have a closing quote or backtick.");
+                document.RawStatements.Add(new MermaidRawStatement(text, span)); continue;
+            }
+            if (IsModifier(text, 0)) {
+                if (document.Nodes.Count == 0) {
+                    Invalid(span, result, "Mindmap modifiers require a preceding node.");
+                    document.RawStatements.Add(new MermaidRawStatement(text, span));
+                } else if (!ReadModifiers(text, 0, document.Nodes[document.Nodes.Count - 1], span, result, nativeIconNodes))
+                    document.RawStatements.Add(new MermaidRawStatement(text, span));
+                continue;
+            }
             while (indents.Count > 0 && indent <= indents[indents.Count - 1]) {
                 indents.RemoveAt(indents.Count - 1);
                 stack.RemoveAt(stack.Count - 1);
             }
-
             MermaidResourceGuard.CheckDepth(stack.Count + 1, span);
-            var node = ParseNode(trimmed, document.Nodes.Count, stack.Count, span);
+            var node = ParseNode(text, document.Nodes.Count, stack.Count, span, result, nativeIconNodes);
+            if (node == null) { document.RawStatements.Add(new MermaidRawStatement(text, span)); continue; }
+            MermaidResourceGuard.ReserveElements(1, span);
             node.ParentId = stack.Count == 0 ? null : stack[stack.Count - 1].Id;
+            if (node.ParentId != null) MermaidResourceGuard.ReserveEdges(1, span);
             document.Nodes.Add(node);
             stack.Add(node);
             indents.Add(indent);
         }
-
-        if (document.Nodes.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid mindmaps require at least one node.");
+        if (document.Nodes.Count == 0 && !result.HasErrors)
+            MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid mindmaps require at least one node.");
     }
 
-    private static MermaidMindMapNode ParseNode(string text, int index, int level, MermaidSourceSpan span) {
-        var classes = new List<string>();
-        var icons = new List<string>();
-        ExtractIcons(ref text, icons);
-        ExtractClasses(ref text, classes);
-        var shape = "default";
-        var label = ExtractShape(text, out shape);
-        var node = new MermaidMindMapNode(MermaidParserUtilities.StableId("mindmap-node", index), label, level, span) { Shape = shape };
-        foreach (var item in classes) node.Classes.Add(item);
-        foreach (var item in icons) node.Icons.Add(item);
-        return node;
+    /// <summary>Consumes one quoted caption for the family parser and shared opaque-line prepasses.</summary>
+    internal static string ReadStatement(string[] lines, ref int line, int indent, out bool closed) {
+        var text = new StringBuilder(); var quote = '\0';
+        while (true) {
+            MermaidResourceGuard.Checkpoint();
+            var raw = lines[line - 1]; var start = text.Length == 0 ? indent : 0;
+            for (var index = start; index < raw.Length; index++) {
+                if ((index & 255) == 0) MermaidResourceGuard.Checkpoint();
+                var ch = raw[index];
+                if (quote == '\0' && ch == '%' && index + 1 < raw.Length && raw[index + 1] == '%') break;
+                if ((ch == '"' || ch == '`') && !MermaidFlowchartText.IsEscaped(raw, index)) {
+                    if (quote == '\0') quote = ch;
+                    else if (quote == ch) quote = '\0';
+                }
+                text.Append(ch);
+            }
+            if (quote == '\0' || line >= lines.Length) break;
+            text.Append('\n'); line++;
+        }
+        closed = quote == '\0';
+        return text.ToString().TrimEnd();
     }
 
-    private static void ExtractIcons(ref string text, List<string> icons) {
-        var index = text.IndexOf("::icon(", StringComparison.Ordinal);
-        while (index >= 0) {
-            var end = text.IndexOf(')', index);
-            if (end < 0) break;
-            icons.Add(text.Substring(index + 7, end - index - 7).Trim());
-            text = (text.Substring(0, index) + text.Substring(end + 1)).Trim();
-            index = text.IndexOf("::icon(", StringComparison.Ordinal);
-        }
+    private static int LastPhysicalLength(string raw, string logical) {
+        var newline = logical.LastIndexOf('\n');
+        // The first physical line starts at its authored indentation; continuations retain theirs.
+        return newline >= 0 ? logical.Length - newline - 1 : MermaidParserUtilities.LeadingWhitespace(raw) + logical.Length;
     }
 
-    private static void ExtractClasses(ref string text, List<string> classes) {
-        var index = text.IndexOf(":::", StringComparison.Ordinal);
-        if (index < 0) return;
-        var classText = text.Substring(index + 3).Trim();
-        text = text.Substring(0, index).Trim();
-        foreach (var item in classText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)) classes.Add(item);
-    }
-
-    private static string ExtractShape(string text, out string shape) {
-        shape = "default";
-        if (TryDelimiters(text, "((", "))", out var label)) {
-            shape = "circle";
-            return label;
-        }
-
-        if (TryDelimiters(text, "(", ")", out label)) {
-            shape = "rounded";
-            return label;
-        }
-
-        if (TryDelimiters(text, "[", "]", out label)) {
-            shape = "square";
-            return label;
-        }
-
-        if (TryDelimiters(text, "{{", "}}", out label)) {
-            shape = "hexagon";
-            return label;
-        }
-
-        if (TryDelimiters(text, ")", "(", out label)) {
-            shape = "bang";
-            return label;
-        }
-
-        if (TryDelimiters(text, "(-", "-)", out label)) {
-            shape = "cloud";
-            return label;
-        }
-
-        return MermaidParserUtilities.Unquote(text);
-    }
-
-    private static bool TryDelimiters(string value, string start, string end, out string found) {
-        found = string.Empty;
-        var startIndex = value.IndexOf(start, StringComparison.Ordinal);
-        if (startIndex < 0 || !value.EndsWith(end, StringComparison.Ordinal)) return false;
-        found = value.Substring(startIndex + start.Length, value.Length - startIndex - start.Length - end.Length).Trim();
-        return found.Length > 0;
+    private static void Invalid(MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, string message) {
+        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidStatement);
     }
 }

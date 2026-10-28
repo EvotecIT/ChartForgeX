@@ -1,0 +1,16 @@
+W3C turbulence algorithm attribution and native implementation boundary
+
+Copyright © 2011 W3C® (MIT, ERCIM, Keio), All Rights Reserved.
+Copyright © 2018 W3C® (MIT, ERCIM, Keio, Beihang).
+
+The scalar source was independently authored from the algorithm descriptions in:
+https://www.w3.org/TR/SVG11/filters.html#feTurbulenceElement
+https://www.w3.org/TR/2018/WD-filter-effects-1-20181218/#feTurbulenceElement
+
+Retained full source license documents accompany this source-only packet under licenses/.
+Their original bytes and retrieval hashes are not replaced with a paraphrase. No upstream
+browser implementation, library, assets or vendor code is imported into the product.
+The native algorithm normalizes square-sampled gradients and retries zero vectors.
+Native sampling uses physical pixel centers; browser phase, gradient precision and
+intermediate color conversion can produce different pixels. Universal byte identity
+is not claimed. This notice is not a conformance or completed legal review.

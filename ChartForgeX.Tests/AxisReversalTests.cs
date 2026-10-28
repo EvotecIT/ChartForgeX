@@ -55,9 +55,17 @@ public sealed class AxisReversalTests {
     }
 
     [Fact]
-    public void UnsupportedScheduleAxisReversalRejectsInsteadOfSplittingTicksFromSpans() {
-        var chart = Chart.Create().AddTimelineRange("Window", 1, 3).ConfigureXAxis(axis => axis.WithReversal());
-        Assert.Throws<NotSupportedException>(() => Prepare(chart));
+    public void ScheduleAxisReversalKeepsItsAuthoredTicksAndSpanOnTheSameCapturedMap() {
+        var chart = Chart.Create().WithSize(800, 460).WithXAxisBounds(0, 4).AddTimelineRange("Window", 1, 3)
+            .ConfigureXAxis(axis => { axis.WithReversal(); axis.Labels.Add(new ChartAxisLabel(1, "Start")); axis.Labels.Add(new ChartAxisLabel(3, "End")); });
+        var prepared = Prepare(chart); var plot = prepared.Scene.DataProjection!.Plot;
+        var span = prepared.Scene.Regions.Single(region => region.Role == "timeline-item").Bounds;
+        var start = prepared.Scene.Regions.Single(region => region.Role == "schedule-tick-label" && region.Label == "Start").Bounds;
+        var end = prepared.Scene.Regions.Single(region => region.Role == "schedule-tick-label" && region.Label == "End").Bounds;
+        Assert.True(prepared.Scene.DataProjection.X.Reversed); Assert.True(start.Left > end.Left);
+        Assert.Equal(plot.Left + plot.Width * .75, span.Right, 8); Assert.Equal(plot.Left + plot.Width * .25, span.Left, 8);
+        Assert.Equal(span.Right, start.Left + start.Width / 2, 8); Assert.Equal(span.Left, end.Left + end.Width / 2, 8);
+        Assert.Equal(new ChartPoint(1, 3), chart.Series[0].Points[0]);
     }
 
     [Theory]

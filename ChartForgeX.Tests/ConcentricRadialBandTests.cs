@@ -138,15 +138,17 @@ public sealed class ConcentricRadialBandTests {
     [InlineData(ChartDataLabelPlacement.Right)]
     [InlineData(ChartDataLabelPlacement.Above)]
     [InlineData(ChartDataLabelPlacement.Below)]
-    public void InnerActiveExternalLabelsRejectInsteadOfCrossingOuterBands(ChartDataLabelPlacement placement) {
+    public void InnerActiveExternalLabelsRetainTheirOwnSourceAndOverlayLeaders(ChartDataLabelPlacement placement) {
         var chart = Rings().WithDataLabels(); chart.Series[0].DataLabelPlacement = placement;
-        Assert.Contains("outermost", Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context())).Message);
+        var prepared = chart.Prepare(Context()); MultiRingDepthTests.AssertCalloutAssociations(prepared);
+        Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "radial-data-label-source"
+            && group.Metadata.TryGetValue("data-cfx-series", out var source) && source == "0" && group.Metadata["data-cfx-label-dropped"] == "false");
         chart.Series[0].ShowDataLabels = false; chart.Series[1].DataLabelPlacement = placement;
         Assert.NotEmpty(chart.Prepare(Context()).ToPng());
     }
 
     [Fact]
-    public void InvalidBandsOverlapExplosionAndWrongFamiliesRejectWithoutChangingSourceFacts() {
+    public void InvalidBandsOverlapAndWrongFamiliesRejectWhileExplosionRetainsSourceFacts() {
         foreach (var values in new[] { (double.NaN, 1d), (0d, double.PositiveInfinity), (-.1, 1d), (.5, .5), (.5, .4), (.5, 1.1) })
             Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRadialBand(values.Item1, values.Item2));
         var wrong = ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", new[] { new ChartPoint(1, 2) });
@@ -157,7 +159,8 @@ public sealed class ConcentricRadialBandTests {
         chart.Series[0].RadialBand = new ChartRadialBand(.2, .5); chart.Series[1].RadialBand = null;
         Assert.Contains("every series", Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context())).Message);
         chart.Series[1].RadialBand = new ChartRadialBand(.65, 1); chart.Series[0].WithPointSliceOffset(0, .1);
-        Assert.Contains("Exploded", Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context())).Message);
+        Assert.NotEmpty(chart.Prepare(Context()).ToPng()); Assert.Equal(source, chart.Series[0].Points);
+        Assert.Equal(.1, chart.Series[0].PointSliceOffsets[0]);
     }
 
     [Fact]

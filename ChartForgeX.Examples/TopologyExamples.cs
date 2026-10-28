@@ -25,6 +25,7 @@ internal static class TopologyExamples {
 
     private static void WriteAll(string target) {
         TopologyTypographyExamples.Write(target);
+        AuthoredHandoffExamples.Write(target);
         var iconCatalog = BuildDemoIconCatalog();
         var demos = new[] {
             ("site-topology", BuildSiteTopologyChart()),

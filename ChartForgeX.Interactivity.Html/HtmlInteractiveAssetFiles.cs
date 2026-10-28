@@ -13,6 +13,7 @@ namespace ChartForgeX.Interactivity.Html;
 public static class HtmlInteractiveAssetFiles {
     private static readonly Lazy<HtmlAssetFile> ChartStyleFile = new(() => new HtmlAssetFile("cfx-interactive", "css", HtmlInteractiveAssets.Style));
     private static readonly Lazy<HtmlAssetFile> ChartScriptFile = new(() => new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.Script));
+    private static readonly Lazy<HtmlAssetFile> NativeTextScriptFile = new(() => new HtmlAssetFile("cfx-native-text", "js", HtmlInteractiveAssets.NativeTextScript));
     private static readonly Lazy<HtmlAssetFile> GraphStyleFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "css", HtmlGraphExplorerAssets.Style));
     private static readonly Lazy<HtmlAssetFile> DefaultTopologyScriptFile = new(() => CreateTopologyScript(null));
     private static readonly Lazy<HtmlAssetFile> GraphScriptFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "js", HtmlGraphExplorerRenderer.WrappedInteractionScript()));
@@ -22,6 +23,9 @@ public static class HtmlInteractiveAssetFiles {
 
     /// <summary>Gets the runtime used by interactive chart and dashboard pages.</summary>
     public static HtmlAssetFile ChartScript => ChartScriptFile.Value;
+
+    /// <summary>Gets the shared binary font registration and captured-text export adapter without loading a chart runtime.</summary>
+    public static HtmlAssetFile NativeTextScript => NativeTextScriptFile.Value;
 
     /// <summary>Gets the stylesheet used by graph explorer pages.</summary>
     public static HtmlAssetFile GraphExplorerStyle => GraphStyleFile.Value;

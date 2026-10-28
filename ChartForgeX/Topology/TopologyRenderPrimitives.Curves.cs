@@ -7,6 +7,8 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
     public static List<ChartPoint> RenderedEdgeSamplePoints(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, IReadOnlyList<ChartPoint> points, int segments = 24) {
+        if (edge.Interpolation.HasValue) return InterpolatedOrdinaryPath(chart, edge, points).Flatten(maximumPoints: 10000);
+        if (edge.PathGeometry != null) return points.ToList();
         if (IsGeographicCurve(chart, edge, nodes)) return GeographicCurveSamplePoints(chart, edge, nodes, points, segments);
         if (edge.Routing != TopologyEdgeRouting.Curved || edge.Waypoints.Count != 0) return points.ToList();
         if (points.Count == 4 && !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) return CubicCurveSamplePoints(points[0], points[1], points[2], points[3], segments);

@@ -54,6 +54,7 @@ public sealed partial class ChartSeries {
     public ChartSeries ApplyDifferenceChanges(IEnumerable<ChartObservationChange<ChartDifferencePoint>> changes, int? maximumObservations = null,
         int maximumChanges = 4096, CancellationToken cancellationToken = default) {
         RequireObservationKind(ChartSeriesKind.DifferenceArea);
+        RequireDirectDifferencePoints();
         ApplyTypedObservationChanges(ref _differencePoints, changes, ValidateDifferencePoint, maximumObservations, maximumChanges, cancellationToken);
         return this;
     }

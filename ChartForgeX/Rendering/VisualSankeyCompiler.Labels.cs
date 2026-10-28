@@ -11,6 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSankeyCompiler {
     private static void Labels(VisualSceneBuilder builder, ChartRect plot, ChartSankeyModel model, TextStyle[] styles, string[] labels, VisualThemeColors colors, double gap, ChartSankeyOptions options) {
         var columns = LabelColumns(plot, model, options);
+        var padding = options.LabelStyle == ChartSankeyLabelStyle.Outlined ? 2d : 0;
         var requests = new List<LabelPlacementRequest>();
         var requestedNodes = new List<ChartSankeyNode>();
         for (int layer = 0; layer <= model.MaxLayer; layer++) {
@@ -20,24 +21,29 @@ internal static partial class VisualSankeyCompiler {
             foreach (var node in nodes) {
                 var anchor = new ChartPoint(column.Anchor, node.Y + node.Height / 2);
                 var text = labels[node.Index]; var style = styles[node.Index];
-                var height = Math.Min(bounds.Height, node.Height);
+                var height = Math.Min(bounds.Height, node.Height) - padding * 2;
+                var width = bounds.Width - padding * 2;
+                if (padding > 0 && (height <= 0 || width <= 0)) {
+                    builder.AddDiagnostic(new VisualDiagnostic("sankey.label-overflow", "No outlined label interior remains; full text is retained in node semantics."));
+                    continue;
+                }
                 style = VisualTextFitting.FitOversized(builder, style, height, fittedStyle => {
                     var size = builder.MeasureText(text, fittedStyle);
-                    return size.Width <= bounds.Width && size.Height <= height;
+                    return size.Width <= width && size.Height <= height;
                 });
                 var measured = builder.MeasureText(text, style);
-                if (measured.Width > bounds.Width) {
-                    var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
+                if (measured.Width > width) {
+                    var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
                         (value, _) => builder.MeasureText(value, style).Width);
                     var wrapped = string.Join("\n", lines); var wrappedSize = builder.MeasureText(wrapped, style);
-                    if (lines.Length == 2 && wrappedSize.Width <= bounds.Width && wrappedSize.Height <= node.Height) {
+                    if (lines.Length == 2 && wrappedSize.Width <= width && wrappedSize.Height <= node.Height - padding * 2) {
                         text = wrapped; measured = wrappedSize;
                     }
                 }
                 requests.Add(new LabelPlacementRequest(text, anchor, style, new[] {
                     new LabelCandidate(0, 0, column.Alignment, .5), new LabelCandidate(0, -gap, column.Alignment, 1),
                     new LabelCandidate(0, gap, column.Alignment, 0), new LabelCandidate(0, -gap * 2, column.Alignment, 1), new LabelCandidate(0, gap * 2, column.Alignment, 0)
-                }, priority: 40) { MeasuredSize = measured, Bounds = bounds });
+                }, priority: 40) { MeasuredSize = measured, Bounds = bounds, Padding = padding });
                 requestedNodes.Add(node);
             }
         }
@@ -53,11 +59,15 @@ internal static partial class VisualSankeyCompiler {
             var id = ChartRelationshipMetadata.SourceId("node-label", requestedNodes[i].Id);
             using var caption = builder.PushGroup(id + "-source", "sankey-node-label-source",
                 VisualMarkLabel.Metadata(labels[requestedNodes[i].Index], ChartRelationshipMetadata.SourceId("node", requestedNodes[i].Id)));
-            builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop",
-                paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .92), .92)));
-            double x = side == ChartSankeyLabelPlacement.Left ? result.Bounds.Right : side == ChartSankeyLabelPlacement.Center ? result.Bounds.X + result.Bounds.Width / 2 : result.Bounds.Left;
-            builder.Text(result.Text, x, result.Bounds.Y + builder.TextAscent(style), style,
-                "sankey-node-label", id, paint: VisualChartPaint.Text(style));
+            if (options.LabelStyle == ChartSankeyLabelStyle.Backdrop)
+                builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop",
+                    paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .92), .92)));
+            double x = side == ChartSankeyLabelPlacement.Left ? result.Bounds.Right - padding : side == ChartSankeyLabelPlacement.Center ? result.Bounds.X + result.Bounds.Width / 2 : result.Bounds.Left + padding;
+            builder.Text(result.Text, x, result.Bounds.Y + padding + builder.TextAscent(style), style,
+                "sankey-node-label", id, paint: VisualChartPaint.Text(style),
+                stroke: options.LabelStyle == ChartSankeyLabelStyle.Outlined ? colors.Surface : null,
+                strokeWidth: options.LabelStyle == ChartSankeyLabelStyle.Outlined ? 4 : 0,
+                strokePaint: options.LabelStyle == ChartSankeyLabelStyle.Outlined ? SvgPaint.Of(colors.Surface, SvgColorRole.Surface) : null);
         }
     }
 }

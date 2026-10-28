@@ -93,6 +93,61 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserFact]
+    public async Task GroupedNativeBrushAndVisualViewportKeepPeerFactsWithoutEcho() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(560, 320).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), "Observed", new[] {
+                new ChartPoint(0, 0), new ChartPoint(5, 5), new ChartPoint(10, 10) }));
+        var html = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
+            options.Columns = 1; options.Interaction.GroupName = "native-brush-peer";
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
+            options.Interaction.Features = ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Brush
+                | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.SynchronizedCharts;
+        });
+        await using var session = await OpenAsync(html, 820, 1100);
+        var page = session.Page;
+        var roots = page.Locator(Root); var source = roots.Nth(0); var peer = roots.Nth(1);
+        await page.EvaluateAsync("""
+            () => {
+                const [source,peer]=document.querySelectorAll('.cfx-interactive-chart');
+                window.groupedSource=[];window.groupedPeer=[];
+                for(const [root,log] of [[source,groupedSource],[peer,groupedPeer]])
+                    for(const name of ['cfxsync','cfxviewport','cfxbrush','cfxlasso','cfxcompare'])
+                        root.addEventListener(name,event=>log.push({name,detail:event.detail}));
+            }
+            """);
+        var positions = await source.EvaluateAsync<double[]>("""
+            root => {
+                const svg=root.querySelector('.cfx-stage svg'),p=JSON.parse(root.dataset.cfxPreparedChart).dataProjection.plotBounds;
+                return [[.22,.27],[.78,.73]].flatMap(([x,y])=>{const q=new DOMPoint(p.x+x*p.width,p.y+y*p.height).matrixTransform(svg.getScreenCTM());return[q.x,q.y];});
+            }
+            """);
+        await source.Locator("[data-cfx-mode-button=brush]").ClickAsync();
+        await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]); await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)positions[2], (float)positions[3], new MouseMoveOptions { Steps = 5 }); await page.Mouse.UpAsync();
+        var brush = await source.GetAttributeAsync("data-cfx-brush");
+        Assert.False(string.IsNullOrWhiteSpace(brush)); Assert.Equal(brush, await peer.GetAttributeAsync("data-cfx-brush"));
+        var selections = await page.EvaluateAsync<JsonElement>("()=>[...document.querySelectorAll('.cfx-interactive-chart')].map(root=>ChartForgeXCharts.get(root).getSelection())");
+        foreach (var selection in selections.EnumerateArray()) {
+            var target = Assert.Single(selection.EnumerateArray());
+            Assert.Equal("readings", target.GetProperty("seriesKey").GetString()); Assert.Equal("1", target.GetProperty("sourcePoint").GetString());
+        }
+        var brushEvents = await page.EvaluateAsync<JsonElement>("()=>({source:groupedSource,peer:groupedPeer})");
+        Assert.Single(brushEvents.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxbrush");
+        Assert.Single(brushEvents.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxlasso");
+        Assert.Contains(brushEvents.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxsync" && item.GetProperty("detail").GetProperty("action").GetString() == "brush");
+        Assert.Empty(brushEvents.GetProperty("peer").EnumerateArray());
+        await source.Locator("[data-cfx-zoom=in]").ClickAsync();
+        var zoom = await source.GetAttributeAsync("data-cfx-zoom"); Assert.NotEqual("1.000", zoom);
+        Assert.Equal(zoom, await peer.GetAttributeAsync("data-cfx-zoom"));
+        var events = await page.EvaluateAsync<JsonElement>("()=>({source:groupedSource,peer:groupedPeer})");
+        Assert.Single(events.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxviewport");
+        Assert.Empty(events.GetProperty("peer").EnumerateArray());
+        await CaptureAsync(page, "grouped-native-brush-viewport", new { brush, selections, brushEvents, zoom, events });
+        AssertNoConsoleErrors(session);
+    }
+
     [BrowserTheory]
     [InlineData(ChartSeriesKind.Bar)]
     [InlineData(ChartSeriesKind.Line)]

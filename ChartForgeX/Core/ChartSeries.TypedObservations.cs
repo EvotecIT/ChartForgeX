@@ -192,6 +192,7 @@ public sealed partial class ChartSeries {
     public ChartSeries ReplaceDifferencePoints(IEnumerable<ChartDifferencePoint> values) {
         RequireObservationKind(ChartSeriesKind.DifferenceArea);
         ReplaceObservations(ref _differencePoints, values, ValidateDifferencePoint);
+        _differenceAlignment = null;
         return this;
     }
 
@@ -201,6 +202,7 @@ public sealed partial class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries UpdateDifferencePoint(int index, ChartDifferencePoint value) {
         RequireObservationKind(ChartSeriesKind.DifferenceArea);
+        RequireDirectDifferencePoints();
         UpdateObservation(ref _differencePoints, index, value, ValidateDifferencePoint);
         return this;
     }
@@ -221,8 +223,8 @@ public sealed partial class ChartSeries {
     }
 
     private void ClearObservationMetadata() {
-        PointColors.Clear(); PointFillPatterns.Clear(); PointLabels.Clear();
-        PointDataLabelStyles.Clear(); PointSliceOffsets.Clear(); ClearObservationKeys();
+        _funnelConnectorStyles.Clear(); PointColors.Clear(); _pointStrokeColors.Clear(); PointFillPatterns.Clear(); PointLabels.Clear();
+        _pointMarkers.Clear(); PointDataLabelStyles.Clear(); PointSliceOffsets.Clear(); _pointSliceRadiusRatios.Clear(); ClearObservationKeys();
         _financialStyles = Array.Empty<ChartFinancialItemOptions?>();
     }
 

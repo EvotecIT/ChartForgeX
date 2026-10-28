@@ -15,6 +15,12 @@ if (fs.existsSync(addressFile)) throw new Error('The readiness file must not alr
 
 const server = http.createServer((request, response) => {
   if (!['GET', 'HEAD'].includes(request.method)) { response.writeHead(405); response.end(); return; }
+  if (request.url === '/__cfx_browser_origin.html') {
+    const body = '<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>';
+    response.writeHead(200, { 'Content-Type': types['.html'], 'Content-Length': Buffer.byteLength(body), 'Cache-Control': 'no-store' });
+    response.end(request.method === 'HEAD' ? undefined : body);
+    return;
+  }
   let file;
   try { file = path.resolve(root, '.' + decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname)); }
   catch { response.writeHead(400); response.end(); return; }

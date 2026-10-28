@@ -1,0 +1,15 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualBlocks;
+
+{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+var model = {{FACTORY}}.Create({{VARIANT}}, mode);
+model.WithTheme(VisualTheme.Graphite(){{FONT_THEME}}, mode);
+File.WriteAllText("visual.svg", model.ToSvg());
+File.WriteAllBytes("visual.png", model.ToPng());
+File.WriteAllText("visual.html", model.ToHtmlPage());
+
+{{SOURCE}}

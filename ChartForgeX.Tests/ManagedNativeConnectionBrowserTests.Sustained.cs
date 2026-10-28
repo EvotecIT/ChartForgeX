@@ -49,8 +49,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
             var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
             var path = await download.PathAsync() ?? throw new InvalidOperationException("The final accepted native scene did not export.");
             var exported = XDocument.Load(path);
-            Assert.Equal(await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), exported.Descendants()
-                .Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value).ToArray());
+            Assert.Equal(await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync(), await BrowserProofCaptions.ExportedAsync(page, exported, "axis-x-label"));
             Assert.Single(exported.Descendants(), node => (string?)node.Attribute("data-cfx-annotation-id") == "note");
             Assert.Empty(await page.EvaluateAsync<string[]>("() => managedErrors.map(error=>error.message)"));
             await CaptureAsync(page, "sustained-cycle-" + cycle);

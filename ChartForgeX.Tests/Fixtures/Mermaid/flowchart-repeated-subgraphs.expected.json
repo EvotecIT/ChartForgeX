@@ -1,0 +1,119 @@
+{
+  "mode": "authored primary-source semantic contract; runtime/reference outcomes pending",
+  "groupIds": [
+    "Product",
+    "API",
+    "Service",
+    "Wrapper",
+    "Ops"
+  ],
+  "groupTitles": [
+    "Product delivery",
+    "API",
+    "Service",
+    "Review",
+    "Operations"
+  ],
+  "groupLines": [
+    2,
+    4,
+    12,
+    15,
+    23
+  ],
+  "groupParents": [
+    null,
+    "Product",
+    "Wrapper",
+    null,
+    null
+  ],
+  "groupDirections": [
+    "None",
+    "TopToBottom",
+    "None",
+    "None",
+    "LeftToRight"
+  ],
+  "nodeIds": [
+    "P",
+    "A",
+    "B",
+    "S",
+    "T",
+    "R",
+    "O",
+    "D",
+    "Q"
+  ],
+  "nodeParents": [
+    "Product",
+    "API",
+    "API",
+    "Service",
+    "Service",
+    "Wrapper",
+    "Ops",
+    "Ops",
+    "Ops"
+  ],
+  "rawGroupNodeReferences": [
+    [
+      "P"
+    ],
+    [
+      "A",
+      "B"
+    ],
+    [
+      "S",
+      "T"
+    ],
+    [
+      "R"
+    ],
+    [
+      "D",
+      "O",
+      "Q"
+    ]
+  ],
+  "sourceLines": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37
+  ]
+}

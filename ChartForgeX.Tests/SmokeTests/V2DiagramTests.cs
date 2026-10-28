@@ -126,7 +126,7 @@ public sealed class V2DiagramTests {
     [Fact]
     public void DiagramLabelsUseTheActualPreparedFontAndDiagnoseTruncationWithoutLosingSourceText() {
         var topology = Topology(); topology.Nodes[0].Label = new string('W', 100);
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), font: new ChartForgeX.Typography.FontSpec { Family = "CFX intentionally missing diagram font" });
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), font: new ChartForgeX.Typography.FontSpec { Family = "CFX intentionally missing diagram font, " + BrowserProofFonts.Family });
         var prepared = topology.Prepare(context);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code.StartsWith("topology.label", StringComparison.Ordinal));
         Assert.Contains(new string('W', 100), prepared.ToArtifact("labels", VisualArtifactKind.Topology).ToInterchangeJson());

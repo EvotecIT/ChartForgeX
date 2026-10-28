@@ -18,7 +18,7 @@ internal static partial class TopologyLayoutEngine {
             : children.Sum(group => group.Width) + (children.Length - 1) * gap;
         var contentHeight = horizontalFlow ? children.Sum(group => group.Height) + (children.Length - 1) * gap
             : children.Max(group => group.Height);
-        var labelWidth = parent.Presentation == TopologyGroupPresentation.Compartment ? 0
+        var labelWidth = parent.Presentation == TopologyGroupPresentation.Compartment || !parent.ShowLabel ? 0
             : EstimateTextWidth(parent.Label, 12, true, chart.TextMeasurement) + padding * 2;
         parent.X = 0;
         parent.Y = 0;

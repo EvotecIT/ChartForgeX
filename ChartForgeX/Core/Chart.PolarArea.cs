@@ -7,7 +7,10 @@ public sealed partial class Chart {
     /// <summary>
     /// Adds a polar area series with equal-angle radial segments whose areas are proportional to positive values.
     /// </summary>
-    /// <remarks>Positive values use square-root radius scaling; zero-valued categories retain visible placeholder slots.</remarks>
+    /// <remarks>Positive values use square-root radius scaling; zero-valued categories retain visible placeholder slots.
+    /// For categorical axes, grouped or normalized stacks, independent numeric value axes and radius reversal,
+    /// use <see cref="AddRadialColumn"/> with <see cref="ChartRadialGeometryOptions.ValueEncoding"/> set to
+    /// <see cref="ChartRadialValueEncoding.Area"/>. Radius encoding remains that owner's default.</remarks>
     /// <param name="name">The series name.</param>
     /// <param name="points">The segment values. The x values are used for optional segment labels.</param>
     /// <returns>The current chart.</returns>

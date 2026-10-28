@@ -1,31 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-canvas-86ef8588" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="cfx-visual-canvas-86ef8588-title cfx-visual-canvas-86ef8588-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-canvas-86ef8588-title">Release notes cover</title>
-<desc id="cfx-visual-canvas-86ef8588-desc">Layered static visual canvas.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-canvas-9b230528" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="cfx-visual-canvas-9b230528-title cfx-visual-canvas-9b230528-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-canvas-9b230528-title">Release notes cover</title>
+<desc id="cfx-visual-canvas-9b230528-desc">Layered static visual canvas.</desc>
 <defs>
-<linearGradient id="cfx-visual-canvas-86ef8588-background" x1="0" y1="0" x2="0" y2="1">
+<linearGradient id="cfx-visual-canvas-9b230528-background" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0%" stop-color="#030712"/>
 <stop offset="100%" stop-color="#07182F"/>
 </linearGradient>
-<linearGradient id="cfx-visual-canvas-86ef8588-tile-glass" x1="0" y1="0" x2="0" y2="1">
+<linearGradient id="cfx-visual-canvas-9b230528-tile-glass" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0%" stop-color="rgba(11,28,58,0.961)"/>
 <stop offset="100%" stop-color="rgba(7,24,47,0.941)"/>
 </linearGradient>
-<linearGradient id="cfx-visual-canvas-86ef8588-hero-badge" x1="0" y1="0" x2="0" y2="1">
+<linearGradient id="cfx-visual-canvas-9b230528-hero-badge" x1="0" y1="0" x2="0" y2="1">
 <stop offset="0%" stop-color="#0B1C3A"/>
 <stop offset="100%" stop-color="#07182F"/>
 </linearGradient>
-<filter id="cfx-visual-canvas-86ef8588-soft-glow" x="-30%" y="-30%" width="160%" height="160%">
-<feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/>
-<feFlood flood-color="#22A7FF" flood-opacity="0.122" result="glow-paint"/>
-<feComposite in="glow-paint" in2="blur" operator="in" result="glow"/>
-<feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
-</filter>
-<filter id="cfx-visual-canvas-86ef8588-raised-depth" x="-18%" y="-18%" width="136%" height="148%">
-<feDropShadow dx="0" dy="11" stdDeviation="8" flood-color="#000000" flood-opacity="0.42"/>
-<feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#22A7FF" flood-opacity="0.24"/>
-</filter>
 </defs>
-<rect data-cfx-role="visual-canvas-background" width="100%" height="100%" fill="url(#cfx-visual-canvas-86ef8588-background)"/>
+<rect data-cfx-role="visual-canvas-background" width="100%" height="100%" fill="url(#cfx-visual-canvas-9b230528-background)"/>
 <text data-cfx-role="visual-canvas-text" x="72" y="160" text-anchor="start" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="800">Release 2.0</text>
 <text data-cfx-role="visual-canvas-text" x="72" y="224" text-anchor="start" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="500">Charts, topology and Mermaid diagram...</text>
 <g data-cfx-role="visual-canvas-image">

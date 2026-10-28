@@ -6,7 +6,9 @@ namespace ChartForgeX.Core;
 /// <remarks>
 /// The default preserves square-root interpolation of the radius range. Area encoding instead interpolates
 /// reference-circle areas and normalizes marker shapes. Source observations remain finite and positive even
-/// when a domain starts at zero.
+/// when a domain starts at zero. Custom marker coordinates stay in the unit square: SquareRootRadius bounds
+/// their largest possible half-extent, while Area retains these reference-circle bounds and normalizes their
+/// even-odd fill, so a custom silhouette can extend beyond the reference radius. Stroke width is independent.
 /// </remarks>
 public sealed class ChartBubbleOptions {
     private double _minimumRadius = 6;

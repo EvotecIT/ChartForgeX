@@ -1,0 +1,21 @@
+---
+title: Release ancestry
+config:
+  gitGraph:
+    mainBranchName: trunk
+    mainBranchOrder: 3
+    showBranches: true
+    showCommitLabel: true
+    rotateCommitLabel: false
+    parallelCommits: true
+---
+gitGraph LR
+commit id:"base" tag:"v1"
+branch feature order:2
+commit id:"feature-1" type:HIGHLIGHT
+checkout trunk
+commit id:"main-next"
+merge feature id:"joined" tag:"v2"
+branch consumer order:1
+commit id:"consumer-1"
+cherry-pick id:"joined" parent:"main-next" tag:"picked"

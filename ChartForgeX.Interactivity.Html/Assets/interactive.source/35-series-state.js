@@ -54,6 +54,7 @@
     return seriesTarget(exactLabel || exactPoint || matchingSeries.find((item) => (item.dataset || {}).cfxPoint === undefined) || matchingSeries[0]);
   };
   const setSeriesMuted = (root, target, muted) => {
+    if (muted && nativeLegendConnected(root)) return;
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       if (!matchesLocalSeriesTarget(node, target)) return;
       const role = node.dataset ? node.dataset.cfxRole || '' : '';
@@ -70,6 +71,7 @@
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
+    if (isolated && nativeLegendConnected(root)) return;
     const item = target && target.targetKind ? referencedTargetNode(root, target) : null;
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       const data = node.dataset || {};
@@ -103,6 +105,7 @@
     syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
+    if (nativeLegendConnected(root)) return;
     if (!hasFeature(root, 'LegendToggles')) return;
     const target = seriesTarget(item);
     if (target.series === undefined) return;
@@ -113,6 +116,7 @@
   };
   const toggleSeries = (root, item) => {
     if (!hasFeature(root, 'LegendToggles')) return;
+    if (nativeLegendConnected(root)) { requestNativeSeriesVisibility(root, item); return; }
     const target = seriesTarget(item);
     if (target.series === undefined) return;
     if (root.dataset.cfxIsolatedSeries) setSeriesIsolation(root, null, false);

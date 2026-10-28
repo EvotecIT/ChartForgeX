@@ -12,6 +12,9 @@ public enum TopologyGroupPresentation {
 public sealed partial class TopologyGroup {
     private TopologyGroupPresentation _presentation;
 
+    /// <summary>Gets or sets whether the group title and subtitle are painted. Semantic labels and icons are retained.</summary>
+    public bool ShowLabel { get; set; } = true;
+
     /// <summary>Gets or sets whether this group is an independent container or a compartment of its parent.</summary>
     /// <remarks>Compartments retain identity and bounds, but do not paint a duplicate surface or header.</remarks>
     public TopologyGroupPresentation Presentation {

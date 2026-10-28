@@ -51,6 +51,8 @@ internal static class TypographyFontResolver {
     /// fallback for the stack (with its bold or italic sibling when one is installed).
     /// </summary>
     internal static ResolvedTypeface ResolveFace(FontSpec font) {
+        if (font.OwnedFileFont is {} owned)
+            return WithColorPalette(WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(owned, font.Weight >= 600, font.Italic), font.Weight, font.Italic), font.Variations), font.ColorPaletteIndex);
         if (font.FilePath != null) {
             var requested = TrueTypeFont.TryLoadFromPath(font.FilePath, font.CollectionIndex, font.FaceName);
             if (requested != null) return WithColorPalette(WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic), font.Variations), font.ColorPaletteIndex);

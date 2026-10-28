@@ -18,6 +18,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(wrapper, 'topology:' + selector);
+    window[Symbol.for('ChartForgeX.nativeTextExport')].mount(wrapper, release => lifetime.own(release));
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);
     lifetime.own(() => wrapper.removeAttribute('data-cfx-runtime-bound'));
     wrapper.setAttribute('data-cfx-runtime-bound', 'true');
@@ -602,10 +603,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     };
     const svgElement = () => topologySvg();
     const exportName = () => (attr(wrapper, 'data-chart-id') || 'topology').replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
-    const serializeSvg = () => {
+    const serializeSvg = (png = false) => {
       const svg = svgElement();
       if (!svg) return null;
       const clone = svg.cloneNode(true);
+      window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
       const defs = clone.querySelector('defs') || clone.insertBefore(document.createElementNS('http://www.w3.org/2000/svg', 'defs'), clone.firstChild);
       const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
       style.setAttribute('data-cfx-export-style', 'force-filters');
@@ -641,12 +643,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       downloadBlob(new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' }), 'svg', 'svg');
     };
     const exportPng = () => {
-      const serialized = serializeSvg();
+      const serialized = serializeSvg(true);
       if (!serialized) return;
-      const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
-      const sourceUrl = URL.createObjectURL(source);
+      const sourceUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(serialized.data);
       const image = new Image();
-      const releaseImage = lifetime.own(() => { image.onload = null; image.onerror = null; URL.revokeObjectURL(sourceUrl); });
+      const releaseImage = lifetime.own(() => { image.onload = null; image.onerror = null; image.src = ''; });
       image.onload = () => {
         if (!lifetime.active || !wrapper.isConnected) { releaseImage(); return; }
         const size = svgSize(serialized.svg);

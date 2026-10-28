@@ -1,0 +1,35 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.Interactivity.Html;
+
+if (args.Length != 1) throw new ArgumentException("Pass the path of a font licensed for this output.");
+FontRegistry.Register("Owned interval font", File.ReadAllBytes(args[0]));
+var initial = {{INITIAL}}; var renderer = new HtmlInteractiveChartRenderer();
+Chart Model(double lower, double upper) => NativeRangeComponentRecipe.Create(lower, upper, {{AREA}}, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Owned interval font");
+void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-range-components"; }
+var from = renderer.PrepareSection(Model(10, 35), configure: Configure); var to = renderer.PrepareSection(Model(20, 60), configure: Configure);
+var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));
+var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));document.querySelector('#play').onclick=()=>" + (initial
+    ? "chart.presentInitial(" + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});"
+    : "chart.update(" + JsonSerializer.Serialize(to.Html) + ",{sceneRevision:chart.sceneRevision,transition:" + JsonSerializer.Serialize(payload) + ",motion:{duration:650}});");
+var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+    + "</style></head><body><button id='play' type='button'>Present native interval values</button>" + (initial ? to.Html : from.Html)
+    + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + action + "</script></body></html>";
+var flashPayload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValueFlash, 5, ChartColor.FromHex("#FFC000")));
+var flashAction = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));document.querySelector('#play').onclick=()=>chart.update("
+    + JsonSerializer.Serialize(to.Html) + ",{sceneRevision:chart.sceneRevision,transition:" + JsonSerializer.Serialize(flashPayload) + ",motion:{duration:650}});";
+var flashHtml = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+    + "</style></head><body><button id='play' type='button'>Flash changed native interval</button>" + from.Html
+    + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + flashAction + "</script></body></html>";
+Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html", html); File.WriteAllText("output/visual.transition.json", payload);
+File.WriteAllText("output/visual.flash.html", flashHtml); File.WriteAllText("output/visual.flash.transition.json", flashPayload);
+File.WriteAllText("output/visual.svg", to.PreparedVisual.ToSvg()); File.WriteAllBytes("output/visual.png", to.PreparedVisual.ToPng());
+
+{{SOURCE}}

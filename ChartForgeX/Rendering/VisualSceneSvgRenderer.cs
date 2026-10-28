@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using ChartForgeX.Primitives;
@@ -13,10 +14,41 @@ namespace ChartForgeX.Rendering;
 /// <summary>Serializes native scene decisions; it never lays out or parses a rendered visual.</summary>
 internal static partial class VisualSceneSvgRenderer {
     internal static string Render(VisualScene scene, string? title = null, string? description = null,
-        string? language = null, bool decorative = false, string? idPrefix = null, VisualSvgOptions? options = null) {
+        string? language = null, bool decorative = false, string? idPrefix = null, VisualSvgOptions? options = null, bool capturePngText = false, int? maximumCharacters = null) =>
+        Render(scene, title, description, language, decorative, idPrefix, options, capturePngText, System.Threading.CancellationToken.None, maximumCharacters);
+
+    internal static string Render(VisualScene scene, string? title, string? description,
+        string? language, bool decorative, string? idPrefix, VisualSvgOptions? options, bool capturePngText,
+        System.Threading.CancellationToken cancellation, int? maximumCharacters = null) {
+        return Render(scene, title, description, language, decorative, idPrefix, options, capturePngText, cancellation, out _, out _, maximumCharacters);
+    }
+    /// <summary>Returns the resolved namespace from this exact emission, including automatic/native identity.</summary>
+    internal static string Render(VisualScene scene, string? title, string? description, string? language,
+        bool decorative, string? idPrefix, VisualSvgOptions? options, bool capturePngText, out string resolvedPrefix, int? maximumCharacters = null) =>
+        Render(scene, title, description, language, decorative, idPrefix, options, capturePngText, System.Threading.CancellationToken.None, out resolvedPrefix, out _, maximumCharacters);
+    internal static string RenderForHtml(VisualScene scene, string? title, string? description, string? language,
+        bool decorative, string? idPrefix, VisualSvgOptions options, bool capturePngText,
+        out string resolvedPrefix, out VisualSvgFontResources? fonts) =>
+        Render(scene, title, description, language, decorative, idPrefix, options, capturePngText,
+            System.Threading.CancellationToken.None, out resolvedPrefix, out fonts);
+    private static string Render(VisualScene scene, string? title, string? description, string? language,
+        bool decorative, string? idPrefix, VisualSvgOptions? options, bool capturePngText,
+        System.Threading.CancellationToken cancellation, out string resolvedPrefix, out VisualSvgFontResources? fonts, int? maximumCharacters = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
+        cancellation.ThrowIfCancellationRequested();
+        var imageCharacters = maximumCharacters.HasValue ? AdmitSvgImageUris(scene, maximumCharacters.Value) : 0;
+        var effects = EffectPlans(scene, options, cancellation);
+        var textImages = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic
+            ? NativeLineInkResources.Prepare(scene, options, effects, cancellation, maximumCharacters, imageCharacters) : null;
+        var surfaces = effects?.Shadows;
         var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
-        var writer = new SvgMarkupWriter(4096);
+        resolvedPrefix = prefix;
+        fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
+        string? resourceOwner = null;
+        var resourceOwners = maximumCharacters.HasValue ? new Stack<string?>() : null;
+        var writer = maximumCharacters.HasValue
+            ? new SvgMarkupWriter(4096, maximumCharacters.Value, observed => new VisualResourceLimitException("MaximumOutputBytes", maximumCharacters.Value, observed, resourceOwner))
+            : new SvgMarkupWriter(4096);
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg")
             .Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
             .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height))
@@ -34,17 +66,29 @@ internal static partial class VisualSceneSvgRenderer {
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
         var colorScopes = ColorScopeOptions(scene, options);
         var clipAliases = WriteClips(writer, scene, prefix, options, colorScopes);
+        WriteSurfaceFilters(writer, surfaces, prefix, options);
+        WriteRetainedEffects(writer, effects, prefix, cancellation);
         WriteFontPalettes(writer, scene);
+        var nativeInk = false;
+        foreach (var command in scene.Nodes) if (command is VisualSceneText textCommand && textCommand.Text.NativeGlyphInk) { nativeInk = true; break; }
+        var pngText = capturePngText || nativeInk || options?.TextPresentation is VisualSvgTextPresentation.Automatic or VisualSvgTextPresentation.NativeContours ? new PngTextResources(prefix) : null;
         for (var i = 0; i < scene.Nodes.Count; i++) {
+            cancellation.ThrowIfCancellationRequested();
             var node = scene.Nodes[i];
             var paintOptions = colorScopes == null ? options : colorScopes[i];
             if (node is VisualSceneGroup group) {
+                if (resourceOwners != null) {
+                    resourceOwners.Push(resourceOwner);
+                    if (group.Metadata.TryGetValue("data-node-id", out var nodeIdentity)) resourceOwner = nodeIdentity;
+                }
                 writer.StartElement(group.Href == null ? "g" : "a"); Semantics(writer, group, prefix, i);
                 if (group.Href != null) {
                     writer.Attribute("href", group.Href).Attribute("tabindex", decorative ? -1 : 0);
                     if (options?.LinkTarget == VisualSvgLinkTarget.NewContext) writer.Attribute("target", "_blank").Attribute("rel", "noopener noreferrer");
                 }
                 foreach (var item in group.Metadata) writer.Attribute(item.Key, item.Value);
+                if (group.Opacity != 1) writer.Attribute("opacity", group.Opacity);
+                if (group.Metadata.TryGetValue("data-cfx-passive-overlay", out var passive) && passive == "true") writer.Attribute("pointer-events", "none");
                 if (group.Metadata.TryGetValue("data-cfx-pin-state-colors", out var pin) && pin == "true") writer.Attribute("style", "forced-color-adjust:none");
                 if (group.Clip.HasValue) {
                     var clipIndex = clipAliases.TryGetValue(i, out var canonicalIndex) ? canonicalIndex : i;
@@ -64,15 +108,33 @@ internal static partial class VisualSceneSvgRenderer {
                     }
                     writer.Attribute("transform", transform.ToString());
                 }
+                if (surfaces != null && surfaces.ContainsKey(i) && options?.EffectProfile == VisualSvgEffectProfile.NativeFilters)
+                    writer.Attribute("filter", "url(#" + SurfaceFilterId(prefix, i) + ")");
+                if (effects != null && effects.NativeMasks.ContainsKey(i))
+                    writer.Attribute("mask", "url(#" + RetainedEffectId(prefix, i) + ")");
+                if (effects != null && effects.NativeAppearance.TryGetValue(i, out var appearance) && appearance.Effect != null)
+                    writer.Attribute("filter", "url(#" + RetainedAppearanceId(prefix, i, appearance.Scope.Effect) + ")");
                 writer.EndStartElement();
+                if (effects != null && effects.BakedMasks.TryGetValue(i, out var masked)) {
+                    WriteBakedRetainedEffect(writer, masked, cancellation);
+                    SkipImageFallback(scene, ref i);
+                    writer.EndElement();
+                    continue;
+                }
+                if (surfaces != null && surfaces.TryGetValue(i, out var surface) && options?.EffectProfile != VisualSvgEffectProfile.NativeFilters)
+                    WriteBakedSurfaceShadow(writer, surface, cancellation);
                 if (options?.PatternTiles == true && WritePatternTile(writer, scene, group, prefix, ref i, paintOptions)) continue;
                 if (group.Tooltip != null) writer.StartElement("title").Text(group.Tooltip).EndElement();
                 if (group.ImageResource != null) {
                     WriteImageResource(writer, group.ImageResource, prefix, i);
                     SkipImageFallback(scene, ref i);
                     writer.EndElement();
+                    if (resourceOwners != null) resourceOwner = resourceOwners.Pop();
                 }
-            } else if (node is VisualSceneEndGroup) writer.EndElement();
+            } else if (node is VisualSceneEndGroup) {
+                writer.EndElement();
+                if (resourceOwners != null) resourceOwner = resourceOwners.Pop();
+            }
             else if (node is VisualSceneRectangle rect) {
                 writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
                     .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
@@ -96,15 +158,20 @@ internal static partial class VisualSceneSvgRenderer {
                 writer.StartElement("path").Attribute("d", ChartSlicePathGeometry.BuildPath(slice.Cx, slice.Cy, slice.Outer,
                     slice.Inner, slice.Start, slice.Start + slice.Sweep));
                 Paint(writer, slice, prefix, i, options: paintOptions); writer.EndEmptyElement();
+            } else if (node is VisualSceneProceduralSource && effects != null && effects.Procedural.TryGetValue(i, out var procedural)) {
+                WriteProceduralSource(writer, procedural, prefix, i, options, cancellation);
             } else if (node is VisualSceneImage image) {
                 writer.StartElement("image").Attribute("x", image.Bounds.X).Attribute("y", image.Bounds.Y)
                     .Attribute("width", image.Bounds.Width).Attribute("height", image.Bounds.Height)
                     .Attribute("preserveAspectRatio", "none").Attribute("href", image.DataUri);
+                WriteImageAlphaBounds(writer, image);
                 if (image.Opacity != 1) writer.Attribute("opacity", image.Opacity);
                 Semantics(writer, image, prefix, i); writer.EndEmptyElement();
             } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i, paintOptions);
-            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, paintOptions);
+            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, paintOptions, pngText, capturePngText, fonts, textImages);
         }
+        pngText?.Write(writer);
+        cancellation.ThrowIfCancellationRequested();
         writer.EndElement(); return writer.Build();
     }
 
@@ -144,6 +211,7 @@ internal static partial class VisualSceneSvgRenderer {
     }
 
     private static void Paint(SvgMarkupWriter writer, VisualSceneMark mark, string prefix, int index, string? fillOverride = null, VisualSvgOptions? options = null) {
+        if (mark.Opacity != 1) writer.Attribute("opacity", mark.Opacity);
         Semantics(writer, mark, prefix, index);
         // A collapsed filled slice can still have a visible separator stroke; describe fill independently.
         if (mark is VisualSceneSlice slice && !ChartSlicePathGeometry.HasEncodedFillArea(slice.Cx, slice.Cy, slice.Outer, slice.Inner, slice.Start, slice.Sweep))
@@ -173,18 +241,54 @@ internal static partial class VisualSceneSvgRenderer {
         writer.Attribute("data-cfx-role", node.Role);
     }
 
-    private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options) {
+    private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options, PngTextResources? pngText, bool capturePngText, VisualSvgFontResources? fonts, NativeLineInkResources? textImages) {
         var prepared = node.Text; var style = prepared.Style;
-        writer.StartElement("g"); Semantics(writer, node, prefix, index); writer.EndStartElement();
+        writer.StartElement("g"); Semantics(writer, node, prefix, index);
+        if (textImages?.ForNode(node) is {} capturedImage) {
+            var caption = string.Join("\n", prepared.Lines.Select(line => line.Text));
+            writer.Attribute("aria-label", caption).Attribute("data-cfx-caption", caption).EndStartElement();
+            writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
+                .Attribute("data-cfx-native-raster-text-ink", "true").EndStartElement();
+            writer.StartElement("image").Attribute("x", capturedImage.Bounds.X).Attribute("y", capturedImage.Bounds.Y)
+                .Attribute("width", capturedImage.Bounds.Width).Attribute("height", capturedImage.Bounds.Height)
+                .Attribute("preserveAspectRatio", "none").Attribute("href", capturedImage.Uri);
+            WriteImageAlphaBounds(writer, capturedImage.Data.AlphaBounds, capturedImage.Data.Image.Width, capturedImage.Data.Image.Height);
+            writer.EndEmptyElement();
+            writer.EndElement();
+            writer.EndElement(); return;
+        }
+        writer.EndStartElement();
         for (var i = 0; i < prepared.Lines.Count; i++) {
             var line = prepared.Lines[i];
+            var delivered = fonts?.ForLine(node, i);
+            var nativeInk = prepared.NativeGlyphInk || options?.TextPresentation is VisualSvgTextPresentation.Automatic or VisualSvgTextPresentation.NativeContours;
+            if (nativeInk && pngText != null && pngText.TryCapture(node, line, i, true, out var glyphs)) {
+                writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
+                    .Attribute("fill", ResolvePaint(node.Color, node.Paint, options)).Attribute("fill-rule", "nonzero");
+                if (delivered != null) writer.Attribute("data-cfx-owned-font-native", delivered.Alias);
+                if (node.Stroke.HasValue && node.StrokeWidth > 0) writer.Attribute("stroke", ResolvePaint(node.Stroke, node.StrokePaint, options))
+                    .Attribute("stroke-width", node.StrokeWidth).Attribute("stroke-linejoin", "round").Attribute("paint-order", "stroke");
+                writer.EndStartElement();
+                foreach (var glyph in glyphs) writer.StartElement("use").Attribute("href", "#" + glyph.Id)
+                    .Attribute("transform", "matrix(1 0 0 1 " + glyph.X.ToString("R", CultureInfo.InvariantCulture) + " " + glyph.Baseline.ToString("R", CultureInfo.InvariantCulture) + ")").EndEmptyElement();
+                writer.EndElement();
+                if (delivered == null) continue;
+            } else if (nativeInk) throw new NotSupportedException(prepared.NativeGlyphInk
+                ? "Structured SVG caption ink requires native outline or built-in TinyFont geometry; color/bitmap-only glyph faces are unsupported."
+                : "Captured SVG text ink requires native outline or built-in TinyFont geometry; color/bitmap-only glyph faces are unsupported.");
             writer.StartElement("text").Attribute("x", node.LineLeft(line)).Attribute("y", node.Baseline + i * prepared.Metrics.LineHeight)
-                .Attribute("font-family", style.Font.Family).Attribute("font-size", prepared.Size).Attribute("font-weight", style.Font.Weight)
+                .Attribute("font-family", delivered?.Alias ?? style.Font.Family).Attribute("font-size", prepared.Size).Attribute("font-weight", style.Font.Weight)
                 .Attribute("font-style", style.Font.Italic ? "italic" : "normal").Attribute("fill", ResolvePaint(node.Color, node.Paint, options))
                 .Attribute("xml:space", "preserve");
+            if (delivered != null) writer.Attribute("data-cfx-owned-font-text", delivered.Alias).Attribute("display", "none");
+            if (capturePngText && pngText != null) {
+                if (pngText.TryCapture(node, line, i, out var references)) writer.Attribute("data-cfx-png-glyphs", references);
+                else writer.Attribute("data-cfx-png-font-fallback", "browser-text");
+            }
             if (node.Stroke.HasValue && node.StrokeWidth > 0) writer.Attribute("stroke", ResolvePaint(node.Stroke, node.StrokePaint, options))
                 .Attribute("stroke-width", node.StrokeWidth).Attribute("stroke-linejoin", "round").Attribute("paint-order", "stroke");
             var css = "white-space:pre";
+            if (style.LetterSpacing != 0) css += ";letter-spacing:" + style.LetterSpacing.ToString("R", CultureInfo.InvariantCulture) + "px";
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
             css += style.OpenTypeLanguageTag == null ? ";font-language-override:normal" : ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
             css += ";font-palette:" + (style.Font.ColorPaletteIndex == 0 ? "normal" : ChartForgeX.Typography.TypographyPaletteCss.Name(style.Font.ColorPaletteIndex));
@@ -205,24 +309,13 @@ internal static partial class VisualSceneSvgRenderer {
         if (rules.Length > 0) writer.StartElement("style").Text(rules).EndElement();
     }
 
-    private static string PathData(VisualScenePath path) {
-        var writer = new SvgPathDataBuilder(); var hasSubpath = false;
-        foreach (var command in path.Commands) {
-            if (command.Kind == ChartPathCommandKind.MoveTo) {
-                if (hasSubpath && path.Close) writer.Close();
-                writer.MoveTo(command.X, command.Y); hasSubpath = true;
-            } else if (hasSubpath && command.Kind == ChartPathCommandKind.LineTo) writer.LineTo(command.X, command.Y);
-            else if (hasSubpath && command.Kind == ChartPathCommandKind.CubicTo)
-                writer.CubicTo(command.Control1X, command.Control1Y, command.Control2X, command.Control2Y, command.X, command.Y);
-        }
-        if (hasSubpath && path.Close) writer.Close();
-        return writer.Build();
-    }
+    private static string PathData(VisualScenePath path) => new SvgPathDataBuilder().Append(path.Commands, path.Close).Build();
 
     private static string N(double value) => SvgMarkupWriter.FormatNumber(value);
 
     /// <summary>Hashes detached typed content for prepared exports without SVG intermediates or random identities.</summary>
     internal static string Identity(VisualScene scene, string? title, string? description, string? language, bool decorative, VisualSvgOptions? options = null) {
+        AdmitImageIdentityWork(scene);
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         // Batch primitive writes without changing the identity byte stream. Dense scenes otherwise
@@ -230,6 +323,9 @@ internal static partial class VisualSceneSvgRenderer {
         using var buffered = new BufferedStream(stream, 16384);
         using (var writer = new BinaryWriter(buffered, Encoding.UTF8, leaveOpen: true)) {
             writer.Write("cfx-native-svg-2");
+            if (options?.TextPresentation is VisualSvgTextPresentation.Automatic or VisualSvgTextPresentation.NativeContours) {
+                writer.Write("captured-svg-text"); writer.Write((int)options.TextPresentation);
+            }
             writer.Write(scene.Size.Width); writer.Write(scene.Size.Height);
             Text(writer, title); Text(writer, description); Text(writer, language); writer.Write(decorative);
             writer.Write(scene.Nodes.Count);
@@ -237,11 +333,16 @@ internal static partial class VisualSceneSvgRenderer {
                 writer.Write(node switch {
                     VisualSceneGroup => 1, VisualSceneEndGroup => 2, VisualSceneRectangle => 3, VisualSceneEllipse => 4,
                     VisualSceneLine => 5, VisualScenePath => 6, VisualSceneSlice => 7, VisualSceneText => 8, VisualSceneGradient => 9, VisualSceneImage => 10,
+                    VisualSceneProceduralSource => 11,
                     _ => throw new NotSupportedException("Unknown native scene command.")
                 });
                 Text(writer, node.Id); Text(writer, node.Role);
                 if (node is VisualSceneMark mark) { Color(writer, mark.Fill); Color(writer, mark.Stroke); writer.Write(mark.StrokeWidth); PaintIdentity(writer, mark.Paint); }
+                if (node is VisualSceneMark opacityMark) WriteOpacityIdentity(writer, opacityMark.Opacity);
                 if (node is VisualSceneGroup group) {
+                    WriteOpacityIdentity(writer, group.Opacity);
+                    SurfaceIdentity(writer, group.SurfaceShadow);
+                    MaskIdentity(writer, group.RetainedEffect);
                     if (group.ColorScope != null) writer.Write("svg-color-scope");
                     writer.Write(group.Clip.HasValue);
                     if (group.Clip.HasValue) Rectangle(writer, group.Clip.Value);
@@ -278,6 +379,8 @@ internal static partial class VisualSceneSvgRenderer {
                 } else if (node is VisualSceneSlice slice) {
                     writer.Write(slice.Cx); writer.Write(slice.Cy); writer.Write(slice.Outer);
                     writer.Write(slice.Inner); writer.Write(slice.Start); writer.Write(slice.Sweep);
+                } else if (node is VisualSceneProceduralSource procedural) {
+                    TurbulenceIdentity(writer, procedural);
                 } else if (node is VisualSceneImage image) {
                     Rectangle(writer, image.Bounds); writer.Write(image.Opacity); writer.Write(image.Image.Width); writer.Write(image.Image.Height);
                     writer.Write(image.Image.Pixels.Length); writer.Write(image.Image.Pixels);
@@ -293,10 +396,13 @@ internal static partial class VisualSceneSvgRenderer {
                     writer.Write(font.CollectionIndex ?? -1); writer.Write(font.Weight); writer.Write(font.Italic);
                     writer.Write(font.Variations.Css); writer.Write(font.ColorPaletteIndex);
                     writer.Write(style.FontSize); writer.Write(style.LineHeight); Color(writer, style.Color);
+                    if (style.LetterSpacing != 0) { writer.Write("letter-spacing"); writer.Write(style.LetterSpacing); }
                     writer.Write((int)style.Alignment); writer.Write((int)style.UnderlineStyle); writer.Write((int)style.StrikethroughStyle);
                     writer.Write((int)style.Baseline); writer.Write((int)style.TextCase); writer.Write((int)style.Hinting); Text(writer, style.OpenTypeLanguageTag);
                     writer.Write(prepared.Lines.Count);
                     foreach (var preparedLine in prepared.Lines) { writer.Write(preparedLine.Text); writer.Write(preparedLine.Width); }
+                    // Preserve every ordinary identity byte; structured glyph ink has a distinct export contract.
+                    if (prepared.NativeGlyphInk) writer.Write("native-inline-glyph-ink");
                 } else throw new NotSupportedException("Unknown native scene command.");
             }
         }

@@ -50,12 +50,19 @@ internal sealed partial class VisualTopologyCompiler {
         SourcePaint(group.LabelColor, color, SvgColorRole.Any, HighlightFactor(active), secondary ? _colors.MutedForeground : _colors.Foreground);
 
     private ChartColor NodeSubtitleColor(TopologyNode node, bool active) =>
-        Highlight(Color(node.LabelColor, _colors.MutedForeground), active);
+        Highlight(node.SubtitleTextStyle?.Color ?? Color(node.LabelColor, _colors.MutedForeground), active);
 
     private SvgPaint NodeSubtitlePaint(TopologyNode node, bool active) =>
-        string.IsNullOrWhiteSpace(node.LabelColor)
-            ? MutedPaint(NodeSubtitleColor(node, active), HighlightFactor(active))
-            : SourcePaint(node.LabelColor, NodeSubtitleColor(node, active), SvgColorRole.Any, HighlightFactor(active), _colors.MutedForeground);
+        node.SubtitleTextStyle?.Color is ChartColor color
+            ? SourcePaint(color.ToHexRgba(), NodeSubtitleColor(node, active), SvgColorRole.Any, HighlightFactor(active), _colors.MutedForeground)
+            : string.IsNullOrWhiteSpace(node.LabelColor)
+                ? MutedPaint(NodeSubtitleColor(node, active), HighlightFactor(active))
+                : SourcePaint(node.LabelColor, NodeSubtitleColor(node, active), SvgColorRole.Any, HighlightFactor(active), _colors.MutedForeground);
+
+    private SvgPaint EdgeLabelSurfacePaint(TopologyEdge edge, ChartColor color, double opacity, bool cardFallback) =>
+        !string.IsNullOrWhiteSpace(edge.LabelBackgroundColor)
+            ? SourcePaint(edge.LabelBackgroundColor, color, SvgColorRole.Any, opacity, _colors.Surface)
+            : cardFallback ? CardPaint(color, opacity) : BackgroundPaint(color, opacity);
 
     private SvgPaint EdgeTextPaint(TopologyEdge edge, ChartColor color, bool secondary = false) =>
         !string.IsNullOrWhiteSpace(edge.LabelColor)

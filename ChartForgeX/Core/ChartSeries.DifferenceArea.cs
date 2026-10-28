@@ -20,8 +20,8 @@ public sealed partial class ChartSeries {
             return;
         }
         var axis = ValueAxis == ChartAxisSide.Secondary ? options.SecondaryYAxis : options.YAxis;
-        if ((options.XAxis.Scale != ChartScaleKind.Linear && options.XAxis.Scale != ChartScaleKind.Time) || axis.Scale != ChartScaleKind.Linear)
-            throw new NotSupportedException("Difference areas require numeric/time X and a linear value axis.");
+        if (axis.Scale == ChartScaleKind.Time)
+            throw new NotSupportedException("Difference areas require a numeric Linear, Logarithmic or SymmetricLogarithmic value axis; date/time coordinates belong on X.");
         if (RenderPoints.Count % 2 != 0) throw new InvalidOperationException("Difference areas require complete First/Second pairs.");
         for (var item = 0; item < RenderPoints.Count; item += 2) {
             var first = RenderPoints[item]; var second = RenderPoints[item + 1];

@@ -59,13 +59,10 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
         Assert.Equal(await first.GetAttributeAsync("data-cfx-target-id"), await SelectedId(page));
         Assert.Equal("keyboard", await page.EvaluateAsync<string>("()=>annotationEvents.at(-1).reason"));
         await page.EvaluateAsync("()=>annotationController.clearSelection()");
-        var labelPosition = await page.Locator(Annotation(1)).EvaluateAsync<double[]>("""
-            node=>{const text=node.querySelector('[data-cfx-role=annotation-label] text'),box=text.getExtentOfChar(Math.floor(text.textContent.length/2)),
-                point=new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(text.getScreenCTM());return[point.x,point.y];}
-            """);
+        var labelPosition = await BrowserProofCaptions.PointAsync(page, page.Locator(Annotation(1)).Locator("[data-cfx-role=annotation-label]"));
         Assert.True(await page.Locator(Annotation(1)).EvaluateAsync<bool>("""
-            (node,point)=>node.querySelector('[data-cfx-role=annotation-label] text')===document.elementFromPoint(Math.trunc(point[0]),Math.trunc(point[1]))
-            """, labelPosition), "A real integer pointer coordinate must hit this annotation's native caption text.");
+            (node,json)=>{const point=JSON.parse(json);return node.querySelector('[data-cfx-role=annotation-label]').contains(document.elementFromPoint(Number(point[0]),Number(point[1])))}
+            """, JsonSerializer.Serialize(labelPosition)), "A real pointer coordinate must hit this annotation's native caption ink.");
         await page.Mouse.ClickAsync((float)labelPosition[0], (float)labelPosition[1]);
         Assert.Equal(await page.Locator(Annotation(1)).GetAttributeAsync("data-cfx-target-id"), await SelectedId(page));
         Assert.Equal("click", await page.EvaluateAsync<string>("()=>annotationEvents.at(-1).reason"));

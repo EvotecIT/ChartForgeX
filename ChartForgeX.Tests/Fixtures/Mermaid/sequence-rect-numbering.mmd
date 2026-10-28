@@ -1,0 +1,29 @@
+---
+config:
+  theme: default
+  themeVariables:
+    rectBkgColor: "rgba(160,190,235,0.22)"
+---
+sequenceDiagram
+title Authored highlights and numbering
+participant A as Client
+participant B as Storage
+A->>B: Before
+rect rgba(220,235,255,0.65)
+autonumber 5.5 0.5
+A->>+B: Started
+rect hsla(120,45%,70%,0.3)
+autonumber off
+Note over A,B: Hidden counter still advances
+B-->>A: Hidden
+end
+autonumber
+B-->>-A: Resumed
+end
+autonumber 10
+A->>B: Reset
+A->>B: Continued
+rect
+Note over A,B: Default highlight
+A-->>B: Default color
+end

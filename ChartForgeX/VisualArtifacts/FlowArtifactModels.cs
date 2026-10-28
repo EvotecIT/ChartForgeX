@@ -96,7 +96,8 @@ public sealed partial class FlowArtifact {
     private double _width = 1200;
     private double _height = 700;
     private double _padding = 24;
-    private VisualArtifactExportFormat _exportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json | VisualArtifactExportFormat.Office;
+    internal const VisualArtifactExportFormat DefaultExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json | VisualArtifactExportFormat.Office;
+    private VisualArtifactExportFormat _exportFormats = DefaultExportFormats;
 
     /// <summary>Gets or sets a stable flow identifier.</summary>
     public string Id { get => _id; set => _id = RequireToken(value, nameof(value)); }

@@ -25,7 +25,8 @@ public sealed class HtmlChartSectionTests {
         });
         Assert.Equal(1, configureCalls);
         Assert.NotEmpty(calls); Assert.All(calls.Values, count => Assert.Equal(1, count));
-        Assert.Equal(XElement.Parse(section.PreparedVisual.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId("captured-section"), chart.Options.SvgColorVariables))).ToString(SaveOptions.DisableFormatting), EmbeddedSvg(section.Html).ToString(SaveOptions.DisableFormatting));
+        Assert.Equal(XElement.Parse(section.PreparedVisual.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId("captured-section"), chart.Options.SvgColorVariables)
+            .WithTextPresentation(VisualSvgTextPresentation.Automatic))).ToString(SaveOptions.DisableFormatting), EmbeddedSvg(section.Html).ToString(SaveOptions.DisableFormatting));
         var html = section.Html; var svg = section.PreparedVisual.ToSvg(); var png = section.PreparedVisual.ToPng();
         var countAfterPreparation = calls.Values.Sum();
         retained!.IdScope = "changed-section";

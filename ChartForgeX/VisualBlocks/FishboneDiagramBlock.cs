@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -12,6 +13,23 @@ public sealed class FishboneDiagramBlock : VisualBlock<FishboneDiagramBlock> {
 
     /// <summary>Gets or sets the effect shown at the fishbone head.</summary>
     public string Effect { get => _effect; set => _effect = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    internal bool UsesNaturalLayout { get; private set; }
+
+    /// <summary>Measures a complete, wrapped cause tree at native typography before raster allocation.</summary>
+    /// <remarks>The ordinary fixed layout remains unchanged until WithNaturalSize is called.</remarks>
+    public ChartSize MeasureNaturalSize() => VisualBlockRendering.MeasureFishboneNatural(this).Size;
+
+    /// <summary>Selects measured parent-connected cause lanes and sets their complete natural frame.</summary>
+    /// <remarks>Call again after changing causes, padding or typography. A smaller subsequent explicit
+    /// frame is rejected rather than dropping captions or reducing every label to a tiny font.</remarks>
+    public FishboneDiagramBlock WithNaturalSize(int minimumWidth = 0, int minimumHeight = 0) {
+        if (minimumWidth < 0) throw new ArgumentOutOfRangeException(nameof(minimumWidth));
+        if (minimumHeight < 0) throw new ArgumentOutOfRangeException(nameof(minimumHeight));
+        var size = MeasureNaturalSize();
+        Options.Size = new ChartSize(Math.Max(size.Width, minimumWidth), Math.Max(size.Height, minimumHeight));
+        UsesNaturalLayout = true; return this;
+    }
 
     /// <summary>Gets top-level causes in source/render order.</summary>
     public IReadOnlyList<FishboneCause> Causes => _causes;

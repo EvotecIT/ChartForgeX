@@ -125,7 +125,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
     }
 
     internal static async Task<HtmlBrowserSession> OpenTitleChartAsync(Chart chart, int width, int height) {
-        var html = chart.ToInteractiveHtmlPage().Replace("</head>", ProofFontCss.Value + "</head>", StringComparison.Ordinal);
+        var html = chart.ToInteractiveHtmlPage(options => options.TextPresentation = HtmlChartTextPresentation.Browser).Replace("</head>", ProofFontCss.Value + "</head>", StringComparison.Ordinal);
         var session = await OpenAsync(html, width, height);
         try {
             Assert.True(await session.Page.EvaluateAsync<bool>("""

@@ -74,7 +74,7 @@ public sealed partial class ChartSeries {
     }
 
     internal string InteractionIdentityKey => Id.Value;
-    private bool HasSourceIndexedObservationIds => DecimationMode.HasValue || HistogramBinLayout != null || TrendLineSourcePoints.Count > 0 || _isRawBoxPlot;
+    private bool HasSourceIndexedObservationIds => DecimationMode.HasValue || HistogramBinLayout != null || TrendLineSourcePoints.Count > 0 || _isRawBoxPlot || _visibilityPreparation;
     private int IdentityObservationCount => HasSourceIndexedObservationIds
         ? SourcePointCount : AuthoredObservationCount;
     internal bool HasIdentity => _hasId;
@@ -83,5 +83,18 @@ public sealed partial class ChartSeries {
     internal void AssignAutomaticIdentity(ChartSeriesId id, Chart owner) { _id = id; _hasId = true; _automaticIdentityOwner = owner; }
     internal void AttachTo(Chart owner) => _owner = owner;
     internal void DetachFrom(Chart owner) { if (ReferenceEquals(_owner, owner)) _owner = null; }
+    /// <summary>Atomically restores sparse authored identities with linear validation at a portable-data boundary.</summary>
+    internal void RestoreObservationIds(IEnumerable<KeyValuePair<int, ChartObservationId>> ids) {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var candidate = new Dictionary<int, ChartObservationId>(); var unique = new HashSet<ChartObservationId>();
+        foreach (var entry in ids) {
+            _ = entry.Value.Value;
+            if (entry.Key < 0 || entry.Key >= IdentityObservationCount || candidate.ContainsKey(entry.Key) || !unique.Add(entry.Value))
+                throw new ArgumentException("Restored IDs need unique authored indices and identities.", nameof(ids));
+            candidate.Add(entry.Key, entry.Value);
+        }
+        _observationIds.Clear(); foreach (var entry in candidate) _observationIds.Add(entry.Key, entry.Value);
+    }
+
     internal void ClearObservationKeys() => _observationIds.Clear();
 }

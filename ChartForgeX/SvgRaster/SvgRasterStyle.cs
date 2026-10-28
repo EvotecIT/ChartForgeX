@@ -62,7 +62,10 @@ internal sealed class SvgRasterStyle {
     public string ClipRule { get; set; } = "nonzero";
     public string? ClipPath { get; set; }
     public string? Filter { get; set; }
+    public string? ColorInterpolationFilters { get; set; }
+    public string ColorInterpolation { get; set; } = "sRGB";
     public double FontSize { get; set; }
+    public double LetterSpacing { get; set; }
     public string? FontFamily { get; set; }
     public string? OpenTypeLanguageTag { get; set; }
     public FontVariationSettings? Variations { get; set; }
@@ -108,7 +111,10 @@ internal sealed class SvgRasterStyle {
             StrokeDashOffset = StrokeDashOffset,
             FillRule = FillRule,
             ClipRule = ClipRule,
+            ColorInterpolationFilters = ColorInterpolationFilters,
+            ColorInterpolation = ColorInterpolation,
             FontSize = FontSize,
+            LetterSpacing = LetterSpacing,
             FontFamily = FontFamily,
             OpenTypeLanguageTag = OpenTypeLanguageTag,
             Variations = Variations,
@@ -153,9 +159,17 @@ internal sealed class SvgRasterStyle {
         }
 
         ApplyCustomProperties(style, declarations);
-        foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
-            if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
+        var ordered = SvgStyleDeclarationList.InCascadeOrder(declarations);
+        foreach (var declaration in ordered) {
+            if (SvgRasterCssVariables.IsCustomProperty(declaration.Name) || declaration.Name == "letter-spacing") continue;
             Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight, parent.Color);
+        }
+        // Computed lengths use the final same-element font size, independent of declaration order.
+        foreach (var declaration in ordered) if (declaration.Name == "letter-spacing") {
+            var value = SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties).Trim();
+            if (value.Equals("initial", StringComparison.OrdinalIgnoreCase)) style.LetterSpacing = 0;
+            else if (value.Equals("inherit", StringComparison.OrdinalIgnoreCase) || value.Equals("unset", StringComparison.OrdinalIgnoreCase)) style.LetterSpacing = parent.LetterSpacing;
+            else if (TypographyCss.TryLetterSpacing(value, style.FontSize, out var spacing, allowUserUnits: true)) style.LetterSpacing = spacing;
         }
 
         style.Fill = style.Fill.ResolveCurrentColor(style.Color);
@@ -205,9 +219,9 @@ internal sealed class SvgRasterStyle {
     private static readonly string[] PresentationNames = {
         "color", "fill", "fill-rule", "clip-rule", "clip-path", "filter", "stroke", "stroke-width", "paint-order", "stroke-linecap",
         "stroke-linejoin", "stroke-miterlimit", "stroke-dasharray", "stroke-dashoffset", "opacity", "fill-opacity", "stroke-opacity",
-        "font-size", "font-family", "font-language-override", "font-variation-settings", "font-palette", "font-weight", "font-style",
+        "font-size", "letter-spacing", "font-family", "font-language-override", "font-variation-settings", "font-palette", "font-weight", "font-style",
         "text-decoration", "text-decoration-style", "baseline-shift", "text-transform", "text-anchor", "dominant-baseline",
-        "alignment-baseline", "xml:space", "white-space", "display", "visibility", "mask-type", "overflow"
+        "alignment-baseline", "xml:space", "white-space", "display", "visibility", "mask-type", "overflow", "color-interpolation-filters", "color-interpolation"
     };
     private static readonly Dictionary<string, int> PresentationOrder = CreatePresentationOrder();
     [ThreadStatic] private static int[]? _presentationOrders;
@@ -233,7 +247,7 @@ internal sealed class SvgRasterStyle {
         var count = 0;
         foreach (var attribute in attributes) {
             if (!PresentationOrder.TryGetValue(attribute.Key, out var order)) continue;
-            var declaration = order == 31
+            var declaration = attribute.Key == "xml:space"
                 ? new SvgStyleDeclaration("white-space", string.Equals(attribute.Value.Trim(), "preserve", StringComparison.OrdinalIgnoreCase) ? "pre" : "normal")
                 : new SvgStyleDeclaration(attribute.Key, attribute.Value);
             // Insertion by order; names are unique, so orders are too.
@@ -273,6 +287,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "fill-opacity");
         AddAttribute(declarations, element, "stroke-opacity");
         AddAttribute(declarations, element, "font-size");
+        AddAttribute(declarations, element, "letter-spacing");
         AddAttribute(declarations, element, "font-family");
         AddAttribute(declarations, element, "font-language-override");
         AddAttribute(declarations, element, "font-variation-settings");
@@ -292,6 +307,8 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "visibility");
         AddAttribute(declarations, element, "mask-type");
         AddAttribute(declarations, element, "overflow");
+        AddAttribute(declarations, element, "color-interpolation-filters");
+        AddAttribute(declarations, element, "color-interpolation");
     }
 
     private static void AddAttribute(List<SvgStyleDeclaration> declarations, SvgRasterElement element, string name) {
@@ -336,6 +353,15 @@ internal sealed class SvgRasterStyle {
                 break;
             case "filter":
                 style.Filter = value.Trim();
+                break;
+            case "color-interpolation":
+                var space = value.Trim();
+                if (string.Equals(space, "initial", StringComparison.OrdinalIgnoreCase) || string.Equals(space, "auto", StringComparison.OrdinalIgnoreCase)) style.ColorInterpolation = "sRGB";
+                else if (string.Equals(space, "sRGB", StringComparison.OrdinalIgnoreCase) || string.Equals(space, "linearRGB", StringComparison.OrdinalIgnoreCase)) style.ColorInterpolation = space;
+                // Inherited property: inherit/unset retain the already computed parent; invalid values are ignored.
+                break;
+            case "color-interpolation-filters":
+                if (!string.Equals(value.Trim(), "inherit", StringComparison.OrdinalIgnoreCase)) style.ColorInterpolationFilters = value.Trim();
                 break;
             case "clip-path":
                 style.ClipPath = value.Trim();

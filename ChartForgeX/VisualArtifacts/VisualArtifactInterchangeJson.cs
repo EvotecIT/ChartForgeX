@@ -6,11 +6,46 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.VisualArtifacts;
 
 internal static partial class VisualArtifactInterchangeJson {
-    private const int MaximumJsonDepth = 32;
+    internal const int MaximumJsonDepth = 32;
     private static readonly GeoJsonReadLimits JsonReadLimits = new GeoJsonReadLimits(
             VisualArtifactInterchangeValidation.MaximumJsonValues,
             VisualArtifactInterchangeValidation.MaximumEdges,
             VisualArtifactInterchangeValidation.MaximumExtensionEntries)
+        .LimitArray("waterfallItems", VisualArtifactInterchangeValidation.MaximumWaterfallItems)
+        .LimitArray("waterfallDeltas", VisualArtifactInterchangeValidation.MaximumWaterfallItems)
+        .LimitArray("waterfallPointPresentation", VisualArtifactInterchangeValidation.MaximumWaterfallItems + 1)
+        .LimitArray("waterfallAxisLabels", VisualArtifactInterchangeValidation.MaximumWaterfallAxisLabels)
+        .LimitArray("waterfallCategoryGroups", VisualArtifactInterchangeValidation.MaximumWaterfallCategoryDepth)
+        .LimitArray("waterfallTextStyles", 6)
+        .LimitArray("labelRuns", VisualArtifactInterchangeValidation.MaximumTextCharacters)
+        .LimitArray("valueRuns", VisualArtifactInterchangeValidation.MaximumTextCharacters)
+        .LimitArray("textRuns", VisualArtifactInterchangeValidation.MaximumTextCharacters)
+        .LimitArray("treeViewItems", ChartForgeX.VisualBlocks.VisualBlockRendering.MaximumTreeViewItems)
+        .LimitArray("treeViewClasses", 64)
+        .LimitArray("journeySections", 128)
+        .LimitArray("journeyTasks", 512)
+        .LimitArray("journeyActors", 64)
+        .LimitArray("timelineSections", 128)
+        .LimitArray("timelinePeriods", 512)
+        .LimitArray("timelineEvents", 2048)
+        .LimitArray("railroadRules", ChartForgeX.VisualBlocks.RailroadDiagramLimits.MaximumRules)
+        .LimitArray("railroadExpressions", ChartForgeX.VisualBlocks.RailroadDiagramLimits.MaximumExpressionOccurrences)
+        .LimitArray("railroadArguments", ChartForgeX.VisualBlocks.RailroadDiagramLimits.MaximumExpressionOccurrences)
+        .LimitArray("collapsedNodeIds", VisualArtifactInterchangeValidation.MaximumNodes)
+        .LimitArray("nodeOrder", VisualArtifactInterchangeValidation.MaximumNodes)
+        .LimitArray("sourceNodes", VisualArtifactInterchangeValidation.MaximumNodes)
+        .LimitArray("sourceGroups", VisualArtifactInterchangeValidation.MaximumGroups)
+        .LimitArray("sourceEdges", VisualArtifactInterchangeValidation.MaximumEdges)
+        .LimitArray("sourceScenarios", VisualArtifactInterchangeValidation.MaximumScenarios)
+        .LimitArray("sourceAnnotations", VisualArtifactInterchangeValidation.MaximumAnnotations)
+        .LimitArray("capturedEffects", ChartForgeX.Rendering.VisualSceneRasterRenderer.MaximumIsolatedDepth)
+        .LimitArray("fontRoots", OwnedFontResources.MaximumRoots)
+        .LimitArray("fontClusters", ChartForgeX.Typography.TextShaper.CapturedClusters.MaximumClusters)
+        .LimitArray("inputScalars", ChartForgeX.Typography.TextShaper.CapturedClusters.MaximumScalars)
+        .LimitArray("outputScalars", ChartForgeX.Typography.TextShaper.CapturedClusters.MaximumScalars)
+        .LimitArray("pathDecorations", ChartForgeX.Topology.TopologyPathDecoration.MaximumPaths)
+        .LimitArray("commands", ChartForgeX.Topology.TopologyPathDecoration.MaximumCommands)
+        .LimitArray("portIds", VisualArtifactInterchangeValidation.MaximumPortsPerNode)
         .LimitArray("groups", VisualArtifactInterchangeValidation.MaximumGroups)
         .LimitArray("nodes", VisualArtifactInterchangeValidation.MaximumNodes)
         .LimitArray("edges", VisualArtifactInterchangeValidation.MaximumEdges)
@@ -25,11 +60,13 @@ internal static partial class VisualArtifactInterchangeJson {
         .LimitArray("dashPattern", VisualArtifactInterchangeValidation.MaximumDashPatternValues)
         .LimitArray("waypoints", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
         .LimitArray("resolvedRoute", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
+        .LimitObject("surfaceElements", 4)
         .LimitObject("extensions", VisualArtifactInterchangeValidation.MaximumExtensionEntries)
         .LimitDepth(MaximumJsonDepth)
         .RejectDuplicates();
 
     public static string Serialize(VisualArtifactInterchangeEnvelope envelope) {
+        envelope = VisualArtifactInterchangeMapping.CompleteProjectedSourceIds(envelope);
         VisualArtifactInterchangeValidation.Validate(envelope);
         var writer = new VisualArtifactInterchangeJsonWriter();
         WriteEnvelope(writer, envelope);
@@ -74,10 +111,16 @@ internal static partial class VisualArtifactInterchangeJson {
     public static VisualArtifactInterchangeEnvelope Deserialize(string json) {
         ValidateJsonInput(json);
         Dictionary<string, GeoJsonValue> root = GeoJsonValue.Parse(json, StringComparer.Ordinal, JsonReadLimits).AsObject("visual artifact interchange envelope");
+        var envelope = ReadEnvelope(root);
+        VisualArtifactInterchangeValidation.Validate(envelope);
+        return envelope;
+    }
+
+    private static VisualArtifactInterchangeEnvelope ReadEnvelope(Dictionary<string, GeoJsonValue> root) {
         string schema = RequiredString(root, "schema");
         if (!string.Equals(schema, VisualArtifactInterchangeEnvelope.SchemaId, StringComparison.Ordinal)) throw new NotSupportedException("Unsupported visual artifact interchange schema: " + schema + ".");
         int version = RequiredInt(root, "version");
-        if (version != VisualArtifactInterchangeEnvelope.CurrentVersion) throw new NotSupportedException("Unsupported visual artifact interchange version: " + version + ".");
+        if (version < 1 || version > VisualArtifactInterchangeEnvelope.CurrentVersion) throw new NotSupportedException("Unsupported visual artifact interchange version: " + version + ".");
 
         var envelope = new VisualArtifactInterchangeEnvelope {
             Kind = RequiredEnum<VisualArtifactKind>(root, "kind"),
@@ -96,6 +139,11 @@ internal static partial class VisualArtifactInterchangeJson {
         envelope.Topology = ReadTopologyArtifact(root);
         envelope.Flow = ReadFlowArtifact(root);
         envelope.Sequence = ReadSequenceArtifact(root);
+        envelope.Railroad = ReadRailroad(root);
+        envelope.TreeView = ReadTreeView(root);
+        envelope.Waterfall = ReadWaterfall(root);
+        envelope.Journey = ReadJourney(root);
+        envelope.Timeline = ReadTimeline(root);
         envelope.Presentation = ReadPresentation(root);
         ReadExtensions(root, envelope.Extensions);
         ReadGroups(root, envelope.Groups);
@@ -103,7 +151,8 @@ internal static partial class VisualArtifactInterchangeJson {
         ReadEdges(root, envelope.Edges);
         ReadScenarios(root, envelope.Scenarios);
         ReadAnnotations(root, envelope.Annotations);
-        VisualArtifactInterchangeValidation.Validate(envelope);
+        if (version < VisualArtifactInterchangeValidation.RequiredVersion(envelope))
+            throw new NotSupportedException("This typed visual artifact payload requires interchange version 2.");
         return envelope;
     }
 
@@ -204,12 +253,14 @@ internal static partial class VisualArtifactInterchangeJson {
         foreach (var detail in details) {
             writer.StartObject();
             OptionalString(writer, "text", detail.Text);
+            CaptionRuns(writer, "textRuns", detail.Content); CaptionRuns(writer, "valueRuns", detail.ValueContent);
             String(writer, "label", detail.Label);
             String(writer, "value", detail.Value);
             OptionalString(writer, "iconId", detail.IconId);
             OptionalString(writer, "status", detail.Status);
             OptionalString(writer, "color", detail.Color);
             DetailTextStyle(writer, detail.TextStyle);
+            DetailBadgeStyle(writer, detail.BadgeStyle);
             Extensions(writer, detail.Extensions);
             writer.EndObject();
         }
@@ -279,6 +330,8 @@ internal static partial class VisualArtifactInterchangeJson {
             foreach (var targetId in annotation.TargetIds) writer.String(targetId);
             writer.EndArray();
             SequenceAnnotation(writer, annotation.Sequence);
+            OptionalNumber(writer, "topologyDefaultUnits", annotation.TopologyDefaultUnits);
+            Rectangle(writer, "topologyRoutingViewport", annotation.TopologyRoutingViewport);
             Extensions(writer, annotation.Extensions);
             writer.EndObject();
         }
@@ -367,7 +420,7 @@ internal static partial class VisualArtifactInterchangeJson {
             }
             foreach (var detailValue in OptionalArray(item, "details")) {
                 var detailItem = detailValue.AsObject("detail");
-                var detail = new VisualArtifactInterchangeDetail { Text = OptionalString(detailItem, "text"), Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color"), TextStyle = ReadDetailTextStyle(detailItem) };
+                var detail = new VisualArtifactInterchangeDetail { Text = OptionalString(detailItem, "text"), Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color"), TextStyle = ReadDetailTextStyle(detailItem), BadgeStyle = ReadDetailBadgeStyle(detailItem), Content = ReadCaptionRuns(detailItem, "textRuns"), ValueContent = ReadCaptionRuns(detailItem, "valueRuns") };
                 ReadExtensions(detailItem, detail.Extensions);
                 node.Details.Add(detail);
             }
@@ -417,6 +470,8 @@ internal static partial class VisualArtifactInterchangeJson {
             };
             foreach (var targetValue in OptionalArray(item, "targetIds")) annotation.TargetIds.Add(targetValue.AsString("annotation target id"));
             annotation.Sequence = ReadSequenceAnnotation(item);
+            annotation.TopologyDefaultUnits = OptionalNumber(item, "topologyDefaultUnits");
+            annotation.TopologyRoutingViewport = OptionalRectangle(item, "topologyRoutingViewport");
             ReadExtensions(item, annotation.Extensions);
             target.Add(annotation);
         }

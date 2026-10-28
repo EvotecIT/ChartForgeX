@@ -28,6 +28,9 @@ public sealed class MermaidQuadrantDocument : MermaidDocument {
     /// <summary>Gets quadrant labels keyed from 1 to 4.</summary>
     public Dictionary<int, string> QuadrantLabels { get; } = new();
 
+    /// <summary>Gets source-ordered named point styles. The last complete definition of a name wins.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
+
     /// <summary>Gets plotted quadrant points in source order.</summary>
     public List<MermaidQuadrantPoint> Points { get; } = new();
 }
@@ -47,6 +50,12 @@ public sealed class MermaidQuadrantPoint : MermaidAstNode {
 
     /// <summary>Gets or sets the point label.</summary>
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the optional single inline class reference.</summary>
+    public string? ClassName { get; set; }
+
+    /// <summary>Gets direct point declarations, including diagnosed properties without a native mapping.</summary>
+    public Dictionary<string, string> Styles { get; } = new();
 
     /// <summary>Gets or sets the normalized X position.</summary>
     public double X { get; set; }

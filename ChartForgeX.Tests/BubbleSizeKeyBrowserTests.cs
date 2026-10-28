@@ -25,7 +25,7 @@ public sealed class BubbleSizeKeyBrowserTests {
         });
         await using var session = await OpenAsync(html, 1440, 900);
         var page = session.Page;
-        Assert.Equal(new[] { "1.001", "1.0015", "1.002" }, await page.Locator("[data-cfx-role='bubble-size-key-label']").AllTextContentsAsync());
+        Assert.Equal(new[] { "1.001", "1.0015", "1.002" }, await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='bubble-size-key-label']")));
         await MoveToAsync(page, Point(0, 0));
         Assert.Equal("1.001", await Row(page, "Size"));
         await MoveAwayAsync(page);
@@ -36,7 +36,7 @@ public sealed class BubbleSizeKeyBrowserTests {
             Directory.CreateDirectory(directory);
             await page.ScreenshotAsync(new() { Path = Path.Combine(directory, "close-sizes-default.browser.png") });
             await File.WriteAllTextAsync(Path.Combine(directory, "close-sizes-default.runtime.json"), JsonSerializer.Serialize(new {
-                key = await page.Locator("[data-cfx-role='bubble-size-key-label']").AllTextContentsAsync(),
+                key = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='bubble-size-key-label']")),
                 readout = await TooltipTextAsync(page), rawSize = await page.Locator(Point(0, 1)).GetAttributeAsync("data-cfx-size")
             }, new JsonSerializerOptions { WriteIndented = true }));
         }
@@ -80,7 +80,7 @@ public sealed class BubbleSizeKeyBrowserTests {
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         Assert.Equal(1, await page.Locator("[data-cfx-role='bubble-size-key']").CountAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-role='bubble-size-key'] [data-cfx-target-kind], [data-cfx-role='bubble-size-key'][data-cfx-target-kind]").CountAsync());
-        Assert.Equal("Requests", await page.Locator("[data-cfx-role='bubble-size-key-title']").TextContentAsync());
+        Assert.Equal("Requests", await BrowserProofCaptions.TextAsync(page.Locator("[data-cfx-role='bubble-size-key-title']")));
         var target = page.Locator(Point(0, 1));
         await MoveToAsync(page, Point(0, 1));
         Assert.Equal("50 req", await Row(page, "Requests"));

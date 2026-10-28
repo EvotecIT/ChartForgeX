@@ -15,16 +15,19 @@ public sealed class RasterDecodeOptions {
 
 internal readonly struct RasterDecodeLimits {
     internal static RasterDecodeLimits Default => new(64 * 1024 * 1024, 64 * 1024 * 1024);
-    private RasterDecodeLimits(int encodedBytes, int pixels) { MaximumEncodedBytes = encodedBytes; MaximumPixels = pixels; }
+    private readonly RasterDecodeObservation? _observation;
+    private RasterDecodeLimits(int encodedBytes, int pixels, RasterDecodeObservation? observation = null) {
+        MaximumEncodedBytes = encodedBytes; MaximumPixels = pixels; _observation = observation;
+    }
     internal int MaximumEncodedBytes { get; }
     internal int MaximumPixels { get; }
 
-    internal static RasterDecodeLimits From(RasterDecodeOptions? options) {
-        if (options == null) return Default;
+    internal static RasterDecodeLimits From(RasterDecodeOptions? options, RasterDecodeObservation? observation = null) {
+        if (options == null) return observation == null ? Default : new RasterDecodeLimits(Default.MaximumEncodedBytes, Default.MaximumPixels, observation);
         int encodedBytes = options.MaximumEncodedBytes, pixels = options.MaximumPixels;
         if (encodedBytes <= 0) throw new ArgumentOutOfRangeException(nameof(options), "The encoded input limit must be positive.");
         if (pixels <= 0 || pixels > int.MaxValue / 4) throw new ArgumentOutOfRangeException(nameof(options), "The pixel limit must be positive and fit an RGBA array.");
-        return new RasterDecodeLimits(encodedBytes, pixels);
+        return new RasterDecodeLimits(encodedBytes, pixels, observation);
     }
 
     internal void ValidateInput(byte[] data) {
@@ -33,7 +36,12 @@ internal readonly struct RasterDecodeLimits {
     }
 
     internal void ValidateDimensions(int width, int height) {
-        if (width <= 0 || height <= 0 || (long)width * height > MaximumPixels)
+        if (width <= 0 || height <= 0)
+            throw new InvalidDataException("Raster dimensions are invalid or exceed the configured pixel limit.");
+        if (_observation != null) {
+            if (!_observation.Declare(width, height, MaximumPixels))
+                throw new InvalidDataException("Raster dimensions are invalid or exceed the configured pixel limit.");
+        } else if ((long)width * height > MaximumPixels)
             throw new InvalidDataException("Raster dimensions are invalid or exceed the configured pixel limit.");
     }
 

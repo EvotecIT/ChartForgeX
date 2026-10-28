@@ -1,0 +1,434 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>An editable saved route &#183; Topology</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Topology</p><h1>An editable saved route</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="topology-expanded-light.html" data-theme-link data-light-href="topology-expanded-light.html" data-dark-href="topology-expanded-dark.html">Detailed</a></span><span><a href="topology-path-decorations-wide-light.html" data-theme-link data-light-href="topology-path-decorations-wide-light.html" data-dark-href="topology-path-decorations-wide-dark.html">Standard &#183; Independent maintenance boundary</a></span><span><a href="usecase-source-depth-wide-light.html" data-theme-link data-light-href="usecase-source-depth-wide-light.html" data-dark-href="usecase-source-depth-wide-dark.html">Standard &#183; Native actor and use case captions</a></span><span><a href="usecase-advanced-actors-wide-light.html" data-theme-link data-light-href="usecase-advanced-actors-wide-light.html" data-dark-href="usecase-advanced-actors-wide-dark.html">Standard &#183; Finite native actor forms</a></span><span><a href="org-portraits-wide-light.html" data-theme-link data-light-href="org-portraits-wide-light.html" data-dark-href="org-portraits-wide-dark.html">Standard &#183; People in the example studio</a></span><span class="current-variant"><a href="topology-interchange-wide-light.html" data-theme-link data-light-href="topology-interchange-wide-light.html" data-dark-href="topology-interchange-wide-dark.html" aria-current="page">Standard &#183; An editable saved route</a></span><span><a href="topology-table-content-wide-light.html" data-theme-link data-light-href="topology-table-content-wide-light.html" data-dark-href="topology-table-content-wide-dark.html">Standard &#183; Approve a captured release</a></span><span><a href="org-portraits-collapsed-light.html" data-theme-link data-light-href="org-portraits-collapsed-light.html" data-dark-href="org-portraits-collapsed-dark.html">Collapsed</a></span><span><a href="topology-path-decorations-compact-light.html" data-theme-link data-light-href="topology-path-decorations-compact-light.html" data-dark-href="topology-path-decorations-compact-dark.html">Compact &#183; Independent maintenance boundary</a></span><span><a href="usecase-source-depth-compact-light.html" data-theme-link data-light-href="usecase-source-depth-compact-light.html" data-dark-href="usecase-source-depth-compact-dark.html">Compact &#183; Native actor and use case captions</a></span><span><a href="usecase-advanced-actors-compact-light.html" data-theme-link data-light-href="usecase-advanced-actors-compact-light.html" data-dark-href="usecase-advanced-actors-compact-dark.html">Compact &#183; Finite native actor forms</a></span><span><a href="org-portraits-compact-light.html" data-theme-link data-light-href="org-portraits-compact-light.html" data-dark-href="org-portraits-compact-dark.html">Compact &#183; People in the example studio</a></span><span><a href="topology-interchange-compact-light.html" data-theme-link data-light-href="topology-interchange-compact-light.html" data-dark-href="topology-interchange-compact-dark.html">Compact &#183; An editable saved route</a></span><span><a href="topology-table-content-compact-light.html" data-theme-link data-light-href="topology-table-content-compact-light.html" data-dark-href="topology-table-content-compact-dark.html">Compact &#183; Approve a captured release</a></span><span><a href="topology-path-decorations-compact-plain-light.html" data-theme-link data-light-href="topology-path-decorations-compact-plain-light.html" data-dark-href="topology-path-decorations-compact-plain-dark.html">Compact Plain</a></span><span><a href="topology-feasibility-light.html" data-theme-link data-light-href="topology-feasibility-light.html" data-dark-href="topology-feasibility-dark.html">Simple</a></span><span><a href="org-portraits-horizontal-light.html" data-theme-link data-light-href="org-portraits-horizontal-light.html" data-dark-href="org-portraits-horizontal-dark.html">Horizontal</a></span><span><a href="org-portraits-meet-light.html" data-theme-link data-light-href="org-portraits-meet-light.html" data-dark-href="org-portraits-meet-dark.html">Meet</a></span><span><a href="topology-path-decorations-plain-light.html" data-theme-link data-light-href="topology-path-decorations-plain-light.html" data-dark-href="topology-path-decorations-plain-dark.html">Plain</a></span><span><a href="org-portraits-reordered-light.html" data-theme-link data-light-href="org-portraits-reordered-light.html" data-dark-href="org-portraits-reordered-dark.html">Reordered</a></span><span><a href="org-portraits-slice-light.html" data-theme-link data-light-href="org-portraits-slice-light.html" data-dark-href="org-portraits-slice-dark.html">Slice</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:900px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="900" height="400" viewBox="0 0 900 400" stroke-linecap="round" stroke-linejoin="round" style="max-width:100%;height:auto;display:block" role="img" aria-label="Saved request route" aria-labelledby="topology-interchange-wide-light-title" aria-describedby="topology-interchange-wide-light-description"><title id="topology-interchange-wide-light-title">Saved request route</title><desc id="topology-interchange-wide-light-description">The loaded graph owns independent native data</desc><defs><clipPath id="topology-interchange-wide-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="852" height="352"/></clipPath><clipPath id="topology-interchange-wide-light-clip-10" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="852" height="300.35"/></clipPath></defs><rect x="0" y="0" width="900" height="400" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#topology-interchange-wide-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">An editable saved route</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Native JSON is loaded into detached owners before editing</text></g></g></g><g id="topology-interchange-wide-light-node-9" data-cfx-source-id="saved-request-route" data-cfx-role="topology" class="cfx-topology" data-canvas-surface-style="Plain" data-cfx-active-scenario="" data-cfx-map-background-style="Dots" data-cfx-projection="" data-cfx-scenario-count="0" data-cfx-scenario-ids="" data-cfx-scenarios="[]" data-cfx-viewport="" data-chart-id="saved-request-route" data-fit-content-to-viewport="false" data-header-style="Standard" data-layout-direction="TopToBottom" data-layout-mode="Manual" data-node-surface-style="Card" data-visual-style="Default"><g clip-path="url(#topology-interchange-wide-light-clip-10)"><g id="topology-interchange-wide-light-node-11" data-cfx-source-id="dispatch" data-cfx-role="topology-edge" class="cfx-topology__edge" data-cfx-selected="false" data-cfx-status="Unknown" data-direction="Forward" data-edge-color="" data-edge-dash-pattern="" data-edge-emphasis="Normal" data-edge-id="dispatch" data-edge-kind="Generic" data-edge-label="Accepted" data-edge-layout-inference="none" data-edge-line-style="Auto" data-edge-minimum-rank-span="1" data-edge-muted="false" data-edge-render-order="0" data-edge-routing-priority="0" data-edge-secondary-label="" data-edge-tertiary-label="" data-label-offset-x="0" data-label-offset-y="0" data-route-candidate-count="1" data-route-corridor="default" data-route-curve="Orthogonal" data-route-end-x="463" data-route-end-y="181.65" data-route-fallback-reason="not-obstacle-aware" data-route-label-obstacle-hits="0" data-route-lane="0" data-route-obstacle-count="0" data-route-obstacle-hits="0" data-route-offset="0" data-route-overlap-score="0" data-route-segment-count="3" data-route-start-x="257" data-route-start-y="181.65" data-route-strategy="Orthogonal" data-scenario-ids="" data-scenario-step-indices="" data-source-group-id="" data-source-label="" data-source-marker="None" data-source-node-id="request" data-source-port="Right" data-source-port-id="send" data-target-group-id="" data-target-label="" data-target-marker="Arrow" data-target-node-id="worker" data-target-port="Auto" data-target-port-id="" data-waypoint-count="0"><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line-ambient-halo" fill="none" stroke="rgba(124,129,138,0.016)" stroke-width="4.4" stroke-dasharray="5 6"/><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line-halo" fill="none" stroke="rgba(124,129,138,0.055)" stroke-width="3.2" stroke-dasharray="5 6"/><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line" fill="none" stroke="#7C818A" stroke-width="2" stroke-dasharray="5 6"/><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line-highlight" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1" stroke-dasharray="5 6"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(124,129,138,0.016)" stroke-width="4.4"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(124,129,138,0.055)" stroke-width="3.2"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="#7C818A" stroke-width="2"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(124,129,138,0.016)" stroke-width="4.4"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(124,129,138,0.055)" stroke-width="3.2"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="#7C818A" stroke-width="2"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/><path d="M 463 181.65 L 455 177.65 L 455 185.65 Z" data-cfx-role="topology-marker" fill="#7C818A" stroke="#7C818A" stroke-width="1" fill-rule="evenodd"/></g><g id="topology-interchange-wide-light-node-26" data-cfx-source-id="dispatch-label" data-cfx-role="topology-edge-label" class="cfx-topology__edge-label" data-cfx-status="Unknown" data-edge-id="dispatch" data-edge-label-render-order="0" data-edge-render-order="0" data-label-anchor-node-id="" data-label-anchor-override="false" data-label-anchor-x="363.7810909090909" data-label-anchor-y="181.65" data-label-clearance="false" data-label-height="24" data-label-leader="false" data-label-line-count="1" data-label-width="84.56727272727272" data-label-x="363.78109090909084" data-label-y="181.65"><rect x="321.497" y="169.65" width="84.567" height="24" rx="9" data-cfx-role="topology-edge-label-surface" fill="#F2F3F4" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="topology-edge-label-text"><text x="340.66" y="185.752" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="600" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Accepted</text></g></g><g id="topology-interchange-wide-light-node-30" data-cfx-source-id="request" data-cfx-role="topology-node" class="cfx-topology__node" data-cfx-meta-host-record="request-42" data-cfx-selected="false" data-cfx-status="Healthy" data-group-id="" data-group-label="" data-node-badge="" data-node-detail-count="1" data-node-display-mode="Card" data-node-id="request" data-node-kind="Server" data-node-label="Request" data-scenario-ids="" data-scenario-step-indices=""><rect x="40" y="126.65" width="210" height="110" rx="3" data-cfx-role="topology-node-surface" fill="#F8F9FA" stroke="#1D8A52" stroke-width="1"/><rect x="51" y="143.65" width="22" height="22" rx="3" data-cfx-role="topology-icon-surface" fill="#DDE8E4" stroke="#1D8A52" stroke-width="1"/><path d="M 55 148.65 L 69 148.65 L 69 153.65 L 55 153.65 Z M 55 156.65 L 69 156.65 L 69 161.65 L 55 161.65 Z" data-cfx-role="topology-node-icon" fill="none" stroke="#1D8A52" stroke-width="1.7"/><path d="M 66.5 151.15 L 67.5 151.15 M 66.5 159.15 L 67.5 159.15" data-cfx-role="topology-node-icon" fill="none" stroke="#1D8A52" stroke-width="1.7"/><g id="topology-interchange-wide-light-node-35" data-cfx-source-id="request-label" data-cfx-role="topology-node-label"><text x="84" y="144.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="600" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Request</text></g><line x1="84" y1="174.509" x2="238" y2="174.509" data-cfx-role="topology-node-detail-separator" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="topology-node-detail"><text x="84" y="189.65" font-family="CFX Proof Carlito, sans-serif" font-size="9.6" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">State Delivered</text></g><g id="topology-interchange-wide-light-node-38" data-cfx-source-id="request-status" data-cfx-role="topology-node-status" data-node-id="request"><ellipse cx="240" cy="136.65" rx="3" ry="3" data-cfx-role="topology-status" fill="#1D8A52" stroke="none" stroke-width="1"/></g></g><g id="topology-interchange-wide-light-node-42" data-cfx-source-id="worker" data-cfx-role="topology-node" class="cfx-topology__node" data-cfx-selected="false" data-cfx-status="Healthy" data-group-id="" data-group-label="" data-node-badge="" data-node-detail-count="0" data-node-display-mode="Card" data-node-id="worker" data-node-kind="Generic" data-node-label="Worker" data-scenario-ids="" data-scenario-step-indices=""><rect x="470" y="126.65" width="210" height="110" rx="3" data-cfx-role="topology-node-surface" fill="#F8F9FA" stroke="#1D8A52" stroke-width="1"/><g id="topology-interchange-wide-light-node-44" data-cfx-source-id="worker-label" data-cfx-role="topology-node-label"><text x="480" y="144.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="600" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Worker</text></g><g id="topology-interchange-wide-light-node-45" data-cfx-source-id="worker-status" data-cfx-role="topology-node-status" data-node-id="worker"><ellipse cx="670" cy="136.65" rx="3" ry="3" data-cfx-role="topology-status" fill="#1D8A52" stroke="none" stroke-width="1"/></g></g></g></g></svg></div><div class="full" style="--example-width:900px" data-visual-theme="light" data-output-format="png"><img src="topology-interchange-wide-light.png" width="900" height="400" alt="An editable saved route" loading="lazy" decoding="async"></div><div class="full" style="--example-width:900px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="900" height="400" viewBox="0 0 900 400" stroke-linecap="round" stroke-linejoin="round" style="max-width:100%;height:auto;display:block" role="img" aria-label="Saved request route" aria-labelledby="topology-interchange-wide-dark-title" aria-describedby="topology-interchange-wide-dark-description"><title id="topology-interchange-wide-dark-title">Saved request route</title><desc id="topology-interchange-wide-dark-description">The loaded graph owns independent native data</desc><defs><clipPath id="topology-interchange-wide-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="852" height="352"/></clipPath><clipPath id="topology-interchange-wide-dark-clip-10" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="852" height="300.35"/></clipPath></defs><rect x="0" y="0" width="900" height="400" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#topology-interchange-wide-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">An editable saved route</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Native JSON is loaded into detached owners before editing</text></g></g></g><g id="topology-interchange-wide-dark-node-9" data-cfx-source-id="saved-request-route" data-cfx-role="topology" class="cfx-topology" data-canvas-surface-style="Plain" data-cfx-active-scenario="" data-cfx-map-background-style="Dots" data-cfx-projection="" data-cfx-scenario-count="0" data-cfx-scenario-ids="" data-cfx-scenarios="[]" data-cfx-viewport="" data-chart-id="saved-request-route" data-fit-content-to-viewport="false" data-header-style="Standard" data-layout-direction="TopToBottom" data-layout-mode="Manual" data-node-surface-style="Card" data-visual-style="Default"><g clip-path="url(#topology-interchange-wide-dark-clip-10)"><g id="topology-interchange-wide-dark-node-11" data-cfx-source-id="dispatch" data-cfx-role="topology-edge" class="cfx-topology__edge" data-cfx-selected="false" data-cfx-status="Unknown" data-direction="Forward" data-edge-color="" data-edge-dash-pattern="" data-edge-emphasis="Normal" data-edge-id="dispatch" data-edge-kind="Generic" data-edge-label="Accepted" data-edge-layout-inference="none" data-edge-line-style="Auto" data-edge-minimum-rank-span="1" data-edge-muted="false" data-edge-render-order="0" data-edge-routing-priority="0" data-edge-secondary-label="" data-edge-tertiary-label="" data-label-offset-x="0" data-label-offset-y="0" data-route-candidate-count="1" data-route-corridor="default" data-route-curve="Orthogonal" data-route-end-x="463" data-route-end-y="181.65" data-route-fallback-reason="not-obstacle-aware" data-route-label-obstacle-hits="0" data-route-lane="0" data-route-obstacle-count="0" data-route-obstacle-hits="0" data-route-offset="0" data-route-overlap-score="0" data-route-segment-count="3" data-route-start-x="257" data-route-start-y="181.65" data-route-strategy="Orthogonal" data-scenario-ids="" data-scenario-step-indices="" data-source-group-id="" data-source-label="" data-source-marker="None" data-source-node-id="request" data-source-port="Right" data-source-port-id="send" data-target-group-id="" data-target-label="" data-target-marker="Arrow" data-target-node-id="worker" data-target-port="Auto" data-target-port-id="" data-waypoint-count="0"><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line-ambient-halo" fill="none" stroke="rgba(138,143,152,0.016)" stroke-width="4.4" stroke-dasharray="5 6"/><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line-halo" fill="none" stroke="rgba(138,143,152,0.055)" stroke-width="3.2" stroke-dasharray="5 6"/><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line" fill="none" stroke="#8A8F98" stroke-width="2" stroke-dasharray="5 6"/><path d="M 257 181.65 L 360 181.65 L 360 181.65 L 463 181.65" data-cfx-role="topology-edge-line-highlight" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1" stroke-dasharray="5 6"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(138,143,152,0.016)" stroke-width="4.4"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(138,143,152,0.055)" stroke-width="3.2"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="#8A8F98" stroke-width="2"/><path d="M 257 181.65 L 264 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(138,143,152,0.016)" stroke-width="4.4"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(138,143,152,0.055)" stroke-width="3.2"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="#8A8F98" stroke-width="2"/><path d="M 463 181.65 L 456 181.65" data-cfx-role="topology-edge-endpoint-connector" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/><path d="M 463 181.65 L 455 177.65 L 455 185.65 Z" data-cfx-role="topology-marker" fill="#8A8F98" stroke="#8A8F98" stroke-width="1" fill-rule="evenodd"/></g><g id="topology-interchange-wide-dark-node-26" data-cfx-source-id="dispatch-label" data-cfx-role="topology-edge-label" class="cfx-topology__edge-label" data-cfx-status="Unknown" data-edge-id="dispatch" data-edge-label-render-order="0" data-edge-render-order="0" data-label-anchor-node-id="" data-label-anchor-override="false" data-label-anchor-x="363.7810909090909" data-label-anchor-y="181.65" data-label-clearance="false" data-label-height="24" data-label-leader="false" data-label-line-count="1" data-label-width="84.56727272727272" data-label-x="363.78109090909084" data-label-y="181.65"><rect x="321.497" y="169.65" width="84.567" height="24" rx="9" data-cfx-role="topology-edge-label-surface" fill="#0C0D10" stroke="#272A30" stroke-width="1"/><g data-cfx-role="topology-edge-label-text"><text x="340.66" y="185.752" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="600" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Accepted</text></g></g><g id="topology-interchange-wide-dark-node-30" data-cfx-source-id="request" data-cfx-role="topology-node" class="cfx-topology__node" data-cfx-meta-host-record="request-42" data-cfx-selected="false" data-cfx-status="Healthy" data-group-id="" data-group-label="" data-node-badge="" data-node-detail-count="1" data-node-display-mode="Card" data-node-id="request" data-node-kind="Server" data-node-label="Request" data-scenario-ids="" data-scenario-step-indices=""><rect x="40" y="126.65" width="210" height="110" rx="3" data-cfx-role="topology-node-surface" fill="#111317" stroke="#4CC78A" stroke-width="1"/><rect x="51" y="143.65" width="22" height="22" rx="3" data-cfx-role="topology-icon-surface" fill="#12201C" stroke="#4CC78A" stroke-width="1"/><path d="M 55 148.65 L 69 148.65 L 69 153.65 L 55 153.65 Z M 55 156.65 L 69 156.65 L 69 161.65 L 55 161.65 Z" data-cfx-role="topology-node-icon" fill="none" stroke="#4CC78A" stroke-width="1.7"/><path d="M 66.5 151.15 L 67.5 151.15 M 66.5 159.15 L 67.5 159.15" data-cfx-role="topology-node-icon" fill="none" stroke="#4CC78A" stroke-width="1.7"/><g id="topology-interchange-wide-dark-node-35" data-cfx-source-id="request-label" data-cfx-role="topology-node-label"><text x="84" y="144.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="600" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Request</text></g><line x1="84" y1="174.509" x2="238" y2="174.509" data-cfx-role="topology-node-detail-separator" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="topology-node-detail"><text x="84" y="189.65" font-family="CFX Proof Carlito, sans-serif" font-size="9.6" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">State Delivered</text></g><g id="topology-interchange-wide-dark-node-38" data-cfx-source-id="request-status" data-cfx-role="topology-node-status" data-node-id="request"><ellipse cx="240" cy="136.65" rx="3" ry="3" data-cfx-role="topology-status" fill="#4CC78A" stroke="none" stroke-width="1"/></g></g><g id="topology-interchange-wide-dark-node-42" data-cfx-source-id="worker" data-cfx-role="topology-node" class="cfx-topology__node" data-cfx-selected="false" data-cfx-status="Healthy" data-group-id="" data-group-label="" data-node-badge="" data-node-detail-count="0" data-node-display-mode="Card" data-node-id="worker" data-node-kind="Generic" data-node-label="Worker" data-scenario-ids="" data-scenario-step-indices=""><rect x="470" y="126.65" width="210" height="110" rx="3" data-cfx-role="topology-node-surface" fill="#111317" stroke="#4CC78A" stroke-width="1"/><g id="topology-interchange-wide-dark-node-44" data-cfx-source-id="worker-label" data-cfx-role="topology-node-label"><text x="480" y="144.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="600" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Worker</text></g><g id="topology-interchange-wide-dark-node-45" data-cfx-source-id="worker-status" data-cfx-role="topology-node-status" data-node-id="worker"><ellipse cx="670" cy="136.65" rx="3" ry="3" data-cfx-role="topology-status" fill="#4CC78A" stroke="none" stroke-width="1"/></g></g></g></g></svg></div><div class="full" style="--example-width:900px" data-visual-theme="dark" data-output-format="png"><img src="topology-interchange-wide-dark.png" width="900" height="400" alt="An editable saved route" loading="lazy" decoding="async"></div></section><div class="export-row"><span>900 × 400 pixels</span><nav aria-label="Download outputs"><a href="topology-interchange-wide-light.svg" data-theme-link data-light-href="topology-interchange-wide-light.svg" data-dark-href="topology-interchange-wide-dark.svg" download>Download SVG</a><a href="topology-interchange-wide-light.png" data-theme-link data-light-href="topology-interchange-wide-light.png" data-dark-href="topology-interchange-wide-dark.png" download>Download PNG</a><a href="topology-interchange-wide-light.csharp.txt" data-theme-link data-light-href="topology-interchange-wide-light.csharp.txt" data-dark-href="topology-interchange-wide-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="topology-interchange-wide-light.gallery.csharp.txt" data-theme-link data-light-href="topology-interchange-wide-light.gallery.csharp.txt" data-dark-href="topology-interchange-wide-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = TopologyInterchangeRecipe.Create(&quot;wide&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;An editable saved route&quot;).WithSubtitle(&quot;Native JSON is loaded into detached owners before editing&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 400)), theme, mode,
+    new VisualFrame(&quot;An editable saved route&quot;, &quot;Native JSON is loaded into detached owners before editing&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Topology).ToHtmlPage());
+
+/// &lt;summary&gt;Saves native topology semantics, loads editable owners and changes a detail without parsing source text.&lt;/summary&gt;
+public static class TopologyInterchangeRecipe {
+    /// &lt;summary&gt;Creates an edited graph after the same public JSON save/load boundary used by a file workflow.&lt;/summary&gt;
+    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        var source = Author(variant, mode);
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
+        return Edit(envelope.ToTopologyChart());
+    }
+
+    /// &lt;summary&gt;Writes original JSON, loads it, edits native owners, then writes script-free SVG and PNG.&lt;/summary&gt;
+    /// &lt;param name=&quot;directory&quot;&gt;A caller-owned output directory.&lt;/param&gt;
+    /// &lt;param name=&quot;variant&quot;&gt;Use wide or compact.&lt;/param&gt;
+    /// &lt;param name=&quot;mode&quot;&gt;The authored resolved color mode.&lt;/param&gt;
+    /// &lt;returns&gt;The detached edited model; the original JSON remains unchanged.&lt;/returns&gt;
+    public static TopologyChart SaveLoadAndEdit(string directory, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException(&quot;An output directory is required.&quot;, nameof(directory));
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, &quot;request-route.json&quot;);
+        File.WriteAllText(path, Author(variant, mode).ToVisualArtifact().ToInterchangeJson());
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(File.ReadAllText(path));
+        // Envelope IDs are retained. Common source-language/extension metadata remains on envelope.
+        // The imported model uses Manual bounds. Set a fresh LayoutMode explicitly when rearranging it.
+        var edited = Edit(envelope.ToTopologyChart());
+        edited.SaveSvg(Path.Combine(directory, &quot;request-route-edited.svg&quot;));
+        edited.SavePng(Path.Combine(directory, &quot;request-route-edited.png&quot;));
+        return edited;
+    }
+
+    private static TopologyChart Edit(TopologyChart chart) {
+        var source = chart.Nodes.Single(node =&gt; node.Id == &quot;request&quot;);
+        source.Details[0].Value = &quot;Delivered&quot;;
+        source.Status = TopologyHealthStatus.Healthy;
+        chart.Edges.Single(edge =&gt; edge.Id == &quot;dispatch&quot;).Label = &quot;Accepted&quot;;
+        return chart;
+    }
+
+    private static TopologyChart Author(string variant, VisualThemeMode mode) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == &quot;compact&quot;;
+        var chart = TopologyChart.Create().WithId(&quot;saved-request-route&quot;).WithTitle(&quot;An editable saved route&quot;)
+            .WithSubtitle(&quot;The loaded graph owns independent native data&quot;)
+            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 900, compact ? 520 : 400);
+        chart.Nodes.Add(new TopologyNode { Id = &quot;request&quot;, Label = &quot;Request&quot;, X = 40, Y = 75, Width = 210, Height = 110,
+            Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Queued&quot; });
+        chart.Nodes[0].Ports.Add(new TopologyNodePort { Id = &quot;send&quot;, Side = compact ? TopologyEdgePort.Bottom : TopologyEdgePort.Right, Offset = .5 });
+        chart.Nodes[0].Metadata[&quot;host.record&quot;] = &quot;request-42&quot;;
+        chart.Nodes.Add(new TopologyNode { Id = &quot;worker&quot;, Label = &quot;Worker&quot;, X = compact ? 40 : 470, Y = compact ? 285 : 75,
+            Width = 210, Height = 110, Status = TopologyHealthStatus.Healthy });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;dispatch&quot;, SourceNodeId = &quot;request&quot;, TargetNodeId = &quot;worker&quot;, SourcePortId = &quot;send&quot;,
+            Label = &quot;Dispatch&quot;, Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Accessibility.Name = &quot;Saved request route&quot;;
+        return chart;
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = TopologyInterchangeRecipe.Create(&quot;wide&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;An editable saved route&quot;).WithSubtitle(&quot;Native JSON is loaded into detached owners before editing&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 400)), theme, mode,
+    new VisualFrame(&quot;An editable saved route&quot;, &quot;Native JSON is loaded into detached owners before editing&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Topology).ToHtmlPage());
+
+/// &lt;summary&gt;Saves native topology semantics, loads editable owners and changes a detail without parsing source text.&lt;/summary&gt;
+public static class TopologyInterchangeRecipe {
+    /// &lt;summary&gt;Creates an edited graph after the same public JSON save/load boundary used by a file workflow.&lt;/summary&gt;
+    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        var source = Author(variant, mode);
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
+        return Edit(envelope.ToTopologyChart());
+    }
+
+    /// &lt;summary&gt;Writes original JSON, loads it, edits native owners, then writes script-free SVG and PNG.&lt;/summary&gt;
+    /// &lt;param name=&quot;directory&quot;&gt;A caller-owned output directory.&lt;/param&gt;
+    /// &lt;param name=&quot;variant&quot;&gt;Use wide or compact.&lt;/param&gt;
+    /// &lt;param name=&quot;mode&quot;&gt;The authored resolved color mode.&lt;/param&gt;
+    /// &lt;returns&gt;The detached edited model; the original JSON remains unchanged.&lt;/returns&gt;
+    public static TopologyChart SaveLoadAndEdit(string directory, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException(&quot;An output directory is required.&quot;, nameof(directory));
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, &quot;request-route.json&quot;);
+        File.WriteAllText(path, Author(variant, mode).ToVisualArtifact().ToInterchangeJson());
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(File.ReadAllText(path));
+        // Envelope IDs are retained. Common source-language/extension metadata remains on envelope.
+        // The imported model uses Manual bounds. Set a fresh LayoutMode explicitly when rearranging it.
+        var edited = Edit(envelope.ToTopologyChart());
+        edited.SaveSvg(Path.Combine(directory, &quot;request-route-edited.svg&quot;));
+        edited.SavePng(Path.Combine(directory, &quot;request-route-edited.png&quot;));
+        return edited;
+    }
+
+    private static TopologyChart Edit(TopologyChart chart) {
+        var source = chart.Nodes.Single(node =&gt; node.Id == &quot;request&quot;);
+        source.Details[0].Value = &quot;Delivered&quot;;
+        source.Status = TopologyHealthStatus.Healthy;
+        chart.Edges.Single(edge =&gt; edge.Id == &quot;dispatch&quot;).Label = &quot;Accepted&quot;;
+        return chart;
+    }
+
+    private static TopologyChart Author(string variant, VisualThemeMode mode) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == &quot;compact&quot;;
+        var chart = TopologyChart.Create().WithId(&quot;saved-request-route&quot;).WithTitle(&quot;An editable saved route&quot;)
+            .WithSubtitle(&quot;The loaded graph owns independent native data&quot;)
+            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 900, compact ? 520 : 400);
+        chart.Nodes.Add(new TopologyNode { Id = &quot;request&quot;, Label = &quot;Request&quot;, X = 40, Y = 75, Width = 210, Height = 110,
+            Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Queued&quot; });
+        chart.Nodes[0].Ports.Add(new TopologyNodePort { Id = &quot;send&quot;, Side = compact ? TopologyEdgePort.Bottom : TopologyEdgePort.Right, Offset = .5 });
+        chart.Nodes[0].Metadata[&quot;host.record&quot;] = &quot;request-42&quot;;
+        chart.Nodes.Add(new TopologyNode { Id = &quot;worker&quot;, Label = &quot;Worker&quot;, X = compact ? 40 : 470, Y = compact ? 285 : 75,
+            Width = 210, Height = 110, Status = TopologyHealthStatus.Healthy });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;dispatch&quot;, SourceNodeId = &quot;request&quot;, TargetNodeId = &quot;worker&quot;, SourcePortId = &quot;send&quot;,
+            Label = &quot;Dispatch&quot;, Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Accessibility.Name = &quot;Saved request route&quot;;
+        return chart;
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

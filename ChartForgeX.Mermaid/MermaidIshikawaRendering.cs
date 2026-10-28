@@ -20,10 +20,13 @@ public static class MermaidIshikawaRendering {
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
-            .WithPadding(options.Padding);
+            .WithPadding(document.Configuration.Ishikawa?.Padding ?? options.Padding);
 
         foreach (var child in document.Root.Children) CopyCause(child, block.AddCause(child.Text));
-        return MermaidPresentation.Apply(block, document, options.Presentation);
+        MermaidPresentation.Apply(block, document, options.Presentation);
+        document.Configuration.Ishikawa?.Apply(block, options.Presentation);
+        if (VisualBlockRendering.FishboneNeedsNaturalLayout(block)) block.WithNaturalSize(options.Width, options.Height);
+        return block;
     }
 
     /// <summary>
@@ -40,6 +43,9 @@ public static class MermaidIshikawaRendering {
         artifact.Subtitle = block.Subtitle;
         artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
+        var useMaxWidth = document.Configuration.Ishikawa?.UseMaxWidth;
+        if (useMaxWidth.HasValue || block.UsesNaturalLayout) artifact.HtmlSizing = useMaxWidth == true
+            ? VisualArtifactHtmlSizing.FitToWidth : VisualArtifactHtmlSizing.PreserveSize;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.causes"] = block.Causes.Count.ToString(CultureInfo.InvariantCulture);
@@ -77,10 +83,10 @@ public static class MermaidIshikawaRendering {
 /// Defines conversion and rendering defaults for Mermaid Ishikawa diagrams.
 /// </summary>
 public sealed class MermaidIshikawaRenderOptions : MermaidDiagramRenderOptions {
-    /// <summary>Gets or sets the natural preview width.</summary>
+    /// <summary>Gets or sets the fixed preview width, or minimum width when complete measured cause lanes are needed.</summary>
     public int Width { get; set; } = 900;
 
-    /// <summary>Gets or sets the natural preview height.</summary>
+    /// <summary>Gets or sets the fixed preview height, or minimum height when complete measured cause lanes are needed.</summary>
     public int Height { get; set; } = 520;
 
     /// <summary>Gets or sets the inner preview padding.</summary>

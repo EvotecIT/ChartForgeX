@@ -641,8 +641,14 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
     $PSNativeCommandUseErrorActionPreference = $true
 }
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $root 'Build/Invoke-RequiredTestContract.ps1')
 Push-Location $root
 try {
+    if ([string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
+        $TestDiagnosticsDirectory = $null
+    } else {
+        $TestDiagnosticsDirectory = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($TestDiagnosticsDirectory)
+    }
     $solution = Join-Path $root 'ChartForgeX.sln'
     $tests = Join-Path $root 'ChartForgeX.Tests/ChartForgeX.Tests.csproj'
     $examples = Join-Path $root 'ChartForgeX.Examples/ChartForgeX.Examples.csproj'
@@ -674,7 +680,8 @@ try {
     Invoke-NodeCommand -FileName 'node' -Arguments @('Build/Test-GraphRuntime.js') -WorkingDirectory $root -Description 'Bundled graph runtime tests' -TimeoutSeconds $PackageConsumerTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-    $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore')
+    # Explicit expensive rendering contracts retain their own normal command budgets.
+    $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery&Category!=RasterStress')
     if (-not [string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
         New-Item -ItemType Directory -Path $TestDiagnosticsDirectory -Force | Out-Null
         $testArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),
@@ -683,6 +690,13 @@ try {
             '--diag', (Join-Path $TestDiagnosticsDirectory 'native.vstest.log'))
     }
     Invoke-DotNetCommand -Arguments $testArguments -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+
+    Write-Host 'Running required raster-stress contracts.'
+    $rasterContractRoot = if ($TestDiagnosticsDirectory) { Join-Path $TestDiagnosticsDirectory 'raster-stress' } else { Join-Path $root "ChartForgeX.Tests/bin/$Configuration/net8.0/raster-stress-contracts" }
+    $contractSettings = if ($TestDiagnosticsDirectory) { Join-Path $root 'Build/native-diagnostics.runsettings' } else { $null }
+    Invoke-RequiredTestContract -Name 'raster-stress' -Project $tests -Configuration $Configuration `
+        -Filter 'Category=RasterStress' -RequiredTestName 'ChartForgeX.Tests.SvgRasterStrokePaintTests.TiledSvgStrokeRetainsItsTransformedGradientFrame' `
+        -RequiredCaseCount 2 -ReportRoot $rasterContractRoot -TimeoutSeconds $DotNetCommandTimeoutSeconds -DiagnosticsSettingsPath $contractSettings
 
     if (-not $SkipAot) {
         $nativeAotRid = Get-NativeAotRuntimeIdentifier
@@ -711,6 +725,13 @@ try {
         $topologyOutput = Join-Path $exampleOutput 'topology-demo'
         Assert-TopologyVisualCoverage -TopologyOutput $topologyOutput -Comparison $comparison
         Assert-PremiumSurfaceCoverage -Output $exampleOutput -Comparison $comparison
+
+        Write-Host 'Running generated-gallery contracts.'
+        $galleryContractRoot = if ($TestDiagnosticsDirectory) { Join-Path $TestDiagnosticsDirectory 'gallery' } else { $exampleOutput.TrimEnd([char[]]@('/', '\')) + '-contracts' }
+        $fontContract = 'ChartForgeX.Tests.MermaidGalleryTypographyTests.PublishedSamplesRetainDefaultGeometryAndAuthoredFontsWhenHostFallbackFacesChange'
+        Invoke-RequiredTestContract -Name 'gallery' -Project $tests -Configuration $Configuration `
+            -Filter 'Category=Gallery' -RequiredTestName $fontContract -RequiredCaseCount 1 `
+            -ReportRoot $galleryContractRoot -TimeoutSeconds $DotNetCommandTimeoutSeconds -DiagnosticsSettingsPath $contractSettings
     }
 
     if (-not $SkipPack) {
@@ -849,7 +870,11 @@ try {
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       </PropertyGroup>
+      <ItemGroup>
+        <None Update="Fonts/*" CopyToOutputDirectory="PreserveNewest" />
+      </ItemGroup>
     </Project>
 '@ | Set-Content -Path (Join-Path $consumerRoot 'PackageConsumer.csproj') -Encoding UTF8
                     @"
@@ -883,6 +908,23 @@ try {
                     Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion, '--package-directory', $consumerPackageCache) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                     Get-ChildItem -LiteralPath (Join-Path $root 'Build/PackageConsumers/Adapters') -Filter '*.cs' -File | Copy-Item -Destination $consumerRoot
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/PackageAssertions.cs') -Destination $consumerRoot
+                    $consumerFonts = Join-Path $consumerRoot 'Fonts'
+                    New-Item -ItemType Directory -Path $consumerFonts | Out-Null
+                    foreach ($fontName in @('Carlito-Regular.ttf', 'Carlito-Bold.ttf', 'OFL.txt')) {
+                        Copy-Item -LiteralPath (Join-Path $root "ChartForgeX.Examples/Fixtures/Fonts/Carlito/$fontName") -Destination $consumerFonts
+                    }
+                    # The quick consumer runs the same adapter contracts; retain their declared source fixtures.
+                    $adapterSourceRoot = Join-Path $root 'Build/PackageConsumers/Adapters'
+                    [xml] $adapterProject = Get-Content -LiteralPath (Join-Path $adapterSourceRoot 'AdaptersPackageProbe.csproj') -Raw
+                    $consumerProjectPath = Join-Path $consumerRoot 'PackageConsumer.csproj'
+                    [xml] $consumerProject = Get-Content -LiteralPath $consumerProjectPath -Raw
+                    $resourceItems = $consumerProject.CreateElement('ItemGroup')
+                    foreach ($resourceItem in $adapterProject.SelectNodes('//EmbeddedResource')) {
+                        Copy-Item -LiteralPath (Join-Path $adapterSourceRoot $resourceItem.GetAttribute('Include')) -Destination $consumerRoot
+                        [void] $resourceItems.AppendChild($consumerProject.ImportNode($resourceItem, $true))
+                    }
+                    [void] $consumerProject.Project.AppendChild($resourceItems)
+                    $consumerProject.Save($consumerProjectPath)
                     Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
                     $consumerSucceeded = $true
                 } finally {

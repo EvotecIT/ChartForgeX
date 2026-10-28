@@ -25,7 +25,7 @@ public sealed class MermaidStateDocument : MermaidDocument {
     /// <summary>Gets explicit class and style statements at their original source locations.</summary>
     public List<MermaidRawStatement> StyleStatements { get; } = new();
 
-    /// <summary>Gets visible state-attached notes in source order.</summary>
+    /// <summary>Gets visible attached and independently named floating notes in source order.</summary>
     public List<MermaidDiagramNote> Notes { get; } = new();
 
     /// <summary>Gets the ordered regions of composite states, including empty regions.</summary>

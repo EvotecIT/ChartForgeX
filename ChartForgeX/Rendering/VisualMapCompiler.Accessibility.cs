@@ -17,8 +17,8 @@ internal static partial class VisualMapCompiler {
             count = Values(series, key => definition.TryResolveRegion(key, out var code) ? code : null).Count;
             total = definition.Regions.Count; name = definition.Name;
         } else {
-            var definition = chart.Series[0].TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
-            count = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null).Count;
+            var definition = series.TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
+            count = Values(series, key => definition.TryResolveRegion(key, out var code) ? code : null).Count;
             total = definition.Regions.Count; name = definition.Name;
         }
         var kind = series.Kind == ChartSeriesKind.RegionMap

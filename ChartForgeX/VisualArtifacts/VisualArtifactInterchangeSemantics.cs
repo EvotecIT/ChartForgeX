@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -12,7 +14,17 @@ public enum VisualArtifactInterchangeFamily {
     /// <summary>Flow lanes, steps, and connectors.</summary>
     Flow,
     /// <summary>Sequence participants, messages, activations, notes, and blocks.</summary>
-    Sequence
+    Sequence,
+    /// <summary>Native railroad rules and symbolic expression structure.</summary>
+    Railroad,
+    /// <summary>Native directory rows with stable parent identities and typed presentation.</summary>
+    TreeView,
+    /// <summary>One exclusive native waterfall with typed or numeric authored items and portable presentation.</summary>
+    Waterfall,
+    /// <summary>Ordered native journey sections, ordinal scores and actor membership.</summary>
+    Journey,
+    /// <summary>Ordered native categorical timeline periods and their events.</summary>
+    Timeline
 }
 
 /// <summary>Identifies the stable role of an interchange group without closing the free-form kind token.</summary>
@@ -67,6 +79,18 @@ public enum VisualArtifactInterchangeAnnotationRole {
 
 /// <summary>Represents topology-wide semantics that do not belong to an individual entity.</summary>
 public sealed class VisualArtifactInterchangeTopologyArtifact {
+    /// <summary>Gets or sets optional exact native viewport/frame edge insets. Null retains uniform native default padding; non-null requires version2.</summary>
+    public ChartPadding? ViewportPadding { get; set; }
+    internal TopologyPreparedContentClip? ContentClip { get; set; }
+    /// <summary>Gets or sets immutable retained native crossing paint; null omits the version-2 policy.</summary>
+    public TopologyCrossingPaint? CrossingPaint { get; set; }
+    /// <summary>Gets ordered immutable native path decorations in this snapshot's coordinate domain; empty is omitted.</summary>
+    /// <remarks>Nonempty decorations require version 2. Prepared snapshots contain fitted geometry; retained hierarchy sources contain authored geometry.</remarks>
+    public List<TopologyPathDecoration> PathDecorations { get; } = new();
+    /// <summary>Gets ordered identified row/column declarations over portable node identities; omitted from JSON when empty.</summary>
+    public List<VisualArtifactInterchangeTopologyAlignment> Alignments { get; } = new();
+    /// <summary>Gets or sets an optional retained raw hierarchy source and its visible projection request.</summary>
+    public VisualArtifactInterchangeTopologyHierarchy? Hierarchy { get; set; }
     /// <summary>Gets or sets the exact topology layout mode.</summary>
     public TopologyLayoutMode LayoutMode { get; set; }
     /// <summary>Gets or sets the exact topology layout direction.</summary>
@@ -75,6 +99,8 @@ public sealed class VisualArtifactInterchangeTopologyArtifact {
 
 /// <summary>Represents flow-wide semantics that do not belong to an individual entity.</summary>
 public sealed class VisualArtifactInterchangeFlowArtifact {
+    internal ChartPadding? ViewportPadding { get; set; }
+    internal VisualArtifactExportFormat? ExportFormats { get; set; }
     /// <summary>Gets or sets the exact flow layout mode.</summary>
     public FlowArtifactLayoutMode LayoutMode { get; set; }
     /// <summary>Gets or sets the exact flow layout direction.</summary>
@@ -83,10 +109,37 @@ public sealed class VisualArtifactInterchangeFlowArtifact {
 
 /// <summary>Represents sequence-wide semantics and provides an additive root for future sequence capabilities.</summary>
 public sealed class VisualArtifactInterchangeSequenceArtifact {
+    /// <summary>Gets or sets immutable contour-only note shadow facts.</summary>
+    public ChartForgeX.Effects.VisualDropShadow? NoteShadow { get; set; }
+    /// <summary>Gets or sets immutable fragment-tab shadow facts.</summary>
+    public ChartForgeX.Effects.VisualDropShadow? FragmentTabShadow { get; set; }
+    /// <summary>Gets or sets immutable rect-background shadow facts.</summary>
+    public ChartForgeX.Effects.VisualDropShadow? BackgroundShadow { get; set; }
+    /// <summary>Gets or sets the immutable native lifeline stroke, independently of source metadata and geometry.</summary>
+    public ChartForgeX.Core.ChartStrokeStyle? LifelineStroke {get;set;}
+    /// <summary>Gets or sets the immutable native theme captured only with a nonempty sequence presentation policy.</summary>
+    public ChartForgeX.Themes.VisualTheme? Theme { get; set; }
+    /// <summary>Gets or sets the paired mode accompanying the captured native theme.</summary>
+    public ChartForgeX.Themes.VisualThemeMode? ThemeMode { get; set; }
+    /// <summary>Gets or sets immutable optional native allocations; nonempty policies require version2.</summary>
+    public SequenceLayoutPolicy? Layout { get; set; }
+    /// <summary>Gets or sets captured detached role typography; nonempty roles require version2.</summary>
+    public SequenceTypography? Typography { get; set; }
 }
 
 /// <summary>Contains artifact-level presentation semantics that portable hosts may preserve.</summary>
 public sealed class VisualArtifactInterchangePresentation {
+    /// <summary>Gets or sets one immutable complete-root procedural source policy; null omits the field.</summary>
+    /// <remarks>Requires version2 and pure Kind=Unknown/Family=None source admission. Restore through
+    /// PrepareTurbulenceSource with an explicit same-size context; captured frame evidence is not a scene codec.</remarks>
+    public ChartForgeX.Effects.VisualTurbulence? TurbulenceSource { get; set; }
+    /// <summary>Gets finite captured presentation steps in source-to-output application order; empty is omitted.</summary>
+    /// <remarks>Nonempty effects require version2. Editable-only import rejects them until explicitly cleared
+    /// on a detached source copy. ApplyCapturedEffects replays root wrappers; ApplyCapturedLayer replays a terminal capture.</remarks>
+    public List<VisualArtifactInterchangeCapturedEffect> CapturedEffects { get; } = new();
+    internal TopologyCaptionPresentation? TopologyCaptions { get; set; }
+    internal VisualFrame? Frame { get; set; }
+    internal PreparedDiagramFont? ContextFont { get; set; }
     /// <summary>Gets or sets the resolved native diagram theme.</summary>
     public VisualArtifactInterchangeTheme? Theme { get; set; }
     /// <summary>Gets or sets the geographic viewport.</summary>
@@ -97,6 +150,18 @@ public sealed class VisualArtifactInterchangePresentation {
 
 /// <summary>Represents a resolved, renderer-neutral color theme.</summary>
 public sealed class VisualArtifactInterchangeTheme {
+    /// <summary>Gets or sets the complete immutable paired native theme. When present it owns geometry, effects and typography; resolved legacy slots remain observations.</summary>
+    public ChartForgeX.Themes.VisualTheme? Definition { get; set; }
+    /// <summary>Gets or sets the selected native theme mode. Null preserves the legacy Light restoration contract; nonnull requires version2.</summary>
+    public ChartForgeX.Themes.VisualThemeMode? Mode { get; set; }
+    /// <summary>Gets or sets an optional positive native topology title size. Null retains the ordinary Graphite size; non-null requires version 2.</summary>
+    public double? TitleSize { get; set; }
+    /// <summary>Gets or sets an optional positive topology data-label size. Null retains the ordinary Graphite size; non-null requires version2.</summary>
+    public double? DataLabelSize { get; set; }
+    /// <summary>Gets or sets an optional positive topology frame subtitle size. Null retains the ordinary Graphite size; non-null requires version 2.</summary>
+    public double? SubtitleSize { get; set; }
+    /// <summary>Gets or sets an optional positive topology frame legend size. Null retains the ordinary Graphite size; non-null requires version 2.</summary>
+    public double? LegendSize { get; set; }
     /// <summary>Gets or sets the background color.</summary>
     public string Background { get; set; } = string.Empty;
     /// <summary>Gets or sets the foreground color.</summary>
@@ -174,7 +239,13 @@ public sealed class VisualArtifactInterchangeLegendItem {
 }
 
 /// <summary>Represents topology-specific group semantics.</summary>
-public sealed class VisualArtifactInterchangeTopologyGroup {
+public sealed partial class VisualArtifactInterchangeTopologyGroup {
+    /// <summary>Gets or sets immutable safe caption runs whose plain projection equals the semantic label.</summary>
+    public ChartForgeX.Typography.TextContent? LabelContent { get; set; }
+    /// <summary>Gets or sets this native item's captured base caption typography.</summary>
+    public ChartForgeX.Typography.TextStyleOverride? TextStyle { get; set; }
+    /// <summary>Gets or sets whether the title/subtitle are painted; identity and semantic label remain available.</summary>
+    public bool ShowLabel { get; set; } = true;
     /// <summary>Gets or sets whether this group is an independent container or an ordered compartment.</summary>
     public TopologyGroupPresentation Presentation { get; set; }
     /// <summary>Gets or sets the containing group id, or null for a root region.</summary>
@@ -198,7 +269,20 @@ public sealed class VisualArtifactInterchangeTopologyGroup {
 }
 
 /// <summary>Represents topology-specific node semantics.</summary>
-public sealed class VisualArtifactInterchangeTopologyNode {
+public sealed partial class VisualArtifactInterchangeTopologyNode {
+    internal TopologyPreparedNodeBasis? PreparedNodeBasis { get; set; }
+    /// <summary>Gets or sets captured subtitle-role typography. Non-null requires interchange version 2.</summary>
+    public ChartForgeX.Typography.TextStyleOverride? SubtitleTextStyle { get; set; }
+    /// <summary>Gets or sets detached finite native table content. Non-null content requires envelope version2.</summary>
+    public VisualArtifactInterchangeTableContent? TableContent { get; set; }
+    /// <summary>Gets or sets optional immutable structured caption runs. Their plain projection must equal the node label.</summary>
+    public ChartForgeX.Typography.TextContent? LabelContent { get; set; }
+    /// <summary>Gets or sets the measured text-line width, independent of a fixed prepared node frame.</summary>
+    public double? MaximumTextWidth { get; set; }
+    /// <summary>Gets or sets authored additional native content padding.</summary>
+    public double? ContentPadding { get; set; }
+    /// <summary>Gets or sets this native item's captured base caption typography.</summary>
+    public ChartForgeX.Typography.TextStyleOverride? TextStyle { get; set; }
     /// <summary>Gets or sets the exact node kind.</summary>
     public TopologyNodeKind Kind { get; set; }
     /// <summary>Gets or sets an optional nonnegative categorical slot in the active theme palette.</summary>
@@ -209,6 +293,8 @@ public sealed class VisualArtifactInterchangeTopologyNode {
     public TopologyNodeDisplayMode DisplayMode { get; set; }
     /// <summary>Gets or sets the optional diagram surface.</summary>
     public TopologyNodeShape? Shape { get; set; }
+    /// <summary>Gets or sets the explicit native glyph shape, independent of an optional catalog id. Non-null requires version 2.</summary>
+    public TopologyIconShape? IconShape { get; set; }
     /// <summary>Gets or sets whether label-only node dimensions are minimums for prepared font fitting.</summary>
     public bool FitLabelToContent { get; set; }
     /// <summary>Gets or sets the optional longitude.</summary>
@@ -261,6 +347,25 @@ public sealed class VisualArtifactInterchangePoint {
 
 /// <summary>Represents topology-specific edge semantics.</summary>
 public sealed class VisualArtifactInterchangeTopologyEdge {
+    /// <summary>Gets or sets optional native relationship and endpoint backplate fill; non-null requires version two.</summary>
+    public string? LabelBackgroundColor { get; set; }
+    /// <summary>Gets or sets interpolation over the resolved native route. Non-null requires version2.</summary>
+    public TopologyEdgeInterpolation? Interpolation { get; set; }
+    /// <summary>Gets or sets the optional pre-interpolation logical corner blend, independent of native rounding.</summary>
+    public double? InterpolationCornerBlendLength { get; set; }
+    internal TopologyPreparedEdgePlan? PreparedEdgePlan { get; set; }
+    /// <summary>Gets or sets immutable safe caption runs whose plain projection equals the semantic label.</summary>
+    public ChartForgeX.Typography.TextContent? LabelContent { get; set; }
+    /// <summary>Gets or sets the explicit native label center, independent of its leader anchor.</summary>
+    public TopologyLabelPosition? LabelPosition { get; set; }
+    /// <summary>Gets or sets optional source endpoint marker layout.</summary>
+    public TopologyMarkerStyle? SourceMarkerStyle { get; set; }
+    /// <summary>Gets or sets optional target endpoint marker layout.</summary>
+    public TopologyMarkerStyle? TargetMarkerStyle { get; set; }
+    /// <summary>Gets or sets immutable complete native route geometry. Non-null requires version 2.</summary>
+    public TopologyPathGeometry? PathGeometry { get; set; }
+    /// <summary>Gets or sets this native item's captured base caption typography.</summary>
+    public ChartForgeX.Typography.TextStyleOverride? TextStyle { get; set; }
     /// <summary>Gets or sets the exact edge kind.</summary>
     public TopologyEdgeKind Kind { get; set; }
     /// <summary>Gets or sets an optional nonnegative categorical slot in the active theme palette.</summary>
@@ -315,6 +420,8 @@ public sealed class VisualArtifactInterchangeTopologyEdge {
 
 /// <summary>Represents flow-step semantics.</summary>
 public sealed class VisualArtifactInterchangeFlowNode {
+    internal double? AuthoredWidth { get; set; }
+    internal double? AuthoredHeight { get; set; }
     /// <summary>Gets or sets the exact step kind.</summary>
     public FlowArtifactStepKind Kind { get; set; }
     /// <summary>Gets or sets whether node dimensions are minima for complete measured content. Default: true.</summary>
@@ -331,6 +438,24 @@ public sealed class VisualArtifactInterchangeFlowEdge {
 
 /// <summary>Represents sequence-participant semantics.</summary>
 public sealed class VisualArtifactInterchangeSequenceNode {
+    /// <summary>Gets or sets immutable native glyph/box surface-shadow facts, separate from captions and links.</summary>
+    public ChartForgeX.Effects.VisualDropShadow? SurfaceShadow { get; set; }
+    /// <summary>Gets or sets optional literal participant border ink.</summary>
+    public string? Border {get;set;}
+    /// <summary>Gets or sets optional literal per-participant activation fill.</summary>
+    public string? ActivationFill {get;set;}
+    /// <summary>Gets or sets optional literal per-participant activation border.</summary>
+    public string? ActivationBorder {get;set;}
+    /// <summary>Gets ordered immutable host navigation records; the collection is detached in prepared snapshots.</summary>
+    public List<VisualNavigationLink> NavigationLinks { get; } = new();
+    /// <summary>Gets or sets the optional literal native stereotype.</summary>
+    public string? Stereotype { get; set; }
+    /// <summary>Gets or sets the optional literal native symbol.</summary>
+    public string? Symbol { get; set; }
+    /// <summary>Gets or sets the optional positive authored minimum header width.</summary>
+    public double? MinimumWidth { get; set; }
+    /// <summary>Gets or sets an optional literal resolved native participant fill.</summary>
+    public string? Fill { get; set; }
     /// <summary>Gets or sets the exact participant kind.</summary>
     public SequenceArtifactParticipantKind Kind { get; set; }
     /// <summary>Gets or sets the participant order.</summary>

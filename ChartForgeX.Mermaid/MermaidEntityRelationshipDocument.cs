@@ -7,6 +7,9 @@ namespace ChartForgeX.Mermaid;
 /// Describes a parsed Mermaid entity relationship diagram.
 /// </summary>
 public sealed class MermaidEntityRelationshipDocument : MermaidDocument {
+    // Caption replacement locations are separate from the first identity occurrence.
+    internal Dictionary<string, MermaidSourceSpan> CaptionSpans { get; } = new(StringComparer.Ordinal);
+
     /// <summary>Gets or sets the authored whole-diagram direction.</summary>
     public string? Direction { get; set; }
 

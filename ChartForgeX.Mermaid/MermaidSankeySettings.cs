@@ -6,7 +6,7 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Mermaid;
 
 /// <summary>Validates source scalars once and maps them into the existing native Sankey owners.</summary>
-internal sealed class MermaidSankeySettings {
+internal sealed partial class MermaidSankeySettings {
     private readonly HashSet<string> _handled = new HashSet<string>(StringComparer.Ordinal);
     internal int? Width { get; private set; }
     internal int? Height { get; private set; }
@@ -19,7 +19,7 @@ internal sealed class MermaidSankeySettings {
 
     internal static bool IsScalarPath(string path) => path == "sankey.width" || path == "sankey.height"
         || path == "sankey.nodeWidth" || path == "sankey.nodePadding" || path == "sankey.nodeAlignment"
-        || path == "sankey.showValues" || path == "sankey.prefix" || path == "sankey.suffix";
+        || path == "sankey.showValues" || path == "sankey.prefix" || path == "sankey.suffix" || IsPaintScalarPath(path);
 
     internal bool Handles(string path) {
         foreach (var handled in _handled)
@@ -49,6 +49,7 @@ internal sealed class MermaidSankeySettings {
                 default: Invalid(alignment, "must be left, right, center or justify"); break;
             }
         }
+        settings.ReadPaint(configuration, error);
         return settings;
 
         MermaidConfigurationSetting? Select(string key) {
@@ -89,6 +90,7 @@ internal sealed class MermaidSankeySettings {
 
     internal void Apply(Chart chart) {
         var options = chart.Options.Sankey;
+        ApplyPaint(chart);
         if (NodeWidth.HasValue) options.NodeWidth = NodeWidth.Value;
         if (NodePadding.HasValue) options.NodeGap = NodePadding.Value;
         if (Alignment.HasValue) options.Alignment = Alignment.Value;

@@ -1,0 +1,11 @@
+zenuml
+title Native presentation
+participant <<Service>> [rocket] API 176 as "API service" #336699
+participant <<Store>> 🔒 Store 144 as "Stored records" #ccddaa
+API.work() {
+  Store.read()
+  return ready
+}
+ref(Login, API, Store)
+== Next phase ==
+API -> Store: ready

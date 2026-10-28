@@ -14,7 +14,7 @@ public sealed class MermaidClassSemanticNotationTests {
     [InlineData(true)]
     public void GenericMembersAndClassifiersUseNativeTypographyInPairedDirectFenceArtifacts(bool dark) {
         var source = (dark ? "%%{init: {'theme':'dark'}}%%\n" : "") + Fixture("class-native-members-namespaces");
-        var direct = MermaidRenderer.Render(source);
+        var direct = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions());
         Assert.Empty(direct.Diagnostics);
         var document = Assert.IsType<MermaidClassDocument>(direct.Document);
         var owner = document.Classes.Single(item => item.Id == "Store");
@@ -44,7 +44,7 @@ public sealed class MermaidClassSemanticNotationTests {
         var svg = XDocument.Parse(direct.Artifact.ToSvg());
         Assert.Contains(svg.Descendants(), item => item.Name.LocalName == "text" && item.Value == "+lookup(int id, string key) Item" && (string?)item.Attribute("font-style") == "italic");
         Assert.DoesNotContain(svg.Descendants().Where(item => item.Name.LocalName == "text"), item => item.Value.EndsWith('*') || item.Value.EndsWith('$'));
-        var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fence = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("```mermaid\n" + source + "\n```");
         Assert.False(fence.HasErrors);
         var fenced = Assert.Single(fence.Artifacts);
         var svgText = direct.Artifact.ToSvg();
@@ -89,15 +89,17 @@ public sealed class MermaidClassSemanticNotationTests {
     }
 
     [Fact]
-    public void UpstreamUnsupportedCommaGenericsRemainOneLocatedDiagnosticWithoutFakeClasses() {
+    public void BalancedCommaGenericsAreOneLocatedChartForgeXExtensionWithStableIdentityAndRawCaption() {
         const string statement = "class Pair~K,V~";
         var result = MermaidRenderer.Render("classDiagram\nclass A\n  " + statement);
         Assert.False(result.HasErrors);
         var warning = Assert.Single(result.Diagnostics);
-        Assert.Equal((MermaidDiagnosticCodes.UnsupportedStatement, 3, 3, statement.Length),
+        Assert.Equal((MermaidDiagnosticCodes.ApproximateMapping, 3, 3, statement.Length),
             (warning.Code, warning.Span.Line, warning.Span.Column, warning.Span.Length));
-        Assert.Equal("A", Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes).Id);
-        Assert.Equal(statement, Assert.Single(result.Document!.RawStatements).Text);
+        var node = Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes.Single(node => node.Id == "Pair");
+        Assert.Equal("Pair<K,V>", node.Label);
+        Assert.Equal("Pair~K,V~", node.Metadata["mermaid.generic.source"]);
+        Assert.Empty(result.Document!.RawStatements);
     }
 
     [Theory]
@@ -122,7 +124,7 @@ public sealed class MermaidClassSemanticNotationTests {
     [InlineData(true)]
     public void EveryLollipopOccurrenceIsASeparateVisibleNativeInterface(bool dark) {
         var source = (dark ? "%%{init: {'theme':'dark'}}%%\n" : "") + Fixture("class-native-lollipops");
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidRenderer.Render(source, BrowserProofFonts.MermaidOptions());
         Assert.Empty(rendered.Diagnostics);
         Assert.Equal(new[] { "A", "B" }, Assert.IsType<MermaidClassDocument>(rendered.Document).Classes.Select(item => item.Id));
         var chart = Assert.IsType<TopologyChart>(rendered.Artifact!.Model);
@@ -143,7 +145,7 @@ public sealed class MermaidClassSemanticNotationTests {
             var saved = envelope.Edges.Single(item => item.Id == edge.Id);
             Assert.Equal((edge.SourceNodeId, edge.TargetNodeId), (saved.SourceId, saved.TargetId));
         });
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fenced = new MermaidVisualMarkupParser(BrowserProofFonts.MermaidOptions()).Parse("```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
         var png = rendered.Artifact.ToPng();
         Assert.Equal(png, Assert.Single(fenced.Artifacts).ToPng());

@@ -1,0 +1,69 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = TrendLineModelRecipe.Create("compact-confidence", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Request volume and its trend").WithSubtitle("Explore the data, then download the chart").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Request volume and its trend", "Explore the data, then download the chart", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Fits the selected native model to retained measurements with a pointwise interval.</summary>
+public static class TrendLineModelRecipe {
+    /// <summary>Creates observed values and a fitted curve; logarithmic-response intervals describe the conditional median.</summary>
+    public static Chart Create(string variant = "polynomial", VisualThemeMode mode = VisualThemeMode.Light) {
+        var selection = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
+        var model = selection switch {
+            "polynomial" => ChartTrendLineModel.Polynomial,
+            "logarithmic" => ChartTrendLineModel.Logarithmic,
+            "exponential" => ChartTrendLineModel.Exponential,
+            "power" => ChartTrendLineModel.Power,
+            "confidence" or "prediction" => ChartTrendLineModel.Linear,
+            _ => throw new ArgumentOutOfRangeException(nameof(variant))
+        };
+        var source = Enumerable.Range(1, 12).Select(index => {
+            double x = index, residual = index % 3 - 1;
+            var value = model switch {
+                ChartTrendLineModel.Polynomial => 8 + .4 * x * x - .9 * x + .4 * residual,
+                ChartTrendLineModel.Logarithmic => 4 + 5 * Math.Log(x) + .2 * residual,
+                ChartTrendLineModel.Exponential => 5 * Math.Exp(.13 * x) * (1 + .04 * residual),
+                ChartTrendLineModel.Power => 2 * Math.Pow(x, 1.4) * (1 + .04 * residual),
+                _ => 12 + 1.8 * x + .8 * residual
+            };
+            return new ChartPoint(x, value);
+        }).ToArray();
+        var observations = ChartSeries.CreateScatter(new ChartSeriesId("measurements"), "Measured observations", source);
+        var fit = ChartSeries.CreateTrendLine(new ChartSeriesId("native-fit"), model + " fit", source, null, options => {
+            options.Model = model; options.PolynomialDegree = 2;
+            options.Interval = selection == "prediction" ? ChartTrendLineIntervalKind.Prediction : ChartTrendLineIntervalKind.Confidence;
+            options.ConfidenceLevel = .95;
+        });
+        return Chart.Create().WithXAxis("Source X").WithYAxis("Observed response").WithLegend(true).WithDataLabels(false)
+            .AddSeries(observations).AddSeries(fit).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

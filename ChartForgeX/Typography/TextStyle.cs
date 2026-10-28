@@ -10,6 +10,7 @@ public sealed class TextStyle {
     private FontSpec _font = FontSpec.SystemSans();
     private double _fontSize = 16;
     private double _lineHeight = 1.2;
+    private double _letterSpacing;
     private TextDecorationStyle _underlineStyle;
     private TextDecorationStyle _strikethroughStyle;
     private TextBaseline _baseline;
@@ -27,6 +28,17 @@ public sealed class TextStyle {
             if (!IsFinite(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Font size must be finite and greater than zero.");
             _fontSize = value;
         }
+    }
+
+    /// <summary>Gets or sets additional logical pixels between eligible shaped groups. Zero preserves ordinary spacing.</summary>
+    /// <remarks>No leading/trailing gap is added. Combining/required-ligature/cursive groups stay intact. A negative value
+    /// must retain nonnegative group progression when text is prepared. Changing FontSize alone does not scale this length.</remarks>
+    public double LetterSpacing {
+        get => _letterSpacing;
+        set { ValidateLetterSpacing(value); _letterSpacing = value; }
+    }
+    internal static void ValidateLetterSpacing(double value) {
+        if (!IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Letter spacing must be finite.");
     }
 
     /// <summary>Gets or sets the text color.</summary>
@@ -110,6 +122,7 @@ public sealed class TextStyle {
         Color = Color,
         Alignment = Alignment,
         LineHeight = LineHeight,
+        LetterSpacing = LetterSpacing,
         UnderlineStyle = UnderlineStyle,
         StrikethroughStyle = StrikethroughStyle,
         Baseline = Baseline,

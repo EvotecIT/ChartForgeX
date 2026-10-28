@@ -200,7 +200,7 @@ public sealed class MermaidFlowchartLengthTests {
             Assert.True(await region.EvaluateAsync<bool>("element => element.scrollWidth > element.clientWidth"));
             Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text')].every(element => parseFloat(getComputedStyle(element).fontSize) * Math.abs(element.getScreenCTM().a) >= 8)"));
             await region.FocusAsync();
-            await session.Page.Keyboard.PressAsync("ArrowRight");
+            await session.Page.Keyboard.PressAsync("ArrowRight",new KeyboardPressOptions{Delay=100});
             await session.Page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-html-sizing=preserve-size]').scrollLeft > 0");
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);

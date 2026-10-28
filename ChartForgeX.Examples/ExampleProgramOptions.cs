@@ -11,8 +11,57 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--swimlane-layout-depth-only")) { SwimlaneLayoutDepthExamples.Write(output); return true; }
+        if (HasArg(args, "--topology-crossings-only")) { TopologyCrossingPaintExamples.Write(output); return true; }
+        if (HasArg(args, "--native-value-number-culture-case-only")) { NativeNumberCultureCaseExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-joint-values-visibility-only")) { NativeJointValuesVisibilityExamples.Write(output,args); return true; }
+        if (HasArg(args, "--native-scatter-values-only")) { NativeScatterValueExamples.Write(output,args); return true; }
+        if (HasArg(args, "--native-complete-cartesian-values-only")) { NativeCompleteCartesianValueExamples.Write(output,args); return true; }
+        if (HasArg(args, "--native-joint-stack-values-only")) { NativeJointStackValueExamples.Write(output,args); return true; }
+        if (HasArg(args, "--native-owned-flash-only")) { NativeOwnedValueFlashExamples.Write(output,args); return true; }
+        if (HasArg(args, "--native-component-clipping-only")) { NativeComponentClipExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-component-time-only")) { NativeComponentTimeExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-financial-components-only")) { NativeFinancialComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-error-components-only")) { NativeErrorComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-range-components-only")) { NativeRangeComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-bubble-components-only")) { NativeBubbleComponentExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-raw-values-only")) { NativeRawValueExamples.Write(output); return true; }
+        if (HasArg(args, "--native-richer-number-only")) { NativeNumberCultureCaseExamples.Write(output, args, richer: true); return true; }
+        if (HasArg(args, "--native-value-text-repertoire-only")) { NativeFallbackRadialExamples.Write(output, args, numericValueText: true); return true; }
+        if (HasArg(args, "--native-fallback-radial-only")) { NativeFallbackRadialExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-hierarchy-motion-only")) { NativeHierarchyMotionExamples.Write(output, args); return true; }
+        if (HasArg(args, "--native-radial-motion-only")) { NativeRadialMotionExamples.Write(output); return true; }
+        if (HasArg(args, "--native-radial-bands-only")) { NativeRadialBandMotionExamples.Write(output); return true; }
+        if (HasArg(args, "--native-reflow-only")) { NativeReflowExamples.Write(output); return true; }
+        if (HasArg(args, "--native-cartesian-values-only")) { NativeCartesianValueExamples.Write(output); return true; }
+        if (HasArg(args, "--native-initial-fade-only")) { NativeInitialFadeExamples.Write(output); return true; }
+        if (HasArg(args, "--native-transition-only")) { NativeTransitionExamples.Write(output); return true; }
+        if (HasArg(args, "--native-preparation-backpressure-only")) { NativePreparationBackpressureExamples.Write(output); return true; }
+        if (HasArg(args, "--polar-viewport-only")) {
+            PolarViewportExamples.Write(output);
+            return true;
+        }
+        if (HasArg(args, "--radial-forms-only")) {
+            RadialFormsExamples.Write(output, pngOutputScale);
+            return true;
+        }
         if (HasArg(args, "--integer-axis-only")) {
             IntegerAxisExamples.Write(output, pngOutputScale);
+            return true;
+        }
+        if (HasArg(args, "--journey-timeline-interchange-only")) {
+            JourneyTimelineInterchangeExamples.Write(output);
+            Console.WriteLine("Generated editable categorical interchange examples in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--svg-gaussian-import-only")) {
+            SvgGaussianImportExamples.Write(output);
+            Console.WriteLine("Generated explicit Gaussian import examples in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--composition-effects-only")) {
+            CompositionEffectsExamples.Write(output);
+            Console.WriteLine("Generated baked composition effect examples in: " + output);
             return true;
         }
         if (HasArg(args, "--composition-only")) {

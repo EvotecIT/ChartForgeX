@@ -3,6 +3,7 @@ using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
+using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
@@ -15,6 +16,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     private readonly MermaidRenderOptions _defaults;
     private readonly MermaidRailroadRenderOptions _railroadRenderOptions;
     private readonly MermaidParseOptions? _parseOptions;
+    private readonly VisualThemeMode? _defaultThemeMode;
     private readonly MermaidFlowchartRenderOptions _renderOptions;
     private readonly MermaidFlowchartRenderOptions _swimlaneRenderOptions;
     private readonly MermaidFlowchartRenderOptions _useCaseRenderOptions;
@@ -44,7 +46,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     private readonly MermaidTopologyRenderOptions _architectureRenderOptions;
     private readonly MermaidTopologyRenderOptions _c4RenderOptions;
     private readonly MermaidTopologyRenderOptions _mindMapRenderOptions;
-    private readonly MermaidTopologyRenderOptions _treeViewRenderOptions;
+    private readonly MermaidTreeViewRenderOptions _treeViewRenderOptions;
     private readonly MermaidTopologyRenderOptions _eventModelingRenderOptions;
     private readonly MermaidTopologyRenderOptions _kanbanRenderOptions;
 
@@ -58,11 +60,20 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     /// Initializes a Mermaid visual block parser with rendering defaults.
     /// </summary>
     /// <param name="renderOptions">Optional rendering defaults by Mermaid diagram kind.</param>
-    public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions) {
+    public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions) : this(renderOptions, null) {
+    }
+
+    /// <summary>Initializes a parser with a host theme fallback applied before native appearance capture.</summary>
+    /// <param name="renderOptions">Rendering defaults captured independently for this parser.</param>
+    /// <param name="defaultThemeMode">Fallback for fences without an authored theme; null preserves native defaults.</param>
+    public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions, VisualThemeMode? defaultThemeMode) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
+        if (defaultThemeMode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), defaultThemeMode.Value))
+            throw new ArgumentOutOfRangeException(nameof(defaultThemeMode));
 
         _defaults = renderOptions.Clone();
         _parseOptions = _defaults.ParseOptions;
+        _defaultThemeMode = defaultThemeMode;
         _railroadRenderOptions = (MermaidRailroadRenderOptions)(_defaults.Railroad ?? new MermaidRailroadRenderOptions()).Clone();
 
         _renderOptions = renderOptions.Flowchart == null ? new MermaidFlowchartRenderOptions() : Clone(renderOptions.Flowchart);
@@ -94,7 +105,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         _architectureRenderOptions = renderOptions.Architecture == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.Architecture);
         _c4RenderOptions = renderOptions.C4 == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.C4);
         _mindMapRenderOptions = renderOptions.MindMap == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.MindMap);
-        _treeViewRenderOptions = renderOptions.TreeView == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.TreeView);
+        _treeViewRenderOptions = (MermaidTreeViewRenderOptions)(renderOptions.TreeView ?? new MermaidTreeViewRenderOptions()).Clone();
         _eventModelingRenderOptions = renderOptions.EventModeling == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.EventModeling);
         _kanbanRenderOptions = renderOptions.Kanban == null ? new MermaidTopologyRenderOptions() : Clone(renderOptions.Kanban);
     }
@@ -108,6 +119,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (result == null) throw new ArgumentNullException(nameof(result));
 
         var parsed = new MermaidParser().Parse(block.Payload, _parseOptions);
+        var usesDefaultTheme = parsed.Document != null && parsed.Document.Theme == null && _defaultThemeMode.HasValue;
+        if (usesDefaultTheme && _defaultThemeMode == VisualThemeMode.Dark) parsed.Document!.Theme = "dark";
         MermaidRenderResult rendered;
         try {
             var options = BuildRenderOptions(block, parsed.Document?.Kind ?? MermaidDiagramKind.Unknown);
@@ -130,6 +143,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         }
         if (rendered.HasErrors || rendered.Artifact == null) return;
         var artifact = rendered.Artifact;
+        // A page default is not a theme authored in the retained source.
+        if (usesDefaultTheme) artifact.Metadata.Remove("mermaid.config.theme");
         artifact.Metadata["fence"] = block.FenceName;
         artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
@@ -150,7 +165,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         MermaidDiagramKind.Architecture => new MermaidRenderOptions { Architecture = BuildTopologyOptions(block, _architectureRenderOptions) },
         MermaidDiagramKind.C4 => new MermaidRenderOptions { C4 = BuildTopologyOptions(block, _c4RenderOptions) },
         MermaidDiagramKind.MindMap => new MermaidRenderOptions { MindMap = BuildTopologyOptions(block, _mindMapRenderOptions) },
-        MermaidDiagramKind.TreeView => new MermaidRenderOptions { TreeView = BuildTopologyOptions(block, _treeViewRenderOptions) },
+        MermaidDiagramKind.TreeView => new MermaidRenderOptions { TreeView = BuildTreeViewOptions(block) },
         MermaidDiagramKind.EventModeling => new MermaidRenderOptions { EventModeling = BuildTopologyOptions(block, _eventModelingRenderOptions) },
         MermaidDiagramKind.Kanban => new MermaidRenderOptions { Kanban = BuildTopologyOptions(block, _kanbanRenderOptions) },
         MermaidDiagramKind.Flowchart => new MermaidRenderOptions { Flowchart = BuildOptions(block) },
@@ -250,6 +265,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (TryReadIntAttribute(block, "width", out var parsedWidth)) options.Width = parsedWidth;
         if (TryReadIntAttribute(block, "height", out var parsedHeight)) options.Height = parsedHeight;
         if (TryReadBooleanAttribute(block, "dataLabels", out var showDataLabels)) options.ShowDataLabels = showDataLabels;
+        if (TryReadBooleanAttribute(block, "legend", out var showLegend)) options.ShowLegend = showLegend;
+        if (TryReadBooleanAttribute(block, "showTitle", out var showTitle)) options.ShowTitle = showTitle;
         return options;
     }
 

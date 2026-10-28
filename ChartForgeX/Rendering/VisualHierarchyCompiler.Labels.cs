@@ -22,8 +22,9 @@ internal static partial class VisualHierarchyCompiler {
     }
 
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
-        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = LabelInsetLimit, int maximumLines = 3) {
+        ChartColor fill, int pointIndex, string role, HierarchyCaptionSurface? surface, bool center = false, SvgPaint? fillPaint = null, double insetLimit = LabelInsetLimit, int maximumLines = 3) {
         var style = LabelStyle(chart, context, fill, pointIndex);
+        if (surface != null && !VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex)) style.Color = surface.Ink;
         var inset = Math.Min(insetLimit, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);
         style = VisualTextFitting.FitOversized(builder, style, height, fittedStyle => {
@@ -66,7 +67,8 @@ internal static partial class VisualHierarchyCompiler {
         style.Alignment = center ? TextAlignment.Center : TextAlignment.Left;
         double y = center ? bounds.Y + (bounds.Height - builder.MeasureText(displayed, style).Height) / 2 : bounds.Y + inset;
         var paint = VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex) ? VisualChartPaint.Text(style)
-            : fillPaint.HasValue ? SvgPaint.Contrast(fill, fillPaint.Value) : SvgPaint.Contrast(fill, ChartRelationshipPaint.Role(chart.Series[0], pointIndex));
+            : fill.A == 255 ? fillPaint.HasValue ? SvgPaint.Contrast(fill, fillPaint.Value) : SvgPaint.Contrast(fill, ChartRelationshipPaint.Role(chart.Series[0], pointIndex))
+            : surface!.Paint(fill, fillPaint ?? ChartRelationshipPaint.Paint(chart.Series[0], fill, pointIndex), style.Color);
         // SVG consumers can substitute a wider fallback font; keep painted captions inside their mark.
         using (builder.PushClip(bounds))
             builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);

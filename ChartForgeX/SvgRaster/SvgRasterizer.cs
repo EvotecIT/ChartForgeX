@@ -33,11 +33,13 @@ public static class SvgRasterizer {
     /// <param name="width">Optional output width.</param>
     /// <param name="height">Optional output height.</param>
     /// <param name="strict">Whether to throw instead of returning pixels when loss diagnostics are present.</param>
+    /// <param name="filters">Optional explicit bounded native-filter import; null retains existing unsupported-filter diagnostics and bytes.</param>
     /// <returns>Pixels and bounded diagnostics for the supported SVG subset.</returns>
-    public static SvgRasterizationResult Rasterize(string svg, int? width = null, int? height = null, bool strict = false) {
+    public static SvgRasterizationResult Rasterize(string svg, int? width = null, int? height = null, bool strict = false, SvgRasterFilterOptions? filters = null) {
         if (string.IsNullOrWhiteSpace(svg)) throw new ArgumentException("SVG content cannot be empty.", nameof(svg));
         if (width.HasValue && width.Value <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Width must be greater than zero.");
         if (height.HasValue && height.Value <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Height must be greater than zero.");
+        filters?.CancellationToken.ThrowIfCancellationRequested();
         XDocument document;
         try {
             var settings = new XmlReaderSettings {
@@ -75,9 +77,11 @@ public static class SvgRasterizer {
             throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.", ex);
         }
         parsed.Diagnostics = new SvgRasterDiagnostics();
+        parsed.Filters = filters == null ? null : new SvgRasterFilterContext(filters);
         if (!SvgRasterRenderer.TryRenderDocument(parsed, Attribute(root, "preserveAspectRatio"), targetWidth, targetHeight, out byte[] rgba)) {
             throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.");
         }
+        filters?.CancellationToken.ThrowIfCancellationRequested();
         var diagnostics = parsed.Diagnostics.Snapshot();
         if (strict && diagnostics.Count != 0) throw new NotSupportedException("SVG rasterization encountered unsupported content: " + string.Join(", ", diagnostics.Select(item => item.Code)) + ". Use Rasterize without strict mode to inspect diagnostics.");
         return new SvgRasterizationResult(new RgbaImage(targetWidth, targetHeight, rgba), diagnostics);

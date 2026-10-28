@@ -139,19 +139,15 @@ public sealed class MermaidZenUmlTests {
     }
 
     [Fact]
-    public void UnsupportedAuthoredPresentationAndReferenceDividersRemainVisibleDiagnostics() {
-        const string source = "zenuml\nparticipant <<Service>> [rocket] API 160 as \"API service\" #336699\nA.call()\nref(Login)\n== Next phase ==";
-        var parsed = new MermaidParser().Parse(source); Assert.False(parsed.HasErrors);
-        Assert.Equal(6, parsed.Diagnostics.Count);
-        Assert.All(parsed.Diagnostics, item => Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, item.Code));
-        var document = Assert.IsType<MermaidZenUmlDocument>(parsed.Document);
-        var api = document.Participants[0];
-        Assert.Equal(("API", "API service", "160", "#336699"), (api.Id, api.Alias, api.Attributes["width"], api.Attributes["color"]));
-        var sequence = document.ToSequenceArtifact();
-        Assert.Contains(sequence.Notes, item => item.Text == "ref: Login");
-        Assert.Contains(sequence.Notes, item => item.Text == "Next phase");
-        var strict = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
-        Assert.True(strict.HasErrors); Assert.Null(strict.Artifact);
+    public void FiniteAuthoredPresentationAndReferenceDividersReachNativeRecordsWithoutLossDiagnostics() {
+        const string source="zenuml\nparticipant <<Service>> [rocket] API 160 as \"API service\" #336699\nA.call()\nref(Login)\n== Next phase ==";
+        var parsed=new MermaidParser().Parse(source);Assert.Empty(parsed.Diagnostics);
+        var sequence=Assert.IsType<MermaidZenUmlDocument>(parsed.Document).ToSequenceArtifact();
+        Assert.Equal("Service",sequence.Participants.Single(item=>item.Id=="API").Stereotype);
+        Assert.Contains(sequence.Blocks,item=>item.Kind==SequenceArtifactBlockKind.Reference&&item.Text=="Login");
+        Assert.Contains(sequence.Blocks,item=>item.Kind==SequenceArtifactBlockKind.Divider&&item.Text=="Next phase");
+        Assert.DoesNotContain(sequence.Notes,item=>item.Text=="ref: Login"||item.Text=="Next phase");
+        Assert.NotNull(MermaidRenderer.Render(source,new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject}).Artifact);
     }
 
     [Fact]

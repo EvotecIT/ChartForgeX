@@ -9,7 +9,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>
 /// Provides ChartForgeX rendering adapters for parsed Mermaid treemap diagrams.
 /// </summary>
-public static class MermaidTreemapRendering {
+public static partial class MermaidTreemapRendering {
     /// <summary>
     /// Converts a Mermaid treemap document into a renderer-independent ChartForgeX chart.
     /// </summary>
@@ -25,6 +25,8 @@ public static class MermaidTreemapRendering {
         MermaidPresentation.Apply(chart, document, options.Presentation);
         document.Configuration.Treemap?.Apply(chart);
         if (options.ShowValues.HasValue) chart.Options.Treemap.ShowValues = options.ShowValues.Value;
+        if (options.ValueFormat != null) chart.Options.ValueFormat = options.ValueFormat;
+        ApplyStyles(chart.Series[0], document);
         return chart;
     }
 
@@ -44,6 +46,9 @@ public static class MermaidTreemapRendering {
         artifact.Metadata["mermaid.leaves"] = LeafCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.classes"] = ClassCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
+        RetainStyles(artifact, document);
+        var sourceFormat = document.Configuration.Last("treemap.valueFormat");
+        if (sourceFormat?.Value != null) artifact.Metadata["mermaid.treemap.source.valueFormat"] = sourceFormat.Value;
         return MermaidPresentation.Apply(artifact, document);
     }
 
@@ -98,4 +103,6 @@ public sealed class MermaidTreemapRenderOptions : MermaidDiagramRenderOptions {
     public int Height { get; set; } = 560;
     /// <summary>Gets or sets an explicit host override for value captions. Null uses source configuration or the native default.</summary>
     public bool? ShowValues { get; set; }
+    /// <summary>Gets or sets an immutable native value format overriding source valueFormat; null preserves source/native policy.</summary>
+    public ChartValueFormat? ValueFormat { get; set; }
 }

@@ -52,3 +52,12 @@ export function flowchartStyleFacts(db) {
   }
   return facts;
 }
+
+// Cynefin facts from the pinned family database. Layout caps do not remove stored items.
+export function cynefinFacts(db) {
+  return {
+    title: db.getDiagramTitle(),
+    domains: [...db.getDomains()].map(([name, domain]) => [name, domain.items.map(item => item.label)]),
+    transitions: db.getTransitions().map(item => [item.from, item.to, item.label ?? null])
+  };
+}

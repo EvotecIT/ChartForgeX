@@ -63,7 +63,7 @@ internal static partial class SvgRasterRenderer {
                 var faces = new List<TrueTypeFont>();
                 var owners = new List<TextRun>();
                 var ownerIds = new List<int>();
-                var pixelSizes = new List<double>();
+                var pixelSizes = new List<double>(); var spacings = new List<double>();
                 var canShape = true;
                 var ownerId = 0;
                 foreach (var run in chunk.Runs) {
@@ -75,13 +75,13 @@ internal static partial class SvgRasterRenderer {
                         faces.Add(face);
                         owners.Add(run);
                         ownerIds.Add(ownerId);
-                        pixelSizes.Add(run.Style.FontSize);
+                        pixelSizes.Add(run.Style.FontSize); spacings.Add(run.Style.LetterSpacing);
                     }
                     ownerId++;
                 }
                 if (!canShape) continue;
 
-                var glyphs = TextShaper.ShapeStyled(text.ToString(), faces, ownerIds, pixelSizes);
+                var glyphs = TextShaper.ShapeStyled(text.ToString(), faces, ownerIds, pixelSizes, letterSpacings: spacings);
                 var first = chunk.Runs[0];
                 var oldWidth = 0.0;
                 var shifted = new HashSet<TextRun>();
@@ -150,16 +150,16 @@ internal static partial class SvgRasterRenderer {
         public List<ShapedGlyph> Glyphs { get; } = new();
     }
 
-    private static double PreparedAdvance(string text, double size, ResolvedTypeface face, IReadOnlyList<ShapedGlyph>? glyphs) =>
-        glyphs == null ? TextAdvanceWidth(text, size, face) : TrueTypeFont.MeasureGlyphs(glyphs, size) + (face.SynthesizeBold && face.Font!.NeedsSyntheticBold(glyphs) ? TextEmphasisOffset(size) : 0);
+    private static double PreparedAdvance(string text, double size, ResolvedTypeface face, IReadOnlyList<ShapedGlyph>? glyphs, double spacing = 0) =>
+        glyphs == null ? TextAdvanceWidth(text, size, face, spacing) : TrueTypeFont.MeasureGlyphs(glyphs, size) + (face.SynthesizeBold && face.Font!.NeedsSyntheticBold(glyphs) ? TextEmphasisOffset(size) : 0);
 
     private static bool NeedsPreparedBoldOffset(SvgRasterStyle style, IReadOnlyList<ShapedGlyph> glyphs) {
         var face = SvgTextFace(style);
         return face.SynthesizeBold && face.Font!.NeedsSyntheticBold(glyphs);
     }
 
-    private static double PreparedPaintWidth(string text, double size, ResolvedTypeface face, bool italic, IReadOnlyList<ShapedGlyph>? glyphs) =>
-        glyphs == null ? TextPaintWidth(text, size, face, italic) : PreparedAdvance(text, size, face, glyphs) + (italic ? TrueTypeFont.ItalicOverhang(size) : 0);
+    private static double PreparedPaintWidth(string text, double size, ResolvedTypeface face, bool italic, IReadOnlyList<ShapedGlyph>? glyphs, double spacing = 0) =>
+        glyphs == null ? TextPaintWidth(text, size, face, italic, spacing) : PreparedAdvance(text, size, face, glyphs, spacing) + (italic ? TrueTypeFont.ItalicOverhang(size) : 0);
 
     private static double TextEmphasisOffset(double size) => RgbaCanvas.EmphasisOffset(size);
 }

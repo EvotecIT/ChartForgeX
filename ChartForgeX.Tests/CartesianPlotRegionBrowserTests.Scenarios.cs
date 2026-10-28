@@ -76,6 +76,66 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(false, 740)]
+    [InlineData(true, 390)]
+    public async Task ScenarioRevealLabelsSeparateNearbyNativeTargetsWithoutDimmingChartStructure(bool dark, int width) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(width < 500 ? 350 : 600, 360).WithTitle("Nearby observations")
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false)
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed",
+                new[] { new ChartPoint(4.98, 5), new ChartPoint(5.02, 5), new ChartPoint(8, 1) }));
+        var html = chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Features = ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.FocusTrail;
+            options.Interaction.AddScenario("neighbors", "Nearby measurements", scenario => scenario
+                .WithFocusMode(ChartInteractionScenarioFocusMode.Spotlight).AddRoleStep("point", "5", "Both measured observations"));
+        });
+        await using var session = await OpenAsync(html, width, 820);
+        var page = session.Page;
+        await RecordScenarioRevealsAsync(page);
+        await page.Locator("[data-cfx-scenario=neighbors]").ClickAsync();
+        await ClickScenarioStepAsync(page, 0);
+        var facts = await page.Locator(RegionRoot).EvaluateAsync<JsonElement>("""
+            root => {
+                const box=node=>{const b=node.getBoundingClientRect();return{left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
+                return{stage:box(root.querySelector('.cfx-stage')),labels:[...root.querySelectorAll('.cfx-reveal-label')].map(box),
+                    targets:[...root.querySelectorAll('[data-cfx-role=point].cfx-scenario-step-active')].map(box),
+                    trail:[...root.querySelectorAll('.cfx-trail')].map(node=>({id:node.dataset.cfxTargetId,index:node.dataset.cfxTrailIndex})),
+                    muted:root.querySelectorAll('[data-cfx-role=point].cfx-scenario-muted,[data-cfx-role=point].cfx-scenario-step-muted').length,
+                    structure:[root.querySelector('svg'),...root.querySelectorAll('[data-cfx-role=title],[data-cfx-role^=axis],[data-cfx-role^=grid]')]
+                        .filter(node=>node.classList.contains('cfx-scenario-active')||node.classList.contains('cfx-scenario-muted')||node.classList.contains('cfx-scenario-step-active')||node.classList.contains('cfx-scenario-step-muted')).length};
+            }
+            """);
+        var labels = facts.GetProperty("labels").EnumerateArray().ToArray();
+        var targets = facts.GetProperty("targets").EnumerateArray().ToArray();
+        Assert.Equal(2, labels.Length); Assert.Equal(2, targets.Length);
+        Assert.True(targets[0].GetProperty("right").GetDouble() > targets[1].GetProperty("left").GetDouble()
+            && targets[1].GetProperty("right").GetDouble() > targets[0].GetProperty("left").GetDouble(),
+            "The native targets must actually compete for the same preferred label location.");
+        var stage = facts.GetProperty("stage");
+        foreach (var label in labels) {
+            Assert.True(label.GetProperty("width").GetDouble() > 0 && label.GetProperty("height").GetDouble() > 0);
+            Assert.True(label.GetProperty("left").GetDouble() >= stage.GetProperty("left").GetDouble()
+                && label.GetProperty("right").GetDouble() <= stage.GetProperty("right").GetDouble()
+                && label.GetProperty("top").GetDouble() >= stage.GetProperty("top").GetDouble()
+                && label.GetProperty("bottom").GetDouble() <= stage.GetProperty("bottom").GetDouble());
+        }
+        Assert.False(labels[0].GetProperty("left").GetDouble() < labels[1].GetProperty("right").GetDouble()
+            && labels[1].GetProperty("left").GetDouble() < labels[0].GetProperty("right").GetDouble()
+            && labels[0].GetProperty("top").GetDouble() < labels[1].GetProperty("bottom").GetDouble()
+            && labels[1].GetProperty("top").GetDouble() < labels[0].GetProperty("bottom").GetDouble(), "Accepted reveal labels must not overlap.");
+        Assert.Equal(new[] { "observations:0", "observations:1" }, facts.GetProperty("trail").EnumerateArray().Select(item => item.GetProperty("id").GetString()));
+        Assert.Equal(new[] { "1", "2" }, facts.GetProperty("trail").EnumerateArray().Select(item => item.GetProperty("index").GetString()));
+        Assert.Equal(1, facts.GetProperty("muted").GetInt32());
+        Assert.Equal(0, facts.GetProperty("structure").GetInt32());
+        var revealed = await ScenarioRevealFactsAsync(page);
+        Assert.Equal(2, revealed.GetProperty("events")[0].GetProperty("count").GetInt32());
+        Assert.Equal(2, revealed.GetProperty("trailCount").GetInt32());
+        await CapturePassiveAsync(session, html, "scenario-collision-" + (dark ? "compact-dark" : "wide-light"), new { facts, revealed });
+        AssertNoConsoleErrors(session);
+    }
+
     private static string ScenarioFixture(bool dark, int width) {
         var chart = PassiveChart().WithSize(width < 500 ? 350 : 600, 360).WithLegend(true)
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);

@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = SequenceNavigationRecipe.Create("compact", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Participant navigation").WithSubtitle("Detached participant links").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 820)), theme, mode,
+    new VisualFrame("Participant navigation", "Detached participant links", showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Sequence).ToHtmlPage());
+
+/// <summary>Creates reusable native participant link facts; an optional HTML consumer decides how to present them.</summary>
+public static class SequenceNavigationRecipe {
+    /// <summary>Creates a compact or wide native sequence; SVG/PNG stays deterministic and menu-free.</summary>
+    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+        if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));var model=SequenceArtifact.Create("sequence-navigation").WithSize(variant=="compact"?390:1000,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8);model.Participants[0].NavigationLinks=new[]{new VisualNavigationLink("Guide","#guide"),new VisualNavigationLink("Status","#status")};model.ThemeMode=mode;return model;
+    }
+}

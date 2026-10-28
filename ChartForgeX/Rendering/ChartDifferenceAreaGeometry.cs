@@ -6,8 +6,10 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Splits paired boundaries at linear crossings or step transitions, coalescing each signed run before either backend paints it.</summary>
-internal static class ChartDifferenceAreaGeometry {
+internal static partial class ChartDifferenceAreaGeometry {
     internal static IReadOnlyList<(bool Positive, ChartPath Path, int Start, int Count)> Regions(ChartSeries series, ChartPairedBoundaryGeometry mapped) {
+        if ((mapped.NonlinearValueScale && series.Interpolation == ChartInterpolation.Linear) || series.Interpolation == ChartInterpolation.Smooth || series.FirstBoundaryInterpolation.HasValue || series.SecondBoundaryInterpolation.HasValue)
+            return InterpolatedRegions(series, mapped);
         if (series.Interpolation == ChartInterpolation.Step) return StepRegions(series, mapped);
         var result = new List<(bool, ChartPath, int, int)>();
         var first = new List<ChartPoint>(); var second = new List<ChartPoint>();

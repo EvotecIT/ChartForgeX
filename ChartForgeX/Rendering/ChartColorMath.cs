@@ -3,7 +3,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
-internal static class ChartColorMath {
+internal static partial class ChartColorMath {
     /// <summary>Interpolates RGBA paints in premultiplied sRGB, matching CSS color-mix().</summary>
     internal static ChartColor BlendPremultiplied(ChartColor from, ChartColor to, double amount) {
         amount = Clamp01(amount);

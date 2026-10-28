@@ -12,8 +12,9 @@ internal static partial class VisualPolarCompiler {
     private static PolarLayout Layout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<string> axes) {
         var style = FittedTickStyle(chart, context, builder, plot, axes);
         var width = 0d; var height = 0d;
-        if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) foreach (var axis in axes) {
-            var measured = builder.MeasureText(axis, style);
+        if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) for (var index = 0; index < axes.Count; index++) {
+            var measured = VisualAxisText.RotatedMetrics(builder.MeasureText(axes[index], style),
+                VisualAxisText.RadialRotation(chart.Options.XAxis, AxisAngle(chart, index, axes.Count), true));
             width = Math.Max(width, Math.Min(plot.Width * .25, measured.Width));
             height = Math.Max(height, Math.Min(plot.Height * .2, measured.Height));
         }
@@ -59,35 +60,45 @@ internal static partial class VisualPolarCompiler {
         foreach (var pair in scales.OrderBy(pair => pair.Key)) {
             var scale = pair.Value; var axis = RadialValueScale.Axis(chart, pair.Key);
             var secondary = pair.Key == ChartAxisSide.Secondary;
+            using var gridClip = chart.Options.ShowGrid && pair.Key == gridSide ? PolarRadiusClip(chart, builder, geometry, pair.Key) : null;
             var ticks = intervalCount.HasValue ? scale.EqualIntervalTicks(intervalCount.Value) : scale.Ticks;
             var ringCount = intervalCount.HasValue ? (int)Math.Ceiling(intervalCount.Value) : ticks.Count;
             var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
                 secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
             for (var index = 0; index < ringCount; index++) {
-                if (!intervalCount.HasValue && scale.Normalize(ticks[index]) <= 0) continue;
+                if (!intervalCount.HasValue && (radar ? scale.Normalize(ticks[index]) : PolarRadius(chart, pair.Key, scale, ticks[index])) <= 0) continue;
                 // Fit the ceiling guide count without rounding the authored interval divisor.
-                var r = intervalCount.HasValue ? geometry.GridRadius * ((index + 1d) / ringCount) : geometry.Radius * scale.Normalize(ticks[index]);
+                var r = intervalCount.HasValue ? PolarGuideRadius(chart, geometry, pair.Key, (index + 1d) / ringCount)
+                    : geometry.Radius * (radar ? scale.Normalize(ticks[index]) : PolarRadius(chart, pair.Key, scale, ticks[index]));
                 if (chart.Options.ShowGrid && pair.Key == gridSide) {
-                    if (polygonGrid) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, radar ? CategoryAngle(chart.Options.XAxis, i, categories.Length) : PolarAngle(chart.Options.XAxis, categories[i]), r)).ToArray(), ChartInterpolation.Linear),
+                    if (polygonGrid) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, radar ? CategoryAngle(chart, i, categories.Length) : PolarAngle(chart, categories[i]), r)).ToArray(), ChartInterpolation.Linear),
                         fill: fill, stroke: gridColor, strokeWidth: gridWidth, role: ringRole, close: true, dash: gridStroke?.ResolveDash(Array.Empty<double>()), paint: gridPaint);
                     else if (gridStroke?.Dash != null && gridStroke.Dash.Count > 0)
                         builder.Path(ChartPathBuilder.Ellipse(geometry.Cx, geometry.Cy, r, r), fill, gridColor, gridWidth, ringRole, close: true, dash: gridStroke.ResolveDash(Array.Empty<double>()), paint: gridPaint);
                     else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, fill, gridColor, gridWidth, ringRole, paint: gridPaint);
                 }
                 if (chart.Options.ShowAxes && axis.Visible && index < ticks.Count) {
-                    var labelRadius = geometry.Radius * scale.Normalize(ticks[index]);
+                    var labelRadius = geometry.Radius * (radar ? scale.Normalize(ticks[index]) : PolarRadius(chart, pair.Key, scale, ticks[index]));
                     if (labelRadius >= geometry.Radius) continue;
                     var text = formatTick(ticks[index]);
-                    var anchor = new ChartPoint(geometry.Cx + (secondary ? -1 : 1) * context.Theme.Spacing / 2, geometry.Cy - labelRadius);
-                    var ringStyle = FitLabel(builder, style, text, plot.Width * .25, geometry.Radius / Math.Max(1, ringCount));
-                    AddLabel(builder, labels, text, anchor, ringStyle, (radar ? "radar" : "polar") + "-radius-label-" + (secondary ? "secondary-" : "") + index,
+                    var ray = -Math.PI / 2 + Rotation(chart);
+                    var target = On(geometry, ray, labelRadius); var side = secondary ? -1 : 1;
+                    // Preserve the exact existing anchor arithmetic at the default orientation.
+                    var anchor = chart.Options.PolarRotationDegrees == 0
+                        ? new ChartPoint(geometry.Cx + side * context.Theme.Spacing / 2, geometry.Cy - labelRadius)
+                        : new ChartPoint(target.X - Math.Sin(ray) * side * context.Theme.Spacing / 2, target.Y + Math.Cos(ray) * side * context.Theme.Spacing / 2);
+                    var rotation = VisualAxisText.RadialRotation(axis, ray, false);
+                    var ringStyle = FitLabel(builder, style, text, plot.Width * .25, geometry.Radius / Math.Max(1, ringCount), rotation);
+                    var label = AddLabel(builder, labels, text, anchor, ringStyle, (radar ? "radar" : "polar") + "-radius-label-" + (secondary ? "secondary-" : "") + index,
                         radar ? "radar-ring-label" : "polar-radius-label", plot,
                         new[] { new LabelCandidate(0, 0, secondary ? 1 : 0, 0), new LabelCandidate(0, 0, secondary ? 1 : 0, 1) }, 20);
+                    ConfigureAxisLabel(label, axis, ray, false, context.Theme.Spacing);
                 }
             }
         }
+        using var spokeClip = chart.Options.ShowGrid ? PolarRadiusClip(chart, builder, geometry, gridSide) : null;
         for (var index = 0; index < categories.Length; index++) {
-            var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, categories[index]);
+            var angle = radar ? CategoryAngle(chart, index, categories.Length) : PolarAngle(chart, categories[index]);
             if (chart.Options.ShowGrid) {
                 var end = On(geometry, angle, geometry.Radius * chart.Options.PolarAxisScaleFactor);
                 builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, axisColor, axisWidth, radar ? "radar-spoke" : "polar-spoke", dash: axisStroke?.ResolveDash(Array.Empty<double>()), paint: axisPaint);
@@ -96,8 +107,9 @@ internal static partial class VisualPolarCompiler {
             var target = On(geometry, angle, geometry.Radius * chart.Options.PolarAxisLabelFactor + context.Theme.Spacing);
             var horizontal = Math.Cos(angle) > .3 ? 0d : Math.Cos(angle) < -.3 ? 1d : .5;
             var vertical = Math.Sin(angle) > .3 ? 0d : Math.Sin(angle) < -.3 ? 1d : .5;
-            AddLabel(builder, labels, axes[index], target, style, (radar ? "radar" : "polar") + "-axis-label-" + index,
+            var label = AddLabel(builder, labels, axes[index], target, style, (radar ? "radar" : "polar") + "-axis-label-" + index,
                 radar ? "radar-axis-label" : "polar-angle-label", plot, new[] { new LabelCandidate(0, 0, horizontal, vertical) }, 100);
+            ConfigureAxisLabel(label, chart.Options.XAxis, angle, true, context.Theme.Spacing);
         }
     }
 
@@ -121,11 +133,12 @@ internal static partial class VisualPolarCompiler {
             source >= 0 ? id : null);
     }
 
-    private static void AddLabel(VisualSceneBuilder builder, List<PolarLabel> labels, string text, ChartPoint anchor, TextStyle style,
+    private static LabelPlacementRequest AddLabel(VisualSceneBuilder builder, List<PolarLabel> labels, string text, ChartPoint anchor, TextStyle style,
         string id, string role, ChartRect bounds, IReadOnlyList<LabelCandidate> candidates, int priority, string? markId = null) {
         // The viewport describes the retained label; the placed rectangle describes only its displayed text.
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
-        labels.Add(new PolarLabel(new LabelPlacementRequest(text, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(text, style) }, id, role, markId));
+        var request = new LabelPlacementRequest(text, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(text, style) };
+        labels.Add(new PolarLabel(request, id, role, markId)); return request;
     }
 
     private static void DrawLabels(VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<PolarLabel> labels, double gap) {
@@ -135,9 +148,7 @@ internal static partial class VisualPolarCompiler {
             using (builder.PushGroup(label.Id + "-source", label.Role + "-source", VisualMarkLabel.Metadata(label.Request.Text, label.MarkId))) {
                 if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("polar.label-overflow", "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
                 if (result.IsDropped) continue;
-                var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
-                style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
-                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style, label.Role, label.Id, paint: VisualChartPaint.Text(style));
+                VisualAxisText.Draw(builder, result, label.Role, label.Id);
             }
         }
     }
@@ -155,11 +166,22 @@ internal static partial class VisualPolarCompiler {
 
     private static TextStyle FittedTickStyle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<string> axes) =>
         VisualTextFitting.FitOversized(builder, TickStyle(chart, context), plot.Height * .2, fitted =>
-            axes.All(text => { var measured = builder.MeasureText(text, fitted); return measured.Width <= plot.Width * .25 && measured.Height <= plot.Height * .2; }));
+            axes.Select((text, index) => VisualAxisText.RotatedMetrics(builder.MeasureText(text, fitted),
+                VisualAxisText.RadialRotation(chart.Options.XAxis, AxisAngle(chart, index, axes.Count), true)))
+                .All(measured => measured.Width <= plot.Width * .25 && measured.Height <= plot.Height * .2));
 
-    private static TextStyle FitLabel(VisualSceneBuilder builder, TextStyle style, string text, double width, double height) =>
+    private static double AxisAngle(Chart chart, int index, int count) => chart.Series[0].Kind == ChartSeriesKind.Radar
+        ? CategoryAngle(chart, index, count) : PolarAngle(chart, Math.PI * 2 * index / count);
+
+    private static void ConfigureAxisLabel(LabelPlacementRequest request, ChartAxis axis, double angle, bool angular, double spacing) {
+        // Default dedicated-polar density keeps its legacy gap. Explicit density and rotation reuse the canonical axis owner.
+        if (axis.LabelDensity != ChartLabelDensity.Auto) VisualAxisText.ConfigureRadialLabel(request, axis, angle, angular, spacing);
+        else request.RotationDegrees = VisualAxisText.RadialRotation(axis, angle, angular);
+    }
+
+    private static TextStyle FitLabel(VisualSceneBuilder builder, TextStyle style, string text, double width, double height, double angle = 0) =>
         VisualTextFitting.FitOversized(builder, style, height, fitted => {
-            var measured = builder.MeasureText(text, fitted); return measured.Width <= width && measured.Height <= height;
+            var measured = VisualAxisText.RotatedMetrics(builder.MeasureText(text, fitted), angle); return measured.Width <= width && measured.Height <= height;
         });
 
     private sealed class PolarLayout {

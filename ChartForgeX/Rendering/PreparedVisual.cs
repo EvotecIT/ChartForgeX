@@ -69,45 +69,67 @@ public sealed class VisualRenderOptions {
 }
 
 /// <summary>A detached immutable scene. SVG and native raster export consume the same prepared decisions.</summary>
-public sealed class PreparedVisual {
+public sealed partial class PreparedVisual {
     private readonly VisualScene _scene;
     private readonly VisualAccessibility _accessibility;
     private readonly Lazy<string> _svgIdPrefix;
     private readonly Lazy<string>? _semanticInterchange;
+    private readonly VisualArtifactInterchangeEnvelope? _semanticSnapshot;
     private readonly VisualSvgOptions? _defaultSvgOptions;
+    private readonly bool _capturePngText;
+    internal VisualSceneTextCapture? NativeTextCapture { get; private set; }
     internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null,
         VisualSvgOptions? svgOptions = null, ChartAxisProjection? xProjection = null, ChartAxisProjection? yProjection = null,
         ChartAxisProjection? secondaryXProjection = null, ChartAxisProjection? secondaryYProjection = null,
-        ChartCartesianViewport? viewport = null, ChartOrientation? cartesianOrientation = null, ChartHierarchyPreparation? hierarchyPreparation = null) {
+        ChartCartesianViewport? viewport = null, ChartOrientation? cartesianOrientation = null, ChartHierarchyPreparation? hierarchyPreparation = null, ChartPolarProjection? polarProjection = null, ChartPolarViewport? polarViewport = null, ChartForgeX.Topology.TopologyHierarchyPreparation? topologyHierarchyPreparation = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
         // Portable-envelope budgets apply when semantics cross that boundary, not to static rendering.
         // Capture all mutable DTO collections now; serialize only if a host requests interchange.
         var semanticSnapshot = semanticInterchange == null ? null : VisualArtifactInterchangeSnapshot.Capture(semanticInterchange);
+        _semanticSnapshot = semanticSnapshot;
         _semanticInterchange = semanticSnapshot == null ? null : new Lazy<string>(semanticSnapshot.ToJson);
         _defaultSvgOptions = svgOptions;
         XProjection = xProjection; YProjection = yProjection;
         SecondaryXProjection = secondaryXProjection; SecondaryYProjection = secondaryYProjection;
         CartesianViewport = viewport; CartesianOrientation = cartesianOrientation;
-        HierarchyPreparation = hierarchyPreparation;
+        HierarchyPreparation = hierarchyPreparation; TopologyHierarchyPreparation = topologyHierarchyPreparation; PolarProjection = polarProjection; PolarViewport = polarViewport;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
+    internal VisualArtifactInterchangeEnvelope? CapturedSemanticSnapshot => _semanticSnapshot == null ? null : VisualArtifactInterchangeSnapshot.Capture(_semanticSnapshot);
     internal VisualArtifactInterchangeEnvelope? SemanticInterchange => _semanticInterchange == null ? null : VisualArtifactInterchangeEnvelope.FromJson(_semanticInterchange.Value);
-    private PreparedVisual(VisualScene scene, PreparedVisual basis, VisualSvgOptions? svgOptions) {
-        _scene = scene; _accessibility = basis._accessibility.Clone();
-        _semanticInterchange = basis._semanticInterchange; _defaultSvgOptions = svgOptions;
+    private PreparedVisual(VisualScene scene, PreparedVisual basis, VisualSvgOptions? svgOptions, bool? capturePngText = null) {
+        _scene = scene; _accessibility = basis._accessibility.Clone(); NativeTextCapture = basis.NativeTextCapture;
+        _turbulenceSourceScene = basis._turbulenceSourceScene;
+        _capturePngText = capturePngText ?? basis._capturePngText;
+        _semanticInterchange = basis._semanticInterchange; _semanticSnapshot = basis._semanticSnapshot; _defaultSvgOptions = svgOptions;
         XProjection = basis.XProjection; YProjection = basis.YProjection;
         SecondaryXProjection = basis.SecondaryXProjection; SecondaryYProjection = basis.SecondaryYProjection;
         CartesianViewport = basis.CartesianViewport; CartesianOrientation = basis.CartesianOrientation;
-        HierarchyPreparation = basis.HierarchyPreparation;
+        HierarchyPreparation = basis.HierarchyPreparation; TopologyHierarchyPreparation = basis.TopologyHierarchyPreparation; PolarProjection = basis.PolarProjection; PolarViewport = basis.PolarViewport;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
     internal PreparedVisual WithScene(VisualScene scene, VisualSvgOptions? svgOptions) => new PreparedVisual(scene, this, svgOptions);
+    // Native frame capture retains the accepted namespace/paint and PNG-text policy.
+    internal PreparedVisual WithNativeFrame(VisualScene scene) => new PreparedVisual(scene, this, _defaultSvgOptions);
+    /// <summary>Decorates only an adapter-owned serialization snapshot; native scene and ordinary exports remain detached.</summary>
+    internal PreparedVisual ForInteractivePngExport() => _capturePngText ? this : new PreparedVisual(_scene, this, _defaultSvgOptions, true);
+    internal PreparedVisual WithCapturedText(VisualSceneTextCapture? capture) {
+        if (capture == null) return this;
+        var copy = new PreparedVisual(_scene, this, _defaultSvgOptions); copy.NativeTextCapture = capture; return copy;
+    }
+    /// <summary>A newly compiled complete frame retains its own semantics, projections and regions; only serialization policy comes from the accepted basis.</summary>
+    internal PreparedVisual WithCapturedExportPolicy(PreparedVisual basis) => new PreparedVisual(_scene, this, basis._defaultSvgOptions, basis._capturePngText);
     internal VisualScene Scene => _scene;
     internal ChartHierarchyPreparation? HierarchyPreparation { get; }
+    internal ChartForgeX.Topology.TopologyHierarchyPreparation? TopologyHierarchyPreparation { get; }
+    /// <summary>Gets the immutable organization hierarchy request, independently of numeric chart hierarchy views.</summary>
+    public ChartForgeX.Topology.TopologyHierarchyView? TopologyHierarchyView => TopologyHierarchyPreparation?.View;
     /// <summary>Gets the immutable subtree request, or null for the complete source hierarchy.</summary>
     public ChartHierarchyView? HierarchyView => HierarchyPreparation?.Request;
+    /// <summary>Gets the immutable whole-series view captured by native visibility preparation, or null for ordinary preparation.</summary>
+    public ChartVisibilityView? VisibilityView => _scene.VisibilityCapture?.View;
     /// <summary>Gets the logical viewport.</summary>
     public VisualSize Size => _scene.Size;
     /// <summary>Gets preparation diagnostics.</summary>
@@ -129,6 +151,10 @@ public sealed class PreparedVisual {
     public ChartCartesianViewport? CartesianViewport { get; }
     /// <summary>Gets the captured Cartesian orientation, or null for a non-Cartesian or unusable scene.</summary>
     public ChartOrientation? CartesianOrientation { get; }
+    /// <summary>Gets the detached directional/radius projection for a usable continuous Polar scene.</summary>
+    public ChartPolarProjection? PolarProjection { get; }
+    /// <summary>Gets the captured polar request, or null for its full view.</summary>
+    public ChartPolarViewport? PolarViewport { get; }
     /// <summary>Gets an independent copy of the text alternative.</summary>
     public VisualAccessibility Accessibility => _accessibility.Clone();
     /// <summary>Exports script-free SVG without repeating layout.</summary>
@@ -141,15 +167,15 @@ public sealed class PreparedVisual {
     public string ToSvg(VisualSvgOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         return VisualSceneSvgRenderer.Render(_scene, _accessibility.Name, _accessibility.Description,
-            _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options);
+            _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options, _capturePngText);
     }
     private string ExportSvg(string idPrefix) => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
-        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions);
+        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions, _capturePngText);
     /// <summary>Exports an owning artifact's metadata without altering the prepared snapshot.</summary>
-    internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null) {
+    internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null, int? maximumCharacters = null) {
         if (accessibility == null) throw new ArgumentNullException(nameof(accessibility));
         return VisualSceneSvgRenderer.Render(_scene, accessibility.Name, accessibility.Description,
-            accessibility.Language, accessibility.IsDecorative, idPrefix ?? _defaultSvgOptions?.IdPrefix, _defaultSvgOptions);
+            accessibility.Language, accessibility.IsDecorative, idPrefix ?? _defaultSvgOptions?.IdPrefix, _defaultSvgOptions, _capturePngText, maximumCharacters);
     }
     /// <summary>Exports native RGBA pixels without repeating layout or parsing SVG.</summary>
     public RgbaImage ToRgba(VisualRenderOptions? options = null) {

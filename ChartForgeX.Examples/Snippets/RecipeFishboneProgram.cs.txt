@@ -1,0 +1,18 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualBlocks;
+using ChartForgeX.VisualArtifacts;
+
+{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+var model = IshikawaDepthRecipe.Create({{VARIANT}}, mode);
+model.WithTheme(VisualTheme.Graphite(){{FONT_THEME}}, mode).WithNaturalSize({{WIDTH}}, 520);
+File.WriteAllText("fishbone.svg", model.ToSvg());
+File.WriteAllBytes("fishbone.png", model.ToPng());
+var artifact = VisualArtifact.Create("fishbone", VisualArtifactKind.VisualBlock, model);
+artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;
+File.WriteAllText("fishbone.html", artifact.ToHtmlPage());
+
+{{SOURCE}}

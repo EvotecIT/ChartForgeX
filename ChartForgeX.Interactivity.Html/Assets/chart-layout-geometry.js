@@ -54,7 +54,8 @@
       }
       if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node)});
     }
-    const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"]')].map(group=>{
+    const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"],[data-cfx-role="heatmap-column-label"]')]
+      .filter(group=>!group.matches('[data-cfx-role="heatmap-column-label"]') || !group.closest('[transform*="rotate("]')).map(group=>{
       const text=group.querySelector('text')||group, box=text.getBBox();
       return {group,text,center:box.x+box.width/2,sourceWidth:box.width};
     });

@@ -15,6 +15,7 @@ internal static class MermaidZenUmlModel {
             participants.Add(participant.Id, participants.Count);
             if (!Enum.IsDefined(typeof(SequenceArtifactParticipantKind), participant.Kind)) throw MermaidZenUmlParser.Syntax("Unknown ZenUML participant notation.", participant.Span);
             elements?.Invoke(1 + participant.Attributes.Count, participant.Span);
+            MermaidZenUmlPresentation.Apply(participant,new SequenceArtifactParticipant(participant.Id,participant.Alias??participant.Id,participant.Kind));
         }
         if (document.StarterId != null && !participants.ContainsKey(document.StarterId)) throw MermaidZenUmlParser.Syntax("ZenUML starter is not a declared or inferred participant.", document.HeaderSpan);
         var grouped = new HashSet<string>(StringComparer.Ordinal);
@@ -40,6 +41,8 @@ internal static class MermaidZenUmlModel {
                 MermaidResourceGuard.CheckDepth(depth, statement.Span);
                 if (depth > 100) throw MermaidZenUmlParser.Syntax("Native ZenUML fragments support at most 100 nested levels.", statement.Span);
                 elements?.Invoke(1 + statement.Comments.Count, statement.Span);
+                if(statement.Kind!=MermaidZenUmlStatementKind.Reference&&statement.ReferenceParticipantIds.Count>0)
+                    throw MermaidZenUmlParser.Syntax("Only ZenUML reference statements may carry participant targets.",statement.Span);
                 switch (statement.Kind) {
                     case MermaidZenUmlStatementKind.Call:
                     case MermaidZenUmlStatementKind.Create:
@@ -89,6 +92,12 @@ internal static class MermaidZenUmlModel {
                         if (statement.Kind == MermaidZenUmlStatementKind.Try && statement.Branches.Count == 0) throw MermaidZenUmlParser.Syntax("ZenUML try requires catch or finally.", statement.Span);
                         break;
                     case MermaidZenUmlStatementKind.Reference:
+                        var targets=new HashSet<string>(System.StringComparer.Ordinal);
+                        foreach(var id in statement.ReferenceParticipantIds) {
+                            if(!participants.ContainsKey(id)||!targets.Add(id))throw MermaidZenUmlParser.Syntax("ZenUML reference targets must be distinct existing participants.",statement.Span);
+                            used.Add(id);elements?.Invoke(1,statement.Span);
+                        }
+                        goto case MermaidZenUmlStatementKind.Divider;
                     case MermaidZenUmlStatementKind.Divider:
                         if (statement.Children.Count != 0 || statement.Branches.Count != 0) throw MermaidZenUmlParser.Syntax("ZenUML reference and divider statements cannot own nested occurrences.", statement.Span);
                         break;

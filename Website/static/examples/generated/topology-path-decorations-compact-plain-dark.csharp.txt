@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = TopologyPathDecorationRecipe.Create("compact-plain", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Independent maintenance boundary").WithSubtitle("One native path decorates the graph without adding source nodes or relationships").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 400)), theme, mode,
+    new VisualFrame("Independent maintenance boundary", "One native path decorates the graph without adding source nodes or relationships", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+
+/// <summary>An ordinary native topology with a curved maintenance boundary, separate from graph facts.</summary>
+public static class TopologyPathDecorationRecipe {
+    /// <summary>Creates a script-free plan with two services, one relationship and an optional independent boundary.</summary>
+    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "plain" or "compact-plain")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal);
+        var includeBoundary = !variant.EndsWith("plain", StringComparison.Ordinal);
+        var chart = TopologyChart.Create().WithId("maintenance-boundary").WithTitle("Maintenance boundary")
+            .WithViewport(compact ? 390 : 760, 400, 28).WithTheme(VisualTheme.Graphite(), mode);
+        if (compact) chart.WithRenderOptions(new TopologyRenderOptions { FitContentToViewport = true });
+        chart.AddNode("gateway", "Gateway", 80, 130, width: 180, height: 90);
+        chart.AddNode("worker", "Worker", 460, 130, width: 180, height: 90);
+        chart.AddEdge("dispatch", "gateway", "worker", "Dispatch");
+        if (includeBoundary) chart.PathDecorations.Add(new TopologyPathDecoration("maintenance-zone",
+            "M 370 70 C 330 120 410 170 370 220 C 330 270 410 300 370 330",
+            stroke: mode == VisualThemeMode.Dark ? ChartColor.FromHex("#FBBF24") : ChartColor.FromHex("#92400E"),
+            strokeWidth: 3, dashPattern: new[] { 8d, 4d }));
+        return chart;
+    }
+}

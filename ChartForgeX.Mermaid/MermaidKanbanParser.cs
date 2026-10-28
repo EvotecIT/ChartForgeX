@@ -3,49 +3,71 @@ using System.Collections.Generic;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidKanbanParser {
+internal static partial class MermaidKanbanParser {
     public static void ParseStatements(MermaidKanbanDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
-        MermaidKanbanColumn? activeColumn = null;
-        int? columnIndent = null;
+        MermaidKanbanColumn? activeColumn = null; int? columnIndent = null; int? taskIndent = null;
+        var identities = new HashSet<string>(StringComparer.Ordinal);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             MermaidResourceGuard.Checkpoint();
-            var raw = lines[line - 1];
-            var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
-            if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
+            var raw = lines[line - 1]; var text = MermaidParserUtilities.StripInlineComment(raw.Trim());
+            if (MermaidParserUtilities.IsSkippable(text)) continue;
             var indent = MermaidParserUtilities.LeadingWhitespace(raw);
-            var span = new MermaidSourceSpan(line, indent + 1, trimmed.Length);
-            if (!MermaidParserUtilities.TryBracketed(trimmed, out var id, out var title, out var suffix)) {
-                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized kanban statement was retained but not rendered exactly: " + trimmed);
-                continue;
+            var span = new MermaidSourceSpan(line, indent + 1, text.Length);
+            if (!ReadDeclaration(text, span, result, out var id, out var title, out var suffix)) { Retain(); continue; }
+            if (!identities.Add(id)) { Invalid(span, result, "Kanban column and task identities must be unique: '" + id + "'."); Retain(); continue; }
+            if (columnIndent.HasValue && (indent < columnIndent.Value || indent > columnIndent.Value && taskIndent.HasValue && indent != taskIndent.Value)) {
+                Invalid(span, result, "Kanban columns share one indentation; tasks share a deeper indentation per column and cannot nest."); Retain(); continue;
             }
-
-            if (!columnIndent.HasValue || indent <= columnIndent.Value) {
-                columnIndent = indent;
-                activeColumn = new MermaidKanbanColumn(id, title, span);
-                document.Columns.Add(activeColumn);
-                continue;
+            MermaidResourceGuard.ReserveElements(1, span);
+            if (!columnIndent.HasValue || indent == columnIndent.Value) {
+                columnIndent = indent; taskIndent = null;
+                var column = new MermaidKanbanColumn(id, title, span);
+                if (!ReadMetadata(text, suffix, column.Metadata, span, result)) { Retain(); continue; }
+                Diagnose(title, column.Metadata, span, result);
+                column.MetadataSource = suffix < text.Length ? text.Substring(suffix).Trim() : null;
+                document.Columns.Add(column); activeColumn = column;
+            } else {
+                taskIndent = indent;
+                var task = new MermaidKanbanTask(id, title, span);
+                if (!ReadMetadata(text, suffix, task.Metadata, span, result)) { Retain(); continue; }
+                Diagnose(title, task.Metadata, span, result);
+                task.MetadataSource = suffix < text.Length ? text.Substring(suffix).Trim() : null;
+                activeColumn!.Tasks.Add(task);
             }
-
-            var task = new MermaidKanbanTask(id, title, span);
-            ParseMetadata(suffix, task.Metadata);
-            activeColumn!.Tasks.Add(task);
+            void Retain() => document.RawStatements.Add(new MermaidRawStatement(text, span));
         }
-
-        if (document.Columns.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid kanban diagrams require at least one column.");
+        if (document.Columns.Count == 0 && !result.HasErrors) Invalid(document.HeaderSpan, result, "Mermaid kanban diagrams require at least one column.");
     }
 
-    private static void ParseMetadata(string text, Dictionary<string, string> metadata) {
-        var start = text.IndexOf("@{", StringComparison.Ordinal);
-        var end = text.LastIndexOf('}');
-        if (start < 0 || end <= start) return;
-        var body = text.Substring(start + 2, end - start - 2).Trim();
-        foreach (var part in MermaidParserUtilities.SplitCsvLike(body)) {
-            var separator = part.IndexOf(':');
-            if (separator < 0) separator = part.IndexOf('=');
-            if (separator <= 0) continue;
-            var key = part.Substring(0, separator).Trim();
-            var value = MermaidParserUtilities.Unquote(part.Substring(separator + 1).Trim());
-            if (key.Length > 0) metadata[key] = value;
+    private static bool ReadDeclaration(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
+        out string id, out string title, out int suffix) {
+        id = title = string.Empty; suffix = text.Length; var opening = text.IndexOf('[');
+        if (opening <= 0) return Fail("Kanban declarations require id[Title] and optional inline metadata.");
+        id = text.Substring(0, opening).Trim();
+        if (!MermaidKanbanMetadata.Identity(id)) return Fail("Kanban identities contain only letters, digits, underscore, hyphen or dot.");
+        var quote = '\0'; var closing = -1;
+        for (var index = opening + 1; index < text.Length; index++) {
+            if ((index & 255) == 0) MermaidResourceGuard.Checkpoint();
+            if (ReadQuoted(text, ref index, ref quote)) continue;
+            if (text[index] == ']') { closing = index; break; }
+            if (text[index] == '[') return Fail("Quote literal brackets inside Kanban titles.");
         }
+        if (closing < 0 || quote != '\0') return Fail("Kanban titles require balanced brackets and quotes.");
+        try { title = Scalar(text.Substring(opening + 1, closing - opening - 1).Trim()); }
+        catch (ArgumentException exception) { return Fail(exception.Message); }
+        try { MermaidKanbanMetadata.Scalar("label", title); }
+        catch (ArgumentException exception) { return Fail(exception.Message); }
+        suffix = closing + 1; return true;
+        bool Fail(string message) { Invalid(span, result, message); return false; }
     }
+
+    private static void Diagnose(string title, Dictionary<string, string> values, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        var caption = MermaidKanbanMetadata.Get(values, "label") ?? title;
+        MermaidLabelText.Diagnose(caption, span, result, "Kanban");
+        if (string.IsNullOrWhiteSpace(MermaidLabelText.DisplayCaption(caption))) Invalid(span, result, "Kanban display captions must not be empty.");
+
+    }
+
+    private static void Invalid(MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, string message) =>
+        MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidStatement);
 }

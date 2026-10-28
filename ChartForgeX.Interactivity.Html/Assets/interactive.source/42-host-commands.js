@@ -26,7 +26,7 @@
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // Separate OLE/Unix dates.
+
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -70,7 +70,7 @@
       if (candidate[key] !== undefined && !Array.isArray(candidate[key])) throw new TypeError('Chart match ' + key + ' must be an array.');
     return candidate;
   };
-  // Whole ms first; fractions vary by engine.
+
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
     : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value)
       ? Date.parse(value.replace(/(\.\d{3})\d+(Z|[+-]\d\d:\d\d)$/, '$1$2')) : NaN;
@@ -121,6 +121,7 @@
     if (!hasFeature(root, 'Selection')) return [];
     const normalized = hostMatch(match), mode = options.mode || 'replace';
     if (!['replace', 'add', 'remove'].includes(mode)) throw new TypeError('Selection mode must be replace, add or remove.');
+    settleChartUpdateMotion(root);
     const previousTargets = selectedTargets(root);
     const nodes = dataTargets(root), matching = new Set(nodes.filter(node => matchesHostTarget(node, normalized)));
     const single = root.dataset.cfxSelectionMode === 'single', first = matching.values().next().value;
@@ -144,6 +145,7 @@
   };
   const clearBrushCommand = (root, options = {}) => {
     if (!hasFeature(root, 'Brush')) return false;
+    settleChartUpdateMotion(root);
     const changed = clearBrush(root);
     if (changed && options.emit === true) emitHostEvent(root, 'cfxbrushclear', {});
     if (changed && options.sync === true) emitSync(root, { action: 'brush', bounds: '', clear: true });
@@ -206,7 +208,7 @@
       delete match.observationIds;
       removed = true;
     }
-    // Local ordinals; persistent IDs/filters.
+
     if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
     else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {
@@ -235,6 +237,7 @@
   const runHighlightCommand = (root, match, options = {}) => {
     if (!hasFeature(root, 'Selection')) return [];
     const state = { match: hostMatch(match), dim: options.dim === true, source: options.source || '' };
+    settleChartUpdateMotion(root);
     const targets = applyHostHighlight(root, state);
     if (options.emit === true) emitHostEvent(root, 'cfxhighlight', { count: targets.length, targets, source: state.source });
     if (options.sync === true) emitSync(root, { action: 'highlight', state: projectHostHighlight(root, state, true) });
@@ -242,6 +245,7 @@
   };
   const clearHighlightCommand = (root, options = {}) => {
     if (!hasFeature(root, 'Selection')) return [];
+    settleChartUpdateMotion(root);
     applyHostHighlight(root, null);
     if (options.emit === true) emitHostEvent(root, 'cfxhighlightclear', {});
     if (options.sync === true) emitSync(root, { action: 'highlight', state: null });

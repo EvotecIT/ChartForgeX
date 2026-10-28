@@ -11,10 +11,21 @@ using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
 internal static class PackageAssertions {
+    // Only fixtures which require portable outline ink select this finite, declared input.
+    internal static string OutlineFontFamily {
+        get {
+            const string family = "CFX Packed Proof Carlito";
+            FontRegistry.Register(family, Path.Combine(AppContext.BaseDirectory, "Fonts", "Carlito-Regular.ttf"), 400);
+            FontRegistry.Register(family, Path.Combine(AppContext.BaseDirectory, "Fonts", "Carlito-Bold.ttf"), 700);
+            return family;
+        }
+    }
+
     internal static void Require(bool condition, string message) {
         if (!condition) throw new InvalidOperationException(message);
     }

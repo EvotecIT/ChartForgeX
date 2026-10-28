@@ -1,0 +1,30 @@
+using System.IO;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
+
+string? source = {{SOURCE_TEXT}};
+VisualArtifact artifact;
+if (source != null) {
+    var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions {
+        WarningPolicy = MermaidWarningPolicy.Reject,
+        Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, TopologySizing = MermaidTopologySizing.Natural },
+        Flowchart = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = 700 },
+        Agentflow = new MermaidTopologyRenderOptions { Width = {{WIDTH}}, Height = 700 }
+    });
+    if (rendered.HasErrors || rendered.Artifact == null) throw new System.InvalidOperationException("The source contour styles could not render.");
+    artifact = rendered.Artifact;
+} else {
+    var chart = TopologyChart.Create().WithTitle("Native contour paints").WithViewport({{WIDTH}}, 360, 24).WithLegend(null);
+    chart.ThemeMode = VisualThemeMode.{{MODE}};
+    chart.Groups.Add(new TopologyGroup { Id = "scope", Label = "Own container ink", X = 16, Y = 16, Width = 310, Height = 240, StrokeWidth = 4, Opacity = .5, SurfaceOpacity = .8, BackgroundColor = "#ffd8b8" });
+    chart.Groups[0].DashPattern.AddRange(new double[] { 7, 3 });
+    chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Independent node ink", X = 50, Y = 85, Width = 220, Height = 100, Shape = TopologyNodeShape.Rectangle, GroupId = "scope", StrokeWidth = 3, Opacity = .6, SurfaceOpacity = .7, BackgroundColor = "#b8d8ff", ShowStatusBadge = false });
+    chart.Nodes[0].DashPattern.AddRange(new double[] { 9, 4 });
+    artifact = chart.ToVisualArtifact();
+}
+File.WriteAllText("paints.svg", artifact.ToSvg());
+File.WriteAllBytes("paints.png", artifact.ToPng());
+File.WriteAllText("paints.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("paints.json", artifact.ToInterchangeJson());

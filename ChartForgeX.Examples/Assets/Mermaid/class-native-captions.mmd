@@ -1,0 +1,15 @@
+classDiagram
+accTitle: Quoted class contracts
+accDescr: A quoted service and generic repository keep authored identities.
+direction LR
+namespace Domain["`**Service** domain`"] {
+  class `API: service~literal`["`**API**<br>service #38; data`"] {
+    +List~Item~ find()*
+  }
+  class Pair~K,List~V~~
+  `API: service~literal` : +int count$
+  `API: service~literal` "1" o-- "0..*" Pair : `**owns**<br>many`
+  note for `API: service~literal` "One stable identity"
+  click `API: service~literal` href "https://example.invalid/service" "Read contract"
+  style `API: service~literal` fill:#dbeafe,stroke:#1e3a8a,color:#172554
+}

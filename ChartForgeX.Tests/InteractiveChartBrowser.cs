@@ -26,8 +26,8 @@ internal static partial class InteractiveChartBrowser {
         _ => throw new InvalidOperationException(EngineVariable + " must be chromium, firefox or webkit.")
     };
 
-    internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false, Action<IPage>? configurePage = null) {
-        var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
+    internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false, Action<IPage>? configurePage = null, Func<IPage, Task>? configurePageAsync = null, bool waitForOwnedFonts = true) {
+        var session = await HtmlBrowser.OpenSessionAsync(OriginPage(), new HtmlBrowserLaunchOptions {
             Browser = Engine,
             Headless = true,
             Timeout = 15000,
@@ -38,12 +38,28 @@ internal static partial class InteractiveChartBrowser {
         });
         try {
             configurePage?.Invoke(session.Page);
+            if (configurePageAsync != null) await configurePageAsync(session.Page);
             await session.Page.SetContentAsync(html);
+            if (waitForOwnedFonts && await session.Page.EvaluateAsync<bool>("()=>isSecureContext&&typeof FontFace==='function'&&!!document.querySelector('.cfx-stage [data-cfx-owned-font-text]')"))
+                await session.Page.WaitForFunctionAsync("()=>[...document.querySelectorAll('.cfx-stage [data-cfx-owned-font-text]')].every(node=>!node.hasAttribute('display'))");
+            await BrowserProofCaptions.InstallNativeAsync(session.Page);
             return session;
         } catch {
             await session.DisposeAsync();
             throw;
         }
+    }
+
+    // The maintained gallery supplies a real loopback origin for crypto-backed owned fonts.
+    // Use a small same-origin document before installing the exact test HTML.
+    // The gallery manifest can be large and is unrelated to these font-origin fixtures.
+    private static string OriginPage() {
+        var gallery = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
+        if (string.IsNullOrWhiteSpace(gallery)) return "about:blank";
+        if (!Uri.TryCreate(gallery, UriKind.Absolute, out var address) || !address.IsLoopback
+            || address.Scheme != Uri.UriSchemeHttp && address.Scheme != Uri.UriSchemeHttps)
+            throw new InvalidOperationException("CFX_V2_GALLERY_URL must identify the owned loopback gallery.");
+        return new Uri(address, "__cfx_browser_origin.html").AbsoluteUri;
     }
 
     /// <summary>The approved "Checks over a week" interaction example: quiet, warning, and danger lines.</summary>

@@ -17,8 +17,13 @@ public sealed class MermaidBlockDocument : MermaidDocument {
     /// <summary>Gets parsed block edges.</summary>
     public List<MermaidBlockEdge> Edges { get; } = new();
 
-    /// <summary>Gets style and class statements retained for future rendering support.</summary>
+    /// <summary>Gets style and class statements retained with their source locations.</summary>
     public List<MermaidRawStatement> StyleStatements { get; } = new();
+
+    /// <summary>Gets named styles in declaration order.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
+    /// <summary>Gets or sets whether source explicitly selects automatic single-row columns.</summary>
+    public bool AutoColumns { get; set; }
 
     /// <summary>Gets or sets the optional column count.</summary>
     public int? Columns { get; set; }
@@ -59,6 +64,21 @@ public sealed class MermaidBlockItem {
     /// <summary>Gets whether this item is an invisible spacer.</summary>
     public bool IsSpace { get; }
 
+    /// <summary>Gets or sets the containing composite ID.</summary>
+    public string? ParentId { get; set; }
+    /// <summary>Gets or sets whether this source declaration is a composite.</summary>
+    public bool IsComposite { get; set; }
+    /// <summary>Gets or sets local columns for this composite. Null inherits its enclosing grid.</summary>
+    public int? Columns { get; set; }
+    /// <summary>Gets or sets whether this composite explicitly uses automatic columns.</summary>
+    public bool AutoColumns { get; set; }
+    /// <summary>Gets or sets native directional arrow heads.</summary>
+    public BlockLayoutArrowDirections ArrowDirections { get; set; } = BlockLayoutArrowDirections.Right;
+    /// <summary>Gets class names in authored order.</summary>
+    public List<string> Classes { get; } = new();
+    /// <summary>Gets captured style declarations after the default/class/direct cascade.</summary>
+    public Dictionary<string, string> Styles { get; } = new(StringComparer.Ordinal);
+
     /// <summary>Gets the source span for the item statement.</summary>
     public MermaidSourceSpan Span { get; }
 }
@@ -91,6 +111,11 @@ public sealed class MermaidBlockEdge {
 
     /// <summary>Gets whether the edge is directed.</summary>
     public bool Directed { get; }
+
+    /// <summary>Gets or sets whether the source connector is painted.</summary>
+    public bool Visible { get; set; } = true;
+    /// <summary>Gets or sets captured native connector paint; null retains the default.</summary>
+    public ChartForgeX.Core.ChartStrokeStyle? Stroke { get; set; }
 
     /// <summary>Gets the source span for the edge statement.</summary>
     public MermaidSourceSpan Span { get; }

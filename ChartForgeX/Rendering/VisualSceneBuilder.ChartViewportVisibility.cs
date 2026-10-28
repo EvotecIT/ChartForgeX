@@ -16,7 +16,7 @@ internal sealed partial class VisualSceneBuilder {
             foreach (var pair in group.Metadata) metadata.Add(pair.Key, pair.Value);
             metadata["data-cfx-visible"] = "false";
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata, group.PathClip, group.Rotation,
-                group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope);
+                group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope, group.Opacity, group.SurfaceShadow, group.RetainedEffect);
         }
     }
 }

@@ -37,7 +37,7 @@ internal static partial class TopologyDenseRoutePlanner {
             }
         }
 
-        public static PlanKey Create(TopologyChart chart, Scene scene, List<TopologyEdge> edges, List<Request> requests, List<List<ChartPoint>> fixedRoutes) {
+        public static PlanKey Create(TopologyChart chart, Scene scene, List<TopologyEdge> edges, List<Request> requests, List<List<ChartPoint>> fixedRoutes, bool recordedInputs = false) {
             var numbers = new List<long>(1024);
             var texts = new List<string>(256);
             Add(numbers, scene.Region);
@@ -75,7 +75,8 @@ internal static partial class TopologyDenseRoutePlanner {
                 var highlight = TopologyHighlightState.From(chart, options);
                 foreach (var edge in edges) {
                     texts.Add(TopologyRenderPrimitives.EffectiveEdgeDash(edge) ?? string.Empty);
-                    texts.Add(TrunkInputs(edge, options, highlight));
+                    texts.Add(TrunkInputs(edge, options, highlight, recordedInputs ? (edge.PreparedEdgePlan?.SelectedInput ?? false) : (bool?)null,
+                        recordedInputs ? (edge.PreparedEdgePlan?.HighlightedInput ?? true) : (bool?)null));
                 }
             }
 
@@ -205,11 +206,16 @@ internal static partial class TopologyDenseRoutePlanner {
     /// The canonical inputs of <see cref="TrunkKey"/> from the edge and render options. The key adds the planned end side.
     /// Only an active palette binding owns paint identity; authored colors and muted edges keep their existing policies.
     /// </summary>
-    private static string TrunkInputs(TopologyEdge edge, TopologyRenderOptions options, TopologyHighlightState highlight) =>
+    private static string TrunkInputs(TopologyEdge edge, TopologyRenderOptions options, TopologyHighlightState highlight, bool? selected = null, bool? highlighted = null) =>
         string.Join("|", edge.TargetNodeId.Length + ":" + edge.TargetNodeId, (int)edge.Kind, (int)edge.Status,
             (int)edge.Direction, (int)edge.Emphasis, edge.IsMuted, edge.Color?.Length + ":" + edge.Color,
             !edge.IsMuted && string.IsNullOrWhiteSpace(edge.Color) ? edge.PaletteIndex : null,
             edge.StrokeWidth?.ToString("R", CultureInfo.InvariantCulture), edge.Opacity?.ToString("R", CultureInfo.InvariantCulture),
             (int?)edge.TargetMarker, edge.TargetPortId?.Length + ":" + edge.TargetPortId,
-            options.SelectedEdgeIds.Contains(edge.Id), highlight.IsEdgeHighlighted(edge));
+            selected ?? options.SelectedEdgeIds.Contains(edge.Id), highlighted ?? highlight.IsEdgeHighlighted(edge))
+        + (edge.TargetMarkerStyle == null ? string.Empty : "|marker:" + edge.TargetMarkerStyle.Scale.ToString("R", CultureInfo.InvariantCulture)
+            + ":" + edge.TargetMarkerStyle.Offset.ToString("R", CultureInfo.InvariantCulture) + ":" + edge.TargetMarkerStyle.StrokeWidth?.ToString("R", CultureInfo.InvariantCulture))
+        + (edge.Interpolation.HasValue ? "|interpolation:" + (int)edge.Interpolation.Value
+            + ":" + edge.InterpolationCornerBlendLength?.ToString("R", CultureInfo.InvariantCulture) : string.Empty)
+        + (TopologyPreparedEdgePlan.Units(edge) != 1 ? "|preparedUnits:" + TopologyPreparedEdgePlan.Units(edge).ToString("R", CultureInfo.InvariantCulture) : string.Empty);
 }

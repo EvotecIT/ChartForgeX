@@ -152,7 +152,7 @@ public sealed class MermaidRenderOptions {
     /// <summary>
     /// Gets or sets default rendering options for Mermaid tree view artifacts.
     /// </summary>
-    public MermaidTopologyRenderOptions? TreeView { get; set; }
+    public MermaidTreeViewRenderOptions? TreeView { get; set; }
 
     /// <summary>
     /// Gets or sets default rendering options for Mermaid Event Modeling artifacts.
@@ -197,7 +197,7 @@ public sealed class MermaidRenderOptions {
             Architecture = Architecture?.Snapshot<MermaidTopologyRenderOptions>(null),
             C4 = C4?.Snapshot<MermaidTopologyRenderOptions>(null),
             MindMap = MindMap?.Snapshot<MermaidTopologyRenderOptions>(null),
-            TreeView = TreeView?.Snapshot<MermaidTopologyRenderOptions>(null),
+            TreeView = TreeView?.Snapshot<MermaidTreeViewRenderOptions>(null),
             EventModeling = EventModeling?.Snapshot<MermaidTopologyRenderOptions>(null),
             Kanban = Kanban?.Snapshot<MermaidTopologyRenderOptions>(null),
     };

@@ -1,0 +1,65 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = MixedScheduleRecipe.Create("compact-time-reversed", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Shared schedule evidence").WithSubtitle("Source-ordered ranges, tasks, state intervals and packed resource items retain one native time axis").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 660)), theme, mode,
+    new VisualFrame("Shared schedule evidence", "Source-ordered ranges, tasks, state intervals and packed resource items retain one native time axis", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>One native time axis retains real ranges, tasks, state intervals and packed resource items.</summary>
+public static class MixedScheduleRecipe {
+    /// <summary>Creates eight numeric/date and ordinary/reversed compact/wide schedule presentations.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "reversed" or "compact-reversed" or "time" or "compact-time" or "time-reversed" or "compact-time-reversed"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal); var time = variant.Contains("time", StringComparison.Ordinal);
+        var reversed = variant.EndsWith("reversed", StringComparison.Ordinal);
+        var origin = time ? new DateTime(2026, 10, 20, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
+        var chart = Chart.Create().WithSize(compact ? 390 : 900, 660).WithTheme(VisualTheme.Graphite(), mode)
+            .WithTitle("One release, several kinds of schedule evidence").WithSubtitle("Reversal changes presentation; source instants and resource identities remain unchanged")
+            .WithXAxisBounds(origin, origin + 10).WithDataLabels().WithStateCategories(
+                new ChartStateCategory("ready", "Ready", ChartColor.FromHex("#218A63")),
+                new ChartStateCategory("review", "Review", ChartColor.FromHex("#BD771C"), ChartStatePattern.Outlined));
+        if (time) chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
+        chart.AddSeries(new ChartSeries(new ChartSeriesId("window"), "Delivery window", ChartSeriesKind.Timeline,
+            new[] { new ChartPoint(origin + 1, origin + 9) }).WithObservationId(0, new ChartObservationId("delivery-window")));
+        var build = ChartSeries.CreateGanttTask(new ChartSeriesId("build"), "Implementation", origin + 2, origin + 4, .65)
+            .WithObservationId(0, new ChartObservationId("implementation")); chart.AddSeries(build);
+        chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("service"), "Service state", new[] {
+            new ChartStateTimelineSegment(origin + 1, origin + 3, "ready"), new ChartStateTimelineSegment(origin + 4, origin + 7, "review") },
+            summary: "One source gap", group: "Resources").WithObservationId(0, new ChartObservationId("ready-period")));
+        chart.AddSeries(ChartSeries.CreateGanttLane(new ChartSeriesId("reviewers"), "Review activity", new[] {
+            new ChartGanttLaneItem(origin + 2, origin + 6, "review", "Review"), new ChartGanttLaneItem(origin + 3, null, "ready", "Follow-up") },
+            group: "Resources", summary: "Two overlapping items").WithObservationId(0, new ChartObservationId("review-item")));
+        var gate = ChartSeries.CreateGanttMilestone(new ChartSeriesId("gate"), "Acceptance", origin + 8)
+            .WithObservationId(0, new ChartObservationId("acceptance")); chart.AddSeries(gate).AddGanttDependency(build, gate);
+        chart.AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("checkpoint"), "Current checkpoint", origin + 9));
+        chart.WithGanttToday(origin + 9);
+        chart.ConfigureXAxis(axis => axis.Reversed = reversed); chart.ConfigureYAxis(axis => axis.Reversed = reversed);
+        return chart;
+    }
+}

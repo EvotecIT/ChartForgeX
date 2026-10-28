@@ -13,7 +13,8 @@ internal static partial class VisualMapCompiler {
         List<LabelObstacle> obstacles, MapDataset data, Func<ChartPoint, ChartPoint> project, Func<ChartPoint, bool> visiblePoint) {
         var series = data.Series;
         for (var index = 0; index < series.RenderPoints.Count; index++) {
-            var source = series.RenderPoints[index]; var visible = visiblePoint(source); var point = project(source);
+            var source = series.RenderPoints[index]; var viewportVisible = visiblePoint(source);
+            var clustered = data.IsClustered(index); var visible = viewportVisible && !clustered; var point = project(source);
             var category = series.MapPoints[index].Label;
             var formatted = !weights[index].HasValue ? "" : series.MapPointSize.HasOverrides
                 ? data.SizeScale!.Presentation.Value(weights[index]!.Value) : ChartNumericFormatter.FormatValue(chart.Options, weights[index]!.Value);
@@ -29,6 +30,11 @@ internal static partial class VisualMapCompiler {
                 ["data-cfx-visible"] = visible ? "true" : "false", ["aria-label"] = full
             };
             data.AddColorFacts(metadata, index);
+            AddFeatureFacts(metadata, series.MapPoints[index].Feature);
+            if (clustered) {
+                metadata["data-cfx-clustered"] = "true"; metadata["data-cfx-viewport-visible"] = viewportVisible ? "true" : "false";
+                metadata["data-cfx-cluster-grid"] = data.ClusterFor(index)!.Key;
+            }
             if (series.MapPointSize.HasOverrides && weights[index].HasValue) {
                 metadata["data-cfx-label-value"] = data.SizeScale.Presentation.Name;
                 metadata["data-cfx-size-mapping"] = data.SizeScale.Mapping;
@@ -47,9 +53,10 @@ internal static partial class VisualMapCompiler {
                     var labelClearance = Math.Max(radius + context.Theme.Spacing, halo + context.Theme.Spacing / 3);
                     AddMapLabel(builder, labels, text, text, point, MapDataStyle(chart, context, index, series: series), id + "-label", "dotted-map-data-label", plot, labelClearance, 50,
                         series.DataLabelPlacement ?? chart.Options.DataLabelPlacement, leaderColor: color, leaderPaint: paint,
-                        leaderRadius: radius + Math.Max(1, dot * .55) / 2);
+                        leaderRadius: radius + Math.Max(1, dot * .55) / 2, callouts: chart.Options.MapCallouts);
                 }
             }
         }
+        DrawMapClusters(chart, context, builder, data, plot, colors, obstacles, dot);
     }
 }

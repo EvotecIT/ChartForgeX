@@ -22,7 +22,8 @@ public static partial class ChartMapGeoJson {
         if (string.IsNullOrWhiteSpace(geoJson)) throw new ArgumentException("GeoJSON must not be empty.", nameof(geoJson));
         options ??= new ChartMapGeoJsonOptions();
         options.Validate();
-        var root = GeoJsonValue.Parse(geoJson).AsObject("GeoJSON root");
+        var root = (options.PolygonViewport.HasValue ? ReadPolygonViewportSource(geoJson) : GeoJsonValue.Parse(geoJson)).AsObject("GeoJSON root");
+        var polygonBudget = options.PolygonViewport.HasValue ? new ObservationImportBudget(options) : null;
         var features = ReadFeatures(root);
         var regions = new List<ChartMapRegion>();
         var usedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -30,7 +31,7 @@ public static partial class ChartMapGeoJson {
         var index = 1;
         foreach (var feature in features) {
             if (!options.IncludesFeature(feature)) continue;
-            if (!TryReadPath(feature, options, out var path, out var label, out var featureBounds, out var coordinates)) {
+            if (!TryReadPath(feature, options, out var path, out var label, out var featureBounds, out var coordinates, polygonBudget)) {
                 if (options.SkipUnsupportedGeometries) continue;
                 throw new ArgumentException("Unsupported GeoJSON geometry type: " + (feature.GeometryType ?? "missing") + ".");
             }
@@ -40,12 +41,15 @@ public static partial class ChartMapGeoJson {
             var code = options.FindCode(feature, index, usedCodes);
             usedCodes.Add(code);
             var regionName = options.FindName(feature, code);
-            regions.Add(new ChartMapRegion(code, regionName, path, label, options.FindAliases(feature, code, regionName)));
+            var region = new ChartMapRegion(code, regionName, path, label, options.FindAliases(feature, code, regionName));
+            if (options.PolygonViewport.HasValue) region = region.WithGeoJsonSource(ChartMapFeature.FromFeature(feature), PolygonGeometryJson(feature));
+            regions.Add(region);
             index++;
         }
 
         if (regions.Count == 0) throw new ArgumentException("GeoJSON did not contain any polygon or multipolygon features matching the import options.", nameof(geoJson));
-        return new ChartMapDefinition(id, name, MaterializeBounds(bounds), regions).WithGeographicProjection(options.Projection);
+        var definition = new ChartMapDefinition(id, name, MaterializeBounds(bounds), regions).WithGeographicProjection(options.Projection);
+        return options.PolygonViewport.HasValue ? definition.WithPolygonViewport(options.PolygonViewport.Value) : definition;
     }
 
     private static List<GeoJsonFeature> ReadFeatures(Dictionary<string, GeoJsonValue> root) {
@@ -64,7 +68,9 @@ public static partial class ChartMapGeoJson {
         throw new ArgumentException("GeoJSON root must be a FeatureCollection or Feature.");
     }
 
-    private static bool TryReadPath(GeoJsonFeature feature, ChartMapGeoJsonOptions options, out string path, out ChartPoint label, out Bounds bounds, out CoordinateBounds coordinates) {
+    private static bool TryReadPath(GeoJsonFeature feature, ChartMapGeoJsonOptions options, out string path, out ChartPoint label, out Bounds bounds, out CoordinateBounds coordinates,
+        ObservationImportBudget? polygonBudget = null) {
+        if (options.PolygonViewport.HasValue) return TryReadViewportPath(feature, options, polygonBudget!, out path, out label, out bounds, out coordinates);
         path = string.Empty;
         label = default;
         bounds = EmptyBounds();

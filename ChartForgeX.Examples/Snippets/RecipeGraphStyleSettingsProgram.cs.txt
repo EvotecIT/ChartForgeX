@@ -1,0 +1,18 @@
+using System.IO;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var source = {{SOURCE_TEXT}};
+var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions {
+    WarningPolicy = MermaidWarningPolicy.Reject,
+    Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, TopologySizing = MermaidTopologySizing.Natural },
+    Flowchart = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = 700 },
+    Agentflow = new MermaidTopologyRenderOptions { Width = {{WIDTH}}, Height = 700 }
+});
+if (rendered.HasErrors || rendered.Artifact == null) throw new System.InvalidOperationException("The source style program could not render.");
+var artifact = rendered.Artifact;
+File.WriteAllText("styles.svg", artifact.ToSvg());
+File.WriteAllBytes("styles.png", artifact.ToPng());
+File.WriteAllText("styles.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("styles.json", artifact.ToInterchangeJson());

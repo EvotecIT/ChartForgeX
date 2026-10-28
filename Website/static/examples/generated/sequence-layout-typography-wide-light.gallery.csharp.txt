@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = SequenceLayoutTypographyRecipe.Create("wide", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Measured review sequence").WithSubtitle("Independent native role typography and spacing").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(1000, 620)), theme, mode,
+    new VisualFrame("Measured review sequence", "Independent native role typography and spacing", showLegend: false, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Sequence).ToHtmlPage());
+
+/// <summary>Creates a native sequence with independent measured role typography and explicit logical spacing.</summary>
+public static class SequenceLayoutTypographyRecipe {
+    /// <summary>Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.</summary>
+    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+        if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
+        var model=SequenceArtifact.Create("sequence-layout").WithSize(variant=="compact"?390:1000,620)
+            .WithTitle("Measured review sequence").WithSubtitle("Each role retains its own font and source identity")
+            .AddParticipant("A","Review").AddParticipant("B","Store")
+            .AddMessage("A","B","Save").AddMessage("B","A","Ready",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return)
+            .AddBlock(SequenceArtifactBlockKind.Alt,"Accepted",0,1).AddActivation("B",true,0).AddActivation("B",false,2)
+            .AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Retain record facts");
+        model.Notes[0].StepIndex=1;model.Metadata["mermaid.autonumber"]="true";model.Theme=VisualTheme.Graphite();model.ThemeMode=mode;
+        model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:90,participantMinimumHeight:60,participantSpacing:20,messageSpacing:18,
+            noteSpacing:12,fragmentMargin:10,fragmentLabelPadding:6,activationWidth:14,wrapPadding:8);
+        model.Typography=new SequenceTypography(new TextStyleOverride{FontSize=17,FontWeight="700"},new TextStyleOverride{FontSize=16,FontWeight="500"},
+            new TextStyleOverride{FontSize=14,FontWeight="400"},new TextStyleOverride{FontSize=15,FontWeight="600"},new TextStyleOverride{FontSize=13,FontWeight="700"});
+        return model;
+    }
+}

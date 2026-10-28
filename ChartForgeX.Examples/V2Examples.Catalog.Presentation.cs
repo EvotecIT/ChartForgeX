@@ -50,6 +50,7 @@ public static partial class V2Examples {
         AppendPairedLink(page, artifacts, selected, "Download SVG", ".svg", download: true);
         AppendPairedLink(page, artifacts, selected, "Download PNG", ".png", download: true);
         AppendPairedLink(page, artifacts, selected, "Download C#", ".csharp.txt", download: true);
+        if (selected.HtmlAdapter) AppendPairedLink(page, artifacts, selected, "Open interactive example", ".interactive.html");
         page.Append("</nav></div>");
         foreach (var artifact in paired.Where(artifact => artifact.Diagnostics.Length > 0)) {
             page.Append("<aside class=\"layout-notes\" data-layout-notes data-visual-theme=\"").Append(artifact.Theme)
@@ -58,7 +59,7 @@ public static partial class V2Examples {
                 page.Append("<li>").Append(Escape(message)).Append("</li>");
             page.Append("</ul></aside>");
         }
-        page.Append("<section class=\"source-section\" aria-labelledby=\"source-heading\"><div class=\"source-heading\"><h2 id=\"source-heading\">Create this example</h2><button type=\"button\" data-copy-source>Copy C#</button><span data-copy-status role=\"status\"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p>");
+        page.Append("<section class=\"source-section\" aria-labelledby=\"source-heading\"><div class=\"source-heading\"><h2 id=\"source-heading\">Create this example</h2><button type=\"button\" data-copy-source>Copy C#</button><span data-copy-status role=\"status\"></span></div><p>Create a console project, add the ").Append(selected.HtmlAdapter ? "ChartForgeX and ChartForgeX.Interactivity.Html packages" : "ChartForgeX package").Append(", and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p>");
         page.Append("<p>For the same typography as the gallery, ");
         AppendPairedLink(page, artifacts, selected, "download the gallery-font recipe", ".gallery.csharp.txt", download: true);
         page.Append(" and copy the gallery’s fonts directory beside your program.</p>");

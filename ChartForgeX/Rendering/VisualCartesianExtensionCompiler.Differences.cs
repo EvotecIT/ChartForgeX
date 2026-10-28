@@ -10,7 +10,10 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawDifferenceArea(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
-        var series = chart.Series[index]; var geometry = new ChartPairedBoundaryGeometry(series, map);
+        var series = chart.Series[index];
+        var axis = series.ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+        var geometry = new ChartPairedBoundaryGeometry(series, map, axis.Reversed,
+            axis.Scale is ChartScaleKind.Logarithmic or ChartScaleKind.SymmetricLogarithmic);
         var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
         foreach (var region in ChartDifferenceAreaGeometry.Regions(series, geometry)) {
@@ -24,14 +27,15 @@ internal static partial class VisualCartesianCompiler {
             obstacles.Add(new LabelObstacle(SeriesId(index) + "-" + role + "-" + Number(obstacles.Count),
                 new LabelMarkShape(new[] { region.Path.Flatten() }, true, stroke, plot)));
         }
-        DrawLayeredPath(chart, builder, ChartPathBuilder.FromPoints(geometry.First, series.Interpolation, series.StepPosition), color, paint, stroke, "difference-first");
-        DrawLayeredPath(chart, builder, ChartPathBuilder.FromPoints(geometry.Second, series.Interpolation, series.StepPosition), color, paint, stroke, "difference-second");
+        DrawLayeredPath(chart, builder, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.First, true), color, paint, stroke, "difference-first");
+        DrawLayeredPath(chart, builder, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.Second, false), color, paint, stroke, "difference-second");
         for (var item = 0; item < geometry.First.Count; item++) {
             var first = series.RenderPoints[item * 2]; var second = series.RenderPoints[item * 2 + 1];
             var showMarkers = PairedObservationMarkersEnabled(series, item);
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
             var a = geometry.First[item]; var b = geometry.Second[item];
-            var bounds = Extents(a.X, a.Y, b.X, b.Y, VisualMarkerScene.Extent(series, radius));
+            var bounds = series.Markers.CustomPath == null ? Extents(a.X, a.Y, b.X, b.Y, VisualMarkerScene.Extent(series, radius))
+                : VisualMarkerScene.PairBounds(series, a, b, radius);
             var firstText = Value(chart, first.Y); var secondText = Value(chart, second.Y);
             var options = series.DifferenceArea;
             var label = ResolveObservationLabel(chart, context, series, item, colors,
@@ -41,6 +45,7 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-formatted-first"] = firstText, ["data-cfx-formatted-second"] = secondText,
                 ["data-cfx-formatted-y"] = firstText
             };
+            series.AddDifferenceSourceFacts(item, facts);
             var visible = ViewportObservationVisible(xViewport, yViewport, first.X, Math.Min(first.Y, second.Y), Math.Max(first.Y, second.Y), map);
             using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, visible, facts,
                 ("x", first.X), ("first", first.Y), ("second", second.Y))) {

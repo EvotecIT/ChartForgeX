@@ -10,7 +10,7 @@ internal static class VisualDiagramPrimitives {
     internal static VisualRenderContext WithFrame(VisualRenderContext context, string? title, string? subtitle) {
         var frame = context.Frame;
         return new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode,
-            frame.WithHeadings(frame.Title ?? title, frame.Subtitle ?? subtitle), context.Font);
+            frame.WithHeadings(frame.Title ?? title, frame.Subtitle ?? subtitle), context.Font).WithNativeTextCapture(context.NativeTextCapture);
     }
 
     internal static void Text(VisualSceneBuilder builder, string text, ChartRect bounds, double size,

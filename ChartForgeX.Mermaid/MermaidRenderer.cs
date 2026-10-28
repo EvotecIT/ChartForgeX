@@ -31,7 +31,13 @@ public static class MermaidRenderer {
         var result = new MermaidRenderResult { Document = parsed.Document };
         result.Diagnostics.AddRange(parsed.Diagnostics);
         if (parsed.HasErrors || parsed.Document == null || parsed.Document.IsDiagnosticOnly) return result;
-        if (captured.WarningPolicy == MermaidWarningPolicy.Reject && parsed.Diagnostics.Any(item => item.Severity == MermaidDiagnosticSeverity.Warning)) {
+        if (parsed.Document is MermaidUseCaseDocument useCase)
+            result.Diagnostics.AddRange(MermaidFlowchartRendering.UseCaseIconDiagnostics(useCase, captured.Resolve(captured.UseCase)));
+        if (parsed.Document is MermaidFlowchartDocument flowchart && flowchart.Kind == MermaidDiagramKind.Flowchart) {
+            result.Diagnostics.AddRange(MermaidFlowchartAssets.Diagnostics(flowchart, captured.Resolve(captured.Flowchart)));
+            if (result.HasErrors) return result;
+        }
+        if (captured.WarningPolicy == MermaidWarningPolicy.Reject && result.Diagnostics.Any(item => item.Severity == MermaidDiagnosticSeverity.Warning)) {
             result.Diagnostics.Add(new MermaidDiagnostic { Code = MermaidDiagnosticCodes.RejectedWarning,
                 Severity = MermaidDiagnosticSeverity.Error, Span = parsed.Document.HeaderSpan,
                 Message = "The host warning policy rejects source with unsupported or approximate notation." });
@@ -43,9 +49,17 @@ public static class MermaidRenderer {
             MermaidResourceGuard.ValidateDocument(parsed.Document);
             result.Artifact = MermaidArtifactPolicy.Attach(parsed.Document.ToVisualArtifact(captured), parsed.Document, limits, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
+        } catch (ChartForgeX.Rendering.VisualResourceLimitException exception) {
+            var located = MermaidArtifactPolicy.Translate(exception, parsed.Document);
+            result.Diagnostics.Add(new MermaidDiagnostic { Code = MermaidDiagnosticCodes.ResourceLimitExceeded,
+                Severity = MermaidDiagnosticSeverity.Error, Span = located.Span, Message = located.Message });
         } catch (MermaidResourceLimitException exception) {
             result.Diagnostics.Add(new MermaidDiagnostic { Code = MermaidDiagnosticCodes.ResourceLimitExceeded,
                 Severity = MermaidDiagnosticSeverity.Error, Span = exception.Span, Message = exception.Message });
+        } catch (ChartForgeX.Topology.TopologyValidationException exception) when (parsed.Document is MermaidArchitectureDocument architecture && architecture.Alignments.Count > 0) {
+            var issue = exception.Result.Errors.First();
+            result.Diagnostics.Add(new MermaidDiagnostic { Code = issue.Code == "alignment-conflict" ? MermaidDiagnosticCodes.InvalidStatement : MermaidDiagnosticCodes.ConversionFailed,
+                Severity = MermaidDiagnosticSeverity.Error, Span = MermaidArchitectureRendering.AlignmentSpan(architecture, issue.ItemId), Message = exception.Message });
         } catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is OverflowException) {
             result.Diagnostics.Add(new MermaidDiagnostic { Code = MermaidDiagnosticCodes.ConversionFailed,
                 Severity = MermaidDiagnosticSeverity.Error, Span = parsed.Document.HeaderSpan, Message = exception.Message });

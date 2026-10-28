@@ -18,6 +18,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" Link="Fonts\Carlito-Regular.ttf" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" Link="Fonts\Carlito-Bold.ttf" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" Link="Fonts\OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" Properties="TargetFramework=net8.0" />
     <ProjectReference Include="..\ChartForgeX.Stories\ChartForgeX.Stories.csproj" Properties="TargetFramework=net8.0" />
     <ProjectReference Include="..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" Properties="TargetFramework=net8.0" />

@@ -17,9 +17,14 @@ internal static class BrowserProofFonts {
         }
     }
 
+    /// <summary>Declares the bounded font inputs for notation/portable-scene fixtures, independently of installed host collections.</summary>
+    internal static ChartForgeX.Mermaid.MermaidRenderOptions MermaidOptions() => new() {
+        Presentation = new ChartForgeX.Mermaid.MermaidPresentationOptions { FontFamily = Family }
+    };
+
     internal static async Task<HtmlBrowserSession> OpenAsync(string body, int width, int height) {
         var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><head>" + Style.Value
-            + "</head><body style='margin:0'>" + body + "</body></html>", width, height);
+            + "</head><body style='margin:0'>" + body + "</body></html>", width, height, waitForOwnedFonts: false);
         try {
             var loaded = await session.Page.EvaluateAsync<bool>("""
                 async family => {

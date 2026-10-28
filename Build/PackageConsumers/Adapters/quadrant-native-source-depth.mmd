@@ -1,0 +1,33 @@
+---
+config:
+  theme: default
+  quadrantChart:
+    chartWidth: 800
+    chartHeight: 500
+    pointRadius: 5
+    pointLabelFontSize: 13
+    titleFontSize: 18
+  themeVariables:
+    quadrant1Fill: "#DBEAFE"
+    quadrant2Fill: "#DCFCE7"
+    quadrant3Fill: "#FEF3C7"
+    quadrant4Fill: "#FCE7F3"
+    quadrantPointFill: "#334155"
+    quadrantPointTextFill: "#1E293B"
+    quadrantXAxisTextFill: "#475569"
+    quadrantTitleFill: "#0F172A"
+---
+quadrantChart
+title Work priorities
+x-axis Low effort --> High effort
+y-axis Low impact --> High impact
+quadrant-1 Plan
+quadrant-2 Prioritize
+quadrant-3 Consider
+quadrant-4 Reassess
+classDef important color:#B45309,radius:9,stroke-color:#7C2D12,stroke-width:2px
+classDef optional color:#7C3AED,radius:6
+Opportunity:::important: [0.22, 0.74]
+Investment:::important: [0.78, 0.76] color:#0369A1,radius:7,stroke-color:#075985,stroke-width:1px
+Experiment:::optional: [0.28, 0.26]
+Review: [0.72, 0.24]

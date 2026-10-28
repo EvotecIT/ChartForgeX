@@ -62,7 +62,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No committed export was downloaded.");
         var exported = XDocument.Load(path);
         Assert.DoesNotContain(exported.Descendants(), node => (string?)node.Attribute("data-cfx-x-navigation") != null);
-        var exportedX = exported.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").Select(node => node.Value);
+        var exportedX = await BrowserProofCaptions.ExportedAsync(page, exported, "axis-x-label");
         Assert.Equal((await SceneAsync(page)).GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), exportedX);
         await page.Locator("[data-cfx-x-full]").ClickAsync(); await WaitForChangesAsync(page, 5);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), host.Origin, host.Origin + 12);

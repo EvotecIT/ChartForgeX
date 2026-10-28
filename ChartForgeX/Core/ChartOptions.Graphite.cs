@@ -9,6 +9,7 @@ public sealed partial class ChartOptions {
         // Prepared domains and viewport edge policies belong to this private preparation only.
         view.XAxis = XAxis.Clone(); view.YAxis = YAxis.Clone();
         view.SecondaryXAxis = SecondaryXAxis.Clone(); view.SecondaryYAxis = SecondaryYAxis.Clone();
+        view.RangeBar = RangeBar.Clone(); view.BoxPlot = BoxPlot.Clone();
         var font = context.Font;
         view.Theme = context.Theme.WithFontFamily(font.Family);
         view.ThemeMode = context.ThemeMode;

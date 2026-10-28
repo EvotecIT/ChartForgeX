@@ -21,8 +21,9 @@ public sealed class ChartMapGeoJsonOptions {
     private string? _colorValuePropertyName;
     private int _maximumObservations = 100_000;
     private int _maximumExpandedLabelCharacters = 4 * 1024 * 1024;
+    private int _maximumExpandedFeatureCharacters = 4 * 1024 * 1024;
 
-    /// <summary>Gets or sets the positive maximum number of imported point positions or route waypoints per observation import.
+    /// <summary>Gets or sets the positive maximum number of imported point positions, route waypoints, or seam-aware polygon vertices including periodic copies.
     /// Coordinate-filtered features do not consume this output budget. The default is 100,000.</summary>
     public int MaximumObservations {
         get => _maximumObservations;
@@ -40,6 +41,17 @@ public sealed class ChartMapGeoJsonOptions {
         set {
             if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "The expanded label limit must be positive.");
             _maximumExpandedLabelCharacters = value;
+        }
+    }
+
+    /// <summary>Gets or sets the positive aggregate UTF-16 budget for feature metadata repeated across imported observations.
+    /// The default is 4,194,304 characters. Multipart expansion is checked before constructing output observations;
+    /// a route's feature metadata is counted once per line, not once per waypoint. Seam-aware polygons count raw geometry and feature JSON once per region. Host input-size policy remains separate.</summary>
+    public int MaximumExpandedFeatureCharacters {
+        get => _maximumExpandedFeatureCharacters;
+        set {
+            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "The expanded feature metadata limit must be positive.");
+            _maximumExpandedFeatureCharacters = value;
         }
     }
 
@@ -102,6 +114,11 @@ public sealed class ChartMapGeoJsonOptions {
     /// Gets or sets the coordinate projection used for polygon geometry. Point and route imports retain raw longitude/latitude.
     /// </summary>
     public ChartMapGeoJsonProjection Projection { get; set; } = ChartMapGeoJsonProjection.Equirectangular;
+
+    /// <summary>Gets or sets an explicit antimeridian polygon geometry window, or null to preserve ordinary import bytes.</summary>
+    /// <remarks>This is view geometry, not feature filtering. Closed rings unwrap through the same projection owner; native rectangle clipping
+    /// retains complete raw rings and source features. Projection must match this viewport. Point/route imports still retain raw positions.</remarks>
+    public ChartMapViewport? PolygonViewport { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether geometries unsupported by the selected import method are skipped.
@@ -259,6 +276,8 @@ public sealed class ChartMapGeoJsonOptions {
 
     internal void Validate() {
         ChartGeographicProjection.Validate(Projection);
+        if (PolygonViewport.HasValue && (!PolygonViewport.Value.CrossesAntimeridian || PolygonViewport.Value.GeographicProjection != Projection))
+            throw new ArgumentException("PolygonViewport must be an explicit antimeridian window using the same Projection.", nameof(PolygonViewport));
         if (_minimumLongitude.HasValue && _maximumLongitude.HasValue && _maximumLongitude.Value <= _minimumLongitude.Value) {
             throw new ArgumentOutOfRangeException(nameof(MaximumLongitude), _maximumLongitude.Value, "Maximum longitude must be greater than minimum longitude.");
         }

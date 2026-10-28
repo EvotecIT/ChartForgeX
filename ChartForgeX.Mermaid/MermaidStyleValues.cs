@@ -23,4 +23,28 @@ internal static class MermaidStyleValues {
         }
         return true;
     }
+    /// <summary>Reads a finite logical-pixel scalar without evaluating CSS expressions.</summary>
+    internal static bool TryPixels(string value, out double number, bool allowUnit = true) {
+        value = value.Trim();
+        if (allowUnit && value.EndsWith("px", StringComparison.OrdinalIgnoreCase)) value = value.Substring(0, value.Length - 2).TrimEnd();
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out number)
+            && !double.IsNaN(number) && !double.IsInfinity(number);
+    }
+
+    /// <summary>Materializes native dash pairs; an odd positive CSS list repeats once per CSS stroke semantics.</summary>
+    internal static bool TryNativeDash(string value, out double[] pattern) {
+        pattern = Array.Empty<double>();
+        if (string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase)) return true;
+        var parts = value.Split(new[] { ' ', '\t', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0 || parts.Length > 256) return false;
+        var count = parts.Length % 2 == 0 ? parts.Length : parts.Length * 2;
+        var values = new double[count];
+        for (var index = 0; index < parts.Length; index++) {
+            if (!TryPixels(parts[index], out var length, allowUnit: false) || length <= 0) return false;
+            values[index] = length;
+        }
+        for (var index = parts.Length; index < count; index++) values[index] = values[index - parts.Length];
+        pattern = values; return true;
+    }
+
 }

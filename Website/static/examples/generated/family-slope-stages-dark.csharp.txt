@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = SlopeStagesRecipe.Create("stages", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Capacity change across teams").WithSubtitle("Explore the data, then download the chart").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Capacity change across teams", "Explore the data, then download the chart", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Compares complete stage observations without inventing values for unrecorded stages.</summary>
+public static class SlopeStagesRecipe {
+    /// <summary>Creates ordered stage lines, including one explicit disconnected interval, on either physical orientation.</summary>
+    public static Chart Create(string variant = "stages", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("stages" or "compact-stages" or "horizontal-stages" or "compact-horizontal-stages"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Received", "Prepared", "Reviewed", "Accepted")
+            .WithLegend(true).WithDataLabels(false)
+            .AddSlope("Standard", new[] { new ChartPoint(1, 28), new ChartPoint(2, 43), new ChartPoint(3, 38), new ChartPoint(4, 64) })
+            .AddSlope("Express", new[] { new ChartPoint(1, 52), new ChartPoint(2, 49), new ChartPoint(3, 58, true), new ChartPoint(4, 71) })
+            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        var ids = new[] { "received", "prepared", "reviewed", "accepted" }.Select(id => new ChartObservationId(id)).ToArray();
+        foreach (var series in chart.Series) series.WithObservationIds(ids);
+        if (variant.EndsWith("horizontal-stages", StringComparison.Ordinal)) {
+            chart.Options.SlopeOrientation = ChartOrientation.Horizontal;
+            chart.WithXAxis("Recorded capacity").WithYAxis("Delivery stage");
+        } else chart.WithXAxis("Delivery stage").WithYAxis("Recorded capacity");
+        return chart;
+    }
+}

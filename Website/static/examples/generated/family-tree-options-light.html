@@ -97,6 +97,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TreeRecipe.Create(&quot;options&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Teams and their responsibilities&quot;).WithSubtitle(&quot;Explore configured marks, scales and labels&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame(&quot;Teams and their responsibilities&quot;, &quot;Explore configured marks, scales and labels&quot;, showLegend: null, showSurface: false));
@@ -139,6 +146,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TreeRecipe.Create(&quot;options&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Teams and their responsibilities&quot;).WithSubtitle(&quot;Explore configured marks, scales and labels&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame(&quot;Teams and their responsibilities&quot;, &quot;Explore configured marks, scales and labels&quot;, showLegend: null, showSurface: false));

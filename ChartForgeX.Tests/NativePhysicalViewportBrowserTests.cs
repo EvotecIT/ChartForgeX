@@ -71,8 +71,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No physical viewport SVG download.");
         var svg = XDocument.Load(path);
         var role = horizontal ? "axis-secondary-x-label" : "axis-secondary-y-label";
-        Assert.Equal(await page.Locator("[data-cfx-role=" + role + "]").AllTextContentsAsync(), svg.Descendants()
-            .Where(node => (string?)node.Attribute("data-cfx-role") == role).Select(node => node.Value));
+        Assert.Equal(await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role=" + role + "]")), await BrowserProofCaptions.ExportedAsync(page, svg, role));
         Assert.Equal(3, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-series-key") == "secondary"
             && (string?)node.Attribute("data-cfx-role") == "point"));
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

@@ -28,10 +28,14 @@ internal static partial class Program {
         inner.RadialBand = new ChartRadialBand(.1, .4); outer.Points[0] = new ChartPoint(1, 5);
         PackageAssertions.Require(prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png), "A source band edit changed an existing prepared export.");
         inner.ShowDataLabels = true; inner.DataLabelPlacement = ChartDataLabelPlacement.Outside;
-        var rejected = false;
-        try { chart.Prepare(DepthContext(chart, showLegend: false)); }
-        catch (InvalidOperationException error) { rejected = error.Message.IndexOf("outermost", StringComparison.Ordinal) >= 0; }
-        PackageAssertions.Require(rejected, "Packed inner external labels were silently painted across another ring.");
+        inner.WithPointSliceOffset(0, .12);
+        var callouts = chart.Prepare(DepthContext(chart, showLegend: false)); var calloutXml = XDocument.Parse(callouts.ToSvg());
+        PackageAssertions.Require(calloutXml.Descendants().Any(node => (string?)node.Attribute("data-cfx-radial-callout") == "overlay"
+            && (string?)node.Attribute("data-cfx-series") == "0" && (string?)node.Attribute("data-cfx-label-dropped") == "false"),
+            "Packed inner external captions lost their source-owned overlay leader.");
+        PackageAssertions.Require(calloutXml.Descendants().Any(node => (string?)node.Attribute("data-cfx-slice-offset-ratio") == "0.12"),
+            "Packed multiring explosion lost its source displacement fact.");
+        PackageAssertions.Png(callouts.ToPng());
         inner.ShowDataLabels = false;
         var ordinary = Chart.Create().WithSize(520, 340).WithHeader(false).WithLegend(false)
             .AddDonut("Ordinary", new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) });

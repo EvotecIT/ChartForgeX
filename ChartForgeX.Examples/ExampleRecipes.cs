@@ -59,6 +59,27 @@ public static partial class ExampleRecipes {
         [ChartSeriesKind.DifferenceArea] = new(nameof(DifferenceAreaRecipe), DifferenceAreaRecipe.Create),
     });
     private static readonly IReadOnlyDictionary<string, ExampleRecipe> NamedRecipes = new ReadOnlyDictionary<string, ExampleRecipe>(new Dictionary<string, ExampleRecipe>(StringComparer.Ordinal) {
+        ["topology-crossing-paint"] = new(nameof(TopologyCrossingPaintRecipe), TopologyCrossingPaintRecipe.Create),
+        ["sequence-surface-shadows"] = new(nameof(SequenceSurfaceShadowRecipe), SequenceSurfaceShadowRecipe.Create),
+        ["topology-path-decorations"] = new(nameof(TopologyPathDecorationRecipe), TopologyPathDecorationRecipe.Create),
+        ["usecase-source-depth"] = new(nameof(UseCaseSourceDepthRecipe), UseCaseSourceDepthRecipe.Create),
+        ["usecase-advanced-actors"] = new(nameof(UseCaseAdvancedActorsRecipe), UseCaseAdvancedActorsRecipe.Create),
+        ["quadrant-point-styles"] = new(nameof(QuadrantPointStylesRecipe), QuadrantPointStylesRecipe.Create),
+        ["mixed-schedule"] = new(nameof(MixedScheduleRecipe), MixedScheduleRecipe.Create),
+        ["multi-ring-callouts"] = new(nameof(MultiRingCalloutsRecipe), MultiRingCalloutsRecipe.Create),
+        ["aligned-difference"] = new(nameof(AlignedDifferenceRecipe), AlignedDifferenceRecipe.Create),
+        ["funnel-presentation"] = new(nameof(FunnelPresentationRecipe), FunnelPresentationRecipe.Create),
+        ["pyramid-presentation"] = new(nameof(PyramidPresentationRecipe), PyramidPresentationRecipe.Create),
+        ["chord-depth"] = new(nameof(ChordDepthRecipe), ChordDepthRecipe.Create),
+        ["combined-gauge"] = new(nameof(CombinedGaugeRecipe), CombinedGaugeRecipe.Create),
+        ["independent-bullet"] = new(nameof(IndependentBulletRecipe), IndependentBulletRecipe.Create),
+        ["independent-progress"] = new(nameof(IndependentProgressRecipe), IndependentProgressRecipe.Create),
+        ["topology-table-content"] = new(nameof(TopologyTableContentRecipe), TopologyTableContentRecipe.Create),
+        ["topology-interchange"] = new(nameof(TopologyInterchangeRecipe), TopologyInterchangeRecipe.Create),
+        ["org-portraits"] = new(nameof(OrgPortraitsRecipe), OrgPortraitsRecipe.Create),
+        ["heatmap-hierarchical-axes"] = new(nameof(HeatmapHierarchicalAxesRecipe), HeatmapHierarchicalAxesRecipe.Create),
+        ["categorical-radial-area"] = new(nameof(CategoricalRadialAreaRecipe), CategoricalRadialAreaRecipe.Create),
+        ["pictorial-artwork"] = new(nameof(PictorialArtworkRecipe), PictorialArtworkRecipe.Create),
         ["license-cost"] = new(nameof(LicenseCostRecipe), LicenseCostRecipe.Create),
         ["dashboard-premium-trend"] = new(nameof(DashboardPremiumTrendRecipe), DashboardPremiumTrendRecipe.Create),
         ["control-coverage-heatmap"] = new(nameof(ControlCoverageRecipe), ControlCoverageRecipe.Create),
@@ -68,6 +89,13 @@ public static partial class ExampleRecipes {
         ["topology"] = new(nameof(TopologyRecipe), TopologyRecipe.Create),
         ["flow"] = new(nameof(FlowRecipe), FlowRecipe.Create),
         ["sequence"] = new(nameof(SequenceRecipe), SequenceRecipe.Create),
+        ["sequence-message-presentation"] = new(nameof(SequenceMessagePresentationRecipe), SequenceMessagePresentationRecipe.Create),
+        ["sequence-self-routes"] = new(nameof(SequenceSelfRoutesRecipe), SequenceSelfRoutesRecipe.Create),
+        ["sequence-navigation"] = new(nameof(SequenceNavigationRecipe), SequenceNavigationRecipe.Create),
+        ["sequence-preset-appearance"] = new(nameof(SequencePresetAppearanceRecipe), SequencePresetAppearanceRecipe.Create),
+        ["sequence-source-defaults"] = new(nameof(SequenceSourceDefaultsRecipe), SequenceSourceDefaultsRecipe.Create),
+        ["sequence-participant-views"] = new(nameof(SequenceParticipantViewsRecipe), SequenceParticipantViewsRecipe.Create),
+        ["sequence-layout-typography"] = new(nameof(SequenceLayoutTypographyRecipe), SequenceLayoutTypographyRecipe.Create),
         ["simple-topology"] = new(nameof(SimpleTopologyRecipe), SimpleTopologyRecipe.Create),
         ["simple-sequence"] = new(nameof(SimpleSequenceRecipe), SimpleSequenceRecipe.Create),
         ["equal-pie"] = new(nameof(EqualPieRecipe), EqualPieRecipe.Create),
@@ -82,6 +110,10 @@ public static partial class ExampleRecipes {
         ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create),
         ["financial-layers"] = new(nameof(FinancialLayersRecipe), FinancialLayersRecipe.Create),
         ["geographic-datasets"] = new(nameof(GeographicDatasetsRecipe), GeographicDatasetsRecipe.Create),
+        ["map-composition-depth"] = new(nameof(MapCompositionDepthRecipe), MapCompositionDepthRecipe.Create),
+        ["map-navigation-depth"] = new(nameof(MapNavigationDepthRecipe), MapNavigationDepthRecipe.Create),
+        ["dateline-map"] = new(nameof(DatelineMapRecipe), DatelineMapRecipe.Create),
+        ["seam-polygon-map"] = new(nameof(SeamPolygonMapRecipe), SeamPolygonMapRecipe.Create),
         ["source-drawings"] = new(nameof(SourceDrawingsRecipe), SourceDrawingsRecipe.Create)
     });
 
@@ -116,15 +148,24 @@ public static partial class ExampleRecipes {
             foreach (var variant in variants) recipes.Add((kind, variant), recipe);
         }
         Add(ChartSeriesKind.Donut, nameof(ConcentricPieRecipe), ConcentricPieRecipe.Create, "concentric");
-        Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options");
+        Add(ChartSeriesKind.Pie, nameof(PieSliceRadiusRecipe), PieSliceRadiusRecipe.Create, "variable-radius");
+        Add(ChartSeriesKind.Donut, nameof(DonutSliceRadiusRecipe), DonutSliceRadiusRecipe.Create, "variable-radius");
+        Add(ChartSeriesKind.Donut, nameof(AutomaticRadialBandsRecipe), AutomaticRadialBandsRecipe.Create, "automatic-rings");
+        Add(ChartSeriesKind.TrendLine, nameof(TrendLineModelRecipe), TrendLineModelRecipe.Create, "polynomial", "logarithmic", "exponential", "power", "confidence", "prediction");
+        Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options", "source-colors", "target-colors", "quantitative-colors");
+        Add(ChartSeriesKind.Sankey, nameof(SankeyPaintRecipe), SankeyPaintRecipe.Create, "gradient-colors");
+        Add(ChartSeriesKind.Lollipop, nameof(LollipopHorizontalRecipe), LollipopHorizontalRecipe.Create, "horizontal");
+        Add(ChartSeriesKind.Slope, nameof(SlopeStagesRecipe), SlopeStagesRecipe.Create, "stages", "horizontal-stages");
+        Add(ChartSeriesKind.Dumbbell, nameof(DumbbellEndpointRecipe), DumbbellEndpointRecipe.Create, "horizontal", "endpoint-markers");
         Add(ChartSeriesKind.Chord, nameof(ChordRecipe), ChordRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Scatter, nameof(ScatterMarkerShapesRecipe), ScatterMarkerShapesRecipe.Create, "options");
         Add(ChartSeriesKind.Scatter, nameof(ScatterColorScaleRecipe), ScatterColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.Scatter, nameof(ScatterPositionedColorScaleRecipe), ScatterPositionedColorScaleRecipe.Create, "positioned-color-scale");
         Add(ChartSeriesKind.Scatter, nameof(ScatterColorDimensionRecipe), ScatterColorDimensionRecipe.Create, "color-dimension", "gradient-color-legend", "swatch-color-legend");
         Add(ChartSeriesKind.Scatter, nameof(ScatterQuadrantsRecipe), ScatterQuadrantsRecipe.Create, "quadrants");
+        Add(ChartSeriesKind.Scatter, nameof(QuadrantRegionDepthRecipe), QuadrantRegionDepthRecipe.Create, "pivot-quadrants", "interior-quadrants");
         Add(ChartSeriesKind.Scatter, nameof(ScatterPartialColorRangeRecipe), ScatterPartialColorRangeRecipe.Create, "partial-color-range");
-        Add(ChartSeriesKind.Bubble, nameof(BubbleMarkerOptionsRecipe), BubbleMarkerOptionsRecipe.Create, "options");
+        Add(ChartSeriesKind.Bubble, nameof(BubbleMarkerOptionsRecipe), BubbleMarkerOptionsRecipe.Create, "options", "custom-markers");
         Add(ChartSeriesKind.Bubble, nameof(BubbleColorScaleRecipe), BubbleColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.Bubble, nameof(BubbleColorDimensionRecipe), BubbleColorDimensionRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Bubble, nameof(BubblePlotRegionsRecipe), BubblePlotRegionsRecipe.Create, "plot-regions");
@@ -140,6 +181,8 @@ public static partial class ExampleRecipes {
         Add(ChartSeriesKind.TileMap, nameof(TileMapPositionedColorScaleRecipe), TileMapPositionedColorScaleRecipe.Create, "positioned-color-scale");
         Add(ChartSeriesKind.TileMap, nameof(TileMapColorDimensionRecipe), TileMapColorDimensionRecipe.Create, "color-dimension", "gradient-color-legend", "swatch-color-legend");
         Add(ChartSeriesKind.TileMap, nameof(TileMapPartialColorRangeRecipe), TileMapPartialColorRangeRecipe.Create, "partial-color-range");
+        Add(ChartSeriesKind.Sunburst, nameof(SunburstCurvedLabelsRecipe), SunburstCurvedLabelsRecipe.Create, "curved-labels");
+        Add(ChartSeriesKind.Treemap, nameof(TreemapCaptionPoliciesRecipe), TreemapCaptionPoliciesRecipe.Create, "caption-policies");
         Add(ChartSeriesKind.Treemap, nameof(TreemapColorDimensionRecipe), TreemapColorDimensionRecipe.Create, "color-dimension");
         return new ReadOnlyDictionary<(ChartSeriesKind, string), ExampleRecipe>(recipes);
     }

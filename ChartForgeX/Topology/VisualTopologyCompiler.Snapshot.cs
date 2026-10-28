@@ -27,7 +27,14 @@ internal sealed partial class VisualTopologyCompiler {
         return snapshot;
     }
 
-    internal VisualRenderContext Context => _context;
+    internal VisualRenderContext Context {
+        get {
+            var captured=_context.Font.NativeTextCapture?.Freeze();
+            var font=captured==null?_context.Font:_context.Font.WithCapturedText(captured);
+            return new VisualRenderContext(_context.Layout,_context.Theme,_context.ThemeMode,_frameRequest.RequestValues(retainOwnedFonts:true),font)
+                .WithNativeTextCapture(captured);
+        }
+    }
     internal string? SourceTitle => HeadingOrSource(_options.View?.Title, _source.Title);
     internal string? SourceSubtitle => HeadingOrSource(_options.View?.Subtitle, _source.Subtitle);
     internal TopologyLegend? FrameLegend => _legend == null ? null : TopologyLegend.Clone(_legend);

@@ -5,7 +5,7 @@ namespace ChartForgeX.Typography;
 /// <summary>
 /// Identifies a font without depending on a platform drawing framework.
 /// </summary>
-public sealed class FontSpec {
+public sealed partial class FontSpec {
     private string _family = "system-ui, sans-serif";
     private string? _filePath;
     private string? _faceName;
@@ -84,7 +84,8 @@ public sealed class FontSpec {
         Weight = Weight,
         Italic = Italic,
         Variations = Variations,
-        ColorPaletteIndex = ColorPaletteIndex
+        ColorPaletteIndex = ColorPaletteIndex,
+        _capturedSelection = _capturedSelection
     };
 
     /// <summary>Creates a system sans-serif font specification.</summary>

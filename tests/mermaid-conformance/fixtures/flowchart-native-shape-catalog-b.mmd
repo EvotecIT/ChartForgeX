@@ -1,0 +1,16 @@
+flowchart LR
+n15@{ shape: diam, label: "Decision" }
+n16@{ shape: hex, label: "Prepare" }
+n17@{ shape: lean-r, label: "Input" }
+n18@{ shape: lean-l, label: "Output" }
+n19@{ shape: trap-b, label: "Priority" }
+n20@{ shape: trap-t, label: "Manual" }
+n21@{ shape: dbl-circ, label: "Complete" }
+n22@{ shape: text, label: "Plain text" }
+n23@{ shape: notch-rect, label: "Card" }
+n24@{ shape: lin-rect, label: "Lined process" }
+n25@{ shape: sm-circ, label: "Retained start label" }
+n26@{ shape: fr-circ, label: "Retained stop label" }
+n27@{ shape: fork, label: "Retained fork label" }
+n15 --> n16 --> n17 --> n18 --> n19 --> n20 --> n21
+n21 --> n22 --> n23 --> n24 --> n25 --> n26 --> n27

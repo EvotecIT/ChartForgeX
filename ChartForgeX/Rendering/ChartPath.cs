@@ -64,7 +64,8 @@ internal sealed partial class ChartPath {
         include(q / a); include(c / q);
     }
 
-    public List<ChartPoint> Flatten(double maxSegmentLength = 18) {
+    public List<ChartPoint> Flatten(double maxSegmentLength = 18, int maximumPoints = int.MaxValue) {
+        if (maximumPoints < 2) throw new ArgumentOutOfRangeException(nameof(maximumPoints));
         var points = new List<ChartPoint>();
         var current = default(ChartPoint);
         var hasCurrent = false;
@@ -73,16 +74,17 @@ internal sealed partial class ChartPath {
         foreach (var command in Commands) {
             if (command.Kind == ChartPathCommandKind.MoveTo) {
                 current = new ChartPoint(command.X, command.Y, hasCurrent);
-                points.Add(current);
+                Check(1); points.Add(current);
                 hasCurrent = true;
             } else if (command.Kind == ChartPathCommandKind.LineTo && hasCurrent) {
                 current = new ChartPoint(command.X, command.Y);
-                points.Add(current);
+                Check(1); points.Add(current);
             } else if (command.Kind == ChartPathCommandKind.CubicTo && hasCurrent) {
                 var end = new ChartPoint(command.X, command.Y);
                 var control1 = new ChartPoint(command.Control1X, command.Control1Y);
                 var control2 = new ChartPoint(command.Control2X, command.Control2Y);
                 var steps = CubicSteps(current, control1, control2, end, maxSegmentLength);
+                Check(steps);
                 for (var step = 1; step <= steps; step++) {
                     points.Add(CubicPoint(current, control1, control2, end, step / (double)steps));
                 }
@@ -92,6 +94,8 @@ internal sealed partial class ChartPath {
         }
 
         return points;
+
+        void Check(int added) { if (added > maximumPoints - points.Count) throw new ArgumentException("Flattened path exceeds its point budget."); }
     }
 
     private static int CubicSteps(ChartPoint start, ChartPoint control1, ChartPoint control2, ChartPoint end, double maxSegmentLength) {
@@ -105,7 +109,7 @@ internal sealed partial class ChartPath {
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
-    private static ChartPoint CubicPoint(ChartPoint p0, ChartPoint c1, ChartPoint c2, ChartPoint p1, double t) {
+    internal static ChartPoint CubicPoint(ChartPoint p0, ChartPoint c1, ChartPoint c2, ChartPoint p1, double t) {
         var inverse = 1 - t;
         var a = inverse * inverse * inverse;
         var b = 3 * inverse * inverse * t;

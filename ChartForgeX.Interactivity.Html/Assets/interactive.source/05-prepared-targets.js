@@ -2,9 +2,25 @@
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
     const point = label && label._cfxLabelTarget;
+    const boundary = target instanceof Element ? target.closest('[data-cfx-target-kind]') : null;
+    if (boundary && label?.contains(boundary) && boundary !== point) return null;
     return point && root.contains(label) && root.contains(point) ? point : null;
   };
   const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));
+
+  const appendNativeBrowserHitArea = (node, region, minimumSize) => {
+    if (![region.x, region.y, region.width, region.height].every(Number.isFinite)) return;
+    const width = Math.max(minimumSize, region.width), height = Math.max(minimumSize, region.height);
+    const x = region.x + (region.width - width) / 2, y = region.y + (region.height - height) / 2;
+    if (![x, y, width, height, x + width, y + height].every(Number.isFinite) || !(width > 0 && height > 0)
+      || Array.from(node.children).some(child => child.hasAttribute('data-cfx-browser-hit-area'))) return;
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hit.setAttribute('x', x); hit.setAttribute('y', y);
+    hit.setAttribute('width', width); hit.setAttribute('height', height);
+    hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+    hit.setAttribute('data-cfx-browser-hit-area', 'true');
+    node.appendChild(hit);
+  };
 
   const prepareChartTargets = (root) => {
     const svg = root.querySelector('.cfx-stage svg');
@@ -12,6 +28,7 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
+    const reflow = metadata.visibility?.layout === 'reflow';
     const annotations = annotationCatalog(svg, metadata);
     svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
       node._cfxAnnotationId = annotations.get(node);
@@ -23,6 +40,21 @@
     if (grouped.length) root._cfxCategoryPaths = new Map(grouped.map(item => [item.value, Object.freeze([...item.groups, item.text])]));
     else delete root._cfxCategoryPaths;
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
+
+    if (metadata.hierarchy?.kind === 'topology') {
+      const facts = new Map(metadata.hierarchy.nodes.map(node => [node.id, node]));
+      const nativeRegions = new Map((metadata.regions || []).filter(region => region.role === 'topology-node').map(region => [region.id, region]));
+      const parents = new Set(metadata.hierarchy.nodes.map(node => node.parentId));
+      const collapsed = new Set(metadata.hierarchy.collapsedNodeIds);
+      svg.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]').forEach(node => {
+        const id = node.dataset.nodeId, fact = facts.get(id), region = nativeRegions.get(id); if (!fact || !region) return;
+        node.dataset.cfxNode = id; node.dataset.cfxTargetKind = 'node'; node.dataset.cfxTargetId = id;
+        node.dataset.cfxKind = 'topology'; node.dataset.cfxLabel = fact.label;
+        node.dataset.cfxLeaf = parents.has(id) ? 'false' : 'true';
+        node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
+        if (parents.has(id)) node.setAttribute('aria-expanded', collapsed.has(id) ? 'false' : 'true');
+      });
+    }
 
     const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
     const plot = plots.length === 1 ? plots[0] : null;
@@ -50,9 +82,11 @@
       if (data.cfxRole !== 'legend-entry-omitted') data.cfxRole = 'legend-item';
       data.cfxSeries = String(index);
       const region = regions.get(source);
+      if (series[index] && node.localName === 'g' && data.cfxRole === 'legend-item'
+        && region?.role === 'legend' && isInteractiveTarget(node)) appendNativeBrowserHitArea(node, region, 0);
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
-      if (reference) {
+      if (reference && !reflow) {
         const mark = referencedTargetNode(svg, { ...reference, seriesKey: data.cfxSeriesKey });
         if (mark) {
           data.cfxLabel = mark.dataset.cfxLabel || data.cfxLabel;
@@ -66,14 +100,17 @@
         const collectionKey = index + ':' + data.cfxPoint;
         const observationId = observationIds.get(collectionKey);
         const facts = sourceFacts.get(collectionKey);
-        if (observationId !== undefined && !facts?.derived) data.cfxObservationId = observationId;
-        if (facts) {
+        if (!reflow && observationId !== undefined && !facts?.derived) data.cfxObservationId = observationId;
+        if (!reflow && facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
           if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
           if (data.cfxDerivedIdentity === undefined) data.cfxDerivedIdentity = facts.identity;
           if (data.cfxGroupIndex === undefined && facts.groupIndex !== undefined) data.cfxGroupIndex = facts.groupIndex;
           if (data.cfxGroupId === undefined && facts.groupId !== undefined) data.cfxGroupId = facts.groupId;
         }
+      }
+      if (reflow && data.cfxPoint !== undefined) {
+        data.cfxLegendTargetKind = 'point'; data.cfxLegendTargetId = pointTargetId(node);
       }
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"],[data-cfx-role="circle-chart"]').forEach((node) => {
@@ -89,7 +126,7 @@
       if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      // Imputed zero: no ID; retain peer category IDs.
+
 
       if (data.cfxDerived === 'missing-category-zero') {
         data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);
@@ -138,20 +175,13 @@
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
       if (box.width > 0 && box.height > 0 && !hollowCandle) return;
-      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      const width = Math.max(8, region.width); const height = Math.max(8, region.height);
-      hit.setAttribute('x', region.x + (region.width - width) / 2);
-      hit.setAttribute('y', region.y + (region.height - height) / 2);
-      hit.setAttribute('width', width); hit.setAttribute('height', height);
-      hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
-      hit.setAttribute('data-cfx-browser-hit-area', 'true');
-      node.appendChild(hit);
+      appendNativeBrowserHitArea(node, region, 8);
     });
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);
       const point = mark && mark.closest('[data-cfx-point],[data-cfx-target-kind]');
-      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
+      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text,[data-cfx-native-text-ink]')) return;
       label._cfxLabelTarget = point;
       (point._cfxPointLabels ||= []).push(label);
     });

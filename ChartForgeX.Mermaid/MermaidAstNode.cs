@@ -11,6 +11,7 @@ public abstract class MermaidAstNode {
 
     /// <summary>Gets the source span for this node.</summary>
     public MermaidSourceSpan Span { get; }
+    internal MermaidSourceSpan? SurfaceOpacitySpan { get; set; }
 }
 
 /// <summary>

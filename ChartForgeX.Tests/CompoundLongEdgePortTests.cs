@@ -3,8 +3,6 @@ using ChartForgeX.Mermaid;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.VisualArtifacts;
 using System.Text.Json;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Xunit;
 
@@ -41,17 +39,29 @@ public sealed class CompoundLongEdgePortTests {
     [InlineData("TB")]
     [InlineData("BT")]
     public void FittedMermaidCompoundExportsKeepOrthogonalEndpointStubs(string direction) {
-        var source = File.ReadAllText(MermaidFlowchartLabelDepthTests.Fixture("flowchart-compound-long-edge.mmd"))
-            .Replace("flowchart LR", "flowchart " + direction, StringComparison.Ordinal);
+        var source = "%%{init: {\"flowchart\":{\"curve\":\"linear\"}}}%%\n"
+            + File.ReadAllText(MermaidFlowchartLabelDepthTests.Fixture("flowchart-compound-long-edge.mmd"))
+                .Replace("flowchart LR", "flowchart " + direction, StringComparison.Ordinal);
         var options = new MermaidRenderOptions { Flowchart = new MermaidFlowchartRenderOptions { Width = 608, Height = 440 } };
         var artifact = MermaidRenderer.Render(source, options).Artifact!;
-        var svg = XDocument.Parse(artifact.ToSvg());
-        foreach (var path in svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "topology-edge-line")) {
-            var values = Regex.Matches((string)path.Attribute("d")!, @"-?\d+(?:\.\d+)?")
-                .Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
-            for (var index = 2; index < values.Length; index += 2) Assert.True(
-                Math.Abs(values[index] - values[index - 2]) < .002 || Math.Abs(values[index + 1] - values[index - 1]) < .002,
-                (string)path.Attribute("d")!);
+        var svgText = artifact.ToSvg();
+        if (Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
+            Directory.CreateDirectory(output);
+            var stem = Path.Combine(output, "compound-endpoint-stubs-" + direction);
+            File.WriteAllText(stem + ".svg", svgText); File.WriteAllBytes(stem + ".native.png", artifact.ToPng());
+        }
+        var svg = XDocument.Parse(svgText);
+        var paths = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "topology-edge-line").ToArray();
+        Assert.NotEmpty(paths);
+        foreach (var path in paths) {
+            var data = (string)path.Attribute("d")!;
+            var route = Assert.Single(ChartForgeX.Core.ChartMapPathParser.ParseSubpaths(data, pixelsPerUnit: 8)).Points;
+            Assert.True(route.Count >= 2, data);
+            // Native corner blending may chamfer interior turns; both endpoint legs must keep the layout axis.
+            foreach (var (start, end) in new[] { (route[0], route[1]), (route[^2], route[^1]) }) {
+                var dx = Math.Abs(end.X - start.X); var dy = Math.Abs(end.Y - start.Y);
+                Assert.True(dx + dy > .002 && (direction is "LR" or "RL" ? dy < .002 : dx < .002), data);
+            }
         }
     }
 

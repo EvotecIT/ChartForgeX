@@ -1,0 +1,12 @@
+%%{init: {"sequence":{"diagramMarginX":18,"diagramMarginY":20,"width":132,"height":72,"actorMargin":32,"messageMargin":24,"noteMargin":14,"boxMargin":10,"boxTextMargin":6,"activationWidth":14,"wrapPadding":10,"wrap":true,"actorFontSize":18,"actorFontWeight":700,"messageFontSize":"20px","messageFontWeight":500,"noteFontSize":16,"noteFontWeight":400}}}%%
+sequenceDiagram
+participant A as Review
+participant B as Store
+autonumber
+A->>B: Save
+activate B
+alt Accepted
+Note over A,B: Note
+B-->>A: Ready
+end
+deactivate B

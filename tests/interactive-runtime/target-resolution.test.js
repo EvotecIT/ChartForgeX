@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { installNativeText } = require('../helpers/adapter-native-text');
 const source = name => fs.readFileSync(path.resolve(__dirname,
   '../../ChartForgeX.Interactivity.Html/Assets/interactive.source', name + '.js'), 'utf8');
 
@@ -37,6 +38,7 @@ function fixture() {
   mark({ cfxRole: 'legend-item', cfxSeries: '0', cfxSeriesKey: 'durations' });
   mark({ ...other.dataset, cfxPassive: 'true' });
   const document = { querySelectorAll: () => [] };
+  installNativeText(window, document);
   const release = owner => {
     lifetimes.get(owner).disposed = true; lifetimes.delete(owner); mounted.delete(owner);
   };
@@ -46,9 +48,9 @@ function fixture() {
     .map(source).join('\n');
   new Function('window', 'document', 'chartLifetimes', 'mountedCharts', 'readChartSection', 'readAdaptiveLayout',
     'nextChartSceneRevision', 'prepareAdaptiveRoot', 'bindChart', 'bindAdaptiveLayout', 'watchChartLifetimes',
-    'releaseChartLifetime', 'emitHostEvent', 'emitSync', runtime)(window, document, lifetimes, mounted,
+    'releaseChartLifetime', 'emitHostEvent', 'emitSync', 'rememberNativeDrawingSnapshot', runtime)(window, document, lifetimes, mounted,
       () => {}, () => null, () => 'scene-1', () => {}, () => {}, () => {}, () => {}, release,
-      () => writes.push('event'), () => writes.push('sync'));
+      () => writes.push('event'), () => writes.push('sync'), () => {}); // Native presentation capture is outside this target-resolution unit's synthetic DOM boundary.
   return { controller: window.ChartForgeXCharts.mount(root), root, aggregate, other, writes, unchanged };
 }
 

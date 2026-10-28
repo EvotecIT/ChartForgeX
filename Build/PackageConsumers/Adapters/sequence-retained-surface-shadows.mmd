@@ -1,0 +1,8 @@
+sequenceDiagram
+participant A as Review
+participant B as Archive
+A->>B: Save
+loop Audit
+B-->>A: Stored
+end
+Note over A,B: Retain audit facts

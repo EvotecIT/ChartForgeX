@@ -8,8 +8,8 @@ using ChartForgeX.VisualArtifacts;
 
 /// <summary>Exercises the shared prepared pipeline and portable handoff in the existing native AOT executable.</summary>
 internal static class PreparedPipelineSmoke {
-    internal static void Run() {
-        string themeJson = VisualTheme.Graphite().ToJson();
+    internal static void Run(string fontFamily) {
+        string themeJson = VisualTheme.Graphite().WithFontFamily(fontFamily).ToJson();
         var theme = VisualTheme.FromJson(themeJson);
         Require(themeJson == theme.ToJson(), "Versioned paired theme roundtrip failed.");
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
@@ -27,7 +27,7 @@ internal static class PreparedPipelineSmoke {
                 .AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) });
             AssertPrepared(donut.Prepare(context), "donut-slice");
 
-            var topology = CreateTopology();
+            var topology = CreateTopology().WithTheme(theme, mode);
             var preparedTopology = topology.Prepare(context);
             AssertPrepared(preparedTopology, "topology-node");
             AssertSemanticHandoff(preparedTopology, topology.ToVisualArtifact().ToInterchangeEnvelope(),
@@ -37,6 +37,8 @@ internal static class PreparedPipelineSmoke {
                 .AddParticipant("client", "Client").AddParticipant("server", "Server")
                 .AddMessage("client", "server", "Request\npayload")
                 .AddMessage("server", "client", "Response", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);
+            sequence.Theme = theme;
+            sequence.ThemeMode = mode;
             var preparedSequence = sequence.Prepare(context);
             AssertPrepared(preparedSequence, "sequence-participant");
             AssertSemanticHandoff(preparedSequence, sequence.ToVisualArtifact().ToInterchangeEnvelope(),

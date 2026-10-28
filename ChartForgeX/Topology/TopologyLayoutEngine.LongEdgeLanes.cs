@@ -46,7 +46,7 @@ internal static partial class TopologyLayoutEngine {
                 var layer = layers[rank];
                 var passing = lanes.Where(lane => lane.Passes(rank)).ToList();
                 if (passing.Count == 0) continue;
-                var total = layer.Nodes.Sum(node => horizontal ? node.Height : node.Width) + passing.Count * LongEdgeLaneWidth
+                var total = layer.Nodes.Sum(node => horizontal ? LayeredNodeHeight(chart, node) : LayeredNodeWidth(chart, node)) + passing.Count * LongEdgeLaneWidth
                     + Math.Max(0, layer.Nodes.Count + passing.Count - 1) * gap;
                 var fits = (horizontal ? layer.Columns : layer.Rows) == 1 && total <= crossLength
                     && layer.Nodes.All(node => IsUnset(node.X) && IsUnset(node.Y));
@@ -78,7 +78,7 @@ internal static partial class TopologyLayoutEngine {
             var items = new List<LaneItem>();
             for (var i = 0; i < layer.Nodes.Count; i++) {
                 var node = layer.Nodes[i];
-                items.Add(new LaneItem(node, null, horizontal ? node.Height : node.Width, Barycenter(chart, node, rank, horizontal, nodesById), FirstEdgeOrder(chart, node), i));
+                items.Add(new LaneItem(node, null, horizontal ? LayeredNodeHeight(chart, node) : LayeredNodeWidth(chart, node), Barycenter(chart, node, rank, horizontal, nodesById), FirstEdgeOrder(chart, node), i));
             }
 
             foreach (var lane in _lanes.Where(lane => lane.Passes(rank) && !lane.Rejected)) {
@@ -95,8 +95,8 @@ internal static partial class TopologyLayoutEngine {
                         item.Node.X = rankPosition + (layer.MaxWidth - item.Node.Width) / 2;
                         item.Node.Y = cursor;
                     } else {
-                        item.Node.X = cursor;
-                        item.Node.Y = rankPosition + (layer.MaxHeight - item.Node.Height) / 2;
+                        item.Node.X = cursor + (item.Size - item.Node.Width) / 2;
+                        item.Node.Y = rankPosition + (layer.MaxHeight - LayeredNodeHeight(chart, item.Node)) / 2;
                     }
                 } else {
                     item.Lane!.Centers[rank] = cursor + item.Size / 2;

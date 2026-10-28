@@ -36,6 +36,7 @@ internal static partial class MermaidStateParser {
             }
 
             if (MermaidParserUtilities.StartsStatement(trimmed, "note", ignoreCase: true)) {
+                if (TryFloatingNote(document, trimmed, span, result)) continue;
                 if (MermaidParserUtilities.IsMultilineStateNote(trimmed)) line = ReadNote(document, lines, line, span, originalLineStarts, result);
                 else {
                     var note = Note.Match(trimmed);
@@ -101,7 +102,8 @@ internal static partial class MermaidStateParser {
             "Composite state definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
         foreach (var note in document.Notes) if (note.NodeId != null && !states.ContainsKey(note.NodeId))
             MermaidParserUtilities.Add(result, note.Span, MermaidDiagnosticSeverity.Error, "State notes must reference a declared state or transition endpoint.", MermaidDiagnosticCodes.InvalidStatement);
-        if (document.States.Count == 0 && document.Transitions.Count == 0 && !result.HasErrors) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state or transition.");
+        ValidateNoteIdentities(document, states, result);
+        if (document.States.Count == 0 && document.Transitions.Count == 0 && document.Notes.Count == 0 && !result.HasErrors) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state, transition or note.");
     }
 
     private static int ReadNote(MermaidStateDocument document, string[] lines, int line, MermaidSourceSpan firstSpan,

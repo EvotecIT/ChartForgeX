@@ -61,6 +61,16 @@ public sealed partial class Chart {
         return this;
     }
 
+    /// <summary>Restores a chart-local identity into this new chart without promoting it to a cross-chart synchronization key.</summary>
+    internal void AddRestoredAutomaticSeries(ChartSeries series, long sequence) {
+        if (sequence <= 0) throw new ArgumentOutOfRangeException(nameof(sequence));
+        if (series.Owner != null || series.AutomaticIdentityOwner != null)
+            throw new InvalidOperationException("Restored automatic identities require a newly constructed series.");
+        series.AssignAutomaticIdentity(ChartSeriesId.Automatic(sequence), this);
+        AddSeries(series);
+        _nextAutomaticSeriesId = Math.Max(_nextAutomaticSeriesId, sequence);
+    }
+
     internal int IndexOfSeries(ChartSeries series) => _series.IndexOf(series);
 
     private int OwnedSeriesIndex(ChartSeries series) {

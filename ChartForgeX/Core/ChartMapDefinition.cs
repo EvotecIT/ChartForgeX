@@ -32,6 +32,10 @@ public sealed class ChartMapDefinition {
     /// <summary>Gets the geographic projection already applied to the paths, or null for arbitrary source coordinates.</summary>
     public ChartMapGeoJsonProjection? GeographicProjection { get; private set; }
 
+    /// <summary>Gets the explicit antimeridian source-window declaration of already unwrapped polygon paths, or null for ordinary geometry.</summary>
+    /// <remarks>Seam-aware paths may continue outside this window; the native scene clips them without discarding their complete source facts.</remarks>
+    public ChartMapViewport? PolygonViewport { get; private set; }
+
     /// <summary>
     /// Gets the drawable regions.
     /// </summary>
@@ -100,7 +104,18 @@ public sealed class ChartMapDefinition {
     /// <returns>A new immutable definition suitable for composition with geographic points, routes and equally projected geometry.</returns>
     public ChartMapDefinition WithGeographicProjection(ChartMapGeoJsonProjection projection) {
         ChartGeographicProjection.Validate(projection);
-        return new ChartMapDefinition(Id, Name, Bounds, Regions) { GeographicProjection = projection };
+        if (PolygonViewport.HasValue && PolygonViewport.Value.GeographicProjection != projection)
+            throw new ArgumentException("A polygon viewport declaration must retain its captured projection.", nameof(projection));
+        return new ChartMapDefinition(Id, Name, Bounds, Regions) { GeographicProjection = projection, PolygonViewport = PolygonViewport };
+    }
+
+    /// <summary>Returns a detached declaration of the antimeridian window already used to prepare the paths.</summary>
+    /// <param name="viewport">A seam-crossing window matching the declared projection.</param>
+    /// <returns>An independent definition. This method declares existing source geometry; it does not transform or clip paths.</returns>
+    public ChartMapDefinition WithPolygonViewport(ChartMapViewport viewport) {
+        if (!viewport.CrossesAntimeridian || !GeographicProjection.HasValue || viewport.GeographicProjection != GeographicProjection)
+            throw new ArgumentException("A polygon viewport requires a matching declared antimeridian projection.", nameof(viewport));
+        return new ChartMapDefinition(Id, Name, Bounds, Regions) { GeographicProjection = GeographicProjection, PolygonViewport = viewport };
     }
 
     /// <summary>

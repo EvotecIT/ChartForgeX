@@ -11,9 +11,9 @@ internal static partial class TopologyLayoutEngine {
     private const double HierarchyBucketNodeGapX = 24;
     private const double HierarchyBucketNodeGapY = 28;
 
-    private static bool TryPlaceHierarchyBucketsTopToBottom(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double left, double availableW, double y, out double occupiedHeight) {
+    private static bool TryPlaceHierarchyBucketsTopToBottom(TopologyChart chart, LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double left, double availableW, double y, out double occupiedHeight) {
         occupiedHeight = 0;
-        var buckets = BuildHorizontalHierarchyBuckets(layer, nodesById, availableW);
+        var buckets = BuildHorizontalHierarchyBuckets(chart, layer, nodesById, availableW);
         if (buckets.Count == 0 || buckets.Sum(bucket => bucket.Nodes.Count) != layer.Nodes.Count) return false;
         occupiedHeight = buckets.Max(bucket => bucket.Height);
         var totalWidth = buckets.Sum(bucket => bucket.Width) + (buckets.Count - 1) * HierarchyBucketGap;
@@ -39,16 +39,16 @@ internal static partial class TopologyLayoutEngine {
                 occupied.Add(node.Id);
                 if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
                 node.X = rowLeft + col * (layer.MaxWidth + HierarchyBucketNodeGapX) + (layer.MaxWidth - node.Width) / 2;
-                node.Y = y + row * (layer.MaxHeight + HierarchyBucketNodeGapY) + (layer.MaxHeight - node.Height) / 2;
+                node.Y = y + row * (layer.MaxHeight + HierarchyBucketNodeGapY) + (layer.MaxHeight - LayeredNodeHeight(chart, node)) / 2;
             }
         }
 
         return occupied.Count == layer.Nodes.Count;
     }
 
-    private static bool TryPlaceHierarchyBucketsLeftToRight(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double x, double top, double availableH, out double occupiedWidth) {
+    private static bool TryPlaceHierarchyBucketsLeftToRight(TopologyChart chart, LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double x, double top, double availableH, out double occupiedWidth) {
         occupiedWidth = 0;
-        var buckets = BuildVerticalHierarchyBuckets(layer, nodesById, availableH);
+        var buckets = BuildVerticalHierarchyBuckets(chart, layer, nodesById, availableH);
         if (buckets.Count == 0 || buckets.Sum(bucket => bucket.Nodes.Count) != layer.Nodes.Count) return false;
         occupiedWidth = buckets.Max(bucket => bucket.Width);
         var totalHeight = buckets.Sum(bucket => bucket.Height) + (buckets.Count - 1) * HierarchyBucketGap;
@@ -74,14 +74,14 @@ internal static partial class TopologyLayoutEngine {
                 occupied.Add(node.Id);
                 if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
                 node.X = x + col * (layer.MaxWidth + HierarchyBucketNodeGapX) + (layer.MaxWidth - node.Width) / 2;
-                node.Y = columnTop + row * (layer.MaxHeight + HierarchyBucketNodeGapY) + (layer.MaxHeight - node.Height) / 2;
+                node.Y = columnTop + row * (layer.MaxHeight + HierarchyBucketNodeGapY) + (layer.MaxHeight - LayeredNodeHeight(chart, node)) / 2;
             }
         }
 
         return occupied.Count == layer.Nodes.Count;
     }
 
-    private static List<HierarchyBucket> BuildHorizontalHierarchyBuckets(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double availableW) {
+    private static List<HierarchyBucket> BuildHorizontalHierarchyBuckets(TopologyChart chart, LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double availableW) {
         var grouped = layer.Nodes
             .GroupBy(node => ParentId(node), StringComparer.Ordinal)
             .Where(group => !string.IsNullOrWhiteSpace(group.Key) && nodesById.ContainsKey(group.Key!))
@@ -95,14 +95,14 @@ internal static partial class TopologyLayoutEngine {
                 var policy = AppliedHierarchyLayoutPolicy(parent, group.Nodes.Count, fitted);
                 var columns = HierarchyColumns(group.Nodes.Count, fitted, policy);
                 var rows = (int)Math.Ceiling(group.Nodes.Count / (double)columns);
-                return new HierarchyBucket(group.Nodes, columns, rows, CenterX(parent), policy);
+                return new HierarchyBucket(chart, group.Nodes, columns, rows, CenterX(parent), policy);
             })
             .OrderBy(bucket => bucket.Center)
             .ThenBy(bucket => bucket.Nodes[0].Id, StringComparer.Ordinal)
             .ToList();
     }
 
-    private static List<HierarchyBucket> BuildVerticalHierarchyBuckets(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double availableH) {
+    private static List<HierarchyBucket> BuildVerticalHierarchyBuckets(TopologyChart chart, LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double availableH) {
         var grouped = layer.Nodes
             .GroupBy(node => ParentId(node), StringComparer.Ordinal)
             .Where(group => !string.IsNullOrWhiteSpace(group.Key) && nodesById.ContainsKey(group.Key!))
@@ -116,7 +116,7 @@ internal static partial class TopologyLayoutEngine {
                 var policy = AppliedHierarchyLayoutPolicy(parent, group.Nodes.Count, fitted);
                 var rows = HierarchyRows(group.Nodes.Count, fitted, policy);
                 var columns = (int)Math.Ceiling(group.Nodes.Count / (double)rows);
-                return new HierarchyBucket(group.Nodes, columns, rows, CenterY(parent), policy);
+                return new HierarchyBucket(chart, group.Nodes, columns, rows, CenterY(parent), policy);
             })
             .OrderBy(bucket => bucket.Center)
             .ThenBy(bucket => bucket.Nodes[0].Id, StringComparer.Ordinal)
@@ -196,14 +196,14 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private sealed class HierarchyBucket {
-        public HierarchyBucket(List<TopologyNode> nodes, int columns, int rows, double center, TopologyHierarchyLayoutPolicy appliedPolicy) {
+        public HierarchyBucket(TopologyChart chart, List<TopologyNode> nodes, int columns, int rows, double center, TopologyHierarchyLayoutPolicy appliedPolicy) {
             Nodes = nodes;
             Columns = Math.Max(1, columns);
             Rows = Math.Max(1, rows);
             Center = center;
             AppliedPolicy = appliedPolicy;
-            var itemWidth = Nodes.Select(node => node.Width).DefaultIfEmpty(80).Max();
-            var itemHeight = Nodes.Select(node => node.Height).DefaultIfEmpty(46).Max();
+            var itemWidth = Nodes.Select(node => LayeredNodeWidth(chart, node)).DefaultIfEmpty(80).Max();
+            var itemHeight = Nodes.Select(node => LayeredNodeHeight(chart, node)).DefaultIfEmpty(46).Max();
             Width = Columns * itemWidth + Math.Max(0, Columns - 1) * HierarchyBucketNodeGapX + (Rows > 1 && Columns > 1 ? (itemWidth + HierarchyBucketNodeGapX) / 2 : 0);
             Height = Rows * itemHeight + Math.Max(0, Rows - 1) * HierarchyBucketNodeGapY + (Columns > 1 && Rows > 1 ? (itemHeight + HierarchyBucketNodeGapY) / 2 : 0);
         }

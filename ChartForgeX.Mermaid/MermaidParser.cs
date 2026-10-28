@@ -88,7 +88,7 @@ public sealed partial class MermaidParser {
         } else if (descriptor.Kind == MermaidDiagramKind.Journey) {
             document = ParseJourney(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.GitGraph) {
-            document = ParseGitGraph(source, lines, frontMatter, header.Value, descriptor, result);
+            document = ParseGitGraph(source, lines, frontMatter, header.Value, descriptor, configuration, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Gantt) {
             document = ParseGantt(source, lines, frontMatter, header.Value, result, options.GanttDateAnchor);
         } else if (descriptor.Kind == MermaidDiagramKind.MindMap) {
@@ -327,7 +327,8 @@ public sealed partial class MermaidParser {
             Header = header.Text,
             HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
             FrontMatter = frontMatter.Text,
-            Orientation = Normalize(descriptor.Direction) == "horizontal" ? ChartOrientation.Horizontal : ChartOrientation.Vertical
+            Orientation = Normalize(descriptor.Direction) == "horizontal" ? ChartOrientation.Horizontal : ChartOrientation.Vertical,
+            HasExplicitOrientation = !string.IsNullOrWhiteSpace(descriptor.Direction)
         };
 
         MermaidXYChartParser.ParseStatements(document, lines, header.Line + 1, result);

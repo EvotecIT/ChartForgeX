@@ -160,7 +160,11 @@ internal static partial class SmokeTests {
         Assert(markupExamples.Contains("new VisualMarkupParser().Parse", StringComparison.Ordinal), "Markup examples should exercise the generic VisualMarkupParser pipeline.");
         Assert(markupExamples.Contains("chartforgex flow v1", StringComparison.Ordinal) && markupExamples.Contains("chartforgex timeline v1", StringComparison.Ordinal) && markupExamples.Contains("chartforgex sequence v1", StringComparison.Ordinal), "Markup examples should cover native v1 flow, timeline, and sequence fences.");
         Assert(galleryCatalog.Contains("\"Native Markup\"", StringComparison.Ordinal), "Example catalog should group generated native markup artifacts intentionally.");
-        Assert(markupProject.Contains("chartforgex-markup-v1.schema.json", StringComparison.Ordinal) && markupProject.Contains("PackagePath=\"schemas\\\"", StringComparison.Ordinal), "ChartForgeX.Markup should pack the machine-readable v1 grammar schema.");
+        var packedMarkupSchema = XDocument.Parse(markupProject).Descendants("None").SingleOrDefault(item =>
+            ((string?)item.Attribute("Include"))?.Replace('\\', '/') == "Schemas/chartforgex-markup-v1.schema.json");
+        Assert((string?)packedMarkupSchema?.Attribute("Pack") == "true"
+            && ((string?)packedMarkupSchema?.Attribute("PackagePath"))?.Replace('\\', '/').TrimEnd('/') == "schemas",
+            "ChartForgeX.Markup should declare the machine-readable v1 grammar schema for packing in schemas.");
         Assert(vscodePackage.Contains("\"schemas/**\"", StringComparison.Ordinal), "VS Code extension package should include the machine-readable v1 grammar schema.");
         var markupSchema = File.ReadAllText(markupSchemaPath);
         var vscodeSchema = File.ReadAllText(vscodeSchemaPath);

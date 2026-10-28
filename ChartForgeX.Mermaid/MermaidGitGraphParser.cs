@@ -14,10 +14,11 @@ internal static partial class MermaidGitGraphParser {
         var branchHeads = new Dictionary<string, string?>(StringComparer.Ordinal);
         var commits = new HashSet<string>(StringComparer.Ordinal);
         var mergeCommits = new HashSet<string>(StringComparer.Ordinal);
-        var currentBranch = "main";
+        var settings = document.Configuration.GitGraph;
+        var currentBranch = settings?.MainBranchName ?? "main";
         var commitIndex = 0;
 
-        AddBranch(document, branches, branchHeads, currentBranch, 0, null, document.HeaderSpan);
+        AddBranch(document, branches, branchHeads, currentBranch, settings?.MainBranchOrder ?? 0, null, document.HeaderSpan);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             MermaidResourceGuard.Checkpoint();
             foreach (var statement in SplitStatements(lines[line - 1], line)) {

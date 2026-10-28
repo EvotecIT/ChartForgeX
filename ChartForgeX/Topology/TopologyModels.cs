@@ -128,7 +128,7 @@ public sealed class TopologyViewport {
 /// </summary>
 public sealed partial class TopologyGroup {
     private string _id = string.Empty;
-    private string _label = string.Empty;
+    private ChartForgeX.Typography.TextContent _labelContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
     private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
     private double _x;
     private double _y;
@@ -142,8 +142,8 @@ public sealed partial class TopologyGroup {
     /// <summary>Gets or sets the stable group identifier.</summary>
     public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets the group label.</summary>
-    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+    /// <summary>Gets or sets the group label; assigning it resets inline formatting.</summary>
+    public string Label { get => _labelContent.PlainText; set => _labelContent = ChartForgeX.Typography.TextContent.Plain(value ?? throw new ArgumentNullException(nameof(value))); }
 
     /// <summary>Gets or sets the optional group subtitle.</summary>
     public string? Subtitle { get; set; }
@@ -260,7 +260,7 @@ public sealed partial class TopologyGroup {
 /// </summary>
 public sealed partial class TopologyNode {
     private string _id = string.Empty;
-    private string _label = string.Empty;
+    private ChartForgeX.Typography.TextContent _labelContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
     private TopologyNodeKind _kind = TopologyNodeKind.Generic;
     private TopologyNodeDisplayMode? _displayMode;
     private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
@@ -276,7 +276,7 @@ public sealed partial class TopologyNode {
     public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the node label.</summary>
-    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+    public string Label { get => _labelContent.PlainText; set => _labelContent = ChartForgeX.Typography.TextContent.Plain(value ?? throw new ArgumentNullException(nameof(value))); }
 
     /// <summary>Gets or sets the optional node subtitle.</summary>
     public string? Subtitle { get; set; }
@@ -296,7 +296,7 @@ public sealed partial class TopologyNode {
     /// <summary>Gets or sets an optional reusable icon id such as <c>network:switch</c> or <c>microsoft-ad:domain-controller</c>.</summary>
     public string? IconId { get; set; }
 
-    /// <summary>Gets or sets optional node-specific artwork. SVG and HTML can embed safe artwork directly; PNG uses renderer-owned fallback glyphs.</summary>
+    /// <summary>Gets or sets node-specific artwork. Embedded images and supported inline SVG share captured native/SVG pixels; host-managed references retain the native glyph fallback.</summary>
     public TopologyIconArtwork? Artwork { get; set; }
 
     /// <summary>Gets or sets an optional node-specific display mode. When null, render options decide.</summary>
@@ -304,6 +304,7 @@ public sealed partial class TopologyNode {
         get => _displayMode;
         set {
             if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            if (_displayMode != value) InvalidateSurfaceElementAppearance();
             _displayMode = value;
         }
     }
@@ -421,8 +422,9 @@ public sealed partial class TopologyNode {
     /// <summary>Gets typed label/value detail rows rendered by card-like node surfaces.</summary>
     public List<TopologyNodeDetail> Details { get; } = new();
 
+    private TopologyNodeShape? _shape;
     /// <summary>Gets or sets a diagram surface; null preserves the display-mode card surface.</summary>
-    public TopologyNodeShape? Shape { get; set; }
+    public TopologyNodeShape? Shape { get => _shape; set { if (_shape != value) InvalidateSurfaceElementAppearance(); _shape = value; } }
 
     /// <summary>Gets arbitrary node metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
@@ -660,8 +662,8 @@ public sealed partial class TopologyEdge {
     /// <summary>Gets explicit route bend points used between the source and target nodes.</summary>
     public List<ChartPoint> Waypoints { get; } = new();
 
-    /// <summary>Gets or sets the primary edge label.</summary>
-    public string? Label { get; set; }
+    /// <summary>Gets or sets the primary edge label; assigning it resets inline formatting.</summary>
+    public string? Label { get => _labelContent?.PlainText; set => _labelContent = value == null ? null : ChartForgeX.Typography.TextContent.Plain(value); }
 
     /// <summary>Gets or sets the secondary edge label.</summary>
     public string? SecondaryLabel { get; set; }
@@ -736,16 +738,17 @@ public sealed class TopologyNodePort {
 /// <summary>Defines a compact typed detail row shown inside a card-like topology node.</summary>
 public sealed partial class TopologyNodeDetail {
     private string _label = string.Empty;
-    private string _value = string.Empty;
+    private ChartForgeX.Typography.TextContent _valueContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
+    private ChartForgeX.Typography.TextContent? _content;
 
     /// <summary>Gets or sets full-width text instead of the label/value columns.</summary>
-    public string? Text { get; set; }
+    public string? Text { get => _content?.PlainText; set => _content = value == null ? null : ChartForgeX.Typography.TextContent.Plain(value); }
 
     /// <summary>Gets or sets the row label.</summary>
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the row value.</summary>
-    public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
+    public string Value { get => _valueContent.PlainText; set => _valueContent = ChartForgeX.Typography.TextContent.Plain(value ?? throw new ArgumentNullException(nameof(value))); }
 
     /// <summary>Gets or sets an optional icon id retained for capable hosts and future icon-aware renderers.</summary>
     public string? IconId { get; set; }

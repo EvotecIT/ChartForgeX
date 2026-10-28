@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create("compact-mean", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Measurements across intervals").WithSubtitle("Arithmetic means; the empty interval has no mean").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame("Measurements across intervals", "Arithmetic means; the empty interval has no mean", showLegend: false, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
@@ -26,8 +33,9 @@ File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
 File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
 
-/// <summary>Counts, density, signed sums or means over the same explicit unequal measurement intervals.</summary>
+/// <summary>Counts, probabilities, densities and signed or weighted means over unequal measurement intervals.</summary>
 public static class HistogramRecipe {
+    /// <summary>Creates a native histogram while retaining its source observations and raw bin aggregates.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         var aggregation = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == "compact") aggregation = "wide";
@@ -35,12 +43,28 @@ public static class HistogramRecipe {
         var chart = Chart.Create().WithXAxis("Measurement").WithDataLabels();
         chart.Options.XAxis.WithBounds(0, 10);
         ChartSeries observations;
-        if (aggregation is "wide" or "density") {
+        if (aggregation is "wide" or "density" or "probability" or "probability-density") {
+            var encoding = aggregation switch {
+                "density" => ChartHistogramEncoding.Density,
+                "probability" => ChartHistogramEncoding.Probability,
+                "probability-density" => ChartHistogramEncoding.ProbabilityDensity,
+                _ => ChartHistogramEncoding.Value
+            };
             observations = ChartSeries.CreateHistogram(new ChartSeriesId("observations"), "Observations",
                 new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout,
-                aggregation == "density" ? ChartHistogramEncoding.Density : ChartHistogramEncoding.Value);
-            chart.WithYAxis(aggregation == "density" ? "Observations per unit" : "Observation count");
+                encoding);
+            chart.WithYAxis(aggregation switch {
+                "density" => "Observations per unit", "probability" => "Probability",
+                "probability-density" => "Probability per unit", _ => "Observation count"
+            });
             foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count + " obs");
+        } else if (aggregation == "weighted-mean") {
+            observations = ChartSeries.CreateHistogram(new ChartSeriesId("weighted-quantity"), "Weighted quantity",
+                new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),
+                    new ChartHistogramObservation(1.2, -4, 2), new ChartHistogramObservation(2.5, 12, 1),
+                    new ChartHistogramObservation(6.1, 9, 0), new ChartHistogramObservation(9, 5, 4) },
+                layout, ChartHistogramAggregation.WeightedMean);
+            chart.WithYAxis("Weighted mean quantity");
         } else if (aggregation is "sum" or "mean") {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId("quantity"), "Quantity",
                 new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4), new ChartPoint(1.2, 8),

@@ -25,9 +25,8 @@ public sealed class NativePolarCoordinateBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         const string observationSelector = "[data-cfx-point],[data-cfx-target-kind=node]";
-        var target = page.Locator("[data-cfx-coordinate-system='polar']").Locator(observationSelector).First;
+        var (target, painted) = await NativePaintedObservationAsync(page);
         var expected = await target.GetAttributeAsync("data-cfx-target-id");
-        var painted = await target.EvaluateAsync<double[]>("node => { const box=node.getBoundingClientRect(); for(let y=1;y<20;y++) for(let x=1;x<20;x++) { const px=box.left+box.width*x/20, py=box.top+box.height*y/20; const hit=document.elementFromPoint(px,py); if(hit && hit.closest('[data-cfx-point],[data-cfx-target-kind=node]')===node && !hit.hasAttribute('data-cfx-browser-hit-area')) return [px,py]; } throw new Error('No native painted observation'); }");
         await page.Mouse.MoveAsync((float)painted[0], (float)painted[1]);
         Assert.Equal(expected, await page.Locator(".cfx-hovered:is(" + observationSelector + ")").GetAttributeAsync("data-cfx-target-id"));
         Assert.NotEqual(string.Empty, await TooltipTextAsync(page));
@@ -42,12 +41,83 @@ public sealed class NativePolarCoordinateBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [Theory]
+    [Trait("Category", "Browser")]
+    [InlineData(ChartSeriesKind.Radar)]
+    [InlineData(ChartSeriesKind.Polar)]
+    public async Task PaintedObservationRequiresAnUnoccludedNativeMark(ChartSeriesKind kind) {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(Fixture(kind).ToInteractiveHtmlPage());
+        var page = session.Page;
+        var (first, _) = await NativePaintedObservationAsync(page);
+        var firstId = await first.GetAttributeAsync("data-cfx-target-id");
+        // A host overlay can cover a native vertex. Its semantic metadata does not make it a painted hit.
+        await first.EvaluateAsync("node => { const box=node.getBoundingClientRect(), cover=document.createElement('div'); cover.id='proof-occluder'; cover.style.cssText='position:fixed;z-index:2147483647;background:white;left:'+(box.left-2)+'px;top:'+(box.top-2)+'px;width:'+(box.width+4)+'px;height:'+(box.height+4)+'px'; document.body.appendChild(cover); }");
+        Assert.Empty(await NativePaintedPointAsync(first));
+        var (visible, _) = await NativePaintedObservationAsync(page);
+        Assert.NotEqual(firstId, await visible.GetAttributeAsync("data-cfx-target-id"));
+        await page.EvaluateAsync("() => { const cover=document.getElementById('proof-occluder'); cover.style.cssText='position:fixed;z-index:2147483647;background:white;inset:0'; }");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativePaintedObservationAsync(page));
+        await page.Locator("#proof-occluder").EvaluateAsync("node => node.remove()");
+        Assert.NotEmpty(await NativePaintedPointAsync(first));
+        AssertNoConsoleErrors(session);
+    }
+
+    // Axis captions and host overlays can occlude a vertex on a different font/layout host.
+    // The family contract requires a real visible observation, not a particular metadata ordinal.
+    private static async Task<(Microsoft.Playwright.ILocator Target, double[] Point)> NativePaintedObservationAsync(Microsoft.Playwright.IPage page) {
+        var observations = page.Locator("[data-cfx-coordinate-system='polar']").Locator("[data-cfx-point],[data-cfx-target-kind=node]");
+        for (var index = 0; index < await observations.CountAsync(); index++) {
+            var target = observations.Nth(index);
+            var point = await NativePaintedPointAsync(target);
+            if (point.Length == 2) return (target, point);
+        }
+        var detail = await observations.EvaluateAllAsync<string>("nodes => JSON.stringify(nodes.map(node=>({owner:node.outerHTML.slice(0,6000),box:node.getBoundingClientRect().toJSON()})))");
+        throw new InvalidOperationException("No unoccluded native painted observation: " + detail);
+    }
+
     [Fact]
     public void LinearGaugeAndScalarCircleDoNotDeclarePolarObservationGeometry() {
         Assert.DoesNotContain("data-cfx-coordinate-system=\"polar\"", Chart.Create().AddLinearGauge("Linear", 80).ToSvg(), StringComparison.Ordinal);
         var circle = Chart.Create().AddCircle("Scalar", 80).Prepare(VisualExportRequest.ForChart(Chart.Create()).Context).Scene;
         Assert.DoesNotContain(circle.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.ContainsKey("data-cfx-point"));
     }
+
+    // Sample the actual native geometry before the broad owner box. Small circular markers
+    // can fall between a screen-space grid's samples on a different font/layout host.
+    private static Task<double[]> NativePaintedPointAsync(Microsoft.Playwright.ILocator target) => target.EvaluateAsync<double[]>("""
+        node => {
+            const marks=[...node.querySelectorAll('circle,ellipse,rect,path,polygon')].filter(mark=>
+                !mark.hasAttribute('data-cfx-browser-hit-area')&&!mark.classList.contains('cfx-prepared-point-marker'));
+            const candidates=[],box=node.getBoundingClientRect();
+            for(const mark of marks.filter(()=>['radar','polar'].includes(node.dataset.cfxKind))){
+                const matrix=mark.getScreenCTM(),box=mark.getBBox(),screen=mark.getBoundingClientRect();if(!matrix)continue;
+                candidates.push({x:(screen.left+screen.right)/2,y:(screen.top+screen.bottom)/2});
+                candidates.push(new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(matrix));
+                if(typeof mark.getTotalLength==='function'){
+                    const length=mark.getTotalLength();
+                    for(let i=0;i<64;i++)candidates.push(mark.getPointAtLength(length*i/64).matrixTransform(matrix));
+                }
+            }
+            for(let y=1;y<20;y++)for(let x=1;x<20;x++)candidates.push({x:box.left+box.width*x/20,y:box.top+box.height*y/20});
+            for(const {x,y} of candidates){
+                const hit=document.elementFromPoint(x,y);
+                if(!hit||hit.closest('[data-cfx-point],[data-cfx-target-kind=node]')!==node)continue;
+                const painted=marks.some(mark=>{
+                    const matrix=mark.getScreenCTM(),style=getComputedStyle(mark);
+                    if(!matrix||style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+                    // A direct native SVG hit is already the browser's physical painted geometry.
+                    if(hit===mark)return style.fill!=='none'&&style.fill!=='transparent'&&Number(style.fillOpacity)>0
+                        ||style.stroke!=='none'&&Number(style.strokeOpacity)>0;
+                    const point=new DOMPoint(x,y).matrixTransform(matrix.inverse());
+                    return style.fill!=='none'&&style.fill!=='transparent'&&Number(style.fillOpacity)>0&&mark.isPointInFill(point)
+                        ||style.stroke!=='none'&&Number(style.strokeOpacity)>0&&mark.isPointInStroke(point);
+                });
+                if(painted)return [x,y];
+            }
+            return [];
+        }
+        """);
 
     private static Chart Fixture(ChartSeriesKind kind) {
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false).WithXLabels("North", "South", "East", "West");

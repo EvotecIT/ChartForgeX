@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using ChartForgeX.Typography;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -11,6 +13,11 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
+
+// Portable handoffs capture owned font bytes; keep the smoke independent of installed host collections.
+const string portableFontFamily = "CFX AOT Carlito";
+foreach (var face in new[] { (Name: "Regular", Weight: 400), (Name: "Bold", Weight: 700) })
+    FontRegistry.Register(portableFontFamily, Path.Combine(AppContext.BaseDirectory, "Fonts", "Carlito-" + face.Name + ".ttf"), face.Weight);
 
 var chart = Chart.Create()
     .WithTitle("AOT smoke")
@@ -92,7 +99,8 @@ var interactive = chart.ToInteractiveHtmlPage(options => {
     options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
 });
 AssertContains(interactive, "data-cfx-export=\"png\"", "Interactive PNG export control missing.");
-AssertContains(interactive, "new CustomEvent('cfxsync'", "Interactive sync runtime missing.");
+AssertContains(interactive, "ChartForgeXCharts", "Interactive controller runtime missing.");
+AssertContains(interactive, "cfxsync", "Interactive sync protocol missing.");
 AssertContains(interactive, "data-cfx-pinned-label=\"Przypięte\"", "AOT localized tooltip status missing.");
 
 var mermaidSources = new[] {
@@ -104,18 +112,21 @@ var mermaidSources = new[] {
     "usecase-beta\nactor User\nUser --> Action(Do work)",
     "cynefin-beta\ncomplex\n\"Discover\""
 };
+var mermaidOptions = new MermaidRenderOptions {
+    Presentation = new MermaidPresentationOptions { FontFamily = portableFontFamily }
+};
 foreach (var source in mermaidSources) {
-    var rendered = MermaidRenderer.Render(source);
+    var rendered = MermaidRenderer.Render(source, mermaidOptions);
     if (rendered.HasErrors || rendered.Artifact == null) throw new InvalidOperationException("Mermaid AOT render failed.");
     AssertContains(rendered.Artifact.ToSvg(), "<svg", "Mermaid SVG render failed.");
     AssertPng(rendered.Artifact.ToPng(), "Mermaid PNG render failed.");
     var json = rendered.Artifact.ToInterchangeJson();
     if (VisualArtifactInterchangeEnvelope.FromJson(json).ToJson() != json) throw new InvalidOperationException("Mermaid interchange round trip failed.");
-    var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+    var markup = new MermaidVisualMarkupParser(mermaidOptions).Parse("```mermaid\n" + source + "\n```");
     if (markup.HasErrors || markup.Artifacts.Count != 1) throw new InvalidOperationException("Mermaid markup AOT render failed.");
 }
 
-PreparedPipelineSmoke.Run();
+PreparedPipelineSmoke.Run(portableFontFamily);
 var coreAnimationFrame = new ChartForgeX.Raster.RasterAnimationFrame(
     new ChartForgeX.Raster.RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }), TimeSpan.FromSeconds(1));
 foreach (var format in new[] { ChartForgeX.Raster.RasterAnimationFormat.Gif, ChartForgeX.Raster.RasterAnimationFormat.Apng }) {

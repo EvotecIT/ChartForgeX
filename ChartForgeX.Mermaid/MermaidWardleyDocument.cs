@@ -23,6 +23,9 @@ public sealed class MermaidWardleyDocument : MermaidDocument {
     /// <summary>Gets evolution stage labels.</summary>
     public List<string> Stages { get; } = new();
 
+    /// <summary>Gets explicit normalized stage boundaries retained in source order; partial lists use equal distribution.</summary>
+    public List<double> StageBoundaries { get; } = new();
+
     /// <summary>Gets parsed map nodes.</summary>
     public List<MermaidWardleyNode> Nodes { get; } = new();
 
@@ -34,6 +37,9 @@ public sealed class MermaidWardleyDocument : MermaidDocument {
 
     /// <summary>Gets parsed notes.</summary>
     public List<MermaidWardleyNote> Notes { get; } = new();
+
+    /// <summary>Gets or sets the optional normalized origin of the annotation legend.</summary>
+    public MermaidWardleyAnnotationBox? AnnotationsBox { get; set; }
 
     /// <summary>Gets parsed numbered annotations.</summary>
     public List<MermaidWardleyAnnotation> Annotations { get; } = new();
@@ -251,6 +257,12 @@ public sealed class MermaidWardleyPipelineComponent {
 
     /// <summary>Gets the normalized evolution coordinate from zero to one.</summary>
     public double Evolution { get; }
+
+    /// <summary>Gets or sets the optional finite X label offset.</summary>
+    public double? LabelOffsetX { get; set; }
+
+    /// <summary>Gets or sets the optional finite Y label offset.</summary>
+    public double? LabelOffsetY { get; set; }
 
     /// <summary>Gets the source span for the child component statement.</summary>
     public MermaidSourceSpan Span { get; }

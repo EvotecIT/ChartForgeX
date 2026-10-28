@@ -1,0 +1,24 @@
+---
+config:
+  xyChart:
+    width: 1100
+    height: 520
+    showLegend: true
+    showDataLabel: false
+    showDataLabelOutsideBar: true
+    titleFontSize: 22
+    legendFontSize: 14
+    xAxis:
+      showTitle: true
+      showAxisLine: true
+      labelRotation: 0
+    yAxis:
+      showTitle: true
+      showAxisLine: true
+---
+xychart-beta
+title "Intake and completed work"
+x-axis "Month" ["Jan", "Feb", "Mar", "Apr"]
+y-axis "Requests" 0 --> 100
+bar "Intake" [18, 70, 44, 85]
+line "Completed" [12 "Opened", 60, 33 "Reviewed, ready", 75 "Released"]

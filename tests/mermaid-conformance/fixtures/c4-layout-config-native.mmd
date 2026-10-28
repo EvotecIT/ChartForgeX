@@ -1,0 +1,16 @@
+C4Deployment
+title Bounded deployment
+Deployment_Node(cloud, "Cloud", "Region") {
+  Deployment_Node(west, "West", "Zone") {
+    Container(a, "Alpha", "Service")
+    Container(b, "Bravo", "Service")
+    Container(c, "Charlie", "Service")
+  }
+  Deployment_Node(east, "East", "Zone") {
+    Container(d, "Delta", "Service")
+  }
+}
+Person(operator, "Operator")
+Rel(operator, cloud, "Operates")
+Rel(a, east, "Replicates")
+UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")

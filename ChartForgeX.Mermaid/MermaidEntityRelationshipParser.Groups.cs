@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidEntityRelationshipParser {
-    private static bool TryGroup(MermaidEntityRelationshipDocument document, string text, MermaidSourceSpan span,
+    private static bool TryGroup(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string text, MermaidSourceSpan span,
         Stack<MermaidEntityGroup> parents, MermaidParseResult<MermaidDocument> result) {
         if (!MermaidParserUtilities.StartsStatement(text, "subgraph")) return false;
         var title = text.Substring(8).Trim();
@@ -21,6 +21,14 @@ internal static partial class MermaidEntityRelationshipParser {
         }
         MermaidResourceGuard.CheckDepth(parents.Count + 1, span);
         var group = new MermaidEntityGroup(id, label, span) { ParentId = parents.Count == 0 ? null : parents.Peek().Id };
+        // A prior relationship may have introduced this shell as an implicit entity.
+        // Move authored facts at declaration time, before later group styles are applied.
+        if (entities.TryGetValue(id, out var endpoint) && endpoint.Label == null && endpoint.Attributes.Count == 0) {
+            group.Classes.AddRange(endpoint.Classes);
+            MermaidStyleParser.Copy(group.Styles, endpoint.Styles);
+            endpoint.Classes.Clear();
+            endpoint.Styles.Clear();
+        }
         document.Groups.Add(group);
         parents.Push(group);
         return true;

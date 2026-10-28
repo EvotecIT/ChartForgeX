@@ -6,7 +6,7 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// A deterministic grid-based block layout with optional directed edges.
 /// </summary>
-public sealed class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
+public sealed partial class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
     private readonly List<BlockLayoutItem> _items = new();
     private readonly List<BlockLayoutEdge> _edges = new();
     private int _columns = 3;
@@ -63,7 +63,7 @@ public sealed class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
 /// <summary>
 /// Describes one item in a deterministic block layout.
 /// </summary>
-public sealed class BlockLayoutItem {
+public sealed partial class BlockLayoutItem {
     private string _id;
     private string _label;
     private int _columnSpan;
@@ -102,7 +102,7 @@ public sealed class BlockLayoutItem {
 /// <summary>
 /// Describes a link between two block layout items.
 /// </summary>
-public sealed class BlockLayoutEdge {
+public sealed partial class BlockLayoutEdge {
     private string _sourceId;
     private string _targetId;
     private string _label;
@@ -139,5 +139,27 @@ public enum BlockLayoutShape {
     /// <summary>A circular or pill-like block, depending on available space.</summary>
     Circle,
     /// <summary>A database/cylinder-like block.</summary>
-    Database
+    Database,
+    /// <summary>A diamond decision surface.</summary>
+    Diamond,
+    /// <summary>A hexagonal surface.</summary>
+    Hexagon,
+    /// <summary>A capsule with semicircular ends.</summary>
+    Stadium,
+    /// <summary>A rectangle with inner vertical rules.</summary>
+    Subroutine,
+    /// <summary>A circle with a second inset outline.</summary>
+    DoubleCircle,
+    /// <summary>A right-leaning parallelogram.</summary>
+    Parallelogram,
+    /// <summary>A left-leaning parallelogram.</summary>
+    ParallelogramAlt,
+    /// <summary>A trapezoid with its narrower edge above.</summary>
+    Trapezoid,
+    /// <summary>A trapezoid with its narrower edge below.</summary>
+    TrapezoidAlt,
+    /// <summary>An asymmetric chevron surface.</summary>
+    Asymmetric,
+    /// <summary>A filled directional block arrow.</summary>
+    Arrow
 }

@@ -161,8 +161,8 @@ internal static partial class VisualCartesianCompiler {
             return;
         }
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
-        if (chart.Options.XAxis.Visible) {
-            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
+        if (chart.Options.XAxis.Visible && !chart.Options.XAxis.CrossAt.HasValue) {
+            if (chart.Options.XAxis.ShowLine) DrawAxisRule(chart, context, builder, plot, range, map, chart.Options.XAxis, true, plot.Bottom, colors, "axis-x");
             var tickHeight = TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height;
             var title = XAxisTitle(chart);
             var available = Math.Max(0, viewport.Bottom - plot.Bottom - spacing);
@@ -174,8 +174,8 @@ internal static partial class VisualCartesianCompiler {
             if (title.Length > 0) DrawAxisTitle(chart, context, builder, title,
                 new ChartRect(plot.Left, bounds.Bottom + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - spacing)), colors, TextAlignment.Center, "axis-x-title");
         }
-        if (chart.Options.YAxis.Visible) {
-            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
+        if (chart.Options.YAxis.Visible && !chart.Options.YAxis.CrossAt.HasValue) {
+            if (chart.Options.YAxis.ShowLine) DrawAxisRule(chart, context, builder, plot, range, map, chart.Options.YAxis, false, plot.Left, colors, "axis-y");
             var available = Math.Max(0, categoryLabelRight - viewport.Left - spacing);
             // Retain the individual widths that reserved this frame. Redistributing their sum
             // equally can starve an outer parent even when the complete stack already fits.
@@ -189,8 +189,9 @@ internal static partial class VisualCartesianCompiler {
             var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
             if (yTitle.Length > 0) DrawAxisTitle(chart, context, builder, yTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");
-        } else DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY, default, colors);
+        } else if (!chart.Options.YAxis.Visible || !chart.Options.YAxis.CrossAt.HasValue)
+            DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY, default, colors);
         if (secondaryRange != null && secondaryMap != null) DrawSecondaryHorizontalAxis(chart, context, builder, plot, viewport,
-            secondaryRange, secondaryMap, cache, colors, style, spacing);
+            secondaryRange, secondaryMap, range, map, cache, colors, style, spacing);
     }
 }

@@ -10,6 +10,9 @@ public sealed class MermaidTreemapDocument : MermaidDocument {
     /// <summary>Gets retained non-empty treemap statements.</summary>
     public List<MermaidRawStatement> Statements { get; } = new();
 
+    /// <summary>Gets named native style definitions in source order, including retained unsupported declarations.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
+
     /// <summary>Gets the top-level treemap nodes.</summary>
     public List<MermaidTreemapNode> Roots { get; } = new();
 

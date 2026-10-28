@@ -1,0 +1,8 @@
+sequenceDiagram
+participant A as Review
+participant B as Archive
+loop Review work
+A->>A: Check
+Note over A,B: Complete note
+A->>B: Save
+end

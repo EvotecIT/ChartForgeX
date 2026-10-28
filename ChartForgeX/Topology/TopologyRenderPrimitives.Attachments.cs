@@ -12,6 +12,10 @@ internal static partial class TopologyRenderPrimitives {
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) =>
         BoundaryPoint(node, towardX, towardY, port, EdgeEndpointGap);
 
+    /// <summary>Converts explicit router units to the contour owner's original-unit gap, retaining ordinary unit-one behavior.</summary>
+    internal static double RoutingContourGap(TopologyNode node, double routingUnits) =>
+        EdgeEndpointGap * (routingUnits == 1 ? 1 : routingUnits / TopologyPreparedNodeBasis.Units(node));
+
     internal static void AttachEndpointsToSurfaces(TopologyEdge edge, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
         AttachEndpoint(source, edge.SourcePort, edge.SourcePortId, points, 0, 1);
@@ -29,7 +33,8 @@ internal static partial class TopologyRenderPrimitives {
         var side = namedPort?.Side ?? port;
         if (side == TopologyEdgePort.Auto) {
             var dx = point.X - CenterX(node); var dy = point.Y - CenterY(node);
-            side = Math.Abs(dx) / (node.Width / 2 + EdgeEndpointGap) >= Math.Abs(dy) / (node.Height / 2 + EdgeEndpointGap)
+            var gap = EdgeEndpointGap * TopologyPreparedNodeBasis.Units(node);
+            side = Math.Abs(dx) / (node.Width / 2 + gap) >= Math.Abs(dy) / (node.Height / 2 + gap)
                 ? dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right
                 : dy < 0 ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
         }
@@ -44,6 +49,7 @@ internal static partial class TopologyRenderPrimitives {
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port, double gap) {
         if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, gap);
+        gap *= TopologyPreparedNodeBasis.Units(node);
         var centerX = CenterX(node);
         var centerY = CenterY(node);
         if (port != TopologyEdgePort.Auto) {

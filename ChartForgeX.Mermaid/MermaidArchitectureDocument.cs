@@ -19,6 +19,9 @@ public sealed class MermaidArchitectureDocument : MermaidDocument {
     /// <summary>Gets parsed architecture junctions in source order.</summary>
     public List<MermaidArchitectureJunction> Junctions { get; } = new();
 
+    /// <summary>Gets every authored row/column alignment occurrence in source order.</summary>
+    public List<MermaidArchitectureAlignment> Alignments { get; } = new();
+
     /// <summary>Gets parsed architecture edges in source order.</summary>
     public List<MermaidArchitectureEdge> Edges { get; } = new();
 }
@@ -39,7 +42,7 @@ public sealed class MermaidArchitectureGroup : MermaidAstNode {
     /// <summary>Gets or sets the Mermaid group identifier.</summary>
     public string Id { get => _id; set => _id = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Group id is required.", nameof(value)) : value; }
 
-    /// <summary>Gets or sets the group title.</summary>
+    /// <summary>Gets or sets the authored group title; an empty value means no painted caption.</summary>
     public string Title { get => _title; set => _title = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the optional Mermaid icon token.</summary>
@@ -65,7 +68,7 @@ public sealed class MermaidArchitectureService : MermaidAstNode {
     /// <summary>Gets or sets the Mermaid service identifier.</summary>
     public string Id { get => _id; set => _id = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Service id is required.", nameof(value)) : value; }
 
-    /// <summary>Gets or sets the service title.</summary>
+    /// <summary>Gets or sets the authored service title; an empty value means no painted caption.</summary>
     public string Title { get => _title; set => _title = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the optional Mermaid icon token.</summary>

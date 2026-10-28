@@ -11,8 +11,10 @@ public sealed class ChartRadialGeometryOptions {
     /// <param name="categorySpacing">The unused fraction of each category band, from zero to less than one.</param>
     /// <param name="seriesSpacing">The unused fraction of each grouped series slot, from zero to less than one. Stacks share a slot.</param>
     /// <param name="cornerRadius">The maximum inward corner radius in pixels, finite and nonnegative. Each painted stack segment is rounded separately.</param>
+    /// <param name="valueEncoding">Radius retains the existing geometry. Area encodes normalized visible intervals as sector area for homogeneous nonnegative linear RadialColumn data.</param>
     public ChartRadialGeometryOptions(double startAngleDegrees = -90, double endAngleDegrees = 270,
-        double innerRadiusRatio = .2, double categorySpacing = .25, double seriesSpacing = .12, double cornerRadius = 0) {
+        double innerRadiusRatio = .2, double categorySpacing = .25, double seriesSpacing = .12, double cornerRadius = 0,
+        ChartRadialValueEncoding valueEncoding = ChartRadialValueEncoding.Radius) {
         ChartGuards.Finite(startAngleDegrees, nameof(startAngleDegrees));
         ChartGuards.Finite(endAngleDegrees, nameof(endAngleDegrees));
         var sweep = endAngleDegrees - startAngleDegrees;
@@ -24,7 +26,8 @@ public sealed class ChartRadialGeometryOptions {
         if (cornerRadius < 0) throw new ArgumentOutOfRangeException(nameof(cornerRadius));
         StartAngleDegrees = startAngleDegrees; EndAngleDegrees = endAngleDegrees;
         InnerRadiusRatio = innerRadiusRatio; CategorySpacing = categorySpacing; SeriesSpacing = seriesSpacing;
-        CornerRadius = cornerRadius;
+        if (!Enum.IsDefined(typeof(ChartRadialValueEncoding), valueEncoding)) throw new ArgumentOutOfRangeException(nameof(valueEncoding));
+        CornerRadius = cornerRadius; ValueEncoding = valueEncoding;
     }
 
     /// <summary>Gets the first angle in degrees.</summary>
@@ -40,6 +43,9 @@ public sealed class ChartRadialGeometryOptions {
     /// <summary>Gets the maximum inward corner radius in pixels for numeric radial bars and columns. Default: zero.</summary>
     /// <remarks>Clamped to each segment's thickness and angular space. A central apex stays sharp; full rings have no corners.</remarks>
     public double CornerRadius { get; }
+    /// <summary>Gets the value-to-radius encoding. Default: Radius. Area applies to homogeneous linear, nonnegative RadialColumn data.</summary>
+    /// <remarks>Each nominal sector area is linear in its normalized visible interval. Raw-value proportionality requires a zero baseline; spacing, rounded corners and clipping do not promise exact painted pixel area.</remarks>
+    public ChartRadialValueEncoding ValueEncoding { get; }
 
     private static void ValidateRatio(double value, string parameter) {
         ChartGuards.UnitInterval(value, parameter);

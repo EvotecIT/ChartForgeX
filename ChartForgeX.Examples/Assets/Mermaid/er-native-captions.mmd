@@ -1,0 +1,23 @@
+erDiagram
+accTitle: Nested data domains
+accDescr: Shell relationships keep cardinalities, local directions, and readable captions.
+direction LR
+Outside ||--o{ "Domain: core":::shell : "**enters**"
+style "Domain: core" fill:#fef3c7,stroke:#92400e
+subgraph "Domain: core"["**Data** domain"]
+  direction TB
+  subgraph "Order group"["Order<br>records"]
+    direction BT
+    C["**Customer**<br>account"] {
+      string id PK "**External** key #38; value"
+      string? name
+    }
+    O[Orders] {
+      int id PK
+    }
+    C ||--o{ O : "places"
+  end
+end
+"Domain: core" ||..|{ "Order group" : "_contains_"
+style "Domain: core" fill:#dcfce7
+classDef shell color:#14532d

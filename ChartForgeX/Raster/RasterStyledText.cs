@@ -33,7 +33,15 @@ internal static class RasterStyledText {
                 var baseline = style.Baseline == TextBaseline.Superscript ? -fontSize * 0.35
                     : style.Baseline == TextBaseline.Subscript ? fontSize * 0.22 : 0;
                 var drawY = y + index * layout.Metrics.LineHeight + baseline;
-                if (face.SynthesizeBold) canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, fontSize, face.Font, face.SynthesizeItalic);
+                if (style.LetterSpacing != 0) {
+                    var prepared = new ChartForgeX.Rendering.VisualSceneTextFace(style, face, false).PrepareDisplayed(line.Text, fontSize);
+                    if (face.Font != null) face.Font.DrawGlyphs(canvas, drawX, drawY, prepared.Lines[0].Glyphs, style.Color, fontSize,
+                        face.SynthesizeItalic, face.SynthesizeBold ? RgbaCanvas.EmphasisOffset(fontSize) : 0);
+                    else foreach (var glyph in TinyFont.SpacedGlyphs(line.Text, fontSize, style.LetterSpacing))
+                        canvas.DrawBitmapText(drawX + glyph.X, drawY, glyph.Character.ToString(), style.Color, fontSize,
+                            face.SynthesizeItalic, face.SynthesizeBold ? RgbaCanvas.EmphasisOffset(fontSize) : 0);
+                }
+                else if (face.SynthesizeBold) canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, fontSize, face.Font, face.SynthesizeItalic);
                 else canvas.DrawText(drawX, drawY, line.Text, style.Color, fontSize, face.Font, face.SynthesizeItalic);
                 var thickness = Math.Max(1, fontSize / 16);
                 RasterTextDecoration.Draw(canvas, drawX, drawX + line.Width, drawY + fontSize * 1.05, style.UnderlineStyle, style.Color, thickness);

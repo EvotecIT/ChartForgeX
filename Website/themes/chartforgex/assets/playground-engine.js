@@ -142,8 +142,8 @@ async function loadPreviewFonts() {
     const response = await fetch('/examples/generated/fonts/' + file);
     if (!response.ok) throw new Error('The preview font could not be loaded: ' + file);
     const bytes = new Uint8Array(await response.arrayBuffer());
-    const face = new FontFace('Carlito', bytes, { weight, style: 'normal' });
-    document.fonts.add(await face.load());
+    const font = window[Symbol.for('ChartForgeX.nativeTextExport')].registerBinary('Carlito', bytes, { weight, style: 'normal' });
+    await font.ready;
     let binary = '';
     for (const byte of bytes) binary += String.fromCharCode(byte);
     return '@font-face{font-family:Carlito;font-style:normal;font-weight:' + weight +

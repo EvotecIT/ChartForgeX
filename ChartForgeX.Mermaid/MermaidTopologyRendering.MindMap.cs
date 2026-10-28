@@ -11,13 +11,33 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var title = document.Nodes.Count == 0 ? ResolveTitle(document, options, "Mermaid mindmap") : ResolveTitle(document, options, document.Nodes[0].Text);
+        var title = document.Nodes.Count == 0 ? ResolveTitle(document, options, "Mermaid mindmap") : ResolveTitle(document, options, MermaidLabelText.DisplayCaption(document.Nodes[0].Text));
         var chart = CreateTopology(options, "mermaid-mindmap", title, TopologyLayoutMode.MindMap, TopologyLayoutDirection.LeftToRight);
-        chart.DefaultRenderOptions = new TopologyRenderOptions().WithMindMapStyle();
+        var renderOptions = new TopologyRenderOptions().WithMindMapStyle();
+        chart.DefaultRenderOptions = renderOptions;
         var sections = MindMapSections(document);
         foreach (var item in document.Nodes) {
-            chart.AddAutoNode(item.Id, item.Text, item.ParentId == null ? TopologyNodeKind.Hub : TopologyNodeKind.Branch, TopologyHealthStatus.Unknown, width: item.ParentId == null ? 150 : 120, height: 58, symbol: item.ParentId == null ? "M" : null, cssClass: "cfx-mermaid-mindmap-node");
+            var caption = MermaidLabelText.DisplayCaption(item.Text);
+            chart.AddAutoNode(item.Id, caption, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown,
+                width: item.ParentId == null ? 150 : 120, height: 58, cssClass: "cfx-mermaid-mindmap-node");
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.LabelContent = MermaidInlineCaption.Content(item.Text, markdownByDefault: true);
+            node.Shape = MermaidMindMapNotation.Shape(item.Shape);
+            node.DisplayMode = TopologyNodeDisplayMode.Card;
+            node.PreserveDisplayModeSize = true;
+            node.FitLabelToContent = true;
+            node.MaximumLabelCharacters = caption.Length;
+            node.ShowStatusBadge = false;
+            foreach (var icon in item.Icons) {
+                node.IconId = MermaidMindMapNotation.BuiltInIcon(icon);
+                if (node.IconId != null) break;
+            }
+            if (item.Classes.Contains("highlight")) renderOptions.SelectedNodeIds.Add(item.Id);
+            node.Metadata["mermaid.source.label"] = item.Text;
+            if (item.SourceId != null) node.Metadata["mermaid.source.id"] = item.SourceId;
+            node.Metadata["mermaid.source.line"] = item.Span.Line.ToString(CultureInfo.InvariantCulture);
+            node.Metadata["mermaid.source.column"] = item.Span.Column.ToString(CultureInfo.InvariantCulture);
+            node.Metadata["mermaid.source.length"] = item.Span.Length.ToString(CultureInfo.InvariantCulture);
             var section = sections[item.Id];
             node.PaletteIndex = section.Section + 1;
             node.Metadata["mermaid.shape"] = item.Shape ?? "default";

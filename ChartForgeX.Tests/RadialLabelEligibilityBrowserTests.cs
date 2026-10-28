@@ -45,7 +45,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         var legend = page.Locator(kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut
             ? $"[data-cfx-role='legend-item'][data-cfx-series='0'][data-cfx-point='{source}']"
             : "[data-cfx-role='legend-item'][data-cfx-series='0']").First;
-        await legend.Locator("text").First.ClickAsync();
+        await legend.ClickAsync();
         await MoveAwayAsync(page);
         Assert.True(await native.EvaluateAsync<bool>("node=>!!node.closest('.cfx-series-muted')"));
         Assert.Equal("true", await legend.GetAttributeAsync("data-cfx-muted"));
@@ -68,7 +68,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         Assert.Equal(selected, await native.GetAttributeAsync("aria-selected"));
         Assert.True(await native.EvaluateAsync<bool>("node=>!!node.closest('.cfx-series-muted')"));
 
-        await legend.Locator("text").First.ClickAsync();
+        await legend.ClickAsync();
         await MoveAwayAsync(page);
         await ResetEventsAsync(page);
         await FocusWithKeyboardAsync(page, native);

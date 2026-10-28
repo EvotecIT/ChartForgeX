@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Word-cloud source inventory remains descriptive while painted terms own public targets.</summary>
 [Trait("BrowserSuite", "Compatibility")]
-public sealed class WordCloudTargetOwnershipBrowserTests {
+public sealed partial class WordCloudTargetOwnershipBrowserTests {
     [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -22,13 +22,14 @@ public sealed class WordCloudTargetOwnershipBrowserTests {
         });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => Options(options, single)), 800, 600);
         var page = session.Page;
+        await BrowserProofCaptions.InstallNativeAsync(page);
         await page.AddStyleTagAsync(new() { Content = ".cfx-stage svg,.cfx-stage svg *{filter:none!important}" });
         var resolved = await page.EvaluateAsync<JsonElement>("""
             ()=>{
                 window.wordRoot=document.querySelector('.cfx-interactive-chart');
                 window.wordController=ChartForgeXCharts.get(wordRoot);
                 window.wordTargets=wordController.resolveTargets();
-                window.wordNativeText=[...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] text')].map(node=>node.outerHTML);
+                window.wordNativeText=[...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] [data-cfx-native-text-ink], [data-cfx-role=word-cloud-term] text')].map(node=>window.cfxCaptionSourceInk(node));
                 return wordTargets;
             }
             """);
@@ -50,7 +51,7 @@ public sealed class WordCloudTargetOwnershipBrowserTests {
         if (single) Assert.Equal(targets[1].GetProperty("targetId").GetString(), Assert.Single(selection).GetProperty("targetId").GetString());
         else Assert.Equal(targets.Select(target => target.GetProperty("targetId").GetString()),
             selection.Select(target => target.GetProperty("targetId").GetString()));
-        Assert.True(await page.EvaluateAsync<bool>("()=>JSON.stringify(wordNativeText)===JSON.stringify([...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] text')].map(node=>node.outerHTML))"));
+        Assert.True(await page.EvaluateAsync<bool>("()=>JSON.stringify(wordNativeText)===JSON.stringify([...wordRoot.querySelectorAll('[data-cfx-role=word-cloud-term] [data-cfx-native-text-ink], [data-cfx-role=word-cloud-term] text')].map(node=>window.cfxCaptionSourceInk(node)))"));
         await page.EvaluateAsync("()=>wordController.clearSelection()");
         await AssertSelectionAsync(page, 0);
         AssertNoConsoleErrors(session);

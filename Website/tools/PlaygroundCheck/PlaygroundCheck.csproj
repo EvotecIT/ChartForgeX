@@ -30,6 +30,7 @@
     <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-ir-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-ir-native.mmd" WithCulture="false" />
     <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-ebnf-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-ebnf-native.mmd" WithCulture="false" />
     <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-abnf-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-abnf-native.mmd" WithCulture="false" />
+    <EmbeddedResource Include="Fixtures\railroad-abnf-case-sensitive.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-abnf-case-sensitive.mmd" WithCulture="false" />
     <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-peg-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-peg-native.mmd" WithCulture="false" />
   </ItemGroup>
   <ItemGroup>

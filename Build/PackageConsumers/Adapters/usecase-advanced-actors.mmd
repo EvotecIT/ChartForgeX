@@ -1,0 +1,16 @@
+usecase-beta
+direction TB
+actor Plain <<participant>>
+actor Hollow @{type:hollow} <<external>>
+actor Business @{business:true} <<business>>
+actor BusinessHollow @{type:hollow,business:true} <<partner>>
+actor Silhouette @{type:awesome} <<operator>>
+actor Icon @{icon:"network:router"} <<system>>
+Submit(Submit request) @{business:true} <<business action>>
+Plain plain@--> Submit
+Hollow hollow@--> Submit
+Business business@--> Submit
+BusinessHollow partner@--> Submit
+Silhouette operator@--> Submit
+Icon system@--> Submit
+note for Submit "All participants retain their own identity"

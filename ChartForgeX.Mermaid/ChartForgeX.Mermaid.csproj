@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />
+    <None Include="Cynefin-Mermaid-LICENSE.txt" Pack="true" PackagePath="licenses/Cynefin-Mermaid-LICENSE.txt" />
     <None Include="..\assets\ChartForgeX.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

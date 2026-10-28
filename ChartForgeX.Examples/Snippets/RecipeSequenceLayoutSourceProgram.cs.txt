@@ -1,0 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var source={{SOURCE_TEXT}};
+var artifact=SequenceLayoutTypographySourceRecipe.Create(source,{{VARIANT}},VisualThemeMode.{{MODE}});
+File.WriteAllText("sequence.mmd",source);
+File.WriteAllText("sequence.svg",artifact.ToSvg());File.WriteAllBytes("sequence.png",artifact.ToPng());
+File.WriteAllText("sequence.html",artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}));
+File.WriteAllText("sequence.json",artifact.ToInterchangeJson());
+// Restore editable facts, change a caption and render through the same native owner.
+var restored=VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToSequenceArtifact();
+restored.Messages[0].Text="Saved request";File.WriteAllText("sequence-edited.svg",restored.ToSvg());File.WriteAllBytes("sequence-edited.png",restored.ToPng());
+
+{{SOURCE}}

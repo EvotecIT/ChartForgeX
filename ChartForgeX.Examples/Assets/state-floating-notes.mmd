@@ -1,0 +1,22 @@
+stateDiagram-v2
+accTitle: Independent state notes
+accDescr: Floating and attached notes stay separate from concurrent state facts.
+direction LR
+note "Release overview: A --> Phantom\n<svg onload='ignored'> is literal" as Overview
+state Active {
+  direction TB
+  [*] --> Ready
+  Ready --> [*]
+  note left of Ready : Attached guidance
+  --
+  direction LR
+  [*] --> Waiting
+  Waiting --> [*]
+  note "accTitle: literal note text\nIndependent region guidance" as RegionMemo
+}
+Active --> Done
+note "A \"quoted\" path\\kept\nReview the result" as FollowUp
+classDef default fill:#e0f2fe,stroke:#075985,color:#0c4a6e
+classDef marked fill:#dcfce7,stroke:#166534
+class Ready,Waiting marked
+style Active fill:#fef3c7,stroke:#92400e,color:#78350f

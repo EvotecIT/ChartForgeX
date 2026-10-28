@@ -1,4 +1,4 @@
-  // Fallback only if absent.
+
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
 
@@ -44,7 +44,7 @@
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      // Share validated IDs only.
+
       seriesScope: targetKind === 'annotation' ? node._cfxAnnotationId === undefined ? 'local' : 'shared' : data.cfxSeriesScope,
       annotationId: node._cfxAnnotationId,
       observationId: data.cfxObservationId,

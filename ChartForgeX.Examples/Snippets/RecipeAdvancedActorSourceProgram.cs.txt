@@ -1,0 +1,24 @@
+using System;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+// Reference the ordinary ChartForgeX.Mermaid package. Core-only native authoring is a separate recipe.
+{{FONT_SETUP}}
+var source = {{SOURCE_TEXT}};
+var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
+    WarningPolicy = MermaidWarningPolicy.Reject,
+    UseCase = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = {{HEIGHT}},
+        Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, FontFamily = {{FONT_FAMILY}}, TopologySizing = MermaidTopologySizing.Natural } }
+});
+if (result.HasErrors || result.Artifact == null)
+    throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+var artifact = result.Artifact;
+File.WriteAllText("usecase-actors.mmd", source);
+File.WriteAllText("usecase-actors.svg", artifact.ToSvg());
+File.WriteAllBytes("usecase-actors.png", artifact.ToPng());
+File.WriteAllText("usecase-actors.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("usecase-actors.json", artifact.ToInterchangeJson());

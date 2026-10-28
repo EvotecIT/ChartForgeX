@@ -31,7 +31,7 @@ public sealed class NumericRadialKeyboardBrowserTests {
         await MoveAwayAsync(page); await legend.FocusAsync();
         Assert.Equal(zeroOnly ? "0" : "15", await page.Locator(".cfx-tooltip dd").TextContentAsync());
         if (!zeroOnly) Assert.True(await page.Locator("[data-cfx-label-for]").CountAsync() > 0);
-        await legend.Locator("text").ClickAsync();
+        await legend.ClickAsync();
         await legend.BlurAsync(); await MoveAwayAsync(page); await legend.FocusAsync();
         Assert.Equal(zeroOnly ? "0" : "15", await page.Locator(".cfx-tooltip dd").TextContentAsync());
         Assert.Equal("Requests\nTotal\n" + (zeroOnly ? "0" : "15"), await TooltipTextAsync(page));
@@ -52,7 +52,7 @@ public sealed class NumericRadialKeyboardBrowserTests {
         var page = session.Page;
         var unavailable = page.Locator(Point(0, 0));
         if (state == "mute") {
-            await page.Locator(Legend(0)).Locator("text").ClickAsync();
+            await page.Locator(Legend(0)).ClickAsync();
         } else {
             await unavailable.EvaluateAsync("(node,state)=>{if(state==='hidden')node.style.visibility='hidden';else node.querySelectorAll('path').forEach(path=>{path.style.fill='none';path.style.stroke='none';});}", state);
         }
@@ -71,7 +71,7 @@ public sealed class NumericRadialKeyboardBrowserTests {
             await page.Keyboard.PressAsync("Tab");
             Assert.NotEqual(id, await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxTargetId||''"));
         }
-        if (state == "mute") await page.Locator(Legend(0)).Locator("text").ClickAsync();
+        if (state == "mute") await page.Locator(Legend(0)).ClickAsync();
         else await unavailable.EvaluateAsync("node=>{node.style.visibility='';node.querySelectorAll('path').forEach(path=>{path.style.fill='';path.style.stroke='';});}");
         await available.FocusAsync(); await page.Keyboard.PressAsync("ArrowUp");
         Assert.Equal(id, await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxTargetId||''"));

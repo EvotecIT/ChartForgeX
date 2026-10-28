@@ -52,6 +52,23 @@ var png = chart.ToPng();
 
 The artifact envelope declares SVG, PNG, HTML, and Office-adapter handoff support and keeps the strongly typed `Chart` in `VisualArtifact.Model`. Hosts should inspect the `Chart` model when they need data-aware behavior rather than scraping rendered markup.
 
+### Retained native series visibility
+
+`Chart.PrepareVisibility(context, view, viewport)` prepares an immutable whole-series visibility view for authored Line/Bar series. The native scene retains the complete source catalog, original observations, legend, full-data domains and completed layout. A null view uses ordinary preparation exactly; an empty default view keeps every series visible. Point, group and derived legend policies are rejected.
+
+```csharp
+var retained = Chart.Create().AddSeries(ChartSeries.CreateLine(
+    new ChartSeriesId("reviewed"), "Reviewed", ChartPoints.FromValues(18, 70, 44)));
+var view = new ChartVisibilityView(new[] { new ChartSeriesId("reviewed") });
+var native = retained.PrepareVisibility(context, view);
+var svg = native.ToSvg();
+var png = native.ToPng();
+```
+
+`ChartVisibilityLabelLayering.PreserveOverlay` is the default. Visible series labels keep their existing global placement and overlay order; hidden series labels are omitted with their exact native mark owner. Labels still participate in the original full-source placement, so hiding a series does not reflow the survivors. Chart-owned annotations, axes, aggregate totals and other context retain their full-source facts and paint.
+
+`GroupWithSeries` explicitly places each series plot and its already positioned labels in one isolated native composite. Series draw order is retained, but a series label now paints before later series and later chart context, instead of the global label overlay. Partial visibility motion with enabled labels requires this policy. SVG and native raster apply opacity once to the completed composite, including plot/label overlap. Retained font captures and the existing native opacity allocation/work limits apply; visibility does not promise unbounded layers or chart size.
+
 ## Static Decorations And Raster Metadata
 
 The optional `ChartForgeX.Visuals` package decorates artifacts without changing the underlying chart, topology, table, flow, sequence, or visual-block model. Text and raster-image watermarks share anchors, offsets, edge padding, opacity, rotation, scale, and optional repetition across SVG, static HTML, and PNG output. `VisualArtifactRenderOptions` supplies native rendering options and raster metadata, including physical DPI:
@@ -83,6 +100,25 @@ Existing producers can render through `IStaticVisualSource` alone when no policy
 ## Flow And Topology Artifacts
 
 Topology and flow are intentionally separate artifact contracts. Native topology models use `TopologyChart.ToVisualArtifact()`; `chartforgex topology v1` emits the same `VisualArtifactKind.Topology` envelope with a typed `TopologyChart` model. The topology envelope carries its natural size, accessibility text, Office handoff capability, and inspectable group/node/edge regions including links when present. `chartforgex flow v1` emits `VisualArtifactKind.Flow` with a typed `FlowArtifact` model containing lanes, steps, and connectors. Static flow previews currently project into `TopologyChart` for SVG/PNG rendering, but host APIs should inspect `FlowArtifact` rather than treating process flows as infrastructure topology.
+
+`ToFlowArtifact()` restores an editable flow from its typed interchange envelope. Lane and connector order, step kinds, original step sizes, metadata and export formats remain native values. The existing flow compiler recomputes automatic layout. Captured presentation retains the paired theme, selected mode, exact caller insets and original frame request; source titles remain separate from caller headings. An explicit `Prepare(context)` uses the new context, and changing flow dimensions or padding replaces the retained layout request.
+
+```csharp
+var flow = FlowArtifact.Create("review")
+    .WithTitle("Request review")
+    .AddStep("receive", "Receive request", FlowArtifactStepKind.Start)
+    .AddStep("publish", "Publish result", FlowArtifactStepKind.End)
+    .AddConnector("receive", "publish", "Approved");
+
+string json = flow.ToVisualArtifact().ToInterchangeJson();
+FlowArtifact editable = VisualArtifactInterchangeEnvelope.FromJson(json).ToFlowArtifact();
+editable.ConfigureStep("publish", step => step.Label = "Publish approved request");
+byte[] png = editable.ToPng();
+```
+
+Topology and flow capture material context, theme and role font requests through the native text measurement and glyph pipeline. Explicit file fonts retain the bytes already read during preparation. Portable requests carry the actual primary and fallback faces and observed cluster decisions, without source paths or font registrations. Known requests reuse those faces after restoration; edited labels can record new fallback decisions. Caller font and frame objects remain independent of prepared output.
+
+Portable font data allows 2 MiB per decoded root, 4 MiB across distinct roots and 32 roots inside the existing 8 MiB envelope. The general 64 KiB text, metadata and URL limits remain. Unsupported or uncovered native font captures reject portable export; static native output remains available. These limits bound the transported font data, not native file admission, font parsing, shaping or total process memory. Material captured font data uses common version 2; the ordinary default font request keeps its existing omission policy.
 
 ## OfficeIMO Handoff
 
@@ -118,6 +154,12 @@ var flow = result.Artifacts.First(artifact => artifact.Kind == VisualArtifactKin
 var model = (FlowArtifact)flow.Model;
 var svg = flow.ToSvg();
 ```
+
+Topology can carry independent ink through `TopologyChart.PathDecorations`. Each immutable `TopologyPathDecoration` captures absolute M/L/C commands, fill/stroke colors, stroke width, an optional dash pattern, closure and an ID. It paints behind relationships and nodes without adding graph facts. Paths participate in the existing content bounds, fitting and clipping, and SVG/HTML/PNG use the same scene. `PathData` and typed JSON retain round-trip double precision; rendered SVG continues to use the renderer's existing numeric formatting.
+
+Portable topology stores these captures in `Topology.PathDecorations`, in paint order, with typed numeric `commands` arrays. Empty collections omit the field and retain version-1 bytes. Nonempty paths, non-null node `SubtitleTextStyle`, and an optional `Presentation.Theme.TitleSize` require version 2. Nondefault topology title sizes use that nullable scalar and restore through the existing common frame typography; Graphite and omitted-size output retain version 1. Report/dashboard presets with a different title size intentionally use version 2 to retain their authored title size. Other theme roles and explicit `VisualFrame.TitleStyle` are not added to this narrow contract. The current reader accepts versions 1 and 2, rejects version-1 payloads carrying version-2 fields, and rejects unknown future versions. Older version-1 readers reject these payloads at the version gate. Rebuild consumers against a matching ChartForgeX assembly before loading version-2 snapshots, including package/process/PowerShell handoffs.
+
+`ToTopologyChart()` restores the fitted snapshot coordinates and styles. `ToTopologyHierarchySource()` restores retained authored coordinates and role sizes instead. Neither route reparses source text or extracts ink from SVG. Validation rejects unsupported commands, malformed arity/subpaths, non-finite or excessive coordinates/paint lengths, resource-budget excesses and path IDs colliding with mapped or restored entity identities. `TopologyNode.SubtitleTextStyle` uses the existing `TextStyleOverride` for independent subtitle measurement and paint; null preserves ordinary output.
 
 ## TableArtifact
 
@@ -250,3 +292,48 @@ For IntelligenceX and similar hosts, the useful split is:
 - Markup packages provide authoring syntax and diagnostics, not product-specific layout or data collection.
 
 That gives IX native visuals without turning ChartForgeX into an IX-only surface.
+
+
+### Editable Waterfall authoring
+
+A single native Waterfall chart exports typed editable data through `chart.ToVisualArtifact(id).ToInterchangeUtf8Json()`. The version-1 `Waterfall` family retains numeric-delta versus typed-item authoring, explicit checkpoint requests, stable source identities and supported native presentation. Read with `VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart()`, edit through the existing series APIs, then prepare again. Native accumulation supplies balances, derived contributor identities and connectors; rendered geometry is not a second data source.
+
+The payload is separate from the general diagram entities. It keeps Waterfall's exclusive single-series composition and does not add a generic chart serializer. Unsupported callbacks, process-local resources and presentation reject explicitly. A prepared chart can carry this detached payload through `prepared.ToArtifact(id, VisualArtifactKind.Chart, semanticInterchange)`; a prepared scene without supplied semantic data does not reconstruct authored Waterfall items from its marks. See [the portable field contract](../api-conventions/#editable-waterfall-interchange).
+
+
+A topology edge can carry an immutable `TopologyPathGeometry` through `PathGeometry`. It captures absolute M/L/C commands with round-trip numeric precision. The complete path includes its endpoints and uses Manual coordinates; waypoints, route lanes and endpoint ports cannot be supplied at the same time. SVG and PNG paint the same path, while route observations use the existing bounded native flattener. Markers follow the path's endpoint tangents. Fitting and normalization transform its endpoints and controls together.
+
+`TopologyEdge.Interpolation` chooses `Linear`, `Basis`, `BumpX`, `BumpY`, `Cardinal`, `CatmullRom`, `MonotoneX`, `MonotoneY`, `Natural`, `Step`, `StepAfter`, `StepBefore`, or `Rounded` over the resolved route. Null keeps ordinary route painting. Optional `InterpolationCornerBlendLength` applies a finite nonnegative logical prepass; zero leaves the resolved vertices unchanged. It requires an interpolation choice. Authored `PathGeometry` and interpolation cannot be combined.
+
+The same numeric path supplies SVG/PNG paint, endpoint tangents, route observations, label placement and fitted bounds. A shared incoming tail is interpolated once through its source-order owner. Common version2 interchange retains the authored policy and finite numeric paint facts, including distinct trunk parts and measured caption allocations. Unchanged Manual imports reuse those facts. Node, port, waypoint, caption or policy edits recompute geometry; automatic layout resets the captured unit basis. Selection and highlight remain caller requests. The path contract keeps the existing 4096 commands per path, 1024 paths and 65536 aggregate command/vertex limits at portable boundaries; general JSON and rendering budgets still apply.
+
+`TopologyNodeDetail.BadgeStyle` adds a surface around the detail's existing text and `TextStyle`. Card, CompactCard and Pill detail bodies share the measured badge plan; other visible display roles reject that new surface explicitly. Null geometry and null detail styles retain ordinary output. Non-null edge geometry or detail badge styles select portable envelope version 2, carrying ordered numeric commands or typed style fields instead of silently discarding ink in older readers. The `TopologyAuthoredPathBadgeRecipe` example builds a queue handoff without source-language input.
+
+
+`TopologyEdge.LabelPosition` captures an immutable `TopologyLabelPosition`: finite coordinates and a `Center` or `TextBaseline` vertical anchor. A pinned position bypasses automatic label relocation; `LabelAnchorX/Y` still identify the independent leader attachment. TextBaseline uses the actual resolved first text row and ascent, including its final fitted font size. Explicit positions cannot be combined with label offsets.
+
+Optional `SourceMarkerStyle` and `TargetMarkerStyle` reuse the native marker kind and edge paint. `Scale` multiplies nominal marker geometry, `Offset` moves it along the outward endpoint tangent in topology units, and optional `StrokeWidth` supplies topology units independently of Scale. Fitting captures geometry, offset and stroke once. Null keeps ordinary output. These typed layout values select the same version-2 envelope owner and survive clone/save/restore. Live force graph rewriting remains unsupported for authored geometry and these explicit layouts.
+
+
+## Editable categorical diagrams
+
+Journey and Timeline use typed version-2 families independently from the broad artifact `Kind`. A Mermaid Journey remains `Kind = Mermaid`, while `Family = Journey` carries ordered native sections, stable task IDs, ordinal scores and actor membership. `Family = Timeline` carries ordered categorical periods, their events and the reading direction. Native theme, configured padding, transparency, outer card, host-frame ownership, PNG scale and accessibility survive the same portable handoff.
+
+```csharp
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var journey = JourneyDiagramBlock.Create().WithTitle("Review journey")
+    .AddSection("draft", "Review")
+    .AddTask("read", "Read proposal", 3, new[] { "Reviewer" }, "draft");
+var json = VisualArtifact.Create("review", VisualArtifactKind.VisualBlock, journey)
+    .ToInterchangeJson();
+var saved = VisualArtifactInterchangeEnvelope.FromJson(json);
+saved.Journey!.Tasks[0] = new JourneyTask("read", "Read imported proposal", 4,
+    new[] { "Reviewer" }, "draft");
+var imported = saved.ToJourneyDiagramBlock();
+```
+
+Use `ToTimelineDiagramBlock()` for the corresponding Timeline family. Repeated section labels retain distinct stable IDs; labels such as `Before launch` or `2026` remain text and never become inferred dates or durations. The imported native block and its mutable options/collections are independent of the envelope and source producer. Immutable native row values and themes may be shared safely. Source-language identity, keyed source-span facts and caller metadata stay on the envelope beside that block; the reconstruction API does not produce a source AST.
+
+The existing native limits remain in force: one through 512 tasks or periods, at most 128 sections, 64 distinct Journey actors and 2048 Timeline events. Invalid scores, references, duplicate IDs, empty diagrams and unsupported presentation fail before restoration. Generic portable JSON byte/value/text limits also apply. Version-1 downgrade, a mismatched family or multiple semantic roots cannot silently discard the typed data. SVG remains a separate static fallback for consumers that do not support the family.

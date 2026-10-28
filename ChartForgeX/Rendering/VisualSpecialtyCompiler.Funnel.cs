@@ -14,7 +14,27 @@ internal static partial class VisualSpecialtyCompiler {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
         var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var form = chart.Options.Funnel.Form;
-        var layout = ChartFunnelLayout.Compute(series.RenderPoints, plot, chart.Options.Funnel, context.Theme.Spacing, show);
+        var separate = show && chart.Options.Funnel.LabelContent == ChartStageLabelContent.Separate
+            ? new StageCaptions(chart, context, builder, plot, true) : null;
+        var layout = ChartFunnelLayout.Compute(series.RenderPoints, separate?.Plot ?? plot, chart.Options.Funnel, context.Theme.Spacing, show && separate == null);
+        if (separate != null && form == ChartFunnelForm.Cone) separate.CaptureConeConnections(chart, layout, colors);
+        if (separate != null) separate.Place(builder, layout.Stages.Select(stage => {
+            var vertical = chart.Options.Funnel.Orientation == ChartOrientation.Vertical;
+            var zero = series.RenderPoints[stage.SourceIndex].Y == 0;
+            var path = zero ? new ChartPath(new[] { ChartPathCommand.MoveTo(stage.ZeroStart.X, stage.ZeroStart.Y),
+                ChartPathCommand.LineTo(stage.ZeroEnd.X, stage.ZeroEnd.Y) }) : form == ChartFunnelForm.StageBars ? stage.Bar : new ChartPath(new[] {
+                ChartPathCommand.MoveTo(stage.LineStart.X, stage.LineStart.Y), ChartPathCommand.LineTo(stage.LineEnd.X, stage.LineEnd.Y) });
+            var outline = StageOutline(series, stage.SourceIndex, Color(series, stage.SourceIndex, colors), chart.Options.Funnel.StageOutline,
+                form == ChartFunnelForm.Cone ? context.Theme.SeriesStrokeWidth : 1);
+            var width = zero ? 1 : form == ChartFunnelForm.Cone && !outline.Color.HasValue
+                ? series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth : outline.Width;
+            var bounds = stage.Bounds;
+            return new StageCaptionFrame(stage.SourceIndex, bounds, stage.LabelBounds, path, !zero && form == ChartFunnelForm.StageBars, true, width,
+                vertical ? stage.LineStart : new ChartPoint(bounds.Left, bounds.Top + bounds.Height / 2),
+                vertical ? stage.LineEnd : new ChartPoint(bounds.Right, bounds.Top + bounds.Height / 2),
+                vertical ? new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top) : stage.LineStart,
+                vertical ? new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Bottom) : stage.LineEnd);
+        }).ToArray());
         using var group = builder.PushGroup("funnel-chart", "funnel-chart", new Dictionary<string, string> {
             ["data-cfx-form"] = form == ChartFunnelForm.StageBars ? "stage-bars" : "cone",
             ["data-cfx-orientation"] = chart.Options.Funnel.Orientation == ChartOrientation.Vertical ? "vertical" : "horizontal"
@@ -39,16 +59,25 @@ internal static partial class VisualSpecialtyCompiler {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
                     var line = new ChartPath(new[] { ChartPathCommand.MoveTo(stage.LineStart.X, stage.LineStart.Y),
                         ChartPathCommand.LineTo(stage.LineEnd.X, stage.LineEnd.Y) });
-                    builder.Path(line, stroke: color, strokeWidth: stroke, role: "funnel-stage-line", cap: VisualStrokeCap.Butt,
+                    var outline = StageOutline(series, index, color, chart.Options.Funnel.StageOutline, stroke);
+                    if (outline.Color.HasValue) builder.Path(line, stroke: outline.Color, strokeWidth: outline.Width, role: "funnel-stage-line",
+                        cap: VisualStrokeCap.Butt, dash: outline.Dash, dashOffset: chart.Options.Funnel.StageOutlineDashOffset,
+                        paint: new VisualScenePaintBinding(stroke: outline.Paint));
+                    else builder.Path(line, stroke: color, strokeWidth: stroke, role: "funnel-stage-line", cap: VisualStrokeCap.Butt,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, index)));
                 } else if (raw > 0) {
-                    builder.Path(stage.Bar, color, role: "funnel-segment", close: true,
-                        paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
-                    Pattern(chart, builder, index, stage.Bar, color);
+                    if (chart.Options.Funnel.StageOutline != null || index < series.PointStrokeColors.Count && series.PointStrokeColors[index].HasValue)
+                        StagePartition(chart, builder, stage.Bar, index, color, "funnel-segment", chart.Options.Funnel.StageOutline, chart.Options.Funnel.StageOutlineDashOffset);
+                    else {
+                        builder.Path(stage.Bar, color, role: "funnel-segment", close: true,
+                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                        Pattern(chart, builder, index, stage.Bar, color);
+                    }
                 }
                 if (raw == 0) builder.Line(stage.ZeroStart.X, stage.ZeroStart.Y, stage.ZeroEnd.X, stage.ZeroEnd.Y,
                     colors.Border, role: "funnel-zero", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Surface));
-                if (show) FunnelLabels(chart, context, builder, stage, color, colors, raw, retention, drop, form);
+                if (separate != null) separate.Draw(chart, builder, index, "funnel", colors);
+                else if (show) FunnelLabels(chart, context, builder, stage, color, colors, raw, retention, drop, form);
             }
         }
         if (series.RenderPoints.All(point => point.Y == 0))
@@ -58,8 +87,8 @@ internal static partial class VisualSpecialtyCompiler {
     private static void FunnelConnection(Chart chart, VisualSceneBuilder builder, ChartFunnelConnectionLayout connection,
         VisualThemeColors colors, ChartFunnelForm form) {
         var series = chart.Series[0]; var color = Color(series, connection.FromIndex, colors);
-        var opacity = form == ChartFunnelForm.Cone ? .3 : .18;
-        var fill = ChartColorMath.WithOpacity(color, opacity);
+        var style = FunnelConnectionStyle(chart, connection.FromIndex);
+        var fill = FunnelConnectionFill(chart, connection.FromIndex, color, form, style);
         var id = Id(connection.FromIndex) + "-connection";
         var summary = Category(chart, connection.FromIndex) + " to " + Category(chart, connection.ToIndex) + ": "
             + VisualStateSceneTools.Value(chart, series, connection.FromIndex, series.RenderPoints[connection.FromIndex].Y)
@@ -70,9 +99,12 @@ internal static partial class VisualSpecialtyCompiler {
                 ["data-cfx-from-value"] = N(series.RenderPoints[connection.FromIndex].Y),
                 ["data-cfx-to-value"] = N(series.RenderPoints[connection.ToIndex].Y)
             })) {
-            builder.Path(connection.Path, fill, role: form == ChartFunnelForm.Cone ? "funnel-connection-area" : "funnel-dropoff", close: true,
-                paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, connection.FromIndex).WithOpacity(fill, opacity)));
-            if (form == ChartFunnelForm.Cone) Pattern(chart, builder, connection.FromIndex, connection.Path, color);
+            if (style != null) StyledFunnelConnection(chart, builder, connection, color, form, style);
+            else {
+                builder.Path(connection.Path, fill.Color, role: form == ChartFunnelForm.Cone ? "funnel-connection-area" : "funnel-dropoff", close: true,
+                    paint: VisualChartPaint.Fill(fill.Paint));
+                if (form == ChartFunnelForm.Cone) Pattern(chart, builder, connection.FromIndex, connection.Path, color);
+            }
         }
     }
 

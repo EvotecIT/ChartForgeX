@@ -6,6 +6,8 @@ namespace ChartForgeX.Core;
 public sealed partial class ChartOptions {
     private ChartMapScaleLegendPosition _mapScaleLegendPosition = ChartMapScaleLegendPosition.Bottom;
     private ChartMapViewport _mapViewport = ChartMapViewport.World();
+    /// <summary>Gets or sets optional shared collision-aware map captions and straight callout leaders. Null preserves legacy placement.</summary>
+    public ChartMapCallouts? MapCallouts { get; set; }
     /// <summary>
     /// Gets or sets the longitude/latitude window rendered by dotted map charts.
     /// </summary>

@@ -76,6 +76,7 @@ public sealed partial class TopologyHtmlRenderer {
         var forceControlsChart = enableForceGraphControls ? TopologyLayoutEngine.Prepare(chart, options.View, options) : chart;
         if (renderSvg != null) {
             var prepared = chart.Prepare(EmbeddedSvgOptions(options, enableScenarioInteractions, enableForceGraphControls));
+            if (enableExportControls) prepared = prepared.ForInteractivePngExport();
             preparedSvg = renderSvg(prepared);
             if (string.IsNullOrWhiteSpace(preparedSvg)) {
                 throw new InvalidOperationException("The topology presentation renderer must return SVG for the supplied prepared topology.");
@@ -148,7 +149,10 @@ public sealed partial class TopologyHtmlRenderer {
     }
 
     private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
-        return _svg.Render(chart, EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls));
+        var nativeOptions = EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls);
+        return options.EnableHtmlInteractions && options.EnableHtmlExportControls
+            ? chart.Prepare(nativeOptions).ForInteractivePngExport().ToSvg()
+            : _svg.Render(chart, nativeOptions);
     }
 
     private static TopologyRenderOptions EmbeddedSvgOptions(TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {

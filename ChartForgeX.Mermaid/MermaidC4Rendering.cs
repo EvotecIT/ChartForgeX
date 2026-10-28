@@ -22,12 +22,21 @@ public static partial class MermaidC4Rendering {
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.Layered, ToLayoutDirection(document.Direction));
 
+        if (document.MaximumShapesPerRow.HasValue || document.MaximumBoundariesPerRow.HasValue) {
+            chart.LayoutMode = TopologyLayoutMode.GroupGrid;
+            chart.GridLayout = new TopologyGridLayout(document.MaximumShapesPerRow ?? 4, document.MaximumBoundariesPerRow ?? 2);
+        }
         foreach (var boundary in document.Boundaries) {
             chart.AddAutoGroup(boundary.Id, boundary.Label, TopologyHealthStatus.Unknown, subtitle: BoundarySubtitle(boundary), cssClass: "cfx-mermaid-c4-boundary", symbol: BoundarySymbol(boundary), iconId: "mermaid:c4-boundary");
             var group = chart.Groups[chart.Groups.Count - 1];
             group.ParentGroupId = boundary.ParentId;
             group.Href = boundary.Link;
             group.Metadata["mermaid.kind"] = boundary.Kind;
+            if (boundary.Shape != null) group.Metadata["mermaid.shape"] = boundary.Shape;
+            if (boundary.Sprite != null) group.Metadata["mermaid.sprite"] = boundary.Sprite;
+            if (boundary.Tags != null) group.Metadata["mermaid.tags"] = boundary.Tags;
+            if (boundary.LegendText != null) group.Metadata["mermaid.legendText"] = boundary.LegendText;
+            if (boundary.LegendSprite != null) group.Metadata["mermaid.legendSprite"] = boundary.LegendSprite;
             if (!string.IsNullOrWhiteSpace(boundary.Type)) group.Metadata["mermaid.type"] = boundary.Type!;
             if (!string.IsNullOrWhiteSpace(boundary.ParentId)) group.Metadata["mermaid.parent"] = boundary.ParentId!;
         }
@@ -36,6 +45,10 @@ public static partial class MermaidC4Rendering {
             chart.AddAutoNode(element.Alias, element.Label, NodeKind(element), TopologyHealthStatus.Unknown, groupId: element.BoundaryId, subtitle: ElementSubtitle(element), width: NodeWidth(element), height: 76, symbol: NodeSymbol(element), cssClass: "cfx-mermaid-c4-element", iconId: IconId(element));
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.Href = element.Link;
+            node.Shape = MermaidC4Shapes.Resolve(element.Shape, element.Sprite, element.Tags);
+            if (element.Shape != null) node.Metadata["mermaid.shape"] = element.Shape;
+            if (element.LegendText != null) node.Metadata["mermaid.legendText"] = element.LegendText;
+            if (element.LegendSprite != null) node.Metadata["mermaid.legendSprite"] = element.LegendSprite;
             node.Metadata["mermaid.kind"] = element.Kind;
             if (!string.IsNullOrWhiteSpace(element.Description)) node.Metadata["mermaid.description"] = element.Description!;
             if (!string.IsNullOrWhiteSpace(element.Technology)) node.Metadata["mermaid.technology"] = element.Technology!;
@@ -55,8 +68,14 @@ public static partial class MermaidC4Rendering {
             ApplyPortHints(edge, relationship.Kind);
         }
 
+        var sourceSettings = document.Configuration.C4;
+        if (sourceSettings?.HasSettings == true) {
+            chart = MermaidPresentation.Apply(chart, document, options.Presentation);
+            sourceSettings.Apply(chart, document, options.Presentation);
+        }
         ApplyC4Styles(chart, document);
-        return MermaidPresentation.Apply(chart, document, options.Presentation);
+        ApplyC4Legend(chart, document);
+        return sourceSettings?.HasSettings == true ? chart : MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>

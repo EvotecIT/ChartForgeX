@@ -1,31 +1,28 @@
 
   const cartesianAxisNames = Object.freeze(['x', 'y', 'secondaryX', 'secondaryY']);
-  const nativeViewportAxes = (axes, defaults = ['x']) => {
+  const nativePreparationAxes = (axes, names, defaults) => {
     const selected = axes === undefined ? defaults : axes;
-    if (!Array.isArray(selected) || !selected.length || selected.length > 4
-      || selected.some(axis => !cartesianAxisNames.includes(axis)) || new Set(selected).size !== selected.length)
-      throw new TypeError('Native viewport axes require a nonempty distinct array of x, y, secondaryX or secondaryY.');
+    if (!Array.isArray(selected) || !selected.length || selected.length > names.length
+      || selected.some(name => !names.includes(name)) || new Set(selected).size !== selected.length)
+      throw new TypeError('Axes: nonempty distinct array of ' + names.join(', ') + '.');
     return Object.freeze([...selected]);
   };
+  const nativeViewportAxes = (axes, defaults = ['x']) => nativePreparationAxes(axes, cartesianAxisNames, defaults);
   const capturedCartesianMetadata = root => {
     try { return JSON.parse(root.dataset.cfxPreparedChart); } catch { return {}; }
   };
   const chartAxisProjection = (root, name) => capturedCartesianMetadata(root)[name + 'Projection'] || null;
-  const chartYProjection = root => chartAxisProjection(root, 'y');
-  const nativeAxisWindow = (root, name) => {
-    const projection = chartAxisProjection(root, name);
-    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale, ...(projection.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
-  };
+  const nativeProjectionWindow = (axis, scale = axis?.scale) => axis ? { minimum: axis.minimum, maximum: axis.maximum,
+    ...(scale ? { scale } : {}), ...(axis.innerRadius !== undefined ? { innerRadius: axis.innerRadius, outerRadius: axis.outerRadius } : {}),
+    ...(axis.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
+  const nativeAxisWindow = (root, name) => nativeProjectionWindow(chartAxisProjection(root, name));
+  const nativeAxisChanged = axis => !!axis && (axis.minimum !== axis.fullMinimum || axis.maximum !== axis.fullMaximum || axis.maximumInclusive === false);
   const nativeYWindow = root => nativeAxisWindow(root, 'y');
-  const nativeYWindowChanged = root => {
-    const projection = chartYProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
+  const nativeViewportChanged = root => cartesianAxisNames.some(name => nativeAxisChanged(chartAxisProjection(root, name)));
+  const cartesianViewportConnected = root => {
+    const binding = nativePreparationBinding(root, 'viewport');
+    return binding?.legacy === false && binding.coordinateSystem !== 'polar';
   };
-  const nativeViewportChanged = root => cartesianAxisNames.some(name => {
-    const projection = chartAxisProjection(root, name);
-    return projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
-  });
-  const cartesianViewportConnected = root => nativePreparationBinding(root, 'viewport')?.legacy === false;
   const nativeViewportWindows = (root, connectedOnly = false) => ({ ...Object.fromEntries(
     (connectedOnly ? cartesianAxisNames.filter(name => chartAxisProjection(root, name)) : cartesianAxisNames).map(name => [name, nativeAxisWindow(root, name)])),
     ...(capturedCartesianMetadata(root).valueDomain ? { valueDomain: capturedCartesianMetadata(root).valueDomain } : {}) });
@@ -58,7 +55,7 @@
       eventPrefix: 'cfxviewport', resetView: payload.kind === 'reset', accepted,
       validate: next => {
         if (payload.axes.some(name => !chartAxisProjection(next, name)))
-          throw new TypeError('The viewport reply must retain every requested physical axis projection.');
+          throw new TypeError('Native reply: requested axis lost.');
       },
       beforeCommit: () => payload.kind === 'reset' ? selectionSignature(root) : '',
       committed: (_, previousSelection) => {
@@ -67,6 +64,8 @@
       }
     });
   };
+  const nativeSourceWindow = window => Object.freeze({ minimum: window.minimum, maximum: window.maximum,
+    ...(window.maximumInclusive === false ? { maximumInclusive: false } : {}) });
   const requestNativeCartesianWindow = (root, viewport, sync = true, accepted) => {
     if (!cartesianViewportConnected(root) || !viewport || typeof viewport !== 'object'
       || Object.keys(viewport).some(name => name !== 'valueDomain' && !cartesianAxisNames.includes(name))) return false;
@@ -75,10 +74,11 @@
     const valueDomain = viewportValuePolicy(root, viewport.valueDomain);
     if (!valueDomain) return false;
     const sourceViewport = Object.freeze(Object.fromEntries(axes.map(name => [name,
-      Object.freeze({ minimum: viewport[name].minimum, maximum: viewport[name].maximum, ...(viewport[name].maximumInclusive === false ? { maximumInclusive: false } : {}) })])));
+      nativeSourceWindow(viewport[name])])));
     return requestCartesianViewport(root, { kind: 'window', axes: Object.freeze(axes), sourceViewport, valueDomain }, sync, accepted);
   };
   const requestViewportReset = root => {
+    if (nativePreparationBinding(root, 'viewport')?.coordinateSystem === 'polar') return requestPolarViewportReset(root);
     if (!cartesianViewportConnected(root)) return requestXViewport(root, 'reset');
     const axes = cartesianAxisNames.filter(name => chartAxisProjection(root, name));
     return axes.length ? requestCartesianViewport(root, { kind: 'reset', axes: Object.freeze(axes), valueDomain: 'fullData' }) : false;

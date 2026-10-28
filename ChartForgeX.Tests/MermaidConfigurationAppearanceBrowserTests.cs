@@ -19,11 +19,14 @@ public sealed class MermaidConfigurationAppearanceBrowserTests {
         var artifact = result.Artifact!;
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
         Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
-        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background, topology.Theme.Resolve(topology.ThemeMode).Background);
+        var global = MermaidRenderer.Render("---\nconfig:\n  theme: dark\n  look: classic\n---\nflowchart LR\nA[Start] --> B[Done]");
+        Assert.Equal(global.Artifact!.ToPng(), artifact.ToPng());
         await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), width, 460);
         Assert.Equal(2, await session.Page.Locator("[data-cfx-role=topology-node]").CountAsync());
-        Assert.Contains("Start", await session.Page.Locator("body").InnerTextAsync());
-        Assert.Contains("Done", await session.Page.Locator("body").InnerTextAsync());
+        await BrowserProofCaptions.InstallNativeAsync(session.Page);
+        var captions = await session.Page.Locator("svg").EvaluateAsync<string>("node=>window.cfxCaptionText(node)");
+        Assert.Contains("Start", captions);
+        Assert.Contains("Done", captions);
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

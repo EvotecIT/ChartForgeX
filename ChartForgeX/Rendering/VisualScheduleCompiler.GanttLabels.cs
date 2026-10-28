@@ -43,14 +43,13 @@ internal static partial class VisualScheduleCompiler {
             var row = model.Rows[rowIndex];
             if (row.IsGroup) {
                 if (row.Name.Length > 0 && chart.Options.ShowAxes && chart.Options.YAxis.Visible)
-                    obstacles.Add(new LabelObstacle("gantt-group-" + rowIndex, new ChartRect(plot.Left, tops[rowIndex], plot.Width,
-                        Math.Max(0, tops[rowIndex + 1] - tops[rowIndex]))));
+                    obstacles.Add(new LabelObstacle("gantt-group-" + rowIndex, model.RowBounds(plot, rowIndex, tops)));
                 continue;
             }
             var series = chart.Series[row.SeriesIndex];
             foreach (var placed in row.Items) {
                 var visible = model.TrySpan(placed, projection, out var left, out var width);
-                var top = visible ? model.BarTop(plot, tops[rowIndex], placed.SubRow, minimumCaptionBand) : tops[rowIndex];
+                var top = visible ? model.BarTop(plot, tops[rowIndex], placed.SubRow, minimumCaptionBand) : model.RowBounds(plot, rowIndex, tops).Top;
                 var bounds = new ChartRect(visible ? left : plot.Left, top,
                     visible ? Math.Max(0, Math.Min(width, plot.Right - left)) : 0, Math.Max(0, band));
                 var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);

@@ -21,7 +21,8 @@ internal static partial class VisualCartesianCompiler {
                         // Shortening remains the final scene's policy after typography fits.
                         var probe = new LabelPlacementRequest(request.Text, request.Anchor, style, request.Candidates) {
                             AssociatedMarkId = request.AssociatedMarkId, Bounds = request.Bounds,
-                            Padding = request.Padding, Fallback = LabelFallbackRule.Drop
+                            Padding = request.Padding, Fallback = LabelFallbackRule.Drop,
+                            AutoPointMarkBounds = request.AutoPointMarkBounds, AutoPointSpacing = request.AutoPointSpacing
                         };
                         return !placement.Place(new[] { probe }, plot, occupied, 2, builder.MeasureText)[0].IsDropped;
                     });

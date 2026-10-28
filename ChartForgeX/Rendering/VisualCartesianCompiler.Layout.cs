@@ -42,7 +42,21 @@ internal static partial class VisualCartesianCompiler {
                 IncludeIntervalExtents(horizontal ? secondary ? secondaryX : x : secondary ? secondaryY : primaryY, series, valueAxis, intervalRadius);
                 continue;
             }
-            if (horizontal && !ChartCartesianOrientation.IsHorizontalLine(chart, series)) continue;
+            if (series.Kind == ChartSeriesKind.Dumbbell) {
+                var startMarker = series.ResolveDumbbellMarker(start: true); var endMarker = series.ResolveDumbbellMarker(start: false);
+                var startExtent = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, startMarker), startMarker);
+                var endExtent = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, endMarker), endMarker);
+                for (var raw = 0; raw + 1 < series.RenderPoints.Count; raw += 2) {
+                    var first = series.RenderPoints[raw]; var second = series.RenderPoints[raw + 1];
+                    if (horizontal) {
+                        Include(first.Y, first.X, startExtent, series.ValueAxis); Include(second.Y, second.X, endExtent, series.ValueAxis);
+                    } else {
+                        Include(first.X, first.Y, startExtent, series.ValueAxis); Include(second.X, second.Y, endExtent, series.ValueAxis);
+                    }
+                }
+                continue;
+            }
+            if (horizontal && !ChartCartesianOrientation.IsHorizontalLine(chart, series) && !ChartCartesianOrientation.IsHorizontalComparison(chart, series)) continue;
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
                 or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
@@ -53,7 +67,7 @@ internal static partial class VisualCartesianCompiler {
                     ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis), x, secondary ? secondaryY : primaryY);
                 continue;
             }
-            if (series.Markers.Enabled == false) continue;
+            if (series.Markers.Enabled == false && !series.HasPointMarkers) continue;
             var radius = ResolveMarkerRadius(series, context);
             var count = series.RenderPoints.Count / ObservationStride(series.Kind);
             for (var item = 0; item < count; item++) {
@@ -63,12 +77,14 @@ internal static partial class VisualCartesianCompiler {
                 }
                 var raw = item * ObservationStride(series.Kind);
                 var point = series.RenderPoints[raw];
+                var markers = series.ResolvePointMarkers(item);
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
-                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, series.Markers.Shape) : radius;
-                markerRadius = VisualMarkerScene.Extent(series, markerRadius);
+                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, series.Markers)
+                    : ReferenceEquals(markers, series.Markers) ? radius : VisualMarkerScene.Radius(series, context, markers);
+                markerRadius = VisualMarkerScene.Extent(series, markerRadius, markers);
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
-                if (ChartCartesianOrientation.IsHorizontalLine(chart, series)) Include(value, point.X, markerRadius, series.ValueAxis);
+                if (ChartCartesianOrientation.IsHorizontal(chart, series)) Include(value, point.X, markerRadius, series.ValueAxis);
                 else Include(point.X, value, markerRadius, series.ValueAxis);
                 if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea)
                     Include(point.X, series.RenderPoints[raw + 1].Y, markerRadius, series.ValueAxis);

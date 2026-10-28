@@ -1,0 +1,66 @@
+{
+  "kind": "authored contracts, actual outcomes pending",
+  "groups": [
+    [
+      "root",
+      "",
+      false,
+      "cloud:cloud"
+    ],
+    [
+      "inner",
+      "",
+      false,
+      "common:server"
+    ],
+    [
+      "facts",
+      "Facts",
+      true,
+      "common:database"
+    ]
+  ],
+  "services": [
+    [
+      "web",
+      "",
+      false,
+      "common:server"
+    ],
+    [
+      "worker",
+      "",
+      false,
+      "cloud:cloud"
+    ],
+    [
+      "store",
+      "Orders",
+      true,
+      "common:database"
+    ],
+    [
+      "plain",
+      "Plain",
+      true,
+      null
+    ]
+  ],
+  "paintedCaptions": [
+    "Facts",
+    "Orders",
+    "Plain"
+  ],
+  "sourceLines": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ]
+}

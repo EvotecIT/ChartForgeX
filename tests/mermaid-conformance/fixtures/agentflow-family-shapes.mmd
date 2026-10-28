@@ -1,0 +1,15 @@
+agentflow-beta LR
+flow review["Review"]
+  request["Request"]@{ shape: rect }
+  task["Inspect"]@{ shape: round }
+  tool["Read policy"]@{ shape: subroutine }
+  input["Input"]@{ shape: lean-right }
+  decision["Approved?"]@{ shape: diamond }
+  policy["Policy"]@{ shape: lin-doc }
+  action["Publish"]@{ shape: hexagon }
+  request --> task --> tool --> decision --> action
+  tool -.- policy
+  input --> task
+  decision --x input
+end
+connector store["Store"]

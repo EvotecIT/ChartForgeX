@@ -1,0 +1,12 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+
+var image = NativeGlassCompositionExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllBytes("glass.png", image.ToPng());
+
+{{SOURCE}}

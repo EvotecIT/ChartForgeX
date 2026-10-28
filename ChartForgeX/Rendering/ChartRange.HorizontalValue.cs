@@ -27,7 +27,8 @@ internal sealed partial class ChartRange {
                 foreach (var distribution in series.BoxPlotDistributions) {
                     range.IncludeX(distribution.SourceMinimum); range.IncludeX(distribution.SourceMaximum);
                 }
-                line |= ChartCartesianOrientation.IsHorizontalLine(chart, series);
+                baseline |= series.Kind == ChartSeriesKind.Lollipop;
+                line |= ChartCartesianOrientation.IsHorizontalLine(chart, series) || ChartCartesianOrientation.IsHorizontalComparison(chart, series);
             }
         }
         if (baseline && UsesZeroBaseline(axis)) range.IncludeX(0);

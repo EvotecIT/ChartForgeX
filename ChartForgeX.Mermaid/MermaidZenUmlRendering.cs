@@ -26,6 +26,7 @@ public static partial class MermaidZenUmlRendering {
         foreach (var participant in document.Participants) {
             MermaidResourceGuard.Checkpoint(); sequence.AddParticipant(participant.Id, participant.Alias ?? participant.Id, participant.Kind);
             var target = sequence.Participants[sequence.Participants.Count - 1]; target.IsImplicit = participant.IsImplicit;
+            MermaidZenUmlPresentation.Apply(participant,target);
             Source(target.Metadata, participant.Span); target.Metadata["mermaid.id"] = participant.Id;
             foreach (var attribute in participant.Attributes) target.Metadata["mermaid.zenuml." + attribute.Key] = attribute.Value;
             participants.Add(participant.Id, target);
@@ -85,8 +86,11 @@ public static partial class MermaidZenUmlRendering {
         private readonly string _external;
         private readonly HashSet<string> _notCreated = new(StringComparer.Ordinal);
         private int _fragment;
+        private long _order;
+        private readonly bool _presentationOrder;
         internal Lowering(SequenceArtifact sequence, Dictionary<string, SequenceArtifactParticipant> participants, string external, MermaidZenUmlDocument document) {
             _sequence = sequence; _participants = participants; _external = external;
+            _presentationOrder=HasPresentation(document.Statements);
             CollectCreations(document.Statements);
         }
         private void CollectCreations(List<MermaidZenUmlStatement> statements) {
@@ -102,14 +106,15 @@ public static partial class MermaidZenUmlRendering {
                 MermaidResourceGuard.Checkpoint(); MermaidResourceGuard.CheckDepth(depth, statement.Span);
                 foreach (var comment in statement.Comments) Note(comment.Text,
                     statement.Kind == MermaidZenUmlStatementKind.Create ? statement.CallerId ?? _external : statement.TargetId, comment.Span);
+                var order=NextOrder();
                 switch (statement.Kind) {
                     case MermaidZenUmlStatementKind.Call:
                     case MermaidZenUmlStatementKind.Create: Occurrence(statement, depth); break;
                     case MermaidZenUmlStatementKind.Async: Message(statement, SequenceArtifactMessageKind.Async); break;
                     case MermaidZenUmlStatementKind.Return: Message(statement, SequenceArtifactMessageKind.Return); break;
-                    case MermaidZenUmlStatementKind.Reference: Note("ref: " + statement.Text, null, statement.Span); break;
-                    case MermaidZenUmlStatementKind.Divider: Note(statement.Text, null, statement.Span); break;
-                    default: Fragment(statement, depth); break;
+                    case MermaidZenUmlStatementKind.Reference: Presentation(statement,SequenceArtifactBlockKind.Reference,depth,order); break;
+                    case MermaidZenUmlStatementKind.Divider: Presentation(statement,SequenceArtifactBlockKind.Divider,depth,order); break;
+                    default: Fragment(statement, depth,order); break;
                 }
             }
         }
@@ -125,7 +130,7 @@ public static partial class MermaidZenUmlRendering {
             foreach (var id in _participants.Keys) if (!_notCreated.Contains(id) && (target == null || id == target)) targets.Add(id);
             if (targets.Count == 0) return;
             _sequence.AddNote(SequenceArtifactNotePlacement.Over, targets, text);
-            var note = _sequence.Notes[_sequence.Notes.Count - 1]; note.StepIndex = _sequence.Messages.Count;
+            var note = _sequence.Notes[_sequence.Notes.Count - 1]; note.StepIndex = _sequence.Messages.Count; note.SourceOrder=NextOrder();
             Source(_sequence.Metadata, "mermaid.zenuml.note." + _sequence.Notes.Count.ToString(CultureInfo.InvariantCulture), span);
         }
     }

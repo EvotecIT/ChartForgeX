@@ -1,0 +1,27 @@
+sequenceDiagram
+title Parallel work
+participant C as Client
+participant A as Alpha
+participant B as Beta
+autonumber 3
+par_over First task
+C->>+A: Alpha request
+Note right of A: First task note
+par Nested fanout
+A->>B: Forward
+and Nested return
+B-->>A: Reply
+end
+A-->>-C: Alpha done
+and Second task
+C->>+B: Beta request
+critical Guard
+Note over C,B: Guard note
+option Recover
+B-->>C: Recovery
+end
+B-->>-C: Beta done
+and Notes only
+Note over A,B: Terminal task note
+end
+C->>A: After fragment

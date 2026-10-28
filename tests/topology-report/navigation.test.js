@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { installUiText, localizationSource } = require('../helpers/adapter-localization');
+const { installNativeText, nativeTextSource } = require('../helpers/adapter-native-text');
 const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/TopologyReportHtmlExtensions.Assets.cs'), 'utf8');
 const script = source.match(/private const string ReportScript = """([\s\S]*?)""";/)[1];
 
@@ -37,10 +38,12 @@ function report(count, customRecords) {
   ids.content.querySelector = selector => ids.content.children[0].querySelector(selector);
   const main = { dataset: {}, lang: 'en' }, window = {};
   installUiText(window);
-  new Function('document', 'window', script)({
+  const document = {
     querySelector: selector => selector === 'main' ? main : null,
     getElementById: id => ids[id], createElement: element, addEventListener() {}
-  }, window);
+  };
+  installNativeText(window, document);
+  new Function('document', 'window', script)(document, window);
   return { ids, allocated: () => buttonsCreated, links: () => ids.content.querySelector('.links').children,
     controls: () => ids.content.querySelector('.relationship-pages').children };
 }
@@ -115,6 +118,7 @@ test('inactive page SVGs remain text and page changes retain one parsed SVG', ()
     const document = dom.window.document;
     assert.equal(document.querySelectorAll('svg').length,0);
     dom.window.eval(localizationSource);
+    dom.window.eval(nativeTextSource);
     dom.window.eval(script);
     assert.equal(document.querySelectorAll('svg').length,1);
     document.getElementById('page').value='199';

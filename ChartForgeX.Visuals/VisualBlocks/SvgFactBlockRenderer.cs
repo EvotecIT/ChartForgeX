@@ -42,55 +42,6 @@ public sealed partial class SvgFactBlockRenderer {
         else if (block is ScheduleTimelineBlock scheduleBlock) RenderScheduleTimeline(writer, scheduleBlock);
         else throw new NotSupportedException("Unsupported static block producer: " + block.GetType().FullName);
     });
-    private static void RenderTable(SvgMarkupWriter writer, ChartTable table, string id) {
-        var options = table.Options;
-        var theme = options.ResolvedTheme;
-        var content = VisualBlockRendering.ContentRect(options);
-        var y = content.Y;
-        RenderBlockHeading(writer, table, ref y, content.X, content.Width);
-        var bodyScale = theme.DataLabelFontSize / 12;
-        var headerHeight = (table.Dense ? 26.0 : 32.0) * Math.Max(1, bodyScale);
-        var rowHeight = (table.Dense ? 24.0 : 31.0) * bodyScale;
-        var widths = ColumnWidths(table, content.Width);
-        if (table.ShowHeader) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "table-header").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", headerHeight).Attribute("rx", Math.Min(6, theme.PlotCornerRadius)).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
-            var x = content.X;
-            for (var i = 0; i < table.Columns.Count; i++) {
-                WriteText(writer, table.Columns[i].Header, x + 9, y + headerHeight * 0.66, widths[i] - 18, table.Columns[i].Alignment, theme.Text, theme.FontFamily, theme.SubtitleFontSize, "700");
-                x += widths[i];
-            }
-
-            y += headerHeight + 4;
-        }
-
-        var maxRows = Math.Max(0, (int)Math.Floor((options.Size.Height - options.Padding.Bottom - y) / rowHeight));
-        for (var rowIndex = 0; rowIndex < table.Rows.Count && rowIndex < maxRows; rowIndex++) {
-            var row = table.Rows[rowIndex];
-            var rowBackground = row.Background ?? (table.RowStriping && rowIndex % 2 == 1 ? theme.PlotBackground.WithAlpha(110) : ChartColor.Transparent);
-            if (rowBackground.A > 0) writer.StartElement("rect").Attribute("data-cfx-role", "table-row").Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", rowHeight).Attribute("rx", 4).Attribute("fill", rowBackground.ToCss()).EndEmptyElement().Line();
-            var x = content.X;
-            for (var i = 0; i < row.Cells.Count; i++) {
-                var cell = row.Cells[i];
-                if (cell.Background.HasValue) writer.StartElement("rect").Attribute("data-cfx-role", "table-cell-background").Attribute("x", x + 2).Attribute("y", y + 2).Attribute("width", Math.Max(1, widths[i] - 4)).Attribute("height", Math.Max(1, rowHeight - 4)).Attribute("rx", 4).Attribute("fill", cell.Background.Value.ToCss()).EndEmptyElement().Line();
-                var status = CellStatus(table, i, cell);
-                var textX = x + 9;
-                if (status != VisualStatus.None && table.StatusColumnIndex == i) {
-                    var color = VisualBlockRendering.StatusColor(theme, status);
-                    writer.StartElement("circle").Attribute("data-cfx-role", "table-status").Attribute("cx", x + 10).Attribute("cy", y + rowHeight / 2).Attribute("r", 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
-                    textX += 12;
-                }
-
-                var cellWidth = widths[i] - (textX - x) - 7;
-                if (cell.MicroVisualKind != ChartTableCellMicroVisualKind.None) RenderTableCellMicroVisual(writer, table, cell, textX, y + 4, cellWidth, rowHeight - 8, i);
-                else if (cell.BadgeText.Length > 0) RenderVisualBadge(writer, table, cell, textX, y + 4, cellWidth, rowHeight - 8);
-                else WriteText(writer, cell.Text, textX, y + rowHeight * 0.66, cellWidth, cell.Alignment ?? table.Columns[i].Alignment, cell.Foreground ?? row.Foreground ?? theme.Text, theme.FontFamily, (table.Dense ? 10.5 : 11.5) * bodyScale, "400");
-                x += widths[i];
-            }
-
-            y += rowHeight;
-        }
-    }
-
     private static void RenderList(SvgMarkupWriter writer, ChartList list) {
         var options = list.Options;
         var theme = options.ResolvedTheme;
@@ -463,25 +414,6 @@ public sealed partial class SvgFactBlockRenderer {
         }
 
         return path.Build();
-    }
-
-    private static double[] ColumnWidths(ChartTable table, double totalWidth) {
-        var widths = new double[table.Columns.Count];
-        var fixedWidth = 0.0;
-        var flexible = 0;
-        for (var i = 0; i < table.Columns.Count; i++) {
-            if (table.Columns[i].Width.HasValue) { widths[i] = table.Columns[i].Width!.Value; fixedWidth += widths[i]; }
-            else flexible++;
-        }
-
-        var flexWidth = flexible == 0 ? 0 : Math.Max(24, (totalWidth - fixedWidth) / flexible);
-        for (var i = 0; i < widths.Length; i++) if (widths[i] <= 0) widths[i] = flexWidth;
-        return widths;
-    }
-
-    private static VisualStatus CellStatus(ChartTable table, int columnIndex, ChartTableCell cell) {
-        if (cell.Status != VisualStatus.None) return cell.Status;
-        return table.StatusColumnIndex == columnIndex ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
     }
 
     private static void WriteRadialSeparators(SvgMarkupWriter writer, ChartRadialLayer layer, ChartForgeX.Themes.ResolvedVisualTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {

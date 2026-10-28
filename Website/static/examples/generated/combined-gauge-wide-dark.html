@@ -1,0 +1,364 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="dark" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Pressure against operating bands &#183; Gauge</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Gauge</p><h1>Pressure against operating bands</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-gauge-wide-light.html" data-theme-link data-light-href="family-gauge-wide-light.html" data-dark-href="family-gauge-wide-dark.html">Standard &#183; Available capacity against a target</a></span><span class="current-variant"><a href="combined-gauge-wide-light.html" data-theme-link data-light-href="combined-gauge-wide-light.html" data-dark-href="combined-gauge-wide-dark.html" aria-current="page">Standard &#183; Pressure against operating bands</a></span><span><a href="family-gauge-compact-light.html" data-theme-link data-light-href="family-gauge-compact-light.html" data-dark-href="family-gauge-compact-dark.html">Compact &#183; Available capacity against a target</a></span><span><a href="combined-gauge-compact-light.html" data-theme-link data-light-href="combined-gauge-compact-light.html" data-dark-href="combined-gauge-compact-dark.html">Compact &#183; Pressure against operating bands</a></span><span><a href="family-gauge-compact-dense-scale-light.html" data-theme-link data-light-href="family-gauge-compact-dense-scale-light.html" data-dark-href="family-gauge-compact-dense-scale-dark.html">Compact Dense Scale</a></span><span><a href="family-gauge-compact-full-circle-light.html" data-theme-link data-light-href="family-gauge-compact-full-circle-light.html" data-dark-href="family-gauge-compact-full-circle-dark.html">Compact Full Circle</a></span><span><a href="family-gauge-compact-precision-light.html" data-theme-link data-light-href="family-gauge-compact-precision-light.html" data-dark-href="family-gauge-compact-precision-dark.html">Compact Precision</a></span><span><a href="family-gauge-compact-semicircle-light.html" data-theme-link data-light-href="family-gauge-compact-semicircle-light.html" data-dark-href="family-gauge-compact-semicircle-dark.html">Compact Semicircle</a></span><span><a href="family-gauge-compact-vertical-light.html" data-theme-link data-light-href="family-gauge-compact-vertical-light.html" data-dark-href="family-gauge-compact-vertical-dark.html">Compact Vertical</a></span><span><a href="family-gauge-dense-scale-light.html" data-theme-link data-light-href="family-gauge-dense-scale-light.html" data-dark-href="family-gauge-dense-scale-dark.html">Dense Scale</a></span><span><a href="family-gauge-full-circle-light.html" data-theme-link data-light-href="family-gauge-full-circle-light.html" data-dark-href="family-gauge-full-circle-dark.html">Full Circle</a></span><span><a href="family-gauge-precision-light.html" data-theme-link data-light-href="family-gauge-precision-light.html" data-dark-href="family-gauge-precision-dark.html">Precision</a></span><span><a href="family-gauge-semicircle-light.html" data-theme-link data-light-href="family-gauge-semicircle-light.html" data-dark-href="family-gauge-semicircle-dark.html">Semicircle</a></span><span><a href="family-gauge-vertical-light.html" data-theme-link data-light-href="family-gauge-vertical-light.html" data-dark-href="family-gauge-vertical-dark.html">Vertical</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:760px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="760" height="440" viewBox="0 0 760 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Pressure against operating bands" aria-labelledby="combined-gauge-wide-light-title" aria-describedby="combined-gauge-wide-light-description"><title id="combined-gauge-wide-light-title">Pressure against operating bands</title><desc id="combined-gauge-wide-light-description">Pressure against operating bands with 1 data series: Pressure.</desc><defs><clipPath id="combined-gauge-wide-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="712" height="392"/></clipPath><clipPath id="combined-gauge-wide-light-clip-11" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="712" height="340.35"/></clipPath></defs><rect x="0" y="0" width="760" height="440" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#combined-gauge-wide-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Pressure against operating bands</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Arc, needle and independently painted semantic bands</text></g></g></g><g data-cfx-role="coordinate-system" data-cfx-coordinate-system="polar"><g id="combined-gauge-wide-light-node-10" data-cfx-source-id="series-0" data-cfx-role="gauge" aria-label="Pressure: 3.25 MPa" data-cfx-gauge-target-0-formatted-value="2.40 MPa" data-cfx-gauge-target-0-label="Minimum" data-cfx-gauge-target-0-value="2.4" data-cfx-gauge-target-1-formatted-value="2.80 MPa" data-cfx-gauge-target-1-label="Target" data-cfx-gauge-target-1-value="2.8" data-cfx-gauge-target-count="2" data-cfx-label-target="Target" data-cfx-max="3" data-cfx-min="2" data-cfx-observation-id="current" data-cfx-percent="1" data-cfx-pin-state-colors="false" data-cfx-point="0" data-cfx-series="0" data-cfx-series-key="pressure" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-status="Danger" data-cfx-value="3.25"><g clip-path="url(#combined-gauge-wide-light-clip-11)"><g id="combined-gauge-wide-light-node-12" data-cfx-source-id="series-0-gauge-label-source" data-cfx-role="gauge-label-source" aria-label="3.25 MPa" data-cfx-label="3.25 MPa"><g id="combined-gauge-wide-light-node-13" data-cfx-source-id="series-0-gauge-label" data-cfx-role="gauge-label"><text x="313.801" y="376.99" font-family="CFX Proof Carlito, sans-serif" font-size="34" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3.25 MPa</text></g></g><g id="combined-gauge-wide-light-node-15" data-cfx-source-id="series-0-gauge-title-source" data-cfx-role="gauge-title-source" aria-label="Raw reading above the operating range" data-cfx-label="Raw reading above the operating range"><g id="combined-gauge-wide-light-node-16" data-cfx-source-id="series-0-gauge-title" data-cfx-role="gauge-title"><text x="284.349" y="409.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Raw reading above the operating range</text></g></g><path d="M 204.189 297.039 A 175.811 175.811 0 0 1 555.811 297.039 L 541.811 297.039 A 161.811 161.811 0 0 0 218.189 297.039 Z" data-cfx-role="gauge-track" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><g id="combined-gauge-wide-light-node-19" data-cfx-source-id="series-0-band-0" data-cfx-role="gauge-band-source" data-cfx-max="2.4" data-cfx-min="2" data-cfx-status="Warning"><path d="M 194.2 295.017 A 185.811 185.811 0 0 1 320.662 120.958 L 321.939 124.748 A 181.811 181.811 0 0 0 198.2 295.061 Z" data-cfx-role="gauge-band" fill="rgba(212,167,44,0.8)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="combined-gauge-wide-light-node-22" data-cfx-source-id="series-0-band-1" data-cfx-role="gauge-band-source" data-cfx-max="2.8" data-cfx-min="2.4" data-cfx-status="Success"><path d="M 324.507 119.708 A 185.811 185.811 0 0 1 529.127 186.193 L 525.917 188.579 A 181.811 181.811 0 0 0 325.702 123.526 Z" data-cfx-role="gauge-band" fill="#178266" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="combined-gauge-wide-light-node-25" data-cfx-source-id="series-0-band-2" data-cfx-role="gauge-band-source" data-cfx-max="3" data-cfx-min="2.8" data-cfx-status="Danger"><path d="M 531.504 189.464 A 185.811 185.811 0 0 1 565.8 295.017 L 561.8 295.061 A 181.811 181.811 0 0 0 528.242 191.78 Z" data-cfx-role="gauge-band" fill="rgba(195,77,67,0.851)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 204.189 297.039 A 175.811 175.811 0 0 1 555.811 297.039 L 541.811 297.039 A 161.811 161.811 0 0 0 218.189 297.039 Z" id="combined-gauge-wide-light-node-28" data-cfx-source-id="series-0-value" data-cfx-role="gauge-value" fill="#176B88" stroke="none" stroke-width="1" fill-rule="evenodd"/><line x1="380" y1="297.039" x2="534.811" y2="297.039" data-cfx-role="gauge-needle" fill="none" stroke="#9D3C20" stroke-width="2"/><ellipse cx="380" cy="297.039" rx="4.667" ry="4.667" data-cfx-role="gauge-pivot" fill="#16181C" stroke="none" stroke-width="1"/><line x1="188.189" y1="297.039" x2="185.189" y2="297.039" data-cfx-role="gauge-tick" fill="none" stroke="#E2E4E7" stroke-width="1"/><g id="combined-gauge-wide-light-node-32" data-cfx-source-id="series-0-gauge-scale-0-source" data-cfx-role="gauge-min-label-source" aria-label="2.00 MPa" data-cfx-label="2.00 MPa"><g id="combined-gauge-wide-light-node-33" data-cfx-source-id="series-0-gauge-scale-0" data-cfx-role="gauge-min-label"><text x="144.431" y="299.676" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.00 MPa</text></g></g><line x1="244.369" y1="161.408" x2="242.248" y2="159.287" data-cfx-role="gauge-tick" fill="none" stroke="#E2E4E7" stroke-width="1"/><g id="combined-gauge-wide-light-node-36" data-cfx-source-id="series-0-gauge-scale-1-source" data-cfx-role="gauge-tick-label-1-source" aria-label="2.25 MPa" data-cfx-label="2.25 MPa"><g id="combined-gauge-wide-light-node-37" data-cfx-source-id="series-0-gauge-scale-1" data-cfx-role="gauge-tick-label-1"><text x="206.7" y="149.345" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.25 MPa</text></g></g><line x1="380" y1="105.228" x2="380" y2="102.228" data-cfx-role="gauge-tick" fill="none" stroke="#E2E4E7" stroke-width="1"/><g id="combined-gauge-wide-light-node-40" data-cfx-source-id="series-0-gauge-scale-2-source" data-cfx-role="gauge-tick-label-2-source" aria-label="2.50 MPa" data-cfx-label="2.50 MPa"><g id="combined-gauge-wide-light-node-41" data-cfx-source-id="series-0-gauge-scale-2" data-cfx-role="gauge-tick-label-2"><text x="357.031" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.50 MPa</text></g></g><line x1="515.631" y1="161.408" x2="517.752" y2="159.287" data-cfx-role="gauge-tick" fill="none" stroke="#E2E4E7" stroke-width="1"/><g id="combined-gauge-wide-light-node-44" data-cfx-source-id="series-0-gauge-scale-3-source" data-cfx-role="gauge-tick-label-3-source" aria-label="2.75 MPa" data-cfx-label="2.75 MPa"><g id="combined-gauge-wide-light-node-45" data-cfx-source-id="series-0-gauge-scale-3" data-cfx-role="gauge-tick-label-3"><text x="507.362" y="149.345" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.75 MPa</text></g></g><line x1="571.811" y1="297.039" x2="574.811" y2="297.039" data-cfx-role="gauge-tick" fill="none" stroke="#E2E4E7" stroke-width="1"/><g id="combined-gauge-wide-light-node-48" data-cfx-source-id="series-0-gauge-scale-4-source" data-cfx-role="gauge-max-label-source" aria-label="3.00 MPa" data-cfx-label="3.00 MPa"><g id="combined-gauge-wide-light-node-49" data-cfx-source-id="series-0-gauge-scale-4" data-cfx-role="gauge-max-label"><text x="569.631" y="299.676" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3.00 MPa</text></g></g><line x1="331.234" y1="146.952" x2="324.435" y2="126.029" data-cfx-role="gauge-target" fill="none" stroke="#16181C" stroke-width="2"/><g id="combined-gauge-wide-light-node-52" data-cfx-source-id="series-0-gauge-target-label-0-source" data-cfx-role="gauge-target-label-source" aria-label="Minimum" data-cfx-label="Minimum"><g id="combined-gauge-wide-light-node-53" data-cfx-source-id="series-0-gauge-target-label-0" data-cfx-role="gauge-target-label"><text x="290.529" y="97.481" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Minimum</text></g></g><line x1="507.672" y1="204.28" x2="525.47" y2="191.349" data-cfx-role="gauge-target" fill="none" stroke="#16181C" stroke-width="2"/><g id="combined-gauge-wide-light-node-56" data-cfx-source-id="series-0-gauge-target-label-1-source" data-cfx-role="gauge-target-label-source" aria-label="Target" data-cfx-label="Target"><g id="combined-gauge-wide-light-node-57" data-cfx-source-id="series-0-gauge-target-label-1" data-cfx-role="gauge-target-label"><text x="536.921" y="174.713" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Target</text></g></g></g></g></g></svg></div><div class="full" style="--example-width:760px" data-visual-theme="light" data-output-format="png"><img src="combined-gauge-wide-light.png" width="760" height="440" alt="Pressure against operating bands" loading="lazy" decoding="async"></div><div class="full" style="--example-width:760px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="760" height="440" viewBox="0 0 760 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Pressure against operating bands" aria-labelledby="combined-gauge-wide-dark-title" aria-describedby="combined-gauge-wide-dark-description"><title id="combined-gauge-wide-dark-title">Pressure against operating bands</title><desc id="combined-gauge-wide-dark-description">Pressure against operating bands with 1 data series: Pressure.</desc><defs><clipPath id="combined-gauge-wide-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="712" height="392"/></clipPath><clipPath id="combined-gauge-wide-dark-clip-11" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="712" height="340.35"/></clipPath></defs><rect x="0" y="0" width="760" height="440" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#combined-gauge-wide-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Pressure against operating bands</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Arc, needle and independently painted semantic bands</text></g></g></g><g data-cfx-role="coordinate-system" data-cfx-coordinate-system="polar"><g id="combined-gauge-wide-dark-node-10" data-cfx-source-id="series-0" data-cfx-role="gauge" aria-label="Pressure: 3.25 MPa" data-cfx-gauge-target-0-formatted-value="2.40 MPa" data-cfx-gauge-target-0-label="Minimum" data-cfx-gauge-target-0-value="2.4" data-cfx-gauge-target-1-formatted-value="2.80 MPa" data-cfx-gauge-target-1-label="Target" data-cfx-gauge-target-1-value="2.8" data-cfx-gauge-target-count="2" data-cfx-label-target="Target" data-cfx-max="3" data-cfx-min="2" data-cfx-observation-id="current" data-cfx-percent="1" data-cfx-pin-state-colors="false" data-cfx-point="0" data-cfx-series="0" data-cfx-series-key="pressure" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-status="Danger" data-cfx-value="3.25"><g clip-path="url(#combined-gauge-wide-dark-clip-11)"><g id="combined-gauge-wide-dark-node-12" data-cfx-source-id="series-0-gauge-label-source" data-cfx-role="gauge-label-source" aria-label="3.25 MPa" data-cfx-label="3.25 MPa"><g id="combined-gauge-wide-dark-node-13" data-cfx-source-id="series-0-gauge-label" data-cfx-role="gauge-label"><text x="313.801" y="376.99" font-family="CFX Proof Carlito, sans-serif" font-size="34" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3.25 MPa</text></g></g><g id="combined-gauge-wide-dark-node-15" data-cfx-source-id="series-0-gauge-title-source" data-cfx-role="gauge-title-source" aria-label="Raw reading above the operating range" data-cfx-label="Raw reading above the operating range"><g id="combined-gauge-wide-dark-node-16" data-cfx-source-id="series-0-gauge-title" data-cfx-role="gauge-title"><text x="284.349" y="409.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Raw reading above the operating range</text></g></g><path d="M 204.189 297.039 A 175.811 175.811 0 0 1 555.811 297.039 L 541.811 297.039 A 161.811 161.811 0 0 0 218.189 297.039 Z" data-cfx-role="gauge-track" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><g id="combined-gauge-wide-dark-node-19" data-cfx-source-id="series-0-band-0" data-cfx-role="gauge-band-source" data-cfx-max="2.4" data-cfx-min="2" data-cfx-status="Warning"><path d="M 194.2 295.017 A 185.811 185.811 0 0 1 320.662 120.958 L 321.939 124.748 A 181.811 181.811 0 0 0 198.2 295.061 Z" data-cfx-role="gauge-band" fill="rgba(212,167,44,0.8)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="combined-gauge-wide-dark-node-22" data-cfx-source-id="series-0-band-1" data-cfx-role="gauge-band-source" data-cfx-max="2.8" data-cfx-min="2.4" data-cfx-status="Success"><path d="M 324.507 119.708 A 185.811 185.811 0 0 1 529.127 186.193 L 525.917 188.579 A 181.811 181.811 0 0 0 325.702 123.526 Z" data-cfx-role="gauge-band" fill="#178266" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="combined-gauge-wide-dark-node-25" data-cfx-source-id="series-0-band-2" data-cfx-role="gauge-band-source" data-cfx-max="3" data-cfx-min="2.8" data-cfx-status="Danger"><path d="M 531.504 189.464 A 185.811 185.811 0 0 1 565.8 295.017 L 561.8 295.061 A 181.811 181.811 0 0 0 528.242 191.78 Z" data-cfx-role="gauge-band" fill="rgba(195,77,67,0.851)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 204.189 297.039 A 175.811 175.811 0 0 1 555.811 297.039 L 541.811 297.039 A 161.811 161.811 0 0 0 218.189 297.039 Z" id="combined-gauge-wide-dark-node-28" data-cfx-source-id="series-0-value" data-cfx-role="gauge-value" fill="#176B88" stroke="none" stroke-width="1" fill-rule="evenodd"/><line x1="380" y1="297.039" x2="534.811" y2="297.039" data-cfx-role="gauge-needle" fill="none" stroke="#9D3C20" stroke-width="2"/><ellipse cx="380" cy="297.039" rx="4.667" ry="4.667" data-cfx-role="gauge-pivot" fill="#F2F3F5" stroke="none" stroke-width="1"/><line x1="188.189" y1="297.039" x2="185.189" y2="297.039" data-cfx-role="gauge-tick" fill="none" stroke="#272A30" stroke-width="1"/><g id="combined-gauge-wide-dark-node-32" data-cfx-source-id="series-0-gauge-scale-0-source" data-cfx-role="gauge-min-label-source" aria-label="2.00 MPa" data-cfx-label="2.00 MPa"><g id="combined-gauge-wide-dark-node-33" data-cfx-source-id="series-0-gauge-scale-0" data-cfx-role="gauge-min-label"><text x="144.431" y="299.676" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.00 MPa</text></g></g><line x1="244.369" y1="161.408" x2="242.248" y2="159.287" data-cfx-role="gauge-tick" fill="none" stroke="#272A30" stroke-width="1"/><g id="combined-gauge-wide-dark-node-36" data-cfx-source-id="series-0-gauge-scale-1-source" data-cfx-role="gauge-tick-label-1-source" aria-label="2.25 MPa" data-cfx-label="2.25 MPa"><g id="combined-gauge-wide-dark-node-37" data-cfx-source-id="series-0-gauge-scale-1" data-cfx-role="gauge-tick-label-1"><text x="206.7" y="149.345" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.25 MPa</text></g></g><line x1="380" y1="105.228" x2="380" y2="102.228" data-cfx-role="gauge-tick" fill="none" stroke="#272A30" stroke-width="1"/><g id="combined-gauge-wide-dark-node-40" data-cfx-source-id="series-0-gauge-scale-2-source" data-cfx-role="gauge-tick-label-2-source" aria-label="2.50 MPa" data-cfx-label="2.50 MPa"><g id="combined-gauge-wide-dark-node-41" data-cfx-source-id="series-0-gauge-scale-2" data-cfx-role="gauge-tick-label-2"><text x="357.031" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.50 MPa</text></g></g><line x1="515.631" y1="161.408" x2="517.752" y2="159.287" data-cfx-role="gauge-tick" fill="none" stroke="#272A30" stroke-width="1"/><g id="combined-gauge-wide-dark-node-44" data-cfx-source-id="series-0-gauge-scale-3-source" data-cfx-role="gauge-tick-label-3-source" aria-label="2.75 MPa" data-cfx-label="2.75 MPa"><g id="combined-gauge-wide-dark-node-45" data-cfx-source-id="series-0-gauge-scale-3" data-cfx-role="gauge-tick-label-3"><text x="507.362" y="149.345" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2.75 MPa</text></g></g><line x1="571.811" y1="297.039" x2="574.811" y2="297.039" data-cfx-role="gauge-tick" fill="none" stroke="#272A30" stroke-width="1"/><g id="combined-gauge-wide-dark-node-48" data-cfx-source-id="series-0-gauge-scale-4-source" data-cfx-role="gauge-max-label-source" aria-label="3.00 MPa" data-cfx-label="3.00 MPa"><g id="combined-gauge-wide-dark-node-49" data-cfx-source-id="series-0-gauge-scale-4" data-cfx-role="gauge-max-label"><text x="569.631" y="299.676" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3.00 MPa</text></g></g><line x1="331.234" y1="146.952" x2="324.435" y2="126.029" data-cfx-role="gauge-target" fill="none" stroke="#F2F3F5" stroke-width="2"/><g id="combined-gauge-wide-dark-node-52" data-cfx-source-id="series-0-gauge-target-label-0-source" data-cfx-role="gauge-target-label-source" aria-label="Minimum" data-cfx-label="Minimum"><g id="combined-gauge-wide-dark-node-53" data-cfx-source-id="series-0-gauge-target-label-0" data-cfx-role="gauge-target-label"><text x="290.529" y="97.481" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Minimum</text></g></g><line x1="507.672" y1="204.28" x2="525.47" y2="191.349" data-cfx-role="gauge-target" fill="none" stroke="#F2F3F5" stroke-width="2"/><g id="combined-gauge-wide-dark-node-56" data-cfx-source-id="series-0-gauge-target-label-1-source" data-cfx-role="gauge-target-label-source" aria-label="Target" data-cfx-label="Target"><g id="combined-gauge-wide-dark-node-57" data-cfx-source-id="series-0-gauge-target-label-1" data-cfx-role="gauge-target-label"><text x="536.921" y="174.713" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Target</text></g></g></g></g></g></svg></div><div class="full" style="--example-width:760px" data-visual-theme="dark" data-output-format="png"><img src="combined-gauge-wide-dark.png" width="760" height="440" alt="Pressure against operating bands" loading="lazy" decoding="async"></div></section><div class="export-row"><span>760 × 440 pixels</span><nav aria-label="Download outputs"><a href="combined-gauge-wide-dark.svg" data-theme-link data-light-href="combined-gauge-wide-light.svg" data-dark-href="combined-gauge-wide-dark.svg" download>Download SVG</a><a href="combined-gauge-wide-dark.png" data-theme-link data-light-href="combined-gauge-wide-light.png" data-dark-href="combined-gauge-wide-dark.png" download>Download PNG</a><a href="combined-gauge-wide-dark.csharp.txt" data-theme-link data-light-href="combined-gauge-wide-light.csharp.txt" data-dark-href="combined-gauge-wide-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="combined-gauge-wide-dark.gallery.csharp.txt" data-theme-link data-light-href="combined-gauge-wide-light.gallery.csharp.txt" data-dark-href="combined-gauge-wide-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = CombinedGaugeRecipe.Create(&quot;wide&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Pressure against operating bands&quot;).WithSubtitle(&quot;Arc, needle and independently painted semantic bands&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(760, 440)), theme, mode,
+    new VisualFrame(&quot;Pressure against operating bands&quot;, &quot;Arc, needle and independently painted semantic bands&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;A single reading shown with an arc, needle, explicit references and independently painted semantic bands.&lt;/summary&gt;
+public static class CombinedGaugeRecipe {
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == &quot;compact&quot;;
+        var series = ChartSeries.CreateGauge(new ChartSeriesId(&quot;pressure&quot;), &quot;Pressure&quot;,
+            new ChartGaugeValue(3.25, 2, 3, new[] { new ChartGaugeTarget(2.4, &quot;Minimum&quot;), new ChartGaugeTarget(2.8, &quot;Target&quot;) }), ChartColor.FromHex(&quot;#176B88&quot;))
+            .WithObservationId(0, new ChartObservationId(&quot;current&quot;));
+        return Chart.Create().WithSize(compact ? 390 : 760, compact ? 360 : 440).WithTitle(&quot;Pressure against operating bands&quot;)
+            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(series)
+            .WithValueFormat(ChartValueFormat.Number(&quot;0.00&#39; MPa&#39;&quot;))
+            .ConfigureGauge(options =&gt; {
+                options.Form = ChartGaugeForm.ArcWithNeedle; options.StartAngleDegrees = 180; options.SweepAngleDegrees = 180;
+                options.TickCount = 5; options.BandGap = 4; options.NeedleColor = ChartColor.FromHex(&quot;#9D3C20&quot;); options.Caption = &quot;Raw reading above the operating range&quot;;
+                options.Bands.Add(new ChartGaugeBand(2, 2.4, ChartSeriesState.Warning, ChartColor.FromHex(&quot;#D4A72C&quot;), .8));
+                options.Bands.Add(new ChartGaugeBand(2.4, 2.8, ChartSeriesState.Success, ChartColor.FromHex(&quot;#178266&quot;)));
+                options.Bands.Add(new ChartGaugeBand(2.8, 3, ChartSeriesState.Danger, ChartColor.FromHex(&quot;#C34D43&quot;), .85));
+            });
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = CombinedGaugeRecipe.Create(&quot;wide&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Pressure against operating bands&quot;).WithSubtitle(&quot;Arc, needle and independently painted semantic bands&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(760, 440)), theme, mode,
+    new VisualFrame(&quot;Pressure against operating bands&quot;, &quot;Arc, needle and independently painted semantic bands&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;A single reading shown with an arc, needle, explicit references and independently painted semantic bands.&lt;/summary&gt;
+public static class CombinedGaugeRecipe {
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == &quot;compact&quot;;
+        var series = ChartSeries.CreateGauge(new ChartSeriesId(&quot;pressure&quot;), &quot;Pressure&quot;,
+            new ChartGaugeValue(3.25, 2, 3, new[] { new ChartGaugeTarget(2.4, &quot;Minimum&quot;), new ChartGaugeTarget(2.8, &quot;Target&quot;) }), ChartColor.FromHex(&quot;#176B88&quot;))
+            .WithObservationId(0, new ChartObservationId(&quot;current&quot;));
+        return Chart.Create().WithSize(compact ? 390 : 760, compact ? 360 : 440).WithTitle(&quot;Pressure against operating bands&quot;)
+            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(series)
+            .WithValueFormat(ChartValueFormat.Number(&quot;0.00&#39; MPa&#39;&quot;))
+            .ConfigureGauge(options =&gt; {
+                options.Form = ChartGaugeForm.ArcWithNeedle; options.StartAngleDegrees = 180; options.SweepAngleDegrees = 180;
+                options.TickCount = 5; options.BandGap = 4; options.NeedleColor = ChartColor.FromHex(&quot;#9D3C20&quot;); options.Caption = &quot;Raw reading above the operating range&quot;;
+                options.Bands.Add(new ChartGaugeBand(2, 2.4, ChartSeriesState.Warning, ChartColor.FromHex(&quot;#D4A72C&quot;), .8));
+                options.Bands.Add(new ChartGaugeBand(2.4, 2.8, ChartSeriesState.Success, ChartColor.FromHex(&quot;#178266&quot;)));
+                options.Bands.Add(new ChartGaugeBand(2.8, 3, ChartSeriesState.Danger, ChartColor.FromHex(&quot;#C34D43&quot;), .85));
+            });
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

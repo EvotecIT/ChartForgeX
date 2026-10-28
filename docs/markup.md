@@ -246,6 +246,9 @@ Annotation commands also accept `id:<source-id>` or `id=<source-id>`. IDs use th
 
 The parser maps the fence to a `VisualArtifact` with `VisualArtifactKind.Chart` and a typed `Chart` model. Static SVG/PNG/HTML export remains deterministic and script-free.
 
+Typed `type chord` uses `node <id> "Label"` and `flow <id> <sourceId> <targetId> <weight> [colorValue=<number>]`. It creates the existing immutable directed relationship facts, including parallel, reciprocal, self and zero flows. Numeric `values` and series data cannot substitute for relationships. Optional complete `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` ID lists and finite `chordRibbonTension` map to the [native Chord options](../chord/#typed-chart-markup). Node/flow tables use separate `nodes:` and `flows:` sections ending with `end`; unknown endpoints and malformed values retain source-line errors. Empty `type chord` keeps native no-data semantics.
+
+
 ## Timeline And Gantt
 
 `chartforgex timeline v1` creates native ChartForgeX timeline or Gantt charts. Set `type` or `mode` to `timeline` or `gantt` in the fence attributes or inside the block. Dates use invariant date parsing; numeric positions are accepted for abstract schedules.
@@ -457,7 +460,7 @@ treeView-beta
 ```
 ````
 
-Event Modeling fences use Mermaid's `eventmodeling` syntax and render through native ChartForgeX topology previews:
+Event Modeling fences use `eventmodeling` source and render through shared native topology swimlane ranks and measured factual cards. Frame numbers retain identity; source order controls the timeline. Inline/referenced JSON and schema data paint as bounded typed-fact rows. Direct and fenced rendering use the same conversion, diagnostics and resource limits; see [Event Modeling](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid.md#event-modeling-diagrams) for table APIs and literal format boundaries:
 
 ````markdown
 ```mermaid {#cart-event-model title="Cart Event Model" width=960 height=560}

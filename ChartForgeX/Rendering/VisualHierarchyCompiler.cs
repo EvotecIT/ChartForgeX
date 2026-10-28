@@ -83,6 +83,7 @@ internal static partial class VisualHierarchyCompiler {
             var bounds = new ChartRect(x1, Math.Min(y1, y2) - width / 2, x2 - x1, Math.Abs(y2 - y1) + width);
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("link", target.Id), "tree-link", bounds, metadata["data-cfx-full-label"]));
         }
+        var captionFrame = HierarchyCaptionSurface.Frame(context);
         foreach (var node in model.Nodes) {
             var b = new ChartRect(node.X, node.Y, model.NodeWidth, node.Height); var color = Color(series, node.Index, colors, node.Depth);
             var caption = HierarchyCaption(series, node.Index, node.Label);
@@ -101,7 +102,8 @@ internal static partial class VisualHierarchyCompiler {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, node.Height / 2), "tree-node-mark",
                     paint: new VisualScenePaintBinding(ChartRelationshipPaint.Paint(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
-                if (showLabels) Label(chart, context, builder, caption, b, color, node.Index, "tree-node-label", center: true);
+                if (showLabels) Label(chart, context, builder, caption, b, color, node.Index, "tree-node-label",
+                    color.A == 255 ? null : captionFrame.Over(color, ChartRelationshipPaint.Paint(series, color, node.Index)), center: true);
             }
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, caption + ": level " + N(node.Depth)));
         }

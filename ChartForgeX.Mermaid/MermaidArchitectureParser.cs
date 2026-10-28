@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidArchitectureParser {
+internal static partial class MermaidArchitectureParser {
     private static readonly string[] EdgeOperators = { "<-->", "-->", "<--", "--" };
 
     public static void ParseStatements(MermaidArchitectureDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
@@ -19,7 +19,7 @@ internal static class MermaidArchitectureParser {
             document.Statements.Add(new MermaidRawStatement(trimmed, span));
 
             if (StartsWithKeyword(trimmed, "group")) {
-                ParseGroup(document, groups, trimmed, span, result);
+                ParseGroup(document, groups, services, junctions, trimmed, span, result);
                 continue;
             }
 
@@ -33,9 +33,15 @@ internal static class MermaidArchitectureParser {
                 continue;
             }
 
+            if (StartsWithKeyword(trimmed, "align")) {
+                ParseAlignment(document, trimmed, span, result);
+                continue;
+            }
+
             if (TryParseEdge(trimmed, span, out var edge)) {
                 ValidateEndpoint(edge.Left, services, junctions, span, result);
                 ValidateEndpoint(edge.Right, services, junctions, span, result);
+                ValidateBoundary(edge, services, junctions, span, result);
                 document.Edges.Add(edge);
                 continue;
             }
@@ -43,17 +49,18 @@ internal static class MermaidArchitectureParser {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized architecture diagram statement was retained but not rendered exactly: " + trimmed);
         }
 
+        ValidateAlignments(document, services, junctions, result);
         if (document.Services.Count == 0 && document.Groups.Count == 0 && document.Junctions.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid architecture diagrams require at least one group, service, or junction.");
     }
 
-    private static void ParseGroup(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseGroup(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureGroup> groups, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureJunction> junctions, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!TryParseComponent(text.Substring(5).Trim(), out var id, out var icon, out var title, out var parentId)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture groups must use Mermaid syntax 'group id(icon)[Title]' or 'group id[Title]'.");
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture groups must use 'group id' with an optional '(icon)', optional '[Title]' and optional 'in parent'.");
             return;
         }
 
         var group = new MermaidArchitectureGroup(id, title, span) { Icon = icon, ParentId = parentId };
-        if (groups.ContainsKey(id)) {
+        if (groups.ContainsKey(id) || services.ContainsKey(id) || junctions.ContainsKey(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture group id '" + id + "' is already defined.");
             return;
         }
@@ -64,16 +71,17 @@ internal static class MermaidArchitectureParser {
 
         groups.Add(id, group);
         document.Groups.Add(group);
+        DiagnoseIcon(icon, span, result);
     }
 
     private static void ParseService(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureJunction> junctions, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!TryParseComponent(text.Substring(7).Trim(), out var id, out var icon, out var title, out var parentId)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture services must use Mermaid syntax 'service id(icon)[Title]' or 'service id[Title]'.");
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture services must use 'service id' with an optional '(icon)', optional '[Title]' and optional 'in group'.");
             return;
         }
 
         var service = new MermaidArchitectureService(id, title, span) { Icon = icon, GroupId = parentId };
-        if (services.ContainsKey(id) || junctions.ContainsKey(id)) {
+        if (services.ContainsKey(id) || junctions.ContainsKey(id) || groups.ContainsKey(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture service id '" + id + "' is already defined.");
             return;
         }
@@ -84,6 +92,7 @@ internal static class MermaidArchitectureParser {
 
         services.Add(id, service);
         document.Services.Add(service);
+        DiagnoseIcon(icon, span, result);
     }
 
     private static void ParseJunction(MermaidArchitectureDocument document, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureJunction> junctions, Dictionary<string, MermaidArchitectureGroup> groups, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
@@ -95,7 +104,7 @@ internal static class MermaidArchitectureParser {
             return;
         }
 
-        if (junctions.ContainsKey(id) || services.ContainsKey(id)) {
+        if (junctions.ContainsKey(id) || services.ContainsKey(id) || groups.ContainsKey(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture junction id '" + id + "' is already defined.");
             return;
         }
@@ -110,29 +119,56 @@ internal static class MermaidArchitectureParser {
     }
 
     private static bool TryParseComponent(string body, out string id, out string? icon, out string title, out string? parentId) {
-        id = string.Empty;
-        icon = null;
-        title = string.Empty;
-        parentId = null;
-        var bracketStart = body.IndexOf('[');
-        var bracketEnd = body.LastIndexOf(']');
-        if (bracketStart <= 0 || bracketEnd <= bracketStart) return false;
-        parentId = ReadParentAfterTitle(ref body, bracketEnd);
-        bracketStart = body.IndexOf('[');
-        bracketEnd = body.LastIndexOf(']');
-        title = MermaidParserUtilities.Unquote(body.Substring(bracketStart + 1, bracketEnd - bracketStart - 1));
-        var prefix = body.Substring(0, bracketStart).Trim();
-        if (prefix.EndsWith(")", StringComparison.Ordinal)) {
-            var parenStart = prefix.LastIndexOf('(');
-            if (parenStart <= 0) return false;
-            id = Clean(prefix.Substring(0, parenStart));
-            icon = Clean(prefix.Substring(parenStart + 1, prefix.Length - parenStart - 2));
-        } else {
-            id = Clean(prefix);
+        icon = null; title = string.Empty; parentId = null;
+        var index = 0;
+        while (index < body.Length && !char.IsWhiteSpace(body[index]) && body[index] != '(' && body[index] != '[') index++;
+        id = Clean(body.Substring(0, index));
+        if (id.Length == 0) return false;
+        SkipSpace();
+        if (index < body.Length && body[index] == '(') {
+            var end = body.IndexOf(')', index + 1);
+            if (end < 0) return false;
+            // Parenthesized names are distinct from the separate, still unsupported quoted icon-text form.
+            icon = body.Substring(index + 1, end - index - 1).Trim();
+            if (icon.Length == 0 || icon.IndexOf('"') >= 0 || icon.IndexOf('\'') >= 0) return false;
+            index = end + 1; SkipSpace();
         }
+        if (index < body.Length && body[index] == '[') {
+            var end = CaptionEnd(body, index + 1);
+            if (end <= index + 1) return false;
+            title = Caption(body.Substring(index + 1, end - index - 1));
+            index = end + 1; SkipSpace();
+        }
+        if (index < body.Length) {
+            if (!body.Substring(index).StartsWith("in ", StringComparison.OrdinalIgnoreCase)) return false;
+            parentId = Clean(body.Substring(index + 3));
+            if (string.IsNullOrWhiteSpace(parentId) || parentId!.IndexOfAny(new[] { ' ', '\t', '[', ']', '(', ')' }) >= 0) return false;
+        }
+        return true;
 
-        if (title.Length == 0) title = id;
-        return id.Length > 0;
+        void SkipSpace() { while (index < body.Length && char.IsWhiteSpace(body[index])) index++; }
+    }
+
+    private static int CaptionEnd(string text, int start) {
+        while (start < text.Length && char.IsWhiteSpace(text[start])) start++;
+        if (start == text.Length) return -1;
+        var quote = text[start];
+        if (quote != '"' && quote != '\'' && quote != '`') return text.IndexOf(']', start);
+        for (var index = start + 1; index < text.Length; index++) {
+            if (text[index] == '\\') { index++; continue; }
+            if (text[index] != quote) continue;
+            index++;
+            while (index < text.Length && char.IsWhiteSpace(text[index])) index++;
+            return index < text.Length && text[index] == ']' ? index : -1;
+        }
+        return -1;
+    }
+
+    private static string Caption(string value) {
+        value = value.Trim();
+        if (value.Length >= 2 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
+            return value.Substring(1, value.Length - 2).Replace("\\\"", "\"").Replace("\\'", "'").Trim();
+        return MermaidParserUtilities.Unquote(value);
     }
 
     private static string? ReadParent(ref string body) {
@@ -142,16 +178,6 @@ internal static class MermaidArchitectureParser {
         var parent = Clean(body.Substring(index + marker.Length));
         body = body.Substring(0, index).Trim();
         return parent.Length == 0 ? null : parent;
-    }
-
-    private static string? ReadParentAfterTitle(ref string body, int titleEnd) {
-        if (titleEnd >= body.Length - 1) return null;
-        var suffix = body.Substring(titleEnd + 1).Trim();
-        if (!suffix.StartsWith("in ", StringComparison.OrdinalIgnoreCase)) return null;
-        var parent = Clean(suffix.Substring(3));
-        if (parent.Length == 0) return null;
-        body = body.Substring(0, titleEnd + 1).Trim();
-        return parent;
     }
 
     private static bool TryParseEdge(string text, MermaidSourceSpan span, out MermaidArchitectureEdge edge) {
@@ -196,8 +222,27 @@ internal static class MermaidArchitectureParser {
     }
 
     private static void ValidateEndpoint(MermaidArchitectureEndpoint endpoint, Dictionary<string, MermaidArchitectureService> services, Dictionary<string, MermaidArchitectureJunction> junctions, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (endpoint.Side != null && endpoint.Side != "L" && endpoint.Side != "R" && endpoint.Side != "T" && endpoint.Side != "B")
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture endpoint side must be L, R, T or B.");
         if (services.ContainsKey(endpoint.Id) || junctions.ContainsKey(endpoint.Id)) return;
         MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture edge endpoint '" + endpoint.Id + "' must refer to a previously declared service or junction.");
+    }
+
+    private static void ValidateBoundary(MermaidArchitectureEdge edge, Dictionary<string, MermaidArchitectureService> services,
+        Dictionary<string, MermaidArchitectureJunction> junctions, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (!edge.Left.GroupBoundary && !edge.Right.GroupBoundary) return;
+        var left = GroupId(edge.Left.Id); var right = GroupId(edge.Right.Id);
+        if (left != null && right != null && left == right)
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Architecture group-boundary edge must leave its containing group.");
+
+        string? GroupId(string id) => services.TryGetValue(id, out var service) ? service.GroupId
+            : junctions.TryGetValue(id, out var junction) ? junction.GroupId : null;
+    }
+
+    private static void DiagnoseIcon(string? icon, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (icon != null && MermaidArchitectureIcons.NativeId(icon) == null)
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning,
+                "Architecture icon is retained without native artwork: " + icon, MermaidDiagnosticCodes.UnsupportedStatement);
     }
 
     private static bool StartsWithKeyword(string text, string keyword) {

@@ -11,7 +11,7 @@ public sealed partial class ChartSeries {
         or ChartSeriesKind.Gantt or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane
         or ChartSeriesKind.DottedMap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap
         or ChartSeriesKind.Gauge or ChartSeriesKind.Circle or ChartSeriesKind.Bullet or ChartSeriesKind.LayeredRadial
-        || IsCategoricalHeatmapRow || IsTypedWaterfall;
+        || IsCategoricalHeatmapRow || IsTypedWaterfall || IsTypedProgress;
 
     private IReadOnlyList<ChartPoint>? _renderPoints;
 
@@ -51,6 +51,8 @@ public sealed partial class ChartSeries {
         foreach (var value in DifferencePoints) {
             points.Add(new ChartPoint(value.X, value.First, value.BreakBefore)); points.Add(new ChartPoint(value.X, value.Second, value.BreakBefore));
         }
+        if (IsTypedProgress) for (var index = 0; index < ProgressItems.Count; index++)
+            points.Add(new ChartPoint(index + 1, ProgressItems[index].Value));
         foreach (var value in GaugeValues) { points.Add(new ChartPoint(value.Minimum, value.Value)); points.Add(new ChartPoint(value.Maximum, value.Value)); }
         foreach (var value in BulletValues) {
             points.Add(new ChartPoint(value.Minimum, value.Value)); points.Add(new ChartPoint(value.Maximum, value.Target));

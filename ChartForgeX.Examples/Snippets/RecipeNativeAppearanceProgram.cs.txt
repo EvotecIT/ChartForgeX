@@ -1,0 +1,45 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var selectedEffect = {{EFFECT}};
+var layer = NativeAppearanceExample.Create(selectedEffect, {{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("appearance.svg", layer.Visual.ToSvg());
+File.WriteAllBytes("appearance.png", layer.Visual.ToPng());
+File.WriteAllText("appearance.source.json", layer.Source.ToArtifact().ToInterchangeJson());
+
+if (selectedEffect == "glow") {
+    var sourceFilter = NativeAppearanceExample.AlphaGlowFilterSource(VisualThemeMode.{{MODE}});
+    var imported = ChartForgeX.SvgRaster.SvgRasterizer.Rasterize(sourceFilter, strict: true,
+        filters: new ChartForgeX.SvgRaster.SvgRasterFilterOptions());
+    File.WriteAllText("appearance.glow-filter.source.svg", sourceFilter);
+    File.WriteAllBytes("appearance.glow-filter.native.png", imported.Image.ToPng());
+    var retained = layer.Source.WithDropShadow(NativeAppearanceExample.AlphaGlowPolicy(VisualThemeMode.{{MODE}}));
+    File.WriteAllText("appearance.native-filter.svg", retained.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+    var saved = layer.ToArtifact().ToInterchangeJson();
+    File.WriteAllText("appearance.effect.json", saved);
+    var envelope = VisualArtifactInterchangeEnvelope.FromJson(saved);
+    var freshSource = NativeAppearanceExample.PrepareSource({{VARIANT}}, VisualThemeMode.{{MODE}});
+    var replayed = envelope.ApplyCapturedLayer(freshSource);
+    File.WriteAllText("appearance.replayed.svg", replayed.Visual.ToSvg());
+    File.WriteAllBytes("appearance.replayed.png", replayed.Visual.ToPng());
+}
+
+if (selectedEffect == "inner") {
+    var retained = layer.Source.WithInnerShadow(NativeAppearanceExample.InnerShadowPolicy(VisualThemeMode.{{MODE}}));
+    File.WriteAllText("appearance.native-filter.svg", retained.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+    var saved = layer.ToArtifact().ToInterchangeJson();
+    File.WriteAllText("appearance.effect.json", saved);
+    var envelope = VisualArtifactInterchangeEnvelope.FromJson(saved);
+    var freshSource = NativeAppearanceExample.PrepareSource({{VARIANT}}, VisualThemeMode.{{MODE}});
+    var replayed = envelope.ApplyCapturedLayer(freshSource);
+    File.WriteAllText("appearance.replayed.svg", replayed.Visual.ToSvg());
+    File.WriteAllBytes("appearance.replayed.png", replayed.Visual.ToPng());
+}
+
+{{SOURCE}}

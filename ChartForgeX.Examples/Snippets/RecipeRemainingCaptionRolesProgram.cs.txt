@@ -1,0 +1,14 @@
+using System;
+using System.IO;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+// Reference the ordinary ChartForgeX.Mermaid package.
+var artifact = MermaidRemainingCaptionRolesExample.Create({{FAMILY}}, {{VARIANT}}, VisualThemeMode.{{MODE}});
+File.WriteAllText("caption.svg", artifact.ToSvg());
+File.WriteAllBytes("caption.png", artifact.ToPng());
+File.WriteAllText("caption.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("caption.json", artifact.ToInterchangeJson());
+
+{{SOURCE}}

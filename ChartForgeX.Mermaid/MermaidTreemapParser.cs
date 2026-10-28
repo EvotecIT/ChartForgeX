@@ -16,6 +16,7 @@ internal static class MermaidTreemapParser {
             var indent = LeadingWhitespace(raw);
             var span = new MermaidSourceSpan(index + 1, indent + 1, trimmed.Length);
             document.Statements.Add(new MermaidRawStatement(trimmed, span));
+            if (TryDefinition(document, trimmed, span, result)) continue;
             var parsed = ParseNode(trimmed, span, result);
             if (!parsed.HasValue) continue;
 
@@ -23,6 +24,9 @@ internal static class MermaidTreemapParser {
             var parent = stack.Count == 0 ? null : stack[stack.Count - 1];
             MermaidResourceGuard.CheckDepth(stack.Count + 1, span);
             var node = new MermaidTreemapNode(parsed.Value.Label, parsed.Value.Value, indent, parent, parsed.Value.ClassName, span);
+            if (node.ClassName != null && !ClassIdentifier(node.ClassName.TrimEnd(';')))
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning,
+                    "Treemap class suffix is retained without native application; use one simple class identifier.", MermaidDiagnosticCodes.UnsupportedStatement);
             if (parent == null) document.Roots.Add(node);
             else parent.Children.Add(node);
             document.Nodes.Add(node);
@@ -35,6 +39,35 @@ internal static class MermaidTreemapParser {
             if (node.IsLeaf && node.Children.Count > 0) Add(result, node.Span.Line, node.Span.Column, node.Span.Length, MermaidDiagnosticSeverity.Error, "Mermaid treemap leaf nodes with values cannot have child nodes.");
             if (!node.IsLeaf && node.Children.Count == 0) Add(result, node.Span.Line, node.Span.Column, node.Span.Length, MermaidDiagnosticSeverity.Error, "Mermaid treemap sections require child nodes; leaves require a value.");
         }
+    }
+
+    /// <summary>Treemap selects one literal class; its grammar does not inherit the other families' implicit default or multiple selectors.</summary>
+    private static bool TryDefinition(MermaidTreemapDocument document, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        if (text != "classDef" && !MermaidParserUtilities.StartsStatement(text, "classDef")) return false;
+        var body = text.Length > 8 ? text.Substring(8).Trim() : string.Empty;
+        if (!MermaidStyleParser.SplitHead(body, out var name, out _) || !ClassIdentifier(name)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                "Treemap classDef requires one simple class identifier followed by declarations.", MermaidDiagnosticCodes.InvalidStatement);
+            return true;
+        }
+        var first = document.ClassDefinitions.Count;
+        MermaidStyleParser.TryDefinition(text, span, result, document.ClassDefinitions, "Treemap");
+        for (var index = first; index < document.ClassDefinitions.Count; index++)
+            foreach (var declaration in document.ClassDefinitions[index].Styles)
+                if (declaration.Key is "fill" or "stroke" or "color"
+                    && MermaidStyleValues.IsColor(declaration.Value)
+                    && !ChartForgeX.SvgRaster.SvgRasterColor.TryParse(declaration.Value, out _))
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning,
+                        "Treemap source paints require a native color; CSS variables are retained without application.",
+                        MermaidDiagnosticCodes.UnsupportedStatement);
+        return true;
+    }
+
+    private static bool ClassIdentifier(string name) {
+        if (name.Length == 0 || !(name[0] is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_')) return false;
+        foreach (var character in name)
+            if (!(character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '_')) return false;
+        return true;
     }
 
     private static ParsedNode? ParseNode(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {

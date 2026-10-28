@@ -1,0 +1,4 @@
+flowchart LR
+notice@{ shape: bang, label: "Stored notice" } --> first@{ shape: h-cyl, label: "Primary records" }
+first --> second@{ shape: das, label: "Replica records" }
+second --> third@{ shape: horizontal-cylinder, label: "Archive records" }

@@ -53,8 +53,15 @@ internal static partial class SmokeTests {
         Assert(series.SourcePointIndices.SequenceEqual(retained), "Each rendered point should retain its original source identity.");
 
         var html = chart.ToInteractiveHtmlFragment();
-        Assert(html.Contains("const sourcePointIndex = (node)", StringComparison.Ordinal), "Interactive HTML should resolve retained points back to source identities.");
-        Assert(html.Contains("sourcePoint: sourcePointIndex(node)", StringComparison.Ordinal), "Interactive events should report the original point identity alongside the rendered ordinal.");
+        var attribute = System.Text.RegularExpressions.Regex.Match(html, "data-cfx-prepared-chart=\"([^\"]+)\"");
+        Assert(attribute.Success, "Interactive decimation should retain the completed native source metadata.");
+        using var metadata = System.Text.Json.JsonDocument.Parse(System.Net.WebUtility.HtmlDecode(attribute.Groups[1].Value));
+        var preparedSeries = metadata.RootElement.GetProperty("series")[0];
+        var sourceIndices = preparedSeries.GetProperty("indices").EnumerateArray().Select(value => value.GetInt32());
+        Assert(preparedSeries.GetProperty("key").GetString() == series.Id.Value && series.SourcePointIndices.SequenceEqual(sourceIndices),
+            "Interactive metadata should retain the original source indices under the native series identity.");
+        Assert(PreparedPointTargetCount(html) == series.Points.Count,
+            "Every retained decimated observation should have a completed native interaction target.");
     }
 
     private static void AdaptiveSeriesUseReusableResolutionPolicy() {

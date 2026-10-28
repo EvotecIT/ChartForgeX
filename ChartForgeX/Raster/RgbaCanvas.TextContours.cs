@@ -4,6 +4,10 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
+    /// <summary>Paints captured built-in text stroke ink through the incumbent stroke coverage policy.</summary>
+    internal void FillCapturedTextStrokeContours(IReadOnlyList<List<ChartPoint>> contours, ChartColor color) =>
+        FillContours(contours, color, RasterFillRule.NonZero, StrokeSubScanlines);
+
     internal void FillTextContours(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, double boldOffset) {
         if (boldOffset == 0) { FillContours(contours, color, RasterFillRule.NonZero); return; }
         var scaled = new List<List<ChartPoint>>(contours.Count * 2);

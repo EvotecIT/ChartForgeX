@@ -25,7 +25,7 @@ public readonly struct ChartFlowLink {
     public double Value { get; }
 
     /// <summary>Gets an independent signed quantitative color measurement, or null for missing color data.</summary>
-    /// <remarks>Supported by Chord flows. It never changes flow weight or endpoint geometry.</remarks>
+    /// <remarks>Supported by Sankey and Chord flows. It never changes flow weight or endpoint geometry.</remarks>
     public double? ColorValue { get; }
 
     /// <summary>

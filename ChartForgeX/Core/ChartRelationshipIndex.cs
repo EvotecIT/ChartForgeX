@@ -87,8 +87,6 @@ internal sealed partial class ChartRelationshipIndex {
                     throw new ArgumentException("Chord flow weights must be finite and non-negative.", nameof(links));
             } else {
                 ValidateWeight(link.Value);
-                if (link.ColorValue.HasValue)
-                    throw new NotSupportedException("Independent quantitative flow color requires a Chord chart.");
             }
             (sources[i], targets[i]) = Resolve(indexes, link.SourceId, link.TargetId, allowSelf: chord);
             incoming[targets[i]] += link.Value;

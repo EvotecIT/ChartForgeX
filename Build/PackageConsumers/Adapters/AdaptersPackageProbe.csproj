@@ -10,6 +10,21 @@
     <DefineConstants>$(DefineConstants);CFX_PACKAGE_BROWSER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../Fonts/*" Link="Fonts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="sequence-retained-surface-shadows.mmd" LogicalName="PackageProbe.sequence-retained-surface-shadows.mmd" />
+    <EmbeddedResource Include="sequence-preset-appearance.mmd" LogicalName="PackageProbe.sequence-preset-appearance.mmd" />
+    <EmbeddedResource Include="sequence-source-defaults.mmd" LogicalName="PackageProbe.sequence-source-defaults.mmd" />
+    <EmbeddedResource Include="sequence-navigation.mmd" LogicalName="PackageProbe.sequence-navigation.mmd" />
+    <EmbeddedResource Include="sequence-self-routes.mmd" LogicalName="PackageProbe.sequence-self-routes.mmd" />
+    <EmbeddedResource Include="sequence-message-presentation.mmd" LogicalName="PackageProbe.sequence-message-presentation.mmd" />
+    <EmbeddedResource Include="sequence-participant-views.mmd" LogicalName="PackageProbe.sequence-participant-views.mmd" />
+    <EmbeddedResource Include="sequence-layout-typography.mmd" LogicalName="SequenceLayoutTypography.mmd" WithCulture="false" />
+    <EmbeddedResource Include="usecase-json-table-content.mmd" LogicalName="UseCaseJsonTable.mmd" WithCulture="false" />
+    <EmbeddedResource Include="quadrant-native-source-depth.mmd" LogicalName="QuadrantSourceDepth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="swimlane-native-layout-depth.mmd" LogicalName="SwimlaneLayoutDepth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="usecase-native-source-depth.mmd" LogicalName="UseCaseSourceDepth.mmd" WithCulture="false" />
+    <EmbeddedResource Include="usecase-advanced-actors.mmd" LogicalName="AdvancedActors.mmd" WithCulture="false" />
+    <EmbeddedResource Include="xychart-native-source-depth.mmd" LogicalName="XYSourceDepth.mmd" WithCulture="false" />
     <Compile Include="../PackageAssertions.cs" Link="PackageAssertions.cs" />
     <Compile Include="../PackageBrowserProbe.cs" Link="PackageBrowserProbe.cs" />
     <PackageReference Include="ChartForgeX" Version="$(PackageVersion)" PrivateAssets="all" />

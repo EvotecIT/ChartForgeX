@@ -83,6 +83,15 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
                 Assert.Contains(label, observed.GetProperty(surface).GetString()!, StringComparison.Ordinal);
             Assert.Empty(observed.GetProperty("clip").EnumerateArray());
             foreach (var (role, count) in Regions(fixture)) Assert.Equal(count, observed.GetProperty("nativeRegions").GetProperty(role).GetInt32());
+            if (key == "sequenceLifetimes") {
+                var sequence = Assert.IsType<SequenceArtifact>(artifact.Model);
+                Assert.True(sequence.Layout?.MirrorParticipants ?? true);
+                Assert.Contains(native.Nodes, node => node.Sequence?.DestroyedAtMessageIndex != null);
+                Assert.Contains("sequence-participant-footer", svg, StringComparison.Ordinal);
+                var nonmirrored = MermaidRenderer.Render("%%{init:{\"sequence\":{\"mirrorActors\":false}}}%%\n" + source, options);
+                Assert.Empty(nonmirrored.Diagnostics);
+                Assert.Contains("sequence-destruction", nonmirrored.Artifact!.ToSvg(), StringComparison.Ordinal);
+            }
             Assert.False(observed.GetProperty("horizontalOverflow").GetBoolean());
             Assert.Equal(0, observed.GetProperty("nativeScripts").GetInt32());
             Assert.Empty(errors); InteractiveChartBrowser.AssertNoConsoleErrors(session);
@@ -95,7 +104,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         "state-controls-notes" => new() { ["topology-node"] = 7, ["topology-edge"] = 7, ["topology-annotation"] = 1 },
         "state-nested-directions" => new() { ["topology-node"] = 3, ["topology-group"] = 2, ["topology-edge"] = 2, ["topology-annotation"] = 1 },
         "state-native-safe-styles" => new() { ["topology-node"] = 5, ["topology-group"] = 1, ["topology-edge"] = 4 },
-        "sequence-lifetimes-boxes" => new() { ["sequence-participant"] = 4, ["sequence-message"] = 6, ["sequence-participant-group"] = 2, ["sequence-destruction"] = 1 },
+        "sequence-lifetimes-boxes" => new() { ["sequence-participant"] = 4, ["sequence-message"] = 6, ["sequence-participant-group"] = 2, ["sequence-destruction"] = 0 },
         _ => new() { ["topology-node"] = 6, ["topology-group"] = 3, ["topology-edge"] = 5 }
     };
 }

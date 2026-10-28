@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Mermaid;
 
@@ -21,7 +22,7 @@ public sealed partial class MermaidParser {
             ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid source configuration exceeds 65536 characters.");
         } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result, originalLineStarts);
 
-        var opaque = AgentflowMetadataLines(lines, frontMatterEndLine);
+        var opaque = OpaqueFamilyLines(lines, frontMatterEndLine);
         for (var index = frontMatterEndLine; index < lines.Length; index++) {
             MermaidResourceGuard.Checkpoint();
             if (opaque.Contains(index)) continue;
@@ -87,11 +88,16 @@ public sealed partial class MermaidParser {
             var key = ConfigurationPathKey(pair.Key);
             var path = prefix + key;
             var declarationSpan = propertySpan?.Invoke(pair.Value) ?? span;
-            if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) {
-                if (IsConfigurationScalarPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, declarationSpan));
+            var parentPath = prefix.Length == 0 ? string.Empty : prefix.Substring(0, prefix.Length - 1);
+            if (pair.Value.TryAsObject(out var nested) && (nested.Count > 0 || MermaidSankeySettings.IsNodeColorsPath(path))) {
+                if (IsConfigurationScalarPath(path) || MermaidSankeySettings.IsNodeColorsPath(path))
+                    configuration.Add(new MermaidConfigurationSetting(path, null, false, declarationSpan, parentPath, pair.Key, true));
                 AddConfigurationJson(nested, path + ".", declarationSpan, configuration, propertySpan);
             }
-            else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, declarationSpan));
+            else {
+                var setting=new MermaidConfigurationSetting(path,pair.Value.AsOptionalString(),pair.Value.IsString,declarationSpan,parentPath,pair.Key,false,!pair.Value.IsNull && pair.Value.AsOptionalString() == null);
+                configuration.Add(MermaidThemePresetInputs.IsPalettePath(path)?MermaidThemePresetInputs.CapturePalette(setting,pair.Value):setting);
+            }
         }
     }
 
@@ -99,10 +105,12 @@ public sealed partial class MermaidParser {
         Regex.IsMatch(key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? key : "[" + key + "]";
 
     private static bool IsConfigurationScalarPath(string path) {
-        if (MermaidRadarThemeSettings.IsScalarPath(path) || MermaidChartColorSettings.IsScalarPath(path) || MermaidThemeColorSettings.IsScalarPath(path)) return true;
-        if (MermaidPacketSettings.IsPath(path)) return true;
+        if (MermaidCynefinSettings.IsScalarPath(path) || MermaidSwimlaneSettings.IsScalarPath(path) || MermaidGraphSettings.IsScalarPath(path)) return true;
+        if (MermaidRequirementThemeSettings.IsScalarPath(path)) return true;
+        if (MermaidSequenceSettings.IsScalarPath(path) || MermaidRadarThemeSettings.IsScalarPath(path) || MermaidChartColorSettings.IsScalarPath(path) || MermaidThemeColorSettings.IsScalarPath(path)) return true;
+        if (MermaidPacketSettings.IsPath(path) || MermaidGitGraphSettings.IsScalarPath(path) || MermaidIshikawaSettings.IsScalarPath(path) || MermaidC4Settings.IsScalarPath(path) || MermaidUseCaseSettings.IsScalarPath(path) || MermaidWardleySettings.IsScalarPath(path) || MermaidQuadrantSettings.IsScalarPath(path) || MermaidXYChartSettings.IsScalarPath(path)) return true;
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path) || MermaidMindMapSettings.IsScalarPath(path);
+        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path) || MermaidMindMapSettings.IsScalarPath(path) || MermaidTreeViewSettings.IsScalarPath(path) || MermaidKanbanSettings.IsScalarPath(path);
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -133,9 +141,21 @@ public sealed partial class MermaidParser {
         configuration.Layout = ReadString("layout");
         configuration.Look = ReadString("look");
         configuration.FontFamily = ReadString("fontFamily");
-        var fontSize = configuration.Last("themeVariables.fontSize");
+        var fontSize = configuration.Last("themeVariables.fontSize") ?? (kind == MermaidDiagramKind.Ishikawa ? configuration.Last("fontSize") : null);
         configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
+        configuration.Preset=MermaidThemePresetInputs.Read(configuration,kind==MermaidDiagramKind.Sequence,(setting,message)=>ConfigurationError(result,setting.Span,message),
+            topology:kind is MermaidDiagramKind.Flowchart or MermaidDiagramKind.Swimlane or MermaidDiagramKind.Agentflow);
         configuration.ThemeColors = MermaidThemeColorSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Cynefin) {
+            configuration.Cynefin = MermaidCynefinSettings.Read(configuration,
+                (setting, message) => ConfigurationError(result, setting.Span, message));
+        }
+        if (kind == MermaidDiagramKind.Requirement) configuration.RequirementTheme = MermaidRequirementThemeSettings.Read(configuration,
+            (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Sequence) configuration.Sequence = MermaidSequenceSettings.Read(configuration,
+            (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Quadrant) configuration.Quadrant = MermaidQuadrantSettings.Read(configuration,
+            (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Packet) configuration.Packet = MermaidPacketSettings.Read(configuration,
             (setting, reason) => ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' " + reason + "."));
         if (kind == MermaidDiagramKind.Radar) {
@@ -143,26 +163,60 @@ public sealed partial class MermaidParser {
             configuration.RadarTheme = MermaidRadarThemeSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
             configuration.ChartColors = MermaidChartColorSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         }
+        if (kind == MermaidDiagramKind.XYChart)
+            configuration.XYChart = MermaidXYChartSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Sankey)
             configuration.Sankey = MermaidSankeySettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Treemap)
-            configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+            configuration.Treemap = MermaidTreemapSettings.Read(configuration,
+                (setting, message) => ConfigurationError(result, setting.Span, message),
+                (setting, message) => Add(result, setting.Span.Line, setting.Span.Column, setting.Span.Length,
+                    MermaidDiagnosticSeverity.Warning, message, MermaidDiagnosticCodes.UnsupportedConfiguration));
         if (kind == MermaidDiagramKind.MindMap)
             configuration.MindMap = MermaidMindMapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.GitGraph)
+            configuration.GitGraph = MermaidGitGraphSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.UseCase)
+            configuration.UseCase = MermaidUseCaseSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.C4)
+            configuration.C4 = MermaidC4Settings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Wardley)
+            configuration.Wardley = MermaidWardleySettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Kanban)
+            configuration.Kanban = MermaidKanbanSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Ishikawa)
+            configuration.Ishikawa = MermaidIshikawaSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Swimlane)
+            configuration.Swimlane = MermaidSwimlaneSettings.Read(configuration,
+                (setting,message) => ConfigurationError(result,setting.Span,message),
+                (setting,message) => Add(result,setting.Span.Line,setting.Span.Column,setting.Span.Length,MermaidDiagnosticSeverity.Warning,message,MermaidDiagnosticCodes.UnsupportedConfiguration));
+        if (kind is MermaidDiagramKind.Flowchart or MermaidDiagramKind.Agentflow)
+            configuration.Graph = MermaidGraphSettings.Read(configuration,kind == MermaidDiagramKind.Agentflow ? "agentflow" : "flowchart",
+                (setting,message) => ConfigurationError(result,setting.Span,message));
+        else if (kind == MermaidDiagramKind.Swimlane) configuration.Graph = configuration.Swimlane?.Graph;
+        if (kind == MermaidDiagramKind.TreeView)
+            configuration.TreeView = MermaidTreeViewSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
+            if (MermaidFlowchartCurves.Applies(kind) && setting.Path == "flowchart.curve" && setting.IsString && MermaidFlowchartCurves.TryKind(setting.Value, out _)) continue;
+            if (configuration.Cynefin?.Handles(setting.Path) == true || configuration.Swimlane?.Handles(setting.Path) == true || configuration.Graph?.Handles(setting.Path) == true) continue;
+            if (configuration.RequirementTheme?.Handles(setting.Path) == true) continue;
+            if (configuration.TreeView?.Handles(setting.Path) == true || configuration.Kanban?.Handles(setting.Path) == true || configuration.Ishikawa?.Handles(setting.Path) == true) continue;
+            if (configuration.Sequence?.Handles(setting.Path) == true || configuration.C4?.Handles(setting.Path) == true || configuration.UseCase?.Handles(setting.Path) == true || configuration.Wardley?.Handles(setting.Path) == true || configuration.Quadrant?.Handles(setting.Path) == true || configuration.XYChart?.Handles(setting.Path) == true) continue;
             if (configuration.ThemeColors?.Handles(setting.Path) == true) continue;
             if (configuration.RadarTheme?.Handles(setting.Path) == true || configuration.ChartColors?.Handles(setting.Path) == true) continue;
             if (kind == MermaidDiagramKind.Packet && MermaidPacketSettings.IsHandledPath(setting.Path)) continue;
             if (configuration.Radar?.Handles(setting.Path) == true) continue;
             if (configuration.Sankey?.Handles(setting.Path) == true || configuration.Treemap?.Handles(setting.Path) == true) continue;
-            if (configuration.MindMap?.Handles(setting.Path) == true) continue;
+            if (configuration.MindMap?.Handles(setting.Path) == true || configuration.GitGraph?.Handles(setting.Path) == true) continue;
+            if(kind==MermaidDiagramKind.Sequence&&setting.Path=="themeVariables.dropShadow"&&ReferenceEquals(setting,configuration.Last(setting.Path))&&configuration.Preset?.HasSupportedShadowSetting==true)continue;
             var theme = Selected("theme");
+            if(kind==MermaidDiagramKind.Sequence && (setting.Path=="look"||setting.Path=="sequence.look") && setting.IsString && setting.Value is "classic" or "neo")continue;
             var font = Selected("fontFamily");
             if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;
             if (ReferenceEquals(setting, fontSize) && invalidFontSize) continue;
             if ((invalidFontSize || fontSize?.Value != null) && setting.Path.StartsWith("themeVariables.fontSize.", StringComparison.Ordinal)) continue;
             if (ReferenceEquals(setting, fontSize) && configuration.FontSize.HasValue) continue;
-            if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
+            if (ReferenceEquals(setting, theme) && setting.IsString && (IsNativeTheme(setting.Value)||kind==MermaidDiagramKind.Sequence&&MermaidThemePreset.IsKnown(setting.Value))) {
                 continue;
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value)) continue;
             else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily" || setting.Path == "themeVariables.fontFamily") &&

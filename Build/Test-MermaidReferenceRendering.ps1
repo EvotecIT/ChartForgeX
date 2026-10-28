@@ -35,6 +35,10 @@ try {
     if (-not ($results.TestRun.Results.UnitTestResult | Where-Object {
         $_.testName -like 'ChartForgeX.Tests.MermaidNotationReferenceRenderingTests.PinnedNotationAndNativeOutputPreserveSharedVisibleContracts*' -and $_.outcome -eq 'Passed'
     })) { throw 'The common-notation reference rendering contracts did not execute.' }
+    $quadrantRows = @($results.TestRun.Results.UnitTestResult | Where-Object {
+        $_.testName -like 'ChartForgeX.Tests.MermaidNotationReferenceRenderingTests.CurrentPinnedQuadrantUsesTheSameClassCascadeAndIndependentCaptionCoordinates*' -and $_.outcome -eq 'Passed'
+    })
+    if ($quadrantRows.Count -ne 4) { throw 'Quadrant source reference proof must execute compact/wide Light/Dark against the current pinned runtime.' }
 } finally {
     foreach ($name in $variables) { [Environment]::SetEnvironmentVariable($name, $saved[$name]) }
 }

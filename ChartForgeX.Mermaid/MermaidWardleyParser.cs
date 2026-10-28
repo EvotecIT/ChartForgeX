@@ -6,7 +6,7 @@ using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidWardleyParser {
+internal static partial class MermaidWardleyParser {
     private const int MaximumWardleyNodes = 256;
     private const int MaximumWardleyLinks = 512;
 
@@ -24,11 +24,12 @@ internal static class MermaidWardleyParser {
 
             if (StartsWithKeyword(trimmed, "title")) { document.Title = trimmed.Substring(5).Trim(); continue; }
             if (StartsWithKeyword(trimmed, "size")) { ParseSize(document, trimmed.Substring(4).Trim(), span, result); continue; }
-            if (StartsWithKeyword(trimmed, "evolution")) { ParseEvolutionStages(document, trimmed.Substring(9).Trim(), span); continue; }
+            if (StartsWithKeyword(trimmed, "evolution")) { ParseEvolutionStages(document, trimmed.Substring(9).Trim(), span, result); continue; }
             if (StartsWithKeyword(trimmed, "anchor")) { ParseNode(document, trimmed.Substring(6).Trim(), WardleyMapNodeKind.Anchor, span, nodeIds, result); continue; }
             if (StartsWithKeyword(trimmed, "component")) { ParseNode(document, trimmed.Substring(9).Trim(), WardleyMapNodeKind.Component, span, nodeIds, result); continue; }
             if (StartsWithKeyword(trimmed, "evolve")) { ParseEvolve(document, trimmed.Substring(6).Trim(), span, nodeIds, result); continue; }
             if (StartsWithKeyword(trimmed, "note")) { ParseNote(document, trimmed.Substring(4).Trim(), span, result); continue; }
+            if (StartsWithKeyword(trimmed, "annotations")) { ParseAnnotationsBox(document, trimmed.Substring(11).Trim(), span, result); continue; }
             if (StartsWithKeyword(trimmed, "annotation")) { ParseAnnotation(document, trimmed.Substring(10).Trim(), span, result); continue; }
             if (StartsWithKeyword(trimmed, "accelerator")) { ParseMarker(document, trimmed.Substring(11).Trim(), WardleyMapMarkerKind.Accelerator, span, result); continue; }
             if (StartsWithKeyword(trimmed, "deaccelerator")) { ParseMarker(document, trimmed.Substring(13).Trim(), WardleyMapMarkerKind.Deaccelerator, span, result); continue; }
@@ -38,6 +39,7 @@ internal static class MermaidWardleyParser {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid Wardley statement was retained but is not rendered by ChartForgeX yet.");
         }
 
+        ResolveWardleyEndpoints(document, result);
         if (document.Nodes.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid Wardley maps require at least one anchor or component.");
     }
 
@@ -47,18 +49,12 @@ internal static class MermaidWardleyParser {
             return;
         }
 
-        document.CanvasWidth = Math.Max(1, (int)Math.Round(width));
-        document.CanvasHeight = Math.Max(1, (int)Math.Round(height));
-    }
-
-    private static void ParseEvolutionStages(MermaidWardleyDocument document, string text, MermaidSourceSpan span) {
-        document.Stages.Clear();
-        foreach (var part in text.Split(new[] { "->" }, StringSplitOptions.None)) {
-            var stage = part.Trim();
-            if (stage.Length > 0) document.Stages.Add(stage);
+        if (double.IsNaN(width) || double.IsInfinity(width) || double.IsNaN(height) || double.IsInfinity(height)
+            || width < 1 || height < 1 || width > int.MaxValue || height > int.MaxValue || width != Math.Floor(width) || height != Math.Floor(height)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Wardley canvas dimensions must be positive 32-bit integers."); return;
         }
-
-        if (document.Stages.Count == 0) document.Statements.Add(new MermaidRawStatement(text, span));
+        document.CanvasWidth = (int)width;
+        document.CanvasHeight = (int)height;
     }
 
     private static void ParseNode(MermaidWardleyDocument document, string text, WardleyMapNodeKind kind, MermaidSourceSpan span, HashSet<string> nodeIds, MermaidParseResult<MermaidDocument> result) {
@@ -73,6 +69,7 @@ internal static class MermaidWardleyParser {
             return;
         }
 
+        name = MermaidParserUtilities.Unquote(name);
         if (!nodeIds.Add(name)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley node names must be unique: " + name + ".");
             return;
@@ -88,7 +85,7 @@ internal static class MermaidWardleyParser {
         if (rest.Length == 0) return;
         if (rest.IndexOf("inertia", StringComparison.OrdinalIgnoreCase) >= 0) {
             node.Inertia = true;
-            rest = Regex.Replace(rest, @"\binertia\b", string.Empty, RegexOptions.IgnoreCase).Trim();
+            rest = Regex.Replace(rest, @"\(?\binertia\b\)?", string.Empty, RegexOptions.IgnoreCase).Trim();
         }
 
         var strategy = ExtractParenthesized(rest);
@@ -99,6 +96,7 @@ internal static class MermaidWardleyParser {
 
         var labelIndex = rest.IndexOf("label", StringComparison.OrdinalIgnoreCase);
         if (labelIndex >= 0 && TryExtractCoordinatePair(rest.Substring(labelIndex + 5).Trim(), allowIntegers: true, out var x, out var y, out _)) {
+            if (!FiniteWardleyOffset(x, y, span, result)) return;
             node.LabelOffsetX = x;
             node.LabelOffsetY = y;
             rest = rest.Substring(0, labelIndex).Trim();
@@ -110,7 +108,7 @@ internal static class MermaidWardleyParser {
     private static bool TryParseLink(MermaidWardleyDocument document, string text, MermaidSourceSpan span, HashSet<string> nodeIds, MermaidParseResult<MermaidDocument> result) {
         var match = LinkPattern.Match(text);
         if (!match.Success) return false;
-        var from = text.Substring(0, match.Index).Trim();
+        var from = MermaidParserUtilities.Unquote(text.Substring(0, match.Index).Trim());
         var arrow = match.Groups["arrow"].Value;
         var to = text.Substring(match.Index + match.Length).Trim();
         var label = string.Empty;
@@ -120,11 +118,7 @@ internal static class MermaidWardleyParser {
             to = to.Substring(0, semicolon).Trim();
         }
 
-        if (!nodeIds.Contains(from) || !nodeIds.Contains(to)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley links must reference previously declared nodes.");
-            return true;
-        }
-
+        to = MermaidParserUtilities.Unquote(to);
         var flow = VisualLinkDirection.None;
         var flowMatch = Regex.Match(arrow, @"^\+'(?<label>[^']*)'(?<direction><>|<|>)$");
         if (flowMatch.Success) {
@@ -150,12 +144,7 @@ internal static class MermaidWardleyParser {
             return;
         }
 
-        var node = text.Substring(0, split).Trim();
-        if (!nodeIds.Contains(node)) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley evolve statements must reference a previously declared node.");
-            return;
-        }
-
+        var node = MermaidParserUtilities.Unquote(text.Substring(0, split).Trim());
         if (TryNormalizeCoordinate(value, span, result, out var normalized)) document.Evolutions.Add(new MermaidWardleyEvolution(node, normalized, span));
     }
 
@@ -195,7 +184,7 @@ internal static class MermaidWardleyParser {
 
     private static int ParsePipeline(MermaidWardleyDocument document, string[] lines, int currentLine, string text, MermaidSourceSpan span, HashSet<string> nodeIds, MermaidParseResult<MermaidDocument> result) {
         var brace = text.IndexOf('{');
-        var parent = (brace >= 0 ? text.Substring(0, brace) : text).Trim();
+        var parent = MermaidParserUtilities.Unquote((brace >= 0 ? text.Substring(0, brace) : text).Trim());
         if (parent.Length == 0 || !nodeIds.Contains(parent)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Wardley pipelines must reference a previously declared parent component.");
             return currentLine;
@@ -218,12 +207,16 @@ internal static class MermaidWardleyParser {
             }
 
             var childSpan = new MermaidSourceSpan(line, MermaidParserUtilities.LeadingWhitespace(raw) + 1, trimmed.Length);
+            document.Statements.Add(new MermaidRawStatement(trimmed, childSpan));
             if (!StartsWithKeyword(trimmed, "component") || !TryParsePipelineComponent(trimmed.Substring(9).Trim(), childSpan, result, out var component)) {
                 MermaidParserUtilities.Add(result, childSpan, MermaidDiagnosticSeverity.Warning, "Mermaid Wardley pipeline child statement was retained but is not rendered by ChartForgeX yet.");
                 continue;
             }
 
             if (component == null) continue;
+            var count = document.Nodes.Count + pipeline.Components.Count;
+            foreach (var existing in document.Pipelines) count += existing.Components.Count;
+            if (count >= MaximumWardleyNodes) { MermaidParserUtilities.Add(result, childSpan, MermaidDiagnosticSeverity.Error, "Wardley maps support at most 256 total declared components."); continue; }
             pipeline.AddComponent(component);
         }
 
@@ -233,9 +226,16 @@ internal static class MermaidWardleyParser {
 
     private static bool TryParsePipelineComponent(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, out MermaidWardleyPipelineComponent? component) {
         component = null;
-        if (!TryExtractSingleCoordinate(text, out var label, out var evolution, out _)) return false;
+        if (!TryExtractSingleCoordinate(text, out var label, out var evolution, out var suffix)) return false;
         if (!TryNormalizeCoordinate(evolution, span, result, out var normalized)) return true;
-        component = new MermaidWardleyPipelineComponent(label, normalized, span);
+        component = new MermaidWardleyPipelineComponent(MermaidParserUtilities.Unquote(label), normalized, span);
+        if (suffix.Length > 0) {
+            if (!StartsWithKeyword(suffix, "label") || !TryExtractCoordinatePair(suffix.Substring(5).Trim(), true, out var x, out var y, out var rest) || rest.Length > 0) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Wardley pipeline label offsets must use 'label [x,y]'."); component = null; return true;
+            }
+            if (!FiniteWardleyOffset(x, y, span, result)) { component = null; return true; }
+            component.LabelOffsetX = x; component.LabelOffsetY = y;
+        }
         return true;
     }
 
@@ -256,7 +256,7 @@ internal static class MermaidWardleyParser {
         prefix = string.Empty;
         suffix = string.Empty;
         value = 0;
-        var start = text.LastIndexOf('[');
+        var start = text.IndexOf('[');
         var end = text.IndexOf(']', start + 1);
         if (start < 0 || end <= start) return false;
         prefix = text.Substring(0, start).Trim();

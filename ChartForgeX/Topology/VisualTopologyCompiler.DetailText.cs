@@ -9,18 +9,28 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void BuildDetailText(TopologyNodeDetail detail, ChartRect bounds, double size, bool active) {
-        var value = detail.Text ?? (detail.Label + " " + detail.Value);
+        var value = NodeDetailText(detail);
+        var content = DetailContent(detail);
+        if (content.IsStructured) {
+            var inlineRows = TopologyTextLayout.AuthoredRowCount(content.PlainText, _options.AllowMultilineNodeLabels);
+            var inlineAuthored = detail.TextStyle?.Color is ChartColor explicitColor ? explicitColor.ToHexRgba() : detail.Color;
+            var inlineColor = Highlight(detail.TextStyle?.Color ?? Color(detail.Color, _colors.Foreground), active);
+            InlineText(content, bounds, size * _scale, inlineColor, "topology-node-detail", inlineRows,
+                paint: SourcePaint(inlineAuthored ?? _svgTheme?.Foreground, inlineColor, string.IsNullOrWhiteSpace(inlineAuthored) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), detailPolicy: detail.TextStyle);
+            return;
+        }
+        var rows = TopologyTextLayout.AuthoredRowCount(value, _options.AllowMultilineNodeLabels);
         var color = Color(detail.Color, _colors.Foreground);
         if (detail.TextStyle == null || !detail.TextStyle.HasOverrides) {
-            Text(value, bounds, size, Highlight(color, active), 400, "topology-node-detail", 1,
+            Text(value, bounds, size, Highlight(color, active), 400, "topology-node-detail", rows,
                 paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, Highlight(color, active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
             return;
         }
 
-        var font = _context.Font.Clone();
-        font.Weight = 400;
-        var style = detail.TextStyle.Resolve(new TextStyle { Font = font, FontSize = size, Color = color, LineHeight = 1 });
-        style.FontSize *= _scale;
+        var policy = TopologyTextPolicy.Resolve(_textPolicy, _context.Font, size, 400);
+        var style = detail.TextStyle.Resolve(new TextStyle { Font = policy.Font, FontSize = size, Color = color, LineHeight = 1,
+            LetterSpacing = policy.LetterSpacing });
+        style.FontSize *= _scale; style.LetterSpacing *= _scale;
         style.Color = Highlight(style.Color, active);
         TextMetrics Measure(string text, double candidateSize, int weight) {
             var candidate = style.Clone();
@@ -28,7 +38,7 @@ internal sealed partial class VisualTopologyCompiler {
             candidate.Font.Weight = weight;
             return _builder.MeasureText(text, candidate);
         }
-        var layout = TopologyTextLayout.Prepare(value, bounds.Width, bounds.Height, style.FontSize, style.Font.Weight, 1,
+        var layout = TopologyTextLayout.Prepare(value, bounds.Width, bounds.Height, style.FontSize, style.Font.Weight, rows,
             false, DotNodeSymbolFontSize * _scale, _options, Measure,
             (code, message) => _builder.AddDiagnostic(new VisualDiagnostic(code, message)));
         if (layout == null) return;

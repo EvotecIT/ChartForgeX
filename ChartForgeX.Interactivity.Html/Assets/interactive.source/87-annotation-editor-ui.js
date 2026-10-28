@@ -2,8 +2,9 @@
     const state = annotationEditorState(root), view = state?.view;
     if (!state) return;
     if (view && root.contains(view.element)) {
+      const admissionBusy = nativePreparationBackpressureBusy(root);
       view.element.hidden = !state.enabled;
-      view.element.setAttribute('aria-busy', state.pending ? 'true' : 'false');
+      view.element.setAttribute('aria-busy', state.pending || admissionBusy ? 'true' : 'false');
       const connected = !!nativePreparationBinding(root, 'annotation');
       const selected = view.select.value, ids = Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
         .filter(node => ['Note', 'LineSegment', 'ParallelChannel'].includes(node.dataset.cfxKind));
@@ -11,15 +12,15 @@
       for (const node of ids) { const option = document.createElement('option'); option.value = node.dataset.cfxAnnotationId;
         option.textContent = node.dataset.cfxLabel ? `${node.dataset.cfxLabel} (${option.value})` : option.value; view.select.append(option); }
       if (ids.some(node => node.dataset.cfxAnnotationId === selected)) view.select.value = selected;
-      view.select.disabled = state.pending || !!state.draft || ids.length === 0;
-      for (const [kind, button] of Object.entries(view.buttons)) button.disabled = !connected || state.pending
+      view.select.disabled = state.pending || admissionBusy || !!state.draft || ids.length === 0;
+      for (const [kind, button] of Object.entries(view.buttons)) button.disabled = !connected || state.pending || admissionBusy
         || ['Note', 'LineSegment', 'ParallelChannel'].includes(kind) && (!state.createId || !!state.draft || !sourceAnnotationProjection(root, 'Primary'))
         || ['edit', 'remove'].includes(kind) && (!!state.draft || ids.length === 0)
         || kind === 'commit' && !state.draft || kind === 'cancel' && !state.draft
         || kind === 'undo' && (!!state.draft || state.undo.length === 0) || kind === 'redo' && (!!state.draft || state.redo.length === 0);
 
-      view.buttons.cancel.disabled = !state.draft && !state.pending;
-      view.label.disabled = state.pending || !state.draft?.drawing;
+      view.buttons.cancel.disabled = admissionBusy || !state.draft && !state.pending;
+      view.label.disabled = state.pending || admissionBusy || !state.draft?.drawing;
       view.label.value = state.draft?.drawing?.label ?? '';
       view.status.textContent = !connected ? uiText(root, 'AnnotationDisconnected', 'Connect native preparation to edit annotations.') : state.pending ? uiText(root, 'AnnotationUpdating', 'Updating annotation…') : state.error
         || (state.draft ? uiText(root, 'AnnotationDraft', 'Draft: move an anchor, then apply or cancel.') : '');

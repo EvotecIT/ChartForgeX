@@ -13,6 +13,8 @@ public static partial class TopologyLayoutDiagnostics {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var validator = new TopologyChartValidator();
+        var interpolation = validator.ValidateInterpolationInputs(chart);
+        if (!interpolation.IsValid) throw new TopologyValidationException(interpolation);
         var sourceValidation = validator.ValidateScenarioReferences(chart);
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
         var prepared = TopologyLayoutEngine.Prepare(chart, effective.View, effective);
@@ -34,8 +36,10 @@ public static partial class TopologyLayoutDiagnostics {
         }
         foreach (var node in chart.Nodes) {
             var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
+            var explicitCaption = TopologyExternalCaption.HasPolicy(node) ? TopologyExternalCaption.Prepare(node, options) : null;
             var diagnostic = new TopologyLayoutNodeDiagnostic(node.Id, new ChartRect(node.X, node.Y, node.Width, node.Height),
-                caption.Height > 0.5 ? new ChartRect(node.X + node.Width / 2 - caption.Width / 2, node.Y + node.Height, caption.Width, caption.Height) : null);
+                TopologyExternalCaption.HasPolicy(node) ? explicitCaption?.Bounds
+                    : caption.Height > 0.5 ? new ChartRect(node.X + node.Width / 2 - caption.Width / 2, node.Y + node.Height, caption.Width, caption.Height) : null);
             foreach (var port in node.Ports) diagnostic.Ports.Add(new TopologyLayoutPortDiagnostic(port.Id, port.Side, PortPoint(node, port)));
             report.Nodes.Add(diagnostic);
         }

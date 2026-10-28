@@ -12,6 +12,13 @@ using ChartForgeX.VisualBlocks;
 
 internal static partial class Program {
     private static void NativeDiagramContracts() {
+        NestedSwimlaneContracts();
+        FlowchartMembershipContracts();
+        NativeShapeCatalogContracts();
+        GraphStyleSettingsContracts();
+        FlowchartCurveContracts();
+        FlowchartAssetContracts();
+        NativeSurfacePaintContracts();
         const string state = "stateDiagram-v2\nclassDef marked fill:#fef9c3,stroke:#92400e,color:#78350f\nstate Active {\n[*] --> A:::marked\nA --> [*]\n--\n[*] --> B\nB --> [*]\n}\nActive --> Done";
         var stateArtifact = PackedNativeDiagram("state-regions", state);
         var stateModel = (TopologyChart)stateArtifact.Model!;
@@ -35,7 +42,8 @@ internal static partial class Program {
             && customer.Details.Any(detail => (detail.Text ?? "").Contains("PK", StringComparison.Ordinal) && (detail.Text ?? "").Contains("FK", StringComparison.Ordinal))
             && entityModel.Edges.Count == 1, "Packed ER aliases, typed keys or native paint was lost.");
 
-        const string themed = "%%{init: {'theme':'dark','themeVariables':{'background':'#112233','primaryColor':'#334455','primaryTextColor':'#FFEEDD','lineColor':'#CCDDEE'}}}%%\nflowchart LR\nA[Start] --> B[Finish]";
+        // Topology's global text role is textColor; primaryTextColor has a separate source-preset role.
+        const string themed = "%%{init: {'theme':'dark','themeVariables':{'background':'#112233','primaryColor':'#334455','textColor':'#FFEEDD','lineColor':'#CCDDEE'}}}%%\nflowchart LR\nA[Start] --> B[Finish]";
         var theme = ((TopologyChart)PackedNativeDiagram("theme-roles", themed).Model!).Theme.Resolve(VisualThemeMode.Dark);
         PackageAssertions.Require(theme.Background.Equals(ChartColor.FromHex("#112233")) && theme.Surface.Equals(ChartColor.FromHex("#334455"))
             && theme.Foreground.Equals(ChartColor.FromHex("#FFEEDD")) && theme.Status.Neutral.Fill.Equals(ChartColor.FromHex("#CCDDEE")),
@@ -74,8 +82,8 @@ internal static partial class Program {
 
     private static VisualArtifact PackedNativeDiagram(string name, string source, bool strict = true) {
         var options = new MermaidRenderOptions { WarningPolicy = strict ? MermaidWarningPolicy.Reject : MermaidWarningPolicy.Allow };
-        var direct = MermaidRenderer.Render(source, options);
-        var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        var direct = RenderFixture(source, options);
+        var fenced = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!direct.HasErrors && direct.Artifact != null && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed native diagram failed direct or Markdown rendering: " + name + "; " + string.Join("; ", direct.Diagnostics.Select(item => item.Message)));
         PackageAssertions.Require(direct.Diagnostics.All(item => !strict && item.Code == MermaidDiagnosticCodes.ApproximateMapping),

@@ -52,6 +52,8 @@ internal sealed class SvgPathData {
     public string ToMarkup() =>
         string.Join(" ", _commands.Select(command => command.ToMarkup()));
 
+    internal string ToRoundTripMarkup() => string.Join(" ", _commands.Select(command => command.ToRoundTripMarkup()));
+
     public override string ToString() => ToMarkup();
 
     internal static bool IsCommand(char value) {

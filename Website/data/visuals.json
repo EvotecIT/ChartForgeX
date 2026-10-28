@@ -122,7 +122,7 @@
         "ext": "svg",
         "w": 1280,
         "h": 720,
-        "kb": 5.2
+        "kb": 5.5
       },
       "stories-3": {
         "base": "/site/docs/stories-3",
@@ -152,7 +152,7 @@
         "ext": "svg",
         "w": 1200,
         "h": 630,
-        "kb": 17.5
+        "kb": 16.8
       },
       "chart": {
         "base": "/site/docs/surface-chart",
@@ -197,7 +197,7 @@
         "ext": "svg",
         "w": 615,
         "h": 320,
-        "kb": 15.4
+        "kb": 19.5
       },
       "topology": {
         "base": "/site/docs/topology",
@@ -304,7 +304,7 @@
         "ext": "svg",
         "w": 951,
         "h": 690,
-        "kb": 19.2,
+        "kb": 23.8,
         "source": "---\ntitle: Review workflow\n---\nagentflow-beta LR\nconnector store[\u0022Object store\u0022]\nstore@{ endpoint: \u0022https://example.invalid/data\u0022, protocol: http }\nglobal\n  shared[\u0022Policy guide\u0022]@{ shape: refdoc }\nend\nflow team[\u0022Review team\u0022]\n  brief[\u0022Request\u0022]@{ shape: input }\n  flow worker[\u0022Worker\u0022]\n    read[\u0022Read input\u0022]@{\n      shape: tool\n      connectorRef: store.read\n      policy:\n        retries: 2\n        enabled: true\n        tags: [safe, deterministic]\n        constructor: ignored\n      instruction: \u0022Display data, never execute it.\u0022\n    }\n    gate[\u0022Ready?\u0022]@{ shape: decision }\n    read edge1@--\u003E gate\n    gate -- no --\u003E read\n    read -.- shared\n  end\n  worker@{ view: collapsed }\n  publish[\u0022Publish\u0022]@{ shape: action }\n  brief --\u003E read\n  gate --x publish\nend\nedge1@{ instruction: \u0022Only after validation\u0022 }",
         "lines": 33,
         "warnings": 0
@@ -312,12 +312,12 @@
       "architecture": {
         "base": "/site/atlas/architecture",
         "ext": "svg",
-        "w": 1103,
+        "w": 951,
         "h": 690,
-        "kb": 31.5,
+        "kb": 32.9,
         "source": "---\ntitle: Report platform\n---\narchitecture-beta\ngroup edge(cloud)[Edge]\ngroup core(cloud)[Platform]\ngroup data(database)[Data] in core\nservice web(internet)[Web] in edge\nservice api(server)[API] in core\nservice renderer(server)[Renderer] in core\nservice sql(database)[SQL] in data\nservice blob(disk)[Cache] in data\nweb:R --\u003E L:api\napi:R --\u003E L:renderer\nrenderer:B --\u003E T:blob\napi:B --\u003E T:sql",
         "lines": 16,
-        "warnings": 0
+        "warnings": 2
       },
       "block": {
         "base": "/site/atlas/block",
@@ -344,7 +344,7 @@
         "ext": "svg",
         "w": 1072,
         "h": 570,
-        "kb": 17.1,
+        "kb": 16.9,
         "source": "---\ntitle: Chart model\n---\nclassDiagram\n  class Chart {\n    \u002Bstring Title\n    \u002BWithSize(width, height)\n    \u002BToSvg() string\n  }\n  class ChartSeries {\n    \u002Bstring Name\n    \u002BChartPoint[] Points\n  }\n  class VisualTheme {\n    \u002BVisualTypography Typography\n  }\n  Chart \u00221\u0022 *-- \u0022many\u0022 ChartSeries : contains\n  Chart --\u003E VisualTheme : uses",
         "lines": 18,
         "warnings": 0
@@ -352,9 +352,9 @@
       "cynefin": {
         "base": "/site/atlas/cynefin",
         "ext": "svg",
-        "w": 940,
-        "h": 621,
-        "kb": 13.5,
+        "w": 892,
+        "h": 669,
+        "kb": 20.9,
         "source": "cynefin-beta\ntitle Service decisions\ncomplex\n \u0022Discover demand\u0022\ncomplicated\n \u0022Analyze capacity\u0022\nchaotic\n \u0022Contain outage\u0022\nclear\n \u0022Run checklist\u0022\nconfusion\n \u0022Investigate context\u0022\ncomplex --\u003E complicated : \u0022Learn\u0022",
         "lines": 13,
         "warnings": 0
@@ -372,9 +372,9 @@
       "eventmodeling": {
         "base": "/site/atlas/eventmodeling",
         "ext": "svg",
-        "w": 1287,
-        "h": 690,
-        "kb": 36.5,
+        "w": 1566,
+        "h": 970,
+        "kb": 35,
         "source": "---\ntitle: Shopping cart events\n---\neventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt Cart.ItemAdded [[ItemAdded01]]\ntf 04 rmo Cart.CartView -\u003E\u003E 03\nrf 05 pcr InventoryProcessor\ntimeframe 06 event Inventory.Reserved\ndata ItemAdded01 \u0060json\u0060{\n  \u0022sku\u0022: \u0022ABC\u0022,\n  \u0022quantity\u0022: 1\n}",
         "lines": 14,
         "warnings": 0
@@ -383,8 +383,8 @@
         "base": "/site/atlas/flowchart",
         "ext": "svg",
         "w": 760,
-        "h": 627,
-        "kb": 28.8,
+        "h": 671,
+        "kb": 36.3,
         "source": "---\ntitle: Incident response\n---\nflowchart TD\n  alert([Alert raised]) --\u003E triage{Known issue?}\n  triage --\u003E|yes| runbook[Run the runbook]\n  triage --\u003E|no| owner[Page the\u003Cbr/\u003Eservice owner]\n  runbook --\u003E verify[Verify recovery]\n  owner --\u003E fix[Ship a fix]\n  fix --\u003E verify",
         "lines": 10,
         "warnings": 0
@@ -412,9 +412,9 @@
       "ishikawa": {
         "base": "/site/atlas/ishikawa",
         "ext": "svg",
-        "w": 740,
-        "h": 555,
-        "kb": 6.5,
+        "w": 741,
+        "h": 556,
+        "kb": 9,
         "source": "---\ntitle: Why the release slipped\n---\nishikawa-beta\nDelayed release\n  People\n    Handoffs\n      Timezone gaps\n  Process\n    Late review\n  Platform\n    Slow build",
         "lines": 12,
         "warnings": 0
@@ -432,9 +432,9 @@
       "kanban": {
         "base": "/site/atlas/kanban",
         "ext": "svg",
-        "w": 861,
+        "w": 771,
         "h": 570,
-        "kb": 14.4,
+        "kb": 13.2,
         "source": "---\ntitle: Playground launch\n---\nkanban\n  todo[To do]\n    docs[Write playground docs]\n    share[Share links]\n  doing[In progress]\n    engine[WebAssembly engine]@{ priority: \u0022High\u0022 }\n  done[Done]\n    site[chartforgex.com]",
         "lines": 11,
         "warnings": 0
@@ -444,7 +444,7 @@
         "ext": "svg",
         "w": 1001,
         "h": 570,
-        "kb": 61,
+        "kb": 60.2,
         "source": "---\ntitle: What ChartForgeX covers\n---\nmindmap\n  root((ChartForgeX))\n    Outputs\n      SVG\n      PNG\n      HTML\n    Authoring\n      Fluent C#\n      Markdown fences\n      Mermaid\n    Hosts\n      Reports\n      Email\n      Dashboards",
         "lines": 17,
         "warnings": 0
@@ -472,9 +472,9 @@
       "quadrant": {
         "base": "/site/atlas/quadrant",
         "ext": "svg",
-        "w": 747,
-        "h": 560,
-        "kb": 18.4,
+        "w": 736,
+        "h": 552,
+        "kb": 15.7,
         "source": "quadrantChart\n  title Feature priorities\n  x-axis Low effort --\u003E High effort\n  y-axis Low impact --\u003E High impact\n  quadrant-1 Plan carefully\n  quadrant-2 Do now\n  quadrant-3 Maybe later\n  quadrant-4 Avoid\n  Dark theme: [0.25, 0.85]\n  PNG export: [0.7, 0.8]\n  Tooltips: [0.35, 0.4]\n  Custom fonts: [0.8, 0.3]",
         "lines": 12,
         "warnings": 0
@@ -522,9 +522,9 @@
       "sequence": {
         "base": "/site/atlas/sequence",
         "ext": "svg",
-        "w": 760,
-        "h": 646,
-        "kb": 12.7,
+        "w": 1434,
+        "h": 951,
+        "kb": 26.7,
         "source": "---\ntitle: Dashboard sign-in\n---\nsequenceDiagram\n  autonumber\n  actor User\n  participant App\n  participant IdP as Identity provider\n  participant API\n  User-\u003E\u003EApp: Open dashboard\n  App-\u003E\u003EIdP: Authorization request\n  IdP--\u003E\u003EApp: ID token \u002B access token\n  App-\u003E\u003EAPI: GET /reports (Bearer token)\n  alt token valid\n    API--\u003E\u003EApp: 200 report data\n  else token expired\n    API--\u003E\u003EApp: 401 Unauthorized\n  end\n  Note over App,API: Tokens refresh silently before expiry\n  App--\u003E\u003EUser: Render charts",
         "lines": 20,
         "warnings": 0
@@ -542,9 +542,9 @@
       "swimlane": {
         "base": "/site/atlas/swimlane",
         "ext": "svg",
-        "w": 1235,
-        "h": 632,
-        "kb": 22.5,
+        "w": 1296,
+        "h": 645,
+        "kb": 24.8,
         "source": "---\ntitle: Pull request flow\n---\nswimlane-beta LR\nsubgraph Author\n A[Write source] --\u003E B[Open pull request]\nend\nsubgraph Build\n C{Checks pass?} --\u003E D[Render report]\nend\nsubgraph Reader\n E[Read in email]\nend\nB --\u003E C\nD --\u003E E",
         "lines": 15,
         "warnings": 0
@@ -554,7 +554,7 @@
         "ext": "svg",
         "w": 758,
         "h": 569,
-        "kb": 8.8,
+        "kb": 8.9,
         "source": "timeline\ntitle Delivery history\nsection Discovery\nBefore launch: Interview users\n : Review findings\nsection Delivery\nLaunch: Ship product\u003Cbr\u003Eand docs : Invite users\nsection Discovery\nAfter launch: Learn and improve",
         "lines": 9,
         "warnings": 0
@@ -572,9 +572,9 @@
       "treeview": {
         "base": "/site/atlas/treeview",
         "ext": "svg",
-        "w": 1073,
-        "h": 570,
-        "kb": 54.5,
+        "w": 375,
+        "h": 281,
+        "kb": 6.7,
         "source": "---\ntitle: Repository layout\n---\ntreeView-beta\n    \u0022src\u0022\n        \u0022ChartForgeX\u0022\n            \u0022VisualBlocks\u0022\n        \u0022ChartForgeX.Mermaid\u0022\n            \u0022MermaidParser.cs\u0022\n            \u0022MermaidTreeViewParser.cs\u0022\n    \u0022README.md\u0022",
         "lines": 11,
         "warnings": 0
@@ -604,10 +604,10 @@
         "ext": "svg",
         "w": 723,
         "h": 542,
-        "kb": 12.8,
+        "kb": 13.7,
         "source": "wardley-beta\ntitle Platform map\nsize [900, 600]\nevolution Genesis -\u003E Custom Built -\u003E Product -\u003E Commodity\nanchor User [0.95, 0.05]\ncomponent Portal [0.80, 0.35] inertia\ncomponent API [0.70, 0.45] (build)\ncomponent Identity [0.55, 0.65] label [-12, 18]\nUser -\u003E Portal\nPortal \u002B\u0027uses\u0027\u003E API\nAPI -.-\u003E Identity;optional\nevolve API 0.75\nnote \u0022Operational pressure\u0022 [0.35, 0.75]\nannotations [0.12, 0.88]\nannotation 1, [0.60, 0.50] \u0022Improve automation\u0022\naccelerator Faster [0.42, 0.62]\ndeaccelerator Risk [0.48, 0.68]\npipeline API {\n  component Build [0.30]\n  component Buy [0.55]\n  component Commodity [0.80]\n}",
         "lines": 22,
-        "warnings": 1
+        "warnings": 0
       },
       "xychart": {
         "base": "/site/atlas/xychart",
@@ -624,7 +624,7 @@
         "ext": "svg",
         "w": 920,
         "h": 1356,
-        "kb": 31.6,
+        "kb": 40.1,
         "source": "zenuml\ntitle Checkout occurrences\ngroup \u0022Application\u0022 {\n  @Actor User\n  @Control Service\n}\n@Database Store\n@Queue Bus\n@Starter(User)\n// Accept the request\nService.checkout(order) {\n  if (valid \u0026\u0026 !cancelled) {\n    String receipt = new Receipt(order) {\n      Store.save(order)\n      return saved\n    }\n  } else {\n    return declined\n  }\n  loop (retries \u003C 3) {\n    Store.retry(order)\n  }\n  par {\n    Bus: ready(order)\n  }\n  critical (commitLock) {\n    Store.commit()\n  }\n  opt (notify) {\n    Bus: notify(order)\n  }\n  try {\n    Store.flush()\n  } catch (StorageError error) {\n    Store.recover(error)\n  } finally {\n    Store.close()\n  }\n  return accepted\n}\nService --\u003E User: confirmed",
         "lines": 41,
         "warnings": 0
@@ -667,7 +667,7 @@
         "ext": "svg",
         "w": 615,
         "h": 320,
-        "kb": 15.5
+        "kb": 19.4
       },
       "playground": {
         "base": "/site/nav/playground",
@@ -681,7 +681,7 @@
         "ext": "png",
         "w": 720,
         "h": 180,
-        "kb": 21.7
+        "kb": 20.2
       }
     }
   },

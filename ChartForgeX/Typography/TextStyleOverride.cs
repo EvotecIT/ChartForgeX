@@ -10,6 +10,7 @@ public sealed class TextStyleOverride {
     private string? _fontFamily;
     private string? _fontWeight;
     private double? _fontSize;
+    private double? _letterSpacing;
     private TextDecorationStyle? _underlineStyle;
     private TextDecorationStyle? _strikethroughStyle;
     private TextBaseline? _baseline;
@@ -55,6 +56,12 @@ public sealed class TextStyleOverride {
         }
     }
 
+    /// <summary>Gets or sets additional logical pixels between eligible shaped groups. Null inherits; zero resets spacing.</summary>
+    public double? LetterSpacing {
+        get => _letterSpacing;
+        set { if (value.HasValue) TextStyle.ValidateLetterSpacing(value.Value); _letterSpacing = value; }
+    }
+
     /// <summary>Gets or sets a value indicating whether text is italic.</summary>
     public bool Italic { get => _italic; set { _italic = value; _hasItalic = true; } }
 
@@ -89,7 +96,7 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets a value indicating whether this instance contains explicit overrides.</summary>
-    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || _hasItalic || _hasUnderline || UnderlineStyle.HasValue || _hasStrikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null || ColorPaletteIndex.HasValue;
+    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || LetterSpacing.HasValue || _hasItalic || _hasUnderline || UnderlineStyle.HasValue || _hasStrikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null || ColorPaletteIndex.HasValue;
 
     /// <summary>Resolves these overrides over a complete text style without mutating the fallback.</summary>
     public TextStyle Resolve(TextStyle fallback) {
@@ -99,6 +106,7 @@ public sealed class TextStyleOverride {
         if (FontFamily != null) resolved.Font.Family = FontFamily;
         if (FontWeight != null) resolved.Font.Weight = ResolveWeight(FontWeight, resolved.Font.Weight);
         if (FontSize.HasValue) resolved.FontSize = FontSize.Value;
+        if (LetterSpacing.HasValue) resolved.LetterSpacing = LetterSpacing.Value;
         if (_hasItalic) resolved.Font.Italic = Italic;
         if (UnderlineStyle.HasValue) resolved.UnderlineStyle = UnderlineStyle.Value;
         else if (_hasUnderline) resolved.UnderlineStyle = Underline ? TextDecorationStyle.Single : TextDecorationStyle.None;

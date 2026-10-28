@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = IndependentProgressRecipe.Create("compact", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Progress in each row\u0027s units").WithSubtitle("Retained row domains preserve fraction, count and signed measurements").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 340)), theme, mode,
+    new VisualFrame("Progress in each row\u0027s units", "Retained row domains preserve fraction, count and signed measurements", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Identified progress rows retain their own measurement domain and source units.</summary>
+public static class IndependentProgressRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var rows = ChartSeries.CreateProgressBars(new ChartSeriesId("delivery"), "Delivery", new[] {
+            new ChartProgressItem("Reviewed fraction", .72, 0, 1),
+            new ChartProgressItem("Verified jobs", 1250, 0, 2000),
+            new ChartProgressItem("Temperature change", -8, -20, 20)
+        }).WithObservationId(0, new ChartObservationId("reviewed"))
+            .WithObservationId(1, new ChartObservationId("verified"))
+            .WithObservationId(2, new ChartObservationId("temperature"));
+        return Chart.Create().WithSize(variant == "compact" ? 390 : 760, 340).WithTitle("Progress in each row's units")
+            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(rows)
+            .WithValueFormat(ChartValueFormat.Number("0.##"));
+    }
+}

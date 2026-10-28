@@ -27,13 +27,22 @@ internal static partial class VisualArtifactInterchangeValidation {
     // projected bag, with a small reserve for typed interchange fields.
     internal const int MaximumExtensionEntries = 544;
     internal const int MaximumLegendItems = 10000;
-    internal const int MaximumDashPatternValues = 64;
+    internal const int MaximumDashPatternValues = TopologySurfacePaintRules.MaximumDashValues;
     internal const int MaximumWaypointsPerEdge = 10000;
     internal const int MaximumIdCharacters = 512;
     internal const int MaximumTextCharacters = 65536;
 
     public static void Validate(VisualArtifactInterchangeEnvelope envelope) {
         if (envelope == null) throw new ArgumentNullException(nameof(envelope));
+        RejectNestedTopologyHierarchy(envelope);
+        if (envelope.Topology?.Hierarchy?.Source.Presentation?.CapturedEffects.Count > 0)
+            throw new NotSupportedException("A retained raw hierarchy source cannot carry captured output masks; capture only the complete visible root presentation.");
+        ValidateContents(envelope);
+        if (envelope.Topology?.Hierarchy != null) ValidateContents(envelope.Topology.Hierarchy.Source);
+        VisualArtifactInterchangeValueBudget.Validate(envelope);
+    }
+
+    private static void ValidateContents(VisualArtifactInterchangeEnvelope envelope) {
         if (!Enum.IsDefined(typeof(VisualArtifactKind), envelope.Kind)) throw new ArgumentOutOfRangeException(nameof(envelope), envelope.Kind, "Interchange artifact kind must be defined.");
         Defined(envelope.Family, "interchange family", envelope);
         if (!Enum.IsDefined(typeof(VisualArtifactSourceLanguage), envelope.SourceLanguage)) throw new ArgumentOutOfRangeException(nameof(envelope), envelope.SourceLanguage, "Interchange source language must be defined.");
@@ -47,6 +56,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         PositiveOptional(envelope.Height, "artifact height");
         Extensions(envelope.Extensions, "artifact extensions");
         ValidateArtifactSemantics(envelope);
+        ValidateSequencePresentation(envelope);
         Presentation(envelope.Presentation, envelope);
         Count(envelope.Groups.Count, MaximumGroups, "groups");
         Count(envelope.Nodes.Count, MaximumNodes, "nodes");
@@ -128,6 +138,11 @@ internal static partial class VisualArtifactInterchangeValidation {
                 OptionalText(detail.Status, "detail status");
                 OptionalText(detail.Color, "detail color");
                 ValidateDetailTextStyle(detail.TextStyle);
+                if (detail.BadgeStyle != null && node.Topology == null) throw new ArgumentException("Detail badge surfaces require typed topology node semantics.", nameof(envelope));
+                ValidateCaptionContent(detail.Content, detail.Text, "detail text runs");
+                ValidateCaptionContent(detail.ValueContent, detail.Value, "detail value runs");
+                if (node.Topology == null && (detail.Content != null || detail.ValueContent != null))
+                    throw new ArgumentException("Structured detail captions require native topology semantics.", nameof(envelope));
                 Extensions(detail.Extensions, "detail extensions");
             }
         }
@@ -135,6 +150,8 @@ internal static partial class VisualArtifactInterchangeValidation {
         foreach (var node in envelope.Nodes) {
             if (!string.IsNullOrWhiteSpace(node.GroupId) && !groupIds.Contains(node.GroupId!)) throw new ArgumentException("Interchange node '" + node.Id + "' references unknown group '" + node.GroupId + "'.", nameof(envelope));
         }
+
+        ValidateTopologyAlignments(envelope, nodeIds, entityIds);
 
         var edgeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var edge in envelope.Edges) {
@@ -227,12 +244,21 @@ internal static partial class VisualArtifactInterchangeValidation {
             }
             Extensions(annotation.Extensions, "annotation extensions");
             ValidateAnnotationSemantics(annotation, envelope);
+            ValidateNoteRoutingViewport(annotation, envelope);
+            if (annotation.TopologyDefaultUnits is double units) {
+                if (envelope.Family != VisualArtifactInterchangeFamily.Topology || annotation.Kind != "TopologyNote" || units <= 0
+                    || double.IsNaN(units) || double.IsInfinity(units) || units * 320 > ChartForgeX.Topology.TopologyPathGeometry.MaximumCoordinate)
+                    throw new ArgumentException("Captured note units require a finite bounded native TopologyNote.", nameof(envelope));
+                var size = envelope.Presentation?.Theme?.Definition?.Typography.DataLabelSize ?? envelope.Presentation?.Theme?.DataLabelSize ?? 12;
+                if (units * size > ChartForgeX.Topology.TopologyPathGeometry.MaximumCoordinate)
+                    throw new ArgumentException("Captured note font extents exceed the portable coordinate limit.", nameof(envelope));
+            }
         }
-        VisualArtifactInterchangeValueBudget.Validate(envelope);
+        ValidateTopologyPaths(envelope, entityIds);
     }
 
     private static void ValidateArtifactSemantics(VisualArtifactInterchangeEnvelope envelope) {
-        int roots = (envelope.Topology == null ? 0 : 1) + (envelope.Flow == null ? 0 : 1) + (envelope.Sequence == null ? 0 : 1);
+        int roots = (envelope.Topology == null ? 0 : 1) + (envelope.Flow == null ? 0 : 1) + (envelope.Sequence == null ? 0 : 1) + (envelope.Railroad == null ? 0 : 1) + (envelope.TreeView == null ? 0 : 1) + (envelope.Waterfall == null ? 0 : 1) + (envelope.Journey == null ? 0 : 1) + (envelope.Timeline == null ? 0 : 1);
         switch (envelope.Family) {
             case VisualArtifactInterchangeFamily.None:
                 if (roots != 0) throw new ArgumentException("An unstructured envelope cannot carry a typed artifact-family root.", nameof(envelope));
@@ -241,11 +267,37 @@ internal static partial class VisualArtifactInterchangeValidation {
                 if (roots != 1 || envelope.Topology == null) throw new ArgumentException("A topology family requires only topology artifact semantics.", nameof(envelope));
                 Defined(envelope.Topology.LayoutMode, "topology layout mode", envelope);
                 Defined(envelope.Topology.LayoutDirection, "topology layout direction", envelope);
+                ValidateViewportPadding(envelope.Topology.ViewportPadding);
+                envelope.Topology.ContentClip?.Validate(envelope.Width ?? 0, envelope.Height ?? 0);
+                ValidateTopologyHierarchy(envelope.Topology.Hierarchy, envelope);
+                ValidateTopologyCrossingPaint(envelope);
                 break;
             case VisualArtifactInterchangeFamily.Flow:
                 if (roots != 1 || envelope.Flow == null) throw new ArgumentException("A flow family requires only flow artifact semantics.", nameof(envelope));
                 Defined(envelope.Flow.LayoutMode, "flow layout mode", envelope);
                 Defined(envelope.Flow.LayoutDirection, "flow layout direction", envelope);
+                ValidateViewportPadding(envelope.Flow.ViewportPadding);
+                if(envelope.Flow.ExportFormats.HasValue)VisualArtifactGuards.ExportFormatsDefined(envelope.Flow.ExportFormats.Value,nameof(envelope));
+                break;
+            case VisualArtifactInterchangeFamily.Waterfall:
+                if (roots != 1 || envelope.Waterfall == null) throw new ArgumentException("A Waterfall family requires only its exclusive typed waterfall payload.", nameof(envelope));
+                ValidateWaterfall(envelope);
+                break;
+            case VisualArtifactInterchangeFamily.TreeView:
+                if (roots != 1 || envelope.TreeView == null) throw new ArgumentException("A tree-view family requires only native tree-row semantics.", nameof(envelope));
+                ValidateTreeView(envelope);
+                break;
+            case VisualArtifactInterchangeFamily.Railroad:
+                if (roots != 1 || envelope.Railroad == null) throw new ArgumentException("A railroad family requires only railroad artifact semantics.", nameof(envelope));
+                ValidateRailroad(envelope);
+                break;
+            case VisualArtifactInterchangeFamily.Journey:
+                if (roots != 1 || envelope.Journey == null) throw new ArgumentException("A journey family requires only its typed native tasks and presentation.", nameof(envelope));
+                ValidateJourney(envelope);
+                break;
+            case VisualArtifactInterchangeFamily.Timeline:
+                if (roots != 1 || envelope.Timeline == null) throw new ArgumentException("A timeline family requires only its typed native periods and presentation.", nameof(envelope));
+                ValidateTimeline(envelope);
                 break;
             case VisualArtifactInterchangeFamily.Sequence:
                 if (roots != 1 || envelope.Sequence == null) throw new ArgumentException("A sequence family requires only sequence artifact semantics.", nameof(envelope));
@@ -319,7 +371,21 @@ internal static partial class VisualArtifactInterchangeValidation {
 
     private static void Presentation(VisualArtifactInterchangePresentation? presentation, VisualArtifactInterchangeEnvelope envelope) {
         if (presentation == null) return;
+        CapturedEffects(presentation, envelope);
+        TurbulenceSource(presentation, envelope);
+        ValidateContextFont(presentation.ContextFont,envelope,presentation.Frame);
+        ValidateFrameRequest(presentation.Frame,presentation.ContextFont,envelope);
+        if (presentation.TopologyCaptions != null) {
+            if (envelope.Family != VisualArtifactInterchangeFamily.Topology) throw new ArgumentException("Captured topology captions require the Topology family.");
+            presentation.TopologyCaptions.Validate(MaximumTextCharacters);
+        }
         if (presentation.Theme != null) {
+            if (presentation.Theme.Definition != null || presentation.Theme.Mode.HasValue) {
+                if(envelope.Family!=VisualArtifactInterchangeFamily.Topology&&envelope.Family!=VisualArtifactInterchangeFamily.Flow)throw new ArgumentException("Complete paired theme facts require Topology or Flow.");
+                if (presentation.Theme.Mode.HasValue && !System.Enum.IsDefined(typeof(ChartForgeX.Themes.VisualThemeMode), presentation.Theme.Mode.Value))
+                    throw new ArgumentException("Interchange theme mode is undefined.");
+                if (presentation.Theme.Definition != null) OptionalText(presentation.Theme.Definition.ToJson(), "complete native theme JSON");
+            }
             Text(presentation.Theme.Background, "theme background");
             Text(presentation.Theme.Foreground, "theme foreground");
             Text(presentation.Theme.MutedForeground, "theme muted foreground");
@@ -333,6 +399,10 @@ internal static partial class VisualArtifactInterchangeValidation {
             Text(presentation.Theme.Unknown, "theme unknown");
             Text(presentation.Theme.Disabled, "theme disabled");
             Text(presentation.Theme.FontFamily, "theme font family");
+            PositiveOptional(presentation.Theme.TitleSize, "theme title size");
+            PositiveOptional(presentation.Theme.DataLabelSize, "theme data-label size");
+            PositiveOptional(presentation.Theme.SubtitleSize, "theme subtitle size");
+            PositiveOptional(presentation.Theme.LegendSize, "theme legend size");
         }
         if (presentation.MapViewport != null) {
             OptionalText(presentation.MapViewport.Name, "map viewport name");
@@ -372,6 +442,12 @@ internal static partial class VisualArtifactInterchangeValidation {
         bool topologyRole = group.Role == VisualArtifactInterchangeGroupRole.TopologyGroup;
         if (topologyRole != (group.Topology != null)) throw new ArgumentException("Topology groups must carry exactly one typed topology semantic record.", nameof(envelope));
         if (group.Topology == null) return;
+        ValidateSurfacePaint(group.Topology.StrokeWidth,group.Topology.Opacity,group.Topology.SurfaceOpacity,group.Topology.DashPattern);
+        if(TopologySurfacePaintRules.HasOverrides(group.Topology.StrokeWidth,group.Topology.Opacity,group.Topology.SurfaceOpacity,group.Topology.DashPattern)
+            &&(group.Topology.Presentation==TopologyGroupPresentation.Compartment||envelope.Topology?.LayoutMode==TopologyLayoutMode.Geographic))
+            throw new NotSupportedException("Nondefault group surface paints require a standard container outside Geographic layout.");
+        ValidateCaptionContent(group.Topology.LabelContent, group.Label, "group label runs");
+        ValidateDetailTextStyle(group.Topology.TextStyle);
         OptionalText(group.Topology.ParentGroupId, "topology parent group id");
         Defined(group.Topology.Presentation, "topology group presentation", envelope);
         if (group.Topology.Presentation == TopologyGroupPresentation.Compartment && group.Topology.ParentGroupId == null)
@@ -396,17 +472,39 @@ internal static partial class VisualArtifactInterchangeValidation {
             throw new ArgumentException("Interchange node role and semantic record do not match.", nameof(envelope));
         }
         if (node.Topology != null) {
+            ValidatePreparedNodeBasis(node);
+            ValidateSurfaceElements(node);
+            var presentationError = TopologyExternalPresentationRules.Error(node.Topology.DisplayMode, node.Topology.Shape, node.Topology.TableContent != null,
+                envelope.Topology?.LayoutMode ?? TopologyLayoutMode.Manual, node.Topology.CaptionPlacement, node.Topology.CaptionSurface,
+                node.Topology.CaptionGap, node.Topology.GlyphScale, node.Topology.CornerRadius, node.Topology.CaptionTextStyle != null);
+            if (presentationError != null) throw new NotSupportedException("Topology node " + presentationError + ".");
+            ValidateDetailTextStyle(node.Topology.CaptionTextStyle);
+            OptionalText(node.Topology.BorderColor, "node border color");
+            if (TopologySurfacePaintRules.BorderColorError(node.Topology.BorderColor) is {} borderError) throw new ArgumentException("Topology node " + borderError + ".");
+            ValidateSurfacePaint(node.Topology.StrokeWidth,node.Topology.Opacity,node.Topology.SurfaceOpacity,node.Topology.DashPattern);
+            ValidateDetailTextStyle(node.Topology.TextStyle);
+            ValidateDetailTextStyle(node.Topology.SubtitleTextStyle);
+            TableContent(node.Topology.TableContent);
+            if (node.Topology.TableContent != null && !TopologyTableContentRules.Supported(node.Topology.Kind,
+                node.Topology.Shape, node.Topology.DisplayMode, TopologyRenderPrimitives.HasExplicitIconShape(node.Topology.IconShape) || !string.IsNullOrWhiteSpace(node.IconId)
+                    || !string.IsNullOrWhiteSpace(node.Symbol) || node.Topology.Artwork != null, node.Details.Count))
+                throw new NotSupportedException("Embedded table presentation cannot be restored by this topology node kind, shape, display mode, glyph or detail combination.");
+            ValidateCaptionContent(node.Topology.LabelContent, node.Label, "node label runs");
+            PositiveOptional(node.Topology.MaximumTextWidth, "topology node text wrapping width");
+            NonNegativeOptional(node.Topology.ContentPadding, "topology node content padding");
             Defined(node.Topology.Kind, "topology node kind", envelope);
             if (node.Topology.PaletteIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.PaletteIndex, "Topology node palette index must not be negative.");
             Defined(node.Topology.Status, "topology node status", envelope);
             Defined(node.Topology.DisplayMode, "topology node display mode", envelope);
             if (node.Topology.Shape.HasValue) Defined(node.Topology.Shape.Value, "topology node shape", envelope);
+            if (node.Topology.IconShape.HasValue) Defined(node.Topology.IconShape.Value, "topology node icon shape", envelope);
             GeographicCoordinates(node.Topology.Longitude, node.Topology.Latitude, "topology node", envelope);
             if (node.Topology.MaximumLabelCharacters is < 1) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.MaximumLabelCharacters, "Maximum label characters must be positive.");
             ValidateArtwork(node.Topology.Artwork, envelope);
         }
-        if (node.Flow != null) Defined(node.Flow.Kind, "flow step kind", envelope);
+        if(node.Flow!=null){Defined(node.Flow.Kind,"flow step kind",envelope);PositiveOptional(node.Flow.AuthoredWidth,"flow authored width");PositiveOptional(node.Flow.AuthoredHeight,"flow authored height");}
         if (node.Sequence != null) {
+            ValidateSequenceParticipantPresentation(node.Sequence);
             Defined(node.Sequence.Kind, "sequence participant kind", envelope);
             if (node.Sequence.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Sequence.Order, "Sequence participant order must not be negative.");
             var created = node.Sequence.CreatedAtMessageIndex;
@@ -426,7 +524,8 @@ internal static partial class VisualArtifactInterchangeValidation {
         OptionalText(artwork.SvgBody, "artwork SVG body");
         OptionalText(artwork.SvgPath, "artwork SVG path");
         OptionalText(artwork.PreviewPath, "artwork preview path");
-        OptionalText(artwork.ImageHref, "artwork image href");
+        var recognizedLargeImage=VisualArtifactInterchangeArtworkText.ValidateImageHref(artwork.ImageHref);
+        if(!recognizedLargeImage)OptionalText(artwork.ImageHref,"artwork image href");
         if (artwork.Status == VisualArtifactInterchangeArtworkStatus.UnsafeOmitted) {
             if (artwork.SvgBody != null || artwork.SvgPath != null || artwork.PreviewPath != null || artwork.ImageHref != null) {
                 throw new ArgumentException("Unsafe omitted artwork cannot carry executable or external artwork content.", nameof(envelope));
@@ -434,7 +533,7 @@ internal static partial class VisualArtifactInterchangeValidation {
             return;
         }
         if (artwork.SvgBody != null && !TopologyIconArtwork.IsSafeSvgFragment(artwork.SvgBody)) throw new ArgumentException("Interchange contains unsafe topology artwork SVG content.", nameof(envelope));
-        if (artwork.ImageHref != null && !TopologyIconArtwork.IsSafeImageHref(artwork.ImageHref)) throw new ArgumentException("Interchange contains an unsafe topology artwork image href.", nameof(envelope));
+        if(artwork.ImageHref!=null&&!recognizedLargeImage&&!TopologyIconArtwork.IsSafeImageHref(artwork.ImageHref))throw new ArgumentException("Interchange contains an unsafe topology artwork image href.",nameof(envelope));
         if (artwork.SvgPath != null && !TopologyIconArtwork.IsSafeAssetPath(artwork.SvgPath)) throw new ArgumentException("Interchange contains an unsafe topology artwork SVG path.", nameof(envelope));
         if (artwork.PreviewPath != null && !TopologyIconArtwork.IsSafeAssetPath(artwork.PreviewPath)) throw new ArgumentException("Interchange contains an unsafe topology artwork preview path.", nameof(envelope));
     }
@@ -450,6 +549,15 @@ internal static partial class VisualArtifactInterchangeValidation {
             throw new ArgumentException("Interchange edge role and semantic record do not match.", nameof(envelope));
         }
         if (edge.Topology != null) {
+            ValidateCaptionContent(edge.Topology.LabelContent, edge.Label, "edge label runs");
+            OptionalText(edge.Topology.LabelBackgroundColor, "edge label background color");
+            ValidateInterpolationPolicy(edge.Topology.Interpolation, edge.Topology.InterpolationCornerBlendLength, edge.Topology.PathGeometry);
+            ValidatePreparedEdgeUnits(edge, envelope);
+            ValidateDetailTextStyle(edge.Topology.TextStyle);
+            if (edge.Topology.LabelPosition != null) {
+                Finite(edge.Topology.LabelPosition.Point.X, "topology explicit label x"); Finite(edge.Topology.LabelPosition.Point.Y, "topology explicit label y");
+                if (edge.Topology.LabelOffsetX != 0 || edge.Topology.LabelOffsetY != 0) throw new ArgumentException("Explicit label positions cannot also use label offsets.", nameof(envelope));
+            }
             Defined(edge.Topology.Kind, "topology edge kind", envelope);
             if (edge.Topology.PaletteIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Topology.PaletteIndex, "Topology edge palette index must not be negative.");
             Defined(edge.Topology.Status, "topology edge status", envelope);
@@ -464,9 +572,11 @@ internal static partial class VisualArtifactInterchangeValidation {
             NonNegativeOptional(edge.Topology.StrokeWidth, "topology edge stroke width");
             FiniteOptional(edge.Topology.Opacity, "topology edge opacity");
             if (edge.Topology.Opacity is < 0 or > 1) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Topology.Opacity, "Topology edge opacity must be between zero and one.");
-            Count(edge.Topology.DashPattern.Count, MaximumDashPatternValues, "topology edge dash pattern");
-            if (edge.Topology.DashPattern.Count % 2 != 0) throw new ArgumentException("Topology edge dash patterns must contain alternating dash and gap pairs.", nameof(envelope));
-            foreach (double value in edge.Topology.DashPattern) Positive(value, "topology edge dash value");
+            if (TopologySurfacePaintRules.DashError(edge.Topology.DashPattern) is {} dashError) {
+                if (TopologySurfacePaintRules.DashCode(edge.Topology.DashPattern) == "dash-pattern-value")
+                    throw new ArgumentOutOfRangeException(nameof(envelope), "Topology edge " + dashError + ".");
+                throw new ArgumentException("Topology edge " + dashError + ".", nameof(envelope));
+            }
             Count(edge.Topology.Waypoints.Count, MaximumWaypointsPerEdge, "topology edge waypoints");
             foreach (var point in edge.Topology.Waypoints) ValidatePoint(point, "topology edge waypoint");
             FiniteOptional(edge.Topology.RouteLane, "topology edge route lane");
@@ -498,6 +608,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         bool requiresSequence = annotation.Role != VisualArtifactInterchangeAnnotationRole.Unspecified;
         if (requiresSequence != (annotation.Sequence != null)) throw new ArgumentException("Sequence annotations must carry exactly one typed sequence semantic record.", nameof(envelope));
         if (annotation.Sequence == null) return;
+        ValidateSequenceOccurrence(annotation,envelope);
         OptionalDefined(annotation.Sequence.NotePlacement, "sequence note placement", envelope);
         OptionalDefined(annotation.Sequence.BlockKind, "sequence block kind", envelope);
         OptionalDefined(annotation.Sequence.ParentBlockKind, "sequence parent block kind", envelope);
@@ -532,6 +643,7 @@ internal static partial class VisualArtifactInterchangeValidation {
                 if (activation || note || !block || branch) {
                     throw new ArgumentException("Sequence block annotations may carry only typed block semantics.", nameof(envelope));
                 }
+                ValidateInstantSequenceAnnotation(annotation,envelope);
                 ValidateSequenceSpan(annotation, "block", envelope);
                 break;
             case VisualArtifactInterchangeAnnotationRole.SequenceBranch:
@@ -539,6 +651,8 @@ internal static partial class VisualArtifactInterchangeValidation {
                     string.IsNullOrWhiteSpace(annotation.Sequence.BranchKind)) {
                     throw new ArgumentException("Sequence branch annotations may carry only typed branch semantics.", nameof(envelope));
                 }
+                if(annotation.Sequence.ParentBlockKind is SequenceArtifactBlockKind.Reference or SequenceArtifactBlockKind.Divider||annotation.TargetIds.Count>0)
+                    throw new ArgumentException("Sequence branch targets and instantaneous parent kinds are contradictory.",nameof(envelope));
                 ValidateSequenceSpan(annotation, "branch", envelope);
                 break;
         }

@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = AutomaticRadialBandsRecipe.Create("compact-automatic-rings", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Three independent service mixes").WithSubtitle("Source order allocates rings; every period keeps its own total").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 600)), theme, mode,
+    new VisualFrame("Three independent service mixes", "Source order allocates rings; every period keeps its own total", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Three independent service mixes use source-ordered automatic Donut bands.</summary>
+public static class AutomaticRadialBandsRecipe {
+    /// <summary>Creates immutable allocation without assigning or changing authored RadialBand values.</summary>
+    public static Chart Create(string variant = "automatic-rings", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("automatic-rings" or "compact-automatic-rings")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support")
+            .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .04)).WithDonutCenterLabel(false)
+            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        var values = new[] { new[] { 50d, 30, 20 }, new[] { 90d, 45, 15 }, new[] { 110d, 66, 44 } };
+        for (var index = 0; index < values.Length; index++) {
+            var series = new ChartSeries(new ChartSeriesId("period-" + index), "Period " + (index + 1), ChartSeriesKind.Donut,
+                values[index].Select((value, category) => new ChartPoint(category + 1, value)))
+                .WithObservationIds(new[] { new ChartObservationId("subscriptions"), new ChartObservationId("consulting"), new ChartObservationId("support") })
+                .WithDataLabels(index == values.Length - 1);
+            if (index == values.Length - 1) {
+                series.DataLabelPlacement = ChartDataLabelPlacement.Outside;
+                series.WithPointSliceRadiusRatio(0, .35).WithPointSliceRadiusRatio(1, .7).WithPointSliceRadiusRatio(2, 1);
+            }
+            chart.AddSeries(series);
+        }
+        return chart;
+    }
+}

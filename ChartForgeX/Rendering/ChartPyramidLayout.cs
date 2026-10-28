@@ -82,7 +82,9 @@ internal sealed class ChartPyramidLayout {
                 _ => horizontal ? crossRight : processLast
             };
             stages[index] = new ChartPyramidStageLayout(index, share, previous, next, bounds,
-                geometry.Polygon(center, crossLength * previous, first, crossLength * next, last), inside, outside, anchor);
+                geometry.Polygon(center, crossLength * previous, first, crossLength * next, last), inside, outside, anchor,
+                horizontal ? processFirst : crossLeft, horizontal ? processLast : crossRight,
+                horizontal ? crossLeft : processFirst, horizontal ? crossRight : processLast);
             previous = next;
         }
         return new ChartPyramidLayout(triangle, stages, total, side);
@@ -91,9 +93,11 @@ internal sealed class ChartPyramidLayout {
 
 internal sealed class ChartPyramidStageLayout {
     internal ChartPyramidStageLayout(int sourceIndex, double valueFraction, double start, double end, ChartRect bounds,
-        ChartPath segment, ChartRect insideLabel, ChartRect outsideLabel, ChartPoint labelAnchor) {
+        ChartPath segment, ChartRect insideLabel, ChartRect outsideLabel, ChartPoint labelAnchor,
+        ChartPoint leftAnchor, ChartPoint rightAnchor, ChartPoint topAnchor, ChartPoint bottomAnchor) {
         SourceIndex = sourceIndex; ValueFraction = valueFraction; Start = start; End = end;
-        Bounds = bounds; Segment = segment; InsideLabel = insideLabel; OutsideLabel = outsideLabel; LabelAnchor = labelAnchor;
+        Bounds = bounds;         Segment = segment; InsideLabel = insideLabel; OutsideLabel = outsideLabel; LabelAnchor = labelAnchor;
+        _leftAnchor = leftAnchor; _rightAnchor = rightAnchor; _topAnchor = topAnchor; _bottomAnchor = bottomAnchor;
     }
     internal int SourceIndex { get; }
     internal double ValueFraction { get; }
@@ -107,4 +111,9 @@ internal sealed class ChartPyramidStageLayout {
     internal ChartRect InsideLabel { get; }
     internal ChartRect OutsideLabel { get; }
     internal ChartPoint LabelAnchor { get; }
+    private readonly ChartPoint _leftAnchor, _rightAnchor, _topAnchor, _bottomAnchor;
+    internal ChartPoint CaptionAnchor(ChartDataLabelPlacement side) => side switch {
+        ChartDataLabelPlacement.Left => _leftAnchor, ChartDataLabelPlacement.Right => _rightAnchor,
+        ChartDataLabelPlacement.Above => _topAnchor, _ => _bottomAnchor
+    };
 }

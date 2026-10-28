@@ -1,0 +1,90 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = TopologyInterchangeRecipe.Create("wide", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("An editable saved route").WithSubtitle("Native JSON is loaded into detached owners before editing").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 400)), theme, mode,
+    new VisualFrame("An editable saved route", "Native JSON is loaded into detached owners before editing", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+
+/// <summary>Saves native topology semantics, loads editable owners and changes a detail without parsing source text.</summary>
+public static class TopologyInterchangeRecipe {
+    /// <summary>Creates an edited graph after the same public JSON save/load boundary used by a file workflow.</summary>
+    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var source = Author(variant, mode);
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
+        return Edit(envelope.ToTopologyChart());
+    }
+
+    /// <summary>Writes original JSON, loads it, edits native owners, then writes script-free SVG and PNG.</summary>
+    /// <param name="directory">A caller-owned output directory.</param>
+    /// <param name="variant">Use wide or compact.</param>
+    /// <param name="mode">The authored resolved color mode.</param>
+    /// <returns>The detached edited model; the original JSON remains unchanged.</returns>
+    public static TopologyChart SaveLoadAndEdit(string directory, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException("An output directory is required.", nameof(directory));
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "request-route.json");
+        File.WriteAllText(path, Author(variant, mode).ToVisualArtifact().ToInterchangeJson());
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(File.ReadAllText(path));
+        // Envelope IDs are retained. Common source-language/extension metadata remains on envelope.
+        // The imported model uses Manual bounds. Set a fresh LayoutMode explicitly when rearranging it.
+        var edited = Edit(envelope.ToTopologyChart());
+        edited.SaveSvg(Path.Combine(directory, "request-route-edited.svg"));
+        edited.SavePng(Path.Combine(directory, "request-route-edited.png"));
+        return edited;
+    }
+
+    private static TopologyChart Edit(TopologyChart chart) {
+        var source = chart.Nodes.Single(node => node.Id == "request");
+        source.Details[0].Value = "Delivered";
+        source.Status = TopologyHealthStatus.Healthy;
+        chart.Edges.Single(edge => edge.Id == "dispatch").Label = "Accepted";
+        return chart;
+    }
+
+    private static TopologyChart Author(string variant, VisualThemeMode mode) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == "compact";
+        var chart = TopologyChart.Create().WithId("saved-request-route").WithTitle("An editable saved route")
+            .WithSubtitle("The loaded graph owns independent native data")
+            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 900, compact ? 520 : 400);
+        chart.Nodes.Add(new TopologyNode { Id = "request", Label = "Request", X = 40, Y = 75, Width = 210, Height = 110,
+            Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = "State", Value = "Queued" });
+        chart.Nodes[0].Ports.Add(new TopologyNodePort { Id = "send", Side = compact ? TopologyEdgePort.Bottom : TopologyEdgePort.Right, Offset = .5 });
+        chart.Nodes[0].Metadata["host.record"] = "request-42";
+        chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Worker", X = compact ? 40 : 470, Y = compact ? 285 : 75,
+            Width = 210, Height = 110, Status = TopologyHealthStatus.Healthy });
+        chart.Edges.Add(new TopologyEdge { Id = "dispatch", SourceNodeId = "request", TargetNodeId = "worker", SourcePortId = "send",
+            Label = "Dispatch", Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Accessibility.Name = "Saved request route";
+        return chart;
+    }
+}

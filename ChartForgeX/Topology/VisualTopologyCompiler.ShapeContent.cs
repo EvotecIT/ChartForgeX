@@ -11,58 +11,91 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private sealed class ShapeContentLayout {
         internal ChartRect Bounds;
-        internal double Size, TitleHeight, SubtitleHeight, DetailHeight, FooterHeight, FooterWidth, GlyphWidth;
+        internal double Size, TitleHeight, SubtitleHeight, DetailHeight, FooterHeight, FooterWidth, GlyphWidth, TableHeight, RequiredHeight, SpacingScale;
         internal int TitleRows, SubtitleRows;
         internal bool Complete;
-        internal double BodyHeight => Math.Max(0, Bounds.Height - FooterHeight - (FooterHeight > 0 ? 4 : 0));
+        internal double BodyHeight => Math.Max(0, Bounds.Height - FooterHeight - (FooterHeight > 0 ? 4 * SpacingScale : 0));
     }
 
     private string ShapeTitle(TopologyNode node) => node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
 
     private ShapeContentLayout ShapeContent(TopologyNode node, double size) {
         var title = ShapeTitle(node);
-        var showText = _options.IncludeNodeLabels;
+        var spacing = ShapeContentSpacingScale(node);
+        var padding = (node.ContentPadding ?? 0) * spacing;
+        var showText = _options.IncludeNodeLabels && node.ShowLabel;
         var subtitle = showText && !string.IsNullOrWhiteSpace(node.Subtitle);
         var chip = _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip;
-        var titleLine = showText ? _builder.MeasureText("Ag", size * _scale, 600).LineHeight / _scale : 0;
-        var subtitleLine = subtitle ? _builder.MeasureText("Ag", size * .85 * _scale, chip ? 700 : 400).LineHeight / _scale : 0;
-        var detailLine = Math.Max(size * .8 * 1.4, _builder.MeasureText("Ag", size * .8 * _scale, 400).LineHeight / _scale);
+        var titleLine = showText ? CaptionLineHeight(NodeCaptionContent(node), size * _scale) / _scale : 0;
+        var subtitleLine = subtitle ? MeasureRoleText("Ag", RoleTextSize(size * .85, node.SubtitleTextStyle) * _scale, chip ? 700 : 400, node.SubtitleTextStyle).LineHeight / _scale : 0;
+        var detailLine = Math.Max(size * .8 * 1.4, MeasurePolicyText("Ag", size * .8 * _scale, 400).LineHeight / _scale);
+        foreach (var detail in node.Details) if (DetailContent(detail).IsStructured || detail.TextStyle?.HasOverrides == true)
+            detailLine = Math.Max(detailLine, CaptionLineHeight(DetailContent(detail), size * .8 * _scale, detail.TextStyle) / _scale);
         var badge = !string.IsNullOrWhiteSpace(node.Badge);
         var status = _options.IncludeStatusBadges && node.ShowStatusBadge;
-        var footer = badge ? 18d : status ? 6 : 0;
-        var footerWidth = (badge ? NodeBadgeWidth(node, _options) : 0) + (status ? badge ? 10 : 6 : 0);
+        var footer = (badge ? 18d : status ? 6 : 0) * spacing;
+        var footerWidth = ((badge ? NodeBadgeWidth(node, _options) : 0) + (status ? badge ? 10 : 6 : 0)) * spacing;
         var glyph = HasInlineNodeGlyph(node, EffectiveNodeDisplayMode(node, _options), _options) ? 32d : 0;
         ShapeContentLayout? best = null; var retained = -1;
         var maximumTitle = showText ? Math.Max(1, _options.MaxNodeLabelLines) : 1;
         var maximumSubtitle = subtitle && !chip ? Math.Max(1, _options.MaxNodeSubtitleLines) : 1;
+        var detailHeight = showText && node.Details.Count > 0 ? 6 + DetailRowsHeight(node, size * .8, detailLine) : 0;
+        var tableHeight = TableHeight(node, size);
+        detailHeight += tableHeight;
+        // Candidate row allocations repeatedly use the same measured width. Retain
+        // every candidate and its order, but fit each exact title/subtitle cell once.
+        // These caches belong only to this node/font-size evaluation, never a later render.
+        var titleFits = new Dictionary<(double Width, int Rows), (int Count, bool Overflow)>();
+        var subtitleFits = new Dictionary<(double Width, int Rows), (int Count, bool Overflow)>();
+        var detailFits = new Dictionary<double, (int Count, bool Overflow)>();
         for (var titleRows = 1; titleRows <= maximumTitle; titleRows++) for (var subtitleRows = 1; subtitleRows <= maximumSubtitle; subtitleRows++) {
             var titleHeight = titleRows * titleLine;
-            var subtitleHeight = subtitle ? subtitleRows * subtitleLine + (chip ? 4 : 0) : 0;
-            var detailHeight = showText && node.Details.Count > 0 ? 6 + node.Details.Count * detailLine : 0;
+            var subtitleHeight = subtitle ? subtitleRows * subtitleLine + (chip ? 4 * spacing : 0) : 0;
             var bodyHeight = Math.Max(titleHeight + subtitleHeight + detailHeight, glyph > 0 ? 26 : 0);
-            var totalHeight = bodyHeight + footer + (footer > 0 ? 4 : 0);
-            var bounds = TopologyNodeShapeGeometry.CaptionBounds(node, totalHeight + 1e-8);
+            var totalHeight = bodyHeight + footer + (footer > 0 ? 4 * spacing : 0);
+            var bounds = TopologyNodeShapeGeometry.CaptionBounds(node, totalHeight + 2 * padding + 1e-8, spacing);
+            if (node.MaximumTextWidth.HasValue && bounds.Width > node.MaximumTextWidth.Value * spacing + glyph + 2 * padding)
+                bounds = new ChartRect(bounds.X + (bounds.Width - node.MaximumTextWidth.Value * spacing - glyph - 2 * padding) / 2,
+                    bounds.Y, node.MaximumTextWidth.Value * spacing + glyph + 2 * padding, bounds.Height);
+            if (node.ContentPadding.HasValue) { var inset = padding; bounds = new ChartRect(bounds.X + inset, bounds.Y + inset,
+                Math.Max(0, bounds.Width - 2 * inset), Math.Max(0, bounds.Height - 2 * inset)); }
             var width = Math.Max(0, bounds.Width - glyph);
             var count = 0;
             var complete = bounds.Height + 1e-8 >= totalHeight && bounds.Width >= footerWidth && width > 0;
             if (showText) {
-                var lines = FitTextLines(title, width * _scale, size * _scale, 600, titleRows, false, false, out var overflow);
-                count += lines.Sum(line => line.Length); complete &= !overflow;
+                var titleKey = (width, titleRows);
+                if (!titleFits.TryGetValue(titleKey, out var titleFit)) {
+                    var lines = CaptionLines(node.LabelContent.IsStructured ? NodeCaptionContent(node) : ChartForgeX.Typography.TextContent.Plain(title), width * _scale, size * _scale, 600, titleRows, out var overflow);
+                    titleFit = (lines.Sum(line => line.Length), overflow);
+                    titleFits.Add(titleKey, titleFit);
+                }
+                count += titleFit.Count; complete &= !titleFit.Overflow;
                 if (subtitle) {
-                    lines = FitTextLines(node.Subtitle!, Math.Max(0, width - (chip ? 12 : 0)) * _scale, size * .85 * _scale,
-                        chip ? 700 : 400, subtitleRows, false, false, out overflow);
-                    count += lines.Sum(line => line.Length); complete &= !overflow;
+                    var subtitleKey = (width, subtitleRows);
+                    if (!subtitleFits.TryGetValue(subtitleKey, out var subtitleFit)) {
+                        var lines = FitTextLines(node.Subtitle!, Math.Max(0, width - (chip ? 12 * spacing : 0)) * _scale, size * .85 * _scale,
+                            chip ? 700 : 400, subtitleRows, false, false, out var overflow, node.SubtitleTextStyle);
+                        subtitleFit = (lines.Sum(line => line.Length), overflow);
+                        subtitleFits.Add(subtitleKey, subtitleFit);
+                    }
+                    count += subtitleFit.Count; complete &= !subtitleFit.Overflow;
                 }
-                foreach (var detail in node.Details) {
-                    var reserve = !string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? 14 : 0;
-                    lines = FitTextLines(detail.Text ?? detail.Label + " " + detail.Value, Math.Max(0, width - reserve) * _scale,
-                        size * .8 * _scale, 400, 1, false, false, out overflow);
-                    count += lines.Sum(line => line.Length); complete &= !overflow;
+                if (!detailFits.TryGetValue(width, out var detailFit)) {
+                    var detailCount = 0; var detailOverflow = false;
+                    foreach (var detail in node.Details) {
+                        var reserve = (!string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? 14 : 0) + (detail.BadgeStyle?.HorizontalPadding * 2 ?? 0);
+                        var lines = CaptionLines(DetailContent(detail), Math.Max(0, width - reserve) * _scale,
+                            size * .8 * _scale, 400, TopologyTextLayout.AuthoredRowCount(NodeDetailText(detail), _options.AllowMultilineNodeLabels), out var overflow, detail.TextStyle);
+                        detailCount += lines.Sum(line => line.Length); detailOverflow |= overflow;
+                    }
+                    detailFit = (detailCount, detailOverflow);
+                    detailFits.Add(width, detailFit);
                 }
+                count += detailFit.Count; complete &= !detailFit.Overflow;
             }
             var candidate = new ShapeContentLayout { Bounds = bounds, Size = size, TitleHeight = titleHeight,
                 SubtitleHeight = subtitleHeight, DetailHeight = detailLine, FooterHeight = Math.Min(footer, bounds.Height),
-                FooterWidth = footerWidth, GlyphWidth = glyph, TitleRows = titleRows, SubtitleRows = subtitleRows, Complete = complete };
+                FooterWidth = footerWidth, GlyphWidth = glyph, TitleRows = titleRows, SubtitleRows = subtitleRows, TableHeight = tableHeight, RequiredHeight = totalHeight, SpacingScale = spacing, Complete = complete };
             if (complete) return candidate;
             if (best == null || count > retained) { best = candidate; retained = count; }
         }
@@ -71,23 +104,38 @@ internal sealed partial class VisualTopologyCompiler {
 
     /// <summary>Grows minimum dimensions before layout and routing, using the painter's complete content contract.</summary>
     private void GrowShapeContent(TopologyNode node) {
-        var size = _context.Theme.Typography.DataLabelSize;
+        var size = ShapeContentFontSize(node);
+        var spacing = ShapeContentSpacingScale(node);
+        var padding = (node.ContentPadding ?? 0) * spacing;
+        GrowTableWidth(node, size);
         var glyph = HasInlineNodeGlyph(node, EffectiveNodeDisplayMode(node, _options), _options) ? 32d : 0;
-        double Width(string text, double fontSize, int weight) {
+        double Width(string text, double fontSize, int weight, ChartForgeX.Typography.TextStyleOverride? role = null) {
+            fontSize = RoleTextSize(fontSize, role);
             var source = text.Replace("\r\n", "\n").Replace('\r', '\n');
             if (!_options.AllowMultilineNodeLabels) source = source.Replace('\n', ' ');
-            return source.Split('\n').Max(line => _builder.MeasureText(line, fontSize, weight).Width);
+            return source.Split('\n').Max(line => MeasureRoleText(line, fontSize, weight, role).Width);
         }
-        var width = _options.IncludeNodeLabels ? Width(ShapeTitle(node), size, 600) + glyph : glyph;
+        var width = _options.IncludeNodeLabels ? (node.LabelContent.IsStructured ? CaptionNaturalWidth(NodeCaptionContent(node), size) : Width(ShapeTitle(node), size, 600)) + glyph : glyph;
         if (_options.IncludeNodeLabels && !string.IsNullOrWhiteSpace(node.Subtitle)) width = Math.Max(width,
-            Width(node.Subtitle!, size * .85, _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 700 : 400)
-                + glyph + (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 12 : 0));
+            Width(node.Subtitle!, size * .85, _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 700 : 400, node.SubtitleTextStyle)
+                + glyph + (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 12 * spacing : 0));
         if (_options.IncludeNodeLabels) foreach (var detail in node.Details) width = Math.Max(width,
-            Width(detail.Text ?? detail.Label + " " + detail.Value, size * .8, 400) + glyph
+            (DetailContent(detail).IsStructured ? CaptionNaturalWidth(DetailContent(detail), size * .8, detail.TextStyle) : Width(NodeDetailText(detail), size * .8, 400, detail.TextStyle)) + glyph + (detail.BadgeStyle?.HorizontalPadding * 2 ?? 0)
                 + (!string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? 14 : 0));
-        if (!string.IsNullOrWhiteSpace(node.Badge)) width = Math.Max(width, NodeBadgeWidth(node, _options)
-            + (_options.IncludeStatusBadges && node.ShowStatusBadge ? 10 : 0));
-        node.Width = Math.Max(node.Width, width + 20);
+        if (!string.IsNullOrWhiteSpace(node.Badge)) width = Math.Max(width, (NodeBadgeWidth(node, _options)
+            + (_options.IncludeStatusBadges && node.ShowStatusBadge ? 10 : 0)) * spacing);
+        if (node.MaximumTextWidth.HasValue && _options.WrapNodeLabels) {
+            // Text is measured by the same fitter the painter will use. The configured width
+            // is a line-allocation limit, not a new font floor or an arbitrary caption margin.
+            node.Width = Math.Max(node.Width, node.MaximumTextWidth.Value * spacing + glyph + 20 * spacing + 2 * padding);
+            for (var attempt = 0; attempt < 64; attempt++) {
+                if (node.Shape is TopologyNodeShape.Circle or TopologyNodeShape.DoubleCircle) node.Width = node.Height = Math.Max(node.Width, node.Height);
+                if (ShapeContent(node, size).Complete) return;
+                node.Height += Math.Max(1, MeasurePolicyText("Ag", size, 600).LineHeight);
+            }
+            return; // The existing overflow diagnostic still describes exhausted explicit row ceilings.
+        }
+        node.Width = Math.Max(node.Width, width + 20 * spacing + 2 * padding);
         for (var attempt = 0; attempt < 32; attempt++) {
             if (node.Shape is TopologyNodeShape.Circle or TopologyNodeShape.DoubleCircle)
                 node.Width = node.Height = Math.Max(node.Width, node.Height);
@@ -99,22 +147,24 @@ internal sealed partial class VisualTopologyCompiler {
                 ? ShapeTitle(node).Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Length : 1);
             var subtitleRows = Math.Min(Math.Max(1, _options.MaxNodeSubtitleLines), _options.AllowMultilineNodeLabels
                 ? (node.Subtitle ?? "").Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Length : 1);
-            var intendedHeight = (_options.IncludeNodeLabels ? titleRows * _builder.MeasureText("Ag", size, 600).LineHeight : 0)
+            var intendedHeight = (_options.IncludeNodeLabels ? titleRows * CaptionLineHeight(NodeCaptionContent(node), size) : 0)
                 + (_options.IncludeNodeLabels && !string.IsNullOrWhiteSpace(node.Subtitle)
-                    ? subtitleRows * _builder.MeasureText("Ag", size * .85, _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 700 : 400).LineHeight
-                        + (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 4 : 0) : 0)
-                + (_options.IncludeNodeLabels && node.Details.Count > 0 ? 6 + node.Details.Count * content.DetailHeight : 0);
-            var footerHeight = !string.IsNullOrWhiteSpace(node.Badge) ? 18 : _options.IncludeStatusBadges && node.ShowStatusBadge ? 6 : 0;
-            intendedHeight = Math.Max(intendedHeight, glyph > 0 ? 26 : 0) + footerHeight + (footerHeight > 0 ? 4 : 0);
-            var intended = TopologyNodeShapeGeometry.CaptionBounds(node, intendedHeight);
-            if (intended.Width + 1e-8 >= width && intended.Height + 1e-8 >= intendedHeight) return;
+                    ? subtitleRows * MeasureRoleText("Ag", RoleTextSize(size * .85, node.SubtitleTextStyle), _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 700 : 400, node.SubtitleTextStyle).LineHeight
+                        + (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 4 * spacing : 0) : 0)
+                + (_options.IncludeNodeLabels && node.Details.Count > 0 ? 6 + DetailRowsHeight(node, size * .8, content.DetailHeight) : 0)
+                + content.TableHeight;
+            var footerHeight = (!string.IsNullOrWhiteSpace(node.Badge) ? 18 : _options.IncludeStatusBadges && node.ShowStatusBadge ? 6 : 0) * spacing;
+            intendedHeight = Math.Max(intendedHeight, glyph > 0 ? 26 : 0) + footerHeight + (footerHeight > 0 ? 4 * spacing : 0);
+            var intended = TopologyNodeShapeGeometry.CaptionBounds(node, intendedHeight + 2 * padding, spacing);
+            if (intended.Width + 1e-8 >= width + 2 * padding && intended.Height + 1e-8 >= intendedHeight + 2 * padding) return;
             // Growing both axes retains a useful aspect ratio for diamonds and curved surfaces.
             node.Width *= 1.1; node.Height *= 1.1;
         }
     }
 
     private void BuildShapeContent(TopologyNode node, ChartColor accent, bool active, SvgColorRole glyphRole) {
-        var preferred = _context.Theme.Typography.DataLabelSize;
+        var preferred = ShapeContentFontSize(node);
+        var spacing = ShapeContentSpacingScale(node);
         var size = ChartTextFitting.FitFontSize(Math.Min(11, preferred), preferred,
             candidate => ShapeContent(node, candidate).Complete);
         var layout = ShapeContent(node, size);
@@ -128,10 +178,10 @@ internal sealed partial class VisualTopologyCompiler {
             BuildGlyph(node, area.X + glyphWidth / 2, area.Y + layout.BodyHeight / 2, accent, glyphScale, glyphRole);
         }
         var y = text.Top;
-        if (_options.IncludeNodeLabels) {
+        if (_options.IncludeNodeLabels && node.ShowLabel) {
             var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
             var title = Row(layout.TitleHeight);
-            Text(ShapeTitle(node), Project(title), size, Highlight(labelColor, active), 600, "topology-node-label", layout.TitleRows,
+            Text(node.LabelContent.IsStructured ? NodeCaptionContent(node) : ChartForgeX.Typography.TextContent.Plain(ShapeTitle(node)), Project(title), size, Highlight(labelColor, active), 600, "topology-node-label", layout.TitleRows,
                 centered: true, id: node.Id + "-label", opacity: HighlightFactor(active),
                 paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor,
                     Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
@@ -140,18 +190,18 @@ internal sealed partial class VisualTopologyCompiler {
                 var chip = _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip;
                 if (chip && subtitle.Height > 0) {
                     var fill = ChartColorMath.WithOpacity(accent, .1); var stroke = ChartColorMath.WithOpacity(accent, .45);
-                    _builder.Rect(Project(subtitle), fill, stroke, _context.Theme.AxisStrokeWidth * _scale, subtitle.Height * _scale / 2,
+                    _builder.Rect(Project(subtitle), fill, stroke, _context.Theme.AxisStrokeWidth * spacing * _scale, subtitle.Height * _scale / 2,
                         "topology-subtitle-chip", paint: new VisualScenePaintBinding(NodeAccentPaint(node, fill, active, .1), NodeAccentPaint(node, stroke, active, .45)));
-                    subtitle = new ChartRect(subtitle.X + Math.Min(6, subtitle.Width / 2), subtitle.Y + Math.Min(2, subtitle.Height / 2),
-                        Math.Max(0, subtitle.Width - 12), Math.Max(0, subtitle.Height - 4));
+                    subtitle = new ChartRect(subtitle.X + Math.Min(6 * spacing, subtitle.Width / 2), subtitle.Y + Math.Min(2 * spacing, subtitle.Height / 2),
+                        Math.Max(0, subtitle.Width - 12 * spacing), Math.Max(0, subtitle.Height - 4 * spacing));
                 }
                 Text(node.Subtitle!, Project(subtitle), size * .85, NodeSubtitleColor(node, active), chip ? 700 : 400,
                     chip ? "topology-subtitle-chip-text" : "topology-node-subtitle", layout.SubtitleRows, centered: true,
-                    paint: NodeSubtitlePaint(node, active));
+                    paint: NodeSubtitlePaint(node, active), textStyle: node.SubtitleTextStyle);
             }
             if (node.Details.Count > 0) y = Math.Min(text.Bottom, y + 6);
             foreach (var detail in node.Details) {
-                var row = Row(layout.DetailHeight);
+                var row = Row(DetailRowHeight(detail, size * .8, layout.DetailHeight));
                 var reserve = !string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? Math.Min(14, row.Width) : 0;
                 var color = Highlight(Color(detail.Color, detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground), active);
                 if (reserve > 0 && row.Height > 0) {
@@ -171,27 +221,28 @@ internal sealed partial class VisualTopologyCompiler {
                                 color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
                     }
                 }
-                BuildDetailText(detail, Project(new ChartRect(row.X + reserve, row.Y,
+                BuildDetailBadgeOrText(detail, Project(new ChartRect(row.X + reserve, row.Y,
                     Math.Max(0, row.Width - reserve), row.Height)), size * .8, active);
             }
         }
+        if (node.TableContent != null) BuildTableContent(node, new ChartRect(text.X, y, text.Width, Math.Min(layout.TableHeight, Math.Max(0, text.Bottom - y))), size, active);
         var footer = new ChartRect(area.X, area.Bottom - layout.FooterHeight, area.Width, layout.FooterHeight);
         var status = _options.IncludeStatusBadges && node.ShowStatusBadge;
         var badge = !string.IsNullOrWhiteSpace(node.Badge);
         var footerWidth = Math.Min(area.Width, layout.FooterWidth);
         var left = area.X + (area.Width - footerWidth) / 2;
-        if (status && footer.Height >= 6 && footerWidth >= 6) {
+        if (status && footer.Height >= 6 * spacing && footerWidth >= 6 * spacing) {
             var color = Highlight(Status(node.Status), active);
-            var center = Point(new ChartPoint(left + 3, footer.Y + footer.Height / 2));
+            var center = Point(new ChartPoint(left + 3 * spacing, footer.Y + footer.Height / 2));
             using (_builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id })) using (PinnedState())
-                _builder.Ellipse(center.X, center.Y, 3 * _scale, 3 * _scale, color, role: "topology-status",
+                _builder.Ellipse(center.X, center.Y, 3 * spacing * _scale, 3 * spacing * _scale, color, role: "topology-status",
                     paint: new VisualScenePaintBinding(StatusPaint(node.Status, color, HighlightFactor(active))));
-            left += badge ? 10 : 6;
+            left += (badge ? 10 : 6) * spacing;
         }
         if (badge && footer.Height > 0 && area.Right > left) {
-            var badgeBounds = Project(new ChartRect(left, footer.Y, Math.Max(0, Math.Min(NodeBadgeWidth(node, _options), area.Right - left)), footer.Height));
+            var badgeBounds = Project(new ChartRect(left, footer.Y, Math.Max(0, Math.Min(NodeBadgeWidth(node, _options) * spacing, area.Right - left)), footer.Height));
             var paint = NodeAccentPaint(node, accent, active);
-            _builder.Rect(badgeBounds, accent, radius: Math.Min(4 * _scale, badgeBounds.Height / 2), role: "topology-node-badge-surface",
+            _builder.Rect(badgeBounds, accent, radius: Math.Min(4 * spacing * _scale, badgeBounds.Height / 2), role: "topology-node-badge-surface",
                 paint: new VisualScenePaintBinding(paint));
             var ink = ChartColorMath.AccessibleTextOnBackground(accent);
             Text(NodeBadge(node), badgeBounds, preferred * .75, ink, 600, "topology-node-badge", centered: true,

@@ -5,12 +5,12 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.SvgRaster;
 
-internal static class SvgRasterColor {
+internal static partial class SvgRasterColor {
     public static bool TryParse(string? value, out ChartColor color) {
         if (ChartColor.TryParse(value, out color)) return true;
         if (string.IsNullOrWhiteSpace(value)) return false;
         var trimmed = value!.Trim();
-        return TryParseRgb(trimmed, out color);
+        return TryParseRgb(trimmed, out color) || TryParseHsl(trimmed, out color);
     }
 
     private static bool TryParseRgb(string value, out ChartColor color) {
@@ -83,9 +83,6 @@ internal static class SvgRasterColor {
     }
 
     private static byte ClampByte(double value) {
-        if (double.IsNaN(value)) return 0;
-        if (value <= 0) return 0;
-        if (value >= 255) return 255;
-        return (byte)Math.Round(value);
+        return ChartForgeX.Rendering.ChartColorMath.QuantizeSrgb(value);
     }
 }

@@ -110,6 +110,12 @@ public static class RasterImageDecoder {
         }
     }
 
+    internal static bool TryDecodeObserved(byte[] data, RasterDecodeOptions options, RasterDecodeObservation observation, out RgbaImage image) {
+        image = default;
+        try { image = Decode(data, RasterDecodeLimits.From(options, observation)); return true; }
+        catch (Exception exception) when (IsDecodeFailure(exception)) { return false; }
+    }
+
     private static bool IsDecodeFailure(Exception ex) =>
         ex is IOException ||
         ex is UnauthorizedAccessException ||

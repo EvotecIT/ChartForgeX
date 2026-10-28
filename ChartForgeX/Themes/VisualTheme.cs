@@ -117,7 +117,7 @@ public sealed partial class VisualTheme {
 }
 
 /// <summary>Immutable semantic color roles for one theme mode.</summary>
-public sealed class VisualThemeColors {
+public sealed partial class VisualThemeColors {
     private readonly VisualDesignTokens _tokens;
     internal VisualThemeColors(VisualDesignTokens tokens) { _tokens = tokens.Clone(); Palette = Array.AsReadOnly(_tokens.Palette); }
     internal VisualDesignTokens ToTokens() => _tokens.Clone();

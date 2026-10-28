@@ -49,7 +49,7 @@ public sealed class TopologyGroupHeaderGeometryTests {
         var chart = ManualGroup();
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeGroups = groups, IncludeGroupLabels = labels };
         var prepared = chart.Prepare(options);
-        var node = Assert.Single(prepared.ToInterchangeEnvelope().Nodes);
+        var node = Assert.Single(prepared.Visual.CapturedSemanticSnapshot!.Nodes);
         Assert.Equal(chart.Nodes[0].X, node.X);
         Assert.Equal(chart.Nodes[0].Y, node.Y);
         Assert.Null(Assert.Single(prepared.Analyze().Groups).HeaderBounds);
@@ -142,7 +142,7 @@ public sealed class TopologyGroupHeaderGeometryTests {
         foreach (var caption in captions) {
             var bounds = new ChartRect(caption.X, caption.Baseline - caption.Text.Ascent, caption.Text.Metrics.Width, caption.Text.Metrics.Height);
             AssertContained(header, bounds);
-            Assert.All(prepared.ToInterchangeEnvelope().Nodes, node =>
+            Assert.All(prepared.Visual.CapturedSemanticSnapshot!.Nodes, node =>
                 Assert.False(bounds.Left < node.X + node.Width && bounds.Right > node.X && bounds.Top < node.Y + node.Height && bounds.Bottom > node.Y,
                     "A rendered node covers the painted group caption."));
         }

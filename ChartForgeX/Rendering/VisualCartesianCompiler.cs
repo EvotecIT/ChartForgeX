@@ -37,7 +37,8 @@ internal static partial class VisualCartesianCompiler {
                 if (colorScales[0] is ChartSeriesColorSurface surface) (color, paint) = surface.Paint(series, 0, point, colors);
                 entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
                     marker: FinancialLegend(chart, series, 0, colors, point, pattern)
-                        ?? VisualMarkerScene.Legend(chart, series, color, paint, point, pattern, bubbleScale), paint: paint));
+                        ?? VisualMarkerScene.Legend(chart, series, color, paint, point, pattern, bubbleScale), paint: paint,
+                    metadata: series.IsVisibilityPreparation ? VisibilityLegendObservationFacts(series, point) : null));
             }
             return entries;
         }
@@ -85,7 +86,7 @@ internal static partial class VisualCartesianCompiler {
                 + " has a zero " + (total.Positive ? "positive" : "negative") + " total and remains at the baseline with its source observations retained."));
         var range = ChartRange.FromChart(chart, coordinates, stacks);
         ChartTimeSessionValidation.ValidateWindow(chart.Options.XAxis, range.MinX, range.MaxX, "X axis");
-        var hasSecondary = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary);
+        var hasSecondary = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary && (!series.IsVisibilityPreparation || series.HasSourceData));
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryValueAxis(chart, range, stacks) : null;
         fullDomain?.Apply(chart, range, secondaryRange);
         var labels = new CartesianLabels();
@@ -140,10 +141,10 @@ internal static partial class VisualCartesianCompiler {
             : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         if (sourceViewport != null) ValidateFiniteViewportProjection(chart, map, secondaryMap);
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
-        DrawPlotRegionFills(builder, plotRegions, colors);
-        var axisBuilder = !SameAxisFrame(plot, labelBounds)
+        DrawPlotRegionFills(context, builder, plotRegions, colors);
+        var axisBuilder = HasCompleteAxisCrossing(chart) || !SameAxisFrame(plot, labelBounds)
             || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)
-            ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
+            ? new VisualSceneBuilder(builder.Size, context.Font, context.NativeTextCapture) : builder;
         using (axisBuilder.PushClip(viewport)) {
             if (horizontal) DrawHorizontalAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels, labelBounds);
@@ -161,14 +162,16 @@ internal static partial class VisualCartesianCompiler {
         // Caption placement needs the actual marks before the background band layer is
         // emitted. Collect those marks once; ordinary charts keep the direct builder path.
         var seriesBuilder = chart.Annotations.Any(annotation => annotation.IsBand && annotation.ShowLabel && annotation.Label.Length > 0)
-            ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
+            ? new VisualSceneBuilder(builder.Size, context.Font, context.NativeTextCapture) : builder;
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
                     xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
             }
+            var valueFirst = seriesBuilder.ValueBoundary();
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
+                if (series.IsVisibilityPreparation && !series.HasSourceData) continue;
                 var seriesMap = series.ValueAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
                 var pointSeries = IsPointSeries(series.Kind);
                 using (clipMarks && (!pointSeries || sourceViewport != null) ? seriesBuilder.PushClip(plot) : null)
@@ -188,9 +191,14 @@ internal static partial class VisualCartesianCompiler {
                             horizontal ? series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryX : xViewport : xViewport,
                             horizontal ? yViewport : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                     else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index],
-                        horizontal ? null : xViewport, horizontal ? null : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
+                        horizontal ? series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryX : xViewport : xViewport,
+                        horizontal ? yViewport : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                 }
             }
+            var valueLast = seriesBuilder.ValueBoundary();
+            if (ReferenceEquals(seriesBuilder, builder))
+                CaptureCartesianValues(chart, context, builder, plot, range, secondaryRange, fullRange, fullSecondaryRange,
+                    map, secondaryMap, coordinates, stacks, axisLabels, valueFirst, valueLast, sourceViewport);
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
                     xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
@@ -203,6 +211,8 @@ internal static partial class VisualCartesianCompiler {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, secondaryMap, stacks, labels);
             else AddStackTotals(chart, context, builder, plot, coordinates, stacks, map, secondaryMap, labels, verticalTotals!);
         }
+        if (HasCompleteAxisCrossing(chart))
+            DrawCrossingAxes(chart, context, builder, plot, viewport, range, map, secondaryRange, secondaryMap, colors, axisLabels, obstacles);
         DrawPlotRegionLabels(context, builder, plotRegions, colors, obstacles);
         using (sourceViewport != null ? builder.PushClip(plot) : null)
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
@@ -217,13 +227,18 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
             && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
             throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
+        if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalComparison(chart, series))
+            && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
+            throw new NotSupportedException("Horizontal comparison charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
             if (series.TimeBucketInterval != null && chart.Options.XAxis.Scale != ChartScaleKind.Time)
                 throw new InvalidOperationException("Time buckets require a time X axis.");
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
             if (series.RenderPoints.Count % ObservationStride(series.Kind) != 0)
                 throw new InvalidOperationException(series.Kind + " requires complete observation tuples.");
-            if ((series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) && series.RenderPoints.Count != 2)
+            if (series.Kind == ChartSeriesKind.Slope && series.RenderPoints.Count == 1)
+                throw new InvalidOperationException("Slope requires an empty sequence or at least two stage observations.");
+            if (series.Kind == ChartSeriesKind.TrendLine && series.RenderPoints.Count != 2)
                 throw new InvalidOperationException(series.Kind + " requires exactly two endpoints.");
             if (series.Kind == ChartSeriesKind.Waterfall && chart.Series.Count != 1)
                 throw new NotSupportedException("A waterfall requires a single cumulative series.");

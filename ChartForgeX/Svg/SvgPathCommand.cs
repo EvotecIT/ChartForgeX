@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ChartForgeX.Svg;
@@ -30,6 +31,14 @@ internal readonly struct SvgPathCommand {
         var parts = new string[_values.Length + 1];
         parts[0] = Command.ToString();
         for (var i = 0; i < _values.Length; i++) parts[i + 1] = SvgMarkupWriter.FormatNumber(_values[i]);
+        return string.Join(" ", parts);
+    }
+
+    /// <summary>Formats a detached numeric capture without reducing double precision.</summary>
+    internal string ToRoundTripMarkup() {
+        var parts = new string[_values.Length + 1];
+        parts[0] = Command.ToString();
+        for (var index = 0; index < _values.Length; index++) parts[index + 1] = _values[index].ToString("G17", CultureInfo.InvariantCulture);
         return string.Join(" ", parts);
     }
 

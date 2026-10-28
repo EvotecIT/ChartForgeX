@@ -46,9 +46,7 @@ public sealed class NumericRadialPrecisionBrowserTests {
             }
             """);
         if (caption) {
-            var label = await page.Locator("[data-cfx-label-for='series-0-point-0'] text").First.BoundingBoxAsync()
-                ?? throw new InvalidOperationException("Missing painted source caption.");
-            location = new[] { (float)(label.X + label.Width * .35), (float)(label.Y + label.Height * .45) };
+            location = await BrowserProofCaptions.PointAsync(page, page.Locator("[data-cfx-label-for='series-0-point-0']").First);
         }
         await page.Mouse.MoveAsync(location[0], location[1]);
         await page.Mouse.ClickAsync(location[0], location[1]);

@@ -121,9 +121,12 @@ public sealed partial class CartesianPlotRegionBrowserTests {
                     const n=root.querySelector('[data-cfx-role="'+role+'"]'), b=n.getBoundingClientRect();
                     const samples=role==='plot-region-fill' ? [[px-45,py+25],[px+45,py+25],[px-45,py-25]]
                         : [.02,.1,.3,.5,.7,.9,.98].flatMap(x=>[.1,.5,.9].map(y=>[b.x+b.width*x,b.y+b.height*y]));
-                    const hit=samples.find(([x,y])=>document.elementFromPoint(x,y)?.closest('[data-cfx-role]')?.dataset.cfxRole===role);
+                    const hit=samples.find(([x,y])=>{const top=document.elementFromPoint(x,y);
+                        return top?.closest('[data-cfx-role]')?.dataset.cfxRole===role
+                            || role==='plot-region-label-backplate' && n.parentElement.contains(top)
+                                && top.closest('[data-cfx-role=plot-region-label]')!==null;});
                     if(!hit)throw new Error('No real painted hit for '+role);
-                    return {role,x:hit[0],y:hit[1],distance:Math.hypot(hit[0]-px,hit[1]-py),targetId:point.dataset.cfxTargetId};
+                    return {role,actualHitRole:document.elementFromPoint(...hit)?.closest('[data-cfx-role]')?.dataset.cfxRole,x:hit[0],y:hit[1],distance:Math.hypot(hit[0]-px,hit[1]-py),targetId:point.dataset.cfxTargetId};
                 });
             }
             """);

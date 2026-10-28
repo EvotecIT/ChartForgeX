@@ -40,12 +40,14 @@ internal static class VisualRadialPrimitives {
 
     /// <summary>Keeps the complete descriptive fact; Drop omits numeric captions that cannot fit at their resolved size.</summary>
     internal static void Text(VisualSceneBuilder builder, string full, ChartRect area, TextStyle style, string role, string id, SvgPaint? paint = null,
-        TextAlignment alignment = TextAlignment.Center, LabelFallbackRule fallback = LabelFallbackRule.EllipsisThenDrop) {
+        TextAlignment alignment = TextAlignment.Center, LabelFallbackRule fallback = LabelFallbackRule.EllipsisThenDrop, VisualSceneTextFace? capturedFace = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, area, full));
         using (builder.PushGroup(id + "-source", role + "-source", new Dictionary<string, string> { ["aria-label"] = full, ["data-cfx-label"] = full })) {
+            TextMetrics Measure(string text) => capturedFace == null ? builder.MeasureText(text, style)
+                : capturedFace.Prepare(text, style.EffectiveFontSize).Metrics;
             var fitted = fallback == LabelFallbackRule.Drop ? full
-                : ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => builder.MeasureText(text, style).Width);
-            var metrics = builder.MeasureText(fitted, style);
+                : ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => Measure(text).Width);
+            var metrics = Measure(fitted);
             // Centering and intersecting a measured row may subtract a floating-point ULP.
             if (fitted.Length == 0 || metrics.Width > area.Width + .000001 || metrics.Height > area.Height + .000001) {
                 builder.AddDiagnostic(new VisualDiagnostic("radial.text-overflow", "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."));
@@ -55,9 +57,18 @@ internal static class VisualRadialPrimitives {
                 builder.AddDiagnostic(new VisualDiagnostic("radial.text-overflow", "Radial text was shortened; the complete value remains in descriptive regions."));
             style = style.Clone(); style.Alignment = alignment;
             var shift = style.Baseline == TextBaseline.Superscript ? -style.FontSize * .35 : style.Baseline == TextBaseline.Subscript ? style.FontSize * .22 : 0;
-            var baseline = area.Top + (area.Height - metrics.Height) / 2 + builder.TextAscent(style);
+            var baseline = area.Top + (area.Height - metrics.Height) / 2
+                + (capturedFace == null ? builder.TextAscent(style) : capturedFace.Ascent(style.EffectiveFontSize));
             var anchor = alignment == TextAlignment.Left ? area.Left : alignment == TextAlignment.Right ? area.Right : area.Left + area.Width / 2;
-            builder.Text(fitted, anchor, baseline - shift, style, role, id, paint: paint ?? VisualChartPaint.Text(style));
+            if (capturedFace == null) builder.Text(fitted, anchor, baseline - shift, style, role, id, paint: paint ?? VisualChartPaint.Text(style));
+            else {
+                var adjusted = baseline - shift + (style.Baseline == TextBaseline.Superscript ? -style.EffectiveFontSize * .35
+                    : style.Baseline == TextBaseline.Subscript ? style.EffectiveFontSize * .22 : 0);
+                var prepared = capturedFace.Prepare(fitted, style.EffectiveFontSize);
+                prepared.Style.Color = style.Color; prepared.Style.Alignment = alignment;
+                builder.PreparedText(prepared, anchor, adjusted, style.Color,
+                    alignment, role, id, paint ?? VisualChartPaint.Text(style), includeDecorations: true);
+            }
         }
     }
 

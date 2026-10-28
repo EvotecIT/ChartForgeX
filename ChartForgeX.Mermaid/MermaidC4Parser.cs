@@ -43,12 +43,12 @@ internal static partial class MermaidC4Parser {
             if (TryParseNativeUpdate(document, elements, boundaries, call, span, result)) continue;
 
             if (NormalizeName(call.Name) == "relindex") {
-                ParseIndexedRelationship(document, elements, call, span, result);
+                ParseIndexedRelationship(document, elements, boundaries, call, span, result);
                 continue;
             }
 
             if (IsRelationship(call.Name)) {
-                ParseRelationship(document, elements, call, span, result);
+                ParseRelationship(document, elements, boundaries, call, span, result);
                 continue;
             }
 
@@ -102,6 +102,8 @@ internal static partial class MermaidC4Parser {
             Link = OptionalArg(call.Arguments, 2, IsDeployment(call.Name) ? 4 : NormalizeName(call.Name) == "boundary" ? 2 : 1, "link"),
             ParentId = boundaryStack.Count == 0 ? null : boundaryStack.Peek()
         };
+        if (!string.IsNullOrEmpty(boundary.Sprite) && !MermaidC4Shapes.IsKeyword(boundary.Sprite))
+            Retain(document, result, document.Statements[document.Statements.Count - 1].Text, span, "External C4 boundary sprites are not loaded; metadata remains retained: ");
         boundaries.Add(id, boundary);
         document.Boundaries.Add(boundary);
         if (call.OpensBlock) {
@@ -139,11 +141,13 @@ internal static partial class MermaidC4Parser {
             BoundaryId = boundaryStack.Count == 0 ? null : boundaryStack.Peek()
         };
 
+        if (!string.IsNullOrEmpty(element.Sprite) && !MermaidC4Shapes.IsKeyword(element.Sprite))
+            Retain(document, result, document.Statements[document.Statements.Count - 1].Text, span, "External C4 sprites are not loaded; metadata remains retained: ");
         elements.Add(alias, element);
         document.Elements.Add(element);
     }
 
-    private static void ParseRelationship(MermaidC4Document document, Dictionary<string, MermaidC4Element> elements, CallStatement call, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseRelationship(MermaidC4Document document, Dictionary<string, MermaidC4Element> elements, Dictionary<string, MermaidC4Boundary> boundaries, CallStatement call, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (call.Arguments.Count < 3) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 relationships require source, target, and label arguments.");
             return;
@@ -151,8 +155,8 @@ internal static partial class MermaidC4Parser {
 
         var source = Clean(call.Arguments[0]);
         var target = Clean(call.Arguments[1]);
-        if (!elements.ContainsKey(source)) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 relationship source '" + source + "' must refer to a previously declared element.");
-        if (!elements.ContainsKey(target)) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 relationship target '" + target + "' must refer to a previously declared element.");
+        if (!elements.ContainsKey(source) && !boundaries.ContainsKey(source)) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 relationship source '" + source + "' must refer to a previously declared element or boundary.");
+        if (!elements.ContainsKey(target) && !boundaries.ContainsKey(target)) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 relationship target '" + target + "' must refer to a previously declared element or boundary.");
 
         document.Relationships.Add(new MermaidC4Relationship(source, target, NormalizeKind(call.Name), span) {
             Label = Arg(call.Arguments, 2),

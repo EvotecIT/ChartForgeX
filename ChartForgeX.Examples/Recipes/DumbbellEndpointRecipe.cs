@@ -1,0 +1,27 @@
+/// <summary>Compares service capacity with independent Start and End glyphs on either physical orientation.</summary>
+public static class DumbbellEndpointRecipe {
+    /// <summary>Creates source-ordered pairs; marker presentation never sorts or replaces the two endpoint values.</summary>
+    public static Chart Create(string variant = "endpoint-markers", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("horizontal" or "compact-horizontal" or "endpoint-markers" or "compact-endpoint-markers"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var capacity = ChartSeries.CreateDumbbell(new ChartSeriesId("capacity"), "Start / End capacity", new[] {
+            new ChartDumbbell(1, 32, 44), new ChartDumbbell(2, 58, 38), new ChartDumbbell(3, 51, 72),
+            new ChartDumbbell(4, 43, 67), new ChartDumbbell(5, 81, 58)
+        }).WithObservationIds(new[] { "standard", "express", "premium", "bulk", "return" }.Select(id => new ChartObservationId(id)))
+            .ConfigureDumbbell(options => {
+                options.StartMarker.Shape = ChartMarkerShape.Circle; options.StartMarker.Radius = 4;
+                options.StartMarker.Fill = colors.Palette[1];
+                options.EndMarker.Shape = ChartMarkerShape.Diamond; options.EndMarker.Radius = 8;
+                options.EndMarker.Fill = colors.Palette[0]; options.EndMarker.Stroke = colors.Surface; options.EndMarker.StrokeWidth = 1;
+            });
+        var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk", "Return")
+            .WithLegend(true).WithDataLabels(false).AddSeries(capacity)
+            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        if (variant.EndsWith("horizontal", StringComparison.Ordinal)) {
+            chart.Options.DumbbellOrientation = ChartOrientation.Horizontal;
+            chart.WithXAxis("Capacity").WithYAxis("Service");
+        } else chart.WithXAxis("Service").WithYAxis("Capacity");
+        return chart;
+    }
+}

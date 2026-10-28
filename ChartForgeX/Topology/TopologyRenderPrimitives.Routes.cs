@@ -37,6 +37,8 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static bool ShouldRoundEdgeCorners(TopologyEdge edge, IReadOnlyList<ChartPoint> points, TopologyRenderOptions options) {
+        if (edge.Interpolation.HasValue) return false;
+        if (edge.PathGeometry != null) return false;
         if (options.EdgeCornerStyle != TopologyEdgeCornerStyle.Rounded || options.EdgeCornerRadius <= 0 || points.Count < 3) return false;
         return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0;
     }

@@ -6,7 +6,25 @@ description: "Render tables, lists, metric cards and timelines as native SVG, PN
 
 `ChartGrid` remains a chart-only composition surface in core. Install `ChartForgeX.Visuals` and use the `ChartForgeX.VisualBlocks` namespace for tables, lists, metric cards, status panels, and infographic snippets.
 
-Current visual-block primitives:
+Core also provides `TreeViewBlock` for static directory trees. It uses immutable `TreeViewItem` rows, stable parent IDs, measured captions/descriptions, native file/folder icons and shared SVG/PNG geometry. Class names and external icon references remain inert metadata. This diagram owner is available without the Visuals package; it does not read a filesystem or collect host data.
+
+```csharp
+using ChartForgeX.VisualBlocks;
+
+var tree = TreeViewBlock.Create()
+    .WithTitle("Build inputs")
+    .AddItem("root", "Source/")
+    .AddItem("engine", "Engine.cs", "root", "Native rendering")
+    .AddItem("docs", "README.md", "root", "Public usage");
+tree.ShowIcons = true;
+tree.WithNaturalSize(520, 300);
+```
+
+Typed artifacts serialize through the existing `VisualArtifactInterchangeEnvelope` TreeView family and import with `ToTreeViewBlock()`. The envelope retains authoring identity and extension metadata; the imported block retains editable rows, native presentation and accessibility. Wire IDs obey the existing 512-character limit and are never silently rewritten. Older readers without TreeView support reject the new family.
+
+Rows use contiguous preorder and parents precede descendants. Explicit file rows reject children. Call `WithNaturalSize` after changing data, padding or typography. Native bounds are 10,000 rows, 128 levels and 8,192 pixels per axis; small explicit frames reject rather than omitting rows. Captions can shorten while full labels and descriptions remain in the model and SVG row titles.
+
+Current Visuals primitives:
 
 - `ChartTable` for structured rows, columns, headers, alignment, formattable values, row striping, status columns, conditional row/cell colors, dense mode, table-cell badges/chips, mini bars/sparklines, transparent backgrounds, and SVG/PNG/HTML export.
 - `ChartList` for bullets, numbered lists, key/value rows, checklists, status lists, and compact inventory summaries.

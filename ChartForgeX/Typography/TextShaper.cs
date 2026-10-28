@@ -9,11 +9,11 @@ namespace ChartForgeX.Typography;
 
 /// <summary>One glyph of shaped text: the face that draws it and its glyph id, in visual order.</summary>
 internal readonly struct ShapedGlyph {
-    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0, double? advance = null, double offsetX = 0, double offsetY = 0) {
+    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0, double? advance = null, double offsetX = 0, double offsetY = 0, int trackingGroup = -1, double trailingAdvance = 0) {
         Face = face;
         Glyph = glyph;
         SourceIndex = sourceIndex;
-        Advance = advance; OffsetX = offsetX; OffsetY = offsetY;
+        Advance = advance; OffsetX = offsetX; OffsetY = offsetY; TrackingGroup = trackingGroup; TrailingAdvance = trailingAdvance;
     }
 
     public TrueTypeFont Face { get; }
@@ -24,6 +24,10 @@ internal readonly struct ShapedGlyph {
     public double? Advance { get; }
     public double OffsetX { get; }
     public double OffsetY { get; }
+    internal int TrackingGroup { get; }
+    /// <summary>Additional font-unit advance after the complete eligible group, separate from legacy pair kerning.</summary>
+    internal double TrailingAdvance { get; }
+    internal ShapedGlyph WithTrailingAdvance(double value) => new(Face, Glyph, SourceIndex, Advance, OffsetX, OffsetY, TrackingGroup, value);
 }
 
 /// <summary>
@@ -52,12 +56,15 @@ internal static partial class TextShaper {
         (cp >= 0x20A0 && cp < 0x20D0) || (cp >= 0x2100 && cp < 0x2400) || (cp >= 0x2500 && cp < 0x2600);
 
     /// <summary>The glyphs of <paramref name="text"/> in visual order, cached per face.</summary>
-    internal static IReadOnlyList<ShapedGlyph> Shape(TrueTypeFont primary, string text, double pixelSize = 0) {
+    internal static IReadOnlyList<ShapedGlyph> Shape(TrueTypeFont primary, string text, double pixelSize = 0, bool strictPrimary = false) =>
+        Shape(primary, text, pixelSize, strictPrimary, null);
+    internal static IReadOnlyList<ShapedGlyph> Shape(TrueTypeFont primary, string text, double pixelSize, bool strictPrimary, CapturedClusters? capturedClusters) {
         pixelSize = NormalizePixelSize(pixelSize);
-        if (text.Length > MaximumCachedTextLength) return ShapeCore(primary, text, pixelSize);
-        var key = (text, pixelSize);
+        if (capturedClusters != null && !capturedClusters.IsReplay || text.Length > MaximumCachedTextLength)
+            return ShapeCore(primary, text, pixelSize, strictPrimary: strictPrimary, capturedClusters: capturedClusters);
+        var key = (text, pixelSize, strictPrimary, capturedClusters?.CacheIdentity);
         var cache = Caches.GetValue(primary, _ => new RunCache());
-        var version = FontFallbackChain.Version;
+        var version = strictPrimary || capturedClusters?.IsReplay == true ? -1 : FontFallbackChain.Version;
         lock (cache) {
             if (cache.Version != version) {
                 cache.Runs.Clear();
@@ -68,7 +75,7 @@ internal static partial class TextShaper {
             if (cache.Runs.TryGetValue(key, out var cached)) return cached;
         }
 
-        var shaped = ShapeCore(primary, text, pixelSize);
+        var shaped = ShapeCore(primary, text, pixelSize, strictPrimary: strictPrimary, capturedClusters: capturedClusters);
         if (shaped.Length > MaximumCachedGlyphs) return shaped;
         lock (cache) {
             if (cache.Version == version) {
@@ -83,22 +90,29 @@ internal static partial class TextShaper {
     }
 
     /// <summary>Shapes one complete text chunk while retaining the primary face of each logical code point.</summary>
-    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners, IReadOnlyList<double>? pixelSizes = null) =>
-        ShapeCore(faces[0], text, 0, faces, owners, pixelSizes);
+    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners, IReadOnlyList<double>? pixelSizes = null, IReadOnlyList<CapturedClusters?>? styledCaptures = null, IReadOnlyList<double>? letterSpacings = null) {
+        var tracked = letterSpacings != null && HasLetterSpacing(letterSpacings);
+        var shaped = ShapeCore(faces[0], text, 0, faces, owners, pixelSizes, styledCaptures: styledCaptures,
+            letterSpacings: tracked ? letterSpacings : null);
+        return tracked ? ApplyLetterSpacing(shaped, pixelSizes!, letterSpacings!) : shaped;
+    }
 
     private static double NormalizePixelSize(double size) => size > 0 && size < 65535.5 ? Math.Floor(size + 0.5) : 0;
 
-    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, double pixelSize, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null, IReadOnlyList<double>? pixelSizes = null) {
-        if (faces == null && TryShapeAscii(primary, text, pixelSize, out var simple)) return simple;
+    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, double pixelSize, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null, IReadOnlyList<double>? pixelSizes = null, bool strictPrimary = false, CapturedClusters? capturedClusters = null, IReadOnlyList<CapturedClusters?>? styledCaptures = null, IReadOnlyList<double>? letterSpacings = null) {
+        if (letterSpacings == null && faces == null && TryShapeAscii(primary, text, pixelSize, out var simple)) return simple;
         var codePoints = new List<int>(text.Length);
         for (var index = 0; index < text.Length;) codePoints.Add(TrueTypeFont.ReadCodePoint(text, ref index));
         var clusters = Segment(codePoints, owners);
         FontFallbackChain? chain = null;
         foreach (var cluster in clusters) {
             if (faces != null) { primary = faces[cluster.Start]; chain = null; }
-            AssignFace(primary, ref chain, codePoints, cluster);
+            var capture = styledCaptures == null ? capturedClusters : styledCaptures[cluster.Start];
+            AssignFace(primary, ref chain, codePoints, cluster, strictPrimary, capture);
             cluster.Face = cluster.Face!.WithLanguage(primary.LanguageTag).WithVariations(primary.Variations);
             cluster.Face = primary.PaletteContext == null ? cluster.Face.WithColorPalette(primary.ColorPaletteIndex) : cluster.Face.WithPaletteContext(primary.PaletteContext);
+            if (capture != null && !capture.IsReplay && cluster.FallbackAttempted)
+                capture.Observe(codePoints, cluster.Start, cluster.Count, cluster.Face!, cluster.Output);
             ComposeHebrew(cluster);
             RetainJoiners(codePoints, cluster);
         }
@@ -113,7 +127,8 @@ internal static partial class TextShaper {
             }
         }
 
-        return ShapeFontRuns(codePoints, clusters, levels, pixelSize, pixelSizes);
+        return ShapeFontRuns(codePoints, clusters, levels, pixelSize, pixelSizes, letterSpacings,
+            letterSpacings == null ? null : SourceTrackingGroups(codePoints, clusters));
     }
 
     // A base character and what attaches to it: marks, joiners and what they join, variation selectors, emoji modifiers, tags.
@@ -149,7 +164,7 @@ internal static partial class TextShaper {
         return before == IndicCategory.Halant || before == IndicCategory.Repha;
     }
 
-    private static void AssignFace(TrueTypeFont primary, ref FontFallbackChain? chain, List<int> codePoints, Cluster cluster) {
+    private static void AssignFace(TrueTypeFont primary, ref FontFallbackChain? chain, List<int> codePoints, Cluster cluster, bool strictPrimary, CapturedClusters? capturedClusters) {
         var visible = new List<int>(cluster.Count);
         for (var i = cluster.Start; i < cluster.Start + cluster.Count; i++) if (!IsIgnorable(codePoints[i])) visible.Add(codePoints[i]);
         cluster.Face = primary;
@@ -159,9 +174,17 @@ internal static partial class TextShaper {
         if (emoji && primary.IsColorFace && Covers(primary, visible)) {
             cluster.Output.AddRange(visible); return;
         }
+        if (strictPrimary) {
+            var composedPrimary = Compose(visible);
+            if (!emoji && composedPrimary != null && Covers(primary, composedPrimary)) { cluster.Output.AddRange(composedPrimary); return; }
+            if ((!emoji || primary.IsColorFace) && Covers(primary, visible)) { cluster.Output.AddRange(visible); return; }
+            throw new NotSupportedException("Native captured text replay requires the captured primary face to cover this complete cluster; fallback-dependent value frames are not admitted yet.");
+        }
         if (visible.Count == 1) {
             cluster.Output.Add(visible[0]);
             if (emoji || !primary.HasGlyph(visible[0])) {
+                cluster.FallbackAttempted = true;
+                if (capturedClusters != null && (capturedClusters.IsReplay || capturedClusters.HasCaptured(codePoints, cluster.Start, cluster.Count))) { cluster.Output.Clear(); ApplyCapturedCluster(capturedClusters, codePoints, cluster); return; }
                 var fallback = (chain ??= FontFallbackChain.For(primary)).FaceFor(visible[0], emoji);
                 if (fallback != null || !primary.HasGlyph(visible[0])) cluster.Face = fallback ?? primary;
             }
@@ -181,6 +204,8 @@ internal static partial class TextShaper {
         var composed = scriptJoiner ? null : Compose(visible);
         if (!emoji && composed != null && Covers(primary, composed)) { cluster.Output.AddRange(composed); return; }
         if (!emoji && Covers(primary, visible)) { cluster.Output.AddRange(visible); return; }
+        cluster.FallbackAttempted = true;
+        if (capturedClusters != null && (capturedClusters.IsReplay || capturedClusters.HasCaptured(codePoints, cluster.Start, cluster.Count))) { ApplyCapturedCluster(capturedClusters, codePoints, cluster); return; }
         chain ??= FontFallbackChain.For(primary);
         var face = chain.FaceForCluster(composed, visible, emoji, out var useComposed);
         if (face != null) {
@@ -292,12 +317,13 @@ internal static partial class TextShaper {
         public int Count { get; set; }
         public int Base { get; set; }
         public TrueTypeFont? Face { get; set; }
+        public bool FallbackAttempted { get; set; }
         public List<int> Output { get; } = new();
     }
 
     private sealed class RunCache {
         public int Version { get; set; }
         public int GlyphCount { get; set; }
-        public Dictionary<(string Text, double PixelSize), ShapedGlyph[]> Runs { get; } = new();
+        public Dictionary<(string Text, double PixelSize, bool StrictPrimary, object? CapturedPolicyIdentity), ShapedGlyph[]> Runs { get; } = new();
     }
 }

@@ -60,6 +60,8 @@ public sealed class LabelPlacementRequest {
     public LabelFallbackRule Fallback { get; set; } = LabelFallbackRule.EllipsisThenDrop;
     /// <summary>Gets or sets whether a displaced label should have a leader from its anchor.</summary>
     public bool HasLeaderLine { get; set; }
+    // Some native owners start with an already displaced candidate. Preserve legacy first-candidate behavior unless requested.
+    internal bool LeaderOnFirstCandidate { get; set; }
     /// <summary>Gets or sets the associated mark identity. A label fully contained in that mark is intentional; all other intersections are rejected.</summary>
     public string? AssociatedMarkId { get; set; }
 
@@ -78,6 +80,10 @@ public sealed class LabelPlacementRequest {
     internal bool AllowLabelOverlap { get; set; }
     // Prepared Cartesian Auto captions may retain complete authored text on two lines.
     internal bool AllowWrapping { get; set; }
+    // Only authored Cartesian Auto point captions opt into extra full-text lanes.
+    // The prepared mark box and spacing use the same physical coordinates as all obstacles.
+    internal ChartRect? AutoPointMarkBounds { get; set; }
+    internal double AutoPointSpacing { get; set; }
     internal TextMetrics? MeasuredSize { get; set; }
     internal TextMetrics? DecorationSize { get; set; }
 }
@@ -112,7 +118,7 @@ public sealed class PlacedLabel {
     /// <summary>Gets the chosen candidate index, or minus one when dropped.</summary>
     public int CandidateIndex { get; }
     /// <summary>Gets whether to draw a leader to the nearest point on the label box.</summary>
-    public bool HasLeaderLine => !IsDropped && Request.HasLeaderLine && CandidateIndex > 0;
+    public bool HasLeaderLine => !IsDropped && Request.HasLeaderLine && (CandidateIndex > 0 || Request.LeaderOnFirstCandidate);
     /// <summary>Gets the leader's endpoint on the label box.</summary>
     public ChartPoint LeaderEnd => new(Math.Max(Bounds.Left, Math.Min(Bounds.Right, Request.Anchor.X)), Math.Max(Bounds.Top, Math.Min(Bounds.Bottom, Request.Anchor.Y)));
 }

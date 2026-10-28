@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = TreemapCaptionPoliciesRecipe.Create("caption-policies", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("How work is allocated across teams").WithSubtitle("Explore the data, then download the chart").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("How work is allocated across teams", "Explore the data, then download the chart", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Opts into bounded caption shrinking and whole-text-element ellipsis while retaining complete source names.</summary>
+public static class TreemapCaptionPoliciesRecipe {
+    /// <summary>Creates the complete source model; layout and exports use the existing Treemap owner.</summary>
+    public static Chart Create(string variant = "caption-policies", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("caption-policies" or "compact-caption-policies")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
+            .AddTreemap("Reconciliation", new[] {
+                new ChartHierarchyItem("all", "International reconciliation, settlement and regional ownership — complete source caption"),
+                new ChartHierarchyItem("processing", "Regional processing reconciliation and settlement allocation", "all", 55),
+                new ChartHierarchyItem("regional", "North America processing", "all", 30),
+                new ChartHierarchyItem("reserve", "Reserve capacity", "all", 15)
+            }).ConfigureTreemap(options => {
+                options.MinimumLabelFontSize = 11;
+                options.LabelTrimming = ChartForgeX.Typography.TextTrimming.Ellipsis;
+                options.ShowValues = true;
+            });
+        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(14));
+        return chart.WithValueFormat(ChartValueFormat.Number("0", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

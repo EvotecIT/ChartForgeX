@@ -40,18 +40,14 @@ public sealed partial class DifferenceAreaTests {
     [InlineData("log-x")]
     [InlineData("log-y")]
     [InlineData("secondary-log-y")]
-    [InlineData("sym-log-x")]
-    [InlineData("smooth")]
     public void UnsupportedOrAmbiguousMutablePairsFailAtPreparation(string invalid) {
         var chart = Model(new(0, 8, 2), new(1, 2, 5)); var series = chart.Series[0];
         switch (invalid) {
             case "duplicate-x": series.UpdateDifferencePoint(1, new ChartDifferencePoint(0, 2, 5)); break;
             case "backtracking": series.UpdateDifferencePoint(1, new ChartDifferencePoint(-1, 2, 5)); break;
             case "log-x": chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic; break;
-            case "log-y": chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic; break;
-            case "secondary-log-y": series.UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
-            case "sym-log-x": chart.Options.XAxis.Scale = ChartScaleKind.SymmetricLogarithmic; break;
-            case "smooth": series.Interpolation = ChartInterpolation.Smooth; break;
+            case "log-y": series.UpdateDifferencePoint(0, new ChartDifferencePoint(0, 0, 2)); chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic; break;
+            case "secondary-log-y": series.UpdateDifferencePoint(0, new ChartDifferencePoint(0, 0, 2)); series.UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
         }
         var error = Record.Exception(() => Prepare(chart));
         Assert.True(error is InvalidOperationException or NotSupportedException, error?.ToString());

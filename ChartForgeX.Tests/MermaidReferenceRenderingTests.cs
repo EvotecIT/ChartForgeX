@@ -47,7 +47,8 @@ public sealed class MermaidReferenceRenderingTests {
                     await document.querySelector('#png').decode();
                 }
                 """, new { source, dark });
-            var observed = await page.EvaluateAsync<JsonElement>("""
+            await BrowserProofCaptions.InstallAsync(page);
+            var observed = await page.EvaluateReferenceJsonAsync("""
                 () => {
                     const normalize=text=>text.replace(/\s+/g,' ').trim();
                     const labelText=node=> {
@@ -57,12 +58,12 @@ public sealed class MermaidReferenceRenderingTests {
                     };
                     const reference=document.querySelector('#reference svg');
                     const native=document.querySelector('#native svg');
-                    const nativeLabels=[...native.querySelectorAll('[data-cfx-role="topology-node"]')].map(n=>normalize([...n.querySelectorAll('[data-cfx-role="topology-node-label"] text')].map(t=>t.textContent).join(' ')));
+                    const nativeLabels=[...native.querySelectorAll('[data-cfx-role="topology-node"]')].map(n=>[...n.querySelectorAll('[data-cfx-role="topology-node-label"]')].map(window.cfxReferenceLabelText).join(' '));
                     const referenceLabels=[...reference.querySelectorAll('.node .label')].map(labelText);
                     const clip=[];
                     for(const node of native.querySelectorAll('[data-cfx-role="topology-node"]')) {
                         const surface=node.querySelector('[data-cfx-role="topology-node-surface"]').getBBox();
-                        for(const text of node.querySelectorAll('[data-cfx-role="topology-node-label"] text')) {
+                        for(const text of node.querySelectorAll('[data-cfx-role="topology-node-label"] text,[data-cfx-role="topology-node-label"][data-cfx-caption]')) {
                             const box=text.getBBox();
                             if(box.x<surface.x-.5||box.y<surface.y-.5||box.x+box.width>surface.x+surface.width+.5||box.y+box.height>surface.y+surface.height+.5) clip.push(node.getAttribute('data-node-id'));
                         }

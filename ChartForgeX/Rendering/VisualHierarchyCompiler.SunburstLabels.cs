@@ -12,8 +12,9 @@ internal static partial class VisualHierarchyCompiler {
 
     /// <summary>Fits measured horizontal or upright tangential captions within the actual annular segment.</summary>
     private static void SunburstLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        ChartSunburstModel model, ChartSunburstNode node, SunburstSectorPaintGeometry geometry, ChartColor fill, SvgPaint fillPaint, string? secondary) {
+        ChartSunburstModel model, ChartSunburstNode node, SunburstSectorPaintGeometry geometry, ChartColor fill, SvgPaint fillPaint, string? secondary, HierarchyCaptionSurface? surface) {
         var style = LabelStyle(chart, context, fill, node.Index);
+        if (surface != null && !VisualChartPaint.ExplicitDataLabelColor(chart, node.Index)) style.Color = surface.Ink;
         var series = chart.Series[0];
         var original = HierarchyCaption(series, node.Index, node.Label);
         var metrics = builder.MeasureText(original, style);
@@ -30,15 +31,26 @@ internal static partial class VisualHierarchyCompiler {
         var probing = false;
         var horizontalShape = RoundedShape(0);
         var tangentShape = Math.Abs(tangent) < .001 ? horizontalShape : RoundedShape(tangent);
-        if (TryRadialPositions(original, metrics)) return;
+        string? curvedFallback = null;
+        if (chart.Options.Sunburst.CurvedLabels) {
+            if (SunburstCurvedLabel(chart, builder, model, node, geometry, fill, fillPaint, surface, style, original, secondary, false, out var reason)) return;
+            curvedFallback = reason;
+        }
+        if (TryRadialPositions(original, metrics)) { CurvedFallback(); return; }
         // Wrapping preserves a multiword caption before shortening. Geometry checks
         // still use the actual shaped width and combined line height of that result.
         var wrapped = ChartLabelWrapping.BalancedTwoLine(original, style.EffectiveFontSize, metrics.Width * .6,
             (value, _) => builder.MeasureText(value, style).Width);
         var twoLines = string.Join("\n", wrapped);
-        if (wrapped.Length > 1 && TryRadialPositions(twoLines, builder.MeasureText(twoLines, style))) return;
-        if (TrySmallerPrimary()) return;
+        if (wrapped.Length > 1 && TryRadialPositions(twoLines, builder.MeasureText(twoLines, style))) { CurvedFallback(); return; }
+        if (TrySmallerPrimary()) { CurvedFallback(); return; }
+        CurvedFallback();
         builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst label was omitted to fit its segment; complete text remains in source semantics."));
+
+        void CurvedFallback() {
+            if (curvedFallback != null) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.curved-label-fallback",
+                "A curved Sunburst caption used ordinary placement (" + curvedFallback + "); complete source text remains in semantics."));
+        }
 
         bool TryRadialPositions(string text, TextMetrics measured) {
             var thickness = geometry.OuterRadius - geometry.InnerRadius;
@@ -58,12 +70,12 @@ internal static partial class VisualHierarchyCompiler {
         bool TryCaption(string text, TextMetrics measured) {
             var orientations = node.ViewDepth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent };
             if (probing) return orientations.Any(degrees => Fits(measured, degrees));
-            if (secondary != null && SunburstSecondaryLabel(chart, builder, node, fill, fillPaint, style, text, measured, secondary, x, y, orientations, Fits)) return true;
+            if (secondary != null && SunburstSecondaryLabel(chart, builder, node, fill, fillPaint, surface, style, text, measured, secondary, x, y, orientations, Fits)) return true;
             foreach (var degrees in orientations) {
                 if (!Fits(measured, degrees)) continue;
                 if (secondary != null) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."));
                 var paint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(style)
-                    : SvgPaint.Contrast(fill, fillPaint);
+                    : surface?.Paint(fill, fillPaint, style.Color) ?? SvgPaint.Contrast(fill, fillPaint);
                 style.Alignment = TextAlignment.Center;
                 using (Math.Abs(degrees) < .001 ? null : builder.PushRotation(degrees, x, y))
                     builder.Text(text, x, y - measured.Height / 2 + builder.TextAscent(style), style, "sunburst-label",
@@ -89,6 +101,11 @@ internal static partial class VisualHierarchyCompiler {
 
         bool AtSize(double fontSize) {
             style.FontSize = fontSize;
+            if (chart.Options.Sunburst.CurvedLabels && SunburstCurvedLabel(chart, builder, model, node, geometry, fill, fillPaint,
+                surface, style, original, secondary, probing, out _)) {
+                if (!probing) curvedFallback = null;
+                return true;
+            }
             if (TryRadialPositions(original, builder.MeasureText(original, style))) return true;
             var lines = ChartLabelWrapping.BalancedTwoLine(original, style.EffectiveFontSize,
                 builder.MeasureText(original, style).Width * .6, (value, _) => builder.MeasureText(value, style).Width);

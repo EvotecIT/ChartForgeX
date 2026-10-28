@@ -1,0 +1,17 @@
+block-beta
+columns 3
+block:services:2
+  columns 2
+  api["API"] worker("Worker")
+  block:storage:2
+    columns 2
+    queue[["Queue"]] data[("Data")]
+  end
+end
+client{{"Client"}}
+api --> client
+client --> data
+classDef default fill:#dbeafe,stroke:#1e3a8a,color:#172554
+classDef important fill:#fef3c7,stroke:#92400e,stroke-width:2,font-weight:bold
+class api,worker important
+style api fill:#dcfce7

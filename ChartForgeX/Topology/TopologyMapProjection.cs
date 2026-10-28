@@ -23,6 +23,8 @@ internal static class TopologyMapProjection {
     public const string ProjectionName = "equirectangular";
 
     public static ChartRect MapRect(TopologyChart chart) {
+        if (chart.MapViewport.CrossesAntimeridian)
+            throw new NotSupportedException("Geographic topology currently requires an ordered longitude viewport; antimeridian point/route windows are supported by DottedMap.");
         var pad = Math.Max(24, chart.Viewport.Padding);
         var top = pad + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
         var legendOffset = TopologyRenderPrimitives.LegendReservedHeight(chart.Legend, chart.Viewport);

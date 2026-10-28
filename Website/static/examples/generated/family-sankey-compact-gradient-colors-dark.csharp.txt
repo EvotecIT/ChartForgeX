@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = SankeyPaintRecipe.Create("compact-gradient-colors", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Requests across processing stages").WithSubtitle("Explore the data, then download the chart").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Requests across processing stages", "Explore the data, then download the chart", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Endpoint gradients and outlined labels use the same native Sankey scene in SVG and PNG.</summary>
+public static class SankeyPaintRecipe {
+    public static Chart Create(string variant = "gradient-colors", VisualThemeMode mode = VisualThemeMode.Light) {
+        var chart = Chart.Create().AddSankey("Requests", new[] {
+            new ChartNode("received", "Received"), new ChartNode("review", "Review"), new ChartNode("ready", "Ready")
+        }, new[] {
+            new ChartFlowLink("standard", "received", "review", 60),
+            new ChartFlowLink("priority", "received", "review", 20),
+            new ChartFlowLink("delivered", "review", "ready", 80)
+        }).ConfigureSankey(options => {
+            options.FlowColorMode = ChartSankeyFlowColorMode.Gradient;
+            options.LabelStyle = ChartSankeyLabelStyle.Outlined;
+            options.RibbonOpacity = .6; options.NodeWidth = 16;
+        }).WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#2864B4"))
+            .WithPointColor(1, ChartColor.FromHex("#BB6428")).WithPointColor(2, ChartColor.FromHex("#279473"))
+            .WithFlowStyle("priority", new ChartFlowStyle(fill: ChartColor.FromHex("#7954AA"), fillOpacity: .75));
+        return chart;
+    }
+}

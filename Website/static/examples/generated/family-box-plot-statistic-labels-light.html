@@ -1,0 +1,436 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Delivery time by service level &#183; Box Plot</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Box Plot</p><h1>Delivery time by service level</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-box-plot-wide-light.html" data-theme-link data-light-href="family-box-plot-wide-light.html" data-dark-href="family-box-plot-wide-dark.html">Standard</a></span><span><a href="family-box-plot-compact-light.html" data-theme-link data-light-href="family-box-plot-compact-light.html" data-dark-href="family-box-plot-compact-dark.html">Compact</a></span><span><a href="family-box-plot-compact-horizontal-light.html" data-theme-link data-light-href="family-box-plot-compact-horizontal-light.html" data-dark-href="family-box-plot-compact-horizontal-dark.html">Compact Horizontal</a></span><span><a href="family-box-plot-compact-horizontal-statistic-labels-light.html" data-theme-link data-light-href="family-box-plot-compact-horizontal-statistic-labels-light.html" data-dark-href="family-box-plot-compact-horizontal-statistic-labels-dark.html">Compact Horizontal Statistic Labels</a></span><span><a href="family-box-plot-compact-options-light.html" data-theme-link data-light-href="family-box-plot-compact-options-light.html" data-dark-href="family-box-plot-compact-options-dark.html">Compact options</a></span><span><a href="family-box-plot-compact-statistic-labels-light.html" data-theme-link data-light-href="family-box-plot-compact-statistic-labels-light.html" data-dark-href="family-box-plot-compact-statistic-labels-dark.html">Compact Statistic Labels</a></span><span><a href="family-box-plot-horizontal-light.html" data-theme-link data-light-href="family-box-plot-horizontal-light.html" data-dark-href="family-box-plot-horizontal-dark.html">Horizontal</a></span><span><a href="family-box-plot-horizontal-statistic-labels-light.html" data-theme-link data-light-href="family-box-plot-horizontal-statistic-labels-light.html" data-dark-href="family-box-plot-horizontal-statistic-labels-dark.html">Horizontal Statistic Labels</a></span><span><a href="family-box-plot-options-light.html" data-theme-link data-light-href="family-box-plot-options-light.html" data-dark-href="family-box-plot-options-dark.html">Configured options</a></span><span class="current-variant"><a href="family-box-plot-statistic-labels-light.html" data-theme-link data-light-href="family-box-plot-statistic-labels-light.html" data-dark-href="family-box-plot-statistic-labels-dark.html" aria-current="page">Statistic Labels</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:800px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Delivery time by service level" aria-labelledby="family-box-plot-statistic-labels-light-title" aria-describedby="family-box-plot-statistic-labels-light-description"><title id="family-box-plot-statistic-labels-light-title">Delivery time by service level</title><desc id="family-box-plot-statistic-labels-light-description">Five-number delivery summaries with 1 data series: Delivery time.</desc><defs><clipPath id="family-box-plot-statistic-labels-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="392"/></clipPath><clipPath id="family-box-plot-statistic-labels-light-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="752" height="340.35"/></clipPath><clipPath id="family-box-plot-statistic-labels-light-clip-24" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="105.228" width="705.928" height="281.194"/></clipPath></defs><rect x="0" y="0" width="800" height="440" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-box-plot-statistic-labels-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Delivery time by service level</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-box-plot-statistic-labels-light-clip-9)"><line x1="48.164" y1="386.422" x2="754.092" y2="386.422" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="292.691" x2="754.092" y2="292.691" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="198.959" x2="754.092" y2="198.959" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="105.228" x2="754.092" y2="105.228" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="386.422" x2="754.092" y2="386.422" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="202.738" y="409.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Standard</text></g><g data-cfx-role="axis-x-label"><text x="559.238" y="409.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Express</text></g><line x1="48.164" y1="105.228" x2="48.164" y2="386.422" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="389.059" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="295.327" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g><g data-cfx-role="axis-y-label"><text x="24" y="201.596" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g><g data-cfx-role="axis-y-label"><text x="24" y="107.865" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">60</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Delivery time (minutes)</text></g></g><g clip-path="url(#family-box-plot-statistic-labels-light-clip-24)"><g id="family-box-plot-statistic-labels-light-node-25" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Delivery time" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="BoxPlot" data-cfx-pin-state-colors="false" data-cfx-rendered-points="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="delivery" data-cfx-series-name="Delivery time" data-cfx-series-scope="shared" data-cfx-source-points="2" data-cfx-state="none"><g id="family-box-plot-statistic-labels-light-node-26" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Delivery time: Standard delivery summary x=1 minimum=10 q1=20 median=30 q3=40 maximum=50 Standard" data-cfx-authored-label="Standard delivery summary" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-category-label="Standard" data-cfx-display-label="Standard" data-cfx-fill-pattern="None" data-cfx-formatted-maximum="50" data-cfx-formatted-median="30" data-cfx-formatted-minimum="10" data-cfx-formatted-q1="20" data-cfx-formatted-q3="40" data-cfx-formatted-value="30" data-cfx-formatted-x="Standard" data-cfx-formatted-y="10" data-cfx-kind="BoxPlot" data-cfx-label="Standard delivery summary" data-cfx-label-category="Category" data-cfx-label-maximum="Maximum" data-cfx-label-median="Median" data-cfx-label-minimum="Minimum" data-cfx-label-q1="Q1" data-cfx-label-q3="Q3" data-cfx-maximum="50" data-cfx-maximum-label="50" data-cfx-median="30" data-cfx-median-label="30" data-cfx-minimum="10" data-cfx-minimum-label="10" data-cfx-orientation="vertical" data-cfx-point="0" data-cfx-q1="20" data-cfx-q1-label="20" data-cfx-q3="40" data-cfx-q3-label="40" data-cfx-series="0" data-cfx-series-key="delivery" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="1" data-cfx-y="10"><line x1="224.646" y1="339.556" x2="224.646" y2="152.094" data-cfx-role="boxplot-whisker" fill="none" stroke="#0F9F8C" stroke-width="2"/><line x1="207.626" y1="339.556" x2="241.666" y2="339.556" data-cfx-role="boxplot-cap" fill="none" stroke="#0F9F8C" stroke-width="2"/><line x1="207.626" y1="152.094" x2="241.666" y2="152.094" data-cfx-role="boxplot-cap" fill="none" stroke="#0F9F8C" stroke-width="2"/><rect x="201.646" y="198.959" width="46" height="93.731" rx="5" data-cfx-role="boxplot-body" fill="rgba(15,159,140,0.22)" stroke="#0F9F8C" stroke-width="2"/><line x1="201.646" y1="245.825" x2="247.646" y2="245.825" data-cfx-role="boxplot-median" fill="none" stroke="#0F9F8C" stroke-width="2.4"/></g><g id="family-box-plot-statistic-labels-light-node-33" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Delivery time: 25 x=2 minimum=5 q1=15 median=25 q3=35 maximum=45 Express" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-category-label="Express" data-cfx-display-label="Express" data-cfx-fill-pattern="None" data-cfx-formatted-maximum="45" data-cfx-formatted-median="25" data-cfx-formatted-minimum="5" data-cfx-formatted-q1="15" data-cfx-formatted-q3="35" data-cfx-formatted-value="25" data-cfx-formatted-x="Express" data-cfx-formatted-y="5" data-cfx-kind="BoxPlot" data-cfx-label="25" data-cfx-label-category="Category" data-cfx-label-maximum="Maximum" data-cfx-label-median="Median" data-cfx-label-minimum="Minimum" data-cfx-label-q1="Q1" data-cfx-label-q3="Q3" data-cfx-maximum="45" data-cfx-maximum-label="45" data-cfx-median="25" data-cfx-median-label="25" data-cfx-minimum="5" data-cfx-minimum-label="5" data-cfx-orientation="vertical" data-cfx-point="1" data-cfx-q1="15" data-cfx-q1-label="15" data-cfx-q3="35" data-cfx-q3-label="35" data-cfx-series="0" data-cfx-series-key="delivery" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="2" data-cfx-y="5"><line x1="577.61" y1="362.989" x2="577.61" y2="175.527" data-cfx-role="boxplot-whisker" fill="none" stroke="#0F9F8C" stroke-width="2"/><line x1="560.59" y1="362.989" x2="594.63" y2="362.989" data-cfx-role="boxplot-cap" fill="none" stroke="#0F9F8C" stroke-width="2"/><line x1="560.59" y1="175.527" x2="594.63" y2="175.527" data-cfx-role="boxplot-cap" fill="none" stroke="#0F9F8C" stroke-width="2"/><rect x="554.61" y="222.392" width="46" height="93.731" rx="5" data-cfx-role="boxplot-body" fill="rgba(15,159,140,0.22)" stroke="#0F9F8C" stroke-width="2"/><line x1="554.61" y1="269.258" x2="600.61" y2="269.258" data-cfx-role="boxplot-median" fill="none" stroke="#0F9F8C" stroke-width="2.4"/></g></g></g><g id="family-box-plot-statistic-labels-light-node-42" data-cfx-source-id="series-0-point-0-minimum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="10" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-light-node-43" data-cfx-source-id="series-0-point-0-minimum-label" data-cfx-role="data-label"><text x="259.646" y="341.754" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#235B9F" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">10</text></g></g><g id="family-box-plot-statistic-labels-light-node-45" data-cfx-source-id="series-0-point-0-q1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="20" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-light-node-46" data-cfx-source-id="series-0-point-0-q1-label" data-cfx-role="data-label"><text x="259.646" y="294.888" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g></g><g id="family-box-plot-statistic-labels-light-node-48" data-cfx-source-id="series-0-point-0-median-label-source" data-cfx-role="data-label-source" data-cfx-full-label="30" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-light-node-49" data-cfx-source-id="series-0-point-0-median-label" data-cfx-role="data-label"><text x="259.646" y="248.462" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">30</text></g></g><g id="family-box-plot-statistic-labels-light-node-51" data-cfx-source-id="series-0-point-0-q3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="40" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-light-node-52" data-cfx-source-id="series-0-point-0-q3-label" data-cfx-role="data-label"><text x="259.646" y="201.157" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g></g><g id="family-box-plot-statistic-labels-light-node-54" data-cfx-source-id="series-0-point-0-maximum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="50" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-light-node-55" data-cfx-source-id="series-0-point-0-maximum-label" data-cfx-role="data-label"><text x="259.646" y="154.291" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#975000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g></g><g id="family-box-plot-statistic-labels-light-node-57" data-cfx-source-id="series-0-point-1-minimum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="5" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-light-node-58" data-cfx-source-id="series-0-point-1-minimum-label" data-cfx-role="data-label"><text x="612.61" y="365.186" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#235B9F" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">5</text></g></g><g id="family-box-plot-statistic-labels-light-node-60" data-cfx-source-id="series-0-point-1-q1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="15" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-light-node-61" data-cfx-source-id="series-0-point-1-q1-label" data-cfx-role="data-label"><text x="612.61" y="318.321" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">15</text></g></g><g id="family-box-plot-statistic-labels-light-node-63" data-cfx-source-id="series-0-point-1-median-label-source" data-cfx-role="data-label-source" data-cfx-full-label="25" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-light-node-64" data-cfx-source-id="series-0-point-1-median-label" data-cfx-role="data-label"><text x="612.61" y="271.895" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">25</text></g></g><g id="family-box-plot-statistic-labels-light-node-66" data-cfx-source-id="series-0-point-1-q3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="35" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-light-node-67" data-cfx-source-id="series-0-point-1-q3-label" data-cfx-role="data-label"><text x="612.61" y="224.589" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">35</text></g></g><g id="family-box-plot-statistic-labels-light-node-69" data-cfx-source-id="series-0-point-1-maximum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="45" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-light-node-70" data-cfx-source-id="series-0-point-1-maximum-label" data-cfx-role="data-label"><text x="612.61" y="177.724" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#975000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">45</text></g></g></svg></div><div class="full" style="--example-width:800px" data-visual-theme="light" data-output-format="png"><img src="family-box-plot-statistic-labels-light.png" width="800" height="440" alt="Delivery time by service level" loading="lazy" decoding="async"></div><div class="full" style="--example-width:800px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Delivery time by service level" aria-labelledby="family-box-plot-statistic-labels-dark-title" aria-describedby="family-box-plot-statistic-labels-dark-description"><title id="family-box-plot-statistic-labels-dark-title">Delivery time by service level</title><desc id="family-box-plot-statistic-labels-dark-description">Five-number delivery summaries with 1 data series: Delivery time.</desc><defs><clipPath id="family-box-plot-statistic-labels-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="392"/></clipPath><clipPath id="family-box-plot-statistic-labels-dark-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="752" height="340.35"/></clipPath><clipPath id="family-box-plot-statistic-labels-dark-clip-24" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="105.228" width="705.928" height="281.194"/></clipPath></defs><rect x="0" y="0" width="800" height="440" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-box-plot-statistic-labels-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Delivery time by service level</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-box-plot-statistic-labels-dark-clip-9)"><line x1="48.164" y1="386.422" x2="754.092" y2="386.422" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="292.691" x2="754.092" y2="292.691" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="198.959" x2="754.092" y2="198.959" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="105.228" x2="754.092" y2="105.228" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="386.422" x2="754.092" y2="386.422" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="202.738" y="409.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Standard</text></g><g data-cfx-role="axis-x-label"><text x="559.238" y="409.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Express</text></g><line x1="48.164" y1="105.228" x2="48.164" y2="386.422" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="389.059" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="295.327" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g><g data-cfx-role="axis-y-label"><text x="24" y="201.596" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g><g data-cfx-role="axis-y-label"><text x="24" y="107.865" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">60</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Delivery time (minutes)</text></g></g><g clip-path="url(#family-box-plot-statistic-labels-dark-clip-24)"><g id="family-box-plot-statistic-labels-dark-node-25" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Delivery time" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="BoxPlot" data-cfx-pin-state-colors="false" data-cfx-rendered-points="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="delivery" data-cfx-series-name="Delivery time" data-cfx-series-scope="shared" data-cfx-source-points="2" data-cfx-state="none"><g id="family-box-plot-statistic-labels-dark-node-26" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Delivery time: Standard delivery summary x=1 minimum=10 q1=20 median=30 q3=40 maximum=50 Standard" data-cfx-authored-label="Standard delivery summary" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-category-label="Standard" data-cfx-display-label="Standard" data-cfx-fill-pattern="None" data-cfx-formatted-maximum="50" data-cfx-formatted-median="30" data-cfx-formatted-minimum="10" data-cfx-formatted-q1="20" data-cfx-formatted-q3="40" data-cfx-formatted-value="30" data-cfx-formatted-x="Standard" data-cfx-formatted-y="10" data-cfx-kind="BoxPlot" data-cfx-label="Standard delivery summary" data-cfx-label-category="Category" data-cfx-label-maximum="Maximum" data-cfx-label-median="Median" data-cfx-label-minimum="Minimum" data-cfx-label-q1="Q1" data-cfx-label-q3="Q3" data-cfx-maximum="50" data-cfx-maximum-label="50" data-cfx-median="30" data-cfx-median-label="30" data-cfx-minimum="10" data-cfx-minimum-label="10" data-cfx-orientation="vertical" data-cfx-point="0" data-cfx-q1="20" data-cfx-q1-label="20" data-cfx-q3="40" data-cfx-q3-label="40" data-cfx-series="0" data-cfx-series-key="delivery" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="1" data-cfx-y="10"><line x1="224.646" y1="339.556" x2="224.646" y2="152.094" data-cfx-role="boxplot-whisker" fill="none" stroke="#179C89" stroke-width="2"/><line x1="207.626" y1="339.556" x2="241.666" y2="339.556" data-cfx-role="boxplot-cap" fill="none" stroke="#179C89" stroke-width="2"/><line x1="207.626" y1="152.094" x2="241.666" y2="152.094" data-cfx-role="boxplot-cap" fill="none" stroke="#179C89" stroke-width="2"/><rect x="201.646" y="198.959" width="46" height="93.731" rx="5" data-cfx-role="boxplot-body" fill="rgba(23,156,137,0.22)" stroke="#179C89" stroke-width="2"/><line x1="201.646" y1="245.825" x2="247.646" y2="245.825" data-cfx-role="boxplot-median" fill="none" stroke="#179C89" stroke-width="2.4"/></g><g id="family-box-plot-statistic-labels-dark-node-33" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Delivery time: 25 x=2 minimum=5 q1=15 median=25 q3=35 maximum=45 Express" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-category-label="Express" data-cfx-display-label="Express" data-cfx-fill-pattern="None" data-cfx-formatted-maximum="45" data-cfx-formatted-median="25" data-cfx-formatted-minimum="5" data-cfx-formatted-q1="15" data-cfx-formatted-q3="35" data-cfx-formatted-value="25" data-cfx-formatted-x="Express" data-cfx-formatted-y="5" data-cfx-kind="BoxPlot" data-cfx-label="25" data-cfx-label-category="Category" data-cfx-label-maximum="Maximum" data-cfx-label-median="Median" data-cfx-label-minimum="Minimum" data-cfx-label-q1="Q1" data-cfx-label-q3="Q3" data-cfx-maximum="45" data-cfx-maximum-label="45" data-cfx-median="25" data-cfx-median-label="25" data-cfx-minimum="5" data-cfx-minimum-label="5" data-cfx-orientation="vertical" data-cfx-point="1" data-cfx-q1="15" data-cfx-q1-label="15" data-cfx-q3="35" data-cfx-q3-label="35" data-cfx-series="0" data-cfx-series-key="delivery" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="2" data-cfx-y="5"><line x1="577.61" y1="362.989" x2="577.61" y2="175.527" data-cfx-role="boxplot-whisker" fill="none" stroke="#179C89" stroke-width="2"/><line x1="560.59" y1="362.989" x2="594.63" y2="362.989" data-cfx-role="boxplot-cap" fill="none" stroke="#179C89" stroke-width="2"/><line x1="560.59" y1="175.527" x2="594.63" y2="175.527" data-cfx-role="boxplot-cap" fill="none" stroke="#179C89" stroke-width="2"/><rect x="554.61" y="222.392" width="46" height="93.731" rx="5" data-cfx-role="boxplot-body" fill="rgba(23,156,137,0.22)" stroke="#179C89" stroke-width="2"/><line x1="554.61" y1="269.258" x2="600.61" y2="269.258" data-cfx-role="boxplot-median" fill="none" stroke="#179C89" stroke-width="2.4"/></g></g></g><g id="family-box-plot-statistic-labels-dark-node-42" data-cfx-source-id="series-0-point-0-minimum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="10" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-dark-node-43" data-cfx-source-id="series-0-point-0-minimum-label" data-cfx-role="data-label"><text x="259.646" y="341.754" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#82B8FF" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">10</text></g></g><g id="family-box-plot-statistic-labels-dark-node-45" data-cfx-source-id="series-0-point-0-q1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="20" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-dark-node-46" data-cfx-source-id="series-0-point-0-q1-label" data-cfx-role="data-label"><text x="259.646" y="294.888" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g></g><g id="family-box-plot-statistic-labels-dark-node-48" data-cfx-source-id="series-0-point-0-median-label-source" data-cfx-role="data-label-source" data-cfx-full-label="30" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-dark-node-49" data-cfx-source-id="series-0-point-0-median-label" data-cfx-role="data-label"><text x="259.646" y="248.462" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">30</text></g></g><g id="family-box-plot-statistic-labels-dark-node-51" data-cfx-source-id="series-0-point-0-q3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="40" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-dark-node-52" data-cfx-source-id="series-0-point-0-q3-label" data-cfx-role="data-label"><text x="259.646" y="201.157" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g></g><g id="family-box-plot-statistic-labels-dark-node-54" data-cfx-source-id="series-0-point-0-maximum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="50" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-0"><g id="family-box-plot-statistic-labels-dark-node-55" data-cfx-source-id="series-0-point-0-maximum-label" data-cfx-role="data-label"><text x="259.646" y="154.291" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#FFBE79" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g></g><g id="family-box-plot-statistic-labels-dark-node-57" data-cfx-source-id="series-0-point-1-minimum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="5" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-dark-node-58" data-cfx-source-id="series-0-point-1-minimum-label" data-cfx-role="data-label"><text x="612.61" y="365.186" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#82B8FF" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">5</text></g></g><g id="family-box-plot-statistic-labels-dark-node-60" data-cfx-source-id="series-0-point-1-q1-label-source" data-cfx-role="data-label-source" data-cfx-full-label="15" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-dark-node-61" data-cfx-source-id="series-0-point-1-q1-label" data-cfx-role="data-label"><text x="612.61" y="318.321" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">15</text></g></g><g id="family-box-plot-statistic-labels-dark-node-63" data-cfx-source-id="series-0-point-1-median-label-source" data-cfx-role="data-label-source" data-cfx-full-label="25" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-dark-node-64" data-cfx-source-id="series-0-point-1-median-label" data-cfx-role="data-label"><text x="612.61" y="271.895" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">25</text></g></g><g id="family-box-plot-statistic-labels-dark-node-66" data-cfx-source-id="series-0-point-1-q3-label-source" data-cfx-role="data-label-source" data-cfx-full-label="35" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-dark-node-67" data-cfx-source-id="series-0-point-1-q3-label" data-cfx-role="data-label"><text x="612.61" y="224.589" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">35</text></g></g><g id="family-box-plot-statistic-labels-dark-node-69" data-cfx-source-id="series-0-point-1-maximum-label-source" data-cfx-role="data-label-source" data-cfx-full-label="45" data-cfx-label-decoration="true" data-cfx-label-for="series-0-point-1"><g id="family-box-plot-statistic-labels-dark-node-70" data-cfx-source-id="series-0-point-1-maximum-label" data-cfx-role="data-label"><text x="612.61" y="177.724" font-family="CFX Proof Carlito, sans-serif" font-size="10" font-weight="400" font-style="normal" fill="#FFBE79" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">45</text></g></g></svg></div><div class="full" style="--example-width:800px" data-visual-theme="dark" data-output-format="png"><img src="family-box-plot-statistic-labels-dark.png" width="800" height="440" alt="Delivery time by service level" loading="lazy" decoding="async"></div></section><div class="export-row"><span>800 × 440 pixels</span><nav aria-label="Download outputs"><a href="family-box-plot-statistic-labels-light.svg" data-theme-link data-light-href="family-box-plot-statistic-labels-light.svg" data-dark-href="family-box-plot-statistic-labels-dark.svg" download>Download SVG</a><a href="family-box-plot-statistic-labels-light.png" data-theme-link data-light-href="family-box-plot-statistic-labels-light.png" data-dark-href="family-box-plot-statistic-labels-dark.png" download>Download PNG</a><a href="family-box-plot-statistic-labels-light.csharp.txt" data-theme-link data-light-href="family-box-plot-statistic-labels-light.csharp.txt" data-dark-href="family-box-plot-statistic-labels-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="family-box-plot-statistic-labels-light.gallery.csharp.txt" data-theme-link data-light-href="family-box-plot-statistic-labels-light.gallery.csharp.txt" data-dark-href="family-box-plot-statistic-labels-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = BoxPlotRecipe.Create(&quot;statistic-labels&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Delivery time by service level&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame(&quot;Delivery time by service level&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Builds delivery-time distributions from typed five-number summaries.&lt;/summary&gt;
+public static class BoxPlotRecipe {
+    /// &lt;summary&gt;Creates the selected box-plot example and its orientation.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;
+            or &quot;statistic-labels&quot; or &quot;compact-statistic-labels&quot; or &quot;horizontal-statistic-labels&quot; or &quot;compact-horizontal-statistic-labels&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant.Contains(&quot;statistic-labels&quot;)) chart = StatisticLabels(variant, mode);
+        else if (variant is &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;) {
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var expected = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;expected&quot;), &quot;Expected&quot;, new[] {
+                new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+                new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55)
+            });
+            var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
+                new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+                new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
+            }).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+                .ConfigureBoxPlot(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithDataLabels();
+            if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
+            else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+        }
+        else {
+            var count = variant == &quot;sparse&quot; ? 2 : 5;
+            var distributions = Enumerable.Range(1, count)
+                .Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index));
+            var delivery = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery-time&quot;), &quot;Delivery time&quot;, distributions);
+            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(delivery);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+
+    private static Chart StatisticLabels(string variant, VisualThemeMode mode) {
+        var horizontal = variant.Contains(&quot;horizontal&quot;);
+        var chart = Chart.Create().WithTitle(&quot;Five-number delivery summaries&quot;).WithXLabels(&quot;Standard&quot;, &quot;Express&quot;)
+            .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery time&quot;, new[] {
+                new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
+            }).WithPointLabel(0, &quot;Standard delivery summary&quot;))
+            .ConfigureBoxPlot(options =&gt; {
+                options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+                options.LabelContent = ChartBoxPlotLabelContent.Statistics;
+                foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
+                    label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
+                    label.Style.WithFontSize(10);
+                }
+                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
+                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
+                options.MedianLabel.Style.WithFontSize(12).WithWeight(&quot;700&quot;);
+            }).WithDataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);
+        return horizontal ? chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;) : chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = BoxPlotRecipe.Create(&quot;statistic-labels&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Delivery time by service level&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame(&quot;Delivery time by service level&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Builds delivery-time distributions from typed five-number summaries.&lt;/summary&gt;
+public static class BoxPlotRecipe {
+    /// &lt;summary&gt;Creates the selected box-plot example and its orientation.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;
+            or &quot;statistic-labels&quot; or &quot;compact-statistic-labels&quot; or &quot;horizontal-statistic-labels&quot; or &quot;compact-horizontal-statistic-labels&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant.Contains(&quot;statistic-labels&quot;)) chart = StatisticLabels(variant, mode);
+        else if (variant is &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;) {
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var expected = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;expected&quot;), &quot;Expected&quot;, new[] {
+                new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+                new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55)
+            });
+            var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
+                new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+                new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
+            }).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+                .ConfigureBoxPlot(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithDataLabels();
+            if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
+            else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+        }
+        else {
+            var count = variant == &quot;sparse&quot; ? 2 : 5;
+            var distributions = Enumerable.Range(1, count)
+                .Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index));
+            var delivery = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery-time&quot;), &quot;Delivery time&quot;, distributions);
+            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(delivery);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+
+    private static Chart StatisticLabels(string variant, VisualThemeMode mode) {
+        var horizontal = variant.Contains(&quot;horizontal&quot;);
+        var chart = Chart.Create().WithTitle(&quot;Five-number delivery summaries&quot;).WithXLabels(&quot;Standard&quot;, &quot;Express&quot;)
+            .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery time&quot;, new[] {
+                new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
+            }).WithPointLabel(0, &quot;Standard delivery summary&quot;))
+            .ConfigureBoxPlot(options =&gt; {
+                options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+                options.LabelContent = ChartBoxPlotLabelContent.Statistics;
+                foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
+                    label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
+                    label.Style.WithFontSize(10);
+                }
+                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
+                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
+                options.MedianLabel.Style.WithFontSize(12).WithWeight(&quot;700&quot;);
+            }).WithDataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);
+        return horizontal ? chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;) : chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

@@ -23,20 +23,24 @@ public static partial class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to SVG with artifact-wide options.</summary>
     public static string ToSvg(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Svg, options);
-        var svg = RenderSvg(artifact, options);
-        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Svg, Encoding.UTF8.GetByteCount(svg));
-        return svg;
+        return ExportWithResourceTranslation(artifact, () => {
+            artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Svg, options);
+            var svg = RenderSvg(artifact, options);
+            artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Svg, Encoding.UTF8.GetByteCount(svg));
+            return svg;
+        });
     }
 
     /// <summary>Renders SVG with a caller-owned namespace for embedding several artifacts in one document.</summary>
     public static string ToSvg(this VisualArtifact artifact, VisualArtifactRenderOptions? options, string idScope) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (string.IsNullOrWhiteSpace(idScope)) throw new ArgumentException("An embedding namespace is required.", nameof(idScope));
-        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Svg, options);
-        var svg = RenderSvg(artifact, options, idScope);
-        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Svg, Encoding.UTF8.GetByteCount(svg));
-        return svg;
+        return ExportWithResourceTranslation(artifact, () => {
+            artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Svg, options);
+            var svg = RenderSvg(artifact, options, idScope);
+            artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Svg, Encoding.UTF8.GetByteCount(svg));
+            return svg;
+        });
     }
 
     /// <summary>
@@ -49,10 +53,12 @@ public static partial class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to a standalone HTML page with artifact-wide options.</summary>
     public static string ToHtmlPage(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Html, options);
-        var html = RenderHtmlPage(artifact, options);
-        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Html, Encoding.UTF8.GetByteCount(html));
-        return html;
+        return ExportWithResourceTranslation(artifact, () => {
+            artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Html, options);
+            var html = RenderHtmlPage(artifact, options);
+            artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Html, Encoding.UTF8.GetByteCount(html));
+            return html;
+        });
     }
 
     private static string RenderHtmlPage(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
@@ -199,7 +205,7 @@ public static partial class VisualArtifactRendering {
         accessibility.Name ??= prepared.Visual.Accessibility.Name ?? (artifact.Title.Length == 0 ? artifact.Id : artifact.Title);
         accessibility.Description ??= prepared.Visual.Accessibility.Description;
         accessibility.Language ??= prepared.Visual.Accessibility.Language;
-        return prepared.ToSvg(accessibility);
+        return prepared.ToSvg(accessibility, SvgCharacterCeiling(artifact));
     }
 
     internal static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {

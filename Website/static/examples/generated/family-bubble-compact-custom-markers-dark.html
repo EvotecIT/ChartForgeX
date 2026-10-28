@@ -1,0 +1,390 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="dark" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Workload, time and request volume &#183; Bubble</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Bubble</p><h1>Workload, time and request volume</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-bubble-wide-light.html" data-theme-link data-light-href="family-bubble-wide-light.html" data-dark-href="family-bubble-wide-dark.html">Standard</a></span><span><a href="family-bubble-color-dimension-light.html" data-theme-link data-light-href="family-bubble-color-dimension-light.html" data-dark-href="family-bubble-color-dimension-dark.html">Color Dimension</a></span><span><a href="family-bubble-color-scale-light.html" data-theme-link data-light-href="family-bubble-color-scale-light.html" data-dark-href="family-bubble-color-scale-dark.html">Color Scale</a></span><span><a href="family-bubble-compact-light.html" data-theme-link data-light-href="family-bubble-compact-light.html" data-dark-href="family-bubble-compact-dark.html">Compact</a></span><span><a href="family-bubble-compact-color-dimension-light.html" data-theme-link data-light-href="family-bubble-compact-color-dimension-light.html" data-dark-href="family-bubble-compact-color-dimension-dark.html">Compact Color Dimension</a></span><span><a href="family-bubble-compact-color-scale-light.html" data-theme-link data-light-href="family-bubble-compact-color-scale-light.html" data-dark-href="family-bubble-compact-color-scale-dark.html">Compact Color Scale</a></span><span class="current-variant"><a href="family-bubble-compact-custom-markers-light.html" data-theme-link data-light-href="family-bubble-compact-custom-markers-light.html" data-dark-href="family-bubble-compact-custom-markers-dark.html" aria-current="page">Compact Custom Markers</a></span><span><a href="family-bubble-compact-options-light.html" data-theme-link data-light-href="family-bubble-compact-options-light.html" data-dark-href="family-bubble-compact-options-dark.html">Compact options</a></span><span><a href="family-bubble-compact-plot-regions-light.html" data-theme-link data-light-href="family-bubble-compact-plot-regions-light.html" data-dark-href="family-bubble-compact-plot-regions-dark.html">Compact Plot Regions</a></span><span><a href="family-bubble-custom-markers-light.html" data-theme-link data-light-href="family-bubble-custom-markers-light.html" data-dark-href="family-bubble-custom-markers-dark.html">Custom Markers</a></span><span><a href="family-bubble-options-light.html" data-theme-link data-light-href="family-bubble-options-light.html" data-dark-href="family-bubble-options-dark.html">Configured options</a></span><span><a href="family-bubble-plot-regions-light.html" data-theme-link data-light-href="family-bubble-plot-regions-light.html" data-dark-href="family-bubble-plot-regions-dark.html">Plot Regions</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Workload, time and request volume" aria-labelledby="family-bubble-compact-custom-markers-light-title" aria-describedby="family-bubble-compact-custom-markers-light-description"><title id="family-bubble-compact-custom-markers-light-title">Workload, time and request volume</title><desc id="family-bubble-compact-custom-markers-light-description">Chart with 2 data series: Standard, Priority.</desc><defs><clipPath id="family-bubble-compact-custom-markers-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="19.5"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-11" clipPathUnits="userSpaceOnUse"><rect x="24" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-17" clipPathUnits="userSpaceOnUse"><rect x="111.468" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-24" clipPathUnits="userSpaceOnUse"><rect x="24" y="259.131" width="312" height="15.869"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-28" clipPathUnits="userSpaceOnUse"><rect x="31" y="281" width="8" height="49"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-34" clipPathUnits="userSpaceOnUse"><rect x="85.941" y="281" width="15" height="49"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-40" clipPathUnits="userSpaceOnUse"><rect x="161.941" y="281" width="21" height="49"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-45" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="312" height="151.981"/></clipPath><clipPath id="family-bubble-compact-custom-markers-light-clip-60" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="136.728" width="284.795" height="63.246"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Workload, time and request volume</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-9)"><g id="family-bubble-compact-custom-markers-light-node-10" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Standard" data-cfx-series-key="standard" data-cfx-state="None"><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-11)"><ellipse cx="29" cy="84.578" rx="4" ry="4" data-cfx-role="legend-swatch" fill="rgba(42,120,214,0.298)" stroke="rgba(42,120,214,0.878)" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="42" y="88.028" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Standard</text></g></g><g id="family-bubble-compact-custom-markers-light-node-16" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Priority" data-cfx-series-key="priority" data-cfx-state="None"><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-17)"><path d="M 116.468 80.578 C 120.468 80.578 120.468 88.578 116.468 88.578 C 112.468 88.578 112.468 80.578 116.468 80.578 Z" data-cfx-role="legend-swatch" fill="rgba(194,79,168,0.298)" stroke="#334155" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g><g data-cfx-role="legend-label"><text x="129.468" y="88.028" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Priority</text></g></g></g><g id="family-bubble-compact-custom-markers-light-node-23" data-cfx-source-id="bubble-size-key" data-cfx-role="bubble-size-key" aria-label="Requests: 0, 50, 100" data-cfx-label-size="Requests" data-cfx-max-value="100" data-cfx-min-value="0" data-cfx-reversed="false" data-cfx-size-mapping="linear-area"><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-24)"><g id="family-bubble-compact-custom-markers-light-node-25" data-cfx-source-id="bubble-size-key-title" data-cfx-role="bubble-size-key-title"><text x="24" y="271.509" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests</text></g></g><g id="family-bubble-compact-custom-markers-light-node-27" data-cfx-source-id="bubble-size-key-sample-0" data-cfx-role="bubble-size-key-sample" aria-label="0" data-cfx-radius="0" data-cfx-size-value="0"><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-28)"><g id="family-bubble-compact-custom-markers-light-node-29" data-cfx-source-id="bubble-size-key-label-0" data-cfx-role="bubble-size-key-label"><text x="31" y="309.943" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g></g></g><g id="family-bubble-compact-custom-markers-light-node-32" data-cfx-source-id="bubble-size-key-sample-1" data-cfx-role="bubble-size-key-sample" aria-label="50" data-cfx-radius="16.970562748477143" data-cfx-size-value="50"><ellipse cx="62.471" cy="305.5" rx="16.971" ry="16.971" data-cfx-role="bubble-size-key-marker" fill="none" stroke="#16181C" stroke-width="1"/><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-34)"><g id="family-bubble-compact-custom-markers-light-node-35" data-cfx-source-id="bubble-size-key-label-1" data-cfx-role="bubble-size-key-label"><text x="85.941" y="309.943" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g></g></g><g id="family-bubble-compact-custom-markers-light-node-38" data-cfx-source-id="bubble-size-key-sample-2" data-cfx-role="bubble-size-key-sample" aria-label="100" data-cfx-radius="24" data-cfx-size-value="100"><ellipse cx="131.441" cy="305.5" rx="24" ry="24" data-cfx-role="bubble-size-key-marker" fill="none" stroke="#16181C" stroke-width="1"/><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-40)"><g id="family-bubble-compact-custom-markers-light-node-41" data-cfx-source-id="bubble-size-key-label-2" data-cfx-role="bubble-size-key-label"><text x="161.941" y="309.943" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">100</text></g></g></g></g><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-45)"><line x1="48.164" y1="199.975" x2="332.959" y2="199.975" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="175.817" x2="332.959" y2="175.817" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="151.66" x2="332.959" y2="151.66" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="199.975" x2="332.959" y2="199.975" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="68.426" y="223.4" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1</text></g><g data-cfx-role="axis-x-label"><text x="161.639" y="223.4" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2</text></g><g data-cfx-role="axis-x-label"><text x="254.852" y="223.4" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3</text></g><g data-cfx-role="axis-x-title"><text x="146.64" y="252.979" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Workload batches</text></g><line x1="48.164" y1="136.728" x2="48.164" y2="199.975" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="202.611" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="178.454" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">25</text></g><g data-cfx-role="axis-y-label"><text x="24" y="154.297" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="118.576" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Time (minutes)</text></g></g><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-60)"><g id="family-bubble-compact-custom-markers-light-node-61" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Standard" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bubble" data-cfx-pin-state-colors="false" data-cfx-rendered-points="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-name="Standard" data-cfx-series-scope="shared" data-cfx-source-points="3" data-cfx-state="none"><g id="family-bubble-compact-custom-markers-light-node-62" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Standard: 9 x=1 y=18 size=9; Requests: 9" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="1" data-cfx-fill-pattern="None" data-cfx-formatted-size="9" data-cfx-formatted-value="18" data-cfx-formatted-x="1" data-cfx-label="9" data-cfx-label-size="Requests" data-cfx-point="0" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-scope="shared" data-cfx-size="9" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="1" data-cfx-y="18"><ellipse cx="71.467" cy="182.581" rx="7.2" ry="7.2" data-cfx-role="bubble" fill="rgba(42,120,214,0.298)" stroke="rgba(42,120,214,0.878)" stroke-width="2"/></g><g id="family-bubble-compact-custom-markers-light-node-65" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Standard: 36 x=2 y=30 size=36; Requests: 36" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="2" data-cfx-fill-pattern="None" data-cfx-formatted-size="36" data-cfx-formatted-value="30" data-cfx-formatted-x="2" data-cfx-label="36" data-cfx-label-size="Requests" data-cfx-point="1" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-scope="shared" data-cfx-size="36" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="2" data-cfx-y="30"><ellipse cx="164.68" cy="170.986" rx="14.4" ry="14.4" data-cfx-role="bubble" fill="rgba(42,120,214,0.298)" stroke="rgba(42,120,214,0.878)" stroke-width="2"/></g><g id="family-bubble-compact-custom-markers-light-node-68" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Standard: 81 x=3 y=24 size=81; Requests: 81" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="3" data-cfx-fill-pattern="None" data-cfx-formatted-size="81" data-cfx-formatted-value="24" data-cfx-formatted-x="3" data-cfx-label="81" data-cfx-label-size="Requests" data-cfx-point="2" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-scope="shared" data-cfx-size="81" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="3" data-cfx-y="24"><ellipse cx="257.893" cy="176.784" rx="21.6" ry="21.6" data-cfx-role="bubble" fill="rgba(42,120,214,0.298)" stroke="rgba(42,120,214,0.878)" stroke-width="2"/></g></g></g><g clip-path="url(#family-bubble-compact-custom-markers-light-clip-60)"><g id="family-bubble-compact-custom-markers-light-node-74" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Priority" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bubble" data-cfx-pin-state-colors="false" data-cfx-rendered-points="3" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-name="Priority" data-cfx-series-scope="shared" data-cfx-source-points="3" data-cfx-state="none"><g id="family-bubble-compact-custom-markers-light-node-75" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Priority: 16 x=1.5 y=32 size=16; Requests: 16" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="1.5" data-cfx-fill-pattern="None" data-cfx-formatted-size="16" data-cfx-formatted-value="32" data-cfx-formatted-x="1.5" data-cfx-label="16" data-cfx-label-size="Requests" data-cfx-point="0" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-scope="shared" data-cfx-size="16" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="1.5" data-cfx-y="32"><path d="M 118.074 158.069 C 129.058 158.069 129.058 180.037 118.074 180.037 C 107.09 180.037 107.09 158.069 118.074 158.069 Z" data-cfx-role="bubble" fill="rgba(194,79,168,0.298)" stroke="#334155" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g><g id="family-bubble-compact-custom-markers-light-node-78" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Priority: 36 x=2.5 y=20 size=36; Requests: 36" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="2.5" data-cfx-fill-pattern="None" data-cfx-formatted-size="36" data-cfx-formatted-value="20" data-cfx-formatted-x="2.5" data-cfx-label="36" data-cfx-label-size="Requests" data-cfx-point="1" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-scope="shared" data-cfx-size="36" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="2.5" data-cfx-y="20"><path d="M 211.286 164.173 C 227.762 164.173 227.762 197.125 211.286 197.125 C 194.81 197.125 194.81 164.173 211.286 164.173 Z" data-cfx-role="bubble" fill="rgba(194,79,168,0.298)" stroke="#334155" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g><g id="family-bubble-compact-custom-markers-light-node-81" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Priority: 200 x=3.5 y=36 size=200; Requests: 200" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="3.5" data-cfx-fill-pattern="None" data-cfx-formatted-size="200" data-cfx-formatted-value="36" data-cfx-formatted-x="3.5" data-cfx-label="200" data-cfx-label-size="Requests" data-cfx-point="2" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-scope="shared" data-cfx-size="200" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="3.5" data-cfx-y="36"><path d="M 304.499 137.728 C 331.959 137.728 331.959 192.648 304.499 192.648 C 277.039 192.648 277.039 137.728 304.499 137.728 Z" data-cfx-role="bubble" fill="rgba(194,79,168,0.298)" stroke="#334155" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g></g></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="png"><img src="family-bubble-compact-custom-markers-light.png" width="360" height="360" alt="Workload, time and request volume" loading="lazy" decoding="async"></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Workload, time and request volume" aria-labelledby="family-bubble-compact-custom-markers-dark-title" aria-describedby="family-bubble-compact-custom-markers-dark-description"><title id="family-bubble-compact-custom-markers-dark-title">Workload, time and request volume</title><desc id="family-bubble-compact-custom-markers-dark-description">Chart with 2 data series: Standard, Priority.</desc><defs><clipPath id="family-bubble-compact-custom-markers-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="19.5"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-11" clipPathUnits="userSpaceOnUse"><rect x="24" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-17" clipPathUnits="userSpaceOnUse"><rect x="111.468" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-24" clipPathUnits="userSpaceOnUse"><rect x="24" y="259.131" width="312" height="15.869"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-28" clipPathUnits="userSpaceOnUse"><rect x="31" y="281" width="8" height="49"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-34" clipPathUnits="userSpaceOnUse"><rect x="85.941" y="281" width="15" height="49"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-40" clipPathUnits="userSpaceOnUse"><rect x="161.941" y="281" width="21" height="49"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-45" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="312" height="151.981"/></clipPath><clipPath id="family-bubble-compact-custom-markers-dark-clip-60" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="136.728" width="284.795" height="63.246"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Workload, time and request volume</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-9)"><g id="family-bubble-compact-custom-markers-dark-node-10" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Standard" data-cfx-series-key="standard" data-cfx-state="None"><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-11)"><ellipse cx="29" cy="84.578" rx="4" ry="4" data-cfx-role="legend-swatch" fill="rgba(57,135,229,0.298)" stroke="rgba(57,135,229,0.878)" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="42" y="88.028" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Standard</text></g></g><g id="family-bubble-compact-custom-markers-dark-node-16" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Priority" data-cfx-series-key="priority" data-cfx-state="None"><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-17)"><path d="M 116.468 80.578 C 120.468 80.578 120.468 88.578 116.468 88.578 C 112.468 88.578 112.468 80.578 116.468 80.578 Z" data-cfx-role="legend-swatch" fill="rgba(201,87,159,0.298)" stroke="#E2E8F0" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g><g data-cfx-role="legend-label"><text x="129.468" y="88.028" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Priority</text></g></g></g><g id="family-bubble-compact-custom-markers-dark-node-23" data-cfx-source-id="bubble-size-key" data-cfx-role="bubble-size-key" aria-label="Requests: 0, 50, 100" data-cfx-label-size="Requests" data-cfx-max-value="100" data-cfx-min-value="0" data-cfx-reversed="false" data-cfx-size-mapping="linear-area"><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-24)"><g id="family-bubble-compact-custom-markers-dark-node-25" data-cfx-source-id="bubble-size-key-title" data-cfx-role="bubble-size-key-title"><text x="24" y="271.509" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests</text></g></g><g id="family-bubble-compact-custom-markers-dark-node-27" data-cfx-source-id="bubble-size-key-sample-0" data-cfx-role="bubble-size-key-sample" aria-label="0" data-cfx-radius="0" data-cfx-size-value="0"><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-28)"><g id="family-bubble-compact-custom-markers-dark-node-29" data-cfx-source-id="bubble-size-key-label-0" data-cfx-role="bubble-size-key-label"><text x="31" y="309.943" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g></g></g><g id="family-bubble-compact-custom-markers-dark-node-32" data-cfx-source-id="bubble-size-key-sample-1" data-cfx-role="bubble-size-key-sample" aria-label="50" data-cfx-radius="16.970562748477143" data-cfx-size-value="50"><ellipse cx="62.471" cy="305.5" rx="16.971" ry="16.971" data-cfx-role="bubble-size-key-marker" fill="none" stroke="#F2F3F5" stroke-width="1"/><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-34)"><g id="family-bubble-compact-custom-markers-dark-node-35" data-cfx-source-id="bubble-size-key-label-1" data-cfx-role="bubble-size-key-label"><text x="85.941" y="309.943" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g></g></g><g id="family-bubble-compact-custom-markers-dark-node-38" data-cfx-source-id="bubble-size-key-sample-2" data-cfx-role="bubble-size-key-sample" aria-label="100" data-cfx-radius="24" data-cfx-size-value="100"><ellipse cx="131.441" cy="305.5" rx="24" ry="24" data-cfx-role="bubble-size-key-marker" fill="none" stroke="#F2F3F5" stroke-width="1"/><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-40)"><g id="family-bubble-compact-custom-markers-dark-node-41" data-cfx-source-id="bubble-size-key-label-2" data-cfx-role="bubble-size-key-label"><text x="161.941" y="309.943" font-family="CFX Proof Carlito, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">100</text></g></g></g></g><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-45)"><line x1="48.164" y1="199.975" x2="332.959" y2="199.975" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="175.817" x2="332.959" y2="175.817" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="151.66" x2="332.959" y2="151.66" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="199.975" x2="332.959" y2="199.975" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="68.426" y="223.4" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1</text></g><g data-cfx-role="axis-x-label"><text x="161.639" y="223.4" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2</text></g><g data-cfx-role="axis-x-label"><text x="254.852" y="223.4" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3</text></g><g data-cfx-role="axis-x-title"><text x="146.64" y="252.979" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Workload batches</text></g><line x1="48.164" y1="136.728" x2="48.164" y2="199.975" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="202.611" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="178.454" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">25</text></g><g data-cfx-role="axis-y-label"><text x="24" y="154.297" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="118.576" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Time (minutes)</text></g></g><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-60)"><g id="family-bubble-compact-custom-markers-dark-node-61" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Standard" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bubble" data-cfx-pin-state-colors="false" data-cfx-rendered-points="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-name="Standard" data-cfx-series-scope="shared" data-cfx-source-points="3" data-cfx-state="none"><g id="family-bubble-compact-custom-markers-dark-node-62" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Standard: 9 x=1 y=18 size=9; Requests: 9" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="1" data-cfx-fill-pattern="None" data-cfx-formatted-size="9" data-cfx-formatted-value="18" data-cfx-formatted-x="1" data-cfx-label="9" data-cfx-label-size="Requests" data-cfx-point="0" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-scope="shared" data-cfx-size="9" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="1" data-cfx-y="18"><ellipse cx="71.467" cy="182.581" rx="7.2" ry="7.2" data-cfx-role="bubble" fill="rgba(57,135,229,0.298)" stroke="rgba(57,135,229,0.878)" stroke-width="2"/></g><g id="family-bubble-compact-custom-markers-dark-node-65" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Standard: 36 x=2 y=30 size=36; Requests: 36" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="2" data-cfx-fill-pattern="None" data-cfx-formatted-size="36" data-cfx-formatted-value="30" data-cfx-formatted-x="2" data-cfx-label="36" data-cfx-label-size="Requests" data-cfx-point="1" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-scope="shared" data-cfx-size="36" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="2" data-cfx-y="30"><ellipse cx="164.68" cy="170.986" rx="14.4" ry="14.4" data-cfx-role="bubble" fill="rgba(57,135,229,0.298)" stroke="rgba(57,135,229,0.878)" stroke-width="2"/></g><g id="family-bubble-compact-custom-markers-dark-node-68" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Standard: 81 x=3 y=24 size=81; Requests: 81" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="3" data-cfx-fill-pattern="None" data-cfx-formatted-size="81" data-cfx-formatted-value="24" data-cfx-formatted-x="3" data-cfx-label="81" data-cfx-label-size="Requests" data-cfx-point="2" data-cfx-series="0" data-cfx-series-key="standard" data-cfx-series-scope="shared" data-cfx-size="81" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="3" data-cfx-y="24"><ellipse cx="257.893" cy="176.784" rx="21.6" ry="21.6" data-cfx-role="bubble" fill="rgba(57,135,229,0.298)" stroke="rgba(57,135,229,0.878)" stroke-width="2"/></g></g></g><g clip-path="url(#family-bubble-compact-custom-markers-dark-clip-60)"><g id="family-bubble-compact-custom-markers-dark-node-74" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Priority" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bubble" data-cfx-pin-state-colors="false" data-cfx-rendered-points="3" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-name="Priority" data-cfx-series-scope="shared" data-cfx-source-points="3" data-cfx-state="none"><g id="family-bubble-compact-custom-markers-dark-node-75" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Priority: 16 x=1.5 y=32 size=16; Requests: 16" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="1.5" data-cfx-fill-pattern="None" data-cfx-formatted-size="16" data-cfx-formatted-value="32" data-cfx-formatted-x="1.5" data-cfx-label="16" data-cfx-label-size="Requests" data-cfx-point="0" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-scope="shared" data-cfx-size="16" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="1.5" data-cfx-y="32"><path d="M 118.074 158.069 C 129.058 158.069 129.058 180.037 118.074 180.037 C 107.09 180.037 107.09 158.069 118.074 158.069 Z" data-cfx-role="bubble" fill="rgba(201,87,159,0.298)" stroke="#E2E8F0" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g><g id="family-bubble-compact-custom-markers-dark-node-78" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Priority: 36 x=2.5 y=20 size=36; Requests: 36" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="2.5" data-cfx-fill-pattern="None" data-cfx-formatted-size="36" data-cfx-formatted-value="20" data-cfx-formatted-x="2.5" data-cfx-label="36" data-cfx-label-size="Requests" data-cfx-point="1" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-scope="shared" data-cfx-size="36" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="2.5" data-cfx-y="20"><path d="M 211.286 164.173 C 227.762 164.173 227.762 197.125 211.286 197.125 C 194.81 197.125 194.81 164.173 211.286 164.173 Z" data-cfx-role="bubble" fill="rgba(201,87,159,0.298)" stroke="#E2E8F0" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g><g id="family-bubble-compact-custom-markers-dark-node-81" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Priority: 200 x=3.5 y=36 size=200; Requests: 200" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="3.5" data-cfx-fill-pattern="None" data-cfx-formatted-size="200" data-cfx-formatted-value="36" data-cfx-formatted-x="3.5" data-cfx-label="200" data-cfx-label-size="Requests" data-cfx-point="2" data-cfx-series="1" data-cfx-series-key="priority" data-cfx-series-scope="shared" data-cfx-size="200" data-cfx-size-mapping="linear-area" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="3.5" data-cfx-y="36"><path d="M 304.499 137.728 C 331.959 137.728 331.959 192.648 304.499 192.648 C 277.039 192.648 277.039 137.728 304.499 137.728 Z" data-cfx-role="bubble" fill="rgba(201,87,159,0.298)" stroke="#E2E8F0" stroke-width="2" fill-rule="evenodd" stroke-dasharray="4 3" stroke-dashoffset="1"/></g></g></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="png"><img src="family-bubble-compact-custom-markers-dark.png" width="360" height="360" alt="Workload, time and request volume" loading="lazy" decoding="async"></div></section><div class="export-row"><span>360 × 360 pixels</span><nav aria-label="Download outputs"><a href="family-bubble-compact-custom-markers-dark.svg" data-theme-link data-light-href="family-bubble-compact-custom-markers-light.svg" data-dark-href="family-bubble-compact-custom-markers-dark.svg" download>Download SVG</a><a href="family-bubble-compact-custom-markers-dark.png" data-theme-link data-light-href="family-bubble-compact-custom-markers-light.png" data-dark-href="family-bubble-compact-custom-markers-dark.png" download>Download PNG</a><a href="family-bubble-compact-custom-markers-dark.csharp.txt" data-theme-link data-light-href="family-bubble-compact-custom-markers-light.csharp.txt" data-dark-href="family-bubble-compact-custom-markers-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="family-bubble-compact-custom-markers-dark.gallery.csharp.txt" data-theme-link data-light-href="family-bubble-compact-custom-markers-light.gallery.csharp.txt" data-dark-href="family-bubble-compact-custom-markers-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = BubbleMarkerOptionsRecipe.Create(&quot;compact-custom-markers&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Workload, time and request volume&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame(&quot;Workload, time and request volume&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Compares standard and priority observations with independent bubble markers.&lt;/summary&gt;
+public static class BubbleMarkerOptionsRecipe {
+    /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;options&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;options&quot; or &quot;compact-options&quot; or &quot;custom-markers&quot; or &quot;compact-custom-markers&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        return MarkerOptions(variant.EndsWith(&quot;custom-markers&quot;, StringComparison.Ordinal), mode)
+            .WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+
+    private static Chart MarkerOptions(bool custom, VisualThemeMode mode) {
+        var standard = ChartSeries.CreateBubble(new ChartSeriesId(&quot;standard&quot;), &quot;Standard&quot;, new[] {
+            new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
+        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
+        var priority = ChartSeries.CreateBubble(new ChartSeriesId(&quot;priority&quot;), &quot;Priority&quot;, new[] {
+            new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200)
+        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
+        if (custom) priority.ConfigureMarkers(markers =&gt; {
+            markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
+                .CubicTo(-1, 1, -1, -1, 0, -1);
+            var outline = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
+            markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
+            markers.StrokeDashOffset = 1;
+        });
+        return Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
+            .AddSeries(standard).AddSeries(priority)
+            .ConfigureBubble(bubble =&gt; {
+                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+                bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
+                bubble.SizeDimension.Name = &quot;Requests&quot;; bubble.SizeDimension.ShowLegend = true;
+            });
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = BubbleMarkerOptionsRecipe.Create(&quot;compact-custom-markers&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Workload, time and request volume&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame(&quot;Workload, time and request volume&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Compares standard and priority observations with independent bubble markers.&lt;/summary&gt;
+public static class BubbleMarkerOptionsRecipe {
+    /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;options&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;options&quot; or &quot;compact-options&quot; or &quot;custom-markers&quot; or &quot;compact-custom-markers&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        return MarkerOptions(variant.EndsWith(&quot;custom-markers&quot;, StringComparison.Ordinal), mode)
+            .WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+
+    private static Chart MarkerOptions(bool custom, VisualThemeMode mode) {
+        var standard = ChartSeries.CreateBubble(new ChartSeriesId(&quot;standard&quot;), &quot;Standard&quot;, new[] {
+            new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
+        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
+        var priority = ChartSeries.CreateBubble(new ChartSeriesId(&quot;priority&quot;), &quot;Priority&quot;, new[] {
+            new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200)
+        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
+        if (custom) priority.ConfigureMarkers(markers =&gt; {
+            markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
+                .CubicTo(-1, 1, -1, -1, 0, -1);
+            var outline = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
+            markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
+            markers.StrokeDashOffset = 1;
+        });
+        return Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
+            .AddSeries(standard).AddSeries(priority)
+            .ConfigureBubble(bubble =&gt; {
+                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+                bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
+                bubble.SizeDimension.Name = &quot;Requests&quot;; bubble.SizeDimension.ShowLegend = true;
+            });
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

@@ -1,0 +1,14 @@
+using System;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+var source={{SOURCE_TEXT}};
+var result=SequenceNavigationSourceRecipe.Create(source,{{VARIANT}},VisualThemeMode.{{MODE}});
+File.WriteAllText("sequence.mmd",source);File.WriteAllText("sequence.svg",result.Artifact.ToSvg());File.WriteAllBytes("sequence.png",result.Artifact.ToPng());File.WriteAllText("sequence.html",result.Html);File.WriteAllText("sequence.json",result.Artifact.ToInterchangeJson());
+var restored=VisualArtifactInterchangeEnvelope.FromJson(result.Artifact.ToInterchangeJson()).ToSequenceArtifact();
+restored.Participants[0].NavigationLinks=new[]{new VisualNavigationLink("Updated guide","#updated")};
+File.WriteAllText("sequence-edited.html",restored.ToNavigationHtmlPage());
+{{SOURCE}}

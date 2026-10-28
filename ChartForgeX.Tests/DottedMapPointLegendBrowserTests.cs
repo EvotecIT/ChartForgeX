@@ -37,7 +37,7 @@ public sealed class DottedMapPointLegendBrowserTests {
             """);
 
         Assert.Equal(new[] { "North", "South", "Offscreen" },
-            await page.Locator("[data-cfx-role='legend-label']").AllTextContentsAsync());
+            await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']")));
         foreach (var id in new[] { "north", "south", "offscreen" }) {
             var legend = page.Locator(Key(id));
             Assert.Equal(1, await legend.CountAsync());
@@ -55,7 +55,9 @@ public sealed class DottedMapPointLegendBrowserTests {
             """));
         await CaptureAsync(page, dark, width, "initial", initial);
 
+        await ObserveFirstLegendPointerAsync(page);
         await MoveToAsync(page, Key("north"));
+        await CaptureFirstLegendPointerAsync(page, dark, width);
         Assert.Equal("North", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(new[] { "Value", Number(northFacts.Weight!.Value) }, await TooltipRowsAsync(page));
         Assert.Equal(1d, await PaintOpacityAsync(page, "north"));
@@ -145,6 +147,55 @@ public sealed class DottedMapPointLegendBrowserTests {
         await CaptureAsync(page, false, 380, "zero-weight-key-readout");
         Assert.Empty(pageErrors);
         AssertNoConsoleErrors(session);
+    }
+
+    // Passive diagnostic for the first actual pointer admission; original hover/assertions stay unchanged.
+    private static Task ObserveFirstLegendPointerAsync(IPage page) => page.EvaluateAsync("""
+        () => {
+            const describe=node=>node instanceof Element?{
+                tag:node.localName,role:node.getAttribute('data-cfx-role'),id:node.id,
+                source:node.getAttribute('data-cfx-source-id'),observation:node.getAttribute('data-cfx-observation-id'),
+                className:node.getAttribute('class'),legend:node.closest('[data-cfx-role="legend-item"]')?.getAttribute('data-cfx-source-id')||null
+            }:null;
+            const proof=window.dottedLegendPointerProof={events:[],dropped:0};
+            for(const type of ['pointerover','pointerenter','pointermove','pointerout','pointerleave','focusin','focusout'])
+                document.addEventListener(type,event=>{
+                    if(proof.events.length>=96){proof.dropped++;return;}
+                    proof.events.push({type,time:performance.now(),trusted:event.isTrusted,
+                        x:event.clientX??null,y:event.clientY??null,target:describe(event.target),related:describe(event.relatedTarget),
+                        active:describe(document.activeElement),path:event.composedPath().slice(0,10).map(describe),
+                        hit:Number.isFinite(event.clientX)?describe(document.elementFromPoint(event.clientX,event.clientY)):null});
+                },{capture:true,passive:true});
+        }
+        """);
+
+    private static async Task CaptureFirstLegendPointerAsync(IPage page, bool dark, int width) {
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(directory)) return;
+        if (!Path.IsPathRooted(directory)) throw new InvalidOperationException("Capture output must be an absolute path.");
+        Directory.CreateDirectory(directory);
+        var proof = await page.EvaluateAsync<string>("""
+            () => {
+                const key=document.querySelector('[data-cfx-role="legend-item"][data-cfx-observation-id="north"]');
+                const root=key.closest('.cfx-interactive-chart'),box=key.getBoundingClientRect();
+                const x=box.x+box.width/2,y=box.y+box.height/2,tip=root.querySelector('.cfx-tooltip');
+                const node=n=>n instanceof Element?{tag:n.localName,role:n.getAttribute('data-cfx-role'),id:n.id,
+                    source:n.getAttribute('data-cfx-source-id'),observation:n.getAttribute('data-cfx-observation-id'),
+                    legend:n.closest('[data-cfx-role="legend-item"]')?.getAttribute('data-cfx-source-id')||null,
+                    box:n.getBoundingClientRect().toJSON(),fill:getComputedStyle(n).fill,stroke:getComputedStyle(n).stroke,
+                    display:getComputedStyle(n).display,visibility:getComputedStyle(n).visibility,
+                    pointerEvents:getComputedStyle(n).pointerEvents,opacity:getComputedStyle(n).opacity}:null;
+                return JSON.stringify({events:window.dottedLegendPointerProof.events,dropped:window.dottedLegendPointerProof.dropped,
+                    expectedCentre:{x,y},key:node(key),paintedChildren:[...key.querySelectorAll('ellipse,rect,text,path,image')].map(node),
+                    actualCentreHit:node(document.elementFromPoint(x,y)),centreStack:document.elementsFromPoint(x,y).slice(0,12).map(node),
+                    active:node(document.activeElement),keyboardReadout:node(root._cfxKeyboardReadout),
+                    pointerReadoutSuspended:root._cfxPointerReadoutSuspended===true,pointerFocus:root._cfxPointerFocus===true,
+                    rootData:{...root.dataset},tooltip:{exists:!!tip,hidden:tip?.hidden,text:tip?.innerText||'',html:tip?.innerHTML||''}
+                },null,2);
+            }
+            """);
+        await File.WriteAllTextAsync(Path.Combine(directory,
+            "dotted-map-first-legend-pointer-" + width + "-" + (dark ? "dark" : "light") + ".json"), proof);
     }
 
     private static string Key(string id) => "[data-cfx-role='legend-item'][data-cfx-observation-id='" + id + "']";

@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.SvgRaster;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
@@ -24,13 +26,40 @@ public static class MermaidBlockRendering {
             .WithColumns(columns)
             .WithEdges(options.ShowEdges);
 
+        block.AutoColumns = document.AutoColumns;
         foreach (var item in document.Items) {
-            if (item.IsSpace) block.AddSpace(item.ColumnSpan);
-            else block.AddItem(item.Id, item.Label, item.ColumnSpan, item.Shape);
+            if (item.IsComposite) block.AddComposite(item.Id, item.Label, item.ColumnSpan, item.Columns, item.ParentId, item.AutoColumns);
+            else if (item.IsSpace) { if (item.ParentId == null) block.AddSpace(item.ColumnSpan); else block.AddSpace(item.ParentId, item.ColumnSpan); }
+            else if (item.ParentId == null) block.AddItem(item.Id, item.Label, item.ColumnSpan, item.Shape);
+            else block.AddItem(item.Id, item.Label, item.ParentId, item.ColumnSpan, item.Shape);
+            var target = block.Items[block.Items.Count - 1]; target.ArrowDirections = item.ArrowDirections;
+            target.Metadata["mermaid.source.line"] = item.Span.Line.ToString(CultureInfo.InvariantCulture);
+            target.Metadata["mermaid.source.column"] = item.Span.Column.ToString(CultureInfo.InvariantCulture);
+            if (item.Classes.Count > 0) target.Metadata["mermaid.classes"] = string.Join(" ", item.Classes);
+            ChartForgeX.Primitives.ChartColor? strokeColor = null; double? strokeWidth = null; double[]? strokeDash = null;
+            foreach (var style in item.Styles) {
+                target.Metadata["mermaid.style." + style.Key] = style.Value;
+                if (SvgRasterColor.TryParse(style.Value, out var color)) {
+                    if (style.Key == "fill") target.Fill = color;
+                    else if (style.Key == "stroke") strokeColor = color;
+                    else if (style.Key == "color") target.TextStyle.Color = color;
+                }
+                if (style.Key == "stroke-width" && MermaidBlockParser.BlockNumber(style.Value, out var width) && width >= 0 && width <= 1024) strokeWidth = width;
+                else if (style.Key == "stroke-dasharray" && MermaidBlockParser.BlockDash(style.Value, out var dash)) strokeDash = dash;
+                else if (style.Key == "font-size" && MermaidBlockParser.BlockNumber(style.Value, out var size) && size > 0) target.TextStyle.FontSize = size;
+                else if (style.Key == "font-weight" && MermaidBlockParser.BlockNativeStyle(style.Key, style.Value)) target.TextStyle.FontWeight = style.Value;
+                else if (style.Key == "font-style" && MermaidBlockParser.BlockNativeStyle(style.Key, style.Value)) target.TextStyle.Italic = style.Value == "italic";
+            }
+            if (strokeColor.HasValue || strokeWidth.HasValue || strokeDash != null) target.Stroke = new ChartStrokeStyle(strokeColor, strokeWidth, dash: strokeDash);
         }
 
-        foreach (var edge in document.Edges) block.AddEdge(edge.SourceId, edge.TargetId, edge.Label, edge.Directed);
-        return MermaidPresentation.Apply(block, document, options.Presentation);
+        foreach (var edge in document.Edges) {
+            block.AddEdge(edge.SourceId, edge.TargetId, edge.Label, edge.Directed);
+            block.Edges[block.Edges.Count - 1].Visible = edge.Visible;
+            block.Edges[block.Edges.Count - 1].Stroke = edge.Stroke;
+        }
+        MermaidPresentation.Apply(block, document, options.Presentation);
+        MermaidNativeStyles.ResolveLetterSpacing(block); return block;
     }
 
     /// <summary>
@@ -88,7 +117,7 @@ public sealed class MermaidBlockRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the inner preview padding.</summary>
     public double Padding { get; set; } = 30;
 
-    /// <summary>Gets or sets the default column count when source uses auto columns.</summary>
+    /// <summary>Gets or sets the default column count when source omits a column declaration.</summary>
     public int Columns { get; set; } = 3;
 
     /// <summary>Gets or sets whether parsed block edges are rendered.</summary>

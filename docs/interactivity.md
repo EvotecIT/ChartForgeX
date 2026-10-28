@@ -39,6 +39,24 @@ Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contr
 
 Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `ConfigureRadar`.
 
+## HTML font delivery
+
+`HtmlChartInteractionOptions.TextPresentation` defaults to `Automatic`. The adapter takes eligible single-face fonts from the prepared native drawing and registers their copied bytes with `FontFace`. It loads no font URL and sends no caller font path. A selected TTC member, mixed fallback run, synthetic style, nondefault variation/palette, explicit OpenType language, or unavailable browser font stays on captured native ink. Supported monochrome runs use the existing glyph contours. Ordinary color or embedded-bitmap text that cannot use that outline transport stays as a bounded native raster image. Its prepared faces, shaping, baseline and bitmap/color paint are retained; it is not vector zoom equivalence. A multiline text node is captured together so overlapping lines and strokes keep their native composition. These non-outline images do not switch to a browser face merely because a font loads.
+
+```csharp
+chart.SaveInteractiveHtml("report.html", options => {
+    options.TextPresentation = HtmlChartTextPresentation.Automatic;
+});
+```
+
+Choose `NativeContours` for supported monochrome captured glyph placement throughout the live SVG, or `Browser` for host-selected editable browser text and the existing native PNG-export capture. Explicit `NativeContours` and structured native captions retain their clear rejection when the outline transport cannot represent a color/bitmap glyph. Browser rasterization and shaping can differ from native output even when the delivered face is the same. `Automatic` and `NativeContours` retain native glyph placement in detached SVG/PNG downloads; browser-only CSS text decoration belongs to `Browser`. Core static SVG/PNG exports keep their existing defaults.
+
+Delivery snapshots admit up to 32 distinct roots, 2 MiB per root and 4 MiB of distinct decoded roots across the wide/narrow pair. An additional view that cannot be delivered retains native contours. These are transport limits; they do not bound all browser memory. `NativeContours` rejects glyphs without that outline transport; `Automatic` uses the captured native image fallback described above. Caller fonts must be licensed for distribution in the generated document.
+
+The existing topology and report adapters use `Automatic`. Explicit `RenderPresentation*` callbacks retain the caller's SVG. Configurable prepared chart and hierarchy sections expose the three choices through `HtmlChartInteractionOptions`. The Website playground uses the same binary registration asset with its existing same-origin shipped-face map. Live registration uses no data/blob font source and requires no CSP relaxation.
+
+Migration: automatic HTML now carries bounded font bindings and native contour fallback resources. Select `Browser` when retaining the previous live browser-text representation is part of the host's contract. Native/static defaults, source IDs, layout, measurements, and portable font admission remain independent.
+
 ## Keyboard navigation
 
 When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
@@ -510,6 +528,8 @@ and state-timeline drawings report their horizontal data interval; their rows
 do not acquire a numeric Y range. This projection contract
 does not expand the separate connected native X-window capabilities.
 
+Mixed Timeline/Gantt/StateTimeline/GanttLane sections retain that same horizontal-only projection. X-axis reversal changes the captured time direction and Y-axis reversal changes the lane order; it does not give rows numeric Y coordinates. A fresh native `update` retains surviving explicit source identities and coalesced state contributors while replacing marks, ticks and export content together. Hover and keyboard targets still identify the original typed observation, including packed items and full-height markers. Browser selection or source-domain brushing does not create a scheduling editor or silently expand native viewport support.
+
 For readable range chips, both events also provide `label`, `rangeLabel` and
 `displayRange` when the prepared axes have captions. Numeric and time brushes
 expand outward to prepared ticks or the plot boundaries. The visible brush,
@@ -740,9 +760,13 @@ These commands preserve the same host events, deep-link updates, synchronized ch
 
 Enable `ChartInteractionFeatures.Export` to offer SVG and PNG downloads. Both export the committed native scene, including an accepted connected X window. Downloads retain selection, legend mute/isolation and resolved host colors. Hover emphasis, focus outlines and focus trails stay in the browser; standalone geometric zoom and pan do not change the exported native canvas.
 
-SVG downloads include the resolved presentation needed to display the chart without the adapter stylesheet or runtime. PNG downloads rasterize that SVG in the browser at the device pixel ratio. This browser PNG path is separate from ChartForgeX's native `ToPng` rendering; fonts and rasterization can differ between them.
+SVG downloads keep editable, searchable text and the resolved presentation needed to display the chart without the adapter stylesheet or runtime. A host still supplies the fonts used to display that text. PNG downloads build a separate detached SVG composition at the device pixel ratio. For captured monochrome outline faces, that composition uses the native preparation's shaped glyphs and face instances, including registered fallback and variation choices. It does not look up a font by family again or fetch a font file. Repeated glyph geometry at the same captured size and italic policy is shared within that composition; ordinary Core `ToSvg` and `ToPng` output is unchanged.
 
-The default theme lists Arial before the generic system font, keeping the browser on the same available fallback used by native preparation when Calibri, Carlito and Segoe UI are absent. For an exact font contract, register the chosen faces for native rendering and deliver those same faces to the browser through the host's font stylesheet. Native font registration alone does not make a font available to the browser.
+The live page remains text, so register the chosen faces for native rendering and deliver the same faces to the page through the host's font stylesheet. CSS fill, stroke, opacity and persistent selection or legend paint are captured for export. Native logical-unit glyph paths keep stroke width in logical units while the browser applies only captured placement. Changing the font family, size or shaping policy requires a fresh native preparation; a CSS override cannot lay out new native glyphs. Accepted ordinary updates, native replies and adaptive drawing changes replace their captured glyph resources with the scene. Disposal or replacement cancels pending exports through the existing chart lifetime.
+
+Host CSS text decorations, including decorations propagated by SVG ancestors, retain the original browser `<text>` export path so the browser paints underline, overline and line-through styles. These decorated captions retain the existing browser font fallback and are outside the captured-outline font guarantee. Native-authored decorations remain separate native scene marks.
+
+In `Browser` mode, colour glyphs, embedded bitmap strikes, built-in tiny fallback and synthesized bold retain the existing browser-text export fallback. `Automatic` uses the captured native representation described above. A custom topology presentation that supplies independent SVG must retain the native capture; a callback that exports its supplied `PreparedTopology` uses the capture automatically. These cases and browser antialiasing or hinting differences do not establish universal native/browser pixel equality. Browser PNG is still separate from native `ToPng`; no font bytes, stylesheet scanning, external font request or CSP change is introduced by the native outline transport. The PNG image input uses an encoded `data:image/svg+xml` resource through the existing Image/canvas path; SVG and PNG download links retain their existing Blob transport.
 
 ## State Bookmarks
 
@@ -799,6 +823,25 @@ controller.connectNative((request, signal) => renderNativeSection(request, signa
 ```
 
 The existing native preparation owner carries only the committed basis. It advances that token with the accepted section before notifying change listeners, so a listener can immediately submit a command against the new scene. Rejected, canceled and stale responses never advance it. The application owns transport, chart data and retention of native sections; it can retire rejected candidates and old tokens according to its own retention policy. Browser-side revision and candidate maps are unnecessary.
+
+For a producer that can outpace native preparation, opt in on the same connection:
+
+```javascript
+controller.connectNative(renderNativeSection, {
+    basis: initialNativeToken,
+    axes: ['x', 'y'],
+    preparationBackpressure: 'latest-window'
+});
+```
+
+Omitting `preparationBackpressure`, or using `'immediate'`, retains immediate supersession. `'latest-window'` admits one unresolved callback for that configured connection and retains one latest absolute viewport window or resolved native reset intent. Same-turn windows coalesce before admission. A queued reset retains the channel selected by the existing controller, including hierarchy reset; a later absolute window or reset can replace it. Request IDs and request events are created only when an intent is admitted, using the still-current committed basis and scene revision. The committed basis changes only after an accepted reply. The callback still returns `{ html, basis }` or its promise, and controller methods still return the controller.
+
+Superseding or canceling a request aborts it logically. A callback that ignores its signal must physically settle before the next intent can invoke the host. If it never settles, this connection stalls rather than starting another native preparation. Invalid, rejected, canceled and stale replies never advance the committed basis. Ordinary `update`, Escape, disconnect, binding replacement, removal and disposal discard queued work; an ordinary update keeps the same connection's physical-flight bound. Reconnecting creates a new configured connection. Earlier uncooperative or legacy callbacks may still run outside that new connection's bound; the adapter does not own their execution, retention or total memory.
+
+While this policy has active or queued work, relative zoom/pan and other non-reset hierarchy, annotation or progress operations are not retained. Public incremental controller calls throw `TypeError` before changing pending work, basis or request/change/error events; internal relative controls decline busy input without a page error. Callers wait for their current host callback to settle before retrying an incremental operation. Native inputs and new downloads remain disabled while preparation is pending, including the queued interval. Reset remains available and uses the same single slot. The policy does not combine with nonzero `progressCadenceMs`. A hierarchy-only connection can use `axes: null, hierarchy: true` because it has an existing absolute reset owner; annotation-only `axes: null` rejects this policy.
+
+The generated `--native-preparation-backpressure-only` examples show numeric and typed sections at compact/wide sizes in both themes. Their finite catalog is prepared by .NET before display and demonstrates callback admission and release; it is not a live data collector or a performance measurement. Hosts retain responsibility for ingestion cadence, data queues, native section tokens and retirement of old candidates.
+
 
 Zoom and pan contain logical `left` and `right`; explicit windows use `sourceViewport.x`, and reset omits bounds. Constrain logical positions through the committed drawing's `XProjection`. For explicit source bounds, call `ConstrainViewport(new ChartAxisWindow(minimum, maximum, maximumInclusive))` directly, then wrap the returned X window in `ChartCartesianViewport`, preserving null for full view. Toolbar zoom uses the plot centre; wheel zoom keeps the source coordinate beneath the pointer as its anchor.
 
@@ -920,3 +963,306 @@ Native time windows retain source instants when the axis uses `ChartTimeSpacing.
 ## Native hierarchy views
 
 Treemap and Sunburst can prepare an existing source item as a detached visible root. The [native hierarchy view reference](hierarchy-views.md) covers `ChartHierarchyView`, matching Core/HTML preparation, opt-in group/Up/Home navigation, accepted basis tokens, bookmarks, source identity and committed exports.
+
+
+## Native Polar gestures
+
+A continuous Polar section has no automatic viewport gestures until its existing native connection opts in:
+
+```javascript
+const chart = ChartForgeXCharts.get(section);
+chart.connectNative(async (request, signal) => {
+  const response = await fetch('/native-view', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request), signal
+  });
+  if (!response.ok) throw new Error('The native view was not prepared.');
+  return response.json(); // { html: freshPreparedSection, basis: opaqueNewBasis }
+}, { basis: initialBasis, coordinateSystem: 'polar',
+     axes: ['angle', 'radius', 'secondaryRadius'], gestures: true });
+```
+
+`gestures` accepts a boolean only on a Polar connection and defaults to false. The configured `axes` select gesture coordinates; ordinary programmatic source windows remain explicit. The existing Zoom and Pan feature flags still control the toolbar and handlers. A wheel over the visible sector and every selected radius annulus requests zoom around that logical pointer. The center has no defined bearing. Outside hits, zero vertical wheel deltas and modifier wheel gestures retain page scrolling or browser shortcuts. Keyboard activation of the existing +/- toolbar buttons uses the midpoint of the visible angular sector and selected annular overlap. No new arrow shortcut overrides source-point keyboard navigation.
+
+In Pan mode, one primary pointer drag records continuous clockwise bearing deltas across the screen-angle seam and the outward change in logical radius. The accepted drawing does not move while dragging. Pointer release sends one native `pan` request. Pointer cancellation, lost capture, Escape or disposal discards the drag; Escape also cancels a pending native preparation. A received exact-center sample invalidates the angular drag because its bearing is undefined. Discrete input cannot reconstruct a path that was not sampled. Pan mode uses the existing `touch-action: none`; other modes keep page touch scrolling. This route does not add pinch recognition or inertia.
+
+A `zoom` payload contains the selected axes and positive `factor`. Wheel zoom also supplies logical `anchor: { x, y }`; toolbar zoom omits `anchor` so the host calls `ChartPolarProjection.Zoom(factor, axes)` to resolve the default from its captured projection. A `pan` payload contains `clockwiseAngleDelta` in screen radians and `outwardRadiusDelta` in logical drawing units. Both carry the same basis, scene revision, request ID, adaptive drawing and cancellation signal as other native operations. Hosts use the requested drawing from the retained basis, since compact and wide logical coordinates differ. The [complete host recipe](../ChartForgeX.Examples/PolarNavigationRecipe.cs) decodes those payloads and calls the captured `ChartPolarProjection.Zoom` or `.Pan`; all source-scale conversion and full-domain confinement remain native. The host retains its immutable source and opaque-basis snapshots, checks cancellation, then returns the fresh section and new basis through its own transport. An unsupported request is an error, without a browser-only fallback.
+
+Angular pan moves the directional crop rather than rotating source curves. Radial zoom uses the pointer to select crop bounds, and radial pan shifts the captured transformed-domain span. Uniform annular magnification does not hold an arbitrary source point fixed at its original screen position; this route does not imply a nonlinear grab-point warp. All original observations and stable IDs stay captured. Every installable responsive drawing must retain raw source identities, full-domain scale policy and unselected windows and pass existing radius, angular and native lifetime validation before the accepted basis or scene changes. Rejected, stale and cancelled replies leave native exports, accepted source domains and selection intact. Reset uses the same owner to restore the complete view.
+
+The new native and actual-host browser fixtures cover compact/wide and both themes, source retention, linear/logarithmic and reversed axes, seam direction, annular crop geometry, scroll ownership, native export paths, cancellation and invalid alternate drawings. Their source is authored; execution and physical acceptance of this increment remain pending final qualification. The managed 82 KiB payload gate remains unchanged.
+
+## Independent stage captions
+
+Funnel and Pyramid component labels and outlines are prepared natively. The HTML adapter consumes those same source groups, geometry and paint; it adds no stage renderer or alternate label layout. Stable observation IDs retain stage selection across accepted value changes. Hiding a Funnel connection changes only its paint, so its source facts remain available. SVG/PNG downloads use the accepted native drawing. Standalone responsive Fit changes the displayed scale; it does not recompute a different category/value layout in the browser.
+
+### Multi-ring slice captions and explosion
+
+Pie/Donut external captions may originate in any ring. One native callout pass keeps each caption attached to its own series/observation. Inner leaders overlay enclosing rings with a background halo; measured captions and their actual bent/curved leaders cannot cover another accepted caption. A fixed frame can shorten or omit text with a diagnostic while retaining the full text and source association.
+
+Positive `WithPointSliceOffset` values translate the existing native sectors without changing source values or band ratios. All rings share one fitted frame. Shifted sectors may overlap another ring, using the existing source-series paint order; this option does not promise that the original annular gaps remain empty. Keyboard selection, readouts, responsive presentation and downloads continue to describe the source ring and observation. Caption/halo decorations are not independent selectable observations. Browser PNG output remains browser rasterization, distinct from native PNG pixels.
+
+## Aligned DifferenceArea sources
+
+Aligned difference observations retain matched source series/index/observation references for both roles in native point facts. The HTML adapter consumes the same accepted native source groups and crossing geometry. A host re-aligns changed original sources, replaces the alignment and explicitly reassigns stable destination observation IDs before supplying a new native fragment. Selection then follows the normal accepted-source identity contract. The adapter does not align sources in JavaScript or infer pair IDs from labels. Current SVG/PNG downloads use the accepted prepared geometry; responsive Fit does not change the exact-X join.
+
+
+### Native organization hierarchy sections
+
+`HtmlInteractiveTopologyRenderer.PrepareHierarchySection` uses a genuine `TopologyChart` and the existing chart interaction shell.
+It prepares native SVG/PNG and adaptive drawings with real topology node IDs. It does not translate the organization into numeric series or a GraphScene.
+Existing `RenderPage` and `RenderFragment` topology producers keep their current behavior.
+
+```csharp
+var section = new HtmlInteractiveTopologyRenderer().PrepareHierarchySection(
+    organization,
+    new TopologyHierarchyView(collapsedNodeIds: new[] { "engineering" }),
+    options => {
+        options.Interaction.ChartId = "organization";
+        options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
+        options.Adaptive.NarrowWidth = 360;
+    });
+// Embed section.Html and register the existing chart stylesheet/runtime once.
+// Retain section.PreparedVisual and section.NarrowPreparedVisual with the source snapshot and opaque host basis.
+```
+
+Connect the existing native transport with `controller.connectNative(callback, { basis, hierarchy: true })`.
+For an organization section, omitted axes remain unavailable. The callback receives the same request ID, scene revision, cancellation signal and basis rules
+as other native preparations. A hierarchy request carries `collapsedNodeIds`, `nodeOrder` and nullable `layoutDirection`; the native owner validates exact
+source IDs and prepares the requested layout. Return `{ html: nextSection.Html, basis: nextBasis }` only for the corresponding retained source.
+The adapter validates every installable adaptive drawing before committing the reply. A late, cancelled, wrong-source or wrong-view reply cannot advance the basis.
+
+`controller.setHierarchyView({ collapsedNodeIds, nodeOrder, layoutDirection })` sends a complete view request; omitted collections are empty and an omitted direction
+retains the authored direction. `null` restores the full source view. Branch buttons and keyboard/pointer hierarchy activation use this same path.
+`getHierarchyView()` returns a copied topology snapshot. State bookmarks restore its collapse, order and direction through native acceptance before selection state applies.
+The native compiler owns positions, routing, crop and exports. Hidden node IDs do not become selections on other visible nodes.
+Numeric brushes, comparisons, crosshairs, axis navigators, scenario playback and progress editing reject for this producer rather than manufacturing coordinates.
+Physical assistive-technology acceptance remains a separate validation boundary.
+
+The compiled `OrganizationHierarchyNavigationRecipe` in `ChartForgeX.Examples` shows the ordinary source/basis preparation boundary used by the browser contracts.
+The host still owns transport, opaque basis storage, immutable source snapshots, cancellation and authorization. It can supply localized branch messages through
+`HtmlChartText.HierarchyCollapse` and `HierarchyExpand`, with a `{label}` placeholder. These messages are emitted only for organization hierarchy sections.
+
+### Captured pictorial image paint
+
+Pictorial image artwork participates in the same keyboard, selection and readout eligibility as native contour symbols. The immutable native image capture records its nonzero-alpha pixel-cell extent once; static SVG includes a closed private fact that the adapter maps through the current image rectangle, opacity, visibility and supported rectangular clips. Fully transparent, hidden, opacity-zero and completely clipped-away artwork does not borrow label text or transparent hit surfaces as data paint. Selection cues are real rectangles around the visible image extent, rather than unpainted image copies without resources.
+
+This is image-paint availability under the native pictorial edge-to-edge partial rectangles, not a per-pixel alpha hit mask. Arbitrary interior alpha holes, independent rotated clipping frames and arbitrary SVG mask intersections are not established by that extent. No browser image decoding, tile fetching or browser pixel cache is added. Native contour defaults and captured source identities retain their existing contracts.
+
+## Captured native presentation
+
+PrepareNativeTransitionJson(from, to, options) captures complete native frames for an explicit intent. HtmlNativeTransitionOptions is immutable. Frame count is 2..16, or 3..16 for ValueFlash and Reflow legend motion; the complete UTF-8 payload is bounded to one MiB. Reduce frame count or source size when the bound is exceeded. Both native sections retain their actual HTML export scopes/mode. Every candidate frame passes shared section validation before source, basis, history or acceptance events change.
+
+Values supports one or more identified readings through typed Progress, LayeredRadial, Circle, ProgressRing, Gauge and Bullet, plus the finite Line/Bar and Pie/Donut plans below. InitialValues uses an explicitly prepared native baseline; it does not invent zero for logarithmic/calendar coordinates or a hierarchy root. ValueFlash retains accepted values/geometry and changes changed native value ink, including caps/markers, toward an explicit peak ChartColor before returning to exact accepted paint. Peak alpha is part of that color. Authored series+observation identities remain distinct, including the same observation ID in different Bullet series. Automatic/unproven identities, unsupported formatter/presentation policy, different layouts/domains and unrelated families reject. Ordinary formatter callbacks remain callable in ordinary rendering. PrepareValueTransitionJson and its one-edit payload remain unchanged.
+
+```csharp
+var transition = renderer.PrepareNativeTransitionJson(before, after,
+    new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialValues, frameCount: 3));
+```
+
+Install the authoritative final section, then call `chart.presentInitial(transition, { sceneRevision: chart.sceneRevision, motion: { duration: 650 } })`. Presentation does not accept another source or change managed basis, history or acceptance events. Update and managed reply paths use the same scheduler for Values, ValueFlash or LegendVisibility. They retain reduced motion, hidden document, export, failure, reset, supersession and disposal cleanup. Export uses the accepted native endpoint. Initial frames do not become hit targets or new source facts.
+
+Native legend uses ChartVisibilityView and PrepareVisibilitySection for authored whole-series Line/Bar. Catalog, legend, observations and full-data domains/layout stay retained. PreserveOverlay is the default: labels keep global placement/order, and hidden-series labels are omitted with their exact native mark owner. Partial motion with enabled labels requires explicit GroupWithSeries, which paints each plot and its already positioned labels in one isolated native composite. Later series/context can occlude those captions. Native SVG and raster apply opacity once to the completed composite; labels do not fade independently. This Preserve layout targets whole series. The explicit Reflow policy below adds its native observation/group catalogs.
+
+Opt in with `connectNative(callback, { basis, axes: ['x'], legend: true, motion: { duration: 650 } })`. A click sends kind=visibility on channel=legend with an absolute sourceVisibility containing hiddenSeries and labelLayering. The plot changes after a matching fresh native section and basis are accepted. The reply may include a captured LegendVisibility transition. Native legend requires a retained visibility view with no prior local mute/isolation. Relative mute/isolate synchronization is unavailable while native legend ownership is active.
+
+Reset preserves hierarchy/axis channel priority and adds an absolute sourceVisibility descriptor only when native legend is opted in. A legend-only connection uses its own reset channel. A reset that also changes geometry can return the endpoint without a captured visibility transition; Preserve visibility frames require identical captured domains/layout; Reflow uses its captured native source and destination. The existing latest-window policy keeps one physical flight and one replacement slot. Busy legend clicks decline without mutation/events; reset may replace the absolute queued intent and waits for the same callback to settle. It adds no queue. axes:null with latest-window still requires the existing hierarchy reset owner.
+
+`--native-transition-only --output <absolute-directory>` generates compact/wide light/dark adapter programs for multi-reading values, explicit native initial baselines, value flash and a Bar legend with labels off or explicitly grouped. Source stays outside the Core-only Recipes glob. Mixed Line/Bar coverage belongs to focused native/browser contracts. The finite plans do not imply coverage for every chart family or a global memory/performance bound.
+
+
+### Whole-visual native initial fade
+
+An already prepared native section can supply an explicit initial presentation without inventing baseline data:
+
+```csharp
+var final = renderer.PrepareSection(chart);
+var initial = renderer.PrepareNativeTransitionJson(final,
+    new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, frameCount: 12));
+// Embed final.Html and the existing adapter assets. Then use the accepted controller:
+// controller.presentInitial(initial, { sceneRevision: controller.sceneRevision, motion: { duration: 650 } });
+```
+
+`InitialFade` fades one completed immutable native scene with isolated opacity. It retains logarithmic, calendar, hierarchy, layout and formatting facts; it does not animate values or grow geometry. The final-only overload accepts only this effect. Explicit value baselines continue to use the two-section overload. Native snapshots contain 2–16 frames and fit the existing one MiB transition budget. SVG and native PNG consume the same isolated scene; raster exports remain subject to the shared finite allocation/work budget.
+
+`presentInitial` changes presentation over the exact already accepted destination. It leaves source values, revision, history, events and export unchanged. Reduced motion, hidden state, reset, supersession, resize, export and disposal settle through the existing lifetime. A stale scene revision or malformed candidate rejects before a presentation layer is installed. The final endpoint is the original unwrapped native scene. Every installable candidate uses the shared section validation. Initial fade is opt-in; ordinary static and interactive output stays on its existing path.
+
+
+### Fixed Line/Bar native value frames
+
+`PrepareValueTransitionJson(from, to)` also accepts one authored Line/Bar value edit with compatible fixed structure. `PrepareNativeTransitionJson(from, to, options)` captures multiple ordered readings or an explicit `InitialValues` baseline through that same native plan. A reading is identified by its authored series and observation IDs; the same observation ID in a different series remains a different reading.
+
+The finite plan retains categories, disconnected segments, native line interpolation, markers, line layers, bar slots and surfaces, all captured physical axis policies, plot/frame, built-in formatting and paint. Values interpolate in source units and repaint through native scale and mark owners. Fixed positive/negative logarithmic and symmetric logarithmic value policies keep their real sign/domain rules; category time/calendar/session coordinates stay authored. Independent secondary value axes remain independent. Every endpoint must exactly reconstruct the complete native scene before frames are returned. Captured plans contain no caller chart or series and do not run custom callbacks later.
+
+Changing observation/category topology, domains or frame policy rejects. Stacked/histogram/decimated data, explicit viewports, data labels, annotations, point legends and custom formatter callbacks remain outside this finite value plan; ordinary rendering remains available. A preserved whole-series visibility view uses the same captured full value frame and reapplies its existing native visibility policy. Reflow plus value morph is a separate policy. Cartesian `ValueFlash` rejects because shared line ink and layered bar surfaces do not yet own an independently captured point flash.
+
+The host prepares and retains both native sections, then supplies the existing update transition with the current accepted scene revision. There is no new Cartesian edit command or producer queue. Existing reduced-motion, supersession, export, failure and disposal handling stays with the one presentation lifetime. These frames represent supported native value updates; whole-visual `InitialFade` remains available when a geometry/value baseline is not represented.
+
+
+### Native visibility Reflow
+
+`ChartVisibilityView` defaults to `ChartVisibilityLayout.Preserve`, which keeps the incumbent whole-series Line/Bar domains and placement. Explicit `Reflow` prepares copied visible source data through the native domain, slot, statistics and label owners. It retains the complete source catalog and legend. `ChartVisibilityTarget.Observation(seriesId, observationId)` targets real Line/Bar or supplied BoxPlot observations; `BoxPlotGroup` targets the separate authored raw-group namespace. Raw sample IDs cannot hide a group. Automatic IDs, hierarchy, decimation/histograms, numeric color dimensions, custom formatting callbacks, annotations/plot regions, per-point marker overrides and explicit viewports are outside this finite Reflow capture.
+
+Reflow legend motion uses `HtmlNativeTransitionEffect.LegendVisibility`: captured native source fades out, the identity set switches at zero, then the native destination fades in. It describes transient presentation rather than geometry interpolation. At least three frames are required. The accepted destination, history, revision, source basis, hit regions and exports remain with the existing HTML lifetime throughout presentation. Reduced motion, cancellation, hidden/export/reset, supersession and disposal use the same scheduler. The default global label overlay remains intact; explicit `GroupWithSeries` retains the existing documented native paint-order change. A point/group legend under an explicitly hidden complete series stays disabled until the absolute view restores the series or Reset clears the hidden targets.
+
+The opt-in source key includes copied full values, authored identities, point policies, axes, formatting, theme/render facts and captured native paint. A hidden raw-value or unpainted policy change cannot masquerade as the same source merely because its SVG is unchanged. No public Chart interchange family is introduced. The normal callback-based native connection receives absolute typed `sourceVisibility.hiddenTargets` with `layout:"reflow"`; the existing reset channel clears that absolute set. Busy relative legend toggles retain the existing pre-mutation rejection behavior; no extra queue is created.
+
+`--native-reflow-only` writes compact/wide light/dark examples for Line, Bar, supplied BoxPlot and raw BoxPlot groups, together with ordinary Core + HTML adapter consumer programs. These finite examples do not establish value-morph or universal-family membership support.
+
+
+### Pie/Donut native values and retained Other membership
+
+Pie/Donut Reflow retains the complete native palette, catalog, legend readouts and authored observations, including supported automatic or explicit native bands. `ChartVisibilityTarget.RadialOther(seriesId)` targets the contributors captured from the full source's actual native aggregation. It remains distinct from an authored observation whose ID is `Other`; filtering does not redefine that contributor set. The native slice/label/legend owner recomputes visible geometry while source indices retain their original identity. Each band keeps its original series position and resolved band slot, even when every observation in that band is hidden. An Other target belongs to its captured series; identical observation IDs in another band remain distinct. Authored Treemap/Sunburst membership uses its native hierarchy view below.
+
+Positive, unaggregated Pie/Donut observations in one or more compatible native bands support `Values`, `InitialValues` and the existing one-edit API when ordered native slice membership, layout, presentation and built-in formatter policy stay compatible. Complete native frames retain their own accessibility, regions and projections. Zero or aggregated value transitions, changed native sort order and radial ValueFlash remain outside this value plan. Negative Pie/Donut values remain invalid under native validation. Ordinary zero/aggregation rendering and supported Reflow retain their native semantics. Value morph and membership Reflow are separate captured intents; simultaneous membership/value edits reject.
+
+Every measured font request, including omitted measurements and ascent requests, is captured from actual resolver inputs. Replay uses owned font bytes and captured raw-cluster fallback decisions in the same text shaper. It does not consult a later registry. A missing request, unknown output, missing glyph or unsupported repertoire rejects before a transition payload is returned. This finite fallback capture admits at most4096 clusters and65536 raw/output scalars per request. Changing formatted text or fallback repertoires beyond the captured compatible set remains unsupported; register the intended fonts before preparation and retain compatible native labels at both endpoints.
+
+`--native-radial-motion-only` emits compact/wide light/dark radial value and Reflow programs. `--native-radial-bands-only` emits eight complete Core plus HTML adapter programs covering Pie, Donut and mixed bands, automatic/explicit slots, values, explicit initial baselines and scoped Other visibility. `--native-fallback-radial-only --primary-font <path> --fallback-font <path>` accepts explicit licensed host font files and embeds their normal host CSS in the generated example. These examples use Core plus the existing HTML adapter; they add no shipped font asset, renderer or producer queue.
+
+
+Invariant Compact and automatic numeric value captions pre-observe their actual formatter branches, along with the native radial percentage and overflow captions, before the complete Pie/Donut value plan freezes. The captured request owner shapes these strings for actual None/Uppercase/Lowercase requests and retains their owned fallback decisions. Suffix, grouping, decimal and automatic significant-notation changes can then replay without later font-registry lookup. Observations remain within the existing per-request cluster/scalar limits; they do not become painted scene text. An unsupported unused probe preserves the existing stable-repertoire admission. Richer literal/section/scaled Number grammar remains outside this finite extension; the admitted named-culture and native contextual-case phase is described below.
+
+`--native-value-text-repertoire-only --primary-font <path> --fallback-font <path>` emits ordinary Core/HTML programs for numeric captions crossing a compact suffix. Host fonts are explicit and embedded by the same example owner as the mixed-script fallback programs. No font asset or production dependency is added.
+
+
+### Native hierarchy values and visibility
+
+Authored Treemap and Sunburst items use `ChartVisibilityTarget.HierarchyItem(seriesId, nodeId)` with `ChartVisibilityLayout.Reflow`. A target hides its real descendant subtree through the native hierarchy relationship and layout owners. The retained source catalog keeps the original IDs, order, colors and full-source legend/readouts. A hidden ancestor disables its retained descendant legend controls; restoring that ancestor or Reset makes them available again. Observation IDs and hierarchy node IDs remain distinct namespaces.
+
+The four-argument `ChartVisibilityView(hiddenTargets, layout, labelLayering, hierarchyView)` combines membership with an existing `ChartHierarchyView`. A null hierarchy view uses the full source. Hiding the requested root produces native no-data; it does not choose another root. `LeafAggregate` recomputes visible leaf sums. `AuthoredTotal` preserves valid authored group capacity and represents excluded children as remainder. Full original-source totals and all requested IDs are validated before filtering, so hiding cannot admit an invalid authored hierarchy.
+
+Compatible fixed ordered `(id, parent, nullable authored-size)` structures support complete native `Values`, explicit `InitialValues`, and the existing one-edit API. Raw nonnegative authored sizes, including zero, are interpolated through the same immutable source snapshot and native Treemap/Sunburst compilers. New hierarchy reading facts carry `nodeId` and bind to actual native authored-size metadata. Every complete frame owns its accessibility and hit/region facts. The accepted destination, captured source, revision, export and cancellation behavior use the existing transition lifetime.
+
+Native hierarchy Reflow uses the same fade-out, zero switch and fade-in plan with source/destination frame basis. Root navigation can carry the same absolute visibility descriptor when native legend preparation is connected. The existing reset channel clears both root and hidden targets, retaining hierarchy reset priority and the single backpressure replacement slot. The browser does not derive geometry, values, subtree membership or formatted captions.
+
+This finite value admission excludes changing parent/ID/nullable-size structure, custom caption/format callbacks, simultaneous Reflow/value morph, and unobserved font/fallback repertoires. Ordinary rendering and endpoint Reflow retain those native policies where otherwise supported. The captured request owner observes latent native caption requests before freeze, so an authored zero can become positive without consulting the registry during replay. Font/fallback repertoires remain bounded; uncaptured formatting repertoires require their own native admission.
+
+`--native-hierarchy-motion-only --primary-font <licensed.ttf-or-otf>` emits 52 standalone Core + HTML adapter programs: three parent/family policies, values/initial/subtree/root intents, compact/wide sizes and light/dark themes, plus four explicit Treemap Ellipsis programs. The supplied font is a host asset; these examples add no production dependency or installed font requirement to Core.
+
+
+Treemap `Ellipsis` uses the existing plain wrapping/trimming owner during captured value replay. Every measured candidate and ellipsis marker uses its actual captured face and glyph decisions, with the incumbent simple-run kerning/addition order, synthetic emphasis allowance, line-height and whole-text-element trimming. The display transform is applied once before candidate slicing. Ordinary null capture retains the original layout path; a bitmap/default-font path remains ordinary rendering rather than entering outline replay. No frame-time font resolver or fallback registry is consulted.
+
+
+### Captured Number, named cultures and native case context
+
+Complete Pie/Donut and Treemap/Sunburst value frames can capture built-in `Number` C/E/F/G/N/P/R formats (bounded precision0..17 where the existing formatter accepts it), plus `0`, `0.#`, `0.##`, `0.0`, `0.00`, `#,##0`, `#,##0.#`, `#,##0.##`, `#,##0.0`, and `#,##0.00`. Named-culture Compact uses the same native formatter. The immutable numeric policy must pass its canonical `PortablePolicy` validation: a matching culture name or `CultureInfo.Equals` does not admit modified NumberFormat data. Ordinary formatting remains available for richer formats and custom providers; this finite repertoire does not reinterpret their syntax.
+
+The existing formatter produces every captured observation. Numeric-culture symbols, separators, direction marks and actual native caption compositions enter the same captured request/fallback owner. Native LabelAndValue and Treemap header functions supply real text contexts for TitleCase, SentenceCase and ToggleCase; no generic prefix or second casing algorithm is substituted. The actual native text owner applies invariant casing and freezes raw/displayed facts with that culture binding. Replay does not read later CurrentCulture or FontRegistry state.
+
+The original invariant Compact/automatic catalog and its default probe bytes remain unchanged. New Unicode observations use the existing scalar reader and the same per-request4096/65536 bounds, including lazy bounded native context enumeration. An unsupported unused observation preserves stable-repertoire admission; an uncaptured required run rejects before a transition payload is accepted. Richer custom/literal/section/scale/per-mille grammar and other remaining value/membership cohorts continue through their native owners.
+
+`--native-value-number-culture-case-only --primary-font <path> --fallback-font <path>` emits 84 standalone Core + HTML adapter programs across Pie, Donut and Treemap, seven numeric/case policies, compact/wide sizes and light/dark modes. Both supplied fonts are host assets; the program requires their combined glyph coverage and adds no production dependency.
+
+
+Custom Number capture admits formats bounded to128 UTF-16 units, three sections,17 digit placeholders per section and three scientific exponent digits. Native formatting still supplies every witnessed output, including quoted or escaped literals, scaling commas, percent/per-mille and signed/zero sections. Named culture providers must retain their canonical numeric facts. Captured font/case replay and scalar budgets still apply; an ordinary formatter being callable does not guarantee admission for native value playback.
+
+The `--native-richer-number-only` example route emits eight compact/wide, light/dark Pie, Donut and Treemap programs through the existing numeric-caption recipe. It requires explicit primary/fallback font files, as does the ordinary numeric-caption route.
+
+
+`HtmlChartInteractionOptions.CaptureNativeValueSource` explicitly captures full authored Pie/Donut raw rows, including zero values, omitted radius paint and actual native Other membership. It defaults to false. It requires authored series and observation identities, immutable native presentation and admitted captured text. Raw rows are not painted interaction targets. Values and InitialValues use complete native source compilation at each captured source-value observation, including the native no-data and aggregate policies; negative Pie/Donut remains invalid. The one-edit API retains its old contract and rejects this opt-in raw route in favor of PrepareNativeTransitionJson.
+
+`HtmlNativeTransitionEffect.SourceReflow` accepts a changed raw source and changed absolute Reflow view together. Both endpoints must retain ordered authored structure, full target catalog, presentation and compatible captured face/cluster facts. Derived Other contributors may change through the real native source resolver. Its frames fade the old native view to zero, switch to the new native view at zero, then fade in. This is source reflow, not general simultaneous value/shape/membership interpolation. Ordinary LegendVisibility still requires the exact same full source. Native producer replies use the existing validated transition, request channel/basis and acceptance lifetime. No callback, JavaScript sum/formatter/geometry or alternate renderer is retained.
+
+The `--native-raw-values-only` examples route emits eight compact/wide light/dark standalone programs and exact native before/after artifacts. The opt-in raw source and per-frame facts remain bounded by canonical source capture and the existing one-MiB transition budget. A native domain, source/presentation, missing captured request/cluster or budget failure rejects before a complete payload is published. Broader family values, unbounded fallback repertoires and general joint geometry transitions remain separate capabilities.
+
+
+ValueFlash also uses actual owned Line/Bar, Pie/Donut and Treemap/Sunburst ink. A changed Line reading flashes that series' shared native line layers and only its changed point markers; it does not split paths into fabricated point segments. Bar surfaces include their native gradient stops, patterns and caps, while static tracks remain unchanged. Pie/Donut uses actual slice/outline/pattern groups; opt-in raw Other uses its actual contributors and derived-value/membership change. Hierarchy uses authored nodes and actual changed resolved native ancestor values. Unchanged series, labels, axes, metadata and geometry retain their captured values.
+
+The peak color is explicit. Frames begin and finish at the exact accepted destination, with transient native paint cloned from that immutable destination. Geometry, clipped group ownership, paint order, native gradients and source IDs are retained. The existing lifetime handles cancellation, hidden/reduced motion, export and disposal. Raw-source flash facts retain the accepted full source, never a fake zero/Other observation. The `--native-owned-flash-only --primary-font <licensed-font>` route emits eight native/program cases. Standalone programs take that font path as their sole argument. This adds owned ink flash; it does not establish value geometry interpolation for another family or general simultaneous morphology.
+
+
+Finite native Scatter values and explicit initial baselines reuse the existing Cartesian value plan, marker geometry/paint, actual captured source transforms and HTML lifetime. Ordered authored series/observation IDs, X coordinates, all-axis policy/domains, plot, marker/paint policy and source structure remain fixed. Y values interpolate through the actual native mapper. Custom Scatter semantic marker roles retain their native marker owner, including value flash; static context and unchanged observations stay untouched. Decimation, numeric color dimensions, stacks, enabled labels, explicit viewport and incompatible source/domain changes remain outside this finite capture. This does not add Bubble size-tuple, error/range or numeric-radial interpolation or Scatter Reflow membership. The `--native-scatter-values-only --primary-font <licensed-file>` route emits four programs/32 native/source artifacts; programs take that font path as one argument.
+
+
+`HtmlNativeTransitionEffect.ValuesAndVisibility` explicitly combines finite Line/Bar values and absolute whole-series Preserve visibility. It repaints each intermediate raw value through the existing native value plan, then applies the existing isolated native series opacity painter to that real geometry. Ordered authored identities, category/X coordinates, native all-axis domains/plot, paint/format and label policy stay fixed. Both at least one reading and one series visibility must change. Enabled labels use the complete native route below and require explicit GroupWithSeries; captured Bar stacks use the full-source Preserve contract below, while derived topology and Reflow point/group/hierarchy joint membership remain separate owner work.
+
+Values and LegendVisibility retain their separate strict contracts. Joint selection uses one destination acceptance/revision/basis/history and the same finite scheduler/lifetime, not a second controller or a new geometry renderer. Every candidate must retain the exact full authored point catalog, native domain policy, valid opacity/resources and complete prepared-section validation before commit. Old/new endpoints and exports stay exact. The existing managed payload cap and native JSON budget remain unchanged; no aggregate timeout is added.
+
+`--native-joint-values-visibility-only --primary-font <licensed-file>` emits four compact/wide light/dark programs with before/after native artifacts. Standalone programs take that font file path as their sole argument. This is continuous native value geometry plus whole-series Preserve membership/opacity; it does not claim general joint point/group/Other/hierarchy reflow morphology.
+
+
+### Complete native Cartesian values
+
+Line/Bar values with enabled captions, StepLine, Area, StepArea, stacked/normalized Bar and StackedArea use a complete detached native value plan. Ordered authored series/observation IDs, X coordinates, breaks, stack groups/normalization, StackedArea missing-data policy, axes, paint and caption policy stay fixed. Each frame replays the captured font requests and invokes the existing native chart compiler for paths, stack baselines, totals, labels, readouts, accessibility and regions. Synthesized Gap/Zero vertices retain their actual native geometry and acquire no observation IDs.
+
+This route requires authored fixed used value-axis bounds and exact matching native axis/plot facts on every frame. Changed automatic domains, changing label gutters, horizontal layouts, prepared time/session closures, callbacks, decimation, histograms, numeric color dimensions, per-point marker overrides, explicit windows and unsupported tuple families reject this value capture while ordinary rendering remains available. The existing labels-off unstacked Line/Bar/Scatter fragment route retains its behavior and output. This does not establish arbitrary topology-changing joint interpolation.
+
+Enabled-label joint Line/Bar Preserve motion requires `ChartVisibilityLabelLayering.GroupWithSeries`. Actual complete native geometry and labels are placed first, then each series' plot and associated captions share one native composite. The existing inter-series/global-overlay paint-order tradeoff still applies; PreserveOverlay partial label motion rejects. Area value flash owns the changed series' actual area fill/pattern and shared line ink, plus changed observation markers; accepted labels and static context retain their paint.
+
+`--native-complete-cartesian-values-only --primary-font <licensed-file>` emits 18 source programs and 144 source/native artifacts for nine finite native examples in compact light/wide dark. Each emitted program takes that font file as its single argument and uses the existing native producer/controller.
+
+
+### Joint native Bar stacks under Preserve
+
+`ValuesAndVisibility` also supports compatible native Bar stacks with named or default stack groups and native normalization. Each intermediate raw value is prepared by the same complete native chart plan before the existing series composite changes opacity. Ordered source identities, category coordinates, stack/normalization policy and exact native axis/plot facts remain fixed. Actual native guard failures, changing layout and uncaptured formatting still reject the capture.
+
+Preserve retains all full-source stack contributions. Shared stack totals, their captions and total regions remain global context with the native full-source values for that frame; hiding one series does not subtract its contribution or renormalize the visible series. Only actual series ink and its owned point captions change opacity. Enabled point captions require `GroupWithSeries`; shared total captions keep their existing global placement and paint order. `PreserveOverlay` partial enabled-point-label motion still rejects. Reflow/renormalized hidden-series geometry and topology-changing membership are separate capabilities.
+
+The separate Values and LegendVisibility intents still reject accidental mixed updates; callers select `ValuesAndVisibility` explicitly. Accepted endpoint/default exports, full catalogs, native hits, captured fonts and the existing lifetime/revision/cancellation/backpressure/export rules are retained. `--native-joint-stack-values-only --primary-font <licensed-file>` emits six compact-light/wide-dark public programs and 48 source/native files; each program takes that font file as its sole argument.
+
+
+### Typed Bubble Y/Size native values
+
+Set `HtmlChartInteractionOptions.CaptureNativeValueSource = true` when preparing both Bubble sections, then use `PrepareNativeTransitionJson` with `Values`, an explicit `InitialValues` baseline, or `ValueFlash`. Each reading is the real authored `(series ID, observation ID, component)` tuple. The finite Bubble components are `y` and `size`; sharing an observation ID across series does not merge readings. `PrepareValueTransitionJson` remains the scalar one-edit entry and rejects component plans.
+
+This cohort accepts one or more Bubble series with fixed ordered authored observations and X coordinates, fixed X and used numeric Y domains, and an explicit shared `Bubble.WithSizeDomain`. Raw Size stays strictly positive; values outside that visual size domain retain the native radius clamp. `SquareRootRadius` and `Area`, reversed scales, series marker shapes, fixed ColorValue, captions and readouts use the existing native compiler for every complete frame. A secondary value axis keeps its own domain. Every frame must retain the exact native axes and plot. Export uses the exact accepted endpoint.
+
+The opt-in snapshot owns copied full typed tuples, IDs, paint, options and captured formatter/font requests. Hidden or unpainted facts participate in its source key even when SVG/PNG ink stays unchanged. Replay does not retain a caller chart or query the font registry. Custom or modified-provider formatting, uncaptured fallback decisions, automatic/changing axes or size domains, changing X/ColorValue/identity/presentation, point legends, point-specific marker/outline policies and mixed tuple families reject this finite capture. Ordinary native rendering and default metadata remain available without the opt-in. Size0/negative is already invalid in `ChartBubble`; animation does not create a synthetic observation for it.
+
+Bubble visibility/Reflow/joint value-plus-membership motion, other tuple components and topology changes require their own native membership admissions. This capability is native value geometry interpolation, not a claim that every chart family or arbitrary glyph repertoire supports it. It retains the existing reduced-motion, hidden/export/reset, supersession, cancellation, backpressure, revision and disposal lifetime; no new callback channel or queue is added.
+
+`--native-bubble-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits compact/wide light/dark public programs and captured endpoints for both size encodings and explicit initial baselines. The Core recipe remains adapter-free; the executable program references the existing HTML adapter.
+
+
+### Typed RangeBand/RangeArea native values
+
+The existing `CaptureNativeValueSource` opt-in and `PrepareNativeTransitionJson` support `Values`, explicit `InitialValues`, and `ValueFlash` for authored RangeBand/RangeArea sources. Each observation contributes its real `lower` and `upper` readings, scoped by series and observation IDs. X, BreakBefore, ordering, interpolation, axes, formatting and presentation remain fixed. Raw lower/upper values retain their captured numeric display-domain facts and intrinsic native validity; the native clip policy handles values beyond that window. The native `ChartRangeBand`/`ReplaceRanges` and paired-boundary compiler validate and paint every tuple, curve, envelope, midpoint, caption and region; encoded point slots and derived midlines do not become new observations.
+
+Range uses the same immutable complete component plan and detached full source/font snapshot as Bubble. Its source facts carry no size mapping or reversal fields. All candidate frames pass the same shared native section validator before acceptance, and the accepted endpoint owns export, source, revision, history and hits throughout transient presentation. Ordinary null/default SVG/PNG and existing Bubble component payload paths retain their output.
+
+This admission requires fixed ordered authored identities/X/BreakBefore and captured X/used numeric Y axes. Time-coordinate updates, automatic domain/layout changes, custom or modified-provider formatting, uncaptured font decisions, changing topology/presentation and simultaneous visibility/membership remain unsupported at this admission. The scalar one-edit API rejects component plans. Range `ValueFlash` follows the shared Line ownership law: changing either lower or upper repaints the complete changed series envelope, hatches, both boundaries and their existing line layers across every real disconnected run, plus its RangeArea midline. Both actual endpoint markers and their hatches flash for each changed tuple; unchanged tuple markers, all captions and unrelated series retain their paint. The existing premultiplied sRGB flash law mixes RGBA, including translucent envelope alpha, while geometry, mark opacity, clips, identities, regions and accepted values remain fixed. First and last frames use the exact accepted destination; export always uses that destination.
+
+`--native-range-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits compact/wide light/dark public programs and native endpoints for RangeBand/RangeArea Values and explicit initial baselines, together with a separate captured ValueFlash payload. Each program writes an independent `visual.flash.html` page and its `visual.flash.transition.json` payload using the same public capture entry. The Core-only recipe retains its existing package boundary.
+
+
+### Typed ErrorBar native values
+
+The same `CaptureNativeValueSource` opt-in and complete component plan support ErrorBar `Values`, explicit `InitialValues`, and changed-point `ValueFlash`. A real observation contributes `value` for Y, `x-lower`/`x-upper` only when XBounds exists, and `y-lower`/`y-upper` only when YBounds exists. Absent intervals produce no synthetic mean/bound reading. X, ordered series/observation IDs, nullable interval shape, captured X/numeric member axes and presentation stay captured. X bounds use the actual X domain; Y and Y bounds use their real primary/secondary value domain.
+
+Every frame reconstructs through `ChartErrorBar`, `ChartErrorBounds` and `ReplaceErrorBars`, preserving native order/containing guards, caps, markers, label/readout/region owners and exact export policy. Browser preflight validates the captured nullable shape, complete ordered members, domains and containing facts; it computes no whisker/cap geometry or text. Flash repaints the actual changed point group once, including its whiskers/caps/marker; unchanged observations and labels retain exact paint.
+
+The source snapshot/canonical writer/font replay and accepted-scene scheduler/lifetime are shared with Bubble/Range. No new API, version, controller, queue or formatter is introduced. Ordinary native rendering and default metadata remain unchanged. Changing X/nullable interval presence, automatic axes, time-valued components, uncaptured/custom formatting/font policy and simultaneous visibility/topology changes remain required continuation. Native-invalid intervals still fail in the typed model; they are not animation observations.
+
+`--native-error-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits X-only, Y-only and combined public programs for Values, InitialValues and point flash at compact/wide light/dark sizes.
+
+
+### Typed financial native values
+
+The same `CaptureNativeValueSource` opt-in and native component entry support Candlestick and OHLC `Values`, explicit `InitialValues`, and changed-point `ValueFlash`. Readings are the authored `open`, `high`, `low`, and `close` under their real series/observation identities. X, ordered catalog, captured X/numeric value axes, labels, presentation, both financial direction policies and nullable observation overrides remain captured. Source keys include full prices and all retained paint/dash policies, including a currently unused direction. Old scalar one-edit admission remains strict.
+
+Each frame reconstructs via `ChartCandlestick` and `ReplaceFinancialValues`. The existing financial compiler owns body width, slots, rising/falling/doji paint, hollow wicks, direction and datum dashes, label/readout text, bounds, regions and legend. A rising-to-falling update passes through its real native doji. Browser preflight validates exact OHLC members, domains and native high/low containment; it computes no price geometry or formatting. Flash affects the complete changed native point mark once, leaving other observations and all labels unchanged.
+
+Ordinary null/default rendering is unchanged. This component admission requires captured X/numeric value domains and unchanged X/catalog/presentation. Native clipping owns raw prices beyond the displayed window; fixed temporal X follows the existing native time policy. Changing authored membership and simultaneous tuple/visibility topology require separate admissions. Native-invalid prices reject in `ChartCandlestick` before an observation exists. The finite native tuple contract does not imply universal topology or physical/pixel parity.
+
+`--native-financial-components-only --primary-font <licensed-font-file> --output <absolute-directory>` emits both financial forms for Values/InitialValues/flash at compact light and wide dark sizes through public APIs.
+
+
+### Fixed native time categories for components
+
+Opt-in component value plans retain primary-X elapsed, included-session, ordinal and calendar-unit time policy while updating numeric Bubble/Range/ErrorBar/Candlestick/OHLC values. X stays authored and fixed. The immutable source copies time-zone, sessions and spacing; its private copied axis discards only the generated time domain, so the existing native time owner recomputes it for every complete frame. Original prepared axes remain untouched. Exact captured axes, sessions, calendar instants and plot transforms must match after compilation. No baseline, calendar, DST, session or projection arithmetic is recreated in JavaScript.
+
+The source and transition validators compare the actual native axis facts and fixed per-observation X/scale/instant metadata across endpoints and every candidate before acceptance. Only this component branch admits temporal X. Time-valued Y or ErrorBar X interval components, custom time label callbacks, prepared viewport state and changing category coordinates/time policy remain explicit errors. Ordinary rendering keeps its current formatting and time policies.
+
+`--native-component-time-only --primary-font <licensed-font-file> --output <absolute-directory>` emits a bounded set of elapsed/session/ordinal/calendar public programs at compact light and wide dark sizes. Geometry remains the real native family compiler; source capture and lifetime/export policy are shared with numeric components.
+
+
+### Raw component values and native clipping
+
+Captured native component values retain finite authored readings beyond the displayed axis minimum/maximum. The same complete native compiler, tuple guards and captured plot/clip policy own each frame. Exact full/current axes and endpoint exports must still agree. `CaptureNativeValueSource` never invents a clipped observation or sums geometry in the browser. The full catalog, raw values, native regions/readouts and source keys remain captured even when ink lies outside the plot.
+
+Positive raw Bubble Size still follows its native size-domain clamp; zero/negative Size remains invalid. Logarithmic axes retain their intrinsic positive/negative sign and nonzero rules independently of their display window. Native high/low/containing/nullable interval guards remain unchanged. Component-only browser preflight validates those actual facts without projection or formatting.
+
+Fixed Time X, numeric animated members, immutable source/paint/font policy, exact native endpoints, current acceptance/basis/export and the single existing scheduler remain required. Changing authored tuple/catalog topology and genuinely joint membership/value morphology are separate remaining capabilities. Native-invalid domains and arbitrary callbacks are not admitted through clipping.
+
+`--native-component-clipping-only --primary-font <licensed-font-file> --output <absolute-directory>` emits real values entering a fixed native clip for Bubble/RangeArea/ErrorBar/Candlestick/OHLC at compact light and wide dark sizes.

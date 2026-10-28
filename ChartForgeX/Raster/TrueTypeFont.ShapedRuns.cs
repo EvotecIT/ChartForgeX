@@ -9,6 +9,10 @@ internal sealed partial class TrueTypeFont {
     internal bool NeedsSyntheticBold(string text) =>
         !HasSelectedAxis("wght") && _colors == null && IsSimpleRun(text) || NeedsSyntheticBold(TextShaper.Shape(this, text));
 
+    /// <summary>Preserves the native simple-run short circuit without resolving fallback during captured replay.</summary>
+    internal bool NeedsSyntheticBoldCaptured(string text, IReadOnlyList<ShapedGlyph> glyphs) =>
+        !HasSelectedAxis("wght") && _colors == null && IsSimpleRun(text) || NeedsSyntheticBold(glyphs);
+
     internal bool NeedsSyntheticBold(IReadOnlyList<ShapedGlyph> glyphs) {
         foreach (var glyph in glyphs) if (CanSynthesizeBold(glyph)) return true;
         return false;
@@ -30,9 +34,11 @@ internal sealed partial class TrueTypeFont {
     }
 
     /// <summary>Advance for a visual glyph, including pair kerning when the previous glyph uses the same face.</summary>
-    internal static double GlyphAdvance(ShapedGlyph glyph, ShapedGlyph? previous, double fontSize) =>
-        (glyph.Advance ?? (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && !previous.Value.Advance.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
+    internal static double GlyphAdvance(ShapedGlyph glyph, ShapedGlyph? previous, double fontSize) {
+        var advance = (glyph.Advance ?? (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && !previous.Value.Advance.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
             ? glyph.Face.Kerning(previous.Value.Glyph, glyph.Glyph) : 0))) * glyph.Face.ScaleFor(fontSize);
+        return glyph.TrailingAdvance == 0 ? advance : advance + glyph.TrailingAdvance * glyph.Face.ScaleFor(fontSize);
+    }
 
     /// <summary>A regular fallback retains its advance but receives the requested run's bold ink.</summary>
     private double FallbackBoldOffset(ShapedGlyph glyph, double size) =>
@@ -43,18 +49,10 @@ internal sealed partial class TrueTypeFont {
     internal bool DrawGlyphs(RgbaCanvas canvas, double x, double y, IReadOnlyList<ShapedGlyph> glyphs, ChartColor color, double fontSize, bool italic, double boldOffset = 0) {
         var fit = GlyphGridFit.Create(canvas, fontSize, y + Ascent(fontSize));
         var baseline = fit?.Baseline ?? y + Ascent(fontSize);
-        ShapedGlyph? previous = null;
+        var run = new PositionedGlyphRun(this, glyphs, x, baseline, fontSize, italic, boldOffset);
         var rendered = false;
-        foreach (var glyph in glyphs) {
-            var scale = glyph.Face.ScaleFor(fontSize);
-            var advance = GlyphAdvance(glyph, previous, fontSize);
-            x += advance - GlyphAdvance(glyph, null, fontSize);
-            var offset = CanSynthesizeBold(glyph) ? boldOffset : 0;
-            if (offset == 0) offset = FallbackBoldOffset(glyph, fontSize);
-            rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit, offset);
-            x += GlyphAdvance(glyph, null, fontSize);
-            previous = glyph;
-        }
+        while (run.MoveNext(out var glyph))
+            rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, glyph.X, glyph.Baseline, glyph.Scale, glyph.Italic, color, fit, glyph.BoldOffset);
         return rendered;
     }
 }

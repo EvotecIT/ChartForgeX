@@ -1,0 +1,20 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.Interactivity.Html;
+
+if(args.Length!=1)throw new ArgumentException("Pass a font file licensed for this output.");FontRegistry.Register("Native joint font",File.ReadAllBytes(args[0]));
+var bar={{BAR}};var renderer=new HtmlInteractiveChartRenderer();Chart Model(double value)=>NativeJointValuesVisibilityRecipe.Create(bar,value,{{WIDTH}},VisualThemeMode.{{MODE}},"Native joint font");
+var from=renderer.PrepareVisibilitySection(Model(30),NativeJointValuesVisibilityRecipe.View(false));var to=renderer.PrepareVisibilitySection(Model(40),NativeJointValuesVisibilityRecipe.View(true));
+var payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValuesAndVisibility,5));
+var action="const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));document.querySelector('#play').onclick=()=>chart.update("+JsonSerializer.Serialize(to.Html)+",{sceneRevision:chart.sceneRevision,transition:"+JsonSerializer.Serialize(payload)+",motion:{duration:650}});";
+var html="<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>"+HtmlInteractiveChartRenderer.BuildFragmentStyle()+"</style></head><body><button id='play' type='button'>Present joint native values and visibility</button>"+from.Html+"<script>"+HtmlInteractiveChartRenderer.BuildInteractionScript()+"</script><script>"+action+"</script></body></html>";
+Directory.CreateDirectory("output");File.WriteAllText("output/visual.html",html);File.WriteAllText("output/visual.transition.json",payload);File.WriteAllText("output/visual.svg",to.PreparedVisual.ToSvg());File.WriteAllBytes("output/visual.png",to.PreparedVisual.ToPng());
+
+{{SOURCE}}

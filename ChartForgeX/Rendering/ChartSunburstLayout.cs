@@ -50,7 +50,7 @@ internal static class ChartSunburstLayout {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Sunburst);
         if (series?.Relationships == null || series.Nodes.Count == 0) return ChartSunburstModel.Empty;
         var facts = series.Relationships;
-        var values = facts.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
+        var values = chart.HierarchyPreparation?.Values ?? facts.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
         var nodes = new List<ChartSunburstNode>();
         for (var i = 0; i < facts.Nodes.Count; i++)
             nodes.Add(new ChartSunburstNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label) { Value = values[i], Parent = facts.Parent(i), Depth = facts.Depths[i], ViewDepth = chart.HierarchyPreparation?.Depth(i) ?? facts.Depths[i] });
@@ -62,7 +62,7 @@ internal static class ChartSunburstLayout {
         }
         var view = chart.HierarchyPreparation;
         var root = view?.RootIndex ?? facts.Root;
-        var maxDepth = Math.Max(0, nodes.Where(node => view == null || view.Contains(node.Index)).Max(node => node.ViewDepth));
+        var maxDepth = Math.Max(0, nodes.Where(node => view == null || view.Contains(node.Index)).Select(node => node.ViewDepth).DefaultIfEmpty(0).Max());
         var radius = Math.Max(1, Math.Min(plot.Width, plot.Height) * 0.46);
         var ringWidth = radius / Math.Max(1, maxDepth + 1);
         var centerX = plot.Left + plot.Width / 2;

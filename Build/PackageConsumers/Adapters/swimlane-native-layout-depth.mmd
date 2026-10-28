@@ -1,0 +1,28 @@
+---
+config:
+  flowchart:
+    diagramPadding: 28
+    nodeSpacing: 70
+    rankSpacing: 130
+    useMaxWidth: true
+  swimlane:
+    ignoreCrossLaneEdges: true
+    optimizeRanksByCrossings: false
+    automaticLaneOrdering: false
+    lineHops: false
+---
+swimlane-beta LR
+accTitle: Delivery responsibilities
+accDescr: Product with a locally vertical API lane and a separately ranked partner handoff.
+subgraph Product[Product delivery]
+  P[Plan]
+  subgraph API[API]
+    direction TB
+    A[Accept] --> B[Build]
+    A --> C[Check]
+  end
+end
+subgraph Partner[Partner]
+  D[Deliver]
+end
+Product --> Partner

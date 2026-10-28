@@ -17,25 +17,31 @@ public static class MermaidArchitectureRendering {
     public static TopologyChart ToTopologyChart(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
+        using var sourceScope = MermaidResourceGuard.BeginIfAbsent(document.CapturedResourceLimits);
+        if (document.Alignments.Count > 0) MermaidResourceGuard.ValidateDocument(document);
         var chart = TopologyChart.Create()
             .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-architecture" : options.Id!.Trim())
             .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid architecture"))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+            .WithLayout(document.Alignments.Count > 0 || document.Groups.Any(group => !string.IsNullOrWhiteSpace(group.ParentId))
+                ? TopologyLayoutMode.Layered : TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
 
         foreach (var group in document.Groups) {
-            chart.AddAutoGroup(group.Id, group.Title, TopologyHealthStatus.Unknown, subtitle: group.ParentId == null ? null : "in " + group.ParentId, cssClass: "cfx-mermaid-architecture-group", symbol: Symbol(group.Icon), iconId: IconId(group.Icon));
+            chart.AddAutoGroup(group.Id, string.IsNullOrWhiteSpace(group.Title) ? group.Id : group.Title, TopologyHealthStatus.Unknown, subtitle: group.ParentId == null ? null : "in " + group.ParentId, cssClass: "cfx-mermaid-architecture-group", iconId: MermaidArchitectureIcons.NativeId(group.Icon));
             var topologyGroup = chart.Groups[chart.Groups.Count - 1];
+            topologyGroup.ShowLabel = !string.IsNullOrWhiteSpace(group.Title);
             topologyGroup.LayoutPolicy = TopologyGroupLayoutPolicy.Grid;
+            topologyGroup.ParentGroupId = group.ParentId;
             topologyGroup.Metadata["mermaid.kind"] = "group";
             if (!string.IsNullOrWhiteSpace(group.Icon)) topologyGroup.Metadata["mermaid.icon"] = group.Icon!;
             if (!string.IsNullOrWhiteSpace(group.ParentId)) topologyGroup.Metadata["mermaid.parent"] = group.ParentId!;
         }
 
         foreach (var service in document.Services) {
-            chart.AddAutoNode(service.Id, service.Title, ServiceKind(service.Icon), TopologyHealthStatus.Unknown, groupId: service.GroupId, width: 150, height: 72, symbol: Symbol(service.Icon), cssClass: "cfx-mermaid-architecture-service", iconId: IconId(service.Icon));
+            chart.AddAutoNode(service.Id, string.IsNullOrWhiteSpace(service.Title) ? service.Id : service.Title, ServiceKind(service.Icon), TopologyHealthStatus.Unknown, groupId: service.GroupId, width: 150, height: 72, cssClass: "cfx-mermaid-architecture-service", iconId: MermaidArchitectureIcons.NativeId(service.Icon));
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.ShowLabel = !string.IsNullOrWhiteSpace(service.Title);
             node.Metadata["mermaid.kind"] = "service";
             if (!string.IsNullOrWhiteSpace(service.Icon)) node.Metadata["mermaid.icon"] = service.Icon!;
             if (!string.IsNullOrWhiteSpace(service.GroupId)) node.Metadata["mermaid.group"] = service.GroupId!;
@@ -51,20 +57,29 @@ public static class MermaidArchitectureRendering {
         var groupLookup = document.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
         var serviceGroups = document.Services.ToDictionary(service => service.Id, service => service.GroupId, StringComparer.Ordinal);
         var junctionGroups = document.Junctions.ToDictionary(junction => junction.Id, junction => junction.GroupId, StringComparer.Ordinal);
-        var boundaryAnchors = new Dictionary<string, string>(StringComparer.Ordinal);
         for (var index = 0; index < document.Edges.Count; index++) {
             var item = document.Edges[index];
             var source = ResolveSource(item);
             var target = ResolveTarget(item);
-            var sourceId = ResolveEndpointNodeId(chart, source, groupLookup, serviceGroups, junctionGroups, boundaryAnchors);
-            var targetId = ResolveEndpointNodeId(chart, target, groupLookup, serviceGroups, junctionGroups, boundaryAnchors);
+            var sourceId = ResolveEndpointNodeId(source, groupLookup, serviceGroups, junctionGroups);
+            var targetId = ResolveEndpointNodeId(target, groupLookup, serviceGroups, junctionGroups);
             chart.AddEdge("mermaid-architecture-edge-" + index.ToString(CultureInfo.InvariantCulture), sourceId, targetId, null, TopologyEdgeKind.Connectivity, TopologyHealthStatus.Unknown, Direction(item.Operator), TopologyEdgeRouting.Orthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
+            edge.SourcePort = Port(source.Side); edge.TargetPort = Port(target.Side);
             edge.Metadata["mermaid.operator"] = item.Operator;
             ApplyEndpointMetadata(edge.Metadata, "source", source);
             ApplyEndpointMetadata(edge.Metadata, "target", target);
         }
 
+        for (var index = 0; index < document.Alignments.Count; index++) {
+            var source = document.Alignments[index];
+            var alignment = new TopologyAlignment("mermaid-architecture-alignment-" + index.ToString(CultureInfo.InvariantCulture), source.Kind, source.Members);
+            alignment.Metadata["mermaid.kind"] = "alignment";
+            alignment.Metadata["mermaid.line"] = source.Span.Line.ToString(CultureInfo.InvariantCulture);
+            alignment.Metadata["mermaid.column"] = source.Span.Column.ToString(CultureInfo.InvariantCulture);
+            alignment.Metadata["mermaid.length"] = source.Span.Length.ToString(CultureInfo.InvariantCulture);
+            chart.Alignments.Add(alignment);
+        }
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
@@ -74,7 +89,11 @@ public static class MermaidArchitectureRendering {
     public static VisualArtifact ToVisualArtifact(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         var topology = document.ToTopologyChart(options);
-        var artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
+        VisualArtifact artifact;
+        try { artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid); }
+        catch (TopologyAlignmentLimitException exception) {
+            throw new MermaidResourceLimitException(exception.LimitName, exception.Limit, exception.Actual, AlignmentSpan(document, exception.AlignmentId));
+        }
         artifact.Kind = VisualArtifactKind.Mermaid;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
@@ -83,6 +102,7 @@ public static class MermaidArchitectureRendering {
         artifact.Metadata["mermaid.services"] = document.Services.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.junctions"] = document.Junctions.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.edges"] = document.Edges.Count.ToString(CultureInfo.InvariantCulture);
+        if (document.Alignments.Count > 0) artifact.Metadata["mermaid.alignments"] = document.Alignments.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(TopologyChart);
         return MermaidPresentation.Apply(artifact, document);
     }
@@ -92,6 +112,12 @@ public static class MermaidArchitectureRendering {
 
     /// <summary>Renders a Mermaid architecture document to static PNG.</summary>
     public static byte[] ToPng(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
+
+    internal static MermaidSourceSpan AlignmentSpan(MermaidArchitectureDocument document, string? id) {
+        for (var index = 0; index < document.Alignments.Count; index++)
+            if (id == "mermaid-architecture-alignment-" + index.ToString(CultureInfo.InvariantCulture)) return document.Alignments[index].Span;
+        return document.Alignments.Count == 0 ? document.HeaderSpan : document.Alignments[0].Span;
+    }
 
     private static MermaidArchitectureEndpoint ResolveSource(MermaidArchitectureEdge edge) => edge.Operator.StartsWith("<", StringComparison.Ordinal) && !edge.Operator.EndsWith(">", StringComparison.Ordinal) ? edge.Right : edge.Left;
 
@@ -105,42 +131,31 @@ public static class MermaidArchitectureRendering {
 
     private static void ApplyEndpointMetadata(System.Collections.Generic.IDictionary<string, string> metadata, string prefix, MermaidArchitectureEndpoint endpoint) {
         if (!string.IsNullOrWhiteSpace(endpoint.Side)) metadata["mermaid." + prefix + ".side"] = endpoint.Side!;
-        if (endpoint.GroupBoundary) metadata["mermaid." + prefix + ".groupBoundary"] = "true";
+        if (endpoint.GroupBoundary) {
+            metadata["mermaid." + prefix + ".groupBoundary"] = "true";
+            metadata["mermaid." + prefix + ".id"] = endpoint.Id;
+        }
     }
 
-    private static string ResolveEndpointNodeId(TopologyChart chart, MermaidArchitectureEndpoint endpoint, IReadOnlyDictionary<string, MermaidArchitectureGroup> groups, IReadOnlyDictionary<string, string?> serviceGroups, IReadOnlyDictionary<string, string?> junctionGroups, Dictionary<string, string> boundaryAnchors) {
+    // A modifier belongs to the service/junction's immediate containing group. An ungrouped
+    // endpoint remains a real node, matching the source DB's accepted boundary cases.
+    private static string ResolveEndpointNodeId(MermaidArchitectureEndpoint endpoint, IReadOnlyDictionary<string, MermaidArchitectureGroup> groups,
+        IReadOnlyDictionary<string, string?> serviceGroups, IReadOnlyDictionary<string, string?> junctionGroups) {
         if (!endpoint.GroupBoundary) return endpoint.Id;
         if (!serviceGroups.TryGetValue(endpoint.Id, out var groupId) && !junctionGroups.TryGetValue(endpoint.Id, out groupId)) return endpoint.Id;
-        if (string.IsNullOrWhiteSpace(groupId) || !groups.ContainsKey(groupId!)) return endpoint.Id;
-        var side = string.IsNullOrWhiteSpace(endpoint.Side) ? "boundary" : endpoint.Side!.Trim();
-        var key = groupId + "|" + side;
-        if (boundaryAnchors.TryGetValue(key, out var existing)) return existing;
-
-        var anchorId = "mermaid-architecture-group-anchor-" + groupId + "-" + side.ToLowerInvariant();
-        chart.AddAutoNode(anchorId, groups[groupId!].Title + " boundary", TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: groupId, width: 1, height: 1, symbol: string.Empty, cssClass: "cfx-mermaid-architecture-group-anchor");
-        var node = chart.Nodes[chart.Nodes.Count - 1];
-        node.DisplayMode = TopologyNodeDisplayMode.Hidden;
-        node.Metadata["mermaid.kind"] = "group-boundary-anchor";
-        node.Metadata["mermaid.group"] = groupId!;
-        node.Metadata["mermaid.side"] = side;
-        boundaryAnchors[key] = anchorId;
-        return anchorId;
+        return !string.IsNullOrWhiteSpace(groupId) && groups.ContainsKey(groupId!) ? groupId! : endpoint.Id;
     }
 
-    private static TopologyNodeKind ServiceKind(string? icon) {
-        if (icon == null) return TopologyNodeKind.Service;
-        if (icon.IndexOf("database", StringComparison.OrdinalIgnoreCase) >= 0 || icon.IndexOf("db", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyNodeKind.Database;
-        if (icon.IndexOf("server", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyNodeKind.Server;
-        if (icon.IndexOf("cloud", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyNodeKind.Cloud;
-        if (icon.IndexOf("gateway", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyNodeKind.Gateway;
-        if (icon.IndexOf("disk", StringComparison.OrdinalIgnoreCase) >= 0 || icon.IndexOf("storage", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyNodeKind.Storage;
-        return TopologyNodeKind.Service;
-    }
+    private static TopologyEdgePort Port(string? side) => side switch {
+        "L" => TopologyEdgePort.Left, "R" => TopologyEdgePort.Right,
+        "T" => TopologyEdgePort.Top, "B" => TopologyEdgePort.Bottom,
+        _ => TopologyEdgePort.Auto
+    };
 
-    private static string? Symbol(string? icon) {
-        if (string.IsNullOrWhiteSpace(icon)) return null;
-        return icon!.Length <= 2 ? icon.ToUpperInvariant() : icon.Substring(0, 1).ToUpperInvariant();
-    }
-
-    private static string? IconId(string? icon) => string.IsNullOrWhiteSpace(icon) ? null : "mermaid:" + icon;
+    private static TopologyNodeKind ServiceKind(string? icon) => icon switch {
+        "database" => TopologyNodeKind.Database,
+        "server" => TopologyNodeKind.Server,
+        "cloud" => TopologyNodeKind.Cloud,
+        _ => TopologyNodeKind.Service
+    };
 }

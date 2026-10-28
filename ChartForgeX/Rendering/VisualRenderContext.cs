@@ -47,7 +47,7 @@ public sealed class VisualLayoutOptions {
 }
 
 /// <summary>Common title, subtitle, legend and surface configuration.</summary>
-public sealed class VisualFrame {
+public sealed partial class VisualFrame {
     private readonly TextStyle? _titleStyle, _subtitleStyle, _legendStyle;
     /// <summary>Creates an immutable frame configuration.</summary>
     /// <remarks>Omitted legend visibility and placement use the producer's data-aware policy and model configuration.
@@ -112,6 +112,17 @@ public sealed class VisualRenderContext {
         Layout = layout ?? new VisualLayoutOptions(new VisualSize(640, 400));
         Theme = theme ?? VisualTheme.Graphite(); ThemeMode = themeMode; Frame = frame ?? new VisualFrame();
         _font = font?.Clone() ?? new FontSpec { Family = Theme.Typography.Family };
+    }
+    internal bool CaptureNativeValueSource { get; private set; }
+    internal VisualRenderContext WithNativeValueSource(bool capture) {
+        if (capture == CaptureNativeValueSource) return this;
+        var copy = new VisualRenderContext(Layout, Theme, ThemeMode, Frame, _font);
+        copy.NativeTextCapture = NativeTextCapture; copy.CaptureNativeValueSource = capture; return copy;
+    }
+    internal VisualSceneTextCapture? NativeTextCapture { get; private set; }
+    internal VisualRenderContext WithNativeTextCapture(VisualSceneTextCapture? capture) {
+        if (ReferenceEquals(capture, NativeTextCapture)) return this;
+        var copy = new VisualRenderContext(Layout, Theme, ThemeMode, Frame, _font); copy.NativeTextCapture = capture; copy.CaptureNativeValueSource = CaptureNativeValueSource; return copy;
     }
     /// <summary>Gets the resolved layout.</summary>
     public VisualLayoutOptions Layout { get; }

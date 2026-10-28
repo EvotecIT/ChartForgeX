@@ -12,13 +12,16 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidArtifactContractTests {
     [Fact]
-    public void EveryConformanceFixtureExportsSvgPngAndPortableSemantics() {
+    public void EveryConformanceFixtureExportsSvgPngAndEnforcesPortableFontAdmission() {
         var root = new DirectoryInfo(TestRepository.Root);
         while (root != null && !Directory.Exists(Path.Combine(root.FullName, "tests", "mermaid-conformance"))) root = root.Parent;
         Assert.NotNull(root);
         foreach (var path in Directory.GetFiles(Path.Combine(root!.FullName, "tests", "mermaid-conformance", "fixtures"), "*.mmd")) {
             var source = File.ReadAllText(path);
-            var options = new MermaidRenderOptions();
+            // Exercise positive portable admission with a known bounded face, independent of host collections.
+            var options = new MermaidRenderOptions {
+                Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family }
+            };
             var expectedPath = Path.ChangeExtension(path, ".expected.json");
             if (File.Exists(expectedPath)) {
                 using var expected = JsonDocument.Parse(File.ReadAllText(expectedPath));
@@ -34,8 +37,41 @@ public sealed class MermaidArtifactContractTests {
             Assert.Equal("svg", XDocument.Parse(result.Artifact!.ToSvg()).Root!.Name.LocalName);
             var png = result.Artifact.ToPng();
             Assert.True(png.Length > 64 && png[0] == 137 && png[1] == 80, path);
-            var json = result.Artifact.ToInterchangeJson();
-            Assert.Equal(json, VisualArtifactInterchangeEnvelope.FromJson(json).ToJson());
+            string? json;
+            try { json = result.Artifact.ToInterchangeJson(); }
+            catch (NotSupportedException failure) {
+                // Capture the actual selected fallback roots before a portable budget rejection hides the fixture.
+                ChartForgeX.Rendering.PreparedVisual? prepared = result.Artifact.Model switch {
+                    TopologyChart topology => VisualArtifactRendering.PrepareTopologyArtifact(result.Artifact,
+                        VisualArtifactRendering.TopologyModel(result.Artifact, topology), VisualArtifactRendering.TopologyOptions(result.Artifact, null)).Visual,
+                    FlowArtifact flow => flow.Prepare(ChartForgeX.Rendering.VisualExportRequest.ForFlow(flow).Context),
+                    _ => null
+                };
+                if (prepared != null) TopologyPortableFontObservation.Capture(Path.GetFileNameWithoutExtension(path), prepared);
+                // This escaped-whitespace fixture can select a platform TAB face larger than the owned-root budget.
+                // Native output remains valid; a real oversized fallback must be rejected rather than substituted.
+                if (Path.GetFileName(path) != "cynefin-source-semantics.mmd" || prepared == null)
+                    throw new InvalidOperationException(Path.GetFileName(path) + ": " + failure.Message, failure);
+                var text = prepared.CapturedSemanticSnapshot!.Presentation!.ContextFont!.Text!;
+                var requests = text.Requests;
+                if (failure.Message == "Portable diagram fonts require the existing covered, finite captured request/cluster contract.") {
+                    // Some platform faces leave TAB uncovered instead of selecting an oversized fallback root.
+                    // Both are real admission failures; ordinary native SVG/PNG above still must succeed.
+                    Assert.False(text.SupportsCapturedReplay);
+                    Assert.Contains(text.Runs, run => run.Lines.Any(line => line.Text.Contains('\t') && line.Glyphs.Any(glyph => glyph.Glyph == 0)));
+                } else {
+                    Assert.Equal("Owned font bytes exceed the portable 2 MiB per-root limit.", failure.Message);
+                    Assert.All(requests, request => Assert.True(request.Face.Font!.Root.CapturedByteLength <= OwnedFontResources.MaximumRootBytes));
+                    var oversized = requests.SelectMany(request => request.Clusters.Decisions)
+                        .Where(decision => decision.Face.Root.CapturedByteLength > OwnedFontResources.MaximumRootBytes).ToArray();
+                    Assert.NotEmpty(oversized);
+                    Assert.All(oversized, decision => {
+                        Assert.Equal(new[] { 9 }, decision.Raw); Assert.Equal(new[] { 9 }, decision.Output);
+                    });
+                }
+                json = null;
+            }
+            if (json != null) Assert.Equal(json, VisualArtifactInterchangeEnvelope.FromJson(json).ToJson());
             var markup = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
             Assert.Single(markup.Artifacts);
             Assert.False(markup.HasErrors, path);

@@ -7,9 +7,12 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using ChartForgeX.Themes;
 
-internal static class Program {
+internal static partial class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
+        FiniteCompositeContracts();
+        AppearanceCompositionContracts();
+        NativeBlendContracts();
         PackageAssertions.Owner(typeof(VisualCanvas), "ChartForgeX.Visuals");
         PackageAssertions.Owner(typeof(ImageComposition), "ChartForgeX.Visuals");
         PackageAssertions.Owner(typeof(ChartTable), "ChartForgeX.Visuals");

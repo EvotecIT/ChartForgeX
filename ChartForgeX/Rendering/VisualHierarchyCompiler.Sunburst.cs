@@ -14,6 +14,7 @@ internal static partial class VisualHierarchyCompiler {
         var total = model.Nodes[model.Root].Value;
         var cornerRadius = chart.Options.Sunburst.CornerRadius;
         var sectorGap = chart.Options.Sunburst.SectorGap;
+        var frameSurface = HierarchyCaptionSurface.Frame(context);
         if (total == 0) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The Sunburst has no positive sizes."));
         foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) {
             var item = series.HierarchyItems[node.Index];
@@ -60,14 +61,16 @@ internal static partial class VisualHierarchyCompiler {
             metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
             var id = ChartRelationshipMetadata.SourceId("node", node.Id);
             using (builder.PushGroup(id, "sunburst-segment", metadata)) if (visible) {
-                var stroke = surface.Scale != null && state != ChartSeriesState.None ? ChartSeriesColours.State(state, colors, colors.Foreground) : colors.Surface;
+                var explicitStroke = node.Index < series.PointStrokeColors.Count ? series.PointStrokeColors[node.Index] : null;
+                var stateStroke = surface.Scale != null && state != ChartSeriesState.None;
+                var stroke = explicitStroke ?? (stateStroke ? ChartSeriesColours.State(state, colors, colors.Foreground) : colors.Surface);
                 builder.Slice(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep, color, stroke,
-                    surface.Scale != null && state != ChartSeriesState.None ? 2 : 1, "sunburst-segment-mark",
-                    paint: new VisualScenePaintBinding(paint, SvgPaint.Of(stroke, surface.Scale != null && state != ChartSeriesState.None ? SvgColorRole.Status : SvgColorRole.Surface)), cornerRadius: cornerRadius);
+                    explicitStroke.HasValue ? Math.Min(series.StrokeWidth, (geometry.OuterRadius - geometry.InnerRadius) / 2) : stateStroke ? 2 : 1, "sunburst-segment-mark",
+                    paint: new VisualScenePaintBinding(paint, SvgPaint.Of(stroke, explicitStroke.HasValue ? SvgColorRole.Series : stateStroke ? SvgColorRole.Status : SvgColorRole.Surface)), cornerRadius: cornerRadius);
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern", cornerRadius: cornerRadius);
-                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) SunburstLabel(chart, context, builder, model, node, geometry, color, paint, secondary);
+                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) SunburstLabel(chart, context, builder, model, node, geometry, color, paint, secondary, color.A == 255 ? null : frameSurface.Over(color, paint));
             }
             var bounds = visible ? sectorGap > 0
                 ? ChartSlicePathGeometry.Bounds(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep)

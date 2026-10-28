@@ -17,6 +17,8 @@ public static partial class MermaidSequenceRendering {
     /// <returns>A sequence artifact that can render static SVG and PNG previews.</returns>
     public static SequenceArtifact ToSequenceArtifact(this MermaidSequenceDocument document, MermaidSequenceRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
+        using var resourceScope = MermaidResourceGuard.BeginIfAbsent(document.CapturedResourceLimits);
+        MermaidResourceGuard.ValidateDocument(document);
         options ??= new MermaidSequenceRenderOptions();
         var artifactId = string.IsNullOrWhiteSpace(options.Id) ? "mermaid-sequence" : options.Id!.Trim();
         var sequence = SequenceArtifact.Create(artifactId)
@@ -31,41 +33,34 @@ public static partial class MermaidSequenceRendering {
         sequence.Metadata["mermaid.activations"] = document.Activations.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.notes"] = document.Notes.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.blocks"] = document.Blocks.Count.ToString(CultureInfo.InvariantCulture);
-        if (document.Autonumber != null) {
-            sequence.Metadata["mermaid.autonumber"] = "true";
-            if (document.Autonumber.Start != null) sequence.Metadata["mermaid.autonumber.start"] = document.Autonumber.Start;
-            if (document.Autonumber.Increment != null) sequence.Metadata["mermaid.autonumber.increment"] = document.Autonumber.Increment;
-        }
+
 
         foreach (var participant in document.Participants) {
-            sequence.AddParticipant(participant.Id, string.IsNullOrWhiteSpace(participant.Alias) ? participant.Id : participant.Alias, participant.Kind);
+            sequence.AddParticipant(participant.Id, MermaidLabelText.DisplayCaption(string.IsNullOrWhiteSpace(participant.Alias) ? participant.Id : participant.Alias!), participant.Kind);
             var target = sequence.Participants[sequence.Participants.Count - 1];
             target.IsImplicit = participant.IsImplicit;
             target.Metadata["mermaid.id"] = participant.Id;
             target.Metadata["mermaid.kind"] = participant.Kind.ToString();
+            var rawLabel = participant.Alias ?? participant.Id;
+            if (target.Label != rawLabel) target.Metadata["mermaid.label"] = rawLabel;
             target.Metadata["mermaid.source.line"] = participant.Span.Line.ToString(CultureInfo.InvariantCulture);
             if (participant.Configuration != null) target.Metadata["mermaid.configuration"] = participant.Configuration;
         }
 
         AddParticipantLifetimesAndBoxes(document, sequence);
 
-        foreach (var link in document.Links) {
-            var participant = FindParticipant(sequence, link.ParticipantId);
-            if (participant == null) continue;
-            if (link.Label != null) participant.Metadata["mermaid.link.label"] = link.Label;
-            if (link.Url != null) {
-                participant.Href = link.Url;
-                participant.Metadata["mermaid.link.url"] = link.Url;
-            }
-            if (link.RawJson != null) participant.Metadata["mermaid.links.json"] = link.RawJson;
-        }
+        MermaidSequenceParticipantData.Project(document,
+            (id, key, value) => FindParticipant(sequence, id)!.Metadata[key] = value,
+            (id, href) => FindParticipant(sequence, id)!.Href = href,
+            navigation:(id,links)=>FindParticipant(sequence,id)!.NavigationLinks=links);
 
         foreach (var message in document.Messages) {
-            sequence.AddMessage(message.SourceId, message.TargetId, message.Text, ToLineStyle(message.Operator), ToMessageKind(message.Operator));
+            sequence.AddMessage(message.SourceId, message.TargetId, message.Text == null ? null : MermaidLabelText.DisplayCaption(message.Text), ToLineStyle(message.Operator), ToMessageKind(message.Operator));
             var target = sequence.Messages[sequence.Messages.Count - 1];
             target.ActivatesTarget = message.ActivatesTarget;
             target.Deactivates = message.Deactivates;
             target.Metadata["mermaid.operator"] = message.Operator;
+            if (message.Text != null && target.Text != message.Text) target.Metadata["mermaid.text"] = message.Text;
             target.Metadata["mermaid.source.line"] = message.Span.Line.ToString(CultureInfo.InvariantCulture);
             target.Metadata["mermaid.source.column"] = message.Span.Column.ToString(CultureInfo.InvariantCulture);
             if (message.IsCentralConnection) target.Metadata["mermaid.centralConnection"] = "true";
@@ -79,12 +74,17 @@ public static partial class MermaidSequenceRendering {
         }
 
         foreach (var note in document.Notes) {
-            sequence.AddNote(ToNotePlacement(note.Placement), note.ParticipantIds, note.Text ?? string.Empty);
+            sequence.AddNote(ToNotePlacement(note.Placement), note.ParticipantIds, MermaidLabelText.DisplayCaption(note.Text ?? string.Empty));
             sequence.Notes[sequence.Notes.Count - 1].StepIndex = CountMessagesBefore(document, note.Span);
+            sequence.Notes[sequence.Notes.Count - 1].SourceOrder = SequenceOrder(note.Span);
         }
 
         AddBlocks(document, sequence);
-        return MermaidPresentation.Apply(sequence, document, options.Presentation);
+        AddNumbering(document, sequence);
+        MermaidPresentation.Apply(sequence, document, options.Presentation);
+        if(options.HasExplicitPadding&&sequence.Layout?.CanvasPadding!=null)
+            sequence.Layout=sequence.Layout.WithCanvasPadding(ChartForgeX.Primitives.ChartPadding.All(options.Padding));
+        return sequence;
     }
 
     /// <summary>
@@ -128,8 +128,8 @@ public static partial class MermaidSequenceRendering {
                 if (stack.Count == 0 || !stack.Peek().IsBranching) continue;
                 var current = stack.Pop();
                 int boundary = CountMessagesBefore(document, block.Span);
-                current.CompleteBranch(sequence, boundary);
-                current = current.NextBranch(block.Kind.ToString(), block.Text ?? string.Empty, boundary);
+                current.CompleteBranch(sequence, boundary, SequenceOrder(block.Span));
+                current = current.NextBranch(block.Kind.ToString(), MermaidLabelText.DisplayCaption(block.Text ?? string.Empty), boundary, SequenceOrder(block.Span));
                 stack.Push(current);
                 continue;
             }
@@ -137,17 +137,24 @@ public static partial class MermaidSequenceRendering {
                 if (stack.Count == 0) continue;
                 var start = stack.Pop();
                 int boundary = CountMessagesBefore(document, block.Span);
-                start.CompleteBranch(sequence, boundary);
+                start.CompleteBranch(sequence, boundary, SequenceOrder(block.Span));
                 bool isEmpty = boundary <= start.StepIndex;
                 sequence.AddBlock(start.Kind, start.Text, start.StepIndex, isEmpty ? start.StepIndex : boundary - 1, isEmpty, start.Depth);
+                var target = sequence.Blocks[sequence.Blocks.Count - 1];
+                target.SourceOrder = start.SourceOrder;
+                target.EndSourceOrder = SequenceOrder(block.Span);
+                target.CloseStepIndex = boundary;
+                if (start.Kind == SequenceArtifactBlockKind.Rect) target.BackgroundColor = RectangleBackground(document, start.Text);
                 continue;
             }
 
             var kind = ToBlockKind(block.Kind);
             if (!kind.HasValue) continue;
-            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span), block.Depth));
+            stack.Push(new BlockStart(kind.Value, MermaidLabelText.DisplayCaption(block.Text ?? string.Empty), CountMessagesBefore(document, block.Span), block.Depth, SequenceOrder(block.Span)));
         }
     }
+
+    private static long SequenceOrder(MermaidSourceSpan span) => ((long)span.Line << 32) + (uint)span.Column;
 
     private static int CountMessagesBefore(MermaidSequenceDocument document, MermaidSourceSpan span) {
         var count = 0;
@@ -170,7 +177,7 @@ public static partial class MermaidSequenceRendering {
         MermaidHeading.Title(document, options.Title, document.Title, "Mermaid sequence");
 
     private static SequenceArtifactMessageLineStyle ToLineStyle(string messageOperator) =>
-        messageOperator.StartsWith("--", StringComparison.Ordinal) ? SequenceArtifactMessageLineStyle.Dashed : SequenceArtifactMessageLineStyle.Solid;
+        messageOperator.IndexOf("--", StringComparison.Ordinal) >= 0 ? SequenceArtifactMessageLineStyle.Dashed : SequenceArtifactMessageLineStyle.Solid;
 
     private static SequenceArtifactMessageKind ToMessageKind(string messageOperator) {
         if (messageOperator.IndexOf(')') >= 0) return SequenceArtifactMessageKind.Async;
@@ -204,6 +211,8 @@ public static partial class MermaidSequenceRendering {
                 return SequenceArtifactBlockKind.Opt;
             case MermaidSequenceBlockKind.Par:
                 return SequenceArtifactBlockKind.Par;
+            case MermaidSequenceBlockKind.ParOver:
+                return SequenceArtifactBlockKind.ParOver;
             case MermaidSequenceBlockKind.Critical:
                 return SequenceArtifactBlockKind.Critical;
             case MermaidSequenceBlockKind.Rect:
@@ -216,7 +225,7 @@ public static partial class MermaidSequenceRendering {
     }
 
     private readonly struct BlockStart {
-        public BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth) {
+        public BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth, long sourceOrder) {
             Kind = kind;
             Text = text;
             StepIndex = stepIndex;
@@ -224,9 +233,11 @@ public static partial class MermaidSequenceRendering {
             BranchKind = "Primary";
             BranchText = text;
             BranchStepIndex = stepIndex;
+            SourceOrder = sourceOrder;
+            BranchOrder = sourceOrder;
         }
 
-        private BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth, string branchKind, string branchText, int branchStepIndex) {
+        private BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth, long sourceOrder, string branchKind, string branchText, int branchStepIndex, long branchOrder) {
             Kind = kind;
             Text = text;
             StepIndex = stepIndex;
@@ -234,8 +245,12 @@ public static partial class MermaidSequenceRendering {
             BranchKind = branchKind;
             BranchText = branchText;
             BranchStepIndex = branchStepIndex;
+            SourceOrder = sourceOrder;
+            BranchOrder = branchOrder;
         }
 
+        public long SourceOrder { get; }
+        public long BranchOrder { get; }
         public SequenceArtifactBlockKind Kind { get; }
         public string Text { get; }
         public int StepIndex { get; }
@@ -243,16 +258,20 @@ public static partial class MermaidSequenceRendering {
         public string BranchKind { get; }
         public string BranchText { get; }
         public int BranchStepIndex { get; }
-        public bool IsBranching => Kind == SequenceArtifactBlockKind.Alt || Kind == SequenceArtifactBlockKind.Par || Kind == SequenceArtifactBlockKind.Critical;
+        public bool IsBranching => Kind == SequenceArtifactBlockKind.Alt || Kind == SequenceArtifactBlockKind.Par || Kind == SequenceArtifactBlockKind.ParOver || Kind == SequenceArtifactBlockKind.Critical;
 
-        public void CompleteBranch(SequenceArtifact sequence, int exclusiveEndStepIndex) {
+        public void CompleteBranch(SequenceArtifact sequence, int exclusiveEndStepIndex, long endOrder) {
             if (!IsBranching) return;
             bool isEmpty = exclusiveEndStepIndex <= BranchStepIndex;
             sequence.AddBranch(Kind, BranchKind, BranchText, BranchStepIndex, isEmpty ? BranchStepIndex : exclusiveEndStepIndex - 1, Depth, isEmpty);
+            var target = sequence.Branches[sequence.Branches.Count - 1];
+            target.SourceOrder = BranchOrder;
+            target.EndSourceOrder = endOrder;
+            target.CloseStepIndex = exclusiveEndStepIndex;
         }
 
-        public BlockStart NextBranch(string branchKind, string branchText, int branchStepIndex) =>
-            new(Kind, Text, StepIndex, Depth, branchKind, branchText, branchStepIndex);
+        public BlockStart NextBranch(string branchKind, string branchText, int branchStepIndex, long branchOrder) =>
+            new(Kind, Text, StepIndex, Depth, SourceOrder, branchKind, branchText, branchStepIndex, branchOrder);
     }
 }
 
@@ -266,6 +285,8 @@ public sealed class MermaidSequenceRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview height.</summary>
     public double Height { get; set; } = 560;
 
-    /// <summary>Gets or sets the preview padding.</summary>
-    public double Padding { get; set; } = 32;
+    private double _padding=32;
+    internal bool HasExplicitPadding { get; private set; }
+    /// <summary>Gets or sets explicit host preview padding. An authored value overrides both source diagram-margin axes.</summary>
+    public double Padding { get=>_padding; set { _padding=value;HasExplicitPadding=true; } }
 }

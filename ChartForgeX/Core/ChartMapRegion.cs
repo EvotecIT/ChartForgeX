@@ -35,6 +35,12 @@ public readonly struct ChartMapRegion {
     /// </summary>
     public readonly ChartPoint Label;
 
+    /// <summary>Gets optional immutable source feature metadata, independent of region observation identity.</summary>
+    public ChartMapFeature? Feature { get; }
+    /// <summary>Gets the immutable original imported geometry JSON of a seam-aware polygon, or null for ordinary/manual geometry.</summary>
+    /// <remarks>Complete raw rings, extra coordinate dimensions and original number spelling are retained through the existing bounded JSON owner.</remarks>
+    public string? GeoJsonGeometry { get; }
+
     /// <summary>
     /// Gets alternate codes or names that should resolve to this region.
     /// </summary>
@@ -57,8 +63,18 @@ public readonly struct ChartMapRegion {
         Path = path.Trim();
         HasLabel = label.HasValue;
         Label = label.GetValueOrDefault();
-        _aliases = Array.AsReadOnly(MaterializeAliases(aliases));
+        _aliases = Array.AsReadOnly(MaterializeAliases(aliases)); Feature = null; GeoJsonGeometry = null;
     }
+
+    private ChartMapRegion(ChartMapRegion source, ChartMapFeature? feature, string? geometry) {
+        Code = source.Code; Name = source.Name; Path = source.Path; HasLabel = source.HasLabel; Label = source.Label;
+        _aliases = source._aliases; Feature = feature; GeoJsonGeometry = geometry;
+    }
+    /// <summary>Returns the same region geometry with replacement immutable feature metadata. No observation ID is assigned.</summary>
+    /// <param name="feature">A snapshot, or null to clear it. Imported raw geometry is retained.</param>
+    /// <returns>An independent region with unchanged paths, code, name and aliases.</returns>
+    public ChartMapRegion WithFeature(ChartMapFeature? feature) => new(this, feature, GeoJsonGeometry);
+    internal ChartMapRegion WithGeoJsonSource(ChartMapFeature feature, string geometry) => new(this, feature, geometry);
 
     private static string[] MaterializeAliases(IEnumerable<string>? aliases) {
         if (aliases == null) return Array.Empty<string>();

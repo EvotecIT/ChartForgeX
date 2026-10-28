@@ -17,7 +17,7 @@ internal sealed class LabelSpatialIndex {
         if (id == null) _maximumLabelGap = Math.Max(_maximumLabelGap, gap);
         var entry = new Entry(bounds, id, shape, gap);
         var cells = Cells(bounds);
-        if ((long)(cells.Right - cells.Left + 1) * (cells.Bottom - cells.Top + 1) > 4096) { _large.Add(entry); return; }
+        if (SpansManyCells(cells)) { _large.Add(entry); return; }
         for (var x = cells.Left; x <= cells.Right; x++) for (var y = cells.Top; y <= cells.Bottom; y++) {
             if (!_cells.TryGetValue((x, y), out var entries)) _cells[(x, y)] = entries = new List<Entry>();
             entries.Add(entry);
@@ -37,7 +37,7 @@ internal sealed class LabelSpatialIndex {
         var expanded = Expand(bounds, Math.Max(_gap, Math.Max(gap, _maximumLabelGap)) + .5);
         foreach (var entry in _large) if (BlocksLeader(entry, start, end, gap)) return true;
         var cells = Cells(expanded);
-        if ((long)(cells.Right - cells.Left + 1) * (cells.Bottom - cells.Top + 1) > 4096) {
+        if (SpansManyCells(cells)) {
             foreach (var entries in _cells.Values) foreach (var entry in entries) if (BlocksLeader(entry, start, end, gap)) return true;
             return false;
         }
@@ -62,7 +62,7 @@ internal sealed class LabelSpatialIndex {
         var expanded = Expand(bounds, allowLabelOverlap ? _gap : Math.Max(_gap, Math.Max(gap, _maximumLabelGap)));
         foreach (var entry in _large) if (Blocks(entry, bounds, associated, gap, allowLabelOverlap)) return true;
         var cells = Cells(expanded);
-        if ((long)(cells.Right - cells.Left + 1) * (cells.Bottom - cells.Top + 1) > 4096) {
+        if (SpansManyCells(cells)) {
             foreach (var entries in _cells.Values) foreach (var entry in entries) if (Blocks(entry, bounds, associated, gap, allowLabelOverlap)) return true;
             return false;
         }
@@ -72,6 +72,26 @@ internal sealed class LabelSpatialIndex {
         }
         return false;
     }
+    /// <summary>Gets mapped enclosing mark bounds without mistaking a line's box or another caption for a solid mark.</summary>
+    internal ChartRect? ContainingMarks(ChartPoint anchor, string? associated) {
+        ChartRect? result = null;
+        foreach (var entry in _large) Include(entry);
+        if (_cells.TryGetValue((Cell(anchor.X), Cell(anchor.Y)), out var entries))
+            foreach (var entry in entries) Include(entry);
+        return result;
+
+        void Include(Entry entry) {
+            if (entry.Id == null || entry.Id == associated || entry.Shape != null
+                || anchor.X <= entry.Bounds.Left || anchor.X >= entry.Bounds.Right
+                || anchor.Y <= entry.Bounds.Top || anchor.Y >= entry.Bounds.Bottom) return;
+            if (!result.HasValue) { result = entry.Bounds; return; }
+            var bounds = result.Value;
+            var left = Math.Min(bounds.Left, entry.Bounds.Left); var top = Math.Min(bounds.Top, entry.Bounds.Top);
+            result = new ChartRect(left, top, Math.Max(bounds.Right, entry.Bounds.Right) - left,
+                Math.Max(bounds.Bottom, entry.Bounds.Bottom) - top);
+        }
+    }
+
     private bool Blocks(Entry entry, ChartRect original, string? associated, double labelGap, bool allowLabelOverlap) {
         if (entry.Id == null && allowLabelOverlap) return false;
         var expanded = Expand(original, entry.Id == null ? Math.Max(labelGap, entry.Gap) : _gap);
@@ -79,6 +99,13 @@ internal sealed class LabelSpatialIndex {
             && expanded.Left < entry.Bounds.Right && expanded.Right > entry.Bounds.Left && expanded.Top < entry.Bounds.Bottom && expanded.Bottom > entry.Bounds.Top
             && (entry.Shape?.Intersects(expanded) ?? true);
     }
+    // Cast before subtraction and test each axis before multiplying: two saturated spans exceed even Int64.
+    private static bool SpansManyCells((int Left, int Top, int Right, int Bottom) cells) {
+        var columns = (long)cells.Right - cells.Left + 1;
+        var rows = (long)cells.Bottom - cells.Top + 1;
+        return columns > 4096 || rows > 4096 || columns * rows > 4096;
+    }
+
     private static ChartRect Expand(ChartRect bounds, double gap) => new(bounds.X - gap, bounds.Y - gap, bounds.Width + gap * 2, bounds.Height + gap * 2);
     private static (int Left, int Top, int Right, int Bottom) Cells(ChartRect box) => (Cell(box.Left), Cell(box.Top), Cell(box.Right), Cell(box.Bottom));
     private static int Cell(double value) => (int)Math.Max(int.MinValue + 1d, Math.Min(int.MaxValue - 1d, Math.Floor(value / CellSize)));

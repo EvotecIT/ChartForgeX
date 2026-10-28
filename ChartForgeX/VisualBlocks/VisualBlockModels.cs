@@ -50,7 +50,7 @@ public sealed class VisualBlockOptions {
 
     /// <summary>Gets or sets the inner content padding.</summary>
     public ChartPadding Padding {
-        get => HostOwnsFrame ? new ChartPadding(0,0,0,0) : !_hasExplicitPadding ? new ChartPadding(18,16,18,12) : _padding;
+        get => HostOwnsFrame ? new ChartPadding(0,0,0,0) : ConfiguredPadding;
         set {
             ValidateNonNegative(value.Left, nameof(value));
             ValidateNonNegative(value.Top, nameof(value));
@@ -60,6 +60,9 @@ public sealed class VisualBlockOptions {
             _hasExplicitPadding = true;
         }
     }
+
+    /// <summary>Gets resolved configured padding without suppressing it for a host-owned frame; serialization must retain later ownership changes.</summary>
+    internal ChartPadding ConfiguredPadding => !_hasExplicitPadding ? new ChartPadding(18,16,18,12) : _padding;
 
     /// <summary>Gets or sets the visual theme used by renderers.</summary>
     public VisualTheme Theme {

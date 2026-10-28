@@ -14,6 +14,7 @@ public sealed partial class ChartSeries {
             if (IsRelationshipKind(Kind)) return Nodes.Count;
             if (IsCategoricalHeatmapRow) return HeatmapCells.Count;
             if (IsTypedWaterfall) return WaterfallItems.Count;
+            if (IsTypedProgress) return ProgressItems.Count;
             return Kind switch {
                 ChartSeriesKind.DottedMap => MapPoints.Count,
                 ChartSeriesKind.CalendarHeatmap => CalendarItems.Count,

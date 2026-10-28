@@ -28,6 +28,7 @@ internal sealed partial class VisualTopologyCompiler {
         data["class"] = CssPrefix + "__node" + CustomCssClasses(node.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsNodeHighlighted(node));
         data["data-node-kind"] = node.Kind.ToString(); data["data-node-label"] = node.Label;
         if (node.Shape.HasValue) data["data-node-shape"] = node.Shape.Value.ToString();
+        if (node.IconShape.HasValue) data["data-node-icon-shape"] = node.IconShape.Value.ToString();
         data["data-node-display-mode"] = EffectiveNodeDisplayMode(node, _options).ToString();
         data["data-group-id"] = node.GroupId ?? string.Empty;
         data["data-group-label"] = _chart.Groups.FirstOrDefault(group => group.Id == node.GroupId)?.Label ?? string.Empty;
@@ -52,6 +53,7 @@ internal sealed partial class VisualTopologyCompiler {
         data["class"] = CssPrefix + "__group" + CustomCssClasses(group.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsGroupHighlighted(group));
         data["data-group-label"] = group.Label; data["data-group-color"] = group.Color ?? string.Empty;
         data["data-parent-group-id"] = group.ParentGroupId ?? string.Empty;
+        if (!group.ShowLabel) data["data-group-show-label"] = "false";
         if (group.Presentation != TopologyGroupPresentation.Container)
             data["data-group-presentation"] = group.Presentation.ToString();
         data["data-group-layout-direction"] = group.LayoutDirection?.ToString() ?? string.Empty;
@@ -106,6 +108,14 @@ internal sealed partial class VisualTopologyCompiler {
             var control = Point(GeographicCurveControlPoint(_chart, edge, _nodesById, EdgePoints(_chart, edge, _nodesById)));
             data["data-route-control-x"] = Number(control.X); data["data-route-control-y"] = Number(control.Y);
         }
+        if (edge.PathGeometry != null) data["data-route-curve"] = "authored-path";
+        if (edge.LabelPosition != null) {
+            var position = Point(edge.LabelPosition.Point);
+            data["data-label-position-x"] = Number(position.X); data["data-label-position-y"] = Number(position.Y);
+            data["data-label-position-anchor"] = edge.LabelPosition.VerticalAnchor.ToString();
+        }
+        if (edge.SourceMarkerStyle != null) data["data-source-marker-scale"] = Number(edge.SourceMarkerStyle.Scale * _scale);
+        if (edge.TargetMarkerStyle != null) data["data-target-marker-scale"] = Number(edge.TargetMarkerStyle.Scale * _scale);
         var diagnostic = EdgeRouteDiagnostics(_chart, edge, _nodesById);
         data["data-route-strategy"] = diagnostic.Strategy; data["data-route-corridor"] = diagnostic.Corridor;
         data["data-route-candidate-count"] = diagnostic.CandidateCount.ToString(CultureInfo.InvariantCulture);

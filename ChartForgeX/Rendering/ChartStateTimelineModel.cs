@@ -87,7 +87,7 @@ internal sealed class ChartStateTimelineModel {
 
     public string? SummaryHeader => Chart.Options.LaneSummaryHeader;
 
-    public static ChartStateTimelineModel Build(Chart chart, ChartColor? fallback = null) {
+    public static ChartStateTimelineModel Build(Chart chart, ChartColor? fallback = null, (double Min, double Max)? sharedWindow = null) {
         var legend = new ChartStateCategoryLegend(chart, fallback);
         var lanes = new List<ChartStateTimelineLane>();
         var min = double.PositiveInfinity;
@@ -120,6 +120,7 @@ internal sealed class ChartStateTimelineModel {
             lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments, series.LaneGroup));
         }
 
+        if (sharedWindow.HasValue) { min = sharedWindow.Value.Min; max = sharedWindow.Value.Max; }
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
@@ -157,15 +158,17 @@ internal sealed class ChartStateTimelineModel {
 
     public double LaneBand(ChartRect plot) => Math.Min(LaneSlot(plot) * 0.9, Math.Max(LaneBandMinimum, Math.Min(LaneBandMaximum, LaneSlot(plot) * 0.72)));
 
-    public double LaneTop(ChartRect plot, int laneIndex) => plot.Top + _laneOffsets[laneIndex] * LaneSlot(plot) + (LaneSlot(plot) - LaneBand(plot)) / 2;
+    public double LaneTop(ChartRect plot, int laneIndex) => VisualScheduleCompiler.ScheduleRowTop(Chart, plot,
+        plot.Top + _laneOffsets[laneIndex] * LaneSlot(plot) + (LaneSlot(plot) - LaneBand(plot)) / 2, LaneBand(plot));
 
     /// <summary>Returns the top of a group header row or separator.</summary>
-    public double GroupTop(ChartRect plot, ChartStateTimelineGroup group) => plot.Top + group.Offset * LaneSlot(plot);
+    public double GroupTop(ChartRect plot, ChartStateTimelineGroup group) => VisualScheduleCompiler.ScheduleRowTop(Chart, plot,
+        plot.Top + group.Offset * LaneSlot(plot), GroupHeight(plot, group));
 
     /// <summary>Returns the height of a group header row or separator.</summary>
     public double GroupHeight(ChartRect plot, ChartStateTimelineGroup group) => group.Units * LaneSlot(plot);
 
-    public double X(double value, ChartRect plot) => plot.Left + ChartMath.Normalize(Math.Max(Min, Math.Min(Max, value)), Min, Max) * plot.Width;
+    public double X(double value, ChartRect plot) => VisualScheduleCompiler.ScheduleX(Chart.Options.XAxis, value, Min, Max, plot);
 
     /// <summary>Returns the pixel span of a segment clipped to the axis, or false when it lies outside the visible range.</summary>
     public bool TrySegmentSpan(ChartStateTimelineResolvedSegment segment, ChartRect plot, out double left, out double width) {
@@ -173,7 +176,8 @@ internal sealed class ChartStateTimelineModel {
         width = 0;
         if (segment.End <= Min || segment.Start >= Max) return false;
         left = X(segment.Start, plot);
-        width = Math.Max(1, X(segment.End, plot) - left);
+        if (Chart.Options.XAxis.Reversed) { var end = X(segment.End, plot); width = Math.Max(1, left - end); left = Math.Max(plot.Left, left - width); }
+        else width = Math.Max(1, X(segment.End, plot) - left);
         return true;
     }
 

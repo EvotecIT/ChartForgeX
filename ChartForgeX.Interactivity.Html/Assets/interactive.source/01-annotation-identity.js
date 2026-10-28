@@ -1,4 +1,4 @@
-  // Persist catalog IDs, not hints.
+
   const annotationCatalog = (svg, metadata) => {
     const entries = metadata.annotations ?? [], ids = new Set(), sources = new Set(), bindings = new Map();
     const nodes = Array.from(svg.querySelectorAll('[data-cfx-role^="annotation"],[data-cfx-target-kind="annotation"]'));

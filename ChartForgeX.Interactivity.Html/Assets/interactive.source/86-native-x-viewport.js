@@ -17,18 +17,12 @@
       && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
       && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
   };
-  const chartXProjection = root => {
-    try { return JSON.parse(root.dataset.cfxPreparedChart).xProjection || null; } catch { return null; }
-  };
-  const nativeXWindowChanged = root => {
-    const projection = chartXProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
-  };
+  const chartXProjection = root => chartAxisProjection(root, 'x');
   const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
   const syncXViewportControls = root => {
     const binding = nativePreparationBinding(root, 'viewport');
-    const unsupported = !!binding && (!chartXProjection(root) || !binding.legacy && binding.axes.some(name => !chartAxisProjection(root, name)));
-    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
+    const unsupported = !!binding && !polarGestureProjection(root) && (!chartXProjection(root) || !binding.legacy && binding.axes.some(name => !chartAxisProjection(root, name)));
+    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported || nativePreparationBackpressureBusy(root); });
     if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
     syncXNavigation(root);
     syncResetControl(root);
@@ -38,10 +32,10 @@
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return false;
     if (kind === 'reset') suspendPointerReadout(root);
     return requestNativePreparation(root, 'viewport', { kind,
-      ...(sourceWindow ? { sourceWindow: Object.freeze({ minimum: sourceWindow.minimum, maximum: sourceWindow.maximum, ...(sourceWindow.maximumInclusive === false ? { maximumInclusive: false } : {}) }) } : {}),
+      ...(sourceWindow ? { sourceWindow: nativeSourceWindow(sourceWindow) } : {}),
       ...(kind === 'reset' ? {} : { left, right }) }, {
       eventPrefix: 'cfxviewport', resetView: kind === 'reset', accepted,
-      validate: next => { if (!chartXProjection(next)) throw new TypeError('The viewport reply requires a supported X projection.'); },
+      validate: next => { if (!chartXProjection(next)) throw new TypeError('Native reply requires X projection.'); },
       beforeCommit: () => kind === 'reset' ? selectionSignature(root) : '',
       committed: (_, previousSelection) => {
         if (kind === 'reset') { emitHostEvent(root, 'cfxreset', {}); publishResetSelection(root, previousSelection); }
@@ -50,6 +44,7 @@
     });
   };
   const requestXViewportZoom = (root, factor, logicalX, logicalY) => {
+    if (polarViewportConnected(root)) { requestPolarViewportZoom(root, factor, logicalX, logicalY); return; }
     if (cartesianViewportConnected(root)) { requestCartesianViewportZoom(root, factor, logicalX, logicalY); return; }
     const plot = chartXProjection(root)?.plotBounds;
     if (!plot || !Number.isFinite(factor) || factor <= 0) return;
@@ -58,7 +53,7 @@
   };
   const nativeXWindow = root => {
     const projection = chartXProjection(root);
-    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear', ...(projection.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
+    return nativeProjectionWindow(projection, projection?.scale || 'linear');
   };
   const requestNativeXWindow = (root, window, sync = true, accepted) => {
     if (cartesianViewportConnected(root)) return requestNativeCartesianWindow(root, { x: window }, sync, accepted);

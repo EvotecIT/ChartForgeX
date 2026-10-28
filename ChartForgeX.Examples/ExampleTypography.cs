@@ -9,6 +9,8 @@ internal static class ExampleTypography {
 
     internal static string EmbeddedStyle => Embedded.Value;
 
+    internal static string EmbedInHtml(string html) => html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
+
     internal static void Register() {
         FontRegistry.Register(FontFamily, FontPath("Regular"), 400);
         FontRegistry.Register(FontFamily, FontPath("Bold"), 700);
@@ -16,6 +18,7 @@ internal static class ExampleTypography {
 
     internal static void WriteAssets(string output) {
         Register();
+        File.WriteAllText(Path.Combine(output, "cfx-native-text.js"), ChartForgeX.Interactivity.Html.HtmlInteractiveAssetFiles.NativeTextScript.Content);
         var destination = Path.Combine(output, "fonts");
         Directory.CreateDirectory(destination);
         foreach (var file in new[] { "Carlito-Regular.ttf", "Carlito-Bold.ttf", "OFL.txt" })

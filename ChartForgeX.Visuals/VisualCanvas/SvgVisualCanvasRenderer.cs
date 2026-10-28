@@ -63,20 +63,30 @@ public sealed class SvgVisualCanvasRenderer {
         writer.StartElement("stop").Attribute("offset", "0%").Attribute("stop-color", theme.HeroBadgeTop.ToCss()).EndEmptyElement().Line();
         writer.StartElement("stop").Attribute("offset", "100%").Attribute("stop-color", theme.HeroBadgeBottom.ToCss()).EndEmptyElement().Line();
         writer.EndElement().Line();
-        writer.StartElement("filter").Attribute("id", id + "-soft-glow").Attribute("x", "-30%").Attribute("y", "-30%").Attribute("width", "160%").Attribute("height", "160%").EndStartElement().Line();
-        writer.StartElement("feGaussianBlur").Attribute("in", "SourceAlpha").Attribute("stdDeviation", 5).Attribute("result", "blur").EndEmptyElement().Line();
-        writer.StartElement("feFlood").Attribute("flood-color", theme.HeroBadgeGlowColor.WithAlpha(255).ToCss())
-            .Attribute("flood-opacity", theme.HeroBadgeGlowColor.A / 255d).Attribute("result", "glow-paint").EndEmptyElement().Line();
-        writer.StartElement("feComposite").Attribute("in", "glow-paint").Attribute("in2", "blur").Attribute("operator", "in").Attribute("result", "glow").EndEmptyElement().Line();
-        writer.StartElement("feMerge").EndStartElement()
-            .StartElement("feMergeNode").Attribute("in", "glow").EndEmptyElement()
-            .StartElement("feMergeNode").Attribute("in", "SourceGraphic").EndEmptyElement()
-            .EndElement().Line();
-        writer.EndElement().Line();
-        writer.StartElement("filter").Attribute("id", id + "-raised-depth").Attribute("x", "-18%").Attribute("y", "-18%").Attribute("width", "136%").Attribute("height", "148%").EndStartElement().Line();
-        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 11).Attribute("stdDeviation", 8).Attribute("flood-color", "#000000").Attribute("flood-opacity", 0.42).EndEmptyElement().Line();
-        writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 0).Attribute("stdDeviation", 6).Attribute("flood-color", theme.SecondaryAccent.ToCss()).Attribute("flood-opacity", 0.24).EndEmptyElement().Line();
-        writer.EndElement().Line();
+        var needsBadgeGlow = false;
+        var needsRaisedDepth = false;
+        foreach (var layer in canvas.Layers) {
+            if (layer is VisualCanvasHeroBadgeLayer) needsBadgeGlow = true;
+            if (layer is VisualCanvasInfoTileLayer tile && tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised) needsRaisedDepth = true;
+        }
+        if (needsBadgeGlow) {
+            writer.StartElement("filter").Attribute("id", id + "-soft-glow").Attribute("x", "-30%").Attribute("y", "-30%").Attribute("width", "160%").Attribute("height", "160%").EndStartElement().Line();
+            writer.StartElement("feGaussianBlur").Attribute("in", "SourceAlpha").Attribute("stdDeviation", 5).Attribute("result", "blur").EndEmptyElement().Line();
+            writer.StartElement("feFlood").Attribute("flood-color", theme.HeroBadgeGlowColor.WithAlpha(255).ToCss())
+                .Attribute("flood-opacity", theme.HeroBadgeGlowColor.A / 255d).Attribute("result", "glow-paint").EndEmptyElement().Line();
+            writer.StartElement("feComposite").Attribute("in", "glow-paint").Attribute("in2", "blur").Attribute("operator", "in").Attribute("result", "glow").EndEmptyElement().Line();
+            writer.StartElement("feMerge").EndStartElement()
+                .StartElement("feMergeNode").Attribute("in", "glow").EndEmptyElement()
+                .StartElement("feMergeNode").Attribute("in", "SourceGraphic").EndEmptyElement()
+                .EndElement().Line();
+            writer.EndElement().Line();
+        }
+        if (needsRaisedDepth) {
+            writer.StartElement("filter").Attribute("id", id + "-raised-depth").Attribute("x", "-18%").Attribute("y", "-18%").Attribute("width", "136%").Attribute("height", "148%").EndStartElement().Line();
+            writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 11).Attribute("stdDeviation", 8).Attribute("flood-color", "#000000").Attribute("flood-opacity", 0.42).EndEmptyElement().Line();
+            writer.StartElement("feDropShadow").Attribute("dx", 0).Attribute("dy", 0).Attribute("stdDeviation", 6).Attribute("flood-color", theme.SecondaryAccent.ToCss()).Attribute("flood-opacity", 0.24).EndEmptyElement().Line();
+            writer.EndElement().Line();
+        }
         writer.EndElement().Line();
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
             writer.StartElement("rect").Attribute("data-cfx-role", "visual-canvas-background").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-background)").EndEmptyElement().Line();
@@ -89,9 +99,9 @@ public sealed class SvgVisualCanvasRenderer {
 
     private static void RenderLayer(SvgMarkupWriter writer, VisualCanvasLayer layer, string id, ResolvedVisualCanvasStyle theme, int layerIndex) {
         if (layer is VisualCanvasTextLayer text) {
-            RenderText(writer, text, theme);
+            RenderText(writer, text, theme, id + "-text-" + layerIndex);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
-            RenderHeroTitle(writer, hero, theme);
+            RenderHeroTitle(writer, hero, theme, id + "-hero-" + layerIndex);
         } else if (layer is VisualCanvasKeyValueBlockLayer keyValue) {
             RenderKeyValueBlock(writer, keyValue, theme);
         } else if (layer is VisualCanvasInfoTileLayer tile) {
@@ -149,7 +159,10 @@ public sealed class SvgVisualCanvasRenderer {
         return layout + ";background-color:" + canvas.BackgroundBottom.ToCss();
     }
 
-    private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, ResolvedVisualCanvasStyle theme) {
+    private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, ResolvedVisualCanvasStyle theme, string prefix) {
+        if (VisualCanvasStyledText.Requested(text.TextStyle)) {
+            VisualCanvasStyledText.WriteSvg(writer, VisualCanvasStyledText.Plain(text, theme), text.X, text.Y, prefix); return;
+        }
         var anchor = Anchor(text.Alignment);
         var x = AlignedX(text.X, text.Width, text.Alignment);
         var weight = text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular;
@@ -168,7 +181,10 @@ public sealed class SvgVisualCanvasRenderer {
             .Line();
     }
 
-    private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, ResolvedVisualCanvasStyle theme) {
+    private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, ResolvedVisualCanvasStyle theme, string prefix) {
+        if (VisualCanvasStyledText.Requested(hero.TextStyle)) {
+            VisualCanvasStyledText.WriteSvg(writer, VisualCanvasStyledText.Hero(hero, theme), hero.X, hero.Y, prefix); return;
+        }
         var anchor = Anchor(hero.Alignment);
         var x = AlignedX(hero.X, hero.Width, hero.Alignment);
         var fontSize = hero.FittedFontSize(VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode));

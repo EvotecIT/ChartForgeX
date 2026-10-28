@@ -13,9 +13,9 @@ internal static partial class VisualRadialProgressCompiler {
 
     /// <summary>Reserves the smallest circular hole supporting complete measured rows and the existing typography ceiling.</summary>
     private static double RequestedCenterRadius(VisualSceneBuilder builder, VisualRenderContext context, string value, string caption,
-        TextStyle valueStyle, TextStyle captionStyle) {
-        var valueMetrics = builder.MeasureText(value, valueStyle);
-        var captionMetrics = builder.MeasureText(caption, captionStyle);
+        TextStyle valueStyle, TextStyle captionStyle, VisualSceneTextFace? valueFace = null, VisualSceneTextFace? captionFace = null) {
+        var valueMetrics = valueFace == null ? builder.MeasureText(value, valueStyle) : valueFace.Prepare(value, valueStyle.EffectiveFontSize).Metrics;
+        var captionMetrics = captionFace == null ? builder.MeasureText(caption, captionStyle) : captionFace.Prepare(caption, captionStyle.EffectiveFontSize).Metrics;
         double lower = 0, upper = Math.Max(valueMetrics.Width, captionMetrics.Width) / 2
             + valueMetrics.Height + captionMetrics.Height + context.Theme.Spacing / 3;
         for (var iteration = 0; iteration < 40; iteration++) {
@@ -28,9 +28,9 @@ internal static partial class VisualRadialProgressCompiler {
     }
 
     private static void Center(VisualSceneBuilder builder, VisualRenderContext context, double cx, double cy, double radius, string value, string caption,
-        TextStyle valueStyle, TextStyle captionStyle, string role) {
-        var valueMetrics = builder.MeasureText(value, valueStyle);
-        var captionMetrics = builder.MeasureText(caption, captionStyle);
+        TextStyle valueStyle, TextStyle captionStyle, string role, VisualSceneTextFace? valueFace = null, VisualSceneTextFace? captionFace = null) {
+        var valueMetrics = valueFace == null ? builder.MeasureText(value, valueStyle) : valueFace.Prepare(value, valueStyle.EffectiveFontSize).Metrics;
+        var captionMetrics = captionFace == null ? builder.MeasureText(caption, captionStyle) : captionFace.Prepare(caption, captionStyle.EffectiveFontSize).Metrics;
         var valueHeight = valueMetrics.Height; var captionHeight = captionMetrics.Height;
         if (!TryCenterRows(valueMetrics, captionMetrics, radius, context.Theme.Spacing, out var top, out var gap)) {
             // Constrained holes retain the existing bounded rows and descriptive-source fallback.
@@ -39,13 +39,13 @@ internal static partial class VisualRadialProgressCompiler {
             valueHeight = Math.Min(valueHeight, Math.Max(0, availableHeight - captionHeight - gap));
             top = -(valueHeight + gap + captionHeight) / 2;
         }
-        Draw(value, cy + top, valueHeight, valueStyle, role + "-value", "series-0-center-value");
-        Draw(caption, cy + top + valueHeight + gap, captionHeight, captionStyle, role + "-title", "series-0-center-caption");
+        Draw(value, cy + top, valueHeight, valueStyle, role + "-value", "series-0-center-value", valueFace);
+        Draw(caption, cy + top + valueHeight + gap, captionHeight, captionStyle, role + "-title", "series-0-center-caption", captionFace);
 
-        void Draw(string text, double y, double height, TextStyle style, string textRole, string id) {
+        void Draw(string text, double y, double height, TextStyle style, string textRole, string id, VisualSceneTextFace? face) {
             var offset = Math.Max(Math.Abs(y - cy), Math.Abs(y + height - cy));
             var width = 2 * Math.Sqrt(Math.Max(0, radius * radius - offset * offset));
-            VisualRadialPrimitives.Text(builder, text, new ChartRect(cx - width / 2, y, width, height), style, textRole, id);
+            VisualRadialPrimitives.Text(builder, text, new ChartRect(cx - width / 2, y, width, height), style, textRole, id, capturedFace: face);
         }
     }
 

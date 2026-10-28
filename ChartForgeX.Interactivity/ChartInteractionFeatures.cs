@@ -97,7 +97,7 @@ public enum ChartInteractionFeatures {
     /// </summary>
     StateBookmarks = 65536,
 
-    /// <summary>Allows a connected native owner to prepare Treemap and Sunburst subtree views.</summary>
+    /// <summary>Allows a connected native owner to prepare chart subtree views or organization hierarchy projections.</summary>
     HierarchyNavigation = 131072,
 
     /// <summary>

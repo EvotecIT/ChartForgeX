@@ -8,8 +8,8 @@ namespace ChartForgeX.Topology;
 
 internal static class TopologyLayoutNormalizer {
     internal const double NodeGap = 16;
-    private const double GroupPadding = 24;
-    private const double GroupHeaderBottomGap = 12;
+    internal const double GroupPadding = 24;
+    internal const double GroupHeaderBottomGap = 12;
     private const double RowTolerance = 36;
     private const double MinimumNodeWidth = 108;
     private const double MinimumAutoGroupWidth = 190;
@@ -19,6 +19,10 @@ internal static class TopologyLayoutNormalizer {
         ResolveGroupHeaderOverlaps(chart, options ?? new TopologyRenderOptions());
         ExpandGroupsForNodes(chart);
     }
+
+    /// <summary>Only translates/fits a solved layout; packing would invalidate its authored equalities.</summary>
+    internal static void NormalizeAligned(TopologyChart chart, TopologyRenderOptions? options) =>
+        FitViewportForRenderedContent(chart, options ?? new TopologyRenderOptions());
 
     public static void Normalize(TopologyChart chart, TopologyRenderOptions? options = null) {
         options ??= new TopologyRenderOptions();
@@ -115,16 +119,19 @@ internal static class TopologyLayoutNormalizer {
                 continue;
             }
 
-            var requiredRight = nodes.Max(node => node.X + node.Width) + GroupPadding;
-            var requiredBottom = nodes.Max(node => node.Y + node.Height) + GroupPadding;
+            var footprints = nodes.Select(node => chart.RenderOptions is {} options
+                && TopologyNodeFootprint.ExplicitOccupiedBounds(node, options) is {} occupied
+                    ? occupied : new ChartForgeX.Primitives.ChartRect(node.X, node.Y, node.Width, node.Height)).ToArray();
+            var requiredRight = footprints.Max(bounds => bounds.Right) + GroupPadding;
+            var requiredBottom = footprints.Max(bounds => bounds.Bottom) + GroupPadding;
             if (group.Width <= 0) {
-                var requiredLeft = nodes.Min(node => node.X) - GroupPadding;
+                var requiredLeft = footprints.Min(bounds => bounds.Left) - GroupPadding;
                 if (requiredLeft < group.X) group.X = requiredLeft;
                 group.Width = Math.Max(MinimumAutoGroupWidth, requiredRight - group.X);
             }
 
             if (group.Height <= 0) {
-                var requiredTop = nodes.Min(node => node.Y) - GroupPadding;
+                var requiredTop = footprints.Min(bounds => bounds.Top) - GroupPadding;
                 if (requiredTop < group.Y) group.Y = requiredTop;
                 group.Height = Math.Max(MinimumAutoGroupHeight, requiredBottom - group.Y);
             } else if (requiredBottom > group.Y + group.Height) {
@@ -152,14 +159,14 @@ internal static class TopologyLayoutNormalizer {
     }
 
     private static void FitViewportForRenderedContent(TopologyChart chart, TopologyRenderOptions options) {
-        var bounds = MeasureContent(chart, options);
+        var bounds = MeasureContent(chart, options, out var translationBounds);
         if (!bounds.HasContent) return;
 
         var surfaceInset = CanvasSurfaceInset(chart, options);
         var targetLeft = chart.Viewport.Padding + surfaceInset;
         var targetTop = chart.Viewport.Padding + surfaceInset + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : HeaderReservedHeight);
-        var dx = bounds.Left < targetLeft ? targetLeft - bounds.Left : 0;
-        var dy = bounds.Top < targetTop ? targetTop - bounds.Top : 0;
+        var dx = translationBounds.HasContent && translationBounds.Left < targetLeft ? targetLeft - translationBounds.Left : 0;
+        var dy = translationBounds.HasContent && translationBounds.Top < targetTop ? targetTop - translationBounds.Top : 0;
         if (Math.Abs(dx) > 0.0001 || Math.Abs(dy) > 0.0001) {
             ShiftContent(chart, dx, dy);
             bounds = bounds.Shift(dx, dy);
@@ -179,30 +186,60 @@ internal static class TopologyLayoutNormalizer {
     private static bool FitsHeightToContent(TopologyChart chart, TopologyRenderOptions options) =>
         options.ReadableDenseLayout && chart.LayoutMode == TopologyLayoutMode.DenseGrouped && chart.Groups.Count > 0;
 
-    private static ContentBounds MeasureContent(TopologyChart chart, TopologyRenderOptions options) {
+    private static ContentBounds MeasureContent(TopologyChart chart, TopologyRenderOptions options, out ContentBounds translationBounds) {
         var bounds = ContentBounds.Empty;
         foreach (var group in chart.Groups) bounds = bounds.Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
         foreach (var node in chart.Nodes) bounds = IncludeNodeVisualBounds(bounds, node, options);
         foreach (var point in chart.Edges.SelectMany(edge => edge.Waypoints)) bounds = bounds.Include(point.X, point.Y, point.X, point.Y);
+        foreach (var edge in chart.Edges) if (edge.PathGeometry != null) {
+            var path = edge.PathGeometry.Capture().Bounds(); var half = (edge.StrokeWidth ?? chart.Theme.SeriesStrokeWidth) / 2;
+            bounds = bounds.Include(path.Left - half, path.Top - half, path.Right + half, path.Bottom + half);
+        }
+
+        foreach (var decoration in chart.PathDecorations) {
+            var path = decoration.Capture().Bounds(); var half = decoration.Stroke.HasValue ? decoration.StrokeWidth / 2 : 0;
+            bounds = bounds.Include(path.Left - half, path.Top - half, path.Right + half, path.Bottom + half);
+        }
+        if (chart.Edges.Any(edge => edge.SourceMarkerStyle != null || edge.TargetMarkerStyle != null) && CanMeasureEdgeLabels(chart)) {
+            var nodes = TopologyGroupEndpoints.Resolve(chart);
+            foreach (var edge in chart.Edges) if (StyledMarkerBounds(chart, edge, options, nodes) is ChartRect marker)
+                bounds = bounds.Include(marker.Left, marker.Top, marker.Right, marker.Bottom);
+        }
+        var positionedBounds = bounds;
+        var captionTop = chart.Viewport.Padding + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : HeaderReservedHeight);
         if (options.IncludeEdgeLabels && CanMeasureEdgeLabels(chart)) {
             foreach (var layout in EdgeLabelLayouts(chart, options)) {
-                bounds = bounds.Include(layout.CenterX - layout.Width / 2, layout.CenterY - layout.Height / 2, layout.CenterX + layout.Width / 2, layout.CenterY + layout.Height / 2);
+                if (layout.Edge.LabelPosition == null) {
+                    bounds = bounds.Include(layout.CenterX - layout.Width / 2, layout.CenterY - layout.Height / 2, layout.CenterX + layout.Width / 2, layout.CenterY + layout.Height / 2);
+                    // Captions inside real content padding may use the decorative panel gutter.
+                    // Authored placement and captions entering reserved title space still move with content.
+                    if (layout.Edge.LabelOffsetX != 0 || layout.Edge.LabelOffsetY != 0 || layout.Edge.HasLabelAnchorOverride
+                        || !string.IsNullOrWhiteSpace(layout.Edge.LabelAnchorNodeId)
+                        || layout.CenterX - layout.Width / 2 < chart.Viewport.Padding - .0001 || layout.CenterY - layout.Height / 2 < captionTop - .0001)
+                        positionedBounds = positionedBounds.Include(layout.CenterX - layout.Width / 2, layout.CenterY - layout.Height / 2, layout.CenterX + layout.Width / 2, layout.CenterY + layout.Height / 2);
+                    continue;
+                }
+                var labelBounds = TopologyTextLayout.PositionEnvelope(layout.Edge.LabelPosition, layout.CenterX, layout.CenterY, layout.Width, layout.Height);
+                bounds = bounds.Include(labelBounds.Left, labelBounds.Top, labelBounds.Right, labelBounds.Bottom);
+                positionedBounds = positionedBounds.Include(labelBounds.Left, labelBounds.Top, labelBounds.Right, labelBounds.Bottom);
             }
         }
         if (options.IncludeEndpointLabels && chart.Edges.Any(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel)) && CanMeasureEdgeLabels(chart)) {
             var nodes = TopologyGroupEndpoints.Resolve(chart);
             foreach (var edge in chart.Edges.Where(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel))) {
                 var route = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
-                IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
-                IncludeEndpoint(edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
+                IncludeEndpoint(edge, edge.SourceLabel, route[0], route[1]);
+                IncludeEndpoint(edge, edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
             }
-            void IncludeEndpoint(string? text, ChartPoint endpoint, ChartPoint adjacent) {
+            void IncludeEndpoint(TopologyEdge edge, string? text, ChartPoint endpoint, ChartPoint adjacent) {
                 if (string.IsNullOrWhiteSpace(text)) return;
-                var layout = EdgeEndpointLabelLayout(chart, options, endpoint, adjacent, text!);
+                var layout = EdgeEndpointLabelLayout(chart, options, endpoint, adjacent, text!, TopologyPreparedEdgePlan.Units(edge));
                 bounds = bounds.Include(layout.Bounds.Left, layout.Bounds.Top, layout.Bounds.Right, layout.Bounds.Bottom);
+                positionedBounds = positionedBounds.Include(layout.Bounds.Left, layout.Bounds.Top, layout.Bounds.Right, layout.Bounds.Bottom);
             }
         }
 
+        translationBounds = positionedBounds;
         return bounds;
     }
 
@@ -217,53 +254,8 @@ internal static class TopologyLayoutNormalizer {
     }
 
     private static ContentBounds IncludeNodeVisualBounds(ContentBounds bounds, TopologyNode node, TopologyRenderOptions options) {
-        var displayMode = EffectiveNodeDisplayMode(node, options);
-        if (displayMode == TopologyNodeDisplayMode.Hidden) return bounds;
-        bounds = bounds.Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
-        if (UseEnclosedShapeContent(node, displayMode, options)) return bounds;
-        if (options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options)) {
-            var cx = node.X + node.Width - 11;
-            var cy = node.Y + 11;
-            bounds = bounds.Include(cx - 10, cy - 10, cx + 10, cy + 10);
-        }
-
-        var badge = NodeBadge(node);
-        if (!string.IsNullOrWhiteSpace(badge)) {
-            var badgeBounds = NodeBadgeBounds(node, displayMode, options);
-            bounds = bounds.Include(badgeBounds.X, badgeBounds.Y, badgeBounds.Right, badgeBounds.Bottom);
-        }
-
-        if (!options.IncludeNodeLabels) return bounds;
-        if (displayMode == TopologyNodeDisplayMode.Icon) {
-            if (options.IncludeIconLabels) {
-                var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
-                var labelCenter = CenterX(node);
-                var labelY = IconLabelPlateY(node);
-                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + IconLabelPlateHeight(node, options.TextMeasurement, options.ResolvedIconLabelFontSize));
-            }
-
-            return bounds;
-        }
-
-        if (displayMode == TopologyNodeDisplayMode.Tile) {
-            var labelLines = TileCaptionLines(node, options);
-            var labelCenter = CenterX(node);
-            var labelTop = node.Y + node.Height + 4;
-            var lineCount = Math.Max(1, labelLines.Count);
-            if (labelLines.Count == 0) bounds = bounds.Include(labelCenter, labelTop, labelCenter, labelTop + lineCount * 14 + 4);
-            foreach (var line in labelLines) {
-                var labelWidth = EstimateTextWidth(line, 11, true, options.TextMeasurement);
-                bounds = bounds.Include(labelCenter - labelWidth / 2, labelTop, labelCenter + labelWidth / 2, labelTop + lineCount * 14 + 4);
-            }
-
-            if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) {
-                var subtitleWidth = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options).Width;
-                var subtitleY = node.Y + node.Height + 7 + lineCount * 14;
-                bounds = bounds.Include(labelCenter - subtitleWidth / 2, subtitleY, labelCenter + subtitleWidth / 2, subtitleY + 17);
-            }
-        }
-
-        return bounds;
+        var rendered = TopologyNodeFootprint.RenderedBounds(node, options);
+        return rendered.HasValue ? bounds.Include(rendered.Value.X, rendered.Value.Y, rendered.Value.Right, rendered.Value.Bottom) : bounds;
     }
 
     private static void ShiftContent(TopologyChart chart, double dx, double dy) {
@@ -277,7 +269,11 @@ internal static class TopologyLayoutNormalizer {
             node.Y += dy;
         }
 
+        for (var index = 0; index < chart.PathDecorations.Count; index++)
+            chart.PathDecorations[index] = chart.PathDecorations[index].Transform(point => new ChartPoint(point.X + dx, point.Y + dy), 1);
         foreach (var edge in chart.Edges) {
+            if (edge.PathGeometry != null) edge.PathGeometry = edge.PathGeometry.Transform(point => new ChartPoint(point.X + dx, point.Y + dy));
+            if (edge.LabelPosition != null) edge.LabelPosition = edge.LabelPosition.Transform(point => new ChartPoint(point.X + dx, point.Y + dy));
             if (edge.HasLabelAnchorOverride) {
                 edge.LabelAnchorX += dx;
                 edge.LabelAnchorY += dy;

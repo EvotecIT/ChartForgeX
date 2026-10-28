@@ -22,7 +22,9 @@ internal static class ChartLegendVisibility {
             if (colorScales.Heatmap.ShowLegend && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
             if (series.Kind == ChartSeriesKind.RegionMap && colorScales.MapDataset(index).Presentation.ShowLegend) return true;
-            if (colorScales.Map.ShowLegend && series.Kind == ChartSeriesKind.TileMap) return true;
+            if (series.Kind == ChartSeriesKind.TileMap && (chart.Series.Count > 1 ? colorScales.MapDataset(index).Presentation.ShowLegend : colorScales.Map.ShowLegend)) return true;
+            if (series.Kind == ChartSeriesKind.Sankey && colorScales.Sankey.ShowLegend
+                && chart.Options.Sankey.FlowColorMode == ChartSankeyFlowColorMode.Quantitative) return true;
             if (series.Kind == ChartSeriesKind.Chord && colorScales.Chord.ShowLegend
                 && (chart.Options.Chord.ColorScale != null || System.Linq.Enumerable.Any(series.FlowLinks, link => link.ColorValue.HasValue))) return true;
             if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {

@@ -1,4 +1,4 @@
-  // WebKit SVG focus; retain hit geometry.
+
   const clearKeyboardFocusPaint = (root) => {
     root._cfxKeyboardFocusPaint?.remove();
     delete root._cfxKeyboardFocusPaint;

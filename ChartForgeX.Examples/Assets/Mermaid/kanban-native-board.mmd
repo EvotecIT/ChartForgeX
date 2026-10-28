@@ -1,0 +1,19 @@
+---
+title: Delivery board
+config:
+  kanban:
+    ticketBaseUrl: 'https://tickets.example.invalid/item/#TICKET#'
+---
+kanban
+accTitle: Delivery board with authored task facts
+accDescr: Four ordered columns include an empty column, dense work and a sparse completion column.
+  todo[Plan the delivery] @{label: '**Plan**<br>next', assigned: 'Delivery team', ticket: 'BOARD-1'}
+    review[Review the request] @{label: '**Review**<br>the request', assigned: 'Alex Morgan', ticket: 'CFX/7 ?', priority: 'High', estimate: '2 points'}
+    guide[Write a clear public consumption guide with a complete example]
+  doing[In progress]
+    source[Implement source mapping] @{assigned: 'Riley Chen', priority: 'Normal'}
+    verify[Verify both native exports] @{ticket: 'CFX-9', priority: 'Critical'}
+    icon[Keep external icons inert] @{icon: 'fa:bug'}
+  waiting[Waiting for feedback]
+  done[Completed]
+    shipped[Publish the reviewed change] @{assigned: 'Sam Lee', ticket: 'CFX-10', priority: 'Low'}

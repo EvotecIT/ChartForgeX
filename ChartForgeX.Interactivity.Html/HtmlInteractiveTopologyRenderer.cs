@@ -7,7 +7,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// <summary>
 /// Renders topology charts with the adapter-owned browser interaction runtime.
 /// </summary>
-public sealed class HtmlInteractiveTopologyRenderer {
+public sealed partial class HtmlInteractiveTopologyRenderer {
     /// <summary>Localizes adapter controls independently from native topology facts and descriptions.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();
 
@@ -17,14 +17,14 @@ public sealed class HtmlInteractiveTopologyRenderer {
     public string RenderFragment(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options ?? chart.DefaultRenderOptions);
-        return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: true, htmlText: Localization.ForTopology(chart.Accessibility.Language)) + InteractionScriptTag(options);
+        return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: true, renderSvg: AutomaticText, htmlText: Localization.ForTopology(chart.Accessibility.Language)) + InteractionScriptTag(options);
     }
 
     /// <summary>Renders interactive topology markup without CSS or JavaScript assets.</summary>
     public string RenderFragmentWithoutAssets(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options ?? chart.DefaultRenderOptions);
-        return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, htmlText: Localization.ForTopology(chart.Accessibility.Language));
+        return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, renderSvg: AutomaticText, htmlText: Localization.ForTopology(chart.Accessibility.Language));
     }
 
     /// <summary>Renders a complete self-contained interactive topology HTML page.</summary>
@@ -99,7 +99,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, TopologyHtmlRenderer.BuildPageStyle(options, theme));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document", renderSvg: renderSvg, htmlText: Localization.ForTopology(chart.Accessibility.Language))).Line()
+            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document", renderSvg: renderSvg ?? (prepared => AutomaticText(prepared)), htmlText: Localization.ForTopology(chart.Accessibility.Language))).Line()
             .RawTrusted(externalAssets == null ? InteractionScriptTag(options) : string.Empty);
         if (externalAssets != null) HtmlInteractiveAssetFiles.WriteScript(writer, externalAssets, HtmlInteractiveAssetFiles.TopologyScript(options), null);
         writer.Line()

@@ -1,0 +1,14 @@
+flowchart LR
+subgraph Outer[Outer]
+T[Plan]
+X[Work] --> Q
+subgraph Inner[Inner]
+N[Original]
+Q[Persist] --> N
+end
+X --> N[Updated]
+end
+subgraph Sibling[Sibling]
+Y[Check] --> N
+end
+T --> Y

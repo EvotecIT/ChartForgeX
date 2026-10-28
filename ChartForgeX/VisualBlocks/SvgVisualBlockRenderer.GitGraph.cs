@@ -18,19 +18,24 @@ public sealed partial class SvgVisualBlockRenderer {
             var branch = layout.Branches[index];
             var laneY = layout.LaneYs[branch.Name];
             var color = VisualBlockRendering.PaletteAt(theme, index);
-            writer.StartElement("line")
+            if (graph.ShowBranchLabels) writer.StartElement("line")
                 .Attribute("data-cfx-role", "git-branch-line")
                 .Attribute("data-branch", branch.Name)
-                .Attribute("x1", F(layout.PlotX))
-                .Attribute("y1", F(laneY))
-                .Attribute("x2", F(layout.PlotRight))
-                .Attribute("y2", F(laneY))
+                .Attribute("x1", F(layout.Vertical ? laneY : layout.PlotX))
+                .Attribute("y1", F(layout.Vertical ? layout.PlotX : laneY))
+                .Attribute("x2", F(layout.Vertical ? laneY : layout.PlotRight))
+                .Attribute("y2", F(layout.Vertical ? layout.PlotRight : laneY))
                 .Attribute("stroke", color.WithAlpha(115).ToCss())
                 .Attribute("stroke-width", 2)
                 .Attribute("stroke-linecap", "round")
                 .EndEmptyElement()
                 .Line();
-            if (graph.ShowBranchLabels) {
+            if (graph.ShowBranchLabels && layout.Vertical) {
+                var width = System.Math.Max(1, content.Width / layout.Branches.Count - 8);
+                var font = VisualBlockRendering.GitFontSize(layout, theme, branch.Name, 11, width);
+                var baseline = layout.Direction == GitGraphDirection.BottomToTop ? layout.PlotRight + 16 * layout.FontScale : layout.PlotX - 12 * layout.FontScale;
+                WriteText(writer, branch.Name, laneY - width / 2, baseline, width, TextAlignment.Center, theme.MutedText, theme.FontFamily, font, "700", "git-branch-label");
+            } else if (graph.ShowBranchLabels) {
                 var width = layout.PlotX - content.X - 10;
                 var font = VisualBlockRendering.GitFontSize(layout, theme, branch.Name, 11, width);
                 WriteText(writer, branch.Name, content.X, laneY + font * 4 / 11, width, TextAlignment.Right, theme.MutedText, theme.FontFamily, font, "700");
@@ -91,11 +96,22 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (graph.ShowCommitLabels) {
             var label = commit.Label.Length == 0 ? commit.Id : commit.Label;
-            var font = VisualBlockRendering.GitFontSize(layout, theme, label, 10.5, 76);
-            WriteText(writer, label, placement.X - 38, placement.Y + radius + font * 14 / 10.5, 76, TextAlignment.Center, theme.Text, theme.FontFamily, font, "650");
+            var width = layout.Vertical ? System.Math.Max(1, System.Math.Min(64 * layout.FontScale, layout.LaneSpacing / 2 - radius - 5 * layout.FontScale)) : 76;
+            var font = VisualBlockRendering.GitFontSize(layout, theme, label, 10.5, width);
+            if (graph.RotateCommitLabels) writer.StartElement("g").Attribute("transform", "rotate(-45 " + F(placement.X) + " " + F(placement.Y) + ")").EndStartElement();
+            if (layout.Vertical) WriteText(writer, label, placement.X + radius + 5 * layout.FontScale, placement.Y + font * .35, width, TextAlignment.Left, theme.Text, theme.FontFamily, font, "650", "git-commit-label");
+            else WriteText(writer, label, placement.X - 38, placement.Y + radius + font * 14 / 10.5, 76, TextAlignment.Center, theme.Text, theme.FontFamily, font, "650");
+            if (graph.RotateCommitLabels) writer.EndElement().Line();
         }
 
-        if (commit.Tag.Length > 0) WriteGitGraphTag(writer, VisualBlockRendering.GitTag(layout, theme, commit.Tag, placement.X, placement.Y, radius), commit.Tag, theme);
+        if (commit.Tag.Length > 0) {
+            var tag = VisualBlockRendering.GitTag(layout, theme, commit.Tag, placement.X, placement.Y, radius, layout.Vertical ? System.Math.Max(1, System.Math.Min(96, layout.LaneSpacing / 2 - radius - 5 * layout.FontScale)) : 96);
+            if (layout.Vertical) {
+                var bounds = tag.Bounds; var x = placement.X - radius - bounds.Width - 5 * layout.FontScale;
+                tag = new VisualBlockRendering.GitTagMetrics(new ChartRect(x, placement.Y - bounds.Height / 2, bounds.Width, bounds.Height), tag.FontSize, tag.Inset, placement.Y + tag.FontSize * .35);
+            }
+            WriteGitGraphTag(writer, tag, commit.Tag, theme);
+        }
     }
 
     private static void WriteGitGraphTag(SvgMarkupWriter writer, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ResolvedVisualTheme theme) {

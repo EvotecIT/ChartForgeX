@@ -17,7 +17,7 @@
       close();
       const tree = root.getRootNode(), style = view.getComputedStyle(root);
       returnFocus = tree.activeElement || root;
-      // Portals retain owner/focus.
+
 
       root._cfxContextMenuSourceFocus = root.contains(returnFocus) ? returnFocus : stage;
       menu = root.ownerDocument.createElement('div');

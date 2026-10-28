@@ -65,7 +65,6 @@ public sealed class NumericRadialAxisPolicyTests {
 
     [Theory]
     [InlineData(ChartSeriesKind.Line)]
-    [InlineData(ChartSeriesKind.Radar)]
     [InlineData(ChartSeriesKind.Timeline)]
     [InlineData(ChartSeriesKind.PolarArea)]
     public void UnsupportedFamiliesRejectRelativeOrientationEvenOnAHiddenAxis(ChartSeriesKind kind) {
@@ -74,6 +73,15 @@ public sealed class NumericRadialAxisPolicyTests {
         chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
         Assert.Throws<NotSupportedException>(() => Prepare(chart));
         Assert.Throws<NotSupportedException>(() => chart.ToSvg());
+    }
+
+    [Fact]
+    public void RadarAcceptsTheQualifiedRelativePolicyWithoutPaintingAHiddenSecondaryAxis() {
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Radar);
+        chart.Options.SecondaryYAxis.Visible = false;
+        var ordinary = Prepare(chart).ToSvg();
+        chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+        Assert.Equal(ordinary, Prepare(chart).ToSvg());
     }
 
     [Fact]

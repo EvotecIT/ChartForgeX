@@ -769,3 +769,5 @@ body {
     transition: none !important;
   }
 }
+
+.cfx-interactive-chart[data-cfx-progress-connected="true"] [data-cfx-role="progress-handle"] { cursor: ew-resize; touch-action: none; }

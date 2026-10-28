@@ -112,8 +112,8 @@ treeView-beta
         Assert(result.Artifacts.Count == 1, "Mermaid TreeView fences should emit one visual artifact.");
         Assert(result.Artifacts[0].Id == "source-tree", "Mermaid TreeView fence id attributes should map to artifact ids.");
         Assert(result.Artifacts[0].Title == "Source Tree", "Mermaid TreeView fence title attributes should override generated titles.");
-        Assert(result.Artifacts[0].Model is TopologyChart, "Mermaid TreeView visual artifacts should carry a topology model.");
-        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(TopologyChart), "Mermaid TreeView visual artifacts should expose the render model.");
+        Assert(result.Artifacts[0].Model is ChartForgeX.VisualBlocks.TreeViewBlock, "Mermaid TreeView visual artifacts should carry a native tree-row model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(ChartForgeX.VisualBlocks.TreeViewBlock), "Mermaid TreeView visual artifacts should expose the render model.");
         Assert(result.Artifacts[0].Metadata["mermaid.nodes"] == "4", "Mermaid TreeView visual artifacts should expose node counts.");
     }
 
@@ -219,10 +219,16 @@ participant P10";
             "A lazy Mermaid sequence source envelope should retain its authored minimum dimensions.");
         var wideSvg = System.Xml.Linq.XDocument.Parse(wideArtifact.ToSvg()).Root!;
         var resolvedWidth = (double)wideSvg.Attribute("width")!; var resolvedHeight = (double)wideSvg.Attribute("height")!;
-        var prepared = wideDocument.ToSequenceArtifact().Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(resolvedWidth, resolvedHeight)), frame: new VisualFrame(showLegend: false)));
+        if (wideArtifact.Model is not SequenceArtifact wideSequence)
+            throw new InvalidOperationException("A wide Mermaid sequence artifact must retain its native SequenceArtifact model.");
+        var sourcePadding = wideSequence.Layout?.CanvasPadding ?? ChartForgeX.Primitives.ChartPadding.All(wideSequence.Padding);
+        // Serialized SVG dimensions are rounded; ceil them before supplying a strict explicit viewport.
+        var strictWidth = Math.Ceiling(resolvedWidth); var strictHeight = Math.Ceiling(resolvedHeight);
+        var prepared = wideSequence.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(strictWidth, strictHeight),sourcePadding),
+            wideSequence.Theme,wideSequence.ThemeMode,frame: new VisualFrame(showLegend: false)));
         var preparedEnvelope = prepared.ToArtifact("wide-sequence", VisualArtifactKind.Sequence).ToInterchangeEnvelope();
-        Assert(resolvedWidth > 320 && preparedEnvelope.Width == resolvedWidth && preparedEnvelope.Height == resolvedHeight,
-            "Explicitly prepared Mermaid sequence handoff should retain the measured viewport used by static exports.");
+        Assert(resolvedWidth > 320 && preparedEnvelope.Width == strictWidth && preparedEnvelope.Height == strictHeight,
+            "Explicitly prepared Mermaid sequence handoff should retain its integral viewport enclosing the measured static export.");
     }
 
     private static void MermaidVisualMarkupParserMapsPieFencesToArtifacts() {

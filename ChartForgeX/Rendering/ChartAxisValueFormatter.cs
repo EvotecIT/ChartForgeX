@@ -13,6 +13,8 @@ internal static class ChartAxisValueFormatter {
             if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
             labels[value] = text;
         }
+        internal IReadOnlyDictionary<double, string> Capture(ChartAxis axis) => new System.Collections.ObjectModel.ReadOnlyDictionary<double, string>(
+            _labels.TryGetValue(axis, out var rows) ? new Dictionary<double, string>(rows) : new Dictionary<double, string>());
         internal string Format(ChartAxis axis, double value, Func<double, string> formatter, bool retainResult = true) {
             if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
             if (labels.TryGetValue(value, out var text)) return text;

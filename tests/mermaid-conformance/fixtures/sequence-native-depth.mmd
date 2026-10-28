@@ -1,0 +1,41 @@
+---
+config:
+  theme: default
+  sequence:
+    showSequenceNumbers: true
+  themeVariables:
+    actorBkg: "#e3efff"
+    actorBorder: "#23558a"
+    actorTextColor: "#153452"
+    actorLineColor: "#687f96"
+    signalColor: "#276749"
+    signalTextColor: "#194d35"
+    noteBkgColor: "#fff3cc"
+    noteBorderColor: "#997215"
+    noteTextColor: "#59430d"
+    activationBkgColor: "#d0ead9"
+    activationBorderColor: "#3a7550"
+    labelBoxBkgColor: "#e8e3f3"
+    labelBoxBorderColor: "#796292"
+    labelTextColor: "#4f3d64"
+---
+sequenceDiagram
+title Native sequence depth
+box hsl(210, 60%, 92%) Services
+participant API as Native<br/>API
+participant DB as Data store
+end
+participant Client
+par Delivery path
+Client->>+API: Submit<br/>request
+critical Read policy
+API->>+DB: Read policy
+DB-->>-API: Policy
+option Cache fallback
+Note over API,DB: Read<br/>cached policy
+end
+and Receipt path
+Note left of Client: Wait<br/>for receipt
+API-->>-Client: Complete
+end
+Note right of DB: Stored<br/>record

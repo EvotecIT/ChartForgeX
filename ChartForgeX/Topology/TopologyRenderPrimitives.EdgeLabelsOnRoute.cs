@@ -28,6 +28,7 @@ internal static partial class TopologyRenderPrimitives {
         foreach (var node in chart.Nodes) {
             if (EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Hidden) continue;
             boxes.Add(EdgeLabelNodeObstacle(node, options, 1));
+            if (TopologyExternalCaption.HasPolicy(node)) continue;
             // The card and its caption count as one block as wide as the wider of the two.
             var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
             var center = CenterX(node);

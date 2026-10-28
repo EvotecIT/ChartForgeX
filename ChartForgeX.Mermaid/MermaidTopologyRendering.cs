@@ -16,14 +16,17 @@ public static partial class MermaidTopologyRendering {
         var chart = CreateTopology(options, "mermaid-class", ResolveTitle(document, options, "Mermaid class diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
         AddClassNamespaceGroups(chart, document);
         foreach (var item in document.Classes) {
-            chart.AddAutoNode(item.Id, item.Label ?? item.Id, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: item.Namespace, subtitle: item.Annotations.Count == 0 ? null : string.Join(", ", item.Annotations), width: MemberWidth(item), height: 82 + item.Members.Count * 18 + (item.Annotations.Count > 0 ? 20 : 0), cssClass: "cfx-mermaid-class");
+            chart.AddAutoNode(item.Id, MermaidLabelText.DisplayCaption(item.Label ?? item.Id), TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: item.Namespace, subtitle: item.Annotations.Count == 0 ? null : string.Join(", ", item.Annotations), width: MemberWidth(item), height: 82 + item.Members.Count * 18 + (item.Annotations.Count > 0 ? 20 : 0), cssClass: "cfx-mermaid-class");
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.LabelContent = MermaidInlineCaption.Content(item.Label ?? item.Id);
             node.Metadata["mermaid.id"] = item.Id;
             node.ShowStatusBadge = false;
             node.Shape = TopologyNodeShape.Rectangle;
             node.PreserveDisplayModeSize = true;
-            node.MaximumLabelCharacters = (item.Label ?? item.Id).Length;
-            foreach (var member in item.Members) node.Details.Add(new TopologyNodeDetail { Text = MermaidNotationText.Generics(member.Text) });
+            node.FitLabelToContent = true;
+            node.MaximumLabelCharacters = node.Label.Length;
+            node.Metadata["mermaid.source.label"] = item.Label ?? item.Id;
+            if (document.GenericDeclarations.TryGetValue(item.Id, out var declaration)) node.Metadata["mermaid.generic.source"] = declaration;
             node.Metadata["mermaid.kind"] = "class";
             node.Metadata["mermaid.attributes"] = CountMembers(item, false).ToString(CultureInfo.InvariantCulture);
             node.Metadata["mermaid.methods"] = CountMembers(item, true).ToString(CultureInfo.InvariantCulture);
@@ -32,8 +35,9 @@ public static partial class MermaidTopologyRendering {
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var item = document.Relationships[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, ToClassEdgeKind(item.Connector), TopologyHealthStatus.Unknown, ClassDirection(item.Connector), TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, DisplayRelationshipCaption(item.Label), ToClassEdgeKind(item.Connector), TopologyHealthStatus.Unknown, ClassDirection(item.Connector), TopologyEdgeRouting.Orthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
+            edge.LabelContent = RelationshipContent(item.Label);
             edge.LineStyle = item.Connector.IndexOf(".", StringComparison.Ordinal) >= 0 ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid;
             edge.MinimumRankSpan = 2;
             edge.SourceLabel = item.SourceMultiplicity;
@@ -41,6 +45,7 @@ public static partial class MermaidTopologyRendering {
             edge.SourceMarker = ClassMarker(item.Connector, true);
             edge.TargetMarker = ClassMarker(item.Connector, false);
             edge.Metadata["mermaid.connector"] = item.Connector;
+            if (item.Label != null) edge.Metadata["mermaid.source.label"] = item.Label;
         }
 
         ApplyClassNotation(chart, document);
@@ -62,26 +67,38 @@ public static partial class MermaidTopologyRendering {
         options ??= new MermaidTopologyRenderOptions();
         var chart = CreateTopology(options, "mermaid-er", ResolveTitle(document, options, "Mermaid ER diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
         foreach (var item in document.Entities) {
-            chart.AddAutoNode(item.Id, item.Label ?? item.Id, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, width: EntityWidth(item), height: 82 + item.Attributes.Count * 18, cssClass: "cfx-mermaid-er-entity");
+            chart.AddAutoNode(item.Id, MermaidLabelText.EntityCaption(item.Label ?? item.Id), TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, width: EntityWidth(item), height: 82 + item.Attributes.Count * 18, cssClass: "cfx-mermaid-er-entity");
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.LabelContent = MermaidInlineCaption.Content(item.Label ?? item.Id, markdownByDefault: true);
             node.Metadata["mermaid.id"] = item.Id;
             node.ShowStatusBadge = false;
             node.Shape = TopologyNodeShape.Rectangle;
             node.PreserveDisplayModeSize = true;
-            node.MaximumLabelCharacters = (item.Label ?? item.Id).Length;
-            foreach (var attribute in item.Attributes) node.Details.Add(new TopologyNodeDetail { Text = EntityAttributeText(attribute) });
+            node.FitLabelToContent = true;
+            node.MaximumLabelCharacters = node.Label.Length;
+            node.Metadata["mermaid.source.label"] = item.Label ?? item.Id;
+            foreach (var attribute in item.Attributes) {
+                var detail = new TopologyNodeDetail { Content = EntityAttributeContent(attribute) };
+                detail.Metadata["mermaid.attribute.type"] = attribute.Type;
+                detail.Metadata["mermaid.attribute.name"] = attribute.Name;
+                if (attribute.Key != null) detail.Metadata["mermaid.attribute.key"] = attribute.Key;
+                if (attribute.Comment != null) detail.Metadata["mermaid.attribute.comment"] = attribute.Comment;
+                node.Details.Add(detail);
+            }
             node.Metadata["mermaid.attributes"] = item.Attributes.Count.ToString(CultureInfo.InvariantCulture);
         }
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var item = document.Relationships[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, DisplayRelationshipCaption(item.Label, entity: true), TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.Orthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
+            edge.LabelContent = RelationshipContent(item.Label, entity: true);
             edge.MinimumRankSpan = 2;
             edge.SourceMarker = CardinalityMarker(item.Connector, true);
             edge.TargetMarker = CardinalityMarker(item.Connector, false);
             edge.LineStyle = item.Connector.IndexOf("..", StringComparison.Ordinal) >= 0 ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid;
             edge.Metadata["mermaid.cardinality"] = item.Connector;
+            edge.Metadata["mermaid.source.label"] = item.Label;
         }
 
         ApplyEntityGroups(chart, document);
@@ -108,25 +125,6 @@ public static partial class MermaidTopologyRendering {
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
-    /// <summary>Converts a Mermaid kanban board to a topology chart.</summary>
-    public static TopologyChart ToTopologyChart(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) {
-        if (document == null) throw new ArgumentNullException(nameof(document));
-        options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-kanban", ResolveTitle(document, options, "Mermaid kanban"), TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
-        foreach (var column in document.Columns) {
-            chart.AddAutoGroup(column.Id, column.Title, TopologyHealthStatus.Unknown, subtitle: column.Tasks.Count.ToString(CultureInfo.InvariantCulture) + " tasks", cssClass: "cfx-mermaid-kanban-column", symbol: "K");
-            chart.Groups[chart.Groups.Count - 1].LayoutPolicy = TopologyGroupLayoutPolicy.Grid;
-            foreach (var task in column.Tasks) {
-                chart.AddAutoNode(task.Id, task.Title, TopologyNodeKind.Process, TaskStatus(task), groupId: column.Id, subtitle: TaskSubtitle(task), width: 132, height: 58, symbol: TaskSymbol(task), cssClass: "cfx-mermaid-kanban-task");
-                var node = chart.Nodes[chart.Nodes.Count - 1];
-                node.Metadata["mermaid.column"] = column.Id;
-                foreach (var item in task.Metadata) node.Metadata["mermaid.meta." + item.Key] = item.Value;
-            }
-        }
-
-        return MermaidPresentation.Apply(chart, document, options.Presentation);
-    }
-
     /// <summary>Wraps a Mermaid class diagram in a visual artifact envelope.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidClassDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "classes", document.Classes.Count, "relationships", document.Relationships.Count);
 
@@ -139,8 +137,6 @@ public static partial class MermaidTopologyRendering {
     /// <summary>Wraps a Mermaid mindmap in a visual artifact envelope.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "nodes", document.Nodes.Count, "roots", CountMindMapRoots(document));
 
-    /// <summary>Wraps a Mermaid tree view in a visual artifact envelope.</summary>
-    public static VisualArtifact ToVisualArtifact(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "nodes", document.Nodes.Count, "roots", document.Roots.Count);
 
     /// <summary>Wraps a Mermaid kanban board in a visual artifact envelope.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => ToArtifact(document, document.ToTopologyChart(options), "columns", document.Columns.Count, "tasks", CountKanbanTasks(document));
@@ -157,8 +153,6 @@ public static partial class MermaidTopologyRendering {
     /// <summary>Renders a Mermaid mindmap to SVG.</summary>
     public static string ToSvg(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
 
-    /// <summary>Renders a Mermaid tree view to SVG.</summary>
-    public static string ToSvg(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid kanban board to SVG.</summary>
     public static string ToSvg(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
@@ -175,8 +169,6 @@ public static partial class MermaidTopologyRendering {
     /// <summary>Renders a Mermaid mindmap to PNG.</summary>
     public static byte[] ToPng(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
-    /// <summary>Renders a Mermaid tree view to PNG.</summary>
-    public static byte[] ToPng(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
     /// <summary>Renders a Mermaid kanban board to PNG.</summary>
     public static byte[] ToPng(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
@@ -257,27 +249,15 @@ public static partial class MermaidTopologyRendering {
         return count;
     }
 
-    private static string? TaskSubtitle(MermaidKanbanTask task) {
-        if (task.Metadata.TryGetValue("assigned", out var assigned) && !string.IsNullOrWhiteSpace(assigned)) return assigned;
-        if (task.Metadata.TryGetValue("ticket", out var ticket) && !string.IsNullOrWhiteSpace(ticket)) return ticket;
-        return null;
-    }
 
-    private static string? TaskSymbol(MermaidKanbanTask task) => task.Metadata.TryGetValue("priority", out var priority) && !string.IsNullOrWhiteSpace(priority) ? priority.Substring(0, 1).ToUpperInvariant() : null;
-
-    private static TopologyHealthStatus TaskStatus(MermaidKanbanTask task) {
-        if (!task.Metadata.TryGetValue("priority", out var priority)) return TopologyHealthStatus.Unknown;
-        if (priority.IndexOf("very high", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyHealthStatus.Critical;
-        if (priority.IndexOf("high", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyHealthStatus.Warning;
-        if (priority.IndexOf("low", StringComparison.OrdinalIgnoreCase) >= 0) return TopologyHealthStatus.Healthy;
-        return TopologyHealthStatus.Unknown;
-    }
 }
 
 /// <summary>
 /// Defines rendering defaults for topology-backed Mermaid diagram families.
 /// </summary>
 public sealed class MermaidTopologyRenderOptions : MermaidDiagramRenderOptions {
+    private double _padding=28;
+    internal bool HasExplicitPadding { get; private set; }
     /// <summary>Gets or sets the natural preview width.</summary>
     public double Width { get; set; } = 960;
 
@@ -285,5 +265,11 @@ public sealed class MermaidTopologyRenderOptions : MermaidDiagramRenderOptions {
     public double Height { get; set; } = 560;
 
     /// <summary>Gets or sets the topology viewport padding.</summary>
-    public double Padding { get; set; } = 28;
+    public double Padding {
+        get=>_padding;
+        set {
+            if(double.IsNaN(value)||double.IsInfinity(value)||value<0)throw new System.ArgumentOutOfRangeException(nameof(value));
+            _padding=value;HasExplicitPadding=true;
+        }
+    }
 }

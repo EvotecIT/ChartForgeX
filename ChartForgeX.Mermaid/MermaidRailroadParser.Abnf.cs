@@ -22,7 +22,7 @@ internal sealed partial class MermaidRailroadParser {
         var token = _token; var text = token.Text; Advance();
         if (text.Length < 3) throw Error(token, "ABNF numeric literals require a radix and at least one value.");
         var radix = char.ToLowerInvariant(text[1]) switch { 'x' => 16, 'd' => 10, 'b' => 2, _ => 0 };
-        if (radix == 0) throw Error(token, "The pinned ABNF grammar supports %x, %d and %b numeric forms; %i/%s literal prefixes are not supported.");
+        if (radix == 0) throw Error(token, "ABNF requires %x, %d or %b numeric values, or an adjacent %i/%s double-quoted literal.");
         var value = text.Substring(2);
         if (value.IndexOf('-') >= 0) {
             if (value.IndexOf('.') >= 0) throw Error(token, "An ABNF numeric range cannot also be a numeric sequence.");

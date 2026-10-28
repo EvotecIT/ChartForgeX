@@ -1,0 +1,24 @@
+---
+config:
+  usecase:
+    actorFontSize: 14
+    actorFontWeight: "500"
+    usecaseFontSize: 13
+    usecaseFontWeight: "400"
+    wrappingWidth: 150
+    minNodeWidth: 120
+    diagramPadding: 28
+---
+usecase-beta
+direction LR
+actor Operator("Release coordinator") <<primary>>
+systemBoundary Service[Publication service]
+  Publish("Publish prepared documents") <<business action>>
+  Validate("Validate request")
+end
+classDef delivery stroke:#2563EB,color:#1D4ED8,stroke-width:2.5px,stroke-dasharray:6 3 2,opacity:0.8
+Operator request@-- "requests" --> Publish
+Publish ..> : include Validate
+class request delivery
+style request color:#0F766E
+note for Publish "Approval required before delivery"

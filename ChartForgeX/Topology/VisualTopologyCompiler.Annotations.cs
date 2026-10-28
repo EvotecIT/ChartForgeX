@@ -21,9 +21,10 @@ internal sealed partial class VisualTopologyCompiler {
         var right = graph.Length == 0 ? _chart.Viewport.Padding : graph.Max(rect => rect.Right);
         var top = graph.Length == 0 ? _chart.Viewport.Padding : graph.Min(rect => rect.Top);
         var bottoms = new Dictionary<TopologyAnnotationSide, double>();
-        var size = _context.Theme.Typography.DataLabelSize;
-        var lineHeight = _builder.MeasureText("Ag", size, 400).LineHeight;
+
         foreach (var note in _chart.Annotations) {
+            var units = note.PreparedDefaultUnits; var size = _context.Theme.Typography.DataLabelSize * units;
+            var lineHeight = _builder.MeasureText("Ag", size, 400).LineHeight;
             if (!ids.Add(note.Id)) throw new ArgumentException("Duplicate topology annotation id '" + note.Id + "'.");
             ChartRect? target = null;
             if (note.TargetId != null) {
@@ -34,7 +35,7 @@ internal sealed partial class VisualTopologyCompiler {
             }
             var paragraphs = note.Text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
             var textWidth = Math.Max(1, paragraphs.Max(line => _builder.MeasureText(line, size, 400).Width));
-            var width = Math.Min(320, Math.Max(140, textWidth + 24));
+            var width = Math.Min(320 * units, Math.Max(140 * units, textWidth + 24 * units));
             var lines = new List<string>();
             foreach (var paragraph in paragraphs) {
                 var text = paragraph;
@@ -43,7 +44,7 @@ internal sealed partial class VisualTopologyCompiler {
                     var lower = 1; var upper = text.Length;
                     while (lower < upper) {
                         var candidate = lower + (upper - lower + 1) / 2;
-                        if (_builder.MeasureText(text.Substring(0, candidate), size, 400).Width <= width - 24) lower = candidate;
+                        if (_builder.MeasureText(text.Substring(0, candidate), size, 400).Width <= width - 24 * units) lower = candidate;
                         else upper = candidate - 1;
                     }
                     var length = lower;
@@ -56,21 +57,33 @@ internal sealed partial class VisualTopologyCompiler {
                     text = text.Substring(length).TrimStart();
                 }
             }
-            var height = Math.Max(lineHeight, lines.Count * lineHeight) + 20;
+            var height = Math.Max(lineHeight, lines.Count * lineHeight) + 20 * units;
             var y = target?.Y ?? top;
-            if (bottoms.TryGetValue(note.Side, out var bottom)) y = Math.Max(y, bottom + 16);
-            var x = note.Side == TopologyAnnotationSide.Left ? left - width - 36 : right + 36;
+            if (bottoms.TryGetValue(note.Side, out var bottom)) y = Math.Max(y, bottom + 16 * units);
+            var x = note.Side == TopologyAnnotationSide.Left ? left - width - 36 * units : right + 36 * units;
             var bounds = new ChartRect(x, y, width, height);
             IReadOnlyList<ChartPoint> leader = Array.Empty<ChartPoint>();
             if (target.HasValue) {
                 var source = new TopologyNode { Id = note.TargetId!, X = target.Value.X, Y = target.Value.Y,
                     Width = target.Value.Width, Height = target.Value.Height, Shape = TopologyNodeShape.Rectangle };
                 var destination = new TopologyNode { Id = note.Id, X = x, Y = y, Width = width, Height = height, Shape = TopologyNodeShape.Rectangle };
+                if (nodes.TryGetValue(note.TargetId!, out var actual) && TopologyPreparedNodeBasis.ForPresentation(actual) is {} basis
+                    && basis.Factor == units) {
+                    PreserveRoutingContour(source); PreserveRoutingContour(destination);
+                    void PreserveRoutingContour(TopologyNode temporary) {
+                        var origin = basis.Unproject(actual, new ChartPoint(temporary.X, temporary.Y));
+                        var raw = new ChartRect(origin.X, origin.Y, temporary.Width / units, temporary.Height / units);
+                        temporary.DisplayMode = TopologyNodeDisplayMode.Card;
+                        temporary.PreparedNodeBasis = new TopologyPreparedNodeBasis(units, temporary.Width, temporary.Height,
+                            temporary.Shape, TopologyNodeDisplayMode.Card, temporary.Kind, temporary.IconShape, temporary.IconId, temporary.Symbol,
+                            raw.X + raw.Width / 2, raw.Y + raw.Height / 2, raw);
+                    }
+                }
                 var edge = new TopologyEdge { Id = note.Id + "-leader", SourceNodeId = source.Id, TargetNodeId = note.Id,
                     Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal,
                     TargetPort = note.Side == TopologyAnnotationSide.Left ? TopologyEdgePort.Right : TopologyEdgePort.Left };
                 // Route against existing node/header obstacles without publishing the note as a graph node or edge.
-                leader = TopologyEdgeRouter.Route(_chart, edge, source, destination).Points;
+                leader = TopologyEdgeRouter.Route(_chart, edge, source, destination, routingUnits: units, routingViewport: note.PreparedRoutingViewport).Points;
             }
             _annotations.Add((note, bounds, leader, lines));
             bottoms[note.Side] = bounds.Bottom;
@@ -78,21 +91,24 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private ChartRect IncludeAnnotationBounds(ChartRect content) {
+        content = IncludePathDecorationBounds(content);
         if (_annotations.Count == 0) return content;
         var points = _annotations.SelectMany(note => note.Leader.Concat(new[] {
             new ChartPoint(note.Bounds.Left, note.Bounds.Top), new ChartPoint(note.Bounds.Right, note.Bounds.Bottom) })).ToArray();
-        var left = Math.Min(content.Left, points.Min(point => point.X) - 1);
-        var top = Math.Min(content.Top, points.Min(point => point.Y) - 1);
-        var right = Math.Max(content.Right, points.Max(point => point.X) + 1);
-        var bottom = Math.Max(content.Bottom, points.Max(point => point.Y) + 1);
+        var ink = _annotations.Max(note => note.Note.PreparedDefaultUnits);
+        var left = Math.Min(content.Left, points.Min(point => point.X) - ink);
+        var top = Math.Min(content.Top, points.Min(point => point.Y) - ink);
+        var right = Math.Max(content.Right, points.Max(point => point.X) + ink);
+        var bottom = Math.Max(content.Bottom, points.Max(point => point.Y) + ink);
         return new ChartRect(left, top, right - left, bottom - top);
     }
 
     private void BuildAnnotations() {
         var size = _context.Theme.Typography.DataLabelSize;
-        var lineHeight = _builder.MeasureText("Ag", size * _scale, 400).LineHeight;
+
         foreach (var annotation in _annotations) {
-            var note = annotation.Note;
+            var note = annotation.Note; var units = note.PreparedDefaultUnits;
+            var fontSize = size * units * _scale; var lineHeight = _builder.MeasureText("Ag", fontSize, 400).LineHeight;
             var bounds = Bounds(annotation.Bounds.X, annotation.Bounds.Y, annotation.Bounds.Width, annotation.Bounds.Height);
             using var group = _builder.PushGroup(note.Id, "topology-annotation", new Dictionary<string, string> {
                 ["data-annotation-id"] = note.Id, ["data-target-id"] = note.TargetId ?? "", ["data-annotation-side"] = note.Side.ToString()
@@ -101,14 +117,14 @@ internal sealed partial class VisualTopologyCompiler {
                 var points = annotation.Leader.Select(Point).ToArray();
                 var path = new ChartPath(points.Select((point, index) => index == 0 ? ChartPathCommand.MoveTo(point.X, point.Y) : ChartPathCommand.LineTo(point.X, point.Y)).ToArray());
                 _builder.Path(path, stroke: _colors.MutedForeground,
-                    strokeWidth: _context.Theme.AxisStrokeWidth * _scale, role: "topology-annotation-leader", dash: new[] { 4 * _scale, 3 * _scale },
+                    strokeWidth: _context.Theme.AxisStrokeWidth * units * _scale, role: "topology-annotation-leader", dash: new[] { 4 * units * _scale, 3 * units * _scale },
                     paint: new VisualScenePaintBinding(stroke: MutedPaint(_colors.MutedForeground)));
             }
-            _builder.Rect(bounds, _colors.Surface, _colors.Border, _context.Theme.AxisStrokeWidth * _scale, 0,
+            _builder.Rect(bounds, _colors.Surface, _colors.Border, _context.Theme.AxisStrokeWidth * units * _scale, 0,
                 "topology-annotation-surface", paint: new VisualScenePaintBinding(CardPaint(_colors.Surface), BorderPaint(_colors.Border)));
-            var baseline = bounds.Y + 10 * _scale + _builder.TextAscent(size * _scale, 400);
+            var baseline = bounds.Y + 10 * units * _scale + _builder.TextAscent(fontSize, 400);
             foreach (var line in annotation.Lines) {
-                if (line.Length > 0) _builder.Text(line, bounds.X + 12 * _scale, baseline, size * _scale, _colors.Foreground, 400,
+                if (line.Length > 0) _builder.Text(line, bounds.X + 12 * units * _scale, baseline, fontSize, _colors.Foreground, 400,
                     "topology-annotation-text", paint: ForegroundPaint(_colors.Foreground));
                 baseline += lineHeight;
             }

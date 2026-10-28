@@ -1,0 +1,394 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Expected operating range &#183; Range Area</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Range Area</p><h1>Expected operating range</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-range-area-wide-light.html" data-theme-link data-light-href="family-range-area-wide-light.html" data-dark-href="family-range-area-wide-dark.html">Standard</a></span><span><a href="family-range-area-compact-light.html" data-theme-link data-light-href="family-range-area-compact-light.html" data-dark-href="family-range-area-compact-dark.html">Compact</a></span><span class="current-variant"><a href="family-range-area-compact-independent-boundaries-light.html" data-theme-link data-light-href="family-range-area-compact-independent-boundaries-light.html" data-dark-href="family-range-area-compact-independent-boundaries-dark.html" aria-current="page">Compact Independent Boundaries</a></span><span><a href="family-range-area-compact-options-light.html" data-theme-link data-light-href="family-range-area-compact-options-light.html" data-dark-href="family-range-area-compact-options-dark.html">Compact options</a></span><span><a href="family-range-area-compact-singleton-light.html" data-theme-link data-light-href="family-range-area-compact-singleton-light.html" data-dark-href="family-range-area-compact-singleton-dark.html">Compact Singleton</a></span><span><a href="family-range-area-independent-boundaries-light.html" data-theme-link data-light-href="family-range-area-independent-boundaries-light.html" data-dark-href="family-range-area-independent-boundaries-dark.html">Independent Boundaries</a></span><span><a href="family-range-area-options-light.html" data-theme-link data-light-href="family-range-area-options-light.html" data-dark-href="family-range-area-options-dark.html">Configured options</a></span><span><a href="family-range-area-singleton-light.html" data-theme-link data-light-href="family-range-area-singleton-light.html" data-dark-href="family-range-area-singleton-dark.html">Singleton</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Expected operating range" aria-labelledby="family-range-area-compact-independent-boundaries-light-title" aria-describedby="family-range-area-compact-independent-boundaries-light-description"><title id="family-range-area-compact-independent-boundaries-light-title">Expected operating range</title><desc id="family-range-area-compact-independent-boundaries-light-description">Smooth lower and held upper limits with 1 data series: Expected range.</desc><defs><clipPath id="family-range-area-compact-independent-boundaries-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-range-area-compact-independent-boundaries-light-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="260.35"/></clipPath><clipPath id="family-range-area-compact-independent-boundaries-light-clip-29" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="105.228" width="284.795" height="171.616"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-range-area-compact-independent-boundaries-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Expected operating range</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-range-area-compact-independent-boundaries-light-clip-9)"><line x1="48.164" y1="276.844" x2="332.959" y2="276.844" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="214.664" x2="332.959" y2="214.664" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="152.485" x2="332.959" y2="152.485" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="276.844" x2="332.959" y2="276.844" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="45.123" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1</text></g><g data-cfx-role="axis-x-label"><text x="85.808" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2</text></g><g data-cfx-role="axis-x-label"><text x="126.493" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3</text></g><g data-cfx-role="axis-x-label"><text x="167.178" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">4</text></g><g data-cfx-role="axis-x-label"><text x="207.863" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">5</text></g><g data-cfx-role="axis-x-label"><text x="248.548" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">6</text></g><g data-cfx-role="axis-x-label"><text x="289.233" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">7</text></g><g data-cfx-role="axis-x-label"><text x="329.918" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">8</text></g><g data-cfx-role="axis-x-title"><text x="160.887" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Observation</text></g><line x1="48.164" y1="105.228" x2="48.164" y2="276.844" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="279.48" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="217.301" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g><g data-cfx-role="axis-y-label"><text x="24" y="155.121" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Expected level</text></g></g><g clip-path="url(#family-range-area-compact-independent-boundaries-light-clip-29)"><g id="family-range-area-compact-independent-boundaries-light-node-30" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Expected range" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="RangeArea" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-name="Expected range" data-cfx-series-scope="shared" data-cfx-source-points="7" data-cfx-state="none"><g data-cfx-role="fill-segment" data-cfx-fill-point-count="3" data-cfx-fill-point-start="0"><path d="M 48.164 177.356 L 68.507 177.356 L 68.507 133.831 L 88.849 133.831 L 109.192 133.831 L 109.192 158.703 L 129.534 158.703 L 129.534 227.1 L 122.753 224.495 L 115.972 220.422 L 109.192 215.83 L 102.411 211.67 L 95.63 208.892 L 88.849 208.446 L 82.068 211.109 L 75.287 216.276 L 68.507 222.825 L 61.726 229.633 L 54.945 235.578 L 48.164 239.536 Z" data-cfx-role="range-area" fill="rgba(29,79,158,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 48.164 177.356 L 68.507 177.356 L 68.507 133.831 L 88.849 133.831 L 109.192 133.831 L 109.192 158.703 L 129.534 158.703" data-cfx-role="range-upper" fill="none" stroke="#1D4F9E" stroke-width="2"/><path d="M 48.164 239.536 C 61.726 234.354 75.287 210.519 88.849 208.446 C 102.411 206.374 115.972 223.991 129.534 227.1" data-cfx-role="range-lower" fill="none" stroke="rgba(29,79,158,0.878)" stroke-width="2"/><path d="M 48.164 208.446 C 54.945 202.228 75.287 173.729 88.849 171.138 C 102.411 168.548 122.753 189.274 129.534 192.901" data-cfx-role="range-midline" fill="none" stroke="rgba(29,79,158,0.478)" stroke-width="1.3" stroke-dasharray="5 6"/><g data-cfx-role="fill-segment" data-cfx-fill-point-count="4" data-cfx-fill-point-start="3"><path d="M 210.904 127.613 L 231.247 127.613 L 231.247 149.376 L 251.589 149.376 L 271.932 149.376 L 271.932 115.177 L 292.274 115.177 L 312.616 115.177 L 312.616 140.049 L 332.959 140.049 L 332.959 220.882 L 326.178 219.954 L 319.397 218.464 L 312.616 216.802 L 305.836 215.355 L 299.055 214.513 L 292.274 214.664 L 285.493 216.535 L 278.712 219.961 L 271.932 223.991 L 265.151 227.676 L 258.37 230.065 L 251.589 230.209 L 244.808 227.366 L 238.027 222.149 L 231.247 215.636 L 224.466 208.907 L 217.685 203.041 L 210.904 199.119 Z" data-cfx-role="range-area" fill="rgba(29,79,158,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 210.904 127.613 L 231.247 127.613 L 231.247 149.376 L 251.589 149.376 L 271.932 149.376 L 271.932 115.177 L 292.274 115.177 L 312.616 115.177 L 312.616 140.049 L 332.959 140.049" data-cfx-role="range-upper" fill="none" stroke="#1D4F9E" stroke-width="2"/><path d="M 210.904 199.119 C 224.466 204.301 238.027 227.618 251.589 230.209 C 265.151 232.8 278.712 216.219 292.274 214.664 C 305.836 213.11 319.397 219.846 332.959 220.882" data-cfx-role="range-lower" fill="none" stroke="rgba(29,79,158,0.878)" stroke-width="2"/><path d="M 210.904 163.366 C 217.685 167.77 238.027 189.533 251.589 189.792 C 265.151 190.051 278.712 166.475 292.274 164.921 C 305.836 163.366 326.178 177.875 332.959 180.465" data-cfx-role="range-midline" fill="none" stroke="rgba(29,79,158,0.478)" stroke-width="1.3" stroke-dasharray="5 6"/><g id="family-range-area-compact-independent-boundaries-light-node-43" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Expected range: 12–32 x=1 lower=12 upper=32" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="1" data-cfx-fill-pattern="None" data-cfx-formatted-lower="12" data-cfx-formatted-upper="32" data-cfx-formatted-value="12" data-cfx-formatted-x="1" data-cfx-formatted-y="12" data-cfx-label="12–32" data-cfx-lower="12" data-cfx-midline-y="208.44621829710144" data-cfx-point="0" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-upper="32" data-cfx-x="1" data-cfx-y="12"></g><g id="family-range-area-compact-independent-boundaries-light-node-45" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Expected range: 22–46 x=2 lower=22 upper=46" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="2" data-cfx-fill-pattern="None" data-cfx-formatted-lower="22" data-cfx-formatted-upper="46" data-cfx-formatted-value="22" data-cfx-formatted-x="2" data-cfx-formatted-y="22" data-cfx-label="22–46" data-cfx-lower="22" data-cfx-midline-y="171.13847373188406" data-cfx-point="1" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-upper="46" data-cfx-x="2" data-cfx-y="22"></g><g id="family-range-area-compact-independent-boundaries-light-node-47" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Expected range: 16–38 x=3 lower=16 upper=38" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="3" data-cfx-fill-pattern="None" data-cfx-formatted-lower="16" data-cfx-formatted-upper="38" data-cfx-formatted-value="16" data-cfx-formatted-x="3" data-cfx-formatted-y="16" data-cfx-label="16–38" data-cfx-lower="16" data-cfx-midline-y="192.90132472826087" data-cfx-point="2" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-state="none" data-cfx-upper="38" data-cfx-x="3" data-cfx-y="16"></g><g id="family-range-area-compact-independent-boundaries-light-node-49" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Expected range: 25–48 x=5 lower=25 upper=48" data-cfx-axis="primary" data-cfx-break-before="true" data-cfx-display-label="5" data-cfx-fill-pattern="None" data-cfx-formatted-lower="25" data-cfx-formatted-upper="48" data-cfx-formatted-value="25" data-cfx-formatted-x="5" data-cfx-formatted-y="25" data-cfx-label="25–48" data-cfx-lower="25" data-cfx-midline-y="163.36602694746378" data-cfx-observation-id="resumed-range" data-cfx-point="3" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="3" data-cfx-state="none" data-cfx-upper="48" data-cfx-x="5" data-cfx-y="25"></g><g id="family-range-area-compact-independent-boundaries-light-node-51" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Expected range: 15–41 x=6 lower=15 upper=41" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="6" data-cfx-fill-pattern="None" data-cfx-formatted-lower="15" data-cfx-formatted-upper="41" data-cfx-formatted-value="15" data-cfx-formatted-x="6" data-cfx-formatted-y="15" data-cfx-label="15–41" data-cfx-lower="15" data-cfx-midline-y="189.79234601449275" data-cfx-point="4" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="4" data-cfx-state="none" data-cfx-upper="41" data-cfx-x="6" data-cfx-y="15"></g><g id="family-range-area-compact-independent-boundaries-light-node-53" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Expected range: 20–52 x=7 lower=20 upper=52" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="7" data-cfx-fill-pattern="None" data-cfx-formatted-lower="20" data-cfx-formatted-upper="52" data-cfx-formatted-value="20" data-cfx-formatted-x="7" data-cfx-formatted-y="20" data-cfx-label="20–52" data-cfx-lower="20" data-cfx-midline-y="164.92051630434781" data-cfx-point="5" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="5" data-cfx-state="none" data-cfx-upper="52" data-cfx-x="7" data-cfx-y="20"></g><g id="family-range-area-compact-independent-boundaries-light-node-55" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Expected range: 18–44 x=8 lower=18 upper=44" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="8" data-cfx-fill-pattern="None" data-cfx-formatted-lower="18" data-cfx-formatted-upper="44" data-cfx-formatted-value="18" data-cfx-formatted-x="8" data-cfx-formatted-y="18" data-cfx-label="18–44" data-cfx-lower="18" data-cfx-midline-y="180.46540987318843" data-cfx-point="6" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="6" data-cfx-state="none" data-cfx-upper="44" data-cfx-x="8" data-cfx-y="18"></g></g></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="png"><img src="family-range-area-compact-independent-boundaries-light.png" width="360" height="360" alt="Expected operating range" loading="lazy" decoding="async"></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Expected operating range" aria-labelledby="family-range-area-compact-independent-boundaries-dark-title" aria-describedby="family-range-area-compact-independent-boundaries-dark-description"><title id="family-range-area-compact-independent-boundaries-dark-title">Expected operating range</title><desc id="family-range-area-compact-independent-boundaries-dark-description">Smooth lower and held upper limits with 1 data series: Expected range.</desc><defs><clipPath id="family-range-area-compact-independent-boundaries-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-range-area-compact-independent-boundaries-dark-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="260.35"/></clipPath><clipPath id="family-range-area-compact-independent-boundaries-dark-clip-29" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="105.228" width="284.795" height="171.616"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-range-area-compact-independent-boundaries-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Expected operating range</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g></g><g clip-path="url(#family-range-area-compact-independent-boundaries-dark-clip-9)"><line x1="48.164" y1="276.844" x2="332.959" y2="276.844" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="214.664" x2="332.959" y2="214.664" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="152.485" x2="332.959" y2="152.485" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="276.844" x2="332.959" y2="276.844" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="45.123" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1</text></g><g data-cfx-role="axis-x-label"><text x="85.808" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2</text></g><g data-cfx-role="axis-x-label"><text x="126.493" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">3</text></g><g data-cfx-role="axis-x-label"><text x="167.178" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">4</text></g><g data-cfx-role="axis-x-label"><text x="207.863" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">5</text></g><g data-cfx-role="axis-x-label"><text x="248.548" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">6</text></g><g data-cfx-role="axis-x-label"><text x="289.233" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">7</text></g><g data-cfx-role="axis-x-label"><text x="329.918" y="300.27" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">8</text></g><g data-cfx-role="axis-x-title"><text x="160.887" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Observation</text></g><line x1="48.164" y1="105.228" x2="48.164" y2="276.844" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="279.48" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="217.301" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g><g data-cfx-role="axis-y-label"><text x="24" y="155.121" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="87.076" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Expected level</text></g></g><g clip-path="url(#family-range-area-compact-independent-boundaries-dark-clip-29)"><g id="family-range-area-compact-independent-boundaries-dark-node-30" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Expected range" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="RangeArea" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-name="Expected range" data-cfx-series-scope="shared" data-cfx-source-points="7" data-cfx-state="none"><g data-cfx-role="fill-segment" data-cfx-fill-point-count="3" data-cfx-fill-point-start="0"><path d="M 48.164 177.356 L 68.507 177.356 L 68.507 133.831 L 88.849 133.831 L 109.192 133.831 L 109.192 158.703 L 129.534 158.703 L 129.534 227.1 L 122.753 224.495 L 115.972 220.422 L 109.192 215.83 L 102.411 211.67 L 95.63 208.892 L 88.849 208.446 L 82.068 211.109 L 75.287 216.276 L 68.507 222.825 L 61.726 229.633 L 54.945 235.578 L 48.164 239.536 Z" data-cfx-role="range-area" fill="rgba(90,127,216,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 48.164 177.356 L 68.507 177.356 L 68.507 133.831 L 88.849 133.831 L 109.192 133.831 L 109.192 158.703 L 129.534 158.703" data-cfx-role="range-upper" fill="none" stroke="#5A7FD8" stroke-width="2"/><path d="M 48.164 239.536 C 61.726 234.354 75.287 210.519 88.849 208.446 C 102.411 206.374 115.972 223.991 129.534 227.1" data-cfx-role="range-lower" fill="none" stroke="rgba(90,127,216,0.878)" stroke-width="2"/><path d="M 48.164 208.446 C 54.945 202.228 75.287 173.729 88.849 171.138 C 102.411 168.548 122.753 189.274 129.534 192.901" data-cfx-role="range-midline" fill="none" stroke="rgba(90,127,216,0.478)" stroke-width="1.3" stroke-dasharray="5 6"/><g data-cfx-role="fill-segment" data-cfx-fill-point-count="4" data-cfx-fill-point-start="3"><path d="M 210.904 127.613 L 231.247 127.613 L 231.247 149.376 L 251.589 149.376 L 271.932 149.376 L 271.932 115.177 L 292.274 115.177 L 312.616 115.177 L 312.616 140.049 L 332.959 140.049 L 332.959 220.882 L 326.178 219.954 L 319.397 218.464 L 312.616 216.802 L 305.836 215.355 L 299.055 214.513 L 292.274 214.664 L 285.493 216.535 L 278.712 219.961 L 271.932 223.991 L 265.151 227.676 L 258.37 230.065 L 251.589 230.209 L 244.808 227.366 L 238.027 222.149 L 231.247 215.636 L 224.466 208.907 L 217.685 203.041 L 210.904 199.119 Z" data-cfx-role="range-area" fill="rgba(90,127,216,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 210.904 127.613 L 231.247 127.613 L 231.247 149.376 L 251.589 149.376 L 271.932 149.376 L 271.932 115.177 L 292.274 115.177 L 312.616 115.177 L 312.616 140.049 L 332.959 140.049" data-cfx-role="range-upper" fill="none" stroke="#5A7FD8" stroke-width="2"/><path d="M 210.904 199.119 C 224.466 204.301 238.027 227.618 251.589 230.209 C 265.151 232.8 278.712 216.219 292.274 214.664 C 305.836 213.11 319.397 219.846 332.959 220.882" data-cfx-role="range-lower" fill="none" stroke="rgba(90,127,216,0.878)" stroke-width="2"/><path d="M 210.904 163.366 C 217.685 167.77 238.027 189.533 251.589 189.792 C 265.151 190.051 278.712 166.475 292.274 164.921 C 305.836 163.366 326.178 177.875 332.959 180.465" data-cfx-role="range-midline" fill="none" stroke="rgba(90,127,216,0.478)" stroke-width="1.3" stroke-dasharray="5 6"/><g id="family-range-area-compact-independent-boundaries-dark-node-43" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Expected range: 12–32 x=1 lower=12 upper=32" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="1" data-cfx-fill-pattern="None" data-cfx-formatted-lower="12" data-cfx-formatted-upper="32" data-cfx-formatted-value="12" data-cfx-formatted-x="1" data-cfx-formatted-y="12" data-cfx-label="12–32" data-cfx-lower="12" data-cfx-midline-y="208.44621829710144" data-cfx-point="0" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="0" data-cfx-state="none" data-cfx-upper="32" data-cfx-x="1" data-cfx-y="12"></g><g id="family-range-area-compact-independent-boundaries-dark-node-45" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Expected range: 22–46 x=2 lower=22 upper=46" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="2" data-cfx-fill-pattern="None" data-cfx-formatted-lower="22" data-cfx-formatted-upper="46" data-cfx-formatted-value="22" data-cfx-formatted-x="2" data-cfx-formatted-y="22" data-cfx-label="22–46" data-cfx-lower="22" data-cfx-midline-y="171.13847373188406" data-cfx-point="1" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="1" data-cfx-state="none" data-cfx-upper="46" data-cfx-x="2" data-cfx-y="22"></g><g id="family-range-area-compact-independent-boundaries-dark-node-47" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Expected range: 16–38 x=3 lower=16 upper=38" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="3" data-cfx-fill-pattern="None" data-cfx-formatted-lower="16" data-cfx-formatted-upper="38" data-cfx-formatted-value="16" data-cfx-formatted-x="3" data-cfx-formatted-y="16" data-cfx-label="16–38" data-cfx-lower="16" data-cfx-midline-y="192.90132472826087" data-cfx-point="2" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="2" data-cfx-state="none" data-cfx-upper="38" data-cfx-x="3" data-cfx-y="16"></g><g id="family-range-area-compact-independent-boundaries-dark-node-49" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Expected range: 25–48 x=5 lower=25 upper=48" data-cfx-axis="primary" data-cfx-break-before="true" data-cfx-display-label="5" data-cfx-fill-pattern="None" data-cfx-formatted-lower="25" data-cfx-formatted-upper="48" data-cfx-formatted-value="25" data-cfx-formatted-x="5" data-cfx-formatted-y="25" data-cfx-label="25–48" data-cfx-lower="25" data-cfx-midline-y="163.36602694746378" data-cfx-observation-id="resumed-range" data-cfx-point="3" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="3" data-cfx-state="none" data-cfx-upper="48" data-cfx-x="5" data-cfx-y="25"></g><g id="family-range-area-compact-independent-boundaries-dark-node-51" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Expected range: 15–41 x=6 lower=15 upper=41" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="6" data-cfx-fill-pattern="None" data-cfx-formatted-lower="15" data-cfx-formatted-upper="41" data-cfx-formatted-value="15" data-cfx-formatted-x="6" data-cfx-formatted-y="15" data-cfx-label="15–41" data-cfx-lower="15" data-cfx-midline-y="189.79234601449275" data-cfx-point="4" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="4" data-cfx-state="none" data-cfx-upper="41" data-cfx-x="6" data-cfx-y="15"></g><g id="family-range-area-compact-independent-boundaries-dark-node-53" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Expected range: 20–52 x=7 lower=20 upper=52" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="7" data-cfx-fill-pattern="None" data-cfx-formatted-lower="20" data-cfx-formatted-upper="52" data-cfx-formatted-value="20" data-cfx-formatted-x="7" data-cfx-formatted-y="20" data-cfx-label="20–52" data-cfx-lower="20" data-cfx-midline-y="164.92051630434781" data-cfx-point="5" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="5" data-cfx-state="none" data-cfx-upper="52" data-cfx-x="7" data-cfx-y="20"></g><g id="family-range-area-compact-independent-boundaries-dark-node-55" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Expected range: 18–44 x=8 lower=18 upper=44" data-cfx-axis="primary" data-cfx-break-before="false" data-cfx-display-label="8" data-cfx-fill-pattern="None" data-cfx-formatted-lower="18" data-cfx-formatted-upper="44" data-cfx-formatted-value="18" data-cfx-formatted-x="8" data-cfx-formatted-y="18" data-cfx-label="18–44" data-cfx-lower="18" data-cfx-midline-y="180.46540987318843" data-cfx-point="6" data-cfx-series="0" data-cfx-series-key="expected-range" data-cfx-series-scope="shared" data-cfx-source-count="1" data-cfx-source-point="6" data-cfx-state="none" data-cfx-upper="44" data-cfx-x="8" data-cfx-y="18"></g></g></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="png"><img src="family-range-area-compact-independent-boundaries-dark.png" width="360" height="360" alt="Expected operating range" loading="lazy" decoding="async"></div></section><div class="export-row"><span>360 × 360 pixels</span><nav aria-label="Download outputs"><a href="family-range-area-compact-independent-boundaries-light.svg" data-theme-link data-light-href="family-range-area-compact-independent-boundaries-light.svg" data-dark-href="family-range-area-compact-independent-boundaries-dark.svg" download>Download SVG</a><a href="family-range-area-compact-independent-boundaries-light.png" data-theme-link data-light-href="family-range-area-compact-independent-boundaries-light.png" data-dark-href="family-range-area-compact-independent-boundaries-dark.png" download>Download PNG</a><a href="family-range-area-compact-independent-boundaries-light.csharp.txt" data-theme-link data-light-href="family-range-area-compact-independent-boundaries-light.csharp.txt" data-dark-href="family-range-area-compact-independent-boundaries-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="family-range-area-compact-independent-boundaries-light.gallery.csharp.txt" data-theme-link data-light-href="family-range-area-compact-independent-boundaries-light.gallery.csharp.txt" data-dark-href="family-range-area-compact-independent-boundaries-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = RangeAreaRecipe.Create(&quot;compact-independent-boundaries&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Expected operating range&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame(&quot;Expected operating range&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Builds an expected operating range with smooth or stepped area boundaries.&lt;/summary&gt;
+public static class RangeAreaRecipe {
+    /// &lt;summary&gt;Creates the selected range-area example from typed lower and upper limits.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;independent-boundaries&quot; or &quot;compact-independent-boundaries&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is &quot;independent-boundaries&quot; or &quot;compact-independent-boundaries&quot;) {
+            var ranges = ChartRangeBands.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+                new double?[] { 12, 22, 16, null, 25, 15, 20, 18 }, new double?[] { 32, 46, 38, 40, 48, 41, 52, 44 });
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, ranges)
+                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .WithObservationId(3, new ChartObservationId(&quot;resumed-range&quot;));
+            chart.WithTitle(&quot;Smooth lower and held upper limits&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Expected level&quot;).AddSeries(expected);
+        }
+        else if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) {
+            chart.WithTitle(&quot;One observed range&quot;).AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;,
+                new[] { new ChartRangeBand(0, 0, 7) }).WithObservationId(0, new ChartObservationId(&quot;only-range&quot;)));
+        }
+        else if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, new[] {
+                new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50), new ChartRangeBand(3, 20, 40),
+                new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55)
+            }).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Expected level&quot;).AddSeries(expected);
+        }
+        else {
+            var count = variant == &quot;sparse&quot; ? 2 : 5;
+            var ranges = Enumerable.Range(1, count).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4));
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, ranges);
+            chart.WithXLabels(&quot;08:00&quot;, &quot;10:00&quot;, &quot;12:00&quot;, &quot;14:00&quot;, &quot;16:00&quot;).AddSeries(expected);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = RangeAreaRecipe.Create(&quot;compact-independent-boundaries&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Expected operating range&quot;).WithSubtitle(&quot;Explore the data, then download the chart&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame(&quot;Expected operating range&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+/// &lt;summary&gt;Builds an expected operating range with smooth or stepped area boundaries.&lt;/summary&gt;
+public static class RangeAreaRecipe {
+    /// &lt;summary&gt;Creates the selected range-area example from typed lower and upper limits.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;independent-boundaries&quot; or &quot;compact-independent-boundaries&quot;))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is &quot;independent-boundaries&quot; or &quot;compact-independent-boundaries&quot;) {
+            var ranges = ChartRangeBands.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+                new double?[] { 12, 22, 16, null, 25, 15, 20, 18 }, new double?[] { 32, 46, 38, 40, 48, 41, 52, 44 });
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, ranges)
+                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .WithObservationId(3, new ChartObservationId(&quot;resumed-range&quot;));
+            chart.WithTitle(&quot;Smooth lower and held upper limits&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Expected level&quot;).AddSeries(expected);
+        }
+        else if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) {
+            chart.WithTitle(&quot;One observed range&quot;).AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;,
+                new[] { new ChartRangeBand(0, 0, 7) }).WithObservationId(0, new ChartObservationId(&quot;only-range&quot;)));
+        }
+        else if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, new[] {
+                new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50), new ChartRangeBand(3, 20, 40),
+                new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55)
+            }).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Expected level&quot;).AddSeries(expected);
+        }
+        else {
+            var count = variant == &quot;sparse&quot; ? 2 : 5;
+            var ranges = Enumerable.Range(1, count).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4));
+            var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, ranges);
+            chart.WithXLabels(&quot;08:00&quot;, &quot;10:00&quot;, &quot;12:00&quot;, &quot;14:00&quot;, &quot;16:00&quot;).AddSeries(expected);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

@@ -10,7 +10,9 @@ public sealed partial class FlowArtifact : IVisualRenderable {
     /// <returns>A detached static scene and resolved native flow geometry.</returns>
     public PreparedVisual Prepare(VisualRenderContext context) {
         if (context == null) throw new ArgumentNullException(nameof(context));
+        ValidateNative();
         var topology = this.ToTopologyChart();
+        PreparedPresentation?.ApplyAccessibility(topology.Accessibility);
         for (var i = 0; i < Steps.Count; i++) {
             var step = Steps[i]; var node = topology.Nodes[i];
             node.DisplayMode = TopologyNodeDisplayMode.Card;

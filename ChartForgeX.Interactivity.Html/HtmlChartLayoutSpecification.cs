@@ -18,7 +18,7 @@ internal static class HtmlChartLayoutSpecification {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles();
         var svg = prepared.ToSvg(options);
-        var region = prepared.Regions.FirstOrDefault(item => item.Role == "cartesian-plot");
+        var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot");
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
         var output = new StringBuilder("{\"schema\":\"chartforgex/layout-1\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)

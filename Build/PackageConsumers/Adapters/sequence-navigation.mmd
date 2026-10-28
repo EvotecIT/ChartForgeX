@@ -1,0 +1,8 @@
+%%{init: {"sequence":{"forceMenus":true,"width":64,"height":60,"actorMargin":8,"actorFontSize":14,"messageFontSize":12}}}%%
+sequenceDiagram
+participant A as Review
+participant B as Archive
+link A: Guide @ #old
+link A: Guide @ #guide
+link A: Status @ #status
+A->>B: Save

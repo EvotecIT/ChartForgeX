@@ -1,21 +1,21 @@
   const replayAnnotationEdit = (root, state, redo) => {
-    if (state.draft) throw new TypeError('Commit or cancel the current draft before replaying an accepted edit.');
+    if (state.draft) throw new TypeError('History replay: commit/cancel draft first.');
     const stack = redo ? state.redo : state.undo, entry = stack.at(-1);
-    if (!entry) throw new TypeError('No accepted annotation edit is available.');
+    if (!entry) throw new TypeError('No accepted annotation edit.');
     const expected = redo ? entry.before : entry.after, desired = redo ? entry.after : entry.before;
     if (!sameAnnotationDrawing(annotationDrawingAt(root, entry.id), expected))
-      throw new TypeError('The annotation changed outside this history; its current source drawing will not be overwritten.');
+      throw new TypeError('History source changed; refusing annotation overwrite.');
     state.replay = { entry, redo };
     try {
       if (!requestAnnotationChange(root, { id: entry.id, operation: desired ? expected ? 'replace' : 'add' : 'remove', ...(desired ? { drawing: desired } : {}) }, { entry, redo }))
-        throw new TypeError('Native annotation history preparation could not start.');
+        throw new TypeError('History: native request unavailable.');
     } catch (error) { state.replay = null; throw error; }
   };
   const annotationEditorChangeHooks = (root, id, drawing, replay) => {
     const state = annotationEditorState(root);
     if (!state) return {};
     const before = annotationDrawingAt(root, id), after = drawing ?? null;
-    // History cannot restore native bands/lines.
+
     const representable = before !== null || !nativeAnnotationNode(root, id);
     if (!state.enabled) return representable ? {} : { committed: () => { state.undo = []; state.redo = []; } };
 
@@ -25,7 +25,7 @@
       cancelled: release,
       failed: () => { release(); state.error = uiText(root, 'AnnotationFailed', 'The annotation could not be updated.'); refreshAnnotationEditor(root); },
       committed: () => {
-        // History needs native validation.
+
         if (!representable) {
           state.undo = []; state.redo = [];
         } else if (replay) {

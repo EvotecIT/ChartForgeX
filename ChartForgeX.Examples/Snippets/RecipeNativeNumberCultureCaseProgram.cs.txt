@@ -1,0 +1,25 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Globalization;
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.Interactivity.Html;
+
+// Supply licensed .ttf/.otf faces that together cover the native captions and named numeric-culture symbols.
+var primary = args.Length > 0 ? args[0] : "fonts/primary.ttf"; var fallback = args.Length > 1 ? args[1] : "fonts/fallback.otf";
+foreach (var path in new[] { primary, fallback }) { var extension = Path.GetExtension(path); if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".otf", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Supply explicit .ttf/.otf faces."); }
+FontRegistry.Register("Example Primary", primary); FontRegistry.Register("Example Fallback", fallback);
+var kind = {{KIND}}; var policy = {{POLICY}};
+Chart Model(double reading) => NativeNumberCultureCaseRecipe.Create(kind, policy, reading, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Example Primary, Example Fallback");
+var renderer = new HtmlInteractiveChartRenderer(); var readings = NativeNumberCultureCaseRecipe.Readings(policy); var from = renderer.PrepareSection(Model(readings.First)); var to = renderer.PrepareSection(Model(readings.Last));
+var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 9); var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);
+var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>{chart.update(forward?" + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?" + JsonSerializer.Serialize(forward) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}});forward=!forward;};";
+string Css(string family, string path) => "@font-face{font-family:'" + family + "';src:url(data:font/" + (Path.GetExtension(path).Equals(".otf", StringComparison.OrdinalIgnoreCase) ? "otf" : "ttf") + ";base64," + Convert.ToBase64String(File.ReadAllBytes(path)) + ") format('opentype')}";
+var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + Css("Example Primary", primary) + Css("Example Fallback", fallback) + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+    + "</style></head><body><button id='play' type='button'>Present captured native numeric captions</button>" + from.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + action + "</script></body></html>";
+Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html", html); File.WriteAllText("output/visual.transition.json", forward); File.WriteAllText("output/visual.svg", to.PreparedVisual.ToSvg()); File.WriteAllBytes("output/visual.png", to.PreparedVisual.ToPng());
+
+{{SOURCE}}

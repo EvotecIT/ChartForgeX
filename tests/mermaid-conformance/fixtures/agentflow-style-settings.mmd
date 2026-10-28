@@ -1,0 +1,21 @@
+---
+config:
+  agentflow:
+    diagramPadding: 44
+    nodeSpacing: 75
+    rankSpacing: 140
+    wrappingWidth: 160
+    minNodeWidth: 70
+    padding: 14
+    useMaxWidth: false
+---
+agentflow-beta LR
+flow review[Review]
+work[Work] reads@-->|Reads| done[Done]
+end
+classDef framed fill:#ffeedd,stroke:#345678,color:#234567
+classDef association stroke:#234567,color:#654321,stroke-width:3px,stroke-dasharray:9 4 2
+class review,work framed
+class reads association
+style review fill:#e9f0fa
+linkStyle 0 opacity:0.6

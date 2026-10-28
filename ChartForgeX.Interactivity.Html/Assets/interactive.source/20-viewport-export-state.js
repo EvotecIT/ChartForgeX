@@ -23,6 +23,7 @@
 
   const viewChanged = (root) => {
     if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
+    if (polarViewportConnected(root) && nativePolarViewportChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
@@ -32,7 +33,7 @@
   const syncResetControl = (root) => {
     const reset = root.querySelector('[data-cfx-reset]');
     if (!reset) return;
-    const changed = viewChanged(root);
+    const changed = viewChanged(root) || nativeSeriesVisibilityChanged(root) || nativePreparationBackpressureBusy(root);
     if (!changed && document.activeElement === reset) {
 
       if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
@@ -88,7 +89,7 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  // Cancel before pointerup.
+
   const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
     const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
@@ -122,7 +123,8 @@
       chartId: root.dataset.cfxChartId || '',
       source: source || '',
       viewport: getState(root),
-      nativeViewport: cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
+      ...(polarViewportConnected(root) ? { nativePolarViewport: nativePolarViewport(root) } : {}),
+      nativeViewport: polarViewportConnected(root) ? null : cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
         : connectedXViewport(root) ? { x: nativeXWindow(root) } : null,
       nativeHierarchy: hierarchyConnected(root) ? hierarchySnapshot(root) : null,
       mode: root.dataset.cfxMode || '',
@@ -148,11 +150,19 @@
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks') || snapshot.xWindow || snapshot.yWindow) return;
-    if (snapshot.nativeHierarchy && snapshot.nativeViewport) return;
+    if ([snapshot.nativeHierarchy, snapshot.nativeViewport, snapshot.nativePolarViewport].filter(Boolean).length > 1) return;
+    if (!nativeAccepted && snapshot.nativePolarViewport) {
+      const captured = copyHostValue(snapshot);
+      requestNativePolarWindow(root, captured.nativePolarViewport, false, () => applyInteractionState(root, captured, emit, sync, true));
+      return;
+    }
     if (!nativeAccepted && snapshot.nativeHierarchy) {
       const captured = copyHostValue(snapshot), requested = captured.nativeHierarchy, current = capturedHierarchy(root);
-      if (!current || requested.kind !== current.kind || requested.seriesKey !== current.seriesKey) return;
-      requestNativeHierarchy(root, requested.rootId === null ? null : { rootId: requested.rootId }, false,
+      if (!current || requested.kind !== current.kind || requested.seriesKey !== current.seriesKey || current.kind === 'topology' && requested.sourceId !== current.sourceId) return;
+      if (current.kind === 'topology' && (!Array.isArray(requested.collapsedNodeIds) || !Array.isArray(requested.nodeOrder) || !Object.prototype.hasOwnProperty.call(requested, 'layoutDirection'))) return;
+      const hierarchyView = current.kind === 'topology' ? { collapsedNodeIds: requested.collapsedNodeIds, nodeOrder: requested.nodeOrder, layoutDirection: requested.layoutDirection }
+        : requested.rootId === null ? null : { rootId: requested.rootId };
+      requestNativeHierarchy(root, hierarchyView, false,
         () => applyInteractionState(root, captured, emit, sync, true));
       return;
     }
@@ -163,7 +173,7 @@
         requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
       else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
         requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
-      // Atomic replay; preserve rejected state.
+
       return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');

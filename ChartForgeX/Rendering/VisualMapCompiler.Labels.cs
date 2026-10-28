@@ -18,7 +18,7 @@ internal static partial class VisualMapCompiler {
     }
     private static void AddMapLabel(VisualSceneBuilder builder, List<MapLabel> labels, string full, string visible, ChartPoint anchor, TextStyle style,
         string id, string role, ChartRect bounds, double gap, int priority, ChartDataLabelPlacement placement = ChartDataLabelPlacement.Auto, SvgPaint? paint = null,
-        ChartColor? leaderColor = null, SvgPaint? leaderPaint = null, double leaderRadius = 0) {
+        ChartColor? leaderColor = null, SvgPaint? leaderPaint = null, double leaderRadius = 0, ChartMapCallouts? callouts = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, full));
         var candidates = new List<LabelCandidate>();
         if (placement == ChartDataLabelPlacement.Left) candidates.Add(new LabelCandidate(-gap, 0, 1, .5));
@@ -33,15 +33,28 @@ internal static partial class VisualMapCompiler {
             candidates.Add(new LabelCandidate(gap * band, -gap * band, 0, .5));
             candidates.Add(new LabelCandidate(-gap * band, -gap * band, 1, .5));
         }
+        if (callouts != null) candidates = MapCalloutCandidates(placement, gap, callouts.MaximumDistance);
         labels.Add(new MapLabel(new LabelPlacementRequest(visible, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(visible, style),
-            AssociatedMarkId = id.EndsWith("-label", System.StringComparison.Ordinal) ? id.Substring(0, id.Length - 6) : null }, id, role, full, paint ?? VisualChartPaint.Text(style),
+            AssociatedMarkId = id.EndsWith("-label", System.StringComparison.Ordinal) ? id.Substring(0, id.Length - 6) : null,
+            HasLeaderLine = callouts != null && leaderColor.HasValue, LeaderOnFirstCandidate = callouts != null }, id, role, full, paint ?? VisualChartPaint.Text(style),
             leaderColor, leaderPaint, leaderRadius));
     }
     private static void DrawMapLabels(VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<MapLabel> labels, IReadOnlyList<LabelObstacle> obstacles, double gap, bool outline = false) {
-        var placed = new LabelPlacementService().Place(labels.Select(label => label.Request).ToArray(), plot, obstacles, gap / 3, builder.MeasureText);
+        var placed = new LabelPlacementService().Place(labels.Select(label => label.Request).ToArray(), plot, obstacles, gap / 3, builder.MeasureText,
+            avoidLeaderLabels: labels.Any(label => label.Request.HasLeaderLine));
         for (var index = 0; index < placed.Count; index++) {
             var result = placed[index]; var label = labels[index];
-            using (builder.PushGroup(label.Id + "-source", label.Role + "-source", new Dictionary<string, string> { ["data-cfx-full-label"] = label.Full, ["aria-label"] = label.Full })) {
+            var metadata = new Dictionary<string, string> { ["data-cfx-full-label"] = label.Full, ["aria-label"] = label.Full };
+            if (label.Request.HasLeaderLine) {
+                metadata["data-cfx-callout"] = "true"; metadata["data-cfx-label-dropped"] = result.IsDropped ? "true" : "false";
+                metadata["data-cfx-anchor-x"] = N(label.Request.Anchor.X); metadata["data-cfx-anchor-y"] = N(label.Request.Anchor.Y);
+                if (!result.IsDropped) {
+                    metadata["data-cfx-leader-x"] = N(result.LeaderEnd.X); metadata["data-cfx-leader-y"] = N(result.LeaderEnd.Y);
+                    metadata["data-cfx-label-left"] = N(result.Bounds.Left); metadata["data-cfx-label-top"] = N(result.Bounds.Top);
+                    metadata["data-cfx-label-width"] = N(result.Bounds.Width); metadata["data-cfx-label-height"] = N(result.Bounds.Height);
+                }
+            }
+            using (builder.PushGroup(label.Id + "-source", label.Role + "-source", metadata)) {
                 if (result.IsDropped || result.IsEllipsized || label.Full != result.Text) builder.AddDiagnostic(new VisualDiagnostic("map.label-overflow", "Map text was shortened or omitted; complete text remains in descriptive regions."));
                 if (result.IsDropped) continue;
                 DrawMapLabelLeader(builder, label, result);

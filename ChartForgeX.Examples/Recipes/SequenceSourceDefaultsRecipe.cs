@@ -1,0 +1,8 @@
+/// <summary>Creates native fragment tabs, mirrored participants and canonical lifeline strokes.</summary>
+public static class SequenceSourceDefaultsRecipe {
+    /// <summary>Creates an explicitly tighter compact native view or a wide view of the same source facts.</summary>
+    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+        if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));var compact=variant=="compact";var model=SequenceArtifact.Create("sequence-source-defaults").WithSize(compact?390:1000,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","A","Check").AddMessage("A","B","Save");model.AddBlock(SequenceArtifactBlockKind.Loop,"Review work",0,1);model.AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Complete note");model.Notes[0].StepIndex=1;
+        model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:compact?64:150,participantMinimumHeight:65,participantSpacing:compact?8:50,fragmentMargin:10,fragmentLabelPadding:5,mirrorParticipants:true,messageAlignment:TextAlignment.Center,noteAlignment:TextAlignment.Center,selfMessageRouting:SequenceSelfMessageRouting.Curved,footerBottomMargin:1,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:20);model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=compact?12:16},note:new TextStyleOverride{FontSize=14},fragment:new TextStyleOverride{FontSize=compact?12:16});model.Paint.LifelineStroke=new ChartStrokeStyle(width:.5,dash:Array.Empty<double>());model.ThemeMode=mode;return model;
+    }
+}

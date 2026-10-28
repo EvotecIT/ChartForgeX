@@ -1,4 +1,4 @@
-  // Root owns inert alternates.
+
 
   const adaptiveTemplate = (root, name) => Array.from(root.children)
     .find(node => node instanceof HTMLTemplateElement && node.hasAttribute('data-cfx-adaptive-' + name));
@@ -15,14 +15,15 @@
     if (!Number.isFinite(breakpoint) || breakpoint <= 0 || !['wide', 'narrow'].includes(current)
       || !narrowTemplate || narrowTemplate.content.children.length !== 1
       || wideTemplate && wideTemplate.content.children.length !== 1 || current === 'narrow' && !wideTemplate)
-      throw new TypeError('Adaptive charts require a valid breakpoint and matching native drawings.');
+      throw new TypeError('Adaptive: invalid breakpoint/drawings.');
     const wide = wideTemplate ? adaptiveSectionCopy(readChartSection(wideTemplate.content.firstElementChild, true)) : adaptiveSectionCopy(root);
     const narrow = adaptiveSectionCopy(readChartSection(narrowTemplate.content.firstElementChild, true));
+    window[Symbol.for('ChartForgeX.nativeTextExport')].copyBindings(root, narrow);
     const source = JSON.stringify(JSON.parse(wide.dataset.cfxPreparedChart).series);
     for (const section of [wide, narrow]) if (section.dataset.cfxChartId !== root.dataset.cfxChartId
       || section.dataset.cfxResponsiveLayout !== 'adaptive'
       || JSON.stringify(JSON.parse(section.dataset.cfxPreparedChart).series) !== source)
-      throw new TypeError('Adaptive drawings must retain the same chart and source identities.');
+      throw new TypeError('Adaptive: chart/source mismatch.');
     return { wide, narrow, breakpoint, current };
   };
   const prepareAdaptiveRoot = (root, lifetime) => {

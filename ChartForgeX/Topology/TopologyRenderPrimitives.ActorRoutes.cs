@@ -9,7 +9,7 @@ internal static partial class TopologyRenderPrimitives {
         if (edge.Waypoints.Count > 0 || edge.Routing is not (TopologyEdgeRouting.Straight or TopologyEdgeRouting.Orthogonal)) return points;
         var sourceAuto = edge.SourcePort == TopologyEdgePort.Auto && string.IsNullOrWhiteSpace(edge.SourcePortId);
         var targetAuto = edge.TargetPort == TopologyEdgePort.Auto && string.IsNullOrWhiteSpace(edge.TargetPortId);
-        if ((!sourceAuto || source.Shape != TopologyNodeShape.Actor) && (!targetAuto || target.Shape != TopologyNodeShape.Actor)) return points;
+        if ((!sourceAuto || !TopologyNodeShapeGeometry.IsActor(source)) && (!targetAuto || !TopologyNodeShapeGeometry.IsActor(target))) return points;
         var options = chart.RenderOptions ?? chart.ResolveRenderOptions(null);
         if (edge.Routing == TopologyEdgeRouting.Orthogonal && sourceAuto && targetAuto &&
             (CrossesCaption(source, points[0], points[1]) || CrossesCaption(target, points[points.Count - 1], points[points.Count - 2]))) {
@@ -20,8 +20,10 @@ internal static partial class TopologyRenderPrimitives {
             var start = BoundaryPoint(source, CenterX(target), CenterY(target), port);
             var end = BoundaryPoint(target, CenterX(source), CenterY(source), port);
             var sourceCaption = CaptionBounds(source); var targetCaption = CaptionBounds(target);
-            var corridor = right ? Math.Max(Math.Max(source.X + source.Width, target.X + target.Width), Math.Max(sourceCaption.Right, targetCaption.Right)) + EdgeEndpointGap + 16
-                : Math.Min(Math.Min(source.X, target.X), Math.Min(sourceCaption.Left, targetCaption.Left)) - EdgeEndpointGap - 16;
+            var units = Math.Max(TopologyPreparedNodeBasis.Units(source), TopologyPreparedNodeBasis.Units(target));
+            var gap = EdgeEndpointGap * units; var lead = 16 * units;
+            var corridor = right ? Math.Max(Math.Max(source.X + source.Width, target.X + target.Width), Math.Max(sourceCaption.Right, targetCaption.Right)) + gap + lead
+                : Math.Min(Math.Min(source.X, target.X), Math.Min(sourceCaption.Left, targetCaption.Left)) - gap - lead;
             return new List<ChartPoint> { start, new(corridor, start.Y), new(corridor, end.Y), end };
         }
         var changed = false;
@@ -34,7 +36,7 @@ internal static partial class TopologyRenderPrimitives {
         return points;
 
         ChartRect CaptionBounds(TopologyNode node) {
-            if (node.Shape != TopologyNodeShape.Actor || !options.IncludeNodeLabels) return new ChartRect(node.X, node.Y, node.Width, 0);
+            if (!TopologyNodeShapeGeometry.IsActor(node) || !options.IncludeNodeLabels) return new ChartRect(node.X, node.Y, node.Width, 0);
             var mode = EffectiveNodeDisplayMode(node, options);
             if (mode == TopologyNodeDisplayMode.Icon) {
                 if (!options.IncludeIconLabels) return new ChartRect(node.X, node.Y, node.Width, 0);
@@ -45,8 +47,15 @@ internal static partial class TopologyRenderPrimitives {
             if (mode == TopologyNodeDisplayMode.Tile) {
                 var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
                 var width = Math.Max(node.Width, caption.Width);
-                return new ChartRect(CenterX(node) - width / 2, node.Y + node.Height + 4, width, Math.Max(0, caption.Height - 4));
+                var gap = 4 * TopologyPreparedNodeBasis.Units(node);
+                return new ChartRect(CenterX(node) - width / 2, node.Y + node.Height + gap, width, Math.Max(0, caption.Height - gap));
             }
+            if (node.LabelContent.IsStructured) {
+                var height = Math.Max(1, options.MaxNodeLabelLines)
+                    * TopologyTextLayout.StructuredCaptionRowHeight(node, chart.TextMeasurement) + 1e-8;
+                return new ChartRect(node.X, DiagramNodeLabelCenterY(node) - height / 2, node.Width, height);
+            }
+            if (TopologyActorCaption.Applies(node, options)) return TopologyActorCaption.Prepare(node, options, chart.TextMeasurement).Bounds;
             var lines = DiagramNodeLabelLines(node, options);
             return new ChartRect(node.X, DiagramNodeLabelCenterY(node) - 14, node.Width,
                 Math.Max(0, lines.Count - 1) * 14 + 25);
@@ -65,20 +74,21 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         bool Detour(TopologyNode node, bool fromStart) {
-            if (node.Shape != TopologyNodeShape.Actor || points.Count < 2) return false;
+            if (!TopologyNodeShapeGeometry.IsActor(node) || points.Count < 2) return false;
             var endpointIndex = fromStart ? 0 : points.Count - 1;
             var adjacentIndex = fromStart ? 1 : points.Count - 2;
             var adjacent = points[adjacentIndex];
             var center = TopologyNodeShapeGeometry.RoutingCenter(node);
+            var units = TopologyPreparedNodeBasis.Units(node);
             if (!CrossesCaption(node, points[endpointIndex], adjacent)) {
                 if (edge.Routing != TopologyEdgeRouting.Straight) return false;
                 var direction = TopologyNodeShapeGeometry.AutomaticActorPort(node, adjacent.X, adjacent.Y);
                 var attachment = BoundaryPoint(node, adjacent.X, adjacent.Y, direction);
                 var lead = direction switch {
-                    TopologyEdgePort.Left => new ChartPoint(attachment.X - 14, attachment.Y),
-                    TopologyEdgePort.Right => new ChartPoint(attachment.X + 14, attachment.Y),
-                    TopologyEdgePort.Top => new ChartPoint(attachment.X, attachment.Y - 14),
-                    _ => new ChartPoint(attachment.X, attachment.Y + 14)
+                    TopologyEdgePort.Left => new ChartPoint(attachment.X - 14 * units, attachment.Y),
+                    TopologyEdgePort.Right => new ChartPoint(attachment.X + 14 * units, attachment.Y),
+                    TopologyEdgePort.Top => new ChartPoint(attachment.X, attachment.Y - 14 * units),
+                    _ => new ChartPoint(attachment.X, attachment.Y + 14 * units)
                 };
                 points[endpointIndex] = attachment;
                 points.Insert(fromStart ? 1 : endpointIndex, lead);
@@ -87,8 +97,8 @@ internal static partial class TopologyRenderPrimitives {
             var right = adjacent.X >= center.X;
             var port = right ? TopologyEdgePort.Right : TopologyEdgePort.Left;
             var caption = CaptionBounds(node);
-            var outsideX = right ? Math.Max(node.X + node.Width, caption.Right) + EdgeEndpointGap : Math.Min(node.X, caption.Left) - EdgeEndpointGap;
-            var clearY = caption.Bottom + EdgeEndpointGap;
+            var outsideX = right ? Math.Max(node.X + node.Width, caption.Right) + EdgeEndpointGap * units : Math.Min(node.X, caption.Left) - EdgeEndpointGap * units;
+            var clearY = caption.Bottom + EdgeEndpointGap * units;
             if (edge.Routing == TopologyEdgeRouting.Orthogonal && points.Count >= 4) {
                 // Move both corners of the anonymous crossbar instead of retaining
                 // a return leg through the caption. Caller waypoints are excluded.
@@ -105,8 +115,8 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static IReadOnlyList<string> DiagramNodeLabelLines(TopologyNode node, TopologyRenderOptions options) =>
-        NodeTextLines(node.Label, node.Width * .65, 12, true, options.MaxNodeLabelLines, options, node.MaximumLabelCharacters ?? NodeLabelMaxLength);
+        NodeTextLines(node.Label, node.Width * .65, 12 * TopologyPreparedNodeBasis.Units(node), true, options.MaxNodeLabelLines, options, node.MaximumLabelCharacters ?? NodeLabelMaxLength);
 
-    public static double DiagramNodeLabelCenterY(TopologyNode node) => node.Shape == TopologyNodeShape.Actor ? node.Y + 68 * TopologyNodeShapeGeometry.ActorScale(node) + 16
+    public static double DiagramNodeLabelCenterY(TopologyNode node) => TopologyNodeShapeGeometry.IsActor(node) ? node.Y + 68 * TopologyNodeShapeGeometry.ActorScale(node) + 16 * TopologyPreparedNodeBasis.Units(node)
         : node.Details.Count > 0 || !string.IsNullOrWhiteSpace(node.Subtitle) ? node.Y + 24 : CenterY(node);
 }

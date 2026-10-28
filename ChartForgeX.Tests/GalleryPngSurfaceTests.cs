@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ChartForgeX.Core;
+using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
@@ -20,6 +21,10 @@ public sealed class GalleryPngSurfaceTests {
     [InlineData("grid", 2)]
     [InlineData("block-card", 1)]
     [InlineData("block-card", 2)]
+    [InlineData("block-source-dark", 1)]
+    [InlineData("block-source-dark", 2)]
+    [InlineData("block-contrasting-backdrop", 1)]
+    [InlineData("block-contrasting-backdrop", 2)]
     [InlineData("variable-frame", 1)]
     [InlineData("variable-frame", 2)]
     public void DeclaredSurfacesRemainHealthyAndExtraEdgeMarksRemainObservable(string surface, int scale) {
@@ -27,10 +32,22 @@ public sealed class GalleryPngSurfaceTests {
             .AddBar("Observed", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
         string svg;
         byte[] png;
-        if (surface == "block-card") {
-            var theme = VisualTheme.Graphite();
-            var block = BlockLayoutBlock.Create().WithSize(320, 220).WithTitle("Block card")
-                .WithTheme(theme).AddItem("a", "A");
+        if (surface is "block-card" or "block-source-dark" or "block-contrasting-backdrop") {
+            BlockLayoutBlock block;
+            if (surface == "block-source-dark") {
+                var result = MermaidRenderer.Render("%%{init: {'theme':'dark'}}%%\nblock-beta\ncolumns 1\na[Card]");
+                Assert.False(result.HasErrors);
+                block = Assert.IsType<BlockLayoutBlock>(result.Artifact?.Model).WithSize(320, 220);
+            } else {
+                block = BlockLayoutBlock.Create().WithSize(320, 220).WithTitle("Block card")
+                    .WithTheme(VisualTheme.Graphite()).AddItem("a", "A");
+                if (surface=="block-contrasting-backdrop") block.ConfigureTheme(builder=> {
+                    builder.Light.Background=ChartColor.White;
+                    builder.Light.ElevatedSurface=ChartColor.FromHex("#FFFFDE");
+                    builder.Light.Border=ChartColor.FromHex("#C7C7F1");
+                    builder.CardRadius=3;
+                });
+            }
             block.Options.PngOutputScale = scale;
             svg = block.ToSvg(); png = block.ToPng();
             Assert.Contains("data-cfx-role=\"visual-card\"", svg);
@@ -65,13 +82,14 @@ public sealed class GalleryPngSurfaceTests {
                 var offset = (180 * scale * raster.Width + 160 * scale) * 4;
                 Assert.Equal(new byte[] { 255, 255, 255, 255 }, raster.Pixels.Skip(offset).Take(4));
             }
-            foreach (var name in new[] { "normal", "extra-edge-mark" }) {
+            foreach (var name in new[] { "normal", "extra-edge-mark", "extra-corner-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), svg);
                 var canvas = new RgbaCanvas(raster.Width, raster.Height, 1);
                 canvas.DrawImage(0, 0, raster.Width, raster.Height, raster.Pixels);
                 // Even the exact authored shadow RGB must not excuse an opaque added mark.
                 if (name == "extra-edge-mark") canvas.FillRect(raster.Width / 2, raster.Height - 2 * scale,
                     20 * scale, 2 * scale, surface == "shadow" ? ChartColor.FromRgb(15, 23, 42) : ChartColor.Black);
+                if (name == "extra-corner-mark") canvas.FillRect(0, 0, 2 * scale, 2 * scale, ChartColor.Black);
                 File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(canvas.ToImage()));
             }
             GalleryWriter.Write(output);
@@ -82,6 +100,8 @@ public sealed class GalleryPngSurfaceTests {
             Assert.Equal(0, charts["normal"].GetProperty("edgeInkPixels").GetInt64());
             Assert.True(charts["extra-edge-mark"].GetProperty("edgeInkPixels").GetInt64() > 0);
             Assert.False(charts["extra-edge-mark"].GetProperty("healthy").GetBoolean());
+            Assert.True(charts["extra-corner-mark"].GetProperty("edgeInkPixels").GetInt64() > 0);
+            Assert.False(charts["extra-corner-mark"].GetProperty("healthy").GetBoolean());
         } finally {
             Directory.Delete(output, recursive: true);
         }

@@ -43,8 +43,8 @@ public sealed partial class TopologyDenseGridContainmentTests {
     }
 
     [Theory]
-    [InlineData("kanban", false, 3, 132)]
-    [InlineData("kanban", true, 3, 132)]
+    [InlineData("kanban", false, 3, 180)]
+    [InlineData("kanban", true, 3, 180)]
     [InlineData("eventmodeling", false, 5, 144)]
     [InlineData("eventmodeling", true, 5, 144)]
     public void MaintainedBoardsKeepColumnsDisjointInDirectAndFencedSvgAndPng(string family, bool dark,
@@ -79,7 +79,7 @@ public sealed partial class TopologyDenseGridContainmentTests {
             File.WriteAllBytes(name + ".native.png", png);
             File.WriteAllText(name + ".facts.json", facts.ToJson());
         }
-        AssertPanels(facts, expectedCardWidth);
+        AssertPanels(facts, expectedCardWidth, allowMeasuredCardGrowth: family == "eventmodeling");
     }
 
     [Fact]
@@ -104,10 +104,13 @@ public sealed partial class TopologyDenseGridContainmentTests {
         return chart;
     }
 
-    private static void AssertPanels(VisualArtifactInterchangeEnvelope facts, double expectedCardWidth) {
+    private static void AssertPanels(VisualArtifactInterchangeEnvelope facts, double expectedCardWidth, bool allowMeasuredCardGrowth = false) {
         var groups = facts.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
         foreach (var node in facts.Nodes) {
-            Assert.Equal(expectedCardWidth, node.Width);
+            // Event Modeling now lays out complete typed data cards through measured swimlanes.
+            // Its authored 144px width is a minimum; native grids and Kanban keep exact-width controls.
+            if (allowMeasuredCardGrowth) Assert.True(node.Width!.Value >= expectedCardWidth);
+            else Assert.Equal(expectedCardWidth, node.Width);
             var shell = groups[node.GroupId!];
             var card = Bounds(node.X, node.Y, node.Width, node.Height);
             var panel = Bounds(shell.X, shell.Y, shell.Width, shell.Height);

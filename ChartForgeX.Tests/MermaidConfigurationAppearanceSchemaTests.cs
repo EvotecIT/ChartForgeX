@@ -23,7 +23,11 @@ public sealed class MermaidConfigurationAppearanceSchemaTests {
             var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
             Assert.Equal(theme, result.Document!.Configuration.Theme);
             Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Message.Contains(theme, StringComparison.Ordinal));
-            Assert.Equal(MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n" + body).Artifact!.ToPng(), artifact.ToPng());
+            // Scoped precedence selects the same finite preset as an explicit unscoped name.
+            // The retained warning still covers unsupported complete style/effect fidelity.
+            var named = MermaidRenderer.Render("%%{init: {'theme':'" + theme + "'}}%%\n" + body);
+            Assert.False(named.HasErrors);
+            Assert.Equal(named.Artifact!.ToPng(), artifact.ToPng());
             var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + configuration + body + "\n```");
             Assert.False(fenced.HasErrors);
             Assert.Equal(artifact.ToPng(), Assert.Single(fenced.Artifacts).ToPng());

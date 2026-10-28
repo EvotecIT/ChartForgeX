@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.SvgRaster;
 
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidSequenceParser {
     private static readonly string[] MessageOperators = {
+        "--|\\", "--|/", "--\\\\", "--//", "/|--", "\\|--", "//--", "\\\\--",
+        "-|\\", "-|/", "-\\\\", "-//", "/|-", "\\|-", "//-", "\\\\-",
         "<<-->>", "<<->>", "-->>", "->>", "--)", "-)", "--x", "-x", "-->", "->", "--"
     };
 
@@ -31,7 +34,7 @@ internal static partial class MermaidSequenceParser {
                 if (TryParseTitle(document, trimmed, span, result)) continue;
                 if (TryParseAutonumber(document, trimmed, span, result)) continue;
                 if (TryParseParticipantBox(document, ref participantBox, blockStack, trimmed, span, result)) continue;
-                if (TryParseParticipant(document, participants, trimmed, span)) {
+                if (TryParseParticipant(document, participants, trimmed, span, result)) {
                     if (participantBox != null) {
                         var command = FirstToken(trimmed);
                         var id = ReadIdentifier(trimmed.Substring(command.Length).TrimStart(), out _);
@@ -43,7 +46,8 @@ internal static partial class MermaidSequenceParser {
                 if (TryParseLifetime(document, participants, trimmed, span, result)) continue;
                 if (TryParseActivation(document, participants, trimmed, span)) continue;
                 if (TryParseNote(document, participants, trimmed, span)) continue;
-                if (TryParseLink(document, participants, trimmed, span)) continue;
+                if (TryParseLink(document, participants, trimmed, span, result)) continue;
+                if (TryParseProperties(document, participants, trimmed, span, result)) continue;
                 if (TryParseBlock(document, blockStack, trimmed, span, result)) continue;
                 if (TryParseMessage(document, participants, trimmed, span)) continue;
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Unrecognized sequence diagram statement was not rendered: " + trimmed);
@@ -59,52 +63,25 @@ internal static partial class MermaidSequenceParser {
         ValidateActivations(document, result);
         ValidateAutonumber(document, result);
         ValidateParticipantBoxes(document, result);
+        DiagnoseCaptions(document, result);
+        if (!result.HasErrors) MermaidSequenceParticipantData.Project(document, (_, _, _) => { }, (_, _) => { }, materialize: false);
     }
 
     private static bool TryParseAutonumber(MermaidSequenceDocument document, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!StartsCommand(text, "autonumber")) return false;
         var tail = text.Length == "autonumber".Length ? string.Empty : text.Substring("autonumber".Length).Trim();
-        var tokens = SplitWhitespace(tail);
+        var disabled = tail.Equals("off", StringComparison.OrdinalIgnoreCase);
+        var tokens = disabled ? new List<string>() : SplitWhitespace(tail);
         if (tokens.Count > 2 || tokens.Count > 0 && !decimal.TryParse(tokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out _)
             || tokens.Count > 1 && !decimal.TryParse(tokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out _)) {
-            Invalid(result, span, "Sequence autonumber accepts at most a finite decimal start and increment.");
+            Invalid(result, span, "Sequence autonumber accepts 'off' or at most a finite decimal start and increment.");
             return true;
         }
-        document.Autonumber = new MermaidSequenceAutonumber(span) {
+        document.AutonumberStatements.Add(new MermaidSequenceAutonumber(span) {
+            Enabled = !disabled,
             Start = tokens.Count > 0 ? tokens[0] : null,
             Increment = tokens.Count > 1 ? tokens[1] : null
-        };
-        return true;
-    }
-
-    private static bool TryParseParticipant(MermaidSequenceDocument document, Dictionary<string, MermaidSequenceParticipant> participants, string text, MermaidSourceSpan span) {
-        var command = FirstToken(text);
-        var kind = ParseParticipantKind(command);
-        if (!kind.HasValue) return false;
-
-        var body = text.Substring(command.Length).Trim();
-        if (body.Length == 0) return false;
-
-        var id = ReadIdentifier(body, out var consumed);
-        if (id.Length == 0) return false;
-
-        var rest = body.Substring(consumed).Trim();
-        var participant = GetOrAddParticipant(document, participants, id, span);
-        participant.Kind = kind.Value;
-        participant.IsImplicit = false;
-
-        if (rest.StartsWith("{", StringComparison.Ordinal)) {
-            var config = ReadJsonLike(rest, out var configLength);
-            participant.Configuration = config;
-            var inlineAlias = ReadJsonStringValue(config, "alias");
-            if (!string.IsNullOrWhiteSpace(inlineAlias)) participant.Alias = inlineAlias;
-            var type = ReadJsonStringValue(config, "type");
-            if (type != null && !string.IsNullOrWhiteSpace(type)) participant.Kind = ParseParticipantKind(type) ?? participant.Kind;
-            rest = rest.Substring(configLength).Trim();
-        }
-
-        var alias = ReadExternalAlias(rest);
-        if (!string.IsNullOrWhiteSpace(alias)) participant.Alias = alias;
+        });
         return true;
     }
 
@@ -154,38 +131,6 @@ internal static partial class MermaidSequenceParser {
         return true;
     }
 
-    private static bool TryParseLink(MermaidSequenceDocument document, Dictionary<string, MermaidSequenceParticipant> participants, string text, MermaidSourceSpan span) {
-        var advanced = StartsCommand(text, "links");
-        var simple = StartsCommand(text, "link");
-        if (!advanced && !simple) return false;
-
-        var command = advanced ? "links" : "link";
-        var body = text.Substring(command.Length).Trim();
-        var colon = body.IndexOf(':');
-        if (colon <= 0) return false;
-
-        var participantId = body.Substring(0, colon).Trim();
-        var value = body.Substring(colon + 1).Trim();
-        if (participantId.Length == 0 || value.Length == 0) return false;
-
-        GetOrAddParticipant(document, participants, participantId, span);
-        var link = new MermaidSequenceLink(participantId, span);
-        if (advanced) {
-            link.RawJson = value;
-        } else {
-            var at = value.IndexOf('@');
-            if (at >= 0) {
-                link.Label = value.Substring(0, at).Trim();
-                link.Url = value.Substring(at + 1).Trim();
-            } else {
-                link.Label = value;
-            }
-        }
-
-        document.Links.Add(link);
-        return true;
-    }
-
     private static bool TryParseBlock(MermaidSequenceDocument document, Stack<MermaidSequenceBlock> blockStack, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (string.Equals(text, "end", StringComparison.OrdinalIgnoreCase)) {
             if (blockStack.Count == 0) {
@@ -203,11 +148,14 @@ internal static partial class MermaidSequenceParser {
         if (!kind.HasValue) return false;
 
         var body = text.Length == command.Length ? string.Empty : text.Substring(command.Length).Trim();
+        if (kind == MermaidSequenceBlockKind.Rect && body.Length > 0 && !SvgRasterColor.TryParse(body, out _))
+            Invalid(result, span, "Sequence rect background must be a supported native color.");
         var branch = kind == MermaidSequenceBlockKind.Else || kind == MermaidSequenceBlockKind.And || kind == MermaidSequenceBlockKind.Option;
         if (branch) {
             var owner = kind == MermaidSequenceBlockKind.Else ? MermaidSequenceBlockKind.Alt
                 : kind == MermaidSequenceBlockKind.And ? MermaidSequenceBlockKind.Par : MermaidSequenceBlockKind.Critical;
-            if (blockStack.Count == 0 || blockStack.Peek().Kind != owner) {
+            if (blockStack.Count == 0 || blockStack.Peek().Kind != owner
+                && !(kind == MermaidSequenceBlockKind.And && blockStack.Peek().Kind == MermaidSequenceBlockKind.ParOver)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
                     "Sequence '" + command + "' branch requires an open " + owner.ToString().ToLowerInvariant() + " block.", MermaidDiagnosticCodes.InvalidStatement);
                 return true;
@@ -301,6 +249,7 @@ internal static partial class MermaidSequenceParser {
             Tuple.Create("else", MermaidSequenceBlockKind.Else),
             Tuple.Create("opt", MermaidSequenceBlockKind.Opt),
             Tuple.Create("par", MermaidSequenceBlockKind.Par),
+            Tuple.Create("par_over", MermaidSequenceBlockKind.ParOver),
             Tuple.Create("and", MermaidSequenceBlockKind.And),
             Tuple.Create("rect", MermaidSequenceBlockKind.Rect)
         }) {
@@ -342,7 +291,11 @@ internal static partial class MermaidSequenceParser {
         for (var index = 0; index < line.Length; index++) {
             var value = line[index];
             if (quote != '\0') {
-                if (value == quote) quote = '\0';
+                if (value == '\\' && quote == '"') { index++; continue; }
+                if (value == quote) {
+                    if (quote == '\'' && index + 1 < line.Length && line[index + 1] == '\'') { index++; continue; }
+                    quote = '\0';
+                }
                 continue;
             }
 
@@ -351,7 +304,7 @@ internal static partial class MermaidSequenceParser {
                 continue;
             }
 
-            if (value != ';') continue;
+            if (value != ';' || IsEntityTerminator(line, index)) continue;
             fragments.Add(new StatementFragment(line.Substring(start, index - start), start + 1));
             start = index + 1;
         }
@@ -362,62 +315,26 @@ internal static partial class MermaidSequenceParser {
 
     private static string ReadIdentifier(string text, out int consumed) {
         consumed = 0;
-        while (consumed < text.Length && !char.IsWhiteSpace(text[consumed]) && text[consumed] != '{') consumed++;
+        while (consumed < text.Length && !char.IsWhiteSpace(text[consumed]) && text[consumed] != '{' && !(text[consumed] == '@' && consumed + 1 < text.Length && text[consumed + 1] == '{')) consumed++;
         return text.Substring(0, consumed);
     }
 
     private static string ReadJsonLike(string text, out int length) {
-        var depth = 0;
-        var quote = '\0';
+        var depth = 0; var quote = '\0';
         for (var index = 0; index < text.Length; index++) {
             var value = text[index];
             if (quote != '\0') {
-                if (value == quote) quote = '\0';
-                continue;
-            }
-
-            if (value == '"' || value == '\'') {
-                quote = value;
-                continue;
-            }
-
-            if (value == '{') depth++;
-            else if (value == '}') {
-                depth--;
-                if (depth == 0) {
-                    length = index + 1;
-                    return text.Substring(0, length);
+                if (value == '\\' && quote == '"') { index++; continue; }
+                if (value == quote) {
+                    if (quote == '\'' && index + 1 < text.Length && text[index + 1] == '\'') { index++; continue; }
+                    quote = '\0';
                 }
-            }
+            } else if (value == '"' || value == '\'') quote = value;
+            else if (value == '{') depth++;
+            else if (value == '}' && --depth == 0) { length = index + 1; return text.Substring(0, length); }
         }
-
         length = text.Length;
         return text;
-    }
-
-    private static string? ReadJsonStringValue(string text, string key) {
-        foreach (var quote in new[] { '"', '\'' }) {
-            var needle = quote + key + quote;
-            var index = text.IndexOf(needle, StringComparison.OrdinalIgnoreCase);
-            if (index < 0) continue;
-            var colon = text.IndexOf(':', index + needle.Length);
-            if (colon < 0) continue;
-            var valueStart = colon + 1;
-            while (valueStart < text.Length && char.IsWhiteSpace(text[valueStart])) valueStart++;
-            if (valueStart >= text.Length || text[valueStart] != quote) continue;
-            var valueEnd = text.IndexOf(quote, valueStart + 1);
-            if (valueEnd > valueStart) return text.Substring(valueStart + 1, valueEnd - valueStart - 1);
-        }
-
-        return null;
-    }
-
-    private static string? ReadExternalAlias(string text) {
-        if (text.Length == 0) return null;
-        if (text.StartsWith("as ", StringComparison.OrdinalIgnoreCase)) return Unquote(text.Substring(3).Trim());
-        var index = text.IndexOf(" as ", StringComparison.OrdinalIgnoreCase);
-        if (index < 0) return null;
-        return Unquote(text.Substring(index + 4).Trim());
     }
 
     private static List<string> SplitWhitespace(string text) {

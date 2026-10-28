@@ -29,10 +29,11 @@ internal static partial class TopologyRenderPrimitives {
     public static double EdgeStrokeWidth(TopologyEdge edge, bool selected, TopologyRenderOptions options) {
         if (edge.StrokeWidth.HasValue) return selected ? edge.StrokeWidth.Value * 1.25 : edge.StrokeWidth.Value;
         if (options.UseForceGraphPresentation) return selected ? 2.1 : edge.Emphasis == TopologyEdgeEmphasis.Strong ? 1.25 : edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle ? MinimumReadableFineStrokeWidth : ForceGraphNormalEdgeStrokeWidth;
-        if (!IsMonitoringDashboardStyle(options)) return selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2;
-        if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !selected) return 1.05;
-        if (edge.Emphasis == TopologyEdgeEmphasis.Strong && !selected) return 2.15;
-        return selected ? 2.35 : edge.IsMuted ? 1.05 : 1.65;
+        var units = TopologyPreparedEdgePlan.Units(edge);
+        if (!IsMonitoringDashboardStyle(options)) return (selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2) * units;
+        if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !selected) return 1.05 * units;
+        if (edge.Emphasis == TopologyEdgeEmphasis.Strong && !selected) return 2.15 * units;
+        return (selected ? 2.35 : edge.IsMuted ? 1.05 : 1.65) * units;
     }
 
     public static double EdgeOpacity(TopologyEdge edge, TopologyRenderOptions options) {
@@ -172,15 +173,16 @@ internal static partial class TopologyRenderPrimitives {
     public static int NodeTitleMaxLength(TopologyNode node, TopologyNodeDisplayMode displayMode) =>
         node.MaximumLabelCharacters is > 0 ? node.MaximumLabelCharacters.Value : NodeTitleMaxLength(displayMode);
 
-    public static double EstimateTextWidth(string value, double fontSize, bool bold, TextMeasurementContext? measurement = null) {
-        return (measurement ?? new TextMeasurementContext(TopologyPaint.Default.FontFamily)).Measure(value, fontSize, bold);
+    public static double EstimateTextWidth(string value, double fontSize, bool bold, TextMeasurementContext? measurement = null, int? fontWeight = null) {
+        var context = measurement ?? new TextMeasurementContext(TopologyPaint.Default.FontFamily);
+        return fontWeight.HasValue ? context.MeasureMetrics(value, fontSize, fontWeight.Value).Width : context.Measure(value, fontSize, bold);
     }
 
-    public static string TrimToEstimatedWidth(string value, double maxWidth, double fontSize, bool bold, TextMeasurementContext? measurement = null) {
+    public static string TrimToEstimatedWidth(string value, double maxWidth, double fontSize, bool bold, TextMeasurementContext? measurement = null, int? fontWeight = null) {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
         maxWidth = Math.Max(0, maxWidth);
-        if (EstimateTextWidth(value, fontSize, bold, measurement) <= maxWidth) return value;
-        if (maxWidth < EstimateTextWidth("...", fontSize, bold, measurement)) return string.Empty;
+        if (EstimateTextWidth(value, fontSize, bold, measurement, fontWeight) <= maxWidth) return value;
+        if (maxWidth < EstimateTextWidth("...", fontSize, bold, measurement, fontWeight)) return string.Empty;
 
         var boundaries = StringInfo.ParseCombiningCharacters(value);
         var low = 0;
@@ -188,7 +190,7 @@ internal static partial class TopologyRenderPrimitives {
         while (low < high) {
             var mid = (low + high + 1) / 2;
             var candidate = value.Substring(0, mid == boundaries.Length ? value.Length : boundaries[mid]) + "...";
-            if (EstimateTextWidth(candidate, fontSize, bold, measurement) <= maxWidth) low = mid;
+            if (EstimateTextWidth(candidate, fontSize, bold, measurement, fontWeight) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 
@@ -250,19 +252,20 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     /// <summary>Keeps distinct ordinary automatic attachments without changing the default corridor's escape axis.</summary>
-    internal static List<ChartPoint> ObstacleOrthogonalDefaultPoints(TopologyNode source, TopologyNode target, TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double routeLane) {
+    internal static List<ChartPoint> ObstacleOrthogonalDefaultPoints(TopologyNode source, TopologyNode target, TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double routeLane, double routingUnits = 1) {
         var horizontal = OrthogonalRouteIsHorizontal(source, target, sourcePort, targetPort);
-        var sourcePoint = ObstacleDefaultEndpoint(source, target, sourcePort, horizontal);
-        var targetPoint = ObstacleDefaultEndpoint(target, source, targetPort, horizontal);
+        var sourcePoint = ObstacleDefaultEndpoint(source, target, sourcePort, horizontal, routingUnits);
+        var targetPoint = ObstacleDefaultEndpoint(target, source, targetPort, horizontal, routingUnits);
         return OrthogonalRoutePoints(sourcePoint, targetPoint, horizontal, routeLane);
     }
 
-    private static ChartPoint ObstacleDefaultEndpoint(TopologyNode node, TopologyNode other, TopologyEdgePort port, bool horizontal) {
+    private static ChartPoint ObstacleDefaultEndpoint(TopologyNode node, TopologyNode other, TopologyEdgePort port, bool horizontal, double routingUnits = 1) {
         var toward = TopologyNodeShapeGeometry.RoutingCenter(other);
         var axisPort = OrthogonalEndpointPort(node, port, horizontal, toward);
-        var axisPoint = BoundaryPoint(node, toward.X, toward.Y, axisPort);
+        var gap = RoutingContourGap(node, routingUnits);
+        var axisPoint = BoundaryPoint(node, toward.X, toward.Y, axisPort, gap);
         if (port != TopologyEdgePort.Auto || node.Shape.HasValue) return axisPoint;
-        var ray = BoundaryPoint(node, toward.X, toward.Y, TopologyEdgePort.Auto);
+        var ray = BoundaryPoint(node, toward.X, toward.Y, TopologyEdgePort.Auto, gap);
         // A wide or tall card's centre ray can hit another side, or pass its corner.
         // Retain its useful cross-axis position only when the first leg still leaves
         // through the chosen physical side with its normal pointing out of the card.

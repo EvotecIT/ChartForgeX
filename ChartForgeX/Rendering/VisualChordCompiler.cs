@@ -32,13 +32,17 @@ internal static partial class VisualChordCompiler {
         if (captionNodes.Length > 0) model = ChartChordLayout.Compute(series, options, circle);
         if (model.WeightReference == 0) builder.AddDiagnostic(new VisualDiagnostic("chord.no-positive-flow", "The chord chart has no positive flows; zero-valued source facts retain their identities without filled arcs or ribbons."));
         if (model.OuterRadius <= 0) builder.AddDiagnostic(new VisualDiagnostic("chord.insufficient-space", "No positive chord radius remains inside the common viewport."));
-        using (builder.PushGroup("series-0", "chord-series", new Dictionary<string, string> {
+        var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name,
             ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-coordinate-system"] = "polar",
             ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-weight-reference"] = N(model.WeightReference), ["data-cfx-normalized-angular-scale"] = N(model.NormalizedAngularScale),
-            ["data-cfx-node-order"] = "source", ["data-cfx-center-x"] = N(model.CenterX), ["data-cfx-center-y"] = N(model.CenterY)
-        })) {
+            ["data-cfx-node-order"] = options.Ordering?.NodeIds == null ? "source" : "explicit", ["data-cfx-center-x"] = N(model.CenterX), ["data-cfx-center-y"] = N(model.CenterY)
+        };
+        if (options.Ordering?.OutgoingFlowIds != null) metadata["data-cfx-outgoing-flow-order"] = "explicit";
+        if (options.Ordering?.IncomingFlowIds != null) metadata["data-cfx-incoming-flow-order"] = "explicit";
+        if (options.RibbonTension != .8) metadata["data-cfx-ribbon-tension"] = N(options.RibbonTension);
+        using (builder.PushGroup("series-0", "chord-series", metadata)) {
             foreach (var link in model.Links) Link(chart, builder, model, link, colors, colorSurface);
             foreach (var node in model.Nodes) Node(chart, builder, model, node, colors);
             if (showLabels && model.WeightReference > 0 && model.OuterRadius > 0) Labels(chart, context, builder, plot, model, styles, labels, colors);
@@ -46,7 +50,7 @@ internal static partial class VisualChordCompiler {
     }
 
     private static void Link(Chart chart, VisualSceneBuilder builder, ChartChordModel model, ChartChordLink link,
-        VisualThemeColors colors, ChartChordColorSurface colorSurface) {
+        VisualThemeColors colors, ChartFlowColorSurface colorSurface) {
         var series = chart.Series[0]; var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target];
         var flow = ChartRelationshipPaint.Flow(series, link.Fact.Id, source.Index, colors, chart.Options.Chord.RibbonOpacity,
             colorBlend: colorSurface.Blend(link.Index, colors));
@@ -67,7 +71,8 @@ internal static partial class VisualChordCompiler {
             if (visible) {
                 var path = ChartChordLayout.Ribbon(model, link);
                 bounds = ChartChordLayout.Bounds(path.Flatten(1));
-                builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "chord-ribbon", close: true, paint: flow.Binding);
+                builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "chord-ribbon", close: true,
+                    dash: flow.Dash, paint: flow.Binding, dashOffset: flow.DashOffset);
                 if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "chord-ribbon-pattern", paint: flow.PatternPaint);
                 if (chart.Options.Chord.DirectionCue == ChartChordDirectionCue.TargetChevron)
                     builder.Path(ChartChordLayout.DirectionCue(model, link), flow.Color, role: "chord-target-cue", close: true,

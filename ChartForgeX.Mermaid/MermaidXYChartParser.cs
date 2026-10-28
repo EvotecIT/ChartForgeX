@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidXYChartParser {
+internal static partial class MermaidXYChartParser {
     public static void ParseStatements(MermaidXYChartDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var barCount = 0;
         var lineCount = 0;
@@ -103,7 +103,9 @@ internal static class MermaidXYChartParser {
             return;
         }
 
-        var values = ParseNumberList(text.Substring(listStart + 1, listEnd - listStart - 1), span, result);
+        var listSpan = new MermaidSourceSpan(span.Line, span.Column + span.Length - text.Length + listStart + 1, listEnd - listStart - 1);
+        var labels = new List<MermaidXYChartPointLabel>();
+        var values = ParseDatumList(text.Substring(listStart + 1, listEnd - listStart - 1), listSpan, labels, result);
         if (values.Count == 0) {
             Add(result, span.Line, span.Column + listStart, listEnd - listStart + 1, MermaidDiagnosticSeverity.Error, "XY chart series require at least one numeric value.");
             return;
@@ -114,21 +116,9 @@ internal static class MermaidXYChartParser {
             Add(result, span.Line, span.Column + listEnd + 1, text.Length - listEnd - 1, MermaidDiagnosticSeverity.Error, "XY chart series contain unsupported trailing syntax.");
             return;
         }
-        document.Series.Add(new MermaidXYChartSeries(kind, name.Length == 0 ? defaultName : name, values, span));
-    }
-
-    private static List<double> ParseNumberList(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
-        var values = new List<double>();
-        foreach (var item in SplitCommaList(text)) {
-            if (!TryParseNumber(item, out var value)) {
-                Add(result, span.Line, span.Column, item.Length, MermaidDiagnosticSeverity.Error, "XY chart series values must be finite numbers.");
-                continue;
-            }
-
-            values.Add(value);
-        }
-
-        return values;
+        var series = new MermaidXYChartSeries(kind, name.Length == 0 ? defaultName : name, values, span);
+        series.PointLabels.AddRange(labels);
+        document.Series.Add(series);
     }
 
     private static List<string> ParseTextList(string text) {

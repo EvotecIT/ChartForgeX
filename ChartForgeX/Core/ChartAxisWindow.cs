@@ -3,8 +3,8 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
 
-/// <summary>An immutable, increasing source-coordinate window for any physical Cartesian axis.</summary>
-/// <remarks>Time coordinates use OLE Automation date units. The containing viewport selects the physical axis and value-axis slot.</remarks>
+/// <summary>An immutable, increasing source-coordinate window for a source axis.</summary>
+/// <remarks>Time coordinates use OLE Automation date units. The containing Cartesian or polar viewport selects the coordinate axis and value-axis slot.</remarks>
 public sealed class ChartAxisWindow {
     /// <summary>Creates a finite, nonempty source window.</summary>
     /// <param name="minimum">The inclusive lower source-coordinate bound.</param>

@@ -6,7 +6,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>
 /// Describes a parsed Mermaid C4 diagram.
 /// </summary>
-public sealed class MermaidC4Document : MermaidDocument {
+public sealed partial class MermaidC4Document : MermaidDocument {
     /// <summary>Gets or sets the concrete C4 header token such as <c>C4Context</c>.</summary>
     public string DiagramType { get; set; } = string.Empty;
 
@@ -68,6 +68,13 @@ public sealed class MermaidC4Boundary : MermaidAstNode {
     /// <summary>Gets or sets an optional deployment-node description.</summary>
     public string? Description { get; set; }
 
+    /// <summary>Gets or sets a source shape keyword; boundary shape paint remains an explicit approximation.</summary>
+    public string? Shape { get; set; }
+    /// <summary>Gets or sets an explicit native legend projection label.</summary>
+    public string? LegendText { get; set; }
+    /// <summary>Gets or sets the source legend sprite token; only existing native shape keywords are painted.</summary>
+    public string? LegendSprite { get; set; }
+
     /// <summary>Gets or sets retained sprite metadata.</summary>
     public string? Sprite { get; set; }
 
@@ -110,6 +117,13 @@ public sealed class MermaidC4Element : MermaidAstNode {
 
     /// <summary>Gets or sets the optional technology token for containers and components.</summary>
     public string? Technology { get; set; }
+
+    /// <summary>Gets or sets a supported source shape override, independently of the element kind.</summary>
+    public string? Shape { get; set; }
+    /// <summary>Gets or sets an explicit label for this element's native legend projection.</summary>
+    public string? LegendText { get; set; }
+    /// <summary>Gets or sets an explicit source legend sprite; external sprite loading is not performed.</summary>
+    public string? LegendSprite { get; set; }
 
     /// <summary>Gets or sets optional Mermaid sprite metadata.</summary>
     public string? Sprite { get; set; }

@@ -24,9 +24,9 @@ public sealed class ChartHistogramBin {
     public double Center => Layout.GetCenter(Index);
     /// <summary>Gets the number of assigned source observations.</summary>
     public int Count => SourceIndices.Count;
-    /// <summary>Gets the raw aggregate, or null for the mean of an empty bin.</summary>
+    /// <summary>Gets the raw aggregate, or null for an empty mean or a weighted mean with no positive weight.</summary>
     public double? Value { get; }
-    /// <summary>Gets the encoded height in value or density units; an undefined aggregate remains at the baseline.</summary>
+    /// <summary>Gets the encoded value, density, probability or probability-density height; an undefined aggregate remains at the baseline.</summary>
     public double RenderedValue { get; }
     /// <summary>Gets the original source indices in source order.</summary>
     public IReadOnlyList<int> SourceIndices { get; }

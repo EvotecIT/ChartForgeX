@@ -1,0 +1,50 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = DonutSliceRadiusRecipe.Create("compact-variable-radius", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Service shares with authored radii").WithSubtitle("Values determine angles; explicit fractions determine band thickness").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 480)), theme, mode,
+    new VisualFrame("Service shares with authored radii", "Values determine angles; explicit fractions determine band thickness", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Authored Donut radii remain independent of each value's angular share.</summary>
+public static class DonutSliceRadiusRecipe {
+    /// <summary>Creates service shares with explicit source identities and normalized band-relative radii.</summary>
+    public static Chart Create(string variant = "variable-radius", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("variable-radius" or "compact-variable-radius")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var services = new ChartSeries(new ChartSeriesId("services"), "Services", ChartSeriesKind.Donut,
+            new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 20) })
+            .WithObservationIds(new[] { new ChartObservationId("subscriptions"), new ChartObservationId("consulting"), new ChartObservationId("support") })
+            .WithPointSliceRadiusRatio(0, .35).WithPointSliceRadiusRatio(1, .7).WithPointSliceRadiusRatio(2, 1);
+        services.DataLabelPlacement = ChartDataLabelPlacement.Outside;
+        return Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support").WithDataLabels()
+            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithDonutCenterLabel(false)
+            .AddSeries(services).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

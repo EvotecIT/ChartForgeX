@@ -7,6 +7,9 @@ namespace ChartForgeX.Mermaid;
 /// Describes a parsed Mermaid Event Modeling diagram.
 /// </summary>
 public sealed class MermaidEventModelingDocument : MermaidDocument {
+    /// <summary>Gets or sets the authored diagram title.</summary>
+    public string? Title { get; set; }
+
     /// <summary>Gets retained non-empty Event Modeling statements.</summary>
     public List<MermaidRawStatement> Statements { get; } = new();
 
@@ -99,6 +102,8 @@ public sealed class MermaidEventModelingDataBlock : MermaidAstNode {
         DataType = dataType;
         Content = content ?? string.Empty;
     }
+
+    internal MermaidResourceLimits? CapturedResourceLimits { get; set; }
 
     /// <summary>Gets the Mermaid data block id.</summary>
     public string Id => _id;

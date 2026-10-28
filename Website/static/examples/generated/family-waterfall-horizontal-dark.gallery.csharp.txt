@@ -18,6 +18,13 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = WaterfallRecipe.Create("horizontal", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Changes in available capacity").WithSubtitle("Horizontal changes and checkpoints share a cumulative value axis").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
     new VisualFrame("Changes in available capacity", "Horizontal changes and checkpoints share a cumulative value axis", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
@@ -30,8 +37,18 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 public static class WaterfallRecipe {
     /// <summary>Creates the selected waterfall example and its orientation.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"))
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal" or "portable" or "compact-portable" or "portable-horizontal" or "compact-portable-horizontal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "portable" or "compact-portable" or "portable-horizontal" or "compact-portable-horizontal") {
+            var horizontalPortable = variant.EndsWith("horizontal", StringComparison.Ordinal);
+            var authored = Create(horizontalPortable ? "horizontal" : "options", mode)
+                .WithTitle("Editable imported waterfall").WithTheme(VisualTheme.Graphite(), mode);
+            var bytes = authored.ToVisualArtifact("portable-movement").ToInterchangeUtf8Json();
+            var imported = VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart();
+            // An imported delta remains authored; totals and checkpoint contributors are recalculated by the native owner.
+            imported.Series[0].UpdateWaterfallItem(3, ChartWaterfallItem.Delta(4, -125));
+            return imported;
+        }
         var chart = Chart.Create();
         if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal") {
             var horizontal = variant is "horizontal" or "compact-horizontal";

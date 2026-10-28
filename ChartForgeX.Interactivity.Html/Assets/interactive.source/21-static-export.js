@@ -1,4 +1,4 @@
-  // Export committed state only.
+
 
   const withPersistentExportPaint = (root, svg, read) => {
     const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
@@ -22,31 +22,16 @@
       }
     }
   };
-  const exportPaintProperties = ['color', 'display', 'visibility', 'opacity', 'fill', 'fill-opacity', 'fill-rule',
-    'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap',
-    'stroke-linejoin', 'stroke-miterlimit', 'paint-order', 'vector-effect', 'clip-path', 'clip-rule', 'filter',
-    'marker-start', 'marker-mid', 'marker-end', 'stop-color', 'stop-opacity', 'flood-color', 'flood-opacity',
-    'font-family', 'font-size', 'font-weight', 'font-style', 'font-stretch', 'font-variant', 'letter-spacing',
-    'word-spacing', 'text-anchor', 'dominant-baseline', 'text-decoration-line', 'text-decoration-color',
-    'text-decoration-style', 'text-decoration-thickness'];
-  const serializeSvg = (root) => {
+  const serializeSvg = (root, png = false) => {
     settleChartUpdateMotion(root);
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg) return null;
     return withPersistentExportPaint(root, svg, () => {
-      const copy = svg.cloneNode(true), sources = [svg, ...svg.querySelectorAll('*')], copies = [copy, ...copy.querySelectorAll('*')];
-      const ids = new Set(Array.from(svg.querySelectorAll('[id]'), node => node.id));
-      sources.forEach((source, index) => {
-        const target = copies[index], style = getComputedStyle(source);
-        for (const property of exportPaintProperties) {
-          // Localize computed SVG URLs.
-          const value = style.getPropertyValue(property).replace(/url\(["']?[^)"']*#([^)"']+)["']?\)/g,
-            (match, id) => ids.has(id) ? 'url(#' + id + ')' : match);
-          if (value) target.style.setProperty(property, value);
-        }
+      const copy = svg.cloneNode(true);
+      window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, copy, png);
+      for (const target of [copy, ...copy.querySelectorAll('*')])
         for (const attribute of ['tabindex', 'data-cfx-keyboard-component', 'data-cfx-trail-index', 'data-cfx-highlight-state'])
           target.removeAttribute(attribute);
-      });
       copy.style.removeProperty('transform'); copy.style.removeProperty('transition');
       copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-annotation-editor]').forEach(node => node.remove());
       return { svg: copy, data: new XMLSerializer().serializeToString(copy) };
@@ -78,14 +63,13 @@
   };
   const exportPng = (root) => {
     if (!hasFeature(root, 'Export')) return;
-    const serialized = serializeSvg(root);
+    const serialized = serializeSvg(root, true);
     if (!serialized) return;
-    const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
-    const sourceUrl = URL.createObjectURL(source);
+    const sourceUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(serialized.data);
     const image = new Image();
     let canceled = false;
     const release = ownChartWork(root, () => {
-      canceled = true; image.onload = null; image.onerror = null; image.src = ''; URL.revokeObjectURL(sourceUrl);
+      canceled = true; image.onload = null; image.onerror = null; image.src = '';
     });
     image.onload = () => {
       if (canceled) return;

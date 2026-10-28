@@ -40,17 +40,54 @@ internal sealed class ChartCategoryGroupPlan {
             throw new NotSupportedException("Grouped labels belong to the physical Cartesian category axis, not a value axis.");
         if (physical.Scale != ChartScaleKind.Linear)
             throw new NotSupportedException("Grouped categories require a linear category axis.");
+        return Create(physical, labels, chart.Series.SelectMany(ChartCartesianOrientation.Categories), horizontal, slotsOnly: false);
+    }
+
+    /// <summary>Validates each supported family's existing axis binding before any scene is prepared.</summary>
+    internal static void ValidateChart(Chart chart) {
+        if (chart.Series.Count == 0) return;
+        if (!chart.Series.All(series => series.Kind == ChartSeriesKind.Heatmap)) { _ = TryCreate(chart); return; }
+        if (HasGroups(chart.Options.SecondaryYAxis))
+            throw new NotSupportedException("Rectangular heatmap categories use the primary X and Y axes.");
+        if (chart.Options.IsSparkline && (HasGroups(chart.Options.XAxis) || HasGroups(chart.Options.YAxis)))
+            throw new NotSupportedException("Grouped heatmap categories require an ordinary rectangular matrix, not a sparkline.");
+        if (HasGroups(chart.Options.YAxis) && chart.Series.Any(series => series.LaneGroup != null))
+            throw new NotSupportedException("Grouped heatmap Y categories cannot also use LaneGroup row headers. Choose one row grouping presentation.");
+        var columns = chart.Series.SelectMany(row => row.RenderPoints.Select(point => point.X)
+            .Concat(Enumerable.Range(1, row.HeatmapColumnCount ?? 0).Select(index => (double)index)));
+        _ = TryCreateMatrix(chart.Options.XAxis, columns, horizontal: false);
+        _ = TryCreateMatrix(chart.Options.YAxis, Enumerable.Range(1, chart.Series.Count).Select(index => (double)index), horizontal: true);
+    }
+
+    /// <summary>Captures rectangular matrix slots through the same immutable paths and contiguous-run owner.</summary>
+    internal static ChartCategoryGroupPlan? TryCreateMatrix(ChartAxis axis, IEnumerable<double> coordinates, bool horizontal) {
+        if (!HasGroups(axis)) return null;
+        if (axis.Scale != ChartScaleKind.Linear)
+            throw new NotSupportedException("Grouped heatmap categories require a linear category axis.");
+        return Create(axis, axis.Labels, coordinates, horizontal, slotsOnly: true);
+    }
+
+    private static ChartCategoryGroupPlan Create(ChartAxis axis, IReadOnlyList<ChartAxisLabel> labels,
+        IEnumerable<double> coordinates, bool horizontal, bool slotsOnly) {
         var catalog = CaptureCatalog(labels);
-        var observed = chart.Series.SelectMany(ChartCartesianOrientation.Categories).Distinct().OrderBy(value => value).ToArray();
+        var observed = coordinates.Distinct().OrderBy(value => value).ToArray();
         var bindings = new ChartAxisLabel[observed.Length];
         for (var index = 0; index < observed.Length; index++) {
+            ChartGuards.Finite(observed[index], nameof(coordinates));
             var mapping = ChartAxisValueFormatter.FindExplicitMapping(catalog, observed[index], rejectAmbiguous: true)
                 ?? throw new InvalidOperationException("Every observed grouped category coordinate requires an explicit leaf label.");
             bindings[index] = mapping.Groups.Count == 0 ? new ChartAxisLabel(observed[index], mapping.Text)
                 : new ChartAxisLabel(observed[index], mapping.Text, mapping.Groups.ToArray());
         }
-        return new ChartCategoryGroupPlan(physical, horizontal, catalog, bindings, CaptureRuns(catalog));
+        // A matrix has equal-width source slots, including explicitly reserved missing columns.
+        // Unobserved label-catalog entries must not manufacture cells or alter contiguous slot membership.
+        if (slotsOnly) catalog = bindings;
+        return new ChartCategoryGroupPlan(axis, horizontal, catalog, bindings, CaptureRuns(catalog));
     }
+
+    /// <summary>Uses zero-based slot boundaries while each run retains its actual source coordinates.</summary>
+    internal IReadOnlyList<ChartCategoryGroupSpan> CreateSlotSpans() => Array.AsReadOnly(Runs.Select(run =>
+        new ChartCategoryGroupSpan(run, run.FirstLeafIndex, run.LastLeafIndex + 1)).ToArray());
 
     /// <summary>Builds full-domain source cells; clipping, reversal and pixel placement remain with the layout consumer.</summary>
     internal IReadOnlyList<ChartCategoryGroupSpan> CreateSpans(double fullMinimum, double fullMaximum) {
@@ -85,7 +122,7 @@ internal sealed class ChartCategoryGroupPlan {
 
     private static ChartCategoryGroupRun[] CaptureRuns(IReadOnlyList<ChartAxisLabel> catalog) {
         var runs = new List<ChartCategoryGroupRun>();
-        var depth = catalog.Max(label => label.Groups.Count);
+        var depth = catalog.Select(label => label.Groups.Count).DefaultIfEmpty(0).Max();
         for (var level = 0; level < depth; level++) {
             var first = -1;
             for (var index = 0; index <= catalog.Count; index++) {

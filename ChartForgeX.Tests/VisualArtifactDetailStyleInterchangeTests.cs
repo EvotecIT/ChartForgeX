@@ -19,7 +19,8 @@ public sealed class VisualArtifactDetailStyleInterchangeTests {
         var captured = Assert.Single(Assert.Single(envelope.Nodes).Details).TextStyle!;
         Assert.NotSame(style, captured);
         string json = envelope.ToJson();
-        Assert.Equal(reset, json.Contains("\"italic\":false", StringComparison.Ordinal));
+        // Captured font requests also carry italic=false; observe the authored detail role itself.
+        Assert.Equal<bool?>(reset ? false : null, captured.ItalicOverride);
         var restored = VisualArtifactInterchangeEnvelope.FromJson(json);
         Assert.Equal(json, restored.ToJson());
         var fallback = new TextStyle(); fallback.Font.Italic = true; fallback.Underline = true; fallback.Strikethrough = true;
@@ -65,7 +66,7 @@ public sealed class VisualArtifactDetailStyleInterchangeTests {
     }
 
     private static TopologyChart Diagram(TextStyleOverride style) {
-        var chart = TopologyChart.Create().WithViewport(500, 260).WithLegend(null).AddNode("item", "Contract", 40, 60, width: 240, height: 130);
+        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(500, 260).WithLegend(null).AddNode("item", "Contract", 40, 60, width: 240, height: 130);
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "Native text", TextStyle = style });
         return chart;
     }

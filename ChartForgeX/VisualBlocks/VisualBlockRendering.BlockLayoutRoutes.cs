@@ -36,12 +36,12 @@ internal static partial class VisualBlockRendering {
         return new BlockLayoutEdgeRoute(start.X, start.Y, end.X, end.Y);
     }
 
-    private static ChartPoint CircleBoundary(double cx, double cy, double towardX, double towardY, ChartRect bounds) {
+    internal static ChartPoint CircleBoundary(double cx, double cy, double towardX, double towardY, ChartRect bounds, bool minimumRadius = true) {
         var dx = towardX - cx;
         var dy = towardY - cy;
         var length = Math.Sqrt(dx * dx + dy * dy);
         if (length == 0) return new ChartPoint(cx, cy);
-        var scale = BlockLayoutCircleRadius(bounds.Width, bounds.Height) / length;
+        var scale = (minimumRadius ? BlockLayoutCircleRadius(bounds.Width, bounds.Height) : Math.Min(bounds.Width, bounds.Height) / 2) / length;
         return new ChartPoint(cx + dx * scale, cy + dy * scale);
     }
 

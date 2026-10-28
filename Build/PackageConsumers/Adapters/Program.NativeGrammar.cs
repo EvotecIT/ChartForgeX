@@ -27,7 +27,7 @@ internal static partial class Program {
                 "Packed Railroad flattened references or repetition into label-only output for " + item.Item1);
         }
         var limits = new MermaidResourceLimits { MaximumOutputBytes = 100, MaximumRasterPixels = 100 };
-        var bounded = MermaidRenderer.Render(sources[0].Item2, new MermaidRenderOptions {
+        var bounded = RenderFixture(sources[0].Item2, new MermaidRenderOptions {
             ParseOptions = new MermaidParseOptions { ResourceLimits = limits }
         });
         PackageAssertions.Require(!bounded.HasErrors && bounded.Artifact != null, "Packed Railroad bounds rejected valid source before its captured export policy.");
@@ -37,7 +37,7 @@ internal static partial class Program {
         try { bounded.Artifact!.ToPng(); } catch (MermaidResourceLimitException error) { pngRejected = error.LimitName == nameof(MermaidResourceLimits.MaximumRasterPixels); }
         PackageAssertions.Require(svgRejected && pngRejected, "Packed Railroad bypassed captured output or pre-allocation pixel limits.");
         using var cancellation = new CancellationTokenSource();
-        var deferred = MermaidRenderer.Render(sources[0].Item2, null, cancellation.Token); cancellation.Cancel();
+        var deferred = RenderFixture(sources[0].Item2, null, cancellation.Token); cancellation.Cancel();
         var cancelled = false;
         try { deferred.Artifact!.ToPng(); } catch (OperationCanceledException) { cancelled = true; }
         PackageAssertions.Require(cancelled, "Packed lazy Railroad export lost cooperative cancellation.");

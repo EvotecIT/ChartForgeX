@@ -50,13 +50,13 @@ public static partial class TopologyReportHtmlExtensions {
         var linksByPage = report.CrossPageLinks.SelectMany(link => new[] { (Page: link.SourcePage, Link: link), (Page: link.TargetPage, Link: link) }).ToLookup(item => item.Page, item => item.Link);
         WritePage(html, report, 0, report.Overview, labels, linksByPage[0], text, uiLanguage);
         for (int i = 0; i < report.Pages.Count; i++) WritePage(html, report, i + 1, report.Pages[i], labels, linksByPage[i + 1], text, uiLanguage);
-        return html.Append("</main><script>").Append(HtmlInteractiveAssets.LocalizationScript).Append(ReportScript).Append("</script></body></html>").ToString();
+        return html.Append("</main><script>").Append(HtmlInteractiveAssets.LocalizationScript).Append(HtmlInteractiveAssets.AdapterLifetimeScript).Append(HtmlInteractiveAssets.NativeTextScript).Append(ReportScript).Append("</script></body></html>").ToString();
     }
 
     private static void WritePage(StringBuilder html, TopologyReport report, int number, PreparedTopology page,
         System.Collections.Generic.IReadOnlyDictionary<string, string> labels, System.Collections.Generic.IEnumerable<TopologyReportLink> links,
         HtmlChartLocalization text, string uiLanguage) {
-        string body = "<section aria-label=\"" + Text(text[HtmlChartText.ReportDiagram]) + "\" class=\"diagram\" tabindex=\"0\">" + page.ToSvg() + "</section>"
+        string body = "<section aria-label=\"" + Text(text[HtmlChartText.ReportDiagram]) + "\" class=\"diagram\" tabindex=\"0\">" + HtmlInteractiveTopologyRenderer.AutomaticText(page) + "</section>"
             + "<section class=\"connections\"><h2>" + Text(text[number == 0 ? HtmlChartText.ReportDetailPages : HtmlChartText.ReportOtherRelationships])
             + "</h2><div class=\"links\"></div><div class=\"relationship-pages\"></div></section>";
         html.Append("<script type=\"application/json\" id=\"page-").Append(number).Append("\">").Append(HtmlJsonString.Encode(body)).Append("</script>");

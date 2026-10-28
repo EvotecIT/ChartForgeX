@@ -33,7 +33,14 @@ internal static class TopologyGroupHeader {
     public static ChartRect ReservedBounds(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
         if (group.Presentation == TopologyGroupPresentation.Compartment) return new ChartRect(group.X, group.Y, 0, 0);
         var painted = Bounds(group, LayoutParts(chart, group, options));
+        if (!group.ShowLabel) {
+            var bottomWithoutCaptions = painted.Height > 0 ? painted.Bottom + 12 : group.Y;
+            return new ChartRect(painted.Left, painted.Top, painted.Width, Math.Max(0, bottomWithoutCaptions - painted.Top));
+        }
         var bottom = group.Y + (string.IsNullOrWhiteSpace(group.Subtitle) ? 54 : 74);
+        // Only authored multiline captions expand the incumbent one-line reservation.
+        if (group.TextStyle?.HasOverrides == true || group.LabelContent.IsStructured || CaptionRows(group.Label, options) > 1 || CaptionRows(group.Subtitle, options) > 1)
+            bottom = Math.Max(bottom, painted.Bottom + 12);
         return new ChartRect(painted.Left, painted.Top, painted.Width, Math.Max(0, Math.Max(painted.Bottom, bottom) - painted.Top));
     }
 
@@ -56,10 +63,22 @@ internal static class TopologyGroupHeader {
     internal static double SymbolReserve(TopologyGroup group, TopologyRenderOptions options) =>
         string.IsNullOrWhiteSpace(group.Symbol ?? ResolveGroupIcon(group, options)?.Symbol) && string.IsNullOrWhiteSpace(group.IconId) ? 0 : 28;
 
-    internal static ChartRect TitleBounds(TopologyGroup group, TopologyRenderOptions options) => TextBounds(group, options, 9, TitleHeight);
+    internal static ChartRect TitleBounds(TopologyGroup group, TopologyRenderOptions options, double lineHeight = TitleHeight) =>
+        TextBounds(group, options, 9, CaptionHeight(group.Label, options, group.TextStyle?.HasOverrides == true || group.LabelContent.IsStructured ? Math.Max(TitleHeight, lineHeight) : TitleHeight, lineHeight));
 
-    internal static ChartRect SubtitleBounds(TopologyGroup group, TopologyRenderOptions options, bool fitted) =>
-        TextBounds(group, options, fitted ? 33 : 31, SubtitleHeight);
+    internal static ChartRect SubtitleBounds(TopologyGroup group, TopologyRenderOptions options, bool fitted,
+        double titleLineHeight = TitleHeight, double subtitleLineHeight = SubtitleHeight) =>
+        TextBounds(group, options, (fitted ? 33 : 31) + CaptionHeight(group.Label, options, group.TextStyle?.HasOverrides == true || group.LabelContent.IsStructured ? Math.Max(TitleHeight, titleLineHeight) : TitleHeight, titleLineHeight) - TitleHeight,
+            CaptionHeight(group.Subtitle, options, group.TextStyle?.HasOverrides == true ? Math.Max(SubtitleHeight, subtitleLineHeight) : SubtitleHeight, subtitleLineHeight));
+
+    /// <summary>Counts explicit authored rows; wrapping never invents an unbounded header height.</summary>
+    internal static int CaptionRows(string? value, TopologyRenderOptions options) =>
+        TopologyTextLayout.AuthoredRowCount(value, options.AllowMultilineNodeLabels);
+
+    private static double CaptionHeight(string? value, TopologyRenderOptions options, double ordinary, double measured) {
+        var rows = CaptionRows(value, options);
+        return rows == 1 ? ordinary : rows * Math.Max(ordinary, measured);
+    }
 
     internal static ChartPoint SymbolCenter(TopologyGroup group) => new(group.X + 22, group.Y + 21);
     internal static ChartPoint StatusCenter(TopologyGroup group) => new(group.X + group.Width - 12, group.Y + 16);

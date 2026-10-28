@@ -1,0 +1,49 @@
+using System.Text.Json;
+using ChartForgeX.Mermaid;
+using ChartForgeX.VisualArtifacts;
+using Microsoft.Playwright;
+using Xunit;
+
+namespace ChartForgeX.Tests;
+
+public sealed partial class MermaidNotationReferenceRenderingTests {
+    [MermaidReferenceTheory]
+    [Trait("Category", "MermaidReference")]
+    [InlineData(false, 390)]
+    [InlineData(true, 1100)]
+    public async Task CurrentPinnedSequenceDepthAndHalfArrowsPreserveObservedNotation(bool dark, int width) {
+        var corpus = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance");
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(corpus, "compatibility.json")));
+        var reference = manifest.RootElement.GetProperty("references").GetProperty("12");
+        var bundle = Path.Combine(corpus, "node_modules", reference.GetProperty("package").GetString()!);
+        using var installed = JsonDocument.Parse(File.ReadAllText(Path.Combine(bundle, "package.json")));
+        Assert.Equal(reference.GetProperty("version").GetString(), installed.RootElement.GetProperty("version").GetString());
+        foreach (var fixture in new[] { "sequence-native-depth", "sequence-half-arrows" }) {
+            var source = MermaidSequenceDepthTests.PresentationSource(fixture, dark);
+            var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions {
+                Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family },
+                Sequence = new MermaidSequenceRenderOptions { Width = width - 32, Height = 620 }
+            });
+            Assert.Empty(rendered.Diagnostics);
+            var artifact = rendered.Artifact!; var svg = artifact.ToSvg(); var png = artifact.ToPng();
+            var html = "<style>body{margin:0;padding:16px;box-sizing:border-box;background:" + (dark ? "#171b23;color:#edf2f7" : "#fff;color:#182235")
+                + ";font-family:'" + BrowserProofFonts.Family + "'}h2{font-size:18px}section{max-width:100%;overflow:auto;margin-bottom:24px}svg,img{display:block;max-width:none}</style>"
+                + "<h2>Pinned Mermaid " + reference.GetProperty("version").GetString() + " / " + fixture + "</h2><section id='reference'></section>"
+                + "<h2>Native SVG</h2><section id='native'>" + svg + "</section><h2>Native PNG</h2><section><img id='png' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></section>";
+            await using var session = await BrowserProofFonts.OpenAsync(html, width, 1000);
+            await session.Page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = Path.Combine(bundle, "dist", "mermaid.min.js") });
+            var regions = new Dictionary<string, int> { ["sequence-message"] = fixture == "sequence-half-arrows" ? 16 : 4 };
+            var observed = await ObserveAsync(session.Page, source, "", dark, regions);
+            await CaptureAsync(session.Page, "sequence-depth-reference12-" + fixture + "-" + width + (dark ? "-dark" : "-light"), svg, png, artifact.ToInterchangeJson(), observed);
+            Assert.True(observed.GetProperty("referencePaintElements").GetInt32() > 0);
+            Assert.Empty(observed.GetProperty("clip").EnumerateArray());
+            Assert.False(observed.GetProperty("horizontalOverflow").GetBoolean());
+            Assert.Equal(0, observed.GetProperty("nativeScripts").GetInt32());
+            var labels = fixture == "sequence-half-arrows" ? new[] { "Variant 1", "Variant 16" }
+                : new[] { "Delivery path", "Read policy", "Cache fallback", "Receipt path", "cached", "policy", "Stored", "record" };
+            foreach (var label in labels) foreach (var surface in new[] { "referenceText", "nativeText" })
+                Assert.Contains(label, observed.GetProperty(surface).GetString());
+            InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        }
+    }
+}

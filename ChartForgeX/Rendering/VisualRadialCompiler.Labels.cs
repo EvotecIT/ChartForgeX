@@ -11,27 +11,29 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualRadialCompiler {
     private static void AddLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         List<RadialLabel> labels, RadialSlice slice, string text, double percent, double angle, double sx, double sy,
-        double cx, double cy, double radius, double inner, ChartDataLabelPlacement placement) {
+        double cx, double cy, double radius, double inner, double envelopeRadius, ChartDataLabelPlacement placement) {
         var outside = placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
         var colors = context.Theme.Resolve(context.ThemeMode);
         var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
-        var composed = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(slice.Color.R, slice.Color.G, slice.Color.B), slice.Color.A / 255d);
+        var paintedColor = SlicePaintColor(chart, slice.Color);
+        var composed = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(paintedColor.R, paintedColor.G, paintedColor.B), paintedColor.A / 255d);
         var color = outside || vertical ? colors.Foreground : ChartColorMath.AccessibleTextOnBackground(composed);
         var style = Style(chart, context, slice.SeriesIndex, slice.PointIndex, color, context.Theme.Typography.DataLabelSize);
         if (outside) {
             var left = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(angle) < 0);
-            var labelX = cx + (left ? -1 : 1) * radius * chart.Options.PieOutsideLabelDistanceRatio;
-            labels.Add(new RadialLabel(slice, text, angle, labelX, sy + Math.Sin(angle) * radius * 1.1, sx, sy, left, style));
+            var labelX = cx + (left ? -1 : 1) * envelopeRadius * chart.Options.PieOutsideLabelDistanceRatio;
+            labels.Add(new RadialLabel(slice, text, angle, labelX, sy + Math.Sin(angle) * envelopeRadius * 1.1, sx, sy, left, style, radius, placement));
             return;
         }
-        var labelRadius = inner > 0 ? (inner + radius) / 2 : radius * 0.66;
+        var labelRadius = chart.Options.PieInsideLabelRadiusRatio.HasValue ? radius * chart.Options.PieInsideLabelRadiusRatio.Value
+            : inner > 0 ? (inner + radius) / 2 : radius * 0.66;
         var x = sx + Math.Cos(angle) * labelRadius;
         var y = sy + Math.Sin(angle) * labelRadius;
         if (vertical) {
-            x = cx + Math.Cos(angle) * radius;
-            y = cy + (placement == ChartDataLabelPlacement.Above ? -1 : 1) * radius * 1.12;
-            labels.Add(new RadialLabel(slice, text, angle, x, y, sx, sy, false, style));
+            x = cx + Math.Cos(angle) * envelopeRadius;
+            y = cy + (placement == ChartDataLabelPlacement.Above ? -1 : 1) * envelopeRadius * 1.12;
+            labels.Add(new RadialLabel(slice, text, angle, x, y, sx, sy, false, style, radius, placement));
             return;
         }
         var maxWidth = Math.Min(radius * 0.9, Math.Max(0, Math.Min(x - plot.Left, plot.Right - x) * 2));
@@ -54,9 +56,13 @@ internal static partial class VisualRadialCompiler {
         style = FitLabelStyle(builder, text, style, Math.Min(maxWidth, angularWidth),
             Math.Min(radius * .5, Math.Max(0, Math.Min(y - plot.Top, plot.Bottom - y) * 2)), FitsSlice);
         var fitted = Fit(text, style, maxWidth, builder);
-        if ((oversized || chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null) && !FitsSlice(builder.MeasureText(fitted, style))) {
-            if (chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null)
-                builder.AddDiagnostic(new VisualDiagnostic("radial.band-label-omitted", "A radial label cannot fit completely within its explicit band; its full text remains in semantic metadata."));
+        var reducedRadius = slice.RadiusRatio.GetValueOrDefault(1) < 1;
+        var boundedBand = chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null || chart.Options.RadialBandAllocation != null || chart.Options.PieInsideLabelRadiusRatio.HasValue || reducedRadius;
+        if ((oversized || boundedBand) && !FitsSlice(builder.MeasureText(fitted, style))) {
+            if (boundedBand)
+                builder.AddDiagnostic(new VisualDiagnostic("radial.band-label-omitted", chart.Options.RadialBandAllocation != null || reducedRadius
+                    ? "A radial label cannot fit completely within its resolved slice; its full text remains in semantic metadata."
+                    : "A radial label cannot fit completely within its explicit band; its full text remains in semantic metadata."));
             return;
         }
         if (builder.MeasureText(fitted, style).Width > angularWidth) return;
@@ -65,7 +71,7 @@ internal static partial class VisualRadialCompiler {
         using (builder.PushGroup(SliceId(slice) + "-label-source", "radial-data-label-source", VisualMarkLabel.Metadata(text, SliceId(slice))))
             builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label",
                 paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex, seriesIndex: slice.SeriesIndex) ? VisualChartPaint.Text(style)
-                    : slice.Color.A == 255 ? SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[slice.SeriesIndex], slice.PointIndex)) : SvgPaint.Literal(style.Color));
+                    : paintedColor.A == 255 ? SvgPaint.Contrast(paintedColor, VisualChartPaint.SeriesRole(chart.Series[slice.SeriesIndex], slice.PointIndex)) : SvgPaint.Literal(style.Color));
     }
 
     private static void DrawVerticalLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -137,7 +143,7 @@ internal static partial class VisualRadialCompiler {
         var endX = bounds.Left + bounds.Width / 2;
         var endY = above ? bounds.Bottom : bounds.Top;
         var points = new[] {
-            new ChartPoint(label.SliceX + cos * radius, label.SliceY + sin * radius),
+            new ChartPoint(label.SliceX + cos * label.Radius, label.SliceY + sin * label.Radius),
             new ChartPoint(cx + cos * (extent + clearance), cy + sin * (extent + clearance)),
             new ChartPoint(sideX, cy + sin * (extent + clearance)),
             new ChartPoint(sideX, railY), new ChartPoint(endX, railY), new ChartPoint(endX, endY)
@@ -199,7 +205,7 @@ internal static partial class VisualRadialCompiler {
                 var width = left ? label.X - plot.Left - 4 : plot.Right - label.X - 4;
                 var text = Fit(label.Text, label.Style, width, builder);
                 if (text.Length == 0) continue;
-                Connector(chart, builder, label.Slice, label.Angle, label.SliceX, label.SliceY, radius, label.X, label.Y, true);
+                Connector(chart, builder, label.Slice, label.Angle, label.SliceX, label.SliceY, label.Radius, label.X, label.Y, true);
                 label.Style.Alignment = left ? TextAlignment.Right : TextAlignment.Left;
                 using (builder.PushGroup(SliceId(label.Slice) + "-label-source", "radial-data-label-source", VisualMarkLabel.Metadata(label.Text, SliceId(label.Slice))))
                     builder.Text(text, label.X, label.Y - builder.MeasureText(text, label.Style).Height / 2 + builder.TextAscent(label.Style),
@@ -210,6 +216,14 @@ internal static partial class VisualRadialCompiler {
 
     private static void Connector(Chart chart, VisualSceneBuilder builder, RadialSlice slice, double angle,
         double sx, double sy, double radius, double x, double y, bool sideLane) {
+        var path = ConnectorPath(chart, angle, sx, sy, radius, x, y, sideLane);
+        var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? slice.Color, chart.Options.DataLabelConnectorOpacity);
+        builder.Path(path, stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth, role: "data-label-connector", id: slice.RadiusRatio.HasValue ? SliceId(slice) + "-connector" : null, paint: ConnectorPaint(chart, slice, color));
+    }
+
+    private static ChartPath ConnectorPath(Chart chart, double angle, double sx, double sy, double radius,
+        double x, double y, bool sideLane, bool vertical = false) {
+        if (vertical) { (sx, sy) = (sy, sx); (x, y) = (y, x); angle = Math.PI / 2 - angle; }
         var startX = sx + Math.Cos(angle) * radius;
         var startY = sy + Math.Sin(angle) * radius;
         var side = x < sx ? -1 : 1;
@@ -223,8 +237,8 @@ internal static partial class VisualRadialCompiler {
             commands.Add(ChartPathCommand.LineTo(endX - side * 8, y));
             commands.Add(ChartPathCommand.LineTo(endX, y));
         } else commands.Add(ChartPathCommand.LineTo(endX, y));
-        var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? slice.Color, chart.Options.DataLabelConnectorOpacity);
-        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth, role: "data-label-connector", paint: ConnectorPaint(chart, slice, color));
+        var path = new ChartPath(commands);
+        return vertical ? path.Transpose() : path;
     }
 
     private static VisualScenePaintBinding ConnectorPaint(Chart chart, RadialSlice slice, ChartColor actual) {
@@ -237,7 +251,7 @@ internal static partial class VisualRadialCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var value = chart.Options.DonutCenterValue ?? (total.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.Value) : OverflowValueText);
         var overflowCaption = chart.Options.DonutCenterValue == null && !total.HasValue;
-        var displayValue = overflowCaption ? "> 1.79E308" : value;
+        var displayValue = overflowCaption ? FormatOverflowCenter(false) : value;
         var label = chart.Options.DonutCenterLabel ?? chart.Series[seriesIndex].Name;
         // These describe the hole's content, rather than claiming exact hit boxes for fitted text.
         var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
@@ -255,7 +269,7 @@ internal static partial class VisualRadialCompiler {
                     valueStyle.FontSize = size;
                     return builder.MeasureText(displayValue, valueStyle).Width <= width;
                 });
-            if (builder.MeasureText(displayValue, valueStyle).Width > width) displayValue = ">1E308";
+            if (builder.MeasureText(displayValue, valueStyle).Width > width) displayValue = FormatOverflowCenter(true);
             if (builder.MeasureText(displayValue, valueStyle).Width > width) {
                 displayValue = string.Empty;
                 builder.AddDiagnostic(new VisualDiagnostic("radial.center-omitted", "The overflowing total's lower bound cannot fit legibly in the donut hole; its complete value remains in semantic metadata."));
@@ -288,10 +302,12 @@ internal static partial class VisualRadialCompiler {
         });
 
     private sealed class RadialLabel {
-        internal RadialLabel(RadialSlice slice, string text, double angle, double x, double y, double sx, double sy, bool left, TextStyle style) {
-            Slice = slice; Text = text; Angle = angle; X = x; Y = y; SliceX = sx; SliceY = sy; Left = left; Style = style;
+        internal RadialLabel(RadialSlice slice, string text, double angle, double x, double y, double sx, double sy, bool left, TextStyle style, double radius, ChartDataLabelPlacement placement = ChartDataLabelPlacement.Outside) {
+            Placement = placement; Slice = slice; Text = text; Angle = angle; X = x; Y = y; SliceX = sx; SliceY = sy; Left = left; Style = style; Radius = radius;
         }
+        internal ChartDataLabelPlacement Placement { get; }
         internal RadialSlice Slice { get; }
+        internal double Radius { get; }
         internal string Text { get; }
         internal double Angle { get; }
         internal double X { get; }

@@ -43,6 +43,9 @@ public sealed class TopologyHierarchyItem {
     /// <summary>Gets or sets an optional icon id from a topology icon catalog.</summary>
     public string? IconId { get; set; }
 
+    /// <summary>Gets or sets node artwork, including an embedded portrait. The generated node captures this media configuration.</summary>
+    public TopologyIconArtwork? Artwork { get; set; }
+
     /// <summary>Gets or sets an optional group id.</summary>
     public string? GroupId { get; set; }
 
@@ -158,6 +161,9 @@ public sealed class TopologyTeamMember {
     /// <summary>Gets or sets an optional icon id from a topology icon catalog.</summary>
     public string? IconId { get; set; }
 
+    /// <summary>Gets or sets this member's node artwork, including an embedded portrait captured by AddTeam.</summary>
+    public TopologyIconArtwork? Artwork { get; set; }
+
     /// <summary>Gets or sets the layout policy applied to this member and its descendant subtree. Null inherits the manager policy.</summary>
     public TopologyHierarchyLayoutPolicy? LayoutPolicy { get; set; }
 
@@ -236,6 +242,7 @@ public static class TopologyHierarchyExtensions {
             chart.AddAutoNode(item.Id, item.Label, item.Kind, item.Status, item.GroupId, item.Subtitle, width: item.Width ?? options.NodeWidth, height: item.Height ?? options.NodeHeight, symbol: item.Symbol, color: item.Color, iconId: item.IconId);
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.BackgroundColor = item.BackgroundColor;
+            node.Artwork = item.Artwork?.Clone();
             if (options.NodeDisplayMode.HasValue) node.DisplayMode = options.NodeDisplayMode.Value;
             foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
             node.Metadata["layer"] = levels[item.Id].ToString(CultureInfo.InvariantCulture);
@@ -268,7 +275,7 @@ public static class TopologyHierarchyExtensions {
         if (options.IncludeTeamNode) hierarchy.Add(new TopologyHierarchyItem(rootId, teamLabel) { Level = 0, Kind = options.TeamNodeKind, IconId = options.TeamIconId, Status = TopologyHealthStatus.Healthy, Symbol = "TM" });
         foreach (var member in members) {
             var parent = string.IsNullOrWhiteSpace(member.ParentId) && options.IncludeTeamNode ? rootId : member.ParentId;
-            var item = new TopologyHierarchyItem(member.Id, member.Name, parent) { Level = member.Level, Kind = TopologyNodeKind.Person, Status = member.Status, Subtitle = member.Role, IconId = member.IconId ?? options.MemberIconId, Symbol = "U", Width = 164, Height = 64, LayoutPolicy = member.LayoutPolicy };
+            var item = new TopologyHierarchyItem(member.Id, member.Name, parent) { Level = member.Level, Kind = TopologyNodeKind.Person, Status = member.Status, Subtitle = member.Role, IconId = member.IconId ?? options.MemberIconId, Symbol = "U", Width = 164, Height = 64, LayoutPolicy = member.LayoutPolicy, Artwork = member.Artwork?.Clone() };
             foreach (var pair in member.Metadata) item.Metadata[pair.Key] = pair.Value;
             hierarchy.Add(item);
         }

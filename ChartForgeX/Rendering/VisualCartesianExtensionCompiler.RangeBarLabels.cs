@@ -35,11 +35,11 @@ internal static partial class VisualCartesianCompiler {
 
     private static void AddRangeBarEndpointLabels(Chart chart, VisualRenderContext context, ChartSeries series,
         int index, int item, ChartRect body, double category, double start, double end, bool horizontal, bool customCaptions,
-        ResolvedPointLabel observation, string? startText, string? endText, List<LabelPlacementRequest> labels) {
-        Add(startText, start, start <= end, "start");
-        Add(endText, end, end < start, "end");
+        ResolvedPointLabel observation, string? startText, string? endText, ChartRangeBarOptions options, List<LabelPlacementRequest> labels) {
+        Add(startText, start, start <= end, "start", options.StartLabel);
+        Add(endText, end, end < start, "end", options.EndLabel);
 
-        void Add(string? text, double endpoint, bool leading, string suffix) {
+        void Add(string? text, double endpoint, bool leading, string suffix, ChartValueLabelOptions component) {
             if (text == null) return;
             // Each caption owns its half of the interval for Inside/Center and physical side placements.
             // Both still reference the complete observation, whose actual paint remains one shared obstacle.
@@ -50,7 +50,7 @@ internal static partial class VisualCartesianCompiler {
             var label = new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, observation.Style.TextCase, CultureInfo.InvariantCulture), observation.Style,
                 fallback: customCaptions ? LabelFallbackRule.EllipsisThenDrop : LabelFallbackRule.Drop);
             AddLabel(chart, context, series, index, item, anchor, half, label, labels,
-                barDirection: direction, horizontal: horizontal, labelId: PointId(index, item) + "-" + suffix);
+                barDirection: direction, horizontal: horizontal, labelId: PointId(index, item) + "-" + suffix, valueLabel: component);
         }
     }
 }

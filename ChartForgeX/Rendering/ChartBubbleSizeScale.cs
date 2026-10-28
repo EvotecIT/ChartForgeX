@@ -44,10 +44,10 @@ internal sealed class ChartBubbleSizeScale : IChartMarkerSizeScale {
         return new ChartBubbleSizeScale(options.MinimumValue ?? minimum, options.MaximumValue ?? maximum, chart, hasValues);
     }
 
-    internal double Radius(double size, ChartRect plot, ChartMarkerShape shape = ChartMarkerShape.Circle) {
+    internal double Radius(double size, ChartRect plot, ChartMarkerOptions? markers = null) {
         var maximumRadius = MaximumRadius(plot);
         var ratio = ChartMarkerSizeMapping.Ratio(size, _minimumValue, _maximumValue, _reversed, .5);
-        return ChartMarkerSizeMapping.BubbleRadius(ratio, _minimumRadius, maximumRadius, _minimumValue == _maximumValue, _encoding, shape);
+        return ChartMarkerSizeMapping.BubbleRadius(ratio, _minimumRadius, maximumRadius, _minimumValue == _maximumValue, _encoding, markers?.Shape ?? ChartMarkerShape.Circle, markers?.CustomPath);
     }
 
     double IChartMarkerSizeScale.MinimumValue => MinimumValue;

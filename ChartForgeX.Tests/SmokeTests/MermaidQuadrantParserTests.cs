@@ -44,7 +44,7 @@ Campaign B: [0.7, 0.8]";
         var chart = document.ToChart(new MermaidQuadrantRenderOptions { Id = "reach-engagement" });
         Assert(chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Scatter, "Mermaid quadrant conversion should produce a ChartForgeX scatter chart.");
         Assert(chart.Title == "Reach and Engagement", "Mermaid quadrant conversion should use Mermaid titles by default.");
-        Assert(chart.XAxisTitle.Contains("Low Reach", StringComparison.Ordinal), "Mermaid quadrant conversion should map x-axis labels.");
+        Assert(chart.Options.XAxis.Labels.Contains(new ChartAxisLabel(.25, "Low Reach")) && chart.Options.XAxis.Labels.Contains(new ChartAxisLabel(.75, "High Reach")), "Mermaid quadrant conversion should locate independent x-axis endpoint captions.");
 
         var artifact = document.ToVisualArtifact(new MermaidQuadrantRenderOptions { Id = "reach-engagement" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid quadrant visual artifact should report Mermaid artifact kind.");

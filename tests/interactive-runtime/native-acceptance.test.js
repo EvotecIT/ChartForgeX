@@ -5,12 +5,10 @@ const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('../mermaid-conformance/node_modules/jsdom');
 
-// Exercise public controllers, the complete source runtime and real template/DOM replacement.
+// Exercise public controllers and real template/DOM replacement through the shipped asset.
 // Only the native host's generated section and JSDOM's missing SVG measurement are boundaries.
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const runtime = fs.readFileSync(path.join(assets, 'adapter-localization.js'), 'utf8') + '\n'
-  + fs.readdirSync(path.join(assets, 'interactive.source')).filter(name => name.endsWith('.js')).sort()
-    .map(name => fs.readFileSync(path.join(assets, 'interactive.source', name), 'utf8')).join('\n');
+const runtime = ['adapter-native-text-export.js', 'interactive.js'].map(name => fs.readFileSync(path.join(assets, name), 'utf8')).join('\n');
 const point = (x, y) => ({ x, y });
 const note = (label = 'Note') => ({ kind: 'Note', start: point(4, 40), label, yAxis: 'Primary' });
 const axis = (maximum = 10) => ({ minimum: 0, maximum, fullMinimum: 0, fullMaximum: maximum,
@@ -88,6 +86,48 @@ function fixture({ managed = true, adaptiveScene = false, hierarchy = false, ref
   return { dom, window, root, controller, editor, pending, changes, errors, commits, model, make, flush, resolve, accept,
     close() { controller.dispose(); dom.window.close(); } };
 }
+
+test('the shipped runtime preserves public controller keys and native diagnostics', () => {
+  const f = fixture();
+  try {
+    const keys = ['root', 'sceneRevision', 'select', 'clearSelection', 'clearBrush', 'getSelection',
+      'resolveTargets', 'highlight', 'clearHighlight', 'unpinTooltip', 'update', 'presentInitial', 'connectNative',
+      'connectAnnotations', 'applyAnnotationChange', 'editAnnotations', 'connectXViewport',
+      'connectViewport', 'connectPolarViewport', 'getPolarViewport', 'setPolarViewport',
+      'setProgressValue', 'getHierarchyView', 'setHierarchyView', 'getViewport', 'setViewport',
+      'getYWindow', 'setYWindow', 'getXWindow', 'setXWindow', 'resize', 'dispose'];
+    assert.deepEqual(Object.keys(f.controller).sort(), keys.sort());
+    assert.equal(Object.isFrozen(f.controller), true);
+    const revision = f.controller.sceneRevision;
+    assert.throws(() => f.controller.connectNative(1, { basis: 'invalid' }), /Native callback: function\|null required\./);
+    assert.throws(() => f.controller.connectNative(() => {}, { basis: '' }), /Native basis: nonempty string\./);
+    assert.equal(f.controller.sceneRevision, revision, 'invalid connections must not install a scene');
+  } finally { f.close(); }
+});
+test('native invisible source facts and their descendants never become public interaction targets', () => {
+  const dom = new JSDOM('<!doctype html><body></body>', { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://example.test/' });
+  const { window } = dom;
+  window.SVGElement.prototype.getBBox = () => ({ x: 40, y: 40, width: 20, height: 20 });
+  const root = section(window, {});
+  root.dataset.cfxInteractionFeatures = 'Selection,KeyboardNavigation,Tooltips';
+  const svg = root.querySelector('svg');
+  svg.innerHTML = '<g data-cfx-visible="false"><g data-cfx-target-kind="point" data-cfx-target-id="nested" data-cfx-label="Nested source" /></g>'
+    + '<g data-cfx-visible="false" data-cfx-target-kind="point" data-cfx-target-id="hidden" data-cfx-label="Hidden source" />'
+    + '<g data-cfx-visible="true" data-cfx-target-kind="point" data-cfx-target-id="visible" data-cfx-label="Visible source" />';
+  window.document.body.append(root); window.eval(runtime);
+  const controller = window.ChartForgeXCharts.get(root);
+  try {
+    assert.deepEqual(Array.from(controller.resolveTargets(), target => target.targetId), ['visible']);
+    for (const id of ['nested', 'hidden']) {
+      const node = svg.querySelector('[data-cfx-target-id="' + id + '"]');
+      assert.equal(node.hasAttribute('tabindex'), false);
+      assert.notEqual(node.getAttribute('role'), 'button');
+      assert.equal(controller.resolveTargets({ targets: [{ targetKind: 'point', targetId: id }] }).length, 0);
+    }
+    assert.equal(svg.querySelector('[data-cfx-target-id="visible"]').hasAttribute('tabindex'), true);
+    assert.equal(svg.querySelectorAll('[data-cfx-visible="false"]').length, 2, 'complete hidden source facts remain in the native drawing');
+  } finally { controller.dispose(); dom.window.close(); }
+});
 for (const managed of [true, false]) {
   for (const operation of ['replace', 'remove']) {
     for (const kind of ['HorizontalLine', 'HorizontalBand', 'VerticalLine', 'VerticalBand']) {
@@ -199,5 +239,209 @@ for (const managed of [true, false]) test(`${managed ? 'managed' : 'legacy'} acc
     assert.equal(f.editor.getState().canUndo, false); assert.equal(f.editor.getState().canRedo, false);
     f.controller.editAnnotations();
     assert.equal(f.editor.getState().canUndo, false); assert.equal(f.editor.getState().canRedo, false);
+  } finally { f.close(); }
+});
+
+// Public commands run the shipped asset; only browser time and generated-section inputs are boundaries.
+function scenarioFixture({ loop = false, autoPlay = false, reducedMotion = false,
+  url = 'https://example.test/?keep=host', peers = 1, legendPeers = false, routeSteps = null } = {}) {
+  const dom = new JSDOM('<!doctype html><body></body>', { runScripts: 'outside-only', pretendToBeVisual: true, url });
+  const { window } = dom, timers = new Map(), events = [], errors = [];
+  let now = 0, sequence = 0;
+  window.setTimeout = (callback, delay = 0, ...args) => {
+    const id = ++sequence; timers.set(id, { at: now + Number(delay), callback: () => callback(...args) }); return id;
+  };
+  window.clearTimeout = id => timers.delete(id);
+  window.matchMedia = query => ({ matches: reducedMotion && query === '(prefers-reduced-motion: reduce)',
+    media: query, addEventListener() {}, removeEventListener() {} });
+  window.SVGElement.prototype.getBBox = () => ({ x: 40, y: 40, width: 20, height: 20 });
+  window.addEventListener('error', event => errors.push(event.message));
+  const roots = Array.from({ length: peers }, (_, index) => {
+    const root = section(window, {}), keys = index === 2 ? ['unrelated', 'other'] : ['readings', 'reference'];
+    root.dataset.cfxChartId = 'plot-' + String.fromCharCode(97 + index);
+    root.dataset.cfxInteractionGroup = 'review'; root.dataset.cfxDeepLinkState = 'true';
+    root.dataset.cfxInteractionFeatures = 'ReportReview,Scenarios,StepPlayback,StateBookmarks,SynchronizedCharts';
+    root.dataset.cfxActiveScenario = index === 1 ? 'plain' : 'review';
+    root.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, right: 390, bottom: 260, width: 390, height: 260 });
+    const steps = [{ targetKind: 'series', targetId: keys[0], label: 'Reading', durationMilliseconds: 450 },
+      { targetKind: 'series', targetId: keys[1], label: 'Reference' }];
+    for (const id of ['review', 'plain']) {
+      const button = window.document.createElement('button'); button.textContent = id;
+      Object.assign(button.dataset, { cfxScenario: id, cfxScenarioLabel: id, cfxScenarioSteps: JSON.stringify(routeSteps || (id === 'plain' ? steps.slice(0, 1) : steps)),
+        cfxScenarioPlaybackDelay: '700', cfxScenarioLoop: String(loop), cfxScenarioAutoplay: String(autoPlay && id === 'review'),
+        cfxScenarioFocusMode: id === 'review' ? 'spotlight' : 'highlight', ...(id === 'review' ? { cfxScenarioColor: '#2563EB' } : {}) });
+      root.append(button);
+    }
+    root.insertAdjacentHTML('beforeend', '<div data-cfx-scenario-panel><span data-cfx-scenario-panel-title></span>'
+      + '<span data-cfx-scenario-panel-meta></span><ol data-cfx-scenario-panel-steps></ol></div>'
+      + '<div data-cfx-scenario-progress><span data-cfx-scenario-progress-text></span></div>'
+      + '<button data-cfx-scenario-step-control="play">Play</button><button data-cfx-scenario-step-control="link">Link</button>');
+    const svg = root.querySelector('svg');
+    for (const [ordinal, key] of keys.entries()) {
+      const node = window.document.createElementNS(svg.namespaceURI, 'g');
+      Object.assign(node.dataset, { cfxRole: 'series', cfxSeries: String(ordinal), cfxSeriesKey: key, cfxLabel: key }); svg.append(node);
+      for (const [rendered, original] of [[0, 12], [1, 28]]) {
+        const observation = window.document.createElementNS(svg.namespaceURI, 'g');
+        Object.assign(observation.dataset, { cfxRole: 'point', cfxSeries: String(ordinal), cfxSeriesKey: key,
+          cfxPoint: String(rendered), cfxSourcePoint: String(original), cfxLabel: key + '-' + rendered }); node.append(observation);
+      }
+      if (legendPeers && index !== 1) {
+        const legend = window.document.createElementNS(svg.namespaceURI, 'g');
+        Object.assign(legend.dataset, { cfxRole: 'legend-item', cfxSeries: String(ordinal), cfxSeriesKey: key, cfxLabel: key });
+        const swatch = window.document.createElementNS(svg.namespaceURI, 'rect');
+        for (const [name, value] of Object.entries({ x: 20 + ordinal * 40, y: 20, width: 12, height: 12, fill: '#2864B4' }))
+          swatch.setAttribute(name, String(value));
+        legend.append(swatch); svg.append(legend);
+      }
+    }
+    const metadata = JSON.parse(root.dataset.cfxPreparedChart);
+    metadata.series = keys.map(key => ({ key, name: key, local: false, kind: 'Line', state: 'None', indices: [12, 28] }));
+    root.dataset.cfxPreparedChart = JSON.stringify(metadata);
+    for (const name of ['cfxscenario', 'cfxscenariostep', 'cfxscenarioplayback', 'cfxscenariolink', 'cfxstate', 'cfxstateapplied', 'cfxsync', 'cfxseries', 'cfxseriesfocus'])
+      root.addEventListener(name, event => events.push({ root: index, name, detail: event.detail, bubbles: event.bubbles }));
+    window.document.body.append(root); return root;
+  });
+  window.eval(runtime);
+  const controllers = roots.map(root => window.ChartForgeXCharts.get(root));
+  const command = (name, detail = {}, index = 0) => roots[index].dispatchEvent(new window.CustomEvent(name, { detail }));
+  const advance = milliseconds => {
+    const end = now + milliseconds; let calls = 0;
+    for (;;) {
+      const next = [...timers.entries()].filter(([, timer]) => timer.at <= end).sort((a, b) => a[1].at - b[1].at || a[0] - b[0])[0];
+      if (!next) break;
+      assert.ok(++calls <= 100, 'a finite clock advance must not spin');
+      timers.delete(next[0]); now = next[1].at; next[1].callback();
+    }
+    now = end;
+  };
+  return { window, roots, events, errors, command, advance,
+    close() { controllers.forEach(controller => controller.dispose()); dom.window.close(); } };
+}
+
+test('shipped scenario commands honor per-step duration and explicit looping without real-time sleeps', () => {
+  const f = scenarioFixture({ loop: true }), root = f.roots[0];
+  try {
+    f.command('cfx-play-scenario');
+    assert.equal(root.dataset.cfxActiveScenarioStep, '0'); assert.equal(root.dataset.cfxScenarioPlayback, 'playing');
+    assert.equal(root.querySelector('[data-cfx-scenario-step-control=play]').textContent, 'Pause');
+    f.advance(449); assert.equal(root.dataset.cfxActiveScenarioStep, '0');
+    f.advance(1); assert.equal(root.dataset.cfxActiveScenarioStep, '1'); assert.equal(root.dataset.cfxScenarioProgress, '2/2');
+    f.advance(699); assert.equal(root.dataset.cfxActiveScenarioStep, '1');
+    f.advance(1); assert.equal(root.dataset.cfxActiveScenarioStep, '0');
+    assert.deepEqual(f.events.filter(event => event.name === 'cfxscenariostep').map(event => event.detail.index), [0, 1, 0]);
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+for (const loop of [false, true]) test(`shipped playing bookmark holds its captured final step before ${loop ? 'looping' : 'finishing'}`, () => {
+  const f = scenarioFixture({ loop }), root = f.roots[0];
+  try {
+    f.command('cfx-play-scenario'); f.advance(450);
+    f.command('cfx-capture-state', { source: 'review-bookmark', sync: false });
+    const snapshot = f.events.find(event => event.name === 'cfxstate').detail.snapshot;
+    assert.equal(snapshot.scenario.stepIndex, '1'); assert.equal(snapshot.scenario.playback, 'playing');
+    f.command('cfx-pause-scenario'); f.command('cfx-set-scenario-step', { index: 0 });
+    const before = f.events.filter(event => event.name === 'cfxscenariostep').length;
+    f.command('cfx-apply-state', { snapshot, sync: false });
+    assert.equal(root.dataset.cfxActiveScenarioStep, '1'); assert.equal(root.dataset.cfxScenarioPlayback, 'playing');
+    assert.equal(f.events.filter(event => event.name === 'cfxscenariostep').length, before, 'restore must not immediately advance playback');
+    assert.equal(f.events.filter(event => event.name === 'cfxstateapplied').length, 1);
+    f.advance(699); assert.equal(root.dataset.cfxActiveScenarioStep, '1');
+    f.advance(1);
+    assert.equal(root.dataset.cfxActiveScenarioStep, loop ? '0' : '1');
+    assert.equal(root.dataset.cfxScenarioPlayback, loop ? 'playing' : 'finished');
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+for (const reducedMotion of [false, true]) test(`shipped autoplay ${reducedMotion ? 'respects reduced motion' : 'starts the first step when allowed'}`, () => {
+  const f = scenarioFixture({ autoPlay: true, reducedMotion }), root = f.roots[0];
+  try {
+    assert.equal(root.dataset.cfxScenarioPlayback, reducedMotion ? 'idle' : 'playing');
+    assert.equal(root.dataset.cfxActiveScenarioStep, reducedMotion ? undefined : '0');
+    f.advance(450); assert.equal(root.dataset.cfxActiveScenarioStep, reducedMotion ? undefined : '1');
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+for (const scoped of [false, true]) test(`shipped ${scoped ? 'chart-scoped' : 'legacy'} scenario links restore the captured step before URL normalization`, () => {
+  const query = scoped ? 'cfx-plot-a-scenario=review&cfx-plot-a-scenarioStep=0&scenario=plain&scenarioStep=1' : 'scenario=review&scenarioStep=1';
+  const f = scenarioFixture({ autoPlay: true, url: 'https://example.test/?keep=host&cfx-other-scenario=untouched&' + query }), root = f.roots[0];
+  try {
+    const step = scoped ? '0' : '1', url = new f.window.URL(f.window.location.href);
+    assert.equal(root.dataset.cfxActiveScenario, 'review'); assert.equal(root.dataset.cfxActiveScenarioStep, step);
+    assert.equal(root.dataset.cfxScenarioPlayback, 'idle', 'an explicit restored step must not autoplay');
+    assert.equal(url.searchParams.get('cfx-plot-a-scenario'), 'review'); assert.equal(url.searchParams.get('cfx-plot-a-scenarioStep'), step);
+    assert.equal(url.searchParams.has('scenario'), false); assert.equal(url.searchParams.has('scenarioStep'), false);
+    assert.equal(url.searchParams.get('keep'), 'host'); assert.equal(url.searchParams.get('cfx-other-scenario'), 'untouched');
+    root.querySelector('[data-cfx-scenario-step-control=link]').click();
+    assert.equal(f.events.filter(event => event.name === 'cfxscenariolink').at(-1).detail.url, f.window.location.href);
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+test('shipped scenario switching stops playback, publishes idle and clears previous route color', () => {
+  const f = scenarioFixture(), root = f.roots[0];
+  try {
+    assert.equal(root.style.getPropertyValue('--cfx-scenario-color'), '#2563EB');
+    f.command('cfx-play-scenario'); f.command('cfx-set-scenario', { scenarioId: 'plain' });
+    assert.equal(root.dataset.cfxScenarioPlayback, 'idle'); assert.equal(root.dataset.cfxActiveScenario, 'plain');
+    assert.equal(root.style.getPropertyValue('--cfx-scenario-color'), '');
+    assert.equal(root.querySelector('[data-cfx-scenario-panel]').style.getPropertyValue('--cfx-scenario-color'), '');
+    assert.equal(root.querySelector('[data-cfx-scenario-step-control=play]').textContent, 'Play');
+    assert.equal(root.querySelectorAll('.cfx-scenario-muted,.cfx-scenario-step-muted').length, 0, 'highlight routes must not inherit spotlight muting');
+    assert.ok(f.events.some(event => event.name === 'cfxscenarioplayback' && event.detail.state === 'idle'));
+    f.advance(5000); assert.equal(root.dataset.cfxActiveScenarioStep, undefined);
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+test('shipped dashboard scenario-step sync resolves its route before the step and never echoes from the peer', () => {
+  const f = scenarioFixture({ peers: 2 }), [source, peer] = f.roots;
+  try {
+    assert.equal(source.dataset.cfxActiveScenario, 'review'); assert.equal(peer.dataset.cfxActiveScenario, 'plain');
+    f.command('cfx-set-scenario-step', { index: 1 });
+    assert.equal(peer.dataset.cfxActiveScenario, 'review'); assert.equal(peer.dataset.cfxActiveScenarioStep, '1');
+    assert.equal(peer.dataset.cfxScenarioProgress, '2/2');
+    assert.ok(peer.querySelector('[data-cfx-series-key=reference]').classList.contains('cfx-scenario-step-active'));
+    assert.equal(f.events.filter(event => event.name === 'cfxsync' && event.root === 0 && event.detail.action === 'scenario-step').length, 1);
+    assert.equal(f.events.filter(event => event.name === 'cfxsync' && event.root === 1).length, 0);
+    assert.equal(f.events.filter(event => event.name === 'cfxscenariostep' && event.root === 1).length, 0);
+    f.command('cfx-set-scenario', { scenarioId: 'plain' });
+    assert.equal(peer.dataset.cfxActiveScenario, 'plain'); assert.equal(peer.dataset.cfxActiveScenarioStep, undefined);
+    assert.equal(f.events.filter(event => event.name === 'cfxsync' && event.root === 1).length, 0);
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+test('shipped ReportReview legends synchronize with legend-free peers without clearing unrelated isolation', () => {
+  const f = scenarioFixture({ peers: 3, legendPeers: true }), [source, peer, unrelated] = f.roots;
+  const key = (root, name, value) => root.querySelector('[data-cfx-role=legend-item]').dispatchEvent(new f.window.KeyboardEvent(name, { key: value, bubbles: true }));
+  try {
+    assert.equal(peer.querySelectorAll('[data-cfx-role=legend-item]').length, 0);
+    key(unrelated, 'keydown', 'i');
+    const retained = unrelated.dataset.cfxIsolatedSeries;
+    assert.ok(retained);
+    key(source, 'keydown', ' ');
+    assert.ok(peer.querySelector('[data-cfx-series-key=readings]').classList.contains('cfx-series-muted'));
+    assert.equal(peer.querySelector('[data-cfx-series-key=reference]').classList.contains('cfx-series-muted'), false);
+    key(source, 'keydown', 'i');
+    assert.ok(peer.querySelector('[data-cfx-series-key=readings]').classList.contains('cfx-series-isolated-in'));
+    assert.ok(peer.querySelector('[data-cfx-series-key=reference]').classList.contains('cfx-series-isolated-out'));
+    assert.equal(unrelated.dataset.cfxIsolatedSeries, retained);
+    assert.ok(unrelated.querySelector('[data-cfx-role=series][data-cfx-series-key=unrelated]').classList.contains('cfx-series-isolated-in'));
+    assert.equal(f.events.filter(event => event.name === 'cfxsync' && event.root === 1).length, 0);
+    assert.ok(f.events.some(event => event.name === 'cfxseries' && event.root === 0 && event.bubbles));
+    assert.ok(f.events.some(event => event.name === 'cfxseriesfocus' && event.root === 0 && event.bubbles));
+    assert.deepEqual(f.errors, []);
+  } finally { f.close(); }
+});
+
+test('shipped scenario targets prefer typed source identity while retaining documented local point ordinals', () => {
+  const f = scenarioFixture({ routeSteps: [{ targetKind: 'point', targetId: '1', label: 'Legacy local ordinal' },
+    { targetKind: 'point', targetId: 'readings:12', label: 'Typed source identity' }] }), root = f.roots[0];
+  try {
+    f.command('cfx-set-scenario-step', { index: 0 });
+    const legacy = [...root.querySelectorAll('.cfx-scenario-step-active')];
+    assert.equal(legacy.length, 2); assert.ok(legacy.every(node => node.dataset.cfxPoint === '1' && node.dataset.cfxSourcePoint === '28'));
+    f.command('cfx-set-scenario-step', { index: 1 });
+    const typed = [...root.querySelectorAll('.cfx-scenario-step-active')];
+    assert.equal(typed.length, 1); assert.equal(typed[0].dataset.cfxSeriesKey, 'readings');
+    assert.equal(typed[0].dataset.cfxPoint, '0'); assert.equal(typed[0].dataset.cfxSourcePoint, '12');
+    assert.deepEqual(f.errors, []);
   } finally { f.close(); }
 });

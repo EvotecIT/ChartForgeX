@@ -1,0 +1,28 @@
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Rendering;
+using Xunit;
+namespace ChartForgeX.Tests;
+[Collection(nameof(FontRegistryCollection))]
+public sealed class NativeJointValuesVisibilityTests {
+    [Theory][InlineData(false,false,false)][InlineData(false,true,true)][InlineData(true,false,true)][InlineData(true,true,false)]
+    public void ExplicitJointIntentUsesIndependentlyPreparedNativeMiddleGeometryAndExistingIsolatedOpacity(bool bar,bool reverse,bool grouped) {
+        var renderer=new HtmlInteractiveChartRenderer();var labels=grouped?ChartVisibilityLabelLayering.GroupWithSeries:ChartVisibilityLabelLayering.PreserveOverlay;
+        var from=NativeJointValuesVisibilityBeforeControls.Section(renderer,NativeJointValuesVisibilityBeforeControls.Model(bar,30),reverse,labels);var to=NativeJointValuesVisibilityBeforeControls.Section(renderer,NativeJointValuesVisibilityBeforeControls.Model(bar,40),!reverse,labels);
+        var value=ChartMath.InterpolateRange(30,40,.5);var middleA=NativeJointValuesVisibilityBeforeControls.Section(renderer,NativeJointValuesVisibilityBeforeControls.Model(bar,value),reverse,labels);var middleB=NativeJointValuesVisibilityBeforeControls.Section(renderer,NativeJointValuesVisibilityBeforeControls.Model(bar,value),!reverse,labels);
+        var independent=VisualSeriesVisibilityCapture.Frames(middleA.PreparedVisual,middleB.PreparedVisual,3)[1];IReadOnlyList<PreparedVisual>? observed=null;string? payload=null;var error=Record.Exception(()=>{observed=VisualSeriesVisibilityCapture.ValueVisibilityFrames(from.PreparedVisual,to.PreparedVisual,3);payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValuesAndVisibility,3));});
+        var name="joint-native-"+bar+"-"+reverse+"-"+grouped;NativeRadialMotionBeforeControls.Capture(from,name+"-from");NativeRadialMotionBeforeControls.Capture(to,name+"-to");NativeRadialMotionBeforeControls.Capture(middleA,name+"-independent-values");NativeRadialMotionBeforeControls.Save(name+".facts.json",JsonSerializer.Serialize(new{value,payload,error=error?.ToString()}));if(observed!=null)NativeRadialValueMotionTests.Capture(from,to,observed,payload??string.Empty,name);
+        NativeRadialMotionBeforeControls.Save(name+".independent-opacity.svg",independent.ToSvg());if(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is {Length:>0} output)File.WriteAllBytes(Path.Combine(output,name+".independent-opacity.png"),independent.ToPng());
+        Assert.Null(error);var frames=Assert.IsAssignableFrom<IReadOnlyList<PreparedVisual>>(observed);Assert.Same(from.PreparedVisual,frames[0]);Assert.Same(to.PreparedVisual,frames[^1]);Assert.Equal(independent.ToSvg(),frames[1].ToSvg());Assert.Equal(independent.ToSvg("joint-native-check"),frames[1].ToSvg("joint-native-check"));Assert.Equal(independent.ToPng(),frames[1].ToPng());Assert.Equal(independent.Regions.Select(row=>(row.Id,row.Role,row.Label,row.Bounds)),frames[1].Regions.Select(row=>(row.Id,row.Role,row.Label,row.Bounds)));
+        Assert.Equal(to.PreparedVisual.ToSvg(),frames[^1].ToSvg());using var json=JsonDocument.Parse(payload!);Assert.Equal("values-and-visibility",json.RootElement.GetProperty("effect").GetString());Assert.Equal("cartesian-value",json.RootElement.GetProperty("sourceKind").GetString());Assert.Equal(6,json.RootElement.GetProperty("readings").GetArrayLength());Assert.Equal(2,json.RootElement.GetProperty("visibility").GetProperty("seriesKeys").GetArrayLength());
+        Assert.Throws<NotSupportedException>(()=>renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values,3)));Assert.Throws<NotSupportedException>(()=>renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility,3)));
+    }
+    [Theory][InlineData("same-value")][InlineData("same-view")][InlineData("domain")][InlineData("identity")][InlineData("labels")][InlineData("stack")][InlineData("reflow")]
+    public void JointAdmissionRejectsUncapturedStructureDomainLabelsStackAndReflowWithoutWeakeningOtherIntents(string condition) {
+        var renderer=new HtmlInteractiveChartRenderer();var chart=NativeJointValuesVisibilityBeforeControls.Model(true,30);var from=NativeJointValuesVisibilityBeforeControls.Section(renderer,chart,false);var destination=NativeJointValuesVisibilityBeforeControls.Model(true,condition=="same-value"?30:40);
+        if(condition=="domain")destination.ConfigureYAxis(axis=>axis.Maximum=200);if(condition=="identity")destination.Series[0].WithObservationId(1,new ChartObservationId("changed"));if(condition=="labels")destination.WithDataLabels(true);if(condition=="stack")destination.WithBarMode(ChartBarMode.Stacked);
+        var to=condition=="reflow"?renderer.PrepareVisibilitySection(destination,new ChartVisibilityView(new[]{ChartVisibilityTarget.Series(new ChartSeriesId("delivery"))},ChartVisibilityLayout.Reflow)):NativeJointValuesVisibilityBeforeControls.Section(renderer,destination,condition!="same-view");
+        var error=Record.Exception(()=>renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValuesAndVisibility,3)));NativeRadialMotionBeforeControls.Capture(from,"joint-reject-"+condition+"-from");NativeRadialMotionBeforeControls.Capture(to,"joint-reject-"+condition+"-to");NativeRadialMotionBeforeControls.Save("joint-reject-"+condition+".facts.json",JsonSerializer.Serialize(new{condition,error=error?.ToString()}));Assert.IsType<NotSupportedException>(error);
+    }
+}

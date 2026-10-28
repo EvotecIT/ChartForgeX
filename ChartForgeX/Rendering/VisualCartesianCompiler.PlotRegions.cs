@@ -41,13 +41,16 @@ internal static partial class VisualCartesianCompiler {
 
     private static Dictionary<string, string> PlotRegionMetadata(ResolvedPlotRegion region) {
         var source = region.Source;
-        return new Dictionary<string, string> {
+        var metadata = new Dictionary<string, string> {
             ["data-cfx-x-minimum"] = Optional(source.XMinimum), ["data-cfx-x-maximum"] = Optional(source.XMaximum),
             ["data-cfx-y-minimum"] = Optional(source.YMinimum), ["data-cfx-y-maximum"] = Optional(source.YMaximum),
             ["data-cfx-y-axis"] = source.YAxis.ToString().ToLowerInvariant(), ["data-cfx-label"] = source.Label,
             ["data-cfx-show-label"] = source.ShowLabel ? "true" : "false", ["aria-label"] = source.Label,
             ["data-cfx-passive"] = "true"
         };
+        if (source.LabelPosition != ChartPlotRegionLabelPosition.Auto) metadata["data-cfx-label-position"] = source.LabelPosition.ToString().ToLowerInvariant();
+        if (source.Border != null) metadata["data-cfx-border"] = "true";
+        return metadata;
     }
 
     private static string Optional(double? value) => value.HasValue ? Number(value.Value) : string.Empty;
@@ -58,7 +61,7 @@ internal static partial class VisualCartesianCompiler {
     private static SvgPaint PlotRegionPaint(ChartPlotRegion source, VisualThemeColors colors, ChartColor color, bool opaque = false) =>
         source.PaletteIndex.HasValue ? SvgPaint.Palette(color, source.PaletteIndex.Value % colors.Palette.Count, opaque) : SvgPaint.Literal(color);
 
-    private static void DrawPlotRegionFills(VisualSceneBuilder builder, IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors) {
+    private static void DrawPlotRegionFills(VisualRenderContext context, VisualSceneBuilder builder, IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors) {
         foreach (var region in regions) {
             using (builder.PushGroup(region.Id, "plot-region", PlotRegionMetadata(region))) {
                 var source = region.Source;
@@ -67,6 +70,7 @@ internal static partial class VisualCartesianCompiler {
                 if (region.Bounds.Width > 0 && region.Bounds.Height > 0)
                     builder.Rect(region.Bounds, ChartColorMath.WithOpacity(color, source.Opacity), role: "plot-region-fill",
                         paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, source.Opacity), source.Opacity)));
+                DrawPlotRegionBorder(context, builder, region, colors);
                 builder.AddRegion(new VisualSemanticRegion(region.Id, "plot-region", region.Bounds, source.Label));
             }
         }
@@ -76,6 +80,11 @@ internal static partial class VisualCartesianCompiler {
         IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors, List<LabelObstacle> obstacles) {
         foreach (var region in regions) {
             var source = region.Source; var bounds = region.Bounds;
+            if (source.Border != null) {
+                var inset = VisualReferenceStroke.PaintedWidth(source.Border, colors.Axis, context.Theme.AxisStrokeWidth);
+                bounds = new ChartRect(bounds.Left + Math.Min(inset, bounds.Width / 2), bounds.Top + Math.Min(inset, bounds.Height / 2),
+                    Math.Max(0, bounds.Width - inset * 2), Math.Max(0, bounds.Height - inset * 2));
+            }
             if (!source.ShowLabel || source.Label.Length == 0 || bounds.Width <= 0 || bounds.Height <= 0) continue;
             // A fitted, opaque caption plate keeps ink readable across overlapping fills.
             // Reuse the annotation caption treatment rather than sampling layered regions.
@@ -86,9 +95,7 @@ internal static partial class VisualCartesianCompiler {
                 opaqueColor, PlotRegionPaint(source, colors, opaqueColor, opaque: true), .12);
             var ink = ChartColorBlend.Contrast(surface);
             var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = ink.Color };
-            var candidates = new[] { new LabelCandidate(bounds.Width / 2, bounds.Height / 2, .5, .5),
-                new LabelCandidate(0, 0), new LabelCandidate(bounds.Width, 0, 1),
-                new LabelCandidate(0, bounds.Height, 0, 1), new LabelCandidate(bounds.Width, bounds.Height, 1, 1) };
+            var candidates = PlotRegionCaptionCandidates(source.LabelPosition, bounds);
             var request = new LabelPlacementRequest(source.Label, new ChartPoint(bounds.Left, bounds.Top), style, candidates) { Padding = 4 };
             var label = new LabelPlacementService().Place(new[] { request }, bounds, obstacles, 2, builder.MeasureText)[0];
             if (label.IsDropped || label.IsEllipsized)

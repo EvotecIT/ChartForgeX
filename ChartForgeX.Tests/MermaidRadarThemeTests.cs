@@ -89,8 +89,9 @@ public sealed class MermaidRadarThemeTests {
         Assert.Null(chart.Series[1].Color);
         var unknown = new MermaidParser().ParseRadar("%%{init: {'themeVariables': {'radar': {'legendBoxSize': 18}}}}%%\n" + Body);
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, Assert.Single(unknown.Diagnostics).Code);
-        var other = new MermaidParser().ParseFlowchart("%%{init: {'themeVariables': {'titleColor': 'red'}}}%%\nflowchart LR\nA --> B");
+        var other = new MermaidParser().ParseFlowchart("%%{init: {'themeVariables': {'radar': {'axisColor': 'red'}}}}%%\nflowchart LR\nA --> B");
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, Assert.Single(other.Diagnostics).Code);
+        Assert.Contains("themeVariables.radar.axisColor", Assert.Single(other.Diagnostics).Message);
     }
 
     [BrowserTheory]

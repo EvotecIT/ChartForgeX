@@ -1,0 +1,18 @@
+%%{init: {"sequence":{"mirrorActors":true,"hideUnusedParticipants":true,"width":64,"height":60,"actorMargin":8,"boxMargin":10,"actorFontSize":14,"messageFontSize":12,"noteFontSize":12}}}%%
+sequenceDiagram
+box Handlers
+actor A as Review
+participant Unused as Retained unused participant
+participant B as Archive
+end
+box Not participating
+participant Empty as Retained empty-group participant
+end
+participant N as Audit
+Note over N: Retained note
+A->>B: Store
+activate B
+B-->>A: Saved
+deactivate B
+destroy B
+A->>B: Close

@@ -66,10 +66,11 @@ style a fill:#f9f";
 
         var result = new MermaidParser().ParseBlock(source);
 
-        Assert(!result.HasErrors, "Mermaid block styles should be retained as warnings, not hard errors.");
-        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Severity == MermaidDiagnosticSeverity.Warning && diagnostic.Message.Contains("retained", StringComparison.Ordinal)), "Mermaid block parser should warn when style statements are not rendered yet.");
+        Assert(!result.HasErrors, "Mermaid block styles should use the native paint owner.");
+        Assert(!result.Diagnostics.Exists(diagnostic => diagnostic.Severity == MermaidDiagnosticSeverity.Warning), "Supported block paints must not retain an obsolete unsupported warning.");
         var document = result.Document ?? throw new InvalidOperationException("Mermaid block parser should produce a document.");
-        Assert(document.StyleStatements.Count == 1, "Mermaid block parser should retain style statements for future support.");
+        Assert(document.StyleStatements.Count == 1 && document.Items[0].Styles["fill"] == "#f9f", "Block styles must retain their source statement and captured native fill.");
+        Assert(document.ToSvg().Contains("#ff99ff", StringComparison.OrdinalIgnoreCase), "The native SVG must use the authored block fill.");
     }
 
     private static void MermaidBlockParsesIdsStartingWithSpaceAsBlocks() {

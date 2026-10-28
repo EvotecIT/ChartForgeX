@@ -1,0 +1,99 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = DifferenceAreaRecipe.Create("smooth-boundaries", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Actual and forecast requests").WithSubtitle("Shading compares Actual above and below Forecast").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Actual and forecast requests", "Shading compares Actual above and below Forecast", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds actual-versus-forecast areas with crossings, gaps and stepped boundaries.</summary>
+public static class DifferenceAreaRecipe {
+    /// <summary>Creates the selected difference-area example from paired authored observations.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dated-gaps" or "compact-dated-gaps"
+            or "step-start" or "step-middle" or "step-end" or "compact-step-middle" or "singleton" or "compact-singleton" or "dense" or "compact-dense" or "smooth-boundaries" or "compact-smooth-boundaries"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "smooth-boundaries" or "compact-smooth-boundaries") {
+            var smoothPairs = ChartDifferencePoints.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+                new double?[] { 42, 68, 48, null, 74, 46, 62, 55 }, new double?[] { 56, 54, 60, 60, 58, 64, 50, 68 });
+            var smoothComparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", smoothPairs)
+                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .WithObservationId(3, new ChartObservationId("resumed-comparison"))
+                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+                .ConfigureMarkers(markers => markers.Radius = 3);
+            return Chart.Create().WithTitle("Smooth actual and held forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+                .AddSeries(smoothComparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        }
+        if (variant is "singleton" or "compact-singleton") return Chart.Create().WithTitle("One observed comparison")
+            .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", new[] { new ChartDifferencePoint(0, 0, 7) })
+                .WithObservationId(0, new ChartObservationId("only-comparison"))
+                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; }));
+        if (variant is "dense" or "compact-dense") return Chart.Create().WithTitle("Observed and forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+            .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast",
+                Enumerable.Range(0, 32).Select(index => new ChartDifferencePoint(index,
+                    index % 7 == 0 ? 0 : Math.Sin(index * .6) * 9,
+                    index % 7 == 0 ? 0 : Math.Cos(index * .6) * 7, index == 16)))
+                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+                .ConfigureMarkers(options => options.Radius = 2));
+        var dated = variant is "dated-gaps" or "compact-dated-gaps";
+        var stepped = variant is "step-start" or "step-middle" or "step-end" or "compact-step-middle";
+        var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var actual = new[] { 42d, 68, stepped ? 78 : 48, 60, 74, 46, 62 };
+        var forecast = new[] { 56d, 54, stepped ? 62 : 60, 60, 58, 64, 50 };
+        var pairs = new ChartDifferencePoint[actual.Length];
+        for (var item = 0; item < pairs.Length; item++) pairs[item] = dated
+            ? new ChartDifferencePoint(day.AddDays(item + (item >= 4 ? 2 : 0)), actual[item], forecast[item], item == 4)
+            : new ChartDifferencePoint(item + 1, actual[item], forecast[item], stepped && item == 5);
+        var chart = Chart.Create().WithXAxis(dated ? "Observation date (UTC)" : "Observation")
+            .WithYAxis(dated ? "Primary reference" : "Completed requests");
+        if (dated) {
+            chart.ConfigureXAxis(axis => axis.WithTimeScale());
+            var reference = ChartSeries.CreateLine(new ChartSeriesId("primary-reference"), "Primary reference",
+                new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
+            chart.AddSeries(reference);
+        }
+        var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", pairs);
+        comparison.ConfigureDifferenceArea(options => {
+            options.FirstName = "Actual"; options.SecondName = "Forecast";
+            options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
+            options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
+        }).ConfigureMarkers(markers => markers.Radius = 3);
+        if (stepped) comparison.WithInterpolation(ChartInterpolation.Step, variant switch {
+            "step-start" => ChartStepPosition.Start,
+            "step-end" => ChartStepPosition.End,
+            _ => ChartStepPosition.Middle
+        });
+        if (dated) {
+            comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+            chart.WithSecondaryYAxis("Completed requests");
+        }
+        return chart.AddSeries(comparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

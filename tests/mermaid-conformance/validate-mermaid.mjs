@@ -4,7 +4,7 @@ import { isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isReferenceRejection } from './reference-errors.mjs';
-import { gitGraphFacts, flowchartStyleFacts } from './reference-facts.mjs';
+import { gitGraphFacts, flowchartStyleFacts, cynefinFacts } from './reference-facts.mjs';
 import { useReferenceClock } from './reference-clock.mjs';
 import { classFacts, stateFacts, erFacts, sequenceLifetimeFacts } from './reference-notation.mjs';
 import { nodeStyleFacts } from './reference-node-styles.mjs';
@@ -161,6 +161,7 @@ for (const { folder, file, hasExpected } of files) {
       if (expected.classes) assert.deepEqual(keys(diagram.db.getClasses()), expected.classes);
       if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);
       if (expected.states) assert.deepEqual(keys(diagram.db.getStates()), expected.states);
+      if (expected.cynefinFacts) assert.deepEqual(cynefinFacts(diagram.db), expected.cynefinFacts);
       if (expected.classFacts) assert.deepEqual(classFacts(diagram.db), expected.classFacts);
       if (expected.nodeStyleFacts) assert.deepEqual(nodeStyleFacts(diagram.db, /^classDiagram/m.test(source) ? 'class' : 'er'), expected.nodeStyleFacts);
       if (expected.classNamespaceFacts) assert.deepEqual(classNamespaceFacts(diagram.db), expected.classNamespaceFacts);

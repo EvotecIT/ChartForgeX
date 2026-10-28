@@ -20,7 +20,11 @@ internal static class ChartSeriesColours {
 
     /// <summary>Part-to-whole categories retain their own ordinal palette instead of inheriting one series slot.</summary>
     internal static ChartColor CategoryPoint(ChartSeries series, int point, VisualThemeColors colors) =>
-        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.Palette[point % colors.Palette.Count]);
+        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.Palette[CategorySourceOrdinal(series, point) % colors.Palette.Count]);
+
+    // Filtered Pie/Donut models keep source category palette identity while sparse overrides follow the visible native ordinal.
+    private static int CategorySourceOrdinal(ChartSeries series, int point) => series.IsVisibilityPreparation
+        && ChartSeriesKindTraits.IsPieLikeKind(series.Kind) && point >= 0 && point < series.SourcePointIndices.Count ? series.SourcePointIndices[point] : point;
 
     internal static ChartColor State(ChartSeriesState state, VisualThemeColors colors, ChartColor fallback) {
         if (state == ChartSeriesState.None) return fallback;

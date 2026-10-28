@@ -13,6 +13,8 @@ internal sealed class SvgRasterDocument {
 
     public SvgRasterElement Root { get; }
     public SvgRasterDiagnostics? Diagnostics { get; set; }
+    internal SvgRasterFilterContext? Filters { get; set; }
+    internal SvgRasterResourceContext? Resources { get; set; }
 
     public IReadOnlyList<SvgRasterElement> Children => Root.Children;
 }

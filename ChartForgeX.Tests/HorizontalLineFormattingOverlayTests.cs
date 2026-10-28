@@ -26,8 +26,8 @@ public sealed class HorizontalLineFormattingOverlayTests {
         var html = chart.ToInteractiveHtmlPage();
         await using var session = await InteractiveChartBrowser.OpenAsync(html, width, 540);
         var page = session.Page;
-        var values = await page.Locator("[data-cfx-role=axis-x-label]").AllTextContentsAsync();
-        var categories = await page.Locator("[data-cfx-role=axis-y-label]").AllTextContentsAsync();
+        var values = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role=axis-x-label]"));
+        var categories = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role=axis-y-label]"));
         Assert.NotEmpty(values); Assert.All(values, value => Assert.Contains("ms", value));
         Assert.DoesNotContain(categories, category => category.Contains("ms"));
         var guide = await page.Locator("[data-cfx-kind=VerticalLine] [data-cfx-role=annotation-line]").BoundingBoxAsync();

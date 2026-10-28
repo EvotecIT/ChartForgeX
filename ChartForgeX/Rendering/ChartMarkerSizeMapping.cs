@@ -22,11 +22,11 @@ internal static class ChartMarkerSizeMapping {
     }
 
     internal static double BubbleRadius(double ratio, double minimumRadius, double maximumRadius, bool constant,
-        ChartBubbleSizeEncoding encoding, ChartMarkerShape shape) {
+        ChartBubbleSizeEncoding encoding, ChartMarkerShape shape, ChartMarkerPath? customPath = null) {
         if (encoding == ChartBubbleSizeEncoding.Area) {
             if (maximumRadius == 0) return 0;
             var minimumRatio = minimumRadius / maximumRadius;
-            return maximumRadius * Math.Sqrt(minimumRatio * minimumRatio * (1 - ratio) + ratio) * ChartMarkerGeometry.CircleAreaRadiusFactor(shape);
+            return maximumRadius * Math.Sqrt(minimumRatio * minimumRatio * (1 - ratio) + ratio) * (customPath?.CircleAreaRadiusFactor ?? ChartMarkerGeometry.CircleAreaRadiusFactor(shape));
         }
         return ChartMath.InterpolateRange(minimumRadius, maximumRadius, constant ? .5 : Math.Sqrt(ratio));
     }

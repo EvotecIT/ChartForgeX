@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using ChartForgeX.Interactivity.Html;
+using HtmlTinkerX;
 
 namespace ChartForgeX.Tests;
 
@@ -11,7 +12,7 @@ internal static partial class SmokeTests {
     private static void InteractiveJavaScriptAssetsStayGeneratedFromSourceFragments() {
         var root = FindRepositoryRoot();
         var syncScript = Path.Combine(root, "Build", "Sync-InteractiveAssets.ps1");
-        Assert(File.Exists(syncScript), "Interactive JS assets should include a dependency-free source sync script.");
+        Assert(File.Exists(syncScript), "Interactive JS assets should include their maintained shared-owner source sync script.");
 
         AssertGeneratedAssetMatchesSource(
             root,
@@ -21,7 +22,8 @@ internal static partial class SmokeTests {
         AssertGeneratedAssetMatchesSource(
             root,
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.source"),
-            Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"));
+            Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"),
+            optimizeJavaScript: true);
 
         // A shipping-artifact budget catches accidental bundled tools or repeated runtime copies.
         // Managed basis tracking, compatible-axis synchronization and reset recovery share this runtime.
@@ -74,7 +76,7 @@ internal static partial class SmokeTests {
         Assert(bindings.Contains("bindAcceleratedSvgKeyboard(root)", StringComparison.Ordinal) && stateSync.Contains("scene.setAttribute('tabindex', acceleratedSvg ? '0' : '-1')", StringComparison.Ordinal) && svgExport.Contains("'aria-hidden': 'true'", StringComparison.Ordinal), "Accelerated SVG scenes should expose one stable keyboard surface while keeping transient overlay nodes out of the tab order and accessibility tree.");
     }
 
-    private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath) {
+    private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath, bool optimizeJavaScript = false) {
         var sourceDirectory = Path.Combine(root, sourceRelativePath);
         var targetPath = Path.Combine(root, targetRelativePath);
         Assert(Directory.Exists(sourceDirectory), "Interactive JS source fragments should exist: " + sourceRelativePath);
@@ -88,8 +90,11 @@ internal static partial class SmokeTests {
         var prelude = Path.Combine(root, "ChartForgeX.Interactivity.Html", "Assets", "adapter-localization.js");
         var generated = string.Join("\n", new[] { prelude }.Concat(parts)
             .Select(part => NormalizeAsset(File.ReadAllText(part)).TrimEnd('\n'))) + "\n";
+        if (optimizeJavaScript) {
+            generated = NormalizeAsset(HtmlOptimizer.OptimizeJavaScript(generated)).TrimEnd('\n') + "\n";
+        }
         var current = NormalizeAsset(File.ReadAllText(targetPath));
-        Assert(current == generated, "Generated interactive JS asset is out of date: " + targetRelativePath + ". Run Build/Sync-InteractiveAssets.ps1.");
+        Assert(current == generated, "Generated interactive JS asset is out of date: " + targetRelativePath + ". Run Build/Sync-InteractiveAssets.ps1 with the pinned PowerForge Web CLI.");
     }
 
     private static string NormalizeAsset(string value) => value.Replace("\r\n", "\n").Replace("\r", "\n");

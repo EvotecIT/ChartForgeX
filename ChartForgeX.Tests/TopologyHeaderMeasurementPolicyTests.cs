@@ -121,7 +121,7 @@ public sealed class TopologyHeaderMeasurementPolicyTests : IDisposable {
         var report = prepared.Analyze();
         Assert.DoesNotContain(report.RouteCrossings, crossing => crossing.Kind == TopologyLayoutRouteCrossingKind.GroupHeader);
         var route = Assert.Single(report.Edges).Points;
-        var renderedRoute = Assert.Single(prepared.ToInterchangeEnvelope().Edges).ResolvedRoute;
+        var renderedRoute = Assert.Single(prepared.Visual.CapturedSemanticSnapshot!.Edges).ResolvedRoute;
         Assert.Equal(renderedRoute.Count, route.Count);
         for (var index = 0; index < route.Count; index++) {
             Assert.Equal(renderedRoute[index].X, route[index].X, 6);

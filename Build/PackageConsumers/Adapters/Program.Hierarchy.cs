@@ -31,9 +31,10 @@ internal static partial class Program {
             "Packed adaptive Sunburst section lost its gap or committed native view.");
         PackageAssertions.Png(spaced.PreparedVisual.ToPng());
         var script = HtmlInteractiveChartRenderer.BuildInteractionScript();
+        // The packaged contract is the public controller API, not an optimizer's private function names.
         PackageAssertions.Require(script.Contains("setHierarchyView", StringComparison.Ordinal)
             && script.Contains("connectNative", StringComparison.Ordinal)
-            && script.Contains("createAnnotationEditor", StringComparison.Ordinal)
+            && script.Contains("editAnnotations", StringComparison.Ordinal)
             && script.Contains("prefers-reduced-motion", StringComparison.Ordinal),
             "Packed interaction asset omitted a native hierarchy/editor/reduced-motion lifetime owner.");
         // Physical transaction, preview and animation acceptance remain in the maintained browser gate.

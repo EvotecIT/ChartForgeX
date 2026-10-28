@@ -36,9 +36,11 @@ internal static partial class VisualMatrixCompiler {
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         if (rows.Any(row => row.IsCategoricalHeatmapRow != categorical)) throw new InvalidOperationException("Numeric and categorical matrix rows cannot be mixed.");
         var categories = new ChartStateCategoryLegend(chart, colors.MutedForeground);
+        var categoryGroups = MatrixCategoryGroups.Capture(chart, rows, columns);
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
-        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing);
+        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing, categoryGroups);
         var plot = layout.Plot;
+        builder.AddRegion(new VisualSemanticRegion("matrix-plot", "matrix-plot", plot));
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
             Math.Min(columns.Length > 1 ? plot.Width / columns.Length * .5 : double.PositiveInfinity,
@@ -59,14 +61,18 @@ internal static partial class VisualMatrixCompiler {
         using (builder.PushGroup("matrix", kind == ChartSeriesKind.Heatmap ? "heatmap" : "hexbin-heatmap", matrixMetadata)) {
             foreach (var group in rowLayout.Groups) {
                 var y = rowLayout.GroupTop(plot.Top, group, cellHeight, gap);
-                if (group.BeforeRow > 0) builder.Line(viewport.Left, y, plot.Right, y, colors.Border, context.Theme.GridStrokeWidth, "heatmap-row-group-rule", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                var ruleY = y;
+                if (ReverseRows(chart)) { y = MirrorTop(plot, y, group.Height); ruleY = y + group.Height; }
+                if (group.BeforeRow > 0) builder.Line(viewport.Left, ruleY, plot.Right, ruleY, colors.Border, context.Theme.GridStrokeWidth, "heatmap-row-group-rule", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 VisualStateSceneTools.Text(builder, group.Name, new ChartRect(viewport.Left, y, plot.Right - viewport.Left, group.Height),
                     VisualStateSceneTools.TickStyle(chart, context), "heatmap-row-group", "heatmap-group-" + group.BeforeRow);
             }
             for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
                 var series = rows[rowIndex]; var y = rowLayout.RowTop(plot.Top, rowIndex, cellHeight, gap);
+                if (ReverseRows(chart)) y = MirrorTop(plot, y, cellHeight);
                 if (chart.Options.ShowAxes && chart.Options.YAxis.Visible)
-                    VisualStateSceneTools.Text(builder, series.Name, new ChartRect(viewport.Left, y, Math.Max(0, plot.Left - viewport.Left - context.Theme.Spacing), cellHeight),
+                    VisualStateSceneTools.Text(builder, categoryGroups?.RowText(rowIndex, series.Name) ?? series.Name,
+                        new ChartRect(viewport.Left + layout.RowGroupWidth, y, Math.Max(0, plot.Left - viewport.Left - layout.RowGroupWidth - context.Theme.Spacing), cellHeight),
                         VisualStateSceneTools.TickStyle(chart, context), "heatmap-row-label", "matrix-row-label-" + rowIndex, TextAlignment.Right);
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
@@ -74,7 +80,9 @@ internal static partial class VisualMatrixCompiler {
                     for (var renderIndex = 0; renderIndex < series.RenderPoints.Count; renderIndex++) {
                         var point = series.RenderPoints[renderIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
                         var pointIndex = categorical ? (int)point.X - 1 : renderIndex;
-                        var bounds = new ChartRect(plot.Left + columnIndex * (cellWidth + gap), y, cellWidth, cellHeight);
+                        var cellLeft = plot.Left + columnIndex * (cellWidth + gap);
+                        if (ReverseColumns(chart)) cellLeft = plot.Left + plot.Right - cellLeft - cellWidth;
+                        var bounds = new ChartRect(cellLeft, y, cellWidth, cellHeight);
                         ChartPath? hexPath = null;
                         if (kind == ChartSeriesKind.HexbinHeatmap) {
                             var cx = plot.Left + (columnIndex + .5 + (rowIndex % 2) * .5) * plot.Width / (columns.Length + .5);
@@ -90,7 +98,8 @@ internal static partial class VisualMatrixCompiler {
                             : ChartHeatmapSurface.CellBlend(chart, colors, series.Color, point.Y, min, max, VisualChartPaint.SeriesRole(series));
                         var fill = stateMark?.Surface ?? blend.Color;
                         var column = formatColumn(point.X);
-                        var label = series.Name + ", " + column + ": " + (state?.Label ?? presentation.Value(point.Y));
+                        var label = categoryGroups == null ? series.Name + ", " + column + ": " + (state?.Label ?? presentation.Value(point.Y))
+                            : categoryGroups.Describe(rowIndex, columnIndex, series.Name, column) + ": " + (state?.Label ?? presentation.Value(point.Y));
                         if (!string.IsNullOrWhiteSpace(cell?.Tooltip)) label += ". " + cell!.Value.Tooltip;
                         var metadata = state == null ? new Dictionary<string, string>() : VisualStateSceneTools.StateMetadata(chart, state);
                         metadata["data-cfx-series"] = rowIndex.ToString(); metadata["data-cfx-point"] = pointIndex.ToString(); metadata["data-cfx-row"] = rowIndex.ToString();
@@ -108,6 +117,7 @@ internal static partial class VisualMatrixCompiler {
                             else metadata["data-cfx-level"] = ChartHeatmapSurface.Level(ratio).ToString();
                             if (status != null && chart.Options.PinStateColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
                         }
+                        categoryGroups?.CaptureContext(metadata, rowIndex, columnIndex, series.Name, column);
                         var id = VisualStateSceneTools.SourceId(rowIndex, pointIndex);
                         using (VisualStateSceneTools.Mark(builder, id, kind == ChartSeriesKind.Heatmap ? "heatmap-cell" : "hexbin-cell", bounds, label, metadata, cell?.Href)) {
                           using (builder.PushClip(plot)) {
@@ -129,6 +139,7 @@ internal static partial class VisualMatrixCompiler {
                 }
             }
             MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
+            DrawMatrixCategoryGroups(chart, context, builder, categoryGroups, layout, rowLayout, rows.Length, columns.Length, cellWidth, cellHeight, gap, colors);
             if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation, hasDomain, missing);
         }
     }

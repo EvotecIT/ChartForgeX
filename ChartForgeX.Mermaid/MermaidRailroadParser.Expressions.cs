@@ -16,10 +16,13 @@ internal sealed partial class MermaidRailroadParser {
             elements.Add(_document.Dialect == MermaidRailroadDialect.Abnf ? ParseAbnfElement(depth) : ParseTerm(depth));
             if (_document.Dialect == MermaidRailroadDialect.Ebnf && Is(",")) { Advance(); if (!CanStartExpression()) throw Error(_token, "An EBNF concatenation comma requires another element."); }
         }
-        if (elements.Count == 0) throw Error(_token, "A railroad expression must not be empty.");
+        if (elements.Count == 0) {
+            if (_document.Dialect == MermaidRailroadDialect.Peg && (Is(";") || Is("/") || Is(")"))) return Node(RailroadExpression.Empty(), start);
+            throw Error(_token, "A railroad expression must not be empty.");
+        }
         return elements.Count == 1 ? elements[0] : Node(RailroadExpression.Sequence(Native(elements)), start, elements.ToArray());
     }
-    private bool CanStartExpression() => _token.Kind is TokenKind.Identifier or TokenKind.String or TokenKind.Special
+    private bool CanStartExpression() => _token.Kind is TokenKind.Identifier or TokenKind.String or TokenKind.CaseSensitiveString or TokenKind.CharacterClass or TokenKind.Special
         || _document.Dialect == MermaidRailroadDialect.Abnf && (_token.Kind is TokenKind.Number or TokenKind.NumericValue || Is("*"))
         || Is("(") || Is("[") && _document.Dialect != MermaidRailroadDialect.Peg
         || _document.Dialect == MermaidRailroadDialect.Ebnf && Is("{")
@@ -40,7 +43,11 @@ internal sealed partial class MermaidRailroadParser {
     }
     private MermaidRailroadExpression ParsePrimary(int depth) {
         MermaidResourceGuard.CheckDepth(depth, _token.Span); var start = _token;
-        if (_token.Kind == TokenKind.String) { var value = _token.Text; Advance(); return Node(RailroadExpression.Terminal(value, _document.Dialect != MermaidRailroadDialect.Abnf), start); }
+        if (_token.Kind is TokenKind.String or TokenKind.CaseSensitiveString) {
+            var value = _token.Text; var sensitive = _token.Kind == TokenKind.CaseSensitiveString || _document.Dialect != MermaidRailroadDialect.Abnf;
+            Advance(); return Node(RailroadExpression.Terminal(value, sensitive), start);
+        }
+        if (_token.Kind == TokenKind.CharacterClass && _document.Dialect == MermaidRailroadDialect.Peg) return ParsePegCharacterClass();
         if (_token.Kind == TokenKind.Identifier) { ValidateRuleName(_token); var name = _token.Text; Advance(); return Node(RailroadExpression.Reference(name), start); }
         if (_token.Kind == TokenKind.Special && _document.Dialect == MermaidRailroadDialect.Ebnf) { var text = _token.Text; Advance(); return Node(RailroadExpression.Special(text), start); }
         if (Is("." ) && _document.Dialect == MermaidRailroadDialect.Peg) { Advance(); return Node(RailroadExpression.AnyCharacter(), start); }

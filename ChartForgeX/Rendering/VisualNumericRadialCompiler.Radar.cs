@@ -18,7 +18,7 @@ internal static partial class VisualNumericRadialCompiler {
         if (series.RenderPoints.Count == 0) return;
         var scale = scales[series.ValueAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
         var (mapped, raw) = RadarPoints(chart, geometry, seriesIndex, coordinates, categories, scale);
-        var paths = ChartRadarGeometry.Paths(series.Radar, mapped, raw);
+        var paths = ChartRadarGeometry.Paths(series.Radar, mapped, raw, geometry.Sweep == Math.PI * 2);
         ChartRadarGeometry.DiagnoseOpenArea(builder, series, paths);
         using (builder.PushGroup(SeriesId(seriesIndex), "radar-series", new Dictionary<string, string> {
             ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
@@ -26,10 +26,8 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-form"] = series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line", ["data-cfx-missing-policy"] = ChartRadarGeometry.MissingPolicy(series.Radar),
             ["data-cfx-min-value"] = N(scale.Minimum), ["data-cfx-max-value"] = N(scale.Maximum)
         })) {
-            // Clip the hole in both native exporters, without clipping maximum-radius marker outlines.
-            var clipCommands = ChartPathBuilder.RoundedRectangle(plot, 0).Commands.ToList();
-            if (geometry.Inner > 0) clipCommands.AddRange(ChartPathBuilder.Ellipse(geometry.Cx, geometry.Cy, geometry.Inner, geometry.Inner).Commands);
-            using (builder.PushClip(new ChartPath(clipCommands))) {
+            // Shared typed clipping keeps the annular hole and partial angular limits in both exporters.
+            using (builder.PushClip(RadarClip(geometry, plot))) {
                 if (geometry.Outer > 0) foreach (var path in paths)
                     VisualPolarSeriesScene.Draw(chart, context, builder, series, path.Path, color, true, path.Closed);
                 for (var category = 0; category < categories.Length; category++) {
@@ -40,8 +38,7 @@ internal static partial class VisualNumericRadialCompiler {
                         ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                     var id = source >= 0 ? PointId(seriesIndex, source) : SeriesId(seriesIndex) + "-missing-category-" + category;
                     var marker = VisualMarkerScene.Radius(series, context);
-                    var extent = VisualMarkerScene.Extent(series, marker);
-                    var bounds = geometry.Outer > 0 ? VisualMarkerScene.Bounds(mapped[category].X, mapped[category].Y, Math.Max(marker, extent))
+                    var bounds = geometry.Outer > 0 ? VisualMarkerScene.Bounds(series, mapped[category].X, mapped[category].Y, marker)
                         : new ChartRect(mapped[category].X, mapped[category].Y, 0, 0);
                     builder.AddRegion(new VisualSemanticRegion(id, "radar-point", bounds, categoryLabels[category] + ": " + text));
                     var facts = new Dictionary<string, string> {
@@ -64,9 +61,12 @@ internal static partial class VisualNumericRadialCompiler {
                             VisualMarkerScene.Draw(builder, series, source, mapped[category].X, mapped[category].Y, marker, pointColor,
                                 VisualChartPaint.Series(series, pointColor, source), "radar-point", colors.Surface, 1,
                                 SvgPaint.Of(colors.Surface, SvgColorRole.Surface), pattern, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "radar-point-pattern");
-                            if (obstacles != null && extent > 0) obstacles.Add(new LabelObstacle(id,
-                                new LabelMarkShape(new[] { ChartMarkerGeometry.Path(series.Markers.Shape, mapped[category].X, mapped[category].Y, marker).Flatten() },
+                            if (obstacles != null && VisualMarkerScene.Extent(series, marker) > 0) {
+                                var contour = new VisualScenePath(ChartMarkerGeometry.Path(series.Markers, mapped[category].X, mapped[category].Y, marker),
+                                    true, null, null, 0, null, null);
+                                obstacles.Add(new LabelObstacle(id, new LabelMarkShape(VisualSceneGeometry.Flatten(contour, 8),
                                     true, VisualMarkerScene.StrokeWidth(series, true), plot)));
+                            }
                         }
                     }
                     if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)))

@@ -1,0 +1,16 @@
+usecase-beta
+direction LR
+actor User[Release coordinator]
+Publish(Approve release)
+json Details @ {
+  "version": 1.00,
+  "active": false,
+  "memo": "",
+  "owner": {"name": "Aster", "missing": null},
+  "tags": ["ready", "signed"],
+  "path/~": "kept",
+  "empty": []
+}
+User request@--> Publish
+Publish inspect@--> Details
+note for Details "Captured source facts stay linked"

@@ -25,14 +25,24 @@ internal sealed partial class VisualSceneBuilder {
         ValidateRect(bounds);
         ImageOpacity(opacity);
         var aspect = SvgRasterPreserveAspectRatio.Parse(preserveAspectRatio);
-        var destination = bounds;
-        if (!aspect.Stretch) {
-            var scaleX = bounds.Width / image.Width; var scaleY = bounds.Height / image.Height;
-            var scale = aspect.Slice ? Math.Max(scaleX, scaleY) : Math.Min(scaleX, scaleY);
-            var width = image.Width * scale; var height = image.Height * scale;
-            destination = new ChartRect(bounds.X + aspect.AlignX(bounds.Width - width), bounds.Y + aspect.AlignY(bounds.Height - height), width, height);
-        }
+        var destination = FitImageBounds(image.Width, image.Height, bounds, aspect);
         using (aspect.Slice ? PushClip(bounds) : null) _nodes.Add(new VisualSceneImage(image, destination, role, id, opacity));
+    }
+
+    internal void Image(VisualSceneImageData image, ChartRect bounds, string? role = null, string? id = null, double opacity = 1, string? preserveAspectRatio = null) {
+        ValidateRect(bounds); ImageOpacity(opacity);
+        if (preserveAspectRatio == null) { _nodes.Add(new VisualSceneImage(image, bounds, role, id, opacity)); return; }
+        var aspect = SvgRasterPreserveAspectRatio.Parse(preserveAspectRatio);
+        var destination = FitImageBounds(image.Image.Width, image.Image.Height, bounds, aspect);
+        using (aspect.Slice ? PushClip(bounds) : null) _nodes.Add(new VisualSceneImage(image, destination, role, id, opacity));
+    }
+
+    internal static ChartRect FitImageBounds(int imageWidth, int imageHeight, ChartRect bounds, SvgRasterPreserveAspectRatio aspect) {
+        if (aspect.Stretch) return bounds;
+        var scaleX = bounds.Width / imageWidth; var scaleY = bounds.Height / imageHeight;
+        var scale = aspect.Slice ? Math.Max(scaleX, scaleY) : Math.Min(scaleX, scaleY);
+        var width = imageWidth * scale; var height = imageHeight * scale;
+        return new ChartRect(bounds.X + aspect.AlignX(bounds.Width - width), bounds.Y + aspect.AlignY(bounds.Height - height), width, height);
     }
 
     /// <summary>Retains a host-managed SVG image and ordinary native fallback geometry without resolving external I/O.</summary>
@@ -97,8 +107,8 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void PathGradient(ChartPath path, ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, bool close = true, VisualScenePaintBinding? paint = null) {
-        Path(path, stroke: stroke, strokeWidth: strokeWidth, role: role, id: id, close: close, paint: paint);
+        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, bool close = true, VisualScenePaintBinding? paint = null, double[]? dash = null, double dashOffset = 0) {
+        Path(path, stroke: stroke, strokeWidth: strokeWidth, role: role, id: id, close: close, paint: paint, dash: dash, dashOffset: dashOffset);
         ReplaceWithGradient(start, end, stops);
     }
 

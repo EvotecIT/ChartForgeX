@@ -29,6 +29,7 @@ internal static partial class VisualMapCompiler {
                 };
                 if (point.Weight.HasValue) metadata["data-cfx-value"] = N(point.Weight.Value);
                 data.AddColorFacts(metadata, index);
+                AddFeatureFacts(metadata, point.Feature);
                 return new VisualLegendEntry(point.Label, color, prefix + "-point-" + N(index), series.Kind,
                     stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey, paint: paint, metadata: metadata,
                     marker: (builder, bounds, context) => {
@@ -47,7 +48,7 @@ internal static partial class VisualMapCompiler {
             return new[] { new VisualLegendEntry(series.Name, color, prefix, series.Kind,
                 series.FillPattern, series.StateRole, series.InteractionIdentityKey, paint: paint) };
         }
-        var regionScale = series.Kind == ChartSeriesKind.RegionMap ? colorScales.MapDataset(seriesIndex).ResolveKeyScale(colors) : null;
+        var regionScale = series.Kind == ChartSeriesKind.RegionMap || series.Kind == ChartSeriesKind.TileMap && chart.Series.Count > 1 ? colorScales.MapDataset(seriesIndex).ResolveKeyScale(colors) : null;
         var regionColor = regionScale == null ? ChartSeriesColours.Resolve(series, seriesIndex, colors)
             : regionScale.ColorFor(colorScales.MapDataset(seriesIndex).Maximum, colorScales.MapDataset(seriesIndex).Minimum, colorScales.MapDataset(seriesIndex).Maximum);
         return new[] { new VisualLegendEntry(series.Name, regionColor, prefix,

@@ -18,7 +18,10 @@ internal sealed partial class VisualSceneBuilder {
     private readonly List<VisualSemanticRegion> _regions = new();
     internal ChartDataProjection? DataProjection { get; set; }
 
-    internal VisualSceneBuilder(VisualSize size, FontSpec font) {
+    private readonly VisualSceneTextCapture? _textCapture;
+    internal VisualSceneBuilder(VisualSize size, FontSpec font) : this(size, font, null) { }
+    internal VisualSceneBuilder(VisualSize size, FontSpec font, VisualSceneTextCapture? textCapture) {
+        _textCapture = textCapture;
         VisualSize.Positive(size.Width, nameof(size)); VisualSize.Positive(size.Height, nameof(size));
         _size = size;
         _font = (font ?? throw new ArgumentNullException(nameof(font))).Clone();
@@ -26,32 +29,32 @@ internal sealed partial class VisualSceneBuilder {
     internal VisualSize Size => _size;
 
     internal void Rect(ChartRect bounds, ChartColor? fill, ChartColor? stroke = null, double strokeWidth = 1,
-        double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
+        double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double opacity = 1) {
         ValidateRect(bounds); NonNegative(radius, nameof(radius)); NonNegative(strokeWidth, nameof(strokeWidth));
-        _nodes.Add(new VisualSceneRectangle(bounds, Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2), fill, stroke, strokeWidth, role, id, paint));
+        _nodes.Add(new VisualSceneRectangle(bounds, Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2), fill, stroke, strokeWidth, role, id, paint, opacity));
     }
 
     internal void Line(double x1, double y1, double x2, double y2, ChartColor color, double width = 1,
-        string? role = null, string? id = null, double[]? dash = null, VisualScenePaintBinding? paint = null, double dashOffset = 0) {
+        string? role = null, string? id = null, double[]? dash = null, VisualScenePaintBinding? paint = null, double dashOffset = 0, double opacity = 1) {
         NonNegative(width, nameof(width));
         ChartGuards.Finite(dashOffset, nameof(dashOffset));
         if (dash != null) foreach (var length in dash) {
             ChartGuards.Finite(length, nameof(dash));
             if (length <= 0) throw new ArgumentOutOfRangeException(nameof(dash), "Dash lengths must be positive.");
         }
-        _nodes.Add(new VisualSceneLine(new ChartPoint(x1, y1), new ChartPoint(x2, y2), color, width, role, id, dash, paint, dashOffset));
+        _nodes.Add(new VisualSceneLine(new ChartPoint(x1, y1), new ChartPoint(x2, y2), color, width, role, id, dash, paint, dashOffset, opacity));
     }
 
     internal void Ellipse(double cx, double cy, double rx, double ry, ChartColor? fill, ChartColor? stroke = null,
-        double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
+        double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double opacity = 1) {
         ChartGuards.Finite(cx, nameof(cx)); ChartGuards.Finite(cy, nameof(cy));
         NonNegative(rx, nameof(rx)); NonNegative(ry, nameof(ry)); NonNegative(strokeWidth, nameof(strokeWidth));
-        _nodes.Add(new VisualSceneEllipse(cx, cy, rx, ry, fill, stroke, strokeWidth, role, id, paint));
+        _nodes.Add(new VisualSceneEllipse(cx, cy, rx, ry, fill, stroke, strokeWidth, role, id, paint, opacity));
     }
 
     internal void Path(ChartPath path, ChartColor? fill = null, ChartColor? stroke = null, double strokeWidth = 1,
         string? role = null, string? id = null, bool close = false, double[]? dash = null,
-        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round, VisualScenePaintBinding? paint = null, double dashOffset = 0) {
+        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round, VisualScenePaintBinding? paint = null, double dashOffset = 0, double opacity = 1) {
         if (path == null) throw new ArgumentNullException(nameof(path));
         NonNegative(strokeWidth, nameof(strokeWidth));
         ChartGuards.Finite(dashOffset, nameof(dashOffset));
@@ -64,12 +67,12 @@ internal sealed partial class VisualSceneBuilder {
             ChartGuards.Finite(command.Control1X, nameof(path)); ChartGuards.Finite(command.Control1Y, nameof(path));
             ChartGuards.Finite(command.Control2X, nameof(path)); ChartGuards.Finite(command.Control2Y, nameof(path));
         }
-        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join, paint, dashOffset));
+        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join, paint, dashOffset, opacity));
     }
 
     /// <summary>Adds a clockwise slice in radians, including a full-ring case without a radial seam.</summary>
     internal void Slice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
-        ChartColor fill, ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double cornerRadius = 0) {
+        ChartColor fill, ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double cornerRadius = 0, double opacity = 1) {
         ChartGuards.Finite(cx, nameof(cx)); ChartGuards.Finite(cy, nameof(cy)); ChartGuards.Finite(start, nameof(start));
         NonNegative(outerRadius, nameof(outerRadius)); NonNegative(innerRadius, nameof(innerRadius));
         NonNegative(sweep, nameof(sweep)); NonNegative(strokeWidth, nameof(strokeWidth)); NonNegative(cornerRadius, nameof(cornerRadius));
@@ -77,17 +80,17 @@ internal sealed partial class VisualSceneBuilder {
         if (sweep > Math.PI * 2 + 0.000001) throw new ArgumentOutOfRangeException(nameof(sweep));
         var rounded = ChartSlicePathGeometry.RoundedPath(cx, cy, outerRadius, innerRadius, start, sweep, cornerRadius);
         if (rounded != null) {
-            Path(rounded, fill, stroke, strokeWidth, role, id, close: true, paint: paint);
+            Path(rounded, fill, stroke, strokeWidth, role, id, close: true, paint: paint, opacity: opacity);
             return;
         }
-        _nodes.Add(new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, Math.Min(sweep, Math.PI * 2), fill, stroke, strokeWidth, role, id, paint));
+        _nodes.Add(new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, Math.Min(sweep, Math.PI * 2), fill, stroke, strokeWidth, role, id, paint, opacity));
     }
 
     internal TextMetrics MeasureText(string text, double size, int weight = 400) => Face(weight).Prepare(text, size).Metrics;
-    internal TextMetrics MeasureText(string text, TextStyle style) => new VisualSceneTextFace(style).Prepare(text, style.EffectiveFontSize).Metrics;
+    internal TextMetrics MeasureText(string text, TextStyle style) => StyleFace(style).Prepare(text, style.EffectiveFontSize).Metrics;
     internal double TextAscent(double size, int weight = 400) => Face(weight).Ascent(size);
-    internal double TextAscent(TextStyle style) => new VisualSceneTextFace(style).Ascent(style.EffectiveFontSize);
-    internal double TextAscentEnvelope(TextStyle style) => new VisualSceneTextFace(style).AscentEnvelope(style.EffectiveFontSize);
+    internal double TextAscent(TextStyle style) => StyleFace(style).Ascent(style.EffectiveFontSize);
+    internal double TextAscentEnvelope(TextStyle style) => StyleFace(style).AscentEnvelope(style.EffectiveFontSize);
 
     internal void AddDiagnostic(VisualDiagnostic diagnostic) => _diagnostics.Add(diagnostic ?? throw new ArgumentNullException(nameof(diagnostic)));
     internal void AddRegion(VisualSemanticRegion region) => _regions.Add(region ?? throw new ArgumentNullException(nameof(region)));
@@ -103,16 +106,23 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void Text(string text, double x, double baseline, TextStyle style, string? role = null, string? id = null, SvgPaint? paint = null,
-        ChartColor? stroke = null, double strokeWidth = 0, SvgPaint? strokePaint = null) {
+        ChartColor? stroke = null, double strokeWidth = 0, SvgPaint? strokePaint = null,
+        ChartColor? color = null, TextAlignment? alignment = null) {
         if (style == null) throw new ArgumentNullException(nameof(style));
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
         ChartGuards.Finite(strokeWidth, nameof(strokeWidth));
         if (strokeWidth < 0) throw new ArgumentOutOfRangeException(nameof(strokeWidth));
-        var prepared = new VisualSceneTextFace(style).Prepare(text, style.EffectiveFontSize);
-        baseline += style.Baseline == TextBaseline.Superscript ? -style.EffectiveFontSize * 0.35
-            : style.Baseline == TextBaseline.Subscript ? style.EffectiveFontSize * 0.22 : 0;
-        _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id, paint, stroke, strokeWidth, strokePaint));
-        AddTextDecorations(prepared, x, baseline, style, paint);
+        var prepared = StyleFace(style).Prepare(text, style.EffectiveFontSize);
+        baseline += VisualSceneTextFace.BaselineOffset(style);
+        var actualColor = color ?? style.Color;
+        var actualAlignment = alignment ?? style.Alignment;
+        if (!Enum.IsDefined(typeof(TextAlignment), actualAlignment)) throw new ArgumentOutOfRangeException(nameof(alignment));
+        _nodes.Add(new VisualSceneText(prepared, x, baseline, actualColor, actualAlignment, role, id, paint, stroke, strokeWidth, strokePaint));
+        if (color.HasValue || alignment.HasValue) {
+            var decorated = style.Clone();
+            decorated.Color = actualColor; decorated.Alignment = actualAlignment;
+            AddTextDecorations(prepared, x, baseline, decorated, paint);
+        } else AddTextDecorations(prepared, x, baseline, style, paint);
     }
 
     internal IDisposable PushClip(ChartRect bounds) {
@@ -120,7 +130,7 @@ internal sealed partial class VisualSceneBuilder {
         return OpenGroup(new VisualSceneGroup(null, null, bounds, null));
     }
 
-    internal IDisposable PushGroup(string? id, string? role, IReadOnlyDictionary<string, string>? metadata = null) {
+    internal IDisposable PushGroup(string? id, string? role, IReadOnlyDictionary<string, string>? metadata = null, double opacity = 1) {
         if (metadata != null) foreach (var item in metadata) {
             // Native semantic attributes are data, never event handlers, style or markup.
             if (item.Key != "aria-label" && item.Key != "role" && item.Key != "class" && (!item.Key.StartsWith("data-", StringComparison.Ordinal) || item.Key.Length <= 5)
@@ -129,22 +139,25 @@ internal sealed partial class VisualSceneBuilder {
             foreach (var c in item.Key) if (!(char.IsLetterOrDigit(c) || c == '-' || c == '_'))
                 throw new ArgumentException("Scene metadata has an invalid attribute name.", nameof(metadata));
         }
-        return OpenGroup(new VisualSceneGroup(role, id, null, metadata));
+        return OpenGroup(new VisualSceneGroup(role, id, null, metadata, null, null, null, null, null, null, null, opacity));
     }
 
     internal VisualScene Build() {
         if (_groups.Count != 0) throw new InvalidOperationException("Close all scene group scopes before preparing the scene.");
-        return new VisualScene(_size, _nodes, _diagnostics, _regions, DataProjection);
+        return new VisualScene(_size, _nodes, _diagnostics, _regions, DataProjection, _valueCapture);
     }
 
     private VisualSceneTextFace Face(int weight) {
         if (weight < 1 || weight > 1000) throw new ArgumentOutOfRangeException(nameof(weight));
         if (!_faces.TryGetValue(weight, out var face)) {
-            face = new VisualSceneTextFace(_font, weight);
+            if (_textCapture == null) face = new VisualSceneTextFace(_font, weight);
+            else { var style = new TextStyle { Font = _font.Clone(), LineHeight = 1 }; style.Font.Weight = weight; face = _textCapture.Bind(style); }
             _faces.Add(weight, face);
         }
         return face;
     }
+
+    private VisualSceneTextFace StyleFace(TextStyle style) => _textCapture?.Bind(style) ?? new VisualSceneTextFace(style);
 
     private IDisposable OpenGroup(VisualSceneGroup group) {
         var scope = new GroupScope(this); _nodes.Add(group); _groups.Push(scope); return scope;

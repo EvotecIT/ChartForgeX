@@ -97,6 +97,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create(&quot;compact&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Measurements across intervals&quot;).WithSubtitle(&quot;Observation counts in unequal measurement intervals&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame(&quot;Measurements across intervals&quot;, &quot;Observation counts in unequal measurement intervals&quot;, showLegend: false, showSurface: false));
@@ -105,8 +112,9 @@ File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
 File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
 
-/// &lt;summary&gt;Counts, density, signed sums or means over the same explicit unequal measurement intervals.&lt;/summary&gt;
+/// &lt;summary&gt;Counts, probabilities, densities and signed or weighted means over unequal measurement intervals.&lt;/summary&gt;
 public static class HistogramRecipe {
+    /// &lt;summary&gt;Creates a native histogram while retaining its source observations and raw bin aggregates.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var aggregation = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == &quot;compact&quot;) aggregation = &quot;wide&quot;;
@@ -114,12 +122,28 @@ public static class HistogramRecipe {
         var chart = Chart.Create().WithXAxis(&quot;Measurement&quot;).WithDataLabels();
         chart.Options.XAxis.WithBounds(0, 10);
         ChartSeries observations;
-        if (aggregation is &quot;wide&quot; or &quot;density&quot;) {
+        if (aggregation is &quot;wide&quot; or &quot;density&quot; or &quot;probability&quot; or &quot;probability-density&quot;) {
+            var encoding = aggregation switch {
+                &quot;density&quot; =&gt; ChartHistogramEncoding.Density,
+                &quot;probability&quot; =&gt; ChartHistogramEncoding.Probability,
+                &quot;probability-density&quot; =&gt; ChartHistogramEncoding.ProbabilityDensity,
+                _ =&gt; ChartHistogramEncoding.Value
+            };
             observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;observations&quot;), &quot;Observations&quot;,
                 new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout,
-                aggregation == &quot;density&quot; ? ChartHistogramEncoding.Density : ChartHistogramEncoding.Value);
-            chart.WithYAxis(aggregation == &quot;density&quot; ? &quot;Observations per unit&quot; : &quot;Observation count&quot;);
+                encoding);
+            chart.WithYAxis(aggregation switch {
+                &quot;density&quot; =&gt; &quot;Observations per unit&quot;, &quot;probability&quot; =&gt; &quot;Probability&quot;,
+                &quot;probability-density&quot; =&gt; &quot;Probability per unit&quot;, _ =&gt; &quot;Observation count&quot;
+            });
             foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count + &quot; obs&quot;);
+        } else if (aggregation == &quot;weighted-mean&quot;) {
+            observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;weighted-quantity&quot;), &quot;Weighted quantity&quot;,
+                new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),
+                    new ChartHistogramObservation(1.2, -4, 2), new ChartHistogramObservation(2.5, 12, 1),
+                    new ChartHistogramObservation(6.1, 9, 0), new ChartHistogramObservation(9, 5, 4) },
+                layout, ChartHistogramAggregation.WeightedMean);
+            chart.WithYAxis(&quot;Weighted mean quantity&quot;);
         } else if (aggregation is &quot;sum&quot; or &quot;mean&quot;) {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;quantity&quot;), &quot;Quantity&quot;,
                 new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4), new ChartPoint(1.2, 8),
@@ -147,6 +171,13 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create(&quot;compact&quot;, mode);
+if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle(&quot;Measurements across intervals&quot;).WithSubtitle(&quot;Observation counts in unequal measurement intervals&quot;).WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText(&quot;visual.svg&quot;, natural.ToSvg());
+    File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
+    File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
     new VisualFrame(&quot;Measurements across intervals&quot;, &quot;Observation counts in unequal measurement intervals&quot;, showLegend: false, showSurface: false));
@@ -155,8 +186,9 @@ File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
 File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
 
-/// &lt;summary&gt;Counts, density, signed sums or means over the same explicit unequal measurement intervals.&lt;/summary&gt;
+/// &lt;summary&gt;Counts, probabilities, densities and signed or weighted means over unequal measurement intervals.&lt;/summary&gt;
 public static class HistogramRecipe {
+    /// &lt;summary&gt;Creates a native histogram while retaining its source observations and raw bin aggregates.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var aggregation = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == &quot;compact&quot;) aggregation = &quot;wide&quot;;
@@ -164,12 +196,28 @@ public static class HistogramRecipe {
         var chart = Chart.Create().WithXAxis(&quot;Measurement&quot;).WithDataLabels();
         chart.Options.XAxis.WithBounds(0, 10);
         ChartSeries observations;
-        if (aggregation is &quot;wide&quot; or &quot;density&quot;) {
+        if (aggregation is &quot;wide&quot; or &quot;density&quot; or &quot;probability&quot; or &quot;probability-density&quot;) {
+            var encoding = aggregation switch {
+                &quot;density&quot; =&gt; ChartHistogramEncoding.Density,
+                &quot;probability&quot; =&gt; ChartHistogramEncoding.Probability,
+                &quot;probability-density&quot; =&gt; ChartHistogramEncoding.ProbabilityDensity,
+                _ =&gt; ChartHistogramEncoding.Value
+            };
             observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;observations&quot;), &quot;Observations&quot;,
                 new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout,
-                aggregation == &quot;density&quot; ? ChartHistogramEncoding.Density : ChartHistogramEncoding.Value);
-            chart.WithYAxis(aggregation == &quot;density&quot; ? &quot;Observations per unit&quot; : &quot;Observation count&quot;);
+                encoding);
+            chart.WithYAxis(aggregation switch {
+                &quot;density&quot; =&gt; &quot;Observations per unit&quot;, &quot;probability&quot; =&gt; &quot;Probability&quot;,
+                &quot;probability-density&quot; =&gt; &quot;Probability per unit&quot;, _ =&gt; &quot;Observation count&quot;
+            });
             foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count + &quot; obs&quot;);
+        } else if (aggregation == &quot;weighted-mean&quot;) {
+            observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;weighted-quantity&quot;), &quot;Weighted quantity&quot;,
+                new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),
+                    new ChartHistogramObservation(1.2, -4, 2), new ChartHistogramObservation(2.5, 12, 1),
+                    new ChartHistogramObservation(6.1, 9, 0), new ChartHistogramObservation(9, 5, 4) },
+                layout, ChartHistogramAggregation.WeightedMean);
+            chart.WithYAxis(&quot;Weighted mean quantity&quot;);
         } else if (aggregation is &quot;sum&quot; or &quot;mean&quot;) {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;quantity&quot;), &quot;Quantity&quot;,
                 new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4), new ChartPoint(1.2, 8),

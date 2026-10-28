@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
@@ -17,6 +18,10 @@ public sealed class TopologyObstacleAutomaticPortTests {
         var prepared = chart.Prepare(Options());
         var report = prepared.Analyze();
         Capture(prepared, "obstacle-auto-mini" + (mirrored ? "-mirrored" : ""));
+        var panelTop = (double)Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(),
+            element => (string?)element.Attribute("data-cfx-role") == "topology-panel").Attribute("y")!;
+        Assert.All(chart.Nodes, node => Assert.Equal(node.Y - chart.Viewport.Padding,
+            report.Nodes.Single(actual => actual.Id == node.Id).Bounds.Y - panelTop, 3));
         Assert.Empty(report.Collisions);
         Assert.Empty(report.RouteCrossings);
         Assert.Empty(report.RouteOverlaps);

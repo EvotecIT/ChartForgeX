@@ -45,8 +45,8 @@ public sealed class TopologyOptionalCaptionFieldsTests {
         Assert.Equal(18, text.Text.Size);
         Assert.DoesNotContain(visual.Diagnostics, diagnostic => diagnostic.Code.StartsWith("topology.label-", StringComparison.Ordinal));
         Assert.DoesNotContain(visual.Scene.Nodes, node => node.Role == "topology-node-subtitle" || node.Role == "topology-node-symbol");
-        var fitted = Assert.Single(visual.ToArtifact().ToInterchangeEnvelope().Nodes);
-        var expected = Assert.Single(control.ToArtifact().ToInterchangeEnvelope().Nodes);
+        var fitted = Assert.Single(visual.CapturedSemanticSnapshot!.Nodes);
+        var expected = Assert.Single(control.CapturedSemanticSnapshot!.Nodes);
         Assert.True(fitted.Width > 70);
         Assert.Equal(expected.X, fitted.X); Assert.Equal(expected.Y, fitted.Y);
         Assert.Equal(expected.Width, fitted.Width); Assert.Equal(expected.Height, fitted.Height);

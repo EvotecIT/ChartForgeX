@@ -28,6 +28,7 @@ public sealed class SpecialtyEmptyLifecycleTests {
         Assert.Contains(empty.Diagnostics, item => item.Code == diagnostic);
         Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role == role);
         if (kind == ChartSeriesKind.LayeredRadial) series.ReplaceRadialLayers(new[] { new ChartRadialLayer("Arrived", 40) });
+        else if (kind == ChartSeriesKind.ProgressBar) series.ReplaceProgressItems(new[] { new ChartProgressItem("Arrived", 40) });
         else series.Points.Add(new ChartPoint(1, 40));
         series.WithObservationId(0, new ChartObservationId("arrived"));
         var filled = chart.Prepare(Context());
@@ -41,6 +42,7 @@ public sealed class SpecialtyEmptyLifecycleTests {
         Assert.NotEqual(svg, filled.ToSvg()); Assert.NotEmpty(filled.ToPng(Raster()));
         Assert.Equal(svg, empty.ToSvg()); Assert.Equal(png, empty.ToPng(Raster()));
         if (kind == ChartSeriesKind.LayeredRadial) series.ReplaceRadialLayers(Array.Empty<ChartRadialLayer>());
+        else if (kind == ChartSeriesKind.ProgressBar) series.ReplaceProgressItems(Array.Empty<ChartProgressItem>());
         else series.Points.Clear();
         var cleared = chart.Prepare(Context());
         Assert.Contains(cleared.Diagnostics, item => item.Code == diagnostic);

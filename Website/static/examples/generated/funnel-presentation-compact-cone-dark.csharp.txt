@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = FunnelPresentationRecipe.Create("compact-cone", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Independent stage and connection presentation").WithSubtitle("Measured component captions and source-owned connection paint retain every ordered stage").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 560)), theme, mode,
+    new VisualFrame("Independent stage and connection presentation", "Measured component captions and source-owned connection paint retain every ordered stage", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds an ordered intake funnel with independent captions and native connection paint.</summary>
+public static class FunnelPresentationRecipe {
+    /// <summary>Creates the complete requested form. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "cone" or "compact-cone" or "horizontal" or "compact-horizontal" or "cone-horizontal" or "compact-cone-horizontal")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal);
+        var cone = variant is "cone" or "compact-cone" or "cone-horizontal" or "compact-cone-horizontal";
+        var horizontal = variant.EndsWith("horizontal", StringComparison.Ordinal);
+        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 560 : 620)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Requests through the intake stages")
+            .WithSubtitle("Native paint and captions retain every source value, including the zero completion stage")
+            .WithLegend(false).WithDataLabels().WithXLabels("Received", "Reviewed", "Qualified", "Completed");
+        var series = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel,
+            new[] { new ChartPoint(1, 120), new ChartPoint(2, 80), new ChartPoint(3, 40), new ChartPoint(4, 0) })
+            .WithObservationIds(new[] { new ChartObservationId("received"), new ChartObservationId("reviewed"), new ChartObservationId("qualified"), new ChartObservationId("completed") })
+            .WithPointColor(0, "#2978A5").WithPointColor(1, "#3C8D70").WithPointColor(2, "#BA7834")
+            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward)
+            .WithPointStrokeColor(1, ChartColor.FromHex("#93455E"));
+        chart.AddSeries(series).ConfigureFunnel(options => {
+            options.Form = cone ? ChartFunnelForm.Cone : ChartFunnelForm.StageBars;
+            options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+            options.LabelContent = ChartStageLabelContent.Separate;
+            options.CategoryLabel.Style.FontSize = 12; options.ValueLabel.Style.FontSize = 13;
+            options.RetentionLabel.Style.FontSize = 11; options.DropOffLabel.Style.FontSize = 11;
+            options.RetentionLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
+            options.DropOffLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
+            options.StageOutline = new ChartStrokeStyle(width: 2, dash: new[] { 5d, 3d });
+            options.StageOutlineDashOffset = 1;
+            options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .16);
+        });
+        series.WithFunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex("#8763A1"), fillOpacity: .45,
+            fillPattern: ChartFillPattern.DiagonalBackward, outlineStroke: new ChartStrokeStyle(width: 1.5, dash: new[] { 4d, 2d }), strokeDashOffset: 2));
+        // Crowded captions can be omitted at the requested size; the complete source, ratio and connection facts remain descriptive.
+        return chart.WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+    }
+}

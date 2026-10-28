@@ -36,7 +36,9 @@ public class MermaidFlowchartDocument : MermaidDocument {
     /// <summary>Gets parsed flowchart edges.</summary>
     public List<MermaidFlowchartEdge> Edges { get; } = new();
 
-    /// <summary>Gets parsed flowchart subgraphs.</summary>
+    /// <summary>Gets one canonical subgraph per ID in source first-ID order.</summary>
+    /// <remarks>The first completed declaration owns its title, direction and span. Later declarations merge raw
+    /// node references in close order. SourceText and Statements retain every original declaration and span.</remarks>
     public List<MermaidFlowchartSubgraph> Subgraphs { get; } = new();
 
     /// <summary>Gets parsed flowchart class definitions.</summary>
@@ -87,7 +89,79 @@ public enum MermaidFlowchartNodeShape {
     /// <summary>A UML actor.</summary>
     Actor,
     /// <summary>A document contour with horizontal content rules.</summary>
-    LinedDocument
+    LinedDocument,
+    /// <summary>A horizontal cylinder for direct-access storage.</summary>
+    HorizontalCylinder,
+    /// <summary>A direction-aware filled fork or join bar.</summary>
+    SynchronizationBar,
+    /// <summary>An open-sided data store.</summary>
+    DataStore,
+    /// <summary>A folder with a raised tab.</summary>
+    Folder,
+    /// <summary>An object-storage bucket.</summary>
+    Bucket,
+    /// <summary>A terminal window.</summary>
+    Console,
+    /// <summary>A browser window.</summary>
+    Browser,
+    /// <summary>A person with text inside the torso.</summary>
+    Person,
+    /// <summary>A borderless text block.</summary>
+    TextBlock,
+    /// <summary>A card with a clipped upper-left corner.</summary>
+    NotchedRectangle,
+    /// <summary>A process with an inset left rule.</summary>
+    LinedRectangle,
+    /// <summary>A filled start or junction circle.</summary>
+    FilledCircle,
+    /// <summary>A framed stop circle.</summary>
+    FramedCircle,
+    /// <summary>A collate hourglass.</summary>
+    Hourglass,
+    /// <summary>A comment with a left brace.</summary>
+    BraceLeft,
+    /// <summary>A comment with a right brace.</summary>
+    BraceRight,
+    /// <summary>A comment with two braces.</summary>
+    Braces,
+    /// <summary>A communication lightning bolt.</summary>
+    LightningBolt,
+    /// <summary>A document with a lower wave.</summary>
+    Document,
+    /// <summary>A delay surface with a rounded right end.</summary>
+    HalfRoundedRectangle,
+    /// <summary>A disk cylinder with an additional rule.</summary>
+    LinedCylinder,
+    /// <summary>A display surface with a wedge and curved end.</summary>
+    CurvedTrapezoid,
+    /// <summary>A process with an upper compartment.</summary>
+    DividedRectangle,
+    /// <summary>An extraction triangle.</summary>
+    Triangle,
+    /// <summary>Internal storage with upper and left rules.</summary>
+    WindowPane,
+    /// <summary>A loop limit with clipped upper corners.</summary>
+    NotchedPentagon,
+    /// <summary>A downward manual-file triangle.</summary>
+    TriangleDown,
+    /// <summary>A manual-input rectangle with a sloped top.</summary>
+    SlopedRectangle,
+    /// <summary>A stack of document sheets.</summary>
+    StackedDocument,
+    /// <summary>A stack of process rectangles.</summary>
+    StackedRectangle,
+    /// <summary>Stored data with opposing curved sides.</summary>
+    BowTieRectangle,
+    /// <summary>A summary circle with an interior cross.</summary>
+    CrossedCircle,
+    /// <summary>A tagged document.</summary>
+    TaggedDocument,
+    /// <summary>A tagged process rectangle.</summary>
+    TaggedRectangle,
+    /// <summary>Paper tape with upper and lower waves.</summary>
+    WavyRectangle,
+    /// <summary>A bang contour with concave circular scallops.</summary>
+    ScallopedBurst
 }
 
 /// <summary>
@@ -114,7 +188,10 @@ public sealed class MermaidFlowchartNode : MermaidAstNode {
     /// <summary>Gets or sets the explicit Mermaid node shape.</summary>
     public MermaidFlowchartNodeShape Shape { get; set; }
 
-    /// <summary>Gets properties declared with modern Mermaid node metadata syntax.</summary>
+    internal Dictionary<string, MermaidSourceSpan> PropertySpans { get; } = new();
+    internal Dictionary<string, MermaidSourceSpan> PropertyValueSpans { get; } = new();
+    internal Dictionary<string, string> PropertyTokens { get; } = new();
+    /// <summary>Gets source properties and retained UseCase stereotype facts.</summary>
     public Dictionary<string, string> Properties { get; } = new();
 
     /// <summary>Gets class names assigned through Mermaid class syntax.</summary>
@@ -137,6 +214,14 @@ public sealed class MermaidFlowchartNode : MermaidAstNode {
 /// Describes a Mermaid flowchart edge.
 /// </summary>
 public sealed class MermaidFlowchartEdge : MermaidAstNode {
+    /// <summary>Gets inert authored metadata values for this existing edge identity.</summary>
+    public Dictionary<string,string> Properties { get; } = new();
+    /// <summary>Gets original per-property source spans.</summary>
+    public Dictionary<string,MermaidSourceSpan> PropertySpans { get; } = new();
+    /// <summary>Gets the exact authored scalar tokens, including quote spelling.</summary>
+    public Dictionary<string,string> PropertyTokens { get; } = new();
+
+    private string? _id;
     private string _sourceId;
     private string _targetId;
     private string _operator;
@@ -147,6 +232,16 @@ public sealed class MermaidFlowchartEdge : MermaidAstNode {
         _targetId = string.IsNullOrWhiteSpace(targetId) ? throw new System.ArgumentException("Target node id is required.", nameof(targetId)) : targetId;
         _operator = string.IsNullOrWhiteSpace(edgeOperator) ? throw new System.ArgumentException("Edge operator is required.", nameof(edgeOperator)) : edgeOperator;
     }
+
+    /// <summary>Gets or sets an optional authored edge identity. Null retains its source-order generated native identity.</summary>
+    public string? Id {
+        get => _id;
+        set => _id = value != null && string.IsNullOrWhiteSpace(value)
+            ? throw new System.ArgumentException("Authored edge ids must not be empty.", nameof(value)) : value;
+    }
+    internal MermaidSourceSpan? IdentitySpan { get; set; }
+    /// <summary>Gets class names assigned to this association.</summary>
+    public List<string> Classes { get; } = new();
 
     /// <summary>Gets or sets the source node identifier.</summary>
     public string SourceId { get => _sourceId; set => _sourceId = string.IsNullOrWhiteSpace(value) ? throw new System.ArgumentException("Source node id is required.", nameof(value)) : value; }
@@ -160,7 +255,7 @@ public sealed class MermaidFlowchartEdge : MermaidAstNode {
     /// <summary>Gets or sets the optional edge label.</summary>
     public string? Label { get; set; }
 
-    /// <summary>Gets style declarations assigned through linkStyle syntax.</summary>
+    /// <summary>Gets style declarations assigned directly or through the family's class/linkStyle syntax.</summary>
     public Dictionary<string, string> Styles { get; } = new();
 }
 
@@ -168,6 +263,10 @@ public sealed class MermaidFlowchartEdge : MermaidAstNode {
 /// Describes a Mermaid flowchart subgraph.
 /// </summary>
 public sealed class MermaidFlowchartSubgraph : MermaidAstNode {
+    /// <summary>Gets inert source properties associated with this canonical subgraph identity.</summary>
+    public Dictionary<string, string> Properties { get; } = new();
+    internal Dictionary<string, string> PropertyTokens { get; } = new();
+    internal Dictionary<string, MermaidSourceSpan> PropertyValueSpans { get; } = new();
     private string _id;
     private string _title;
 
@@ -189,14 +288,24 @@ public sealed class MermaidFlowchartSubgraph : MermaidAstNode {
     /// <summary>Gets or sets the locally declared direction; None inherits its parent.</summary>
     public MermaidFlowchartDirection Direction { get; set; }
 
-    /// <summary>Gets node ids declared inside the subgraph.</summary>
+    /// <summary>Gets authored node references merged from this ID's declarations in close order; each node owns its resolved semantic membership.</summary>
     public List<string> NodeIds { get; } = new();
+
+    /// <summary>Gets source classes assigned to this canonical subgraph identity.</summary>
+    public List<string> Classes { get; } = new();
+
+    /// <summary>Gets resolved source style declarations for this canonical subgraph identity.</summary>
+    public Dictionary<string,string> Styles { get; } = new();
 }
 
 /// <summary>
 /// Describes a Mermaid flowchart linkStyle declaration.
 /// </summary>
 public sealed class MermaidFlowchartLinkStyle : MermaidAstNode {
+    /// <summary>Gets or sets the raw optional source interpolation token, independent of paint declarations.</summary>
+    public string? Interpolation { get; set; }
+    internal MermaidSourceSpan? InterpolationSpan { get; set; }
+
     private string _selector;
 
     /// <summary>Initializes a parsed link style declaration.</summary>

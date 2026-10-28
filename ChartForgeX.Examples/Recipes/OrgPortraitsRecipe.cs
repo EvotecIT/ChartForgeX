@@ -1,0 +1,36 @@
+/// <summary>Uses fictional names and generated embedded artwork in the native team hierarchy.</summary>
+public static class OrgPortraitsRecipe {
+    /// <summary>Creates a complete portrait-bearing organization diagram without external assets.</summary>
+    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "meet" or "slice" or "collapsed" or "horizontal" or "reordered")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = TopologyChart.Create().WithViewport(variant == "compact" ? 390 : 900, 480).WithLegend(null);
+        chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;
+        chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
+        var fit = variant == "meet" ? TopologyPortraitFit.Meet : TopologyPortraitFit.Slice;
+        chart.AddTeam("studio", "Example studio", new[] {
+            new TopologyTeamMember("avery", "Avery Quinn", "Team lead") { Artwork = Avatar(0, fit) },
+            new TopologyTeamMember("jordan", "Jordan Vale", "Engineering") { ParentId = "avery", Artwork = Avatar(1, fit) },
+            new TopologyTeamMember("morgan", "Morgan Reed", "Operations") { ParentId = "avery", Artwork = Avatar(2, fit) }
+        }, new TopologyTeamOptions { IncludeTeamNode = false });
+        if (variant is "collapsed" or "horizontal" or "reordered") {
+            chart.Nodes.Single(node => node.Id == "avery").Badge = "Lead";
+            chart.DefaultRenderOptions.HierarchyView = new TopologyHierarchyView(
+                collapsedNodeIds: variant == "collapsed" ? new[] { "avery" } : null,
+                nodeOrder: variant == "reordered" ? new[] { "morgan", "jordan" } : null,
+                layoutDirection: variant == "horizontal" ? TopologyLayoutDirection.LeftToRight : null);
+        }
+        return chart;
+    }
+    private static TopologyIconArtwork Avatar(int index, TopologyPortraitFit fit) {
+        var colors = new[] { ChartColor.FromHex("#245CA8"), ChartColor.FromHex("#A84A24"), ChartColor.FromHex("#347B59") };
+        var pixels = new byte[24 * 16 * 4]; var accent = colors[index];
+        for (var y = 0; y < 16; y++) for (var x = 0; x < 24; x++) {
+            var offset = (y * 24 + x) * 4; var head = x >= 9 && x < 15 && y >= 3 && y < 9;
+            var shoulders = x >= 6 && x < 18 && y >= 10;
+            pixels[offset] = head || shoulders ? (byte)240 : accent.R;
+            pixels[offset + 1] = head || shoulders ? (byte)240 : accent.G;
+            pixels[offset + 2] = head || shoulders ? (byte)240 : accent.B; pixels[offset + 3] = 255;
+        }
+        return TopologyIconArtwork.Portrait(new ChartForgeX.Raster.RgbaImage(24, 16, pixels), fit);
+    }
+}

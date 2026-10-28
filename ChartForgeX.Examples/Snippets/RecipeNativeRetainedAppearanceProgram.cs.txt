@@ -1,0 +1,23 @@
+using System;
+using System.IO;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
+
+var root = NativeRetainedAppearanceExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var rootJson = root.ToArtifact().ToInterchangeJson();
+File.WriteAllText("appearance.json", rootJson);
+File.WriteAllText("appearance.native.svg", root.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+File.WriteAllBytes("appearance.png", root.ToPng());
+var edited = NativeRetainedAppearanceExample.RestoreRoot(rootJson, {{VARIANT}}, VisualThemeMode.{{MODE}}, "Approved");
+File.WriteAllText("appearance.edited.svg", edited.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
+var layer = NativeRetainedAppearanceExample.Capture({{VARIANT}}, VisualThemeMode.{{MODE}});
+var captureJson = layer.ToArtifact().ToInterchangeJson();
+File.WriteAllText("capture.json", captureJson);
+File.WriteAllText("capture.svg", NativeRetainedAppearanceExample.RestoreLayer(captureJson, {{VARIANT}}, VisualThemeMode.{{MODE}}).Visual.ToSvg());
+File.WriteAllBytes("capture.png", layer.Visual.ToPng());
+
+{{SOURCE}}

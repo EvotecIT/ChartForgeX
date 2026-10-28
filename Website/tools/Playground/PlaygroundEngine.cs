@@ -182,7 +182,8 @@ public static partial class PlaygroundEngine {
             return;
         }
 
-        var parsed = new MermaidVisualMarkupParser(new MermaidRenderOptions { ParseOptions = parseOptions }).Parse(scan);
+        var parsed = new MermaidVisualMarkupParser(new MermaidRenderOptions { ParseOptions = parseOptions },
+            dark ? VisualThemeMode.Dark : VisualThemeMode.Light).Parse(scan);
         foreach (var diagnostic in parsed.Diagnostics) {
             outcome.Add(diagnostic.Severity.ToString(), diagnostic.Code, diagnostic.Message, diagnostic.Line > 0 ? diagnostic.Line : null, null);
         }
@@ -209,7 +210,8 @@ public static partial class PlaygroundEngine {
     // preserve that same source precedence as the direct Mermaid language path.
     // Null retains the producer's authored or fixed palette.
     private static string? RenderThemed(VisualArtifact artifact, PageTheme theme, string scope) {
-        if (artifact.SourceLanguage == VisualArtifactSourceLanguage.Mermaid && artifact.Metadata.ContainsKey("mermaid.config.theme")) return null;
+        if (artifact.SourceLanguage == VisualArtifactSourceLanguage.Mermaid)
+            return artifact.Metadata.ContainsKey("mermaid.config.theme") ? null : artifact.ToSvg(null, scope);
         switch (artifact.Model) {
             case Chart chart:
                 chart.WithThemeMode(theme.Mode);

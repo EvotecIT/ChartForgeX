@@ -1,0 +1,20 @@
+using System;
+using System.IO;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+
+// Reference the ordinary ChartForgeX Core package; this program has no parser, adapter or browser dependency.
+// Portable JSON owns resolved font bytes. Copy the licensed gallery fonts directory beside this program,
+// or pass regular and bold font paths; every captured root must remain within the portable font limit.
+const string captionFamily = "CFX Proof Carlito";
+FontRegistry.Register(captionFamily, args.Length > 0 ? args[0] : "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register(captionFamily, args.Length > 1 ? args[1] : "fonts/Carlito-Bold.ttf", 700);
+var artifact = MixedCaptionRecipe.Create({{VARIANT}}, VisualThemeMode.{{MODE}}, captionFamily);
+File.WriteAllText("caption.svg", artifact.ToSvg());
+File.WriteAllBytes("caption.png", artifact.ToPng());
+File.WriteAllText("caption.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+File.WriteAllText("caption.json", artifact.ToInterchangeJson());
+
+{{SOURCE}}

@@ -35,20 +35,24 @@ public static partial class GalleryWriter {
             var backgrounds=new List<PngSurface>(); var shadows=new List<PngSurface>();
             foreach (var element in root.Elements().Where(e=>e.Name.LocalName=="rect" && e.Attribute("transform")==null)) {
                 var role=(string?)element.Attribute("data-cfx-role");
-                if (role is not ("background" or "frame-card-shadow") ||
+                if (role is not ("background" or "visual-background" or "frame-card-shadow") ||
                     !TryPngSurfaceColor((string?)element.Attribute("fill"),out var color)) continue;
                 var x=SurfaceNumber(element,"x"); var y=SurfaceNumber(element,"y");
-                var width=SurfaceNumber(element,"width"); var height=SurfaceNumber(element,"height");
+                var width=role=="visual-background" && (string?)element.Attribute("width")=="100%" ? svg.LogicalWidth : SurfaceNumber(element,"width");
+                var height=role=="visual-background" && (string?)element.Attribute("height")=="100%" ? svg.LogicalHeight : SurfaceNumber(element,"height");
+                if (role=="visual-background" && (element.Attribute("opacity")!=null || element.Attribute("fill-opacity")!=null || element.Attribute("style")!=null)) continue;
                 if (x<0 || y<0 || width<=0 || height<=0 || x+width>svg.LogicalWidth+.001 || y+height>svg.LogicalHeight+.001) continue;
-                if (role=="background") {
+                if (role is "background" or "visual-background") {
                     if (color.A!=255 || x!=0 || y!=0 || Math.Abs(width-svg.LogicalWidth)>.001 ||
                         Math.Abs(height-svg.LogicalHeight)>.001 || SurfaceNumber(element,"rx")!=0) continue;
-                    backgrounds.Add(new PngSurface(x*scale,y*scale,width*scale,height*scale,0,color));
+                    backgrounds.Add(new PngSurface(x*scale,y*scale,width*scale,height*scale,0,color,frameBacking:role=="visual-background"));
                 } else if (color.A>0 && color.A<255) {
                     shadows.Add(new PngSurface(x*scale,y*scale,width*scale,height*scale,SurfaceNumber(element,"rx")*scale,color));
                 }
             }
             if (allowance==null && backgrounds.Count==0 && shadows.Count==0) return null;
+            if (allowance!=null && frames.Length==1 && (string?)frames[0].Attribute("data-cfx-role")=="visual-card" && backgrounds.Any(background=>background.FrameBacking))
+                allowance.NativeCornerPixels=ReadNativeFrameCornerPixels(root,frames[0],svg,(int)scale);
             allowance??=new PngFrameAllowance(0,0,0,0,0,0,default,default);
             allowance.Backgrounds=backgrounds; allowance.Shadows=shadows;
             return allowance;
@@ -102,6 +106,7 @@ public static partial class GalleryWriter {
     private sealed class PngFrameAllowance {
         internal List<PngSurface> Backgrounds { get; set; }=new();
         internal List<PngSurface> Shadows { get; set; }=new();
+        internal Dictionary<(int X,int Y),int> NativeCornerPixels { get; set; }=new();
         private readonly double _x,_y,_width,_height,_radius,_stroke;
         private readonly ChartColor _fill,_line;
         internal PngFrameAllowance(double x,double y,double width,double height,double radius,double stroke,ChartColor fill,ChartColor line) {
@@ -111,10 +116,12 @@ public static partial class GalleryWriter {
         internal int Fill => PngColorKey(_fill.R,_fill.G,_fill.B,_fill.A);
         internal int NormalizeEdgeSample(int x,int y,int rgba) {
             if ((rgba&255)==0) return rgba;
+            if (NativeCornerPixels.TryGetValue((x,y),out var expected) && rgba==expected) return Fill;
             if (_stroke>0 && Includes(x,y,rgba)) return Fill;
             foreach (var background in Backgrounds) {
-                if (background.Contains(x,y) && background.MatchesRgb(rgba))
-                    return PngColorKey(background.Color.R,background.Color.G,background.Color.B,255);
+                if (!background.Contains(x,y) || !background.MatchesRgb(rgba)) continue;
+                if (background.FrameBacking) continue;
+                return PngColorKey(background.Color.R,background.Color.G,background.Color.B,255);
             }
             var remainingAlpha=1d;
             foreach (var shadow in Shadows) {
@@ -125,10 +132,13 @@ public static partial class GalleryWriter {
             if ((rgba&255)<=Math.Ceiling((1-remainingAlpha)*255)+2 && remainingAlpha<1) return 0;
             return rgba;
         }
-        internal bool Includes(int x,int y,int rgba) {
+        private double FrameDistance(int x,int y) {
             var dx=Math.Abs(x+.5-(_x+_width/2))-(_width/2-_radius);
             var dy=Math.Abs(y+.5-(_y+_height/2))-(_height/2-_radius);
-            var distance=Math.Sqrt(Math.Pow(Math.Max(dx,0),2)+Math.Pow(Math.Max(dy,0),2))+Math.Min(Math.Max(dx,dy),0)-_radius;
+            return Math.Sqrt(Math.Pow(Math.Max(dx,0),2)+Math.Pow(Math.Max(dy,0),2))+Math.Min(Math.Max(dx,dy),0)-_radius;
+        }
+        internal bool Includes(int x,int y,int rgba) {
+            var distance=FrameDistance(x,y);
             if (Math.Abs(distance)>_stroke/2+1.25) return false;
             // In straight-alpha output the stroke's contribution cannot exceed its authored alpha
             // divided by the resulting pixel alpha. This covers partially filled antialiased edges
@@ -151,11 +161,12 @@ public static partial class GalleryWriter {
 
     private sealed class PngSurface {
         private readonly double _x,_y,_width,_height,_radius;
-        internal PngSurface(double x,double y,double width,double height,double radius,ChartColor color) {
+        internal PngSurface(double x,double y,double width,double height,double radius,ChartColor color,bool frameBacking=false) {
             _x=x; _y=y; _width=width; _height=height;
-            _radius=Math.Max(0,Math.Min(radius,Math.Min(width,height)/2)); Color=color;
+            _radius=Math.Max(0,Math.Min(radius,Math.Min(width,height)/2)); Color=color; FrameBacking=frameBacking;
         }
         internal ChartColor Color { get; }
+        internal bool FrameBacking { get; }
         internal bool MatchesRgb(int rgba) => Math.Abs(((rgba>>24)&255)-Color.R)<=2 &&
             Math.Abs(((rgba>>16)&255)-Color.G)<=2 && Math.Abs(((rgba>>8)&255)-Color.B)<=2;
         internal bool Contains(int x,int y) {

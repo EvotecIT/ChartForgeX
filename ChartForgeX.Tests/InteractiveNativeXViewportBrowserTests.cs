@@ -52,8 +52,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No committed export was downloaded.");
         var svg = XDocument.Load(path);
-        var exportedX = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label")
-            .Select(node => node.Value).ToArray();
+        var exportedX = await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label");
         Assert.Equal(zoomed.GetProperty("xLabels").EnumerateArray().Select(item => item.GetString()), exportedX);
         Assert.Equal("false", (string?)Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-observation-id") == "sample-0").Attribute("data-cfx-visible"));
         await SaveDownloadAsync(download, "committed-" + width + ".svg");
@@ -173,13 +172,14 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         private readonly string? _group;
         private readonly bool _scenarios, _navigation, _adaptive, _sessions, _automaticBounds, _yReversed;
         private readonly ChartScaleKind _yScale;
+        private readonly Action<Chart>? _configureChart;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         internal NativeHost(bool dark = false, bool reversed = false, ChartSeriesKind kind = ChartSeriesKind.Line,
             bool time = false, int width = 800, string id = "native-readings", string? group = null, bool scenarios = false,
-            bool navigation = false, bool adaptive = false, bool sessions = false, bool automaticBounds = false, ChartScaleKind yScale = ChartScaleKind.Linear, bool yReversed = false) {
+            bool navigation = false, bool adaptive = false, bool sessions = false, bool automaticBounds = false, ChartScaleKind yScale = ChartScaleKind.Linear, bool yReversed = false, Action<Chart>? configureChart = null) {
             _dark = dark; _reversed = reversed; _kind = kind; _time = time || sessions; _width = width; Id = id; _group = group; _scenarios = scenarios;
             _navigation = navigation; _adaptive = adaptive; _sessions = sessions;
-            _automaticBounds = automaticBounds; _yScale = yScale; _yReversed = yReversed;
+            _automaticBounds = automaticBounds; _yScale = yScale; _yReversed = yReversed; _configureChart = configureChart;
             _sections.Add("initial", _renderer.PrepareSection(Chart(), configure: ConfigureSection));
         }
         internal string Id { get; }
@@ -285,6 +285,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("envelope"), "Envelope", points.Select(point => new ChartRangeBand(point.X, point.Y / 2 - 6, point.Y / 2 + 6))));
             }
             chart.Options.XAxis.Reversed = _reversed;
+            _configureChart?.Invoke(chart);
             return chart;
         }
     }
@@ -325,13 +326,16 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     }
 
     private static Task WaitForChangesAsync(IPage page, int count) => page.WaitForFunctionAsync("count=>nativeChanges.length===count", count);
-    private static Task<JsonElement> SceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> SceneAsync(IPage page) {
+        await BrowserProofCaptions.InstallNativeAsync(page);
+        return await page.EvaluateAsync<JsonElement>("""
         () => {const root=chartController.root;return {
             revision:chartController.sceneRevision,projection:JSON.parse(root.dataset.cfxPreparedChart).xProjection,
-            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>node.textContent),
-            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>node.textContent)
+            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>window.cfxCaptionText(node)),
+            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>window.cfxCaptionText(node))
         };}
         """);
+    }
     private static async Task CaptureAsync(IPage page, string name, object? evidence = null) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;

@@ -8,7 +8,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Topology;
 
 /// <summary>Prepares the measured topology text shared by native painting and layout obstacles.</summary>
-internal sealed class TopologyTextLayout {
+internal sealed partial class TopologyTextLayout {
     private TopologyTextLayout(double size, double lineHeight, List<string> lines, double width) {
         Size = size; LineHeight = lineHeight; Lines = lines; Width = width;
     }
@@ -17,6 +17,42 @@ internal sealed class TopologyTextLayout {
     internal List<string> Lines { get; }
     internal double Width { get; }
     internal double Height => LineHeight * Lines.Count;
+
+    /// <summary>Reserves the same complete native sibling faces used by fitted external captions.</summary>
+    internal static double StructuredCaptionRowHeight(TopologyNode node, TextMeasurementContext? measurement) {
+        var style = TopologyTextPolicy.ResolveStructured(node.TextStyle,
+            measurement?.Font ?? FontSpec.FromFamily(TopologyPaint.Default.FontFamily), 11);
+        style.FontSize = 11;
+        return Math.Max(14, TextLayoutEngine.Measure(node.LabelContent, style).LineHeight);
+    }
+
+    /// <summary>Normalizes authored line endings once; disabling multiline joins those rows into one literal caption.</summary>
+    /// <summary>Joins authored rows while retaining immutable inline styles and literal identity.</summary>
+    internal static TextContent DisplayRows(TextContent content, bool allowMultiline) {
+        if (allowMultiline) return content;
+        var result = content.WithLiteral(string.Empty); var first = true;
+        foreach (var slice in TextLineScanner.Enumerate(content.PlainText)) {
+            if (!first) result = TextContent.Join(result, result.WithLiteral(" ", trailing: true));
+            result = TextContent.Join(result, content.Slice(slice.Start, slice.Length)); first = false;
+        }
+        return result;
+    }
+
+    internal static string[] AuthoredRows(string value, bool allowMultiline) {
+        var source = value.Replace("\r\n", "\n").Replace('\r', '\n');
+        return allowMultiline ? source.Split('\n') : new[] { source.Replace('\n', ' ') };
+    }
+
+    /// <summary>Counts explicit rows, preserving blank-line space without inferring wrapping.</summary>
+    internal static int AuthoredRowCount(string? value, bool allowMultiline) {
+        if (!allowMultiline || value == null) return 1;
+        var rows = 1;
+        for (var index = 0; index < value.Length; index++) {
+            if (value[index] == '\r') { rows++; if (index + 1 < value.Length && value[index + 1] == '\n') index++; }
+            else if (value[index] == '\n') rows++;
+        }
+        return rows;
+    }
 
     internal static TopologyTextLayout? Prepare(string value, double width, double height, double size, int weight,
         int maxLines, bool fitSingleLine, double minimumSize, TopologyRenderOptions options,
@@ -50,9 +86,7 @@ internal sealed class TopologyTextLayout {
         bool fitSingleLine, TopologyRenderOptions options, Func<string, double, int, TextMetrics> measure,
         Action<string, string>? report, out bool overflow) {
         overflow = false;
-        var source = value.Replace("\r\n", "\n").Replace('\r', '\n');
-        if (!options.AllowMultilineNodeLabels) source = source.Replace('\n', ' ');
-        var queue = new Queue<string>(source.Split('\n'));
+        var queue = new Queue<string>(AuthoredRows(value, options.AllowMultilineNodeLabels));
         var lines = new List<string>();
         while (queue.Count > 0 && lines.Count < maxLines) {
             var text = queue.Dequeue();

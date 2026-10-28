@@ -17,7 +17,7 @@ internal static partial class VisualBlockRendering {
     }
 
     internal static RailroadLayoutPlan RailroadLayout(RailroadDiagramBlock block) {
-        if (block.Rules.Count == 0 || block.Rules.Count > 512) throw new InvalidOperationException("Railroad diagrams require one through 512 rules.");
+        if (block.Rules.Count == 0 || block.Rules.Count > RailroadDiagramLimits.MaximumRules) throw new InvalidOperationException("Railroad diagrams require one through 512 rules.");
         var comparer = block.RuleComparison == RailroadRuleComparison.OrdinalIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var ids = new HashSet<string>(comparer); var count = 0; var theme = block.Options.ResolvedTheme;
         var style = RailroadTextStyle(theme); var ruleHeading = RailroadTextStyle(theme, 700); var heading = RailroadHeading(block);
@@ -34,9 +34,9 @@ internal static partial class VisualBlockRendering {
     }
 
     private static RailroadNodePlan MeasureRailroadNode(RailroadExpression expression, TextStyle style, ref int count) {
-        if (++count > 32768) throw new InvalidOperationException("Railroad diagrams allow no more than 32768 expression occurrences.");
-        if (expression.Depth > 128) throw new InvalidOperationException("Railroad expression nesting must not exceed 128 levels.");
-        if (expression.Children.Count > 32768 - count) throw new InvalidOperationException("Railroad diagrams allow no more than 32768 expression occurrences.");
+        if (++count > RailroadDiagramLimits.MaximumExpressionOccurrences) throw new InvalidOperationException("Railroad diagrams allow no more than 32768 expression occurrences.");
+        if (expression.Depth > RailroadDiagramLimits.MaximumExpressionDepth) throw new InvalidOperationException("Railroad expression nesting must not exceed 128 levels.");
+        if (expression.Children.Count > RailroadDiagramLimits.MaximumExpressionOccurrences - count) throw new InvalidOperationException("Railroad diagrams allow no more than 32768 expression occurrences.");
         var measured = new List<RailroadNodePlan>(expression.Children.Count);
         foreach (var child in expression.Children) measured.Add(MeasureRailroadNode(child, style, ref count));
         var children = measured.ToArray();

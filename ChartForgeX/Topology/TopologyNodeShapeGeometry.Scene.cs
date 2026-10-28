@@ -8,13 +8,29 @@ namespace ChartForgeX.Topology;
 /// <summary>Numeric diagram surfaces shared by the prepared exporters, without an SVG parsing round trip.</summary>
 internal static partial class TopologyNodeShapeGeometry {
     internal readonly struct ScenePart {
-        internal ScenePart(ChartPath path, bool close, bool fill) { Path = path; Close = close; Fill = fill; }
+        internal ScenePart(ChartPath path, bool close, bool fill) : this(path, close, fill, true, true, false) { }
+        internal ScenePart(ChartPath path, bool close, bool fill, bool ink, bool attachment, bool accentFill = false)
+            : this(path, close, fill, ink, attachment, accentFill, true) { }
+        internal ScenePart(ChartPath path, bool close, bool fill, bool ink, bool attachment, bool accentFill, bool contourPaint) {
+            Path = path; Close = close; Fill = fill; Ink = ink; Attachment = attachment; AccentFill = accentFill; ContourPaint = contourPaint;
+        }
         internal ChartPath Path { get; }
         internal bool Close { get; }
         internal bool Fill { get; }
+        internal bool Ink { get; }
+        internal bool Attachment { get; }
+        internal bool AccentFill { get; }
+        /// <summary>Whether the node's explicit contour policies apply; fixed shape details retain their own native ink.</summary>
+        internal bool ContourPaint { get; }
     }
 
     internal static IReadOnlyList<ScenePart> SceneParts(TopologyNode node) {
+        if (TopologyPreparedNodeBasis.Resolve(node) is {} basis && !IsActor(node)) {
+            var captured = SceneParts(basis.OriginalNode(node)); var projected = new List<ScenePart>(captured.Count);
+            foreach (var part in captured) projected.Add(new ScenePart(part.Path.Transform(point => basis.Project(node, point)), part.Close, part.Fill, part.Ink, part.Attachment, part.AccentFill, part.ContourPaint));
+            return projected;
+        }
+        if (IsCatalogSurface(node)) return CatalogParts(node);
         var x = node.X; var y = node.Y; var w = node.Width; var h = node.Height;
         var inset = Math.Min(w * 0.18, h * 0.3);
         var parts = new List<ScenePart>();
@@ -39,16 +55,19 @@ internal static partial class TopologyNodeShapeGeometry {
             }), true, fill));
         }
         switch (node.Shape ?? TopologyNodeShape.Rounded) {
+            case TopologyNodeShape.HorizontalCylinder:
+                return HorizontalCylinderParts(node);
             case TopologyNodeShape.LinedDocument:
                 return LinedDocumentParts(node);
             case TopologyNodeShape.Actor:
-                var cx = x + w / 2;
-                var actorScale = ActorScale(node);
-                Ellipse(cx, y + 15 * actorScale, 9 * actorScale, 9 * actorScale);
-                Open(cx, y + 24 * actorScale, cx, y + 50 * actorScale);
-                Open(cx - 17 * actorScale, y + 34 * actorScale, cx + 17 * actorScale, y + 34 * actorScale);
-                Open(cx - 15 * actorScale, y + 68 * actorScale, cx, y + 50 * actorScale, cx + 15 * actorScale, y + 68 * actorScale);
-                break;
+            case TopologyNodeShape.ActorHollow:
+            case TopologyNodeShape.ActorBusiness:
+            case TopologyNodeShape.ActorBusinessHollow:
+            case TopologyNodeShape.ActorSilhouette:
+            case TopologyNodeShape.ActorIcon:
+                return ActorParts(node);
+            case TopologyNodeShape.BusinessEllipse:
+                return BusinessEllipseParts(node);
             case TopologyNodeShape.Ellipse:
             case TopologyNodeShape.Circle:
             case TopologyNodeShape.DoubleCircle:
@@ -57,6 +76,7 @@ internal static partial class TopologyNodeShapeGeometry {
                 Ellipse(x + w / 2, y + h / 2, rx, ry);
                 if (node.Shape == TopologyNodeShape.DoubleCircle) Ellipse(x + w / 2, y + h / 2, Math.Max(0, rx - 5), Math.Max(0, ry - 5), false);
                 break;
+            case TopologyNodeShape.Burst: Polygon(BurstPoints(node)); break;
             case TopologyNodeShape.Diamond: Polygon(x + w / 2, y, x + w, y + h / 2, x + w / 2, y + h, x, y + h / 2); break;
             case TopologyNodeShape.Hexagon: Polygon(x + inset, y, x + w - inset, y, x + w, y + h / 2, x + w - inset, y + h, x + inset, y + h, x, y + h / 2); break;
             case TopologyNodeShape.Parallelogram: Polygon(x + inset, y, x + w, y, x + w - inset, y + h, x, y + h); break;
@@ -87,7 +107,7 @@ internal static partial class TopologyNodeShapeGeometry {
                 }), true, true));
                 break;
             default:
-                var r = node.Shape == TopologyNodeShape.Stadium ? Math.Min(w, h) / 2 : node.Shape is TopologyNodeShape.Rectangle or TopologyNodeShape.SynchronizationBar ? 0 : Math.Min(10, Math.Min(w, h) / 2);
+                var r = SurfaceCornerRadius(node);
                 if (r == 0) { Polygon(x, y, x + w, y, x + w, y + h, x, y + h); break; }
                 // Quadratic rounded corners expressed exactly as cubic segments.
                 const double q = 2d / 3;

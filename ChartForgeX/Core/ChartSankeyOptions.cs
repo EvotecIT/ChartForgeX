@@ -12,6 +12,34 @@ public sealed class ChartSankeyOptions {
     private double _nodeWidth = 10;
     private double? _nodeGap, _nodeCornerRadius;
     private double _ribbonOpacity = .35;
+    private double _ribbonVisibilityThreshold;
+    private ChartSankeyFlowColorMode _flowColorMode;
+    private ChartSankeyLabelStyle _labelStyle;
+
+    /// <summary>Gets or sets ribbon color inheritance. Source is the default and retains the existing source-node paint policy.</summary>
+    public ChartSankeyFlowColorMode FlowColorMode {
+        get => _flowColorMode;
+        set { Defined(value); _flowColorMode = value; }
+    }
+
+    /// <summary>Gets or sets label paint. Backdrop preserves the native default; Plain and Outlined do not add a rectangular label surface.</summary>
+    public ChartSankeyLabelStyle LabelStyle {
+        get => _labelStyle;
+        set { Defined(value); _labelStyle = value; }
+    }
+
+    /// <summary>Gets or sets the independent quantitative flow-color scale. Null uses the theme's sequential scale in Quantitative mode.</summary>
+    public ChartColorScale? ColorScale { get; set; }
+
+    /// <summary>Gets the independent flow-color name, formatting and numeric-key presentation used in Quantitative mode.</summary>
+    public ChartColorDimensionOptions ColorDimension { get; private set; } = new();
+
+    /// <summary>Gets or sets a non-negative paint-only minimum ribbon thickness in logical units. Zero retains all representable ribbons.</summary>
+    /// <remarks>Thinner flows retain their weights, endpoint slots, node totals, color-domain facts and semantic regions, but omit fill, outline and pattern. No minimum-width inflation or aggregation occurs.</remarks>
+    public double RibbonVisibilityThreshold {
+        get => _ribbonVisibilityThreshold;
+        set { NonNegative(value); _ribbonVisibilityThreshold = value; }
+    }
 
     /// <summary>Gets or sets horizontal layer placement. The default is Justify; every flow remains directed to a later layer.</summary>
     public ChartSankeyAlignment Alignment {
@@ -73,7 +101,7 @@ public sealed class ChartSankeyOptions {
     /// <summary>Gets or sets the node fill. Null retains series/state/theme paint; explicit point colors take precedence.</summary>
     public ChartColor? NodeFill { get; set; }
 
-    /// <summary>Gets or sets the ribbon fill. Null retains source-node paint; explicit source point colors take precedence.</summary>
+    /// <summary>Gets or sets the ribbon fill. Null retains the selected flow-color policy; explicit selected-endpoint point colors take precedence.</summary>
     public ChartColor? RibbonFill { get; set; }
 
     /// <summary>Gets or sets filled ribbon opacity from zero to one. The default is .35; the separate authored pattern overlay retains its own opacity.</summary>
@@ -83,7 +111,11 @@ public sealed class ChartSankeyOptions {
     }
 
     /// <summary>Copies the configured state for isolated chart configuration.</summary>
-    internal ChartSankeyOptions Clone() => (ChartSankeyOptions)MemberwiseClone();
+    internal ChartSankeyOptions Clone() {
+        var clone = (ChartSankeyOptions)MemberwiseClone();
+        clone.ColorDimension = ColorDimension.Clone();
+        return clone;
+    }
 
     private static void NonNegative(double? value) {
         if (!value.HasValue) return;

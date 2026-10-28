@@ -103,7 +103,7 @@ public sealed class InteractiveTreemapBrowserTests {
         Assert.Equal(0, await session.Page.Locator("[data-cfx-role=treemap-color-scale-step]").CountAsync());
         Assert.Null(await session.Page.Locator("[data-cfx-role=treemap-color-scale]").GetAttributeAsync("data-cfx-min-value"));
         Assert.Equal(missing.ToCss(), await session.Page.Locator("[data-cfx-role=treemap-tile-mark]").GetAttributeAsync("fill"));
-        Assert.Equal("No data", await session.Page.Locator("[data-cfx-role=treemap-color-scale-label]").TextContentAsync());
+        Assert.Equal("No data", await BrowserProofCaptions.TextAsync(session.Page.Locator("[data-cfx-role=treemap-color-scale-label]")));
         await Capture(chart, session.Page, "treemap-missing-single-" + (dark ? "dark" : "light"), html); AssertNoConsoleErrors(session);
     }
 

@@ -10,13 +10,9 @@ internal sealed partial class VisualTopologyCompiler {
         var children = _chart.Groups.Where(group => group.ParentGroupId == parent.Id
             && group.Presentation == TopologyGroupPresentation.Compartment).ToArray();
         if (children.Length < 2) return;
-        var direction = parent.LayoutDirection;
-        var ancestor = parent;
-        while (!direction.HasValue && ancestor.ParentGroupId != null) {
-            ancestor = _chart.Groups.First(group => group.Id == ancestor.ParentGroupId);
-            direction = ancestor.LayoutDirection;
-        }
-        var horizontalFlow = (direction ?? _chart.LayoutDirection) is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
+        var direction = TopologyGroupHierarchy.ResolveDirection(parent,
+            id => _chart.Groups.First(group => group.Id == id), _chart.LayoutDirection);
+        var horizontalFlow = direction is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
         for (var index = 1; index < children.Length; index++) {
             var previous = children[index - 1];
             var next = children[index];

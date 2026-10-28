@@ -57,10 +57,10 @@ internal static partial class VisualNumericRadialCompiler {
         var baseRatio = scale.Normalize(baseline); var endRatio = scale.Normalize(end);
         var start = bars ? geometry.Start + Math.Min(baseRatio, endRatio) * geometry.Sweep : geometry.Start + position;
         var sweep = bars ? Math.Abs(endRatio - baseRatio) * geometry.Sweep : width;
-        var inner = bars ? geometry.Inner + position : geometry.Inner + Math.Min(baseRatio, endRatio) * (geometry.Outer - geometry.Inner);
-        var outer = bars ? inner + width : geometry.Inner + Math.Max(baseRatio, endRatio) * (geometry.Outer - geometry.Inner);
+        var inner = bars ? geometry.Inner + position : ValueRadius(chart, geometry, Math.Min(baseRatio, endRatio));
+        var outer = bars ? inner + width : ValueRadius(chart, geometry, Math.Max(baseRatio, endRatio));
         var endAngle = bars ? geometry.Start + endRatio * geometry.Sweep : start + sweep / 2;
-        var endRadius = bars ? (inner + outer) / 2 : geometry.Inner + endRatio * (geometry.Outer - geometry.Inner);
+        var endRadius = bars ? (inner + outer) / 2 : ValueRadius(chart, geometry, endRatio);
         var center = On(geometry, start + sweep / 2, (inner + outer) / 2);
         var direction = endRatio >= baseRatio ? 1 : -1;
         var offset = bars ? new ChartPoint(-Math.Sin(endAngle) * direction, Math.Cos(endAngle) * direction)
@@ -79,16 +79,18 @@ internal static partial class VisualNumericRadialCompiler {
             ? ChartAxisSide.Secondary : ChartAxisSide.Primary;
         foreach (var pair in scales) {
             var axis = Axis(chart, pair.Key); var scale = pair.Value;
-            using (builder.PushGroup(null, "radial-value-axis", new Dictionary<string, string> {
+            var metadata = new Dictionary<string, string> {
                 ["data-cfx-axis"] = pair.Key.ToString().ToLowerInvariant(), ["data-cfx-min"] = N(scale.Minimum), ["data-cfx-max"] = N(scale.Maximum),
                 ["data-cfx-reversed"] = axis.Reversed ? "true" : "false"
-            })) {
+            };
+            if (chart.Options.RadialGeometry.ValueEncoding == ChartRadialValueEncoding.Area) metadata["data-cfx-value-encoding"] = "area";
+            using (builder.PushGroup(null, "radial-value-axis", metadata)) {
                 for (var index = 0; index < scale.Ticks.Count; index++) {
                     var value = scale.Ticks[index]; var ratio = scale.Normalize(value);
                     if (bars && geometry.Sweep == Math.PI * 2 && value == scale.Maximum) continue;
                     var angle = ValueAngle(pair.Key, ratio, geometry.Start, geometry.Sweep, bars);
                     var radius = bars ? geometry.Outer + (pair.Key == ChartAxisSide.Secondary ? geometry.TickLane : 0)
-                        : geometry.Inner + ratio * (geometry.Outer - geometry.Inner);
+                        : ValueRadius(chart, geometry, ratio);
                     if (chart.Options.ShowGrid && pair.Key == gridSide) {
                         if (bars) {
                             var first = On(geometry, angle, geometry.Inner); var last = On(geometry, angle, geometry.Outer);

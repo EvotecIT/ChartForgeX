@@ -128,7 +128,10 @@ public sealed class MixedNumericRadialTests {
     public void MixedProjectionRejectsAmbiguousOrUnsupportedCategoryGeometry() {
         Chart Mixed() => Bare().AddRadialColumn("Observed", Values(40)).AddRadarLine("Target", Values(70));
         var chart = Mixed().WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180));
-        Assert.Throws<NotSupportedException>(() => Prepare(chart));
+        var partial = Prepare(chart);
+        Assert.Equal(4, partial.Scene.Nodes.Count(node => node.Role == "radial-column"));
+        Assert.Equal(4, partial.Regions.Count(region => region.Role == "radar-point"));
+        Assert.Contains(partial.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.PathClip != null);
         chart = Mixed(); chart.Series[0].Points.Add(new ChartPoint(1, 10));
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         chart = Mixed(); chart.Series[1].Points.Add(new ChartPoint(1 + 4e-16, 10));

@@ -19,13 +19,13 @@ internal static partial class VisualCartesianCompiler {
         for (var item = 0; item < count; item++) {
             var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1]; var x = map.X(low.X);
             var breakBefore = low.BreakBefore || high.BreakBefore;
-            middle.Add(new ChartPoint(x, map.Y((low.Y + high.Y) / 2), breakBefore));
+            middle.Add(new ChartPoint(x, map.Y(low.Y / 2 + high.Y / 2), breakBefore));
         }
         var offset = 0;
         foreach (var segment in ChartPointSegments.Split(upper)) {
             var lowSegment = lower.GetRange(offset, segment.Count);
-            var highPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition);
-            var lowPath = ChartPathBuilder.FromPoints(lowSegment, series.Interpolation, series.StepPosition);
+            var highPath = ChartPairedBoundaryGeometry.BoundaryPath(series, segment, false);
+            var lowPath = ChartPairedBoundaryGeometry.BoundaryPath(series, lowSegment, true);
             var highFlat = highPath.Flatten(12); var lowFlat = lowPath.Flatten(12);
             var polygon = ChartPairedBoundaryGeometry.Envelope(highFlat, lowFlat); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
@@ -51,8 +51,10 @@ internal static partial class VisualCartesianCompiler {
             var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1];
             var showMarkers = PairedObservationMarkersEnabled(series, item);
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
-            var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
-            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("lower", low.Y) + "–" + format("upper", high.Y));
+            var bounds = series.Markers.CustomPath == null
+                ? Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius))
+                : VisualMarkerScene.PairBounds(series, lower[item], upper[item], radius);
+            var label = ResolveObservationLabel(chart, context, series, item, colors, format => RangeValueLabel(format, low.Y, high.Y));
             var values = new[] { ("x", low.X), ("lower", low.Y), ("upper", high.Y) };
             var visible = ViewportObservationVisible(xViewport, yViewport, low.X, low.Y, high.Y, map);
             // Adapters use the captured native midpoint; averaging mapped boundaries is wrong on nonlinear axes.
