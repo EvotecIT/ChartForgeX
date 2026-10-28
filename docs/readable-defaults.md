@@ -40,7 +40,9 @@ Each series with an explicit `ChartSeriesId` then derives its palette slot from 
 chart.WithValueUnit("ms");
 ```
 
-The unit follows values in tooltips, readouts and accessible names ("52.7 ms") on cartesian charts (lines, bars, areas, scatter and their relatives), schedules and heatmaps, including calendar heatmaps. Single symbols such as `%` attach directly ("99.8%"). A value format that already writes the unit keeps a single copy. Axis tick labels stay unit-free; put the unit in the axis title instead.
+The unit follows values in tooltips, readouts and accessible names ("52.7 ms"). Single symbols such as `%` attach directly ("99.8%"). A value format that already writes the unit keeps a single copy. Axis tick labels stay unit-free; put the unit in the axis title instead.
+
+Today this covers point marks on line, bar, area, scatter and bubble charts, plus heatmap and calendar heatmap cells. Structured marks with their own descriptions (waterfall steps, ranges, comparisons and schedules) and pie, gauge, radial, map and hierarchy readouts don't add the unit yet.
 
 ## Locale
 
