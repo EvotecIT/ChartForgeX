@@ -44,7 +44,7 @@ The unit follows values in tooltips, readouts and accessible names ("52.7 ms"). 
 
 Today this covers:
 
-- **Cartesian charts:** every mark's formatted tooltip values, such as a waterfall step's value, start and end. Accessible names carry the unit on point marks (line, bar, area, scatter and bubble); structured marks with their own descriptions (waterfall steps, ranges and comparisons) keep unit-free accessible names for now.
+- **Cartesian charts:** every mark's formatted tooltip values, such as a waterfall step's value, start and end. Accessible names carry the unit on line, bar, area and scatter points. Marks with their own descriptions keep unit-free accessible names for now: bubbles, points that also describe a colour dimension, waterfall steps, ranges and comparisons.
 - **Heatmaps and calendar heatmaps:** cell tooltips and accessible names.
 
 Schedules and pie, gauge, radial, map and hierarchy readouts don't add the unit yet.
