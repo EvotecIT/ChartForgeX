@@ -190,7 +190,8 @@ SiteVisuals.PageVisuals.Write(website);
 
 Console.WriteLine($"Site visuals written to {output}");
 
-void Write(string name, string content) => File.WriteAllText(Path.Combine(output, name), content, new UTF8Encoding(false));
+// Generated site files use LF only, like the rest of the generated site; embedded assets can carry CRLF on Windows.
+void Write(string name, string content) => File.WriteAllText(Path.Combine(output, name), content.Replace("\r\n", "\n"), new UTF8Encoding(false));
 
 static void Report(string label, IEnumerable<string?> diagnostics) {
     foreach (var diagnostic in diagnostics) {
