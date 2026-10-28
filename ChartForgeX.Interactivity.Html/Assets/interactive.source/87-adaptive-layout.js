@@ -8,6 +8,15 @@
     copy.removeAttribute('data-cfx-runtime-bound');
     return copy;
   };
+  // Both drawings must carry the same prepared source. Missing or malformed data
+  // is a declared-layout error, never an unhandled JSON.parse("undefined").
+  const adaptivePreparedSeries = section => {
+    const text = section.dataset.cfxPreparedChart;
+    let prepared = null;
+    if (text) try { prepared = JSON.parse(text); } catch { prepared = null; }
+    if (!prepared || typeof prepared !== 'object') throw new TypeError('Adaptive: missing prepared chart data.');
+    return JSON.stringify(prepared.series);
+  };
   const readAdaptiveLayout = root => {
     if (root.dataset.cfxResponsiveLayout !== 'adaptive') return null;
     const breakpoint = Number(root.dataset.cfxAdaptiveBreakpoint), current = root.dataset.cfxAdaptiveDrawing || 'wide';
@@ -19,10 +28,10 @@
     const wide = wideTemplate ? adaptiveSectionCopy(readChartSection(wideTemplate.content.firstElementChild, true)) : adaptiveSectionCopy(root);
     const narrow = adaptiveSectionCopy(readChartSection(narrowTemplate.content.firstElementChild, true));
     window[Symbol.for('ChartForgeX.nativeTextExport')].copyBindings(root, narrow);
-    const source = JSON.stringify(JSON.parse(wide.dataset.cfxPreparedChart).series);
+    const source = adaptivePreparedSeries(wide);
     for (const section of [wide, narrow]) if (section.dataset.cfxChartId !== root.dataset.cfxChartId
       || section.dataset.cfxResponsiveLayout !== 'adaptive'
-      || JSON.stringify(JSON.parse(section.dataset.cfxPreparedChart).series) !== source)
+      || adaptivePreparedSeries(section) !== source)
       throw new TypeError('Adaptive: chart/source mismatch.');
     return { wide, narrow, breakpoint, current };
   };
