@@ -64,8 +64,13 @@ internal static partial class VisualArtifactInterchangeJson {
         var standard = CultureInfo.GetCultureInfo(culture.Name);
         var settings = CulturePatternNames.Where(name => CultureSetting(culture, name) != CultureSetting(standard, name)).ToArray();
         var lists = CultureNameListNames.Where(name => !CultureNameList(culture, name).SequenceEqual(CultureNameList(standard, name))).ToArray();
-        if (settings.Length == 0 && lists.Length == 0) return;
+        // A non-default calendar changes eras and years, so it travels by type; only calendars the culture offers can be restored.
+        var calendar = culture.DateTimeFormat.Calendar.GetType() == standard.DateTimeFormat.Calendar.GetType() ? null : culture.DateTimeFormat.Calendar.GetType().Name;
+        if (calendar != null && !standard.OptionalCalendars.Any(option => option.GetType().Name == calendar))
+            throw new NotSupportedException("Portable chart data can only carry a calendar that the " + culture.Name + " culture offers.");
+        if (settings.Length == 0 && lists.Length == 0 && calendar == null) return;
         writer.Property("cultureFormat"); writer.StartObject();
+        if (calendar != null) String(writer, "calendar", calendar);
         foreach (var name in settings) String(writer, name, CultureSetting(culture, name));
         foreach (var name in lists) {
             writer.Property(name); writer.StartArray(); foreach (var item in CultureNameList(culture, name)) writer.String(item); writer.EndArray();
@@ -78,6 +83,10 @@ internal static partial class VisualArtifactInterchangeJson {
         var format = OptionalObject(fields, "cultureFormat");
         if (format == null) return standard;
         var culture = (CultureInfo)standard.Clone(); var date = culture.DateTimeFormat;
+        // The calendar comes first: assigning it resets patterns to that calendar's defaults, which the settings below then override.
+        if (OptionalString(format, "calendar") is string calendar)
+            date.Calendar = culture.OptionalCalendars.FirstOrDefault(option => option.GetType().Name == calendar)
+                ?? throw new ArgumentException("The " + name + " culture does not offer the " + calendar + " calendar.");
         foreach (var setting in CulturePatternNames) {
             if (OptionalString(format, setting) is not string value) continue;
             switch (setting) {

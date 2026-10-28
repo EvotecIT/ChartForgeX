@@ -93,6 +93,17 @@ public sealed class WaterfallInterchangeTests {
     }
 
     [Fact]
+    public void PortableTimeCultureKeepsANonDefaultCalendar() {
+        var japanese = (CultureInfo)CultureInfo.GetCultureInfo("ja-JP").Clone();
+        japanese.DateTimeFormat.Calendar = new JapaneseCalendar(); japanese.DateTimeFormat.ShortDatePattern = "gg y/MM/dd";
+        var portable = VisualArtifactInterchangeEnvelope.FromJson(Model().WithCulture(japanese).ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        var restored = portable.Options.XAxis.Culture!;
+        var instant = new DateTime(2026, 10, 28);
+        Assert.IsType<JapaneseCalendar>(restored.DateTimeFormat.Calendar);
+        Assert.Equal(instant.ToString("d", japanese), instant.ToString("d", restored));
+    }
+
+    [Fact]
     public void PortableTimeCultureKeepsCustomizedPatternsAndRetainsExplicitInvariantCulture() {
         var modified = (CultureInfo)CultureInfo.GetCultureInfo("de-DE").Clone();
         modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd"; modified.DateTimeFormat.AbbreviatedMonthNames =
