@@ -79,6 +79,8 @@ internal static partial class VisualCartesianCompiler {
                     var numericCaption = _policy.NumericCaption && point.FixedDisplay == null ? caption : null;
                     if (numericCaption != null) metadata["data-cfx-formatted-y"] = numericCaption;
                     metadata["data-cfx-formatted-value"] = series.Readout(y, numericCaption);
+                    // Frames announce the same formatted name as the prepared chart they interpolate between.
+                    if (VisualSceneBuilder.FormattedPointDescription(series.Name, metadata) is { } formatted) metadata["aria-label"] = description = formatted;
                     var bounds = point.MarkerPaint.Bounds(position.X, position.Y, point.Radius);
                     var child = new VisualSceneBuilder(Size, Font);
                     if (series.Kind == ChartSeriesKind.Bar) {

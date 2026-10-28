@@ -34,7 +34,7 @@ internal static partial class VisualCartesianCompiler {
                 && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels,
                     comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount),
             allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations,
-            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis)) is { } timeTicks) {
+            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis, length)) is { } timeTicks) {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
@@ -46,8 +46,25 @@ internal static partial class VisualCartesianCompiler {
         labels.SetFittedTicks(axis, ticks);
     }
 
-    /// <summary>Lets automatic horizontal numeric scales try whole-unit ticks before measured captions choose a coarser step.</summary>
+    /// <summary>
+    /// Starts the automatic numeric search at a readable density for the axis length: at most one tick per 80 px across
+    /// on domains wider than thirteen whole units, and four to nine ticks at about one per 50 px down an axis of at
+    /// least 160 px. Explicit counts, dense or full label density and integer policies keep their own search.
+    /// </summary>
     private static int NumericFittingCount(ChartAxis axis, double minimum, double maximum, double length, bool horizontal, TextStyle style) {
+        var count = UnitFittingCount(axis, minimum, maximum, length, horizontal, style);
+        if (axis.HasExplicitTickCount || axis.LabelDensity != ChartLabelDensity.Auto || axis.IntegerTicks
+            || axis.Scale != ChartScaleKind.Linear || length < MinimumDensityAxisLength) return count;
+        // Small whole-unit domains (up to a year of months) keep every fitting unit; wider domains are capped.
+        if (horizontal) return count <= MaximumUnitTicks ? count : Math.Min(count, Math.Max(MinimumDensityTicks, (int)Math.Floor(length / HorizontalTickPitch) + 1));
+        return Math.Min(MaximumDensityTicks, Math.Max(MinimumDensityTicks, (int)Math.Round(length / VerticalTickPitch) + 1));
+    }
+
+    private const double MinimumDensityAxisLength = 160, HorizontalTickPitch = 80, VerticalTickPitch = 50;
+    private const int MinimumDensityTicks = 4, MaximumDensityTicks = 9, MaximumUnitTicks = 13;
+
+    /// <summary>Lets automatic horizontal numeric scales try whole-unit ticks before measured captions choose a coarser step.</summary>
+    private static int UnitFittingCount(ChartAxis axis, double minimum, double maximum, double length, bool horizontal, TextStyle style) {
         if (!horizontal || axis.Scale != ChartScaleKind.Linear || axis.HasExplicitTickCount) return axis.TickCount;
         var span = maximum - minimum;
         if (!ChartMath.IsFinite(span)) return axis.TickCount;

@@ -55,8 +55,8 @@ internal static partial class ChartTimeScale {
         var first = ToDisplayTime(axis, minimum); var last = ToDisplayTime(axis, maximum);
         var crossesDate = first.HasValue && last.HasValue && first.Value.Date != last.Value.Date;
         if (!crossesDate) return selected;
-        var date = first!.Value.Year == last!.Value.Year ? "MM-dd" : "yyyy-MM-dd";
-        var format = interval.Unit >= TimeUnit.Day ? date : date + (interval.Unit == TimeUnit.Second ? " HH:mm:ss" : " HH:mm");
+        var date = DayPattern(axis, first!.Value.Year != last!.Value.Year);
+        var format = interval.Unit >= TimeUnit.Day ? date : date + " " + TimePattern(axis, interval.Unit == TimeUnit.Second);
         return new CompactDateTicks(selected, format);
     }
 

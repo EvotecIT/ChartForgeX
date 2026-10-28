@@ -90,6 +90,12 @@ internal static partial class ChartTimeScale {
     /// <summary>Retains the broad calendar rhythm ceiling while measured spacing chooses the compact pitch.</summary>
     internal static int AutomaticTickCount(ChartAxis axis) => axis.LabelDensity == ChartLabelDensity.Dense ? 100 : 8;
 
+    /// <summary>Lets wide time axes ask for about one caption per 120 px instead of a fixed eight; measured captions still decide.</summary>
+    internal static int AutomaticTickCount(ChartAxis axis, double length) =>
+        axis.LabelDensity == ChartLabelDensity.Dense ? 100 : Math.Max(8, (int)Math.Floor(length / WideTimeTickPitch) + 1);
+
+    private const double WideTimeTickPitch = 120;
+
     /// <summary>Leaves room between automatic calendar captions rather than merely avoiding overlap.</summary>
     internal static double ComfortableLabelGap(double firstExtent, double secondExtent, double ordinaryGap, double length, double fontSize,
         bool compactDefault) {
@@ -219,12 +225,12 @@ internal static partial class ChartTimeScale {
     private static string CompactDateFormat(ChartAxis axis, double min, double max) {
         var first = ToDisplayTime(axis, min);
         var last = ToDisplayTime(axis, max);
-        return first?.Year == last?.Year ? "MM-dd" : "yyyy-MM-dd";
+        return DayPattern(axis, first?.Year != last?.Year);
     }
 
     internal static string FormatTick(ChartAxis axis, double value, IReadOnlyList<double>? ticks, bool retainDateContext = false) {
         var local = ToDisplayTime(axis, value);
-        if (ticks is CompactDateTicks compact && local.HasValue) return local.Value.ToString(compact.Format, CultureInfo.InvariantCulture);
+        if (ticks is CompactDateTicks compact && local.HasValue) return local.Value.ToString(compact.Format, LabelCulture(axis));
         var text = Format(axis, value);
         if (!retainDateContext || !local.HasValue || local.Value.TimeOfDay == TimeSpan.Zero || ticks == null) return text;
         // A detached observation cannot borrow the calendar context of neighbouring axis
@@ -232,7 +238,7 @@ internal static partial class ChartTimeScale {
         foreach (var tick in ticks) {
             var tickLocal = ToDisplayTime(axis, tick);
             if (tickLocal.HasValue && (tickLocal.Value.TimeOfDay == TimeSpan.Zero || tickLocal.Value.Date != local.Value.Date))
-                return local.Value.ToString(local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+                return local.Value.ToString(DateTimePattern(axis, local.Value.Second != 0), LabelCulture(axis));
         }
         return text;
     }

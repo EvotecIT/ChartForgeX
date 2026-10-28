@@ -113,8 +113,8 @@ internal static partial class ChartTimeScale {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (ToDisplayTime(axis, value, roundToSeconds: !milliseconds) is not { } rounded) return ChartNumericFormatter.FormatCompact(value);
         if (milliseconds) return rounded.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
-        if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
+        if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString(axis.Culture == null ? "yyyy-MM-dd" : DayPattern(axis, false), LabelCulture(axis));
+        return rounded.ToString(TimePattern(axis, rounded.Second != 0), LabelCulture(axis));
     }
 
     /// <summary>Formats a full instant with subsecond precision and disambiguates repeated local hours.</summary>
@@ -125,8 +125,8 @@ internal static partial class ChartTimeScale {
         long fractionalTicks = local.Value.Ticks % TimeSpan.TicksPerSecond;
         var format = fractionalTicks != 0
             ? fractionalTicks % TimeSpan.TicksPerMillisecond == 0 ? "yyyy-MM-dd HH:mm:ss.fff" : "yyyy-MM-dd HH:mm:ss.ffff"
-            : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
-        var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ZoneDesignator(axis);
+            : DateTimePattern(axis, local.Value.Second != 0);
+        var text = local.Value.ToString(format, fractionalTicks != 0 ? CultureInfo.InvariantCulture : LabelCulture(axis)) + " " + ZoneDesignator(axis);
         var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
         if (zone.IsAmbiguousTime(local.Value)) {
             var utc = ChartDateTime.FromOrderedOaDate(value);
