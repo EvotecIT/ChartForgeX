@@ -31,8 +31,8 @@
     if(!host.isConnected){delete host.cfxResponsiveReady;return;}
     await document.fonts?.ready;
     if(!host.isConnected){delete host.cfxResponsiveReady;return;}
-    const fallback=host.querySelector(':scope > svg');let drawing;
-    try{drawing=window.ChartForgeXLayout.create(host,spec);}catch{return unavailable(host,'the layout data does not match this drawing.');}
+    const currentSvg=host.querySelector(':scope > svg'),fallback=(currentSvg?.cfxBaseSvg||currentSvg)?.cloneNode(true);let drawing;
+    try{drawing=window.ChartForgeXLayout.create(host,spec);}catch{const current=host.querySelector(':scope > svg');if(fallback&&current)current.replaceWith(fallback);return unavailable(host,'the layout data does not match this drawing.');}
     let timer=0,disposed=false,printing=matchMedia('print').matches;
     host.style.minWidth=printing?'0':spec.minimum+'px';
     // Every layout, including later resize, print and font passes, falls back to the static drawing on failure.

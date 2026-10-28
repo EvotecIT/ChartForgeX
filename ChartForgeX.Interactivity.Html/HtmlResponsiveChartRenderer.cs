@@ -28,7 +28,7 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <param name="height">Fixed drawing height; defaults to the authored height.</param>
     /// <param name="idScope">Optional stable SVG identifier scope.</param>
     /// <param name="compressLayouts">Compresses the serialized specification; the static fallback remains available.</param>
-    /// <param name="printWidth">Width of the native script-free/print fallback; defaults to the authored width within the bounds.</param>
+    /// <param name="printWidth">Maximum CSS width of the scaled script-free fallback; defaults to the authored width within the bounds.</param>
     /// <returns>A self-contained fragment with an offline debounced resize and print lifecycle.</returns>
     public string RenderFragment(Chart chart, int minimumWidth = 480, int maximumWidth = 1600, int? height = null,
         string? idScope = null, bool compressLayouts = false, int? printWidth = null) {
@@ -39,14 +39,11 @@ public sealed class HtmlResponsiveChartRenderer {
         var drawingHeight = height ?? size.Height;
         var fallbackWidth = printWidth ?? Math.Max(minimumWidth, Math.Min(maximumWidth, size.Width));
         try {
-            var specification = HtmlChartLayoutSpecification.Serialize(chart, minimumWidth, maximumWidth, drawingHeight, fallbackWidth, idScope);
-            chart.Options.XAxis = x; chart.Options.YAxis = y;
-            chart.WithSize(fallbackWidth, drawingHeight);
-            var fallback = idScope == null ? chart.ToSvg() : chart.ToSvg(idScope + "|fallback");
+            var specification = HtmlChartLayoutSpecification.Serialize(chart, minimumWidth, maximumWidth, drawingHeight, fallbackWidth, idScope, out var fallback);
             var payload = compressLayouts ? "<script type=\"application/octet-stream\" data-cfx-spec-gzip>" + Compress(specification)
                 : "<script type=\"application/json\" data-cfx-spec>" + specification;
             return "<div data-cfx-responsive-chart style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
-                fallback + payload + "</script><script>" + Script.Value + "</script></div>";
+                "<style>@media print{[data-cfx-responsive-chart]{min-width:0!important}}</style>" + fallback + payload + "</script><script>" + Script.Value + "</script></div>";
         } finally { chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; }
     }
     private static string Compress(string text) {

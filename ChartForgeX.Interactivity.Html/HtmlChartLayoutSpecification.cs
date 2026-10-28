@@ -11,13 +11,13 @@ namespace ChartForgeX.Interactivity.Html;
 
 // The portable layout IR retains native paint and source semantics. It contains no sampled widths or coordinate derivatives.
 internal static class HtmlChartLayoutSpecification {
-    internal static string Serialize(Chart chart, int minimum, int maximum, int height, int printWidth, string? scope) {
+    internal static string Serialize(Chart chart, int minimum, int maximum, int height, int printWidth, string? scope, out string svg) {
         chart.Options.XAxis = chart.Options.XAxis.Clone(); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         chart.Options.YAxis = chart.Options.YAxis.Clone(); chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
         chart.WithSize(maximum, height);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles();
-        var svg = prepared.ToSvg(options);
+        svg = HtmlCompactSvg.Compact(prepared.ToSvg(options), printWidth);
         // A declared plot band stretches with the container while gutters before it stay fixed and gutters after it move
         // with the right edge. Drawings without a plot band stay centred; only their heading keeps its left inset.
         // Only state timelines stretch their schedule plot: Gantt marks (open ends, milestones, item captions) are not yet
@@ -25,15 +25,14 @@ internal static class HtmlChartLayoutSpecification {
         var stateLanes = chart.Series.Count > 0 && chart.Series.All(series => series.Kind == ChartSeriesKind.StateTimeline);
         var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot" || stateLanes && item.Role == "schedule-plot");
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
-        var output = new StringBuilder("{\"schema\":\"chartforgex/layout-1\",\"width\":").Append(maximum)
+        var output = new StringBuilder("{\"schema\":\"chartforgex/layout-2\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
-            .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()))
-            .Append(",\"svg\":").Append(HtmlJsonString.Encode(svg));
+            .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
         // Source values and labels travel with the serialized native scene, including typed observations and category/time formatting.
         HtmlChartLayoutBars.Append(output, chart, prepared);
         var root = XElement.Parse(svg);

@@ -3,7 +3,7 @@
   if(window.ChartForgeXLayout)return;
   let instance=0;
   function namespace(svg){
-    const nodes=[svg,...svg.querySelectorAll('*')], ids=new Map(),prefix='cfx-live-'+(++instance)+'-';
+    const nodes=[svg,...svg.querySelectorAll('*')], ids=new Map(),prefix='c'+(++instance).toString(36)+'-';
     for(const node of nodes)if(node.id)ids.set(node.id,prefix+node.id);
     for(const node of nodes)for(const attribute of [...node.attributes]){
       let value=attribute.value;
@@ -14,10 +14,19 @@
     }
   }
   function create(host,spec){
-    if(spec.schema!=="chartforgex/layout-1")throw new Error('Unsupported ChartForgeX layout specification.');
-    const parsed=new DOMParser().parseFromString(spec.svg,'image/svg+xml');
-    if(parsed.querySelector('parsererror'))throw new Error('Invalid ChartForgeX paint specification.');
-    const svg=document.importNode(parsed.documentElement,true);namespace(svg);host.querySelector(':scope > svg').replaceWith(svg);
+    if(spec.schema!=="chartforgex/layout-1" && spec.schema!=="chartforgex/layout-2")throw new Error('Unsupported ChartForgeX layout specification.');
+    let svg;
+    if(spec.schema==="chartforgex/layout-1"){
+      const parsed=new DOMParser().parseFromString(spec.svg,'image/svg+xml');
+      if(parsed.querySelector('parsererror'))throw new Error('Invalid ChartForgeX paint specification.');
+      svg=document.importNode(parsed.documentElement,true);host.querySelector(':scope > svg').replaceWith(svg);
+    }else {
+      svg=host.querySelector(':scope > svg');
+      if(svg?.cfxBaseSvg){const base=svg.cfxBaseSvg, fresh=base.cloneNode(true);fresh.cfxBaseSvg=base;svg.replaceWith(fresh);svg=fresh;}
+      else if(svg)svg.cfxBaseSvg=svg.cloneNode(true);
+    }
+    if(!svg)throw new Error('Missing ChartForgeX paint specification.');
+    namespace(svg);
     let source,legend;
     let lastWidth=0;
     function layout(requestedWidth,printing=false){
@@ -32,6 +41,7 @@
       const gutterLeft=spec.gutter ? Math.min(left,Math.max(spec.gutter[1],spec.gutter[0]+(width-right-spec.gutter[0])*.4)) : left;
       const plot=[gutterLeft,top+Math.max(0,delta),Math.max(1,width-(spec.width-pw)+left-gutterLeft),Math.max(1,ph-Math.abs(delta))];
       for(const label of source.labels)label.group.style.display='';
+      for(const label of source.rotatedLabels)label.style.display='';
       const projection=window.ChartForgeXLayoutGeometry.project(source,spec,width,plot);
       // Tick captions are measured in their token font at the actual width and thin at one regular stride from the
       // first caption, keeping the native caption gap. The last caption stays only when it falls on the stride.
@@ -46,8 +56,14 @@
       });
       svg.setAttribute('width',width);svg.setAttribute('height',spec.height);svg.setAttribute('viewBox',`0 0 ${width} ${spec.height}`);
       svg.style.cssText=`display:block;width:${width}px;height:${spec.height}px;max-width:none`;
+      // Measure in the current viewport, including reversed columns, and keep a regular source stride.
+      const rotated=source.rotatedLabels.map(group=>({group,box:group.getBoundingClientRect()}));
+      let rotatedKeep=rotated.map((_,i)=>i);
+      const rotatedFits=indices=>{const boxes=indices.map(i=>rotated[i].box).sort((a,b)=>a.left-b.left);return boxes.every((box,n)=>!n||box.left>=boxes[n-1].right+8);};
+      for(let stride=2;!rotatedFits(rotatedKeep)&&stride<=rotated.length;stride++)rotatedKeep=rotated.map((_,i)=>i).filter(i=>i%stride===0);
+      const rotatedShown=new Set(rotatedKeep);rotated.forEach((label,index)=>label.group.style.display=rotatedShown.has(index)?'':'none');
       fitText(width);
-      host.dataset.cfxLayoutWidth=String(width);host.dataset.cfxLayoutVersion='spec-1';lastWidth=width;
+      host.dataset.cfxLayoutWidth=String(width);host.dataset.cfxLayoutVersion=spec.schema==='chartforgex/layout-2'?'spec-2':'spec-1';lastWidth=width;
     }
     // Headings and lane captions keep their size and truncate with an ellipsis; the complete text stays in a <title>.
     let captions;

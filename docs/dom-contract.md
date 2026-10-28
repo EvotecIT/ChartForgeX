@@ -36,3 +36,18 @@ Select these names in host scripts and styles. Don't select other roles, element
 - HtmlForgeX selected `[data-cfx-role="state-lane-label"]` for lane links. ChartForgeX has emitted `schedule-row-label` since the shared schedule layout, so those links never attached. Select `[data-cfx-role="schedule-row"]` and read `data-cfx-lane-id` instead of matching lanes by position.
 - Topology legends use their own `legend-item` role, which is not part of this contract yet.
 - A contract role is renamed only with a release note and, where practical, one release in which both names are emitted.
+
+## Responsive layout 2
+
+`HtmlResponsiveChartRenderer` uses the `chartforgex/layout-2` specification and
+one inline base SVG. A linked heatmap cell is an `<a data-cfx-role="heatmap-cell">`
+with its native `<title>` as the link name and hover tooltip. It retains row,
+column, status and non-default pattern metadata; the former wrapper,
+`heatmap-cell-link` role and repeated point, series, value, source and label
+attributes are not present on that link. Hosts should select the link by its role
+and use its `href` for navigation, instead of assuming a nested anchor or generated
+ID. Static SVG and the interactive adapter retain their own existing contracts.
+
+Responsive drawings with links use an SVG group role so that links remain exposed
+to assistive technology. Generated definition IDs are implementation details;
+the mounted runtime namespaces each chart independently.

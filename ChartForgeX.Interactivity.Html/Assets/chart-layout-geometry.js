@@ -56,7 +56,6 @@
     // colour steps and shrinks each caption's clip until one character remains.
     const rigid=new Map();
     for(const group of svg.querySelectorAll('[data-cfx-role="heatmap-scale"],[data-cfx-role="heatmap-column-label"]')){
-      if(group.closest('[transform*="rotate("]'))continue;
       const box=group.getBBox(),anchor={center:box.x+box.width/2,width:box.width};
       for(const node of [group,...group.querySelectorAll('*')])rigid.set(node,anchor);
       // A caption's own clip may sit on the wrapper around it; take it only when that wrapper holds this caption alone.
@@ -79,7 +78,8 @@
     });
     const centers=[...new Set(spec.bars.map(slot=>slot.categoryAnchor))].sort((a,b)=>a-b);
     const pitch=Math.min(spec.barPitch ?? plot[2],centers.slice(1).reduce((p,c,i)=>Math.min(p,c-centers[i]),plot[2]));
-    return {recipes,labels,pitch,plot};
+    const rotatedLabels=[...svg.querySelectorAll('[data-cfx-role="heatmap-column-label"]')].filter(group=>group.closest('[transform*="rotate("]'));
+    return {recipes,labels,rotatedLabels,pitch,plot};
   }
   function project(state, spec, width, plot) {
     const [left,top,pw,ph]=spec.plot, [nl,nt,nw,nh]=plot;
