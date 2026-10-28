@@ -33,6 +33,12 @@ Lane labels, lane summaries, group headers and heatmap row labels share one poli
 
 Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `WithHeatmapCellRadius` still sets an exact radius.
 
+Heatmap column captions that don't fit their columns behave according to what they name:
+
+- Dates and numbers stay horizontal and thin out at a regular stride, always keeping the first and last column.
+- Named columns, such as check or service names, wrap to two lines and rotate only as a last resort, because skipping a name would hide that column.
+- `WithXAxisLabelAngle` still sets an exact angle.
+
 ## Series colours
 
 Palette-driven series (those without an explicit colour or a state role) take theme palette colours in series order, so the first series is always the theme accent and every chart family starts from the same colour. A series with a state role, such as success or danger, keeps its state colour. Neighbouring series don't repeat a colour until the palette wraps.

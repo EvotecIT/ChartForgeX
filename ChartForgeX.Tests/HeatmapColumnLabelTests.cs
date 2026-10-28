@@ -225,9 +225,9 @@ public sealed class HeatmapColumnLabelTests {
     }
 
     [Fact]
-    public void ToSvg_NarrowMatrixWithRotatedDates_KeepsEveryRowName() {
-        // Fourteen dated columns at phone width rotate their captions. The row gutter must stay wide enough to name
-        // each target; column captions thin out instead.
+    public void ToSvg_NarrowMatrixWithDates_KeepsEveryRowNameAndThinsDatesHorizontally() {
+        // Fourteen dated columns at phone width: every target keeps its name, and the dates stay horizontal at a regular
+        // stride with the first and last day, because thinning ordered captions hides no column.
         string[] targets = { "dc1", "dc2", "dc3", "dc4", "dc5", "adfs", "dns", "exchange", "1.1.1.1", "8.8.8.8" };
         var days = Enumerable.Range(0, 14).Select(day => new DateTime(2026, 10, 14).AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().WithSize(360, 480).WithTitle("Daily availability per target").WithXLabels(days);
@@ -237,8 +237,10 @@ public sealed class HeatmapColumnLabelTests {
         var svg = XDocument.Parse(chart.ToSvg());
 
         Assert.Equal(targets, ByRole(svg, "heatmap-row-label").Select(label => label.Value).ToArray());
-        Assert.NotEmpty(ByRole(svg, "heatmap-column-label"));
-        Assert.All(ByRole(svg, "heatmap-column-label"), label => Assert.StartsWith("rotate(", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal));
+        var dates = ByRole(svg, "heatmap-column-label");
+        Assert.InRange(dates.Length, 3, days.Length - 1);
+        Assert.Equal(days[0], dates[0].Value); Assert.Equal(days[^1], dates[^1].Value);
+        Assert.All(dates, label => Assert.Null((string?)label.RenderedAttribute("transform")));
     }
 
     private static Chart Matrix(string rowPrefix = "DC0") {
