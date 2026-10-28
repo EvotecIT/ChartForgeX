@@ -109,8 +109,10 @@ internal static partial class VisualMatrixCompiler {
                             : ChartHeatmapSurface.CellBlend(chart, colors, series.Color, point.Y, min, max, VisualChartPaint.SeriesRole(series));
                         var fill = stateMark?.Surface ?? blend.Color;
                         var column = formatColumn(point.X);
-                        var label = categoryGroups == null ? series.Name + ", " + column + ": " + (state?.Label ?? presentation.Value(point.Y))
-                            : categoryGroups.Describe(rowIndex, columnIndex, series.Name, column) + ": " + (state?.Label ?? presentation.Value(point.Y));
+                        // Readouts carry the chart's value unit unless the colour dimension formats values itself.
+                        var readout = presentation.HasFormat ? presentation.Value(point.Y) : ChartOptions.AppendUnit(presentation.Value(point.Y), chart.Options.ValueUnit);
+                        var label = categoryGroups == null ? series.Name + ", " + column + ": " + (state?.Label ?? readout)
+                            : categoryGroups.Describe(rowIndex, columnIndex, series.Name, column) + ": " + (state?.Label ?? readout);
                         if (!string.IsNullOrWhiteSpace(cell?.Tooltip)) label += ". " + cell!.Value.Tooltip;
                         var metadata = state == null ? new Dictionary<string, string>() : VisualStateSceneTools.StateMetadata(chart, state);
                         metadata["data-cfx-series"] = rowIndex.ToString(); metadata["data-cfx-point"] = pointIndex.ToString(); metadata["data-cfx-row"] = rowIndex.ToString();
@@ -118,9 +120,9 @@ internal static partial class VisualMatrixCompiler {
                         metadata["data-cfx-column"] = columnIndex.ToString(); metadata["data-cfx-x"] = VisualStateSceneTools.Number(point.X);
                         metadata["data-cfx-y"] = VisualStateSceneTools.Number(point.Y); metadata["data-cfx-value"] = VisualStateSceneTools.Number(point.Y);
                         if (state == null && presentation.HasOverrides) {
-                            metadata["data-cfx-formatted-value"] = presentation.Value(point.Y);
+                            metadata["data-cfx-formatted-value"] = readout;
                             metadata["data-cfx-label-value"] = presentation.Name;
-                        }
+                        } else if (state == null && chart.Options.ValueUnit != null) metadata["data-cfx-formatted-value"] = readout;
                         if (state == null && chart.Options.HeatmapColorScale == null) {
                             var ratio = ChartHeatmapSurface.Ratio(chart, point.Y, min, max);
                             var status = ChartHeatmapSurface.CellStatus(chart, ratio);

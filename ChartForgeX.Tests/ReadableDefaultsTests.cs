@@ -74,6 +74,18 @@ public sealed class ReadableDefaultsTests {
     }
 
     [Fact]
+    public void WithValueUnit_HeatmapCellReadoutsCarryTheUnit() {
+        var chart = Chart.Create().WithSize(600, 300).WithXLabels("14 Oct", "15 Oct").WithValueUnit("%")
+            .WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture))
+            .AddHeatmapRow("dc1", new double?[] { 99.5, 100 });
+
+        var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
+
+        Assert.Equal("dc1, 14 Oct: 99.5%", (string?)cell.Attribute("aria-label"));
+        Assert.Equal("99.5%", (string?)cell.Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
         var point = ByRole(svg, "point")[1];
