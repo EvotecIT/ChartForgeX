@@ -292,7 +292,7 @@ The payload contains no sampled width bands or coordinate derivatives.
 
 Text and strokes keep their token sizes. Height stays at the configured chart
 height, or the optional `height` argument. Tick captions thin at a measured regular
-stride, keeping both endpoints. Legends wrap before consuming plot space. An oversized caption truncates with its
+stride from the first caption with at least 1.5 em between neighbours; the last caption is kept only when it falls on that stride. Legends wrap before consuming plot space. An oversized caption truncates with its
 full name in an SVG tooltip; legend rows use at most 35% of the fixed height,
 with a named overflow summary when more entries remain. Regular
 bars use the native 68% category pitch and bounded group gaps, with the configured
@@ -309,8 +309,8 @@ Content before the band stays in place, the band stretches, and content after it
 declare their lane-label gutter: below the drawing's natural width
 it narrows toward a minimum so the lanes keep about 60% of the remaining width, and
 lane labels, lane summaries, group headers and the chart heading truncate with an
-ellipsis and a full-text tooltip instead of shrinking. If two endpoint tick captions
-would still collide, only the first is kept. Charts without a declared plot band, such
+ellipsis and a full-text tooltip instead of shrinking. Heatmap colour legends and column
+captions move with the plot but keep their own width. Charts without a declared plot band, such
 as radial charts and, for now, Gantt lanes and mixed schedules, stay centred at their native size; their heading keeps its left inset
 and truncates instead of being cropped.
 

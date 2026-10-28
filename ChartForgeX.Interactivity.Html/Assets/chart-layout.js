@@ -33,18 +33,13 @@
       const plot=[gutterLeft,top+Math.max(0,delta),Math.max(1,width-(spec.width-pw)+left-gutterLeft),Math.max(1,ph-Math.abs(delta))];
       for(const label of source.labels)label.group.style.display='';
       const projection=window.ChartForgeXLayoutGeometry.project(source,spec,width,plot);
-      // Tick captions are measured in their token font at the actual width. Keep endpoints and thin at a regular stride.
-      const labels=source.labels.map(label=>({...label,center:projection.x(label.center),width:label.text.getComputedTextLength()}));
+      // Tick captions are measured in their token font at the actual width and thin at one regular stride from the
+      // first caption, with at least 1.5 em between neighbours. The last caption stays only when it falls on the stride.
+      const labels=source.labels.map(label=>({...label,center:projection.x(label.center),width:label.text.getComputedTextLength(),
+        gap:Math.max(8,1.5*(parseFloat(getComputedStyle(label.text).fontSize)||0))}));
       let keep=labels.map((_,i)=>i);
-      const fits=indices=>indices.every((i,n)=>!n || labels[i].center-labels[i].width/2>=labels[indices[n-1]].center+labels[indices[n-1]].width/2+8);
-      for(let stride=2;!fits(keep) && stride<=labels.length;stride++){
-        keep=labels.map((_,i)=>i).filter(i=>i%stride===0);
-        if(keep.at(-1)!==labels.length-1)keep.push(labels.length-1);
-        // Endpoints are mandatory; omit the adjacent stride tick if that final gap is too short.
-        if(keep.length>2 && !fits(keep.slice(-2)))keep.splice(keep.length-2,1);
-      }
-      // Two endpoints that still collide leave only the first one; overlapping captions are never drawn.
-      if(keep.length===2 && labels.length>1 && !fits(keep))keep=[0];
+      const fits=indices=>indices.every((i,n)=>!n || labels[i].center-labels[i].width/2>=labels[indices[n-1]].center+labels[indices[n-1]].width/2+labels[i].gap);
+      for(let stride=2;!fits(keep) && stride<=labels.length;stride++)keep=labels.map((_,i)=>i).filter(i=>i%stride===0);
       const shown=new Set(keep);
       labels.forEach((label,index)=>{
         label.group.style.display=shown.has(index)?'':'none';

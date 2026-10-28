@@ -52,6 +52,17 @@
       const id=heading.closest('[clip-path]')?.getAttribute('clip-path').match(/url\(#([^)]*)\)/)?.[1],clip=id&&svg.getElementById(id);
       if(clip)for(const child of clip.querySelectorAll('*'))headings.add(child);
     }
+    // Legends and caption boxes inside a plot band move with it but keep their own width: scaling them squashes the
+    // colour steps and shrinks each caption's clip until one character remains.
+    const rigid=new Map();
+    for(const group of svg.querySelectorAll('[data-cfx-role="heatmap-scale"],[data-cfx-role="heatmap-column-label"]')){
+      if(group.closest('[transform*="rotate("]'))continue;
+      const box=group.getBBox(),anchor={center:box.x+box.width/2,width:box.width};
+      for(const node of [group,...group.querySelectorAll('*')])rigid.set(node,anchor);
+      // A caption's own clip may sit on the wrapper around it; take it only when that wrapper holds this caption alone.
+      const owner=group.parentElement?.closest('[clip-path]'), own=owner && owner.querySelectorAll('[data-cfx-role]').length===1 ? [owner] : [];
+      for(const node of [...own,group,...group.querySelectorAll('[clip-path]')]){const id=node.getAttribute('clip-path')?.match(/url\(#([^)]*)\)/)?.[1],clip=id&&svg.getElementById(id);if(clip)for(const child of clip.querySelectorAll('*'))rigid.set(child,anchor);}
+    }
     const recipes=[];
     for(const node of nodes){
       if(node.closest('pattern,marker') || excluded.has(node))continue;
@@ -59,7 +70,7 @@
       for(const name of ['x','y','cx','cy','x1','y1','x2','y2','width','height','d','points','transform']){
         const value=node.getAttribute(name);if(value!=null && !value.includes('%'))attributes[name]=value;
       }
-      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node),heading:headings.has(node)||!!node.closest('[data-cfx-role^="frame-heading"]')});
+      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node),rigid:rigid.get(node),heading:headings.has(node)||!!node.closest('[data-cfx-role^="frame-heading"]')});
     }
     const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"],[data-cfx-role="heatmap-column-label"],[data-cfx-role="schedule-tick-label"]')]
       .filter(group=>!group.matches('[data-cfx-role="heatmap-column-label"]') || !group.closest('[transform*="rotate("]')).map(group=>{
@@ -84,7 +95,8 @@
       const thickness=bar?Math.max(Math.min(.1,maximumBarWidth),Math.min(maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
       const center=bar?x(bar.categoryCenter)+(bar.position-(bar.count-1)/2)*(thickness+gap):0;
       // Drawings without a plot band stay centred, but their heading keeps its left inset and is fitted afterwards.
-      const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):!spec.cartesian && recipe.heading ? v=>v : x;
+      const rigid=recipe.rigid, shift=rigid ? Math.max(rigid.width/2,Math.min(width-rigid.width/2,x(rigid.center)))-rigid.center : 0;
+      const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):rigid ? v=>v+shift : !spec.cartesian && recipe.heading ? v=>v : x;
       const baseX=Number(a.x||0),baseY=Number(a.y||0);
       for(const [name,value] of Object.entries(a)){
         let result=value;

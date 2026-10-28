@@ -10,6 +10,9 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Prepares matrix, hexagonal and calendar geometry directly into one native scene.</summary>
 internal static partial class VisualMatrixCompiler {
+    // Largest theme corner radius as a share of a heatmap cell's shorter side.
+    private const double MaximumThemeCellRounding = .2;
+
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
         chart.Options.ShowHeatmapCategoryLegend && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
             ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray()
@@ -47,7 +50,8 @@ internal static partial class VisualMatrixCompiler {
                 rows.Length > 1 ? Math.Max(0, plot.Height - rowLayout.HeadersHeight) / rows.Length * .5 : double.PositiveInfinity)));
         var cellWidth = Math.Max(0, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
         var cellHeight = Math.Max(0, (plot.Height - rowLayout.HeadersHeight - gap * (rows.Length - 1)) / rows.Length);
-        var radius = Math.Min(chart.Options.HeatmapCellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) / 2);
+        // Theme rounding is for bars; small cells keep a rounded-square reading instead of becoming dots.
+        var radius = Math.Min(chart.Options.HeatmapCellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) * (chart.Options.HeatmapCellRadius.HasValue ? .5 : MaximumThemeCellRounding));
         var hex = ChartHexbinLayout.Build(plot, rows.Length, columns.Length);
         var hexRadius = Math.Min(hex.Radius, Math.Min(cellHeight / 2, cellWidth / Math.Sqrt(3)));
         var matrixMetadata = new Dictionary<string, string> {
@@ -64,16 +68,23 @@ internal static partial class VisualMatrixCompiler {
                 var ruleY = y;
                 if (ReverseRows(chart)) { y = MirrorTop(plot, y, group.Height); ruleY = y + group.Height; }
                 if (group.BeforeRow > 0) builder.Line(viewport.Left, ruleY, plot.Right, ruleY, colors.Border, context.Theme.GridStrokeWidth, "heatmap-row-group-rule", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-                VisualStateSceneTools.Text(builder, group.Name, new ChartRect(viewport.Left, y, plot.Right - viewport.Left, group.Height),
-                    VisualStateSceneTools.TickStyle(chart, context), "heatmap-row-group", "heatmap-group-" + group.BeforeRow);
+                var groupStyle = ChartRowText.Style(builder, VisualStateSceneTools.TickStyle(chart, context), group.Name, group.Height, plot.Right - viewport.Left);
+                VisualStateSceneTools.Text(builder, group.Name, ChartRowText.Bounds(builder, groupStyle, group.Name, viewport.Left, plot.Right - viewport.Left, y, group.Height, group.Height),
+                    groupStyle, "heatmap-row-group", "heatmap-group-" + group.BeforeRow);
             }
             for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
                 var series = rows[rowIndex]; var y = rowLayout.RowTop(plot.Top, rowIndex, cellHeight, gap);
                 if (ReverseRows(chart)) y = MirrorTop(plot, y, cellHeight);
-                if (chart.Options.ShowAxes && chart.Options.YAxis.Visible)
-                    VisualStateSceneTools.Text(builder, categoryGroups?.RowText(rowIndex, series.Name) ?? series.Name,
-                        new ChartRect(viewport.Left + layout.RowGroupWidth, y, Math.Max(0, plot.Left - viewport.Left - layout.RowGroupWidth - context.Theme.Spacing), cellHeight),
-                        VisualStateSceneTools.TickStyle(chart, context), "heatmap-row-label", "matrix-row-label-" + rowIndex, TextAlignment.Right);
+                if (chart.Options.ShowAxes && chart.Options.YAxis.Visible) {
+                    // Row labels follow the shared row-text policy: a readable floor, truncation, and the row pitch
+                    // (cell plus gap) rather than the painted cell height.
+                    var rowName = categoryGroups?.RowText(rowIndex, series.Name) ?? series.Name;
+                    var labelLeft = viewport.Left + layout.RowGroupWidth;
+                    var labelWidth = Math.Max(0, plot.Left - viewport.Left - layout.RowGroupWidth - context.Theme.Spacing);
+                    var labelStyle = ChartRowText.Style(builder, VisualStateSceneTools.TickStyle(chart, context), rowName, cellHeight + gap, labelWidth);
+                    VisualStateSceneTools.Text(builder, rowName, ChartRowText.Bounds(builder, labelStyle, rowName, labelLeft, labelWidth, y, cellHeight, cellHeight + gap),
+                        labelStyle, "heatmap-row-label", "matrix-row-label-" + rowIndex, TextAlignment.Right);
+                }
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
                 })) {
