@@ -22,6 +22,15 @@ internal static partial class ChartTimeScale {
     /// <summary>Returns the pattern for a full date and time.</summary>
     internal static string DateTimePattern(ChartAxis axis, bool seconds) => DayPattern(axis, true) + " " + TimePattern(axis, seconds);
 
+    /// <summary>Returns the culture's date and long time pattern with fractional seconds after the seconds field.</summary>
+    internal static string FractionalDateTimePattern(ChartAxis axis, string fraction) {
+        var time = TimePattern(axis, true);
+        var seconds = time.LastIndexOf("ss", System.StringComparison.Ordinal);
+        var separator = "'" + LabelCulture(axis).NumberFormat.NumberDecimalSeparator + "'";
+        time = seconds < 0 ? time + separator + fraction : time.Insert(seconds + 2, separator + fraction);
+        return DayPattern(axis, true) + " " + time;
+    }
+
     // The culture's month-day pattern with an abbreviated month: "27 Oct", "Oct 27", "27. Okt.", "27 paź".
     private static string ShortMonthDayPattern(CultureInfo culture) {
         var pattern = culture.DateTimeFormat.MonthDayPattern;

@@ -73,6 +73,22 @@ public sealed class StateTimelineLabelPolicyTests {
         Assert.Equal("API", Assert.Single(labels).Value);
     }
 
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public void ToSvg_OverfullGanttLanesWithMultilineNames_DoNotOverlapNeighbours(string lineBreak) {
+        var chart = Chart.Create().WithSize(720, 300).WithLegend(false)
+            .WithStateCategories(new ChartStateCategory("planned", "Planned", ChartColor.FromHex("#2563eb")));
+        for (var lane = 0; lane < 18; lane++)
+            chart.AddGanttLane("Lane " + lane + lineBreak + "second line", new[] { new ChartGanttLaneItem(Day, Day.AddHours(2 + lane % 4), "planned") }, id: new ChartSeriesId("lane-" + lane));
+        var labels = Texts(XDocument.Parse(chart.ToSvg()), ChartDomRoles.ScheduleRowLabel)
+            .Select(label => (Y: double.Parse((string)label.Attribute("y")!, CultureInfo.InvariantCulture), Size: double.Parse((string)label.Attribute("font-size")!, CultureInfo.InvariantCulture)))
+            .OrderBy(label => label.Y).ToArray();
+        for (var index = 1; index < labels.Length; index++)
+            Assert.True(labels[index].Y - labels[index - 1].Y >= labels[index].Size * 2, "Two-line lane labels overlap at y=" + labels[index].Y.ToString(CultureInfo.InvariantCulture));
+    }
+
     [Fact]
     public void ToSvg_NarrowStaticLanes_TruncatesLongNamesInsteadOfShrinkingThem() {
         var svg = XDocument.Parse(DenseLanes(420, 450).ToSvg());

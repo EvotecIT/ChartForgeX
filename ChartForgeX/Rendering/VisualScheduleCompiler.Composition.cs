@@ -52,7 +52,7 @@ internal static partial class VisualScheduleCompiler {
                                 ChartDomRoles.ScheduleGroup, "schedule-group-" + index);
                     continue;
                 }
-                LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, bounds.Top, bounds.Height, row.SeriesIndex, currentGroup);
+                LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, bounds.Top, bounds.Height, row.SeriesIndex, currentGroup, bounds.Height);
                 builder.AddRegion(new VisualSemanticRegion("schedule-lane-" + row.SeriesIndex, "schedule-lane", bounds, row.Name));
             }
             if (chart.Series.Any(series => series.Kind == ChartSeriesKind.StateTimeline)) StateLanes(chart, context, builder, viewport, frame);

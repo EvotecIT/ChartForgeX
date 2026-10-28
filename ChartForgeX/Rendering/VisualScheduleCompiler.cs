@@ -132,7 +132,7 @@ internal static partial class VisualScheduleCompiler {
                     continue;
                 }
                 if (chart.Series[row.SeriesIndex].Kind != ChartSeriesKind.GanttLane) continue;
-                if (frame == null) LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, rowBounds.Top, rowBounds.Height, row.SeriesIndex, currentGroup);
+                if (frame == null) LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, rowBounds.Top, rowBounds.Height, row.SeriesIndex, currentGroup, rowBounds.Height);
                 var series = chart.Series[row.SeriesIndex];
                 foreach (var placed in row.Items) {
                     var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);

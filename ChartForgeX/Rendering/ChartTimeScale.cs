@@ -123,10 +123,10 @@ internal static partial class ChartTimeScale {
         var local = ToDisplayTime(axis, value, roundToSeconds: false);
         if (!local.HasValue) return value.ToString("G17", CultureInfo.InvariantCulture);
         long fractionalTicks = local.Value.Ticks % TimeSpan.TicksPerSecond;
-        var format = fractionalTicks != 0
-            ? fractionalTicks % TimeSpan.TicksPerMillisecond == 0 ? "yyyy-MM-dd HH:mm:ss.fff" : "yyyy-MM-dd HH:mm:ss.ffff"
-            : DateTimePattern(axis, local.Value.Second != 0);
-        var text = local.Value.ToString(format, fractionalTicks != 0 ? CultureInfo.InvariantCulture : LabelCulture(axis)) + " " + ZoneDesignator(axis);
+        var fraction = fractionalTicks % TimeSpan.TicksPerMillisecond == 0 ? "fff" : "ffff";
+        var format = fractionalTicks == 0 ? DateTimePattern(axis, local.Value.Second != 0)
+            : axis.Culture == null ? "yyyy-MM-dd HH:mm:ss." + fraction : FractionalDateTimePattern(axis, fraction);
+        var text = local.Value.ToString(format, LabelCulture(axis)) + " " + ZoneDesignator(axis);
         var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
         if (zone.IsAmbiguousTime(local.Value)) {
             var utc = ChartDateTime.FromOrderedOaDate(value);

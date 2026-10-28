@@ -70,6 +70,19 @@ public sealed class StableSeriesPaletteTests {
     }
 
     [Fact]
+    public void NativeViewsKeepTheIdentityAssignmentAndValueUnit() {
+        ChartSeries Line(string id) => ChartSeries.CreateLine(new ChartSeriesId(id), id, new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
+        var chart = Bare(VisualThemeMode.Light, identity: true).WithValueUnit("ms").AddSeries(Line("requests")).AddSeries(Line("errors"));
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var view = new ChartVisibilitySource(chart, context).CreateNativeView(null);
+        Assert.Equal(ChartSeriesColorAssignment.Identity, view.Options.SeriesColorAssignment);
+        Assert.Equal("ms", view.Options.ValueUnit);
+        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        Assert.Equal(ChartSeriesColours.Resolve(chart, 0, colors), ChartSeriesColours.Resolve(view, 0, colors));
+        Assert.NotEqual(colors.Palette[0], ChartSeriesColours.Resolve(view, 0, colors));
+    }
+
+    [Fact]
     public void AnonymousHelpersKeepTheirOrdinalPaletteContract() {
         var theme = VisualTheme.Graphite();
         var chart = Bare(VisualThemeMode.Light).AddScatter("First", new[] { new ChartPoint(1, 1) })

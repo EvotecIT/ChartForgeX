@@ -33,6 +33,9 @@ public static partial class VisualArtifactInterchangeMapping {
         target.DataLabelConnectorStrokeWidth = source.DataLabelConnectorStrokeWidth;
         target.DataLabelConnectorColor = source.DataLabelConnectorColor;
         target.ValueFormat = source.ValueFormat;
+        // Native views (legend reflow, value replays) keep the authored unit and colour assignment.
+        target.ValueUnit = source.ValueUnit;
+        target.SeriesColorAssignment = source.SeriesColorAssignment;
         target.PngOutputScale = source.PngOutputScale;
         target.PngSupersamplingScale = source.PngSupersamplingScale;
         target.PngTextHinting = source.PngTextHinting;
@@ -76,6 +79,9 @@ public static partial class VisualArtifactInterchangeMapping {
         target.DataLabelConnectorStrokeWidth = source.DataLabelConnectorStrokeWidth;
         target.DataLabelConnectorColor = source.DataLabelConnectorColor;
         target.ValueFormat = source.ValueFormat;
+        // Native views (legend reflow, value replays) keep the authored unit and colour assignment.
+        target.ValueUnit = source.ValueUnit;
+        target.SeriesColorAssignment = source.SeriesColorAssignment;
         target.PngOutputScale = source.PngOutputScale;
         target.PngSupersamplingScale = source.PngSupersamplingScale;
         target.PngTextHinting = source.PngTextHinting;

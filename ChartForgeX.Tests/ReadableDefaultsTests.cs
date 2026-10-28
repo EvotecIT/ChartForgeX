@@ -106,6 +106,23 @@ public sealed class ReadableDefaultsTests {
     }
 
     [Fact]
+    public void TimeSeriesPoint_AuthoredCaptionThatPrefixesTheValueKeepsBothCaptionAndValue() {
+        var chart = Latency().WithValueUnit("ms").WithDataLabels();
+        chart.Series[0].WithPointLabel(0, "5");
+        var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("aria-label")!;
+        Assert.EndsWith(", 5 (50)", label, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WithCulture_FractionalSecondInstantsUseTheCulture() {
+        var chart = Chart.Create().WithSize(800, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+            .AddLine("dc-03", Enumerable.Range(0, 4).Select(index => new ChartPoint(Start.AddSeconds(index + .25), 50 + index)))
+            .WithCulture(CultureInfo.GetCultureInfo("de-DE"));
+        var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("aria-label")!;
+        Assert.Contains("21.10.2026 00:00:00,250", label, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WithValueUnit_SymbolAttachesWithoutSpace() {
         var point = ByRole(XDocument.Parse(Latency().WithValueUnit("%").ToSvg()), "point")[1];
         Assert.Equal("51.5%", (string?)point.Attribute("data-cfx-formatted-value"));

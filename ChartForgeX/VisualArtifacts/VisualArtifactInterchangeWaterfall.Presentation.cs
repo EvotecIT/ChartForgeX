@@ -57,6 +57,10 @@ public sealed partial class VisualArtifactInterchangeWaterfallArtifact {
     public bool ExplicitGridStrokeWidth { get; set; }
     /// <summary>Gets or sets the built-in numeric policy; callback-backed policies reject during interchange validation.</summary>
     public ChartValueFormat ValueFormat { get; set; } = ChartValueFormat.ExistingValue;
+    /// <summary>Gets or sets the unit shown after values in readouts and accessible names, or null for none.</summary>
+    public string? ValueUnit { get; set; }
+    /// <summary>Gets or sets how series without an explicit colour pick their palette colour.</summary>
+    public ChartSeriesColorAssignment SeriesColorAssignment { get; set; }
     /// <summary>Gets or sets the native physical X-axis options within the portable axis subset.</summary>
     public ChartAxis XAxis { get; set; } = new();
     /// <summary>Gets or sets the native physical Y-axis options within the portable axis subset.</summary>

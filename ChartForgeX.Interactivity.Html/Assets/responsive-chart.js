@@ -7,6 +7,8 @@
   // allow a later specification node to retry instead of caching the failure.
   function unavailable(host,reason){
     delete host.cfxResponsiveReady;
+    // A specification that arrived while this attempt was still running gets its own attempt.
+    if(host.cfxResponsiveRetry){delete host.cfxResponsiveRetry;queueMicrotask(()=>mount(host));}
     if(!warned.has(host)){warned.add(host);console.warn('ChartForgeX responsive chart kept its static drawing: '+reason);}
   }
   // The newest specification node wins, so a host can replace an unusable one by appending another.
@@ -50,7 +52,7 @@
   function mount(scope=document){return Promise.all(hosts(scope).map(host=>host.cfxResponsiveReady ||= initialize(host)));}
   window.ChartForgeXResponsive={mount};
   const owner=node=>node?.nodeType===1&&node.matches('[data-cfx-spec],[data-cfx-spec-gzip]')?node.closest('[data-cfx-responsive-chart]'):null;
-  const changes=new MutationObserver(records=>{for(const record of records){for(const node of record.addedNodes){mount(node);const host=owner(node);if(host&&!host.cfxResponsive)mount(host);}for(const node of record.removedNodes)for(const host of hosts(node))if(!host.isConnected)host.cfxResponsive?.dispose();}});
+  const changes=new MutationObserver(records=>{for(const record of records){for(const node of record.addedNodes){mount(node);const host=owner(node);if(host&&!host.cfxResponsive){if(host.cfxResponsiveReady)host.cfxResponsiveRetry=true;else mount(host);}}for(const node of record.removedNodes)for(const host of hosts(node))if(!host.isConnected)host.cfxResponsive?.dispose();}});
   changes.observe(document.documentElement,{childList:true,subtree:true});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>mount(document),{once:true});
   mount(current||document);

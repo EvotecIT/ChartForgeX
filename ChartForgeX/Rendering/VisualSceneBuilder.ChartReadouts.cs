@@ -75,7 +75,7 @@ internal sealed partial class VisualSceneBuilder {
             // A dimensionless factor must not inherit a measurement axis's units or culture.
             if (Number("data-cfx-iqr-multiplier", out var multiplier))
                 metadata["data-cfx-formatted-iqr-multiplier"] = ChartNumericFormatter.FormatCoordinate(multiplier);
-            if (group.Role == "point" && (BoxPlotReadoutDescription(series, metadata) ?? FormattedPointDescription(series.Name, metadata)) is { } description) {
+            if (group.Role == "point" && (BoxPlotReadoutDescription(series, metadata) ?? FormattedPointDescription(series.Name, metadata, chart.Options.ValueUnit)) is { } description) {
                 metadata["aria-label"] = description;
                 if (regionIndices == null) {
                     regionIndices = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -95,7 +95,7 @@ internal sealed partial class VisualSceneBuilder {
     // Time-axis point names were built from raw coordinates ("dc-03: 56.5 (46316.0035, 56.5)"), which announces OLE dates.
     // Rebuild that exact raw form from the captured display text: "dc-03, 2026-10-27 20:20 UTC, 56.5 ms". An authored or
     // compacted caption keeps the exact value beside it. Numeric axes keep their exact round-trip coordinates.
-    internal static string? FormattedPointDescription(string seriesName, IReadOnlyDictionary<string, string> metadata) {
+    internal static string? FormattedPointDescription(string seriesName, IReadOnlyDictionary<string, string> metadata, string? unit) {
         if (!metadata.TryGetValue("data-cfx-formatted-instant", out var instant) || instant.Length == 0
             || !metadata.TryGetValue("aria-label", out var current) || !metadata.TryGetValue("data-cfx-x", out var rawX) || !metadata.TryGetValue("data-cfx-y", out var rawY)
             || !double.TryParse(rawX, NumberStyles.Float, CultureInfo.InvariantCulture, out var x) || !double.TryParse(rawY, NumberStyles.Float, CultureInfo.InvariantCulture, out var y)) return null;
@@ -104,7 +104,8 @@ internal sealed partial class VisualSceneBuilder {
         if (!current.StartsWith(seriesName + ": ", StringComparison.Ordinal) || !current.EndsWith(raw, StringComparison.Ordinal)) return null;
         var caption = current.Substring(seriesName.Length + 2, current.Length - seriesName.Length - 2 - raw.Length);
         var formatted = metadata.TryGetValue("data-cfx-formatted-value", out var value) ? value : string.Empty;
-        var amount = formatted.Length > 0 && (caption.Length == 0 || formatted.StartsWith(caption, StringComparison.Ordinal)) ? formatted
+        // The formatted value replaces the caption only when the caption is exactly that value (plus the chart unit).
+        var amount = formatted.Length > 0 && (caption.Length == 0 || formatted == ChartOptions.AppendUnit(caption, unit)) ? formatted
             : caption == exact || caption.Length == 0 ? exact : caption + " (" + exact + ")";
         return string.Join(", ", new[] { seriesName, instant, amount }.Where(part => part.Length > 0));
     }

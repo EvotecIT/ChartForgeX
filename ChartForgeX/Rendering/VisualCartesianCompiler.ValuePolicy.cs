@@ -53,6 +53,7 @@ internal static partial class VisualCartesianCompiler {
         internal ChartMapper Map { get; }
         internal double Baseline { get; }
         internal CartesianValuePoint[] Points { get; }
+        internal string? Unit => _unit;
         internal double Direction(double value, double endpoint) => MappedBarDirection(_axis, value, Baseline, endpoint);
         // Frames carry the same value unit as the prepared readouts they interpolate between.
         internal string Readout(double value, string? numericCaption) => ChartOptions.AppendUnit(numericCaption != null && _axis.ValueFormat == null

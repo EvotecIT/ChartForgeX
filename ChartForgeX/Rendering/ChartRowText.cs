@@ -40,7 +40,10 @@ internal static class ChartRowText {
     internal static ChartRect Bounds(VisualSceneBuilder builder, TextStyle style, string text, double left, double width, double top, double height, double pitch = 0) {
         var textHeight = builder.MeasureText(text.Length == 0 ? "Mg" : text, style).Height;
         // The measured line box includes generous leading; neighbours collide only when the glyphs themselves do not fit.
-        var lines = 1; foreach (var character in text) if (character == '\n') lines++;
+        // Count line breaks as the text renderer does: CR, LF and CRLF each end a line.
+        var lines = 1;
+        for (var index = 0; index < text.Length; index++)
+            if (text[index] == '\n' || text[index] == '\r' && (index + 1 == text.Length || text[index + 1] != '\n')) lines++;
         var fits = pitch <= 0 || pitch >= style.EffectiveFontSize * GlyphHeightRatio * lines;
         var rowHeight = fits ? Math.Max(height, textHeight) : Math.Max(height, pitch);
         return new ChartRect(left, top + (height - rowHeight) / 2, width, rowHeight);
