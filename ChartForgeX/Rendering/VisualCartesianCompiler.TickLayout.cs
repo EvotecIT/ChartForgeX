@@ -57,7 +57,8 @@ internal static partial class VisualCartesianCompiler {
             || axis.Scale != ChartScaleKind.Linear || length < MinimumDensityAxisLength) return count;
         // Small whole-unit domains (up to a year of months) keep every fitting unit; wider domains are capped.
         if (horizontal) return count <= MaximumUnitTicks ? count : Math.Min(count, Math.Max(MinimumDensityTicks, (int)Math.Floor(length / HorizontalTickPitch) + 1));
-        return Math.Min(MaximumDensityTicks, Math.Max(MinimumDensityTicks, (int)Math.Round(length / VerticalTickPitch) + 1));
+        // Tall axes may start above the default count; short ones keep it, because a lower start can select a coarser nice step.
+        return Math.Max(count, Math.Min(MaximumDensityTicks, (int)Math.Round(length / VerticalTickPitch) + 1));
     }
 
     private const double MinimumDensityAxisLength = 160, HorizontalTickPitch = 80, VerticalTickPitch = 50;
