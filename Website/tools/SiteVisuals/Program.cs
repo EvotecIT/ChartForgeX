@@ -108,7 +108,7 @@ Write("hero.csharp.txt", heroCode);
 File.WriteAllText(Path.Combine(website, "data", "hero.json"),
     JsonSerializer.Serialize(new { generatedBy = "Website/tools/SiteVisuals", width = 960, height = 540, sizes,
         code = heroCode, source = "/site/hero.csharp.txt" },
-        new JsonSerializerOptions { WriteIndented = true }) + "\n",
+        new JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n") + "\n",
     new UTF8Encoding(false));
 
 // Markdown: the same chart authored as a fenced block.
