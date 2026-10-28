@@ -54,6 +54,57 @@ public sealed class WaterfallInterchangeTests {
     }
 
     [Fact]
+    public void PortablePresentationAndNativeReplayKeepCultureUnitAndIdentityColors() {
+        var original = Model().WithCulture(CultureInfo.GetCultureInfo("de-DE")).WithValueUnit("ms")
+            .WithSeriesColorAssignment(ChartSeriesColorAssignment.Identity);
+        var json = original.ToVisualArtifact().ToInterchangeJson();
+        var imported = VisualArtifactInterchangeEnvelope.FromJson(json).ToWaterfallChart();
+        Assert.Equal("ms", imported.Options.ValueUnit);
+        Assert.Equal(ChartSeriesColorAssignment.Identity, imported.Options.SeriesColorAssignment);
+        Assert.Equal("de-DE", imported.Options.XAxis.Culture?.Name);
+        var legacy = VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"valueUnit\":\"ms\",", "")
+            .Replace("\"seriesColorAssignment\":\"Identity\",", "").Replace("\"culture\":\"de-DE\",", "")).ToWaterfallChart();
+        Assert.Null(legacy.Options.ValueUnit);
+        Assert.Equal(ChartSeriesColorAssignment.Order, legacy.Options.SeriesColorAssignment);
+        Assert.Null(legacy.Options.XAxis.Culture);
+        Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("de-DE", "bad_culture!")));
+
+        var chart = Chart.Create().WithSize(600, 320).WithXAxisTimeScale(TimeZoneInfo.Utc);
+        VisualArtifactInterchangeMapping.RestoreVisibilityPresentation(chart, VisualArtifactInterchangeMapping.CaptureVisibilityPresentation(imported));
+        chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
+        chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", new[] {
+            new ChartPoint(new DateTime(2026, 10, 21, 0, 0, 0, DateTimeKind.Utc), 50),
+            new ChartPoint(new DateTime(2026, 10, 21, 1, 0, 0, DateTimeKind.Utc), 60) }));
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var source = new ChartVisibilitySource(chart, context);
+        var facts = source.CanonicalFacts(context);
+        Assert.Contains("\"valueUnit\":\"ms\"", facts, StringComparison.Ordinal);
+        Assert.Contains("\"seriesColorAssignment\":\"Identity\"", facts, StringComparison.Ordinal);
+        Assert.Contains("\"culture\":\"de-DE\"", facts, StringComparison.Ordinal);
+        var view = source.CreateNativeValueView(new[] { 50d, 61d });
+        Assert.Equal("de-DE", view.Options.XAxis.Culture?.Name);
+        Assert.Equal("ms", view.Options.ValueUnit);
+        Assert.Equal(ChartSeriesColorAssignment.Identity, view.Options.SeriesColorAssignment);
+        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        Assert.Equal(ChartSeriesColours.Resolve(chart, 0, colors), ChartSeriesColours.Resolve(view, 0, colors));
+        Assert.Equal(61d, view.Series[0].Points[1].Y);
+        var point = XDocument.Parse(view.ToSvg()).Descendants().First(node => (string?)node.Attribute("data-cfx-role") == "point");
+        Assert.Equal("50.00\u00A0ms", (string?)point.Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
+    public void PortableTimeCultureRejectsCustomPatternsAndRetainsExplicitInvariantCulture() {
+        var modified = (CultureInfo)CultureInfo.GetCultureInfo("de-DE").Clone();
+        modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
+        var custom = Model().WithCulture(modified);
+        Assert.Throws<NotSupportedException>(() => custom.ToVisualArtifact().ToInterchangeJson());
+        var invariant = Model(); invariant.Options.XAxis.Culture = CultureInfo.InvariantCulture;
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(invariant.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        Assert.NotNull(restored.Options.XAxis.Culture);
+        Assert.Equal(string.Empty, restored.Options.XAxis.Culture!.Name);
+    }
+
+    [Fact]
     public void NumericAppendedTotalKeepsDerivedContributorsAndPresentationWithoutBecomingSourceData() {
         var chart = Chart.Create().WithLegend(false).AddWaterfall("Changes", new[] { new ChartPoint(1, 10), new ChartPoint(3, -2) });
         chart.Series[0].WithObservationId(0, new ChartObservationId("first"));

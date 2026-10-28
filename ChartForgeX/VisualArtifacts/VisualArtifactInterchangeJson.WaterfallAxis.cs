@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 
@@ -22,6 +23,7 @@ internal static partial class VisualArtifactInterchangeJson {
         OptionalNumber(writer, "ruleCrossAt", axis.RuleCrossAt); OptionalNumber(writer, "crossAt", axis.CrossAt);
         WaterfallValueFormat(writer, "valueFormat", axis.ValueFormat);
         OptionalString(writer, "timeZoneLabel", axis.TimeZoneLabel); Boolean(writer, "showTimeZone", axis.ShowTimeZone);
+        if (axis.Culture != null) String(writer, "culture", PortableTimeCulture(axis.Culture));
         writer.Property("waterfallAxisLabels"); writer.StartArray();
         foreach (var label in axis.Labels) {
             writer.StartObject(); Number(writer, "value", label.Value); String(writer, "text", label.Text);
@@ -29,6 +31,24 @@ internal static partial class VisualArtifactInterchangeJson {
             writer.EndArray(); writer.EndObject();
         }
         writer.EndArray(); writer.EndObject();
+    }
+
+    // Portable axes retain named, unmodified cultures; silently dropping custom date patterns would change captions.
+    private static string PortableTimeCulture(CultureInfo culture) {
+        if (culture.GetType() != typeof(CultureInfo)) throw new NotSupportedException("Portable time axes require standard named cultures.");
+        var reference = CultureInfo.GetCultureInfo(culture.Name);
+        var actual = culture.DateTimeFormat; var expected = reference.DateTimeFormat;
+        if (culture.NumberFormat.NumberDecimalSeparator != reference.NumberFormat.NumberDecimalSeparator
+            || actual.ShortDatePattern != expected.ShortDatePattern || actual.MonthDayPattern != expected.MonthDayPattern
+            || actual.ShortTimePattern != expected.ShortTimePattern || actual.LongTimePattern != expected.LongTimePattern
+            || actual.DateSeparator != expected.DateSeparator || actual.TimeSeparator != expected.TimeSeparator
+            || actual.AMDesignator != expected.AMDesignator || actual.PMDesignator != expected.PMDesignator
+            || actual.Calendar.GetType() != expected.Calendar.GetType() || actual.Calendar.TwoDigitYearMax != expected.Calendar.TwoDigitYearMax
+            || !actual.MonthNames.SequenceEqual(expected.MonthNames) || !actual.AbbreviatedMonthNames.SequenceEqual(expected.AbbreviatedMonthNames)
+            || !actual.MonthGenitiveNames.SequenceEqual(expected.MonthGenitiveNames) || !actual.AbbreviatedMonthGenitiveNames.SequenceEqual(expected.AbbreviatedMonthGenitiveNames)
+            || !actual.DayNames.SequenceEqual(expected.DayNames) || !actual.AbbreviatedDayNames.SequenceEqual(expected.AbbreviatedDayNames))
+            throw new NotSupportedException("Modified time cultures cannot be serialized as portable chart data.");
+        return culture.Name;
     }
 
     private static ChartAxis ReadWaterfallAxis(Dictionary<string, GeoJsonValue> source, string name) {
@@ -45,6 +65,7 @@ internal static partial class VisualArtifactInterchangeJson {
             TimeZoneLabel = OptionalString(fields, "timeZoneLabel"), ShowTimeZone = OptionalBool(fields, "showTimeZone") ?? false,
             RuleCrossAt = OptionalNumber(fields, "ruleCrossAt"), CrossAt = OptionalNumber(fields, "crossAt")
         };
+        if (OptionalString(fields, "culture") is string culture) axis.Culture = CultureInfo.GetCultureInfo(culture);
         if (OptionalEnum<ChartScaleKind>(fields, "scale") is ChartScaleKind scale) axis.Scale = scale;
         axis.Minimum = OptionalNumber(fields, "minimum"); axis.Maximum = OptionalNumber(fields, "maximum");
         if (OptionalInt(fields, "tickCount") is int ticks) axis.TickCount = ticks;

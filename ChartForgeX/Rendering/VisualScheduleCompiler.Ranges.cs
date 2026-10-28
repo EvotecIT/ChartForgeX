@@ -55,7 +55,7 @@ internal static partial class VisualScheduleCompiler {
             axis.Scale == ChartScaleKind.Time ? tick => gantt && axis.TimeTickLabelFormatter != null
                 ? axis.TimeTickLabelFormatter(tick, effectiveInterval)
                 : projectDates && ChartTimeScale.ToDisplayTime(axis, tick) is { } date
-                    ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    ? date.ToString(ChartTimeScale.DayPattern(axis, true), ChartTimeScale.LabelCulture(axis))
                     : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
         var formatCache = new ChartAxisValueFormatter.Cache();
         string Format(double value) => frame != null ? frame.Layout.FormatTick(value) : formatCache.Format(axis, value, formatTick);

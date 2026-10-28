@@ -224,7 +224,8 @@ internal sealed partial class ChartGanttLaneModel {
     public string FormatTick(double value) => ChartAxisValueFormatter.Format(Chart.Options.XAxis, value,
         tick => Mixed && Chart.Options.XAxis.Scale == ChartScaleKind.Linear ? tick.ToString("G17", CultureInfo.InvariantCulture)
             : Mixed && Chart.Options.XAxis.TimeTickLabelFormatter != null ? Chart.Options.XAxis.TimeTickLabelFormatter(tick, HasFixedTicks ? Chart.Options.GanttTickInterval?.Unit : null)
-            : ChartTicks.IsNumericTimeFallback(Ticks) ? tick.ToString("G17", CultureInfo.InvariantCulture) : ChartTimeScale.Format(Chart.Options.XAxis, tick), Ticks);
+            : ChartTicks.IsNumericTimeFallback(Ticks) ? tick.ToString("G17", CultureInfo.InvariantCulture)
+            : ChartTimeScale.Format(Chart.Options.XAxis, tick, Mixed && HasFixedTicks && Chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond), Ticks);
 
     public string ItemSummary(ChartGanttLaneRow lane, ChartGanttLanePlacedItem placed) {
         var axis = Chart.Options.XAxis;

@@ -44,6 +44,8 @@ internal static partial class VisualArtifactInterchangeJson {
         Number(writer, "dataLabelConnectorStrokeWidth", source.DataLabelConnectorStrokeWidth);
         OptionalString(writer, "dataLabelConnectorColor", WaterfallColor(source.DataLabelConnectorColor));
         WaterfallValueFormat(writer, "valueFormat", source.ValueFormat);
+        OptionalString(writer, "valueUnit", source.ValueUnit);
+        if (source.SeriesColorAssignment != ChartSeriesColorAssignment.Order) String(writer, "seriesColorAssignment", source.SeriesColorAssignment.ToString());
         WaterfallAxis(writer, "xAxis", source.XAxis); WaterfallAxis(writer, "yAxis", source.YAxis);
         WaterfallAxis(writer, "secondaryXAxis", source.SecondaryXAxis); WaterfallAxis(writer, "secondaryYAxis", source.SecondaryYAxis);
         WaterfallBars(writer, source.BarStyle, source.ExplicitBarCornerRadius); WaterfallGrid(writer, source.GridStyle, source.ExplicitGridStrokeWidth);
@@ -92,6 +94,8 @@ internal static partial class VisualArtifactInterchangeJson {
         source.DataLabelConnectorStrokeWidth = OptionalNumber(fields, "dataLabelConnectorStrokeWidth") ?? 1.2;
         source.DataLabelConnectorColor = ReadWaterfallColor(fields, "dataLabelConnectorColor");
         source.ValueFormat = ReadWaterfallValueFormat(fields, "valueFormat") ?? ChartValueFormat.ExistingValue;
+        source.ValueUnit = OptionalString(fields, "valueUnit");
+        source.SeriesColorAssignment = OptionalEnum<ChartSeriesColorAssignment>(fields, "seriesColorAssignment") ?? ChartSeriesColorAssignment.Order;
         source.XAxis = ReadWaterfallAxis(fields, "xAxis"); source.YAxis = ReadWaterfallAxis(fields, "yAxis");
         source.SecondaryXAxis = ReadWaterfallAxis(fields, "secondaryXAxis"); source.SecondaryYAxis = ReadWaterfallAxis(fields, "secondaryYAxis");
         source.BarStyle = ReadWaterfallBars(fields, source.ExplicitBarCornerRadius); source.GridStyle = ReadWaterfallGrid(fields, source.ExplicitGridStrokeWidth);

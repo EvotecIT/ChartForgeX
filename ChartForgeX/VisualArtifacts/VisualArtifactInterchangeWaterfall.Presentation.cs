@@ -123,6 +123,8 @@ public sealed partial class VisualArtifactInterchangeWaterfallArtifact {
         copy.GridStyle = source.GridStyle.Clone();
         copy.ExplicitGridStrokeWidth = source.ExplicitGridStrokeWidth;
         copy.ValueFormat = source.ValueFormat;
+        copy.ValueUnit = source.ValueUnit;
+        copy.SeriesColorAssignment = source.SeriesColorAssignment;
         copy.XAxis = source.XAxis.Clone();
         copy.YAxis = source.YAxis.Clone();
         copy.SecondaryXAxis = source.SecondaryXAxis.Clone();

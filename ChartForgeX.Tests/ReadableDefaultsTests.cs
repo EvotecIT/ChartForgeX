@@ -110,7 +110,45 @@ public sealed class ReadableDefaultsTests {
         var chart = Latency().WithValueUnit("ms").WithDataLabels();
         chart.Series[0].WithPointLabel(0, "5");
         var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("aria-label")!;
-        Assert.EndsWith(", 5 (50)", label, StringComparison.Ordinal);
+        Assert.EndsWith(", 5 (50\u00A0ms)", label, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Line)]
+    [InlineData(ChartSeriesKind.Bar)]
+    [InlineData(ChartSeriesKind.Scatter)]
+    public void NumericPoint_AccessibleNameIncludesUnitAndExactCoordinates(ChartSeriesKind kind) {
+        var chart = Chart.Create().WithSize(800, 320).WithValueUnit("ms")
+            .AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", kind,
+                new[] { new ChartPoint(1.125, 50.25), new ChartPoint(2, 60) }));
+        var point = ByRole(XDocument.Parse(chart.ToSvg()), "point")[0];
+        var label = (string)point.Attribute("aria-label")!;
+        Assert.Contains("50.25\u00A0ms", label, StringComparison.Ordinal);
+        Assert.EndsWith("(1.125, 50.25)", label, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(ChartTimeTickUnit.Day)]
+    [InlineData(ChartTimeTickUnit.Millisecond)]
+    public void Gantt_FixedTimeTicksUseGermanCulture(ChartTimeTickUnit unit) {
+        var end = unit == ChartTimeTickUnit.Day ? Start.AddDays(3) : Start.AddMilliseconds(800);
+        var chart = Chart.Create().WithSize(1000, 320).WithLegend(false).WithCulture(CultureInfo.GetCultureInfo("de-DE"))
+            .AddGanttTask("Task", Start, end).WithGanttTickInterval(new ChartTimeTickInterval(unit, unit == ChartTimeTickUnit.Day ? 1 : 200));
+        var labels = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-tick-label").Select(node => node.Value).ToArray();
+        Assert.NotEmpty(labels);
+        Assert.Contains(labels, label => label.Contains("21.10.2026", StringComparison.Ordinal));
+        if (unit == ChartTimeTickUnit.Millisecond) Assert.Contains(labels, label => label.Contains(",200", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void MixedGantt_FixedMillisecondTicksKeepLocalizedDistinctInstants() {
+        var chart = Chart.Create().WithSize(1000, 400).WithLegend(false).WithCulture(CultureInfo.GetCultureInfo("de-DE"))
+            .AddGanttTask("Task", Start, Start.AddMilliseconds(800))
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddMilliseconds(800), "up") })
+            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 200));
+        var labels = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-tick-label").Select(node => node.Value).ToArray();
+        Assert.Contains(labels, label => label.Contains(",200", StringComparison.Ordinal));
+        Assert.Equal(labels.Length, labels.Distinct().Count());
     }
 
     [Fact]

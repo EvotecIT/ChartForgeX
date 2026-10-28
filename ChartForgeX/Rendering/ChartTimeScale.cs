@@ -112,7 +112,7 @@ internal static partial class ChartTimeScale {
     public static string Format(ChartAxis axis, double value, bool milliseconds = false) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (ToDisplayTime(axis, value, roundToSeconds: !milliseconds) is not { } rounded) return ChartNumericFormatter.FormatCompact(value);
-        if (milliseconds) return rounded.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+        if (milliseconds) return rounded.ToString(axis.Culture == null ? "yyyy-MM-dd HH:mm:ss.fff" : FractionalDateTimePattern(axis, "fff"), LabelCulture(axis));
         if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString(axis.Culture == null ? "yyyy-MM-dd" : DayPattern(axis, rounded.Month == 1 && rounded.Day == 1), LabelCulture(axis));
         return rounded.ToString(TimePattern(axis, rounded.Second != 0), LabelCulture(axis));
     }
