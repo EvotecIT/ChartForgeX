@@ -303,6 +303,21 @@ serialization. Canonical bar slots and mapped source anchors are serialized, so
 sparse categories retain the same series slots. Every mounted fragment gets
 independent SVG definition IDs, even when two charts have identical content.
 
+The specification declares a plot band for Cartesian, matrix and schedule charts.
+Content before the band stays in place, the band stretches, and content after it
+(a lane summary column, for example) moves with the right edge. State timelines and
+Gantt lanes also declare their lane-label gutter: below the drawing's natural width
+it narrows toward a minimum so the lanes keep about 60% of the remaining width, and
+lane labels, lane summaries, group headers and the chart heading truncate with an
+ellipsis and a full-text tooltip instead of shrinking. If two endpoint tick captions
+would still collide, only the first is kept. Charts without a declared plot band, such
+as radial charts, stay centred at their native size; their heading keeps its left inset
+and truncates instead of being cropped.
+
+If the layout data is missing, is not valid JSON or cannot be decompressed, the host
+keeps its static drawing and logs one console warning. A specification element added
+to the host later mounts the chart.
+
 Browser printing lays out at the actual print panel width, including below the
 screen scrolling minimum, and restores the screen minimum after printing. `printWidth` chooses
 the width of the script-free native fallback; a report host can supply its page's

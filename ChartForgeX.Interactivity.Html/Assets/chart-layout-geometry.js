@@ -52,9 +52,9 @@
       for(const name of ['x','y','cx','cy','x1','y1','x2','y2','width','height','d','points','transform']){
         const value=node.getAttribute(name);if(value!=null && !value.includes('%'))attributes[name]=value;
       }
-      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node)});
+      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node),heading:!!node.closest('[data-cfx-role="frame-heading"]')});
     }
-    const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"],[data-cfx-role="heatmap-column-label"]')]
+    const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"],[data-cfx-role="heatmap-column-label"],[data-cfx-role="schedule-tick-label"]')]
       .filter(group=>!group.matches('[data-cfx-role="heatmap-column-label"]') || !group.closest('[transform*="rotate("]')).map(group=>{
       const text=group.querySelector('text')||group, box=text.getBBox();
       return {group,text,center:box.x+box.width/2,sourceWidth:box.width};
@@ -65,8 +65,10 @@
   }
   function project(state, spec, width, plot) {
     const [left,top,pw,ph]=spec.plot, [nl,nt,nw,nh]=plot;
-    const map=(v,low,size,newLow,newSize,totalDelta)=>v<low? v : v>low+size ? v+totalDelta : newLow+(v-low)*newSize/size;
-    const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width) : v+(width-spec.width)/2, y=v=>map(v,top,ph,nt,nh,0);
+    const map=(v,low,size,newLow,newSize,totalDelta,before=value=>value)=>v<low? before(v) : v>low+size ? v+totalDelta : newLow+(v-low)*newSize/size;
+    // A declared lane gutter narrows proportionally between its start and the plot; content before it stays put.
+    const gutter=spec.gutter, before=!gutter||nl>=left ? v=>v : v=>v<=gutter[0] ? v : gutter[0]+(v-gutter[0])*(nl-gutter[0])/Math.max(.001,left-gutter[0]);
+    const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width,before) : v+(width-spec.width)/2, y=v=>map(v,top,ph,nt,nh,0);
     const maximumBarWidth=spec.barWidthUnbounded ? Infinity : spec.maximumBarWidth;
     for(const recipe of state.recipes){
       const {node,attributes:a,bar}=recipe;
@@ -74,7 +76,8 @@
       const occupied=state.pitch*nw/pw*.68, gap=bar && bar.count>1 ? Math.min(spec.spacing/2,occupied/(bar.count*4)):0;
       const thickness=bar?Math.max(Math.min(.1,maximumBarWidth),Math.min(maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
       const center=bar?x(bar.categoryCenter)+(bar.position-(bar.count-1)/2)*(thickness+gap):0;
-      const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):x;
+      // Drawings without a plot band stay centred, but their heading keeps its left inset and is fitted afterwards.
+      const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):!spec.cartesian && recipe.heading ? v=>v : x;
       const baseX=Number(a.x||0),baseY=Number(a.y||0);
       for(const [name,value] of Object.entries(a)){
         let result=value;

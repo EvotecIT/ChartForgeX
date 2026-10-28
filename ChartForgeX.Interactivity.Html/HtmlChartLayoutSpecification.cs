@@ -18,12 +18,15 @@ internal static class HtmlChartLayoutSpecification {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles();
         var svg = prepared.ToSvg(options);
-        var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot");
+        // A declared plot band stretches with the container while gutters before it stay fixed and gutters after it move
+        // with the right edge. Drawings without a plot band stay centred; only their heading keeps its left inset.
+        var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot" or "schedule-plot");
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
         var output = new StringBuilder("{\"schema\":\"chartforgex/layout-1\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
+            .Append(LaneGutter(prepared.Regions, plot))
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()))
@@ -48,5 +51,16 @@ internal static class HtmlChartLayoutSpecification {
         }
         return output.Append("]}").ToString();
     }
+    // Schedule lane labels sit in a left gutter sized for the widest drawing. The browser may narrow it down to this
+    // minimum and truncate labels there, so a narrow container keeps a usable plot instead of a fixed wide gutter.
+    private static string LaneGutter(System.Collections.Generic.IEnumerable<VisualSemanticRegion> regions, ChartRect plot) {
+        var labels = regions.Where(item => item.Role == ChartDomRoles.ScheduleRowLabel).ToArray();
+        if (labels.Length == 0) return string.Empty;
+        var start = labels.Min(item => item.Bounds.Left);
+        if (start >= plot.Left) return string.Empty;
+        var minimum = Math.Min(plot.Left, start + MinimumLaneGutter);
+        return ",\"gutter\":[" + N(start) + "," + N(minimum) + "]";
+    }
+    private const double MinimumLaneGutter = 88;
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
 }
