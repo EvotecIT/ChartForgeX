@@ -3231,7 +3231,7 @@
       "svg": {
         "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 2
+        "maxNearEdgeTextNodes": 5
       },
       "png": {
         "outputScale": 2,
@@ -3879,7 +3879,7 @@
       "svg": {
         "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 2
+        "maxNearEdgeTextNodes": 5
       },
       "png": {
         "outputScale": 2,
