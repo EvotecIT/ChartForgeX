@@ -10,6 +10,30 @@ internal static class ChartNumericFormatter {
     public static string FormatValue(ChartOptions options, double value) =>
         (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat.Format(value);
 
+    /// <summary>
+    /// Picks one compact unit for a series' automatic value captions, so a series doesn't mix "9,800" with "12.5k".
+    /// Returns null when the chart has an authored format or no caption would be compact.
+    /// </summary>
+    internal static Func<double, string>? SeriesCaptionFormat(ChartOptions options, IEnumerable<double> values) {
+        var format = (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat;
+        if (!ReferenceEquals(format, ChartValueFormat.ExistingValue)) return null;
+        var finite = new List<double>();
+        foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) finite.Add(value);
+        var largest = 0d;
+        foreach (var value in finite) largest = Math.Max(largest, Math.Abs(value));
+        if (largest < 10000) return null;
+        var (divisor, suffix) = largest >= 1e9 ? (1e9, "B") : largest >= 1e6 ? (1e6, "M") : (1e3, "k");
+        var decimals = false;
+        foreach (var value in finite) if (Math.Round(value / divisor, 1) != Math.Round(value / divisor)) decimals = true;
+        var pattern = decimals ? "0.0" : "0";
+        return value => {
+            var scaled = Math.Round(value / divisor, 1);
+            // A value far below the series' unit would read as "0.0k"; it keeps its own caption.
+            if (scaled == 0 && value != 0 || Math.Abs(scaled) >= 10000) return format.Format(value);
+            return scaled.ToString(pattern, CultureInfo.InvariantCulture) + suffix;
+        };
+    }
+
     /// <summary>Formats human-facing coordinates with a short round-trip caption; raw metadata retains its own serialization.</summary>
     internal static string FormatCoordinate(double value) => value.ToString("R", CultureInfo.InvariantCulture);
 

@@ -19,7 +19,6 @@ internal static partial class VisualCartesianCompiler {
             var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var selectedRange = series.ValueAxis == ChartAxisSide.Secondary ? secondaryRange! : range;
             var map = new ChartMapper(plot, selectedRange, chart.Options.XAxis, axis);
-            var barLayout = ResolveBarLayout(chart, context, plot, coordinates, map, stacks, seriesIndex);
             var style = SeriesLabelStyle(chart, context, series, colors);
             for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var point = series.RenderPoints[pointIndex];
@@ -33,14 +32,9 @@ internal static partial class VisualCartesianCompiler {
                 // candidates. Do not allocate an unfitted font's height before that pass.
                 if (label.Style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize) continue;
                 var metrics = builder.MeasureText(label.DisplayedText, DisplayedStyle(label.Style));
-                var width = barLayout.Width;
-                if (ChartHistogramBarSlot.TryResolve(chart, coordinates, stacks, seriesIndex, pointIndex, map, out _, out var histogramWidth))
-                    width = histogramWidth;
-                // Auto retains its contained alternative when the complete caption already fits.
-                // Narrow marks need a separate lane so their only full-text option is not lost.
-                if (placement == ChartDataLabelPlacement.Auto && metrics.Width + 4 <= width
-                    && metrics.Height + 4 <= Math.Abs(anchor - map.YBaseline())) continue;
-                var height = metrics.Height + spacing;
+                // Auto keeps every caption of a series on the same side of its bars, so the tallest
+                // bar reserves its lane instead of moving its caption inside (and into a shorter format).
+                var height = metrics.Height + BarLabelGap(context);
                 var above = placement == ChartDataLabelPlacement.Above
                     || placement == ChartDataLabelPlacement.Auto && BarValueDirection(axis, point.Y) >= 0;
                 // Reserving a partial deficit would change that same deficit when the
@@ -52,6 +46,9 @@ internal static partial class VisualCartesianCompiler {
         }
         return InsetVerticalLabelGutters(plot, top, bottom, spacing);
     }
+
+    /// <summary>The gap between a bar end and its value caption: the theme spacing, capped so the caption stays with its bar.</summary>
+    private static double BarLabelGap(VisualRenderContext context) => Math.Min(context.Theme.Spacing, 6);
 
     private static ChartRect InsetVerticalLabelGutters(ChartRect bounds, double top, double bottom, double spacing) {
         var available = bounds.Height - Math.Min(bounds.Height / 2, Math.Max(1, spacing));
