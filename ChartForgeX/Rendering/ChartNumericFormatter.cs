@@ -55,8 +55,33 @@ internal static class ChartNumericFormatter {
     internal static string[] FormatCompactScaleValues(IReadOnlyList<double> values) {
         var captions = new string[values.Count];
         for (var index = 0; index < values.Count; index++) captions[index] = FormatCompact(values[index]);
+        // A tick must name its own value: 1,250 written as "1.3k" labels a gridline that isn't 1,300.
+        var inexact = false;
+        for (var index = 0; index < values.Count && !inexact; index++) inexact = !CompactIsExact(values[index]);
+        if (inexact) {
+            var largest = 0d;
+            foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) largest = Math.Max(largest, Math.Abs(value));
+            for (var index = 0; index < values.Count; index++) {
+                var value = values[index];
+                captions[index] = largest < 10000 ? value.ToString("#,0.##", CultureInfo.InvariantCulture)
+                    : Math.Abs(value) >= 1e9 ? (value / 1e9).ToString("0.##", CultureInfo.InvariantCulture) + "B"
+                    : Math.Abs(value) >= 1e6 ? (value / 1e6).ToString("0.##", CultureInfo.InvariantCulture) + "M"
+                    : Math.Abs(value) >= 1e3 ? (value / 1e3).ToString("0.##", CultureInfo.InvariantCulture) + "k"
+                    : value.ToString("0.##", CultureInfo.InvariantCulture);
+            }
+        }
         RefineDefaults(values, captions, FormatCompact(0));
         return captions;
+    }
+
+    // Compact notation keeps one decimal of its unit; a value it would round is not exact.
+    private static bool CompactIsExact(double value) {
+        if (double.IsNaN(value) || double.IsInfinity(value)) return true;
+        var magnitude = Math.Abs(value);
+        var unit = magnitude >= 1e9 ? 1e9 : magnitude >= 1e6 ? 1e6 : magnitude >= 1e3 ? 1e3 : 0;
+        if (unit == 0) return true;
+        var scaled = value / unit;
+        return Math.Abs(scaled - Math.Round(scaled, 1)) <= 1e-9 * Math.Max(1, Math.Abs(scaled));
     }
 
     internal static string FormatCompactAxisValue(double value) {
