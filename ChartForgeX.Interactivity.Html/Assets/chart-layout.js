@@ -54,7 +54,7 @@
       return {group,background,header,scroll,dispose:()=>{host.removeEventListener('scroll',scroll);host.style.overflowX=previousOverflow;host.style.scrollPaddingLeft=previousPadding;}};
     }
     function layout(requestedWidth,printing=false){
-      const available=requestedWidth||host.getBoundingClientRect().width;
+      const available=requestedWidth||host.clientWidth;
       if(!host.isConnected || !available || (typeof host.checkVisibility === "function" ? !host.checkVisibility() : !host.getClientRects().length))return;
       const hostWidth=printing ? available : Math.min(spec.maximum,Math.max(spec.minimum,available));
       const [left,top,pw,ph]=spec.plot, right=spec.width-left-pw;

@@ -40,7 +40,7 @@
     const layout=(width,forPrint=printing)=>{if(disposed)return;try{drawing.layout(width,forPrint);}catch{fail();}};
     const schedule=()=>{clearTimeout(timer);timer=setTimeout(()=>layout(),60);};
     const observer=new ResizeObserver(schedule);observer.observe(host);
-    const print=()=>{printing=true;host.style.minWidth='0';clearTimeout(timer);layout(host.getBoundingClientRect().width||spec.printWidth);};
+    const print=()=>{printing=true;host.style.minWidth='0';clearTimeout(timer);layout(host.clientWidth||spec.printWidth);};
     const afterPrint=()=>{printing=false;host.style.minWidth=spec.minimum+'px';layout();};
     const media=matchMedia('print'),changed=event=>event.matches?print():afterPrint();
     addEventListener('beforeprint',print);addEventListener('afterprint',afterPrint);media.addEventListener('change',changed);

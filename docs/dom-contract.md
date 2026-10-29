@@ -43,6 +43,8 @@ Rectangular heatmaps use `chartforgex/layout-3`, which adds matrix column count,
 
 The matrix tuple is `[columnCount, cellGap, gutterStart, rowCount, headerBands]`; each header band is `[sourceTop, height]`, ordered by its position in the native plot. The last two fields extend layout 3 and are optional when reading earlier specifications. Responsive screen layout preserves header heights and cell gaps, chooses a row pitch between the readable floor and 32 px (bounded by 1.6 times cell width), and fits the card to its painted content. Print and script-free fallback retain the native frame.
 
+Explicit layout widths and automatic host measurements use CSS layout pixels, so a scaled container keeps the same gutter and captions through resize and print passes.
+
 Missing positions render as `heatmap-missing-cell` outlines in both static and responsive output. They carry no value, link or `heatmap-cell` identity. A categorical key includes one hatched, outlined “No data” entry when any position is missing. Numeric keys use the same missing-data swatch. Fixed frames retain every row and report `matrix.cell-density` when their cell height is below 12 px; `WithHeatmapNaturalHeight()` remains the opt-in for a taller static frame.
 
 ## Responsive layout 2

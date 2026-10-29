@@ -140,6 +140,38 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
     [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PhoneGutterAndCaptionsDoNotDependOnResizeHistory(bool scaled) {
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12), 240, 1600);
+        var cssScale = scaled ? ".96" : "1";
+        await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div id='panel' style='width:390px;transform-origin:0 0;transform:scale(" + cssScale + ")'>" + fragment + "</div></body></html>", 1440, 1000);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-responsive-chart]').cfxResponsive");
+        // Hosts can request their first layout explicitly; observer passes must use the same CSS pixels.
+        await page.EvaluateAsync("()=>document.querySelector('[data-cfx-responsive-chart]').cfxResponsive.layout(390)");
+        const string snapshot = """
+            ()=>{const host=document.querySelector('[data-cfx-responsive-chart]'),cell=host.querySelector('[data-cfx-role=heatmap-cell-shape]');
+              return [host.querySelector('[data-cfx-role=matrix-sticky-labels]>rect').getAttribute('width'),
+                host.querySelector('[data-cfx-role=heatmap-row-label] text').firstChild.textContent,
+                ...['x','y','width','height'].map(name=>cell.getAttribute(name))];}
+            """;
+        var first = await page.EvaluateAsync<string[]>(snapshot);
+        Assert.Equal("136.5", first[0]);
+        foreach (var width in new[] { 1000, 390 }) {
+            await page.EvaluateAsync("w=>document.querySelector('#panel').style.width=w+'px'", width);
+            await page.WaitForFunctionAsync("w=>{const h=document.querySelector('[data-cfx-responsive-chart]');return Math.abs(Number(h.dataset.cfxLayoutWidth)-w)<w*.05}", width);
+        }
+        Assert.Equal(first, await page.EvaluateAsync<string[]>(snapshot));
+        await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
+        await page.WaitForFunctionAsync("()=>document.querySelector('svg').getAttribute('width')==='390'");
+        await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Screen });
+        await page.WaitForFunctionAsync("()=>Number(document.querySelector('svg').getAttribute('width'))>390");
+        Assert.Equal(first, await page.EvaluateAsync<string[]>(snapshot));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task RotatedCaptionsAndGeometryRemainStableAfterResizeAndRemount(bool reversed) {
         var chart = Fixture(12); chart.Options.XAxis.Reversed = reversed;
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
