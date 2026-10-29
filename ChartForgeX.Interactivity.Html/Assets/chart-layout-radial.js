@@ -26,13 +26,14 @@
       return {node,data,label,value,percentage,x:number(label,'x')-18,baseline:number(label,'y')};
     });
     const groups=[...svg.querySelectorAll('[data-cfx-role=coordinate-system] > g[clip-path]')].map(node=>{
-      const point=node.querySelector('[data-cfx-role=radial-point]'),center=node.querySelector('[data-cfx-role=donut-center]');
-      const index=point?Number(point.dataset.cfxSeries):Number(center?.dataset.cfxSourceId?.match(/series-(\d+)/)?.[1]);
+      const point=node.querySelector('[data-cfx-role=radial-point]'),center=node.querySelector('[data-cfx-role=donut-center]'),overlay=node.querySelector('[data-cfx-radial-callout=overlay]');
+      const index=point?Number(point.dataset.cfxSeries):overlay?Number(overlay.dataset.cfxSeries):Number(center?.dataset.cfxSourceId?.match(/series-(\d+)/)?.[1]);
       const id=node.getAttribute('clip-path')?.match(/url\(#([^)]*)\)/)?.[1],clip=id&&svg.getElementById(id)?.querySelector('rect');
       const labels=[...node.querySelectorAll('[data-cfx-role=data-label]')].map(owner=>{
         const text=textOf(owner),source=owner.closest('[data-cfx-full-label]'),slice=r.slices.find(s=>s[0]===source?.dataset.cfxLabelFor);
-        const previous=source?.previousElementSibling,connector=previous?.matches('[data-cfx-role=data-label-connector]')?previous:null;
-        return {owner,text,slice,connector,path:connector?.getAttribute('d'),x:number(text,'x'),y:number(text,'y'),anchor:text.getAttribute('text-anchor'),font:number(text,'font-size'),full:source?.dataset.cfxFullLabel||text.textContent};
+        const previous=source?.previousElementSibling,connector=source?.querySelector('[data-cfx-role=data-label-connector]')||(previous?.matches('[data-cfx-role=data-label-connector]')?previous:null),halo=source?.querySelector('[data-cfx-role=data-label-connector-halo]');
+        const leftOverlay=source?.dataset.cfxRadialCallout==='overlay'&&Number(source.dataset.cfxLabelLeft)+Number(source.dataset.cfxLabelWidth)<sourceX;
+        return {owner,text,slice,series:Number(source?.dataset.cfxSeries??slice?.[0]?.match(/series-(\d+)/)?.[1]),connector,halo,path:connector?.getAttribute('d'),x:number(text,'x')+(leftOverlay?Number(source.dataset.cfxLabelWidth):0),y:number(text,'y'),anchor:leftOverlay?'end':text.getAttribute('text-anchor'),font:number(text,'font-size'),full:source?.dataset.cfxFullLabel||text.textContent};
       });
       for(const mark of node.querySelectorAll('[stroke]'))mark.setAttribute('vector-effect','non-scaling-stroke');
       const patterns=new Map();
@@ -42,7 +43,7 @@
         if(!patterns.has(id)){const clone=pattern.cloneNode(true);clone.id=id+'-r'+index;pattern.parentElement.appendChild(clone);patterns.set(id,{node:clone,transform:clone.getAttribute('patternTransform')||''});}
         mark.setAttribute('fill','url(#'+patterns.get(id).node.id+')');
       }
-      return {node,index,clip,labels,center,patterns};
+      return {node,index,clip,labels,center,patterns,overlay:!!overlay};
     }).filter(group=>Number.isInteger(group.index));
     function layout(requestedWidth,printing=false){
       const available=requestedWidth||host.clientWidth;
@@ -108,12 +109,21 @@
         group.node.setAttribute('transform',`translate(${cx} ${cy}) scale(${scale}) translate(${-sourceX} ${-sourceY})`);
         if(group.clip){group.clip.setAttribute('x',sourceX+(left-cx)/scale);group.clip.setAttribute('y',sourceY+(plotTop-cy)/scale);group.clip.setAttribute('width',plotWidth/scale);group.clip.setAttribute('height',plotHeight/scale);}
         for(const pattern of group.patterns.values())pattern.node.setAttribute('patternTransform',pattern.transform+` scale(${1/scale})`);
-        layoutLabels(group,frame,scale,left,plotTop,plotWidth,plotHeight,cx,cy);
+        if(group.overlay)for(const series of new Set(group.labels.map(label=>label.series)))
+          layoutLabels({...group,labels:group.labels.filter(label=>label.series===series)},r.frames[series],scale,left,plotTop,plotWidth,plotHeight,cx,cy);
+        else layoutLabels(group,frame,scale,left,plotTop,plotWidth,plotHeight,cx,cy);
         if(group.center){
           const value=textOf(group.center.querySelector('[data-cfx-role=donut-total-label]')),caption=textOf(group.center.querySelector('[data-cfx-role=donut-title]'));
           const inner=radius*frame[4];
           value.setAttribute('font-size',Math.min(r.centerSize,inner*.44)/scale);caption.setAttribute('font-size',Math.min(r.labelSize,inner*.25)/scale);
-          value.textContent=fit(value,group.center.dataset.cfxCenterValue,inner*1.6/scale);
+          if(frame[9]){
+            const maximum=Math.min(r.centerSize,inner*.44),minimum=Math.min(10,maximum),room=inner*1.6/scale;
+            value.textContent=frame[9][0];let low=minimum,high=maximum;
+            for(let i=0;i<16;i++){const size=(low+high)/2;value.setAttribute('font-size',size/scale);if(value.getComputedTextLength()<=room)low=size;else high=size;}
+            value.setAttribute('font-size',low/scale);
+            if(value.getComputedTextLength()>room)value.textContent=frame[9][1];
+            if(value.getComputedTextLength()>room)value.textContent='';
+          }else value.textContent=fit(value,group.center.dataset.cfxCenterValue,inner*1.6/scale);
           caption.textContent=fit(caption,group.center.dataset.cfxCenterCaption,inner*1.6/scale);
           for(const text of [value,caption]){text.setAttribute('x',sourceX);text.setAttribute('y',0);text.setAttribute('text-anchor','middle');}
           const vb=value.getBBox(),cb=caption.getBBox(),space=Math.min(gap,inner*.1)/scale,begin=sourceY-(vb.height+space+cb.height)/2;
@@ -134,10 +144,10 @@
       const toSourceX=x=>sourceX+(x-cx)/scale,toSourceY=y=>sourceY+(y-cy)/scale;
       const baseline=(label,y)=>y+(r.labelAscent-r.labelLine/2)*(label.font/r.labelSize)/scale;
       for(const label of group.labels){
-        label.owner.style.display='';if(label.connector)label.connector.style.display='';
-        label.text.setAttribute('font-size',label.font/scale);label.text.setAttribute('x',label.x);label.text.setAttribute('y',label.y);label.text.textContent=label.full;
+        label.owner.style.display='';if(label.connector)label.connector.style.display='';if(label.halo)label.halo.style.display='';
+        label.text.setAttribute('font-size',label.font/scale);label.text.setAttribute('text-anchor',label.anchor||'start');label.text.setAttribute('x',label.x);label.text.setAttribute('y',label.y);label.text.textContent=label.full;
       }
-      const hide=label=>{label.owner.style.display='none';if(label.connector)label.connector.style.display='none';};
+      const hide=label=>{label.owner.style.display='none';if(label.connector)label.connector.style.display='none';if(label.halo)label.halo.style.display='none';};
       const caption=(label,room)=>{label.text.textContent=fit(label.text,label.full,Math.max(0,room)/scale);if(!label.text.textContent)hide(label);};
       const route=(label,x,y)=>{
         if(!label.connector||!label.path)return;
@@ -147,6 +157,7 @@
         if(r.connector==='Curve'){tokens[last-3]=Number(tokens[last-3])+dx;tokens[last-2]=y;}
         else if(r.connector==='Elbow'&&tokens.length>=12){tokens[last-4]=endX-sign*8/scale;tokens[last-3]=y;}
         label.connector.setAttribute('d',tokens.join(' '));
+        if(label.halo)label.halo.setAttribute('d',tokens.join(' '));
       };
       if(side){
         for(const anchor of ['end','start']){

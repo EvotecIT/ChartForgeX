@@ -68,11 +68,8 @@ public sealed partial class Chart : IVisualRenderable {
         var axisLabels = family is VisualChartFamily.NumericRadial or VisualChartFamily.Cartesian ? new ChartAxisValueFormatter.Cache() : null;
         var entries = _visibilityLegendEntries?.Invoke(context)
             ?? VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale, colorScales);
-        TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
-            var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
-            if (configured == null) fallback.Font.Weight = weight;
-            return model.Resolve(fallback);
-        }
+        TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) =>
+            ResolveFrameTextStyle(context, configured, model, size, color, weight);
         var frame = new VisualFrame(sourceFrame.Title ?? Title, sourceFrame.Subtitle ?? Subtitle,
             sourceFrame.HasExplicitLegend ? sourceFrame.ShowLegend : ChartLegendVisibility.ForPreparedContent(this, entries.Count, colorScales),
             sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.LegendPosition,
@@ -127,5 +124,13 @@ public sealed partial class Chart : IVisualRenderable {
             secondaryXProjection: projection?.SecondaryX, secondaryYProjection: projection?.SecondaryY, viewport: viewport,
             cartesianOrientation: projection == null ? null : projection.Horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical,
             hierarchyPreparation: HierarchyPreparation, polarProjection: PolarPreparation?.Projection, polarViewport: PolarPreparation?.Request).WithCapturedText(textCapture?.Freeze());
+    }
+
+    /// <summary>Resolves frame typography identically for native preparation and portable layout measurements.</summary>
+    internal static TextStyle ResolveFrameTextStyle(VisualRenderContext context, TextStyle? configured, TextStyleOverride model,
+        double size, ChartColor color, int weight) {
+        var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
+        if (configured == null) fallback.Font.Weight = weight;
+        return model.Resolve(fallback);
     }
 }

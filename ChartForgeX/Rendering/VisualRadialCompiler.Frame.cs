@@ -22,6 +22,11 @@ internal static partial class VisualRadialCompiler {
         placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right ? .57 : 1,
         placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below ? .76 : 1, extent);
 
+    /// <summary>Returns complete native overflow bounds; responsive totals must never ellipsize an exponent.</summary>
+    internal static string[]? ResponsiveOverflowCenter(Chart chart, VisualRenderContext context, int seriesIndex) =>
+        chart.Options.DonutCenterValue == null && !Total(chart, GetSlices(chart, context.Theme.Resolve(context.ThemeMode), seriesIndex), seriesIndex).FiniteTotal.HasValue
+            ? new[] { FormatOverflowCenter(false), FormatOverflowCenter(true) } : null;
+
     /// <summary>Captures the same envelope policy used for each native radial series.</summary>
     internal static FrameSizing[] ResponsiveFrames(Chart chart, VisualRenderContext context, ChartRect plot) {
         var bands = ChartRadialBandResolver.Resolve(chart);
