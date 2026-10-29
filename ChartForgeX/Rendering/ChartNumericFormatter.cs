@@ -84,17 +84,22 @@ internal static class ChartNumericFormatter {
         return true;
     }
 
-    // Reads a default caption back as a number, k/M/B suffix included.
+    // Reads a default caption back as a number, k/M/B suffix included, in exact decimal arithmetic.
     private static bool ReadsBackAs(string caption, double value, double tolerance) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value == 0) return true;
-        var unit = 1d; var number = caption;
-        if (caption.EndsWith("k", StringComparison.Ordinal)) { unit = 1e3; number = caption.Substring(0, caption.Length - 1); }
-        else if (caption.EndsWith("M", StringComparison.Ordinal)) { unit = 1e6; number = caption.Substring(0, caption.Length - 1); }
-        else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9; number = caption.Substring(0, caption.Length - 1); }
-        if (!double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) return false;
-        var difference = Math.Abs(shown * unit - value);
-        // Only the few units of double precision that the unit multiplication itself introduces count as noise.
-        return difference <= tolerance || difference <= Math.Abs(value) * 4 * 2.220446049250313e-16;
+        var unit = 1m; var number = caption;
+        if (caption.EndsWith("k", StringComparison.Ordinal)) { unit = 1e3m; number = caption.Substring(0, caption.Length - 1); }
+        else if (caption.EndsWith("M", StringComparison.Ordinal)) { unit = 1e6m; number = caption.Substring(0, caption.Length - 1); }
+        else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9m; number = caption.Substring(0, caption.Length - 1); }
+        // The round-trip text keeps every digit of the tick; a direct decimal conversion would round it to 15 digits.
+        if (!decimal.TryParse(value.ToString("R", CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out var exact)
+            || !decimal.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) {
+            // Beyond decimal's range, compare the doubles themselves.
+            return double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var approximate)
+                && Math.Abs(approximate * (double)unit - value) <= tolerance;
+        }
+        try { return Math.Abs(shown * unit - exact) <= (decimal)tolerance; }
+        catch (OverflowException) { return false; }
     }
     internal static string FormatCompactAxisValue(double value) {
         var caption = FormatCompact(value); var zero = FormatCompact(0);
