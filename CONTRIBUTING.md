@@ -128,5 +128,3 @@ Treat numerical health as one check. Inspect complete SVG and native PNG output 
 ## Release Qualification
 
 Before an authorized release, run the quality loop with `-QualifyPackages`, the required browser lane, and the applicable cross-platform CI checks. Inspect the generated examples and retain the release candidate's package-consumer results. Use the coordinated PowerForge entrypoint described above to version and publish the nine packages together. Verify the public artifacts and affected installed consumers separately; successful local packing establishes neither publication nor host readiness.
-
-<!-- CI documentation-only selection proof; removed after hosted validation. -->
