@@ -24,7 +24,7 @@ Heatmap cells keep theme rounding to at most 20% of the shorter side, so small c
 
 ## Series colours
 
-Series without an explicit colour take theme palette colours in series order, so the first series is always the theme accent and every chart family starts from the same colour. Neighbouring series don't repeat a colour until the palette wraps.
+Palette-driven series (those without an explicit colour or a state role) take theme palette colours in series order, so the first series is always the theme accent and every chart family starts from the same colour. A series with a state role, such as success or danger, keeps its state colour. Neighbouring series don't repeat a colour until the palette wraps.
 
 Linked dashboards that need a series to keep its colour when others are added, removed or filtered can opt in to identity colours:
 

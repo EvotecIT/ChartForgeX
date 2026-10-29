@@ -104,7 +104,7 @@ internal static partial class VisualScheduleCompiler {
             foreach (var item in items) {
                 if (item.Marker || frame != null) continue;
                 var center = ScheduleRowCenter(chart, plot, (item.Row + .5) * slot);
-                LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index, pitch: height);
+                LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index, pitch: slot);
             }
             foreach (var item in items) {
                 if (item.Marker) continue;
