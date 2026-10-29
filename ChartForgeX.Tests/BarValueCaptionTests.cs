@@ -72,6 +72,8 @@ public sealed class BarValueCaptionTests {
 
         Assert.Equal("12.5k", format(12480));
         Assert.Equal("40", format(40));
+        Assert.Equal("149", format(149));
+        Assert.Equal("1.4k", format(1449));
     }
 
     [Fact]

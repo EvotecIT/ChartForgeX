@@ -28,8 +28,8 @@ internal static class ChartNumericFormatter {
         var pattern = decimals ? "0.0" : "0";
         return value => {
             var scaled = Math.Round(value / divisor, 1);
-            // Zero, and a value far below the series' unit, would read as "0.0k"; they keep their own caption.
-            if (scaled == 0 || Math.Abs(scaled) >= 10000) return format.Format(value);
+            // A value below one unit would round too far (149 as "0.1k", zero as "0.0k"); it keeps its own caption.
+            if (Math.Abs(scaled) < 1 || Math.Abs(scaled) >= 10000) return format.Format(value);
             return scaled.ToString(pattern, CultureInfo.InvariantCulture) + suffix;
         };
     }

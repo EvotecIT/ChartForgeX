@@ -21,6 +21,7 @@ public sealed class ShortCategoryTickTests {
         var captions = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").ToArray();
 
         Assert.Equal(Steps.Length, captions.Length);
+        Assert.Contains(captions, caption => caption.Value.EndsWith("…", StringComparison.Ordinal));
         for (var index = 0; index < Steps.Length; index++) {
             var shown = captions[index].Value;
             Assert.StartsWith(shown.TrimEnd('…'), Steps[index], StringComparison.Ordinal);
