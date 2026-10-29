@@ -61,13 +61,15 @@ internal static class ChartNumericFormatter {
         if (inexact) {
             var largest = 0d;
             foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) largest = Math.Max(largest, Math.Abs(value));
+            // As many decimals as each tick needs, so the caption reads back as the tick itself (12,255 is "12.255k").
+            const string Exact = "0.##########";
             for (var index = 0; index < values.Count; index++) {
                 var value = values[index];
-                captions[index] = largest < 10000 ? value.ToString("#,0.##", CultureInfo.InvariantCulture)
-                    : Math.Abs(value) >= 1e9 ? (value / 1e9).ToString("0.##", CultureInfo.InvariantCulture) + "B"
-                    : Math.Abs(value) >= 1e6 ? (value / 1e6).ToString("0.##", CultureInfo.InvariantCulture) + "M"
-                    : Math.Abs(value) >= 1e3 ? (value / 1e3).ToString("0.##", CultureInfo.InvariantCulture) + "k"
-                    : value.ToString("0.##", CultureInfo.InvariantCulture);
+                captions[index] = largest < 10000 ? value.ToString("#,0.##########", CultureInfo.InvariantCulture)
+                    : Math.Abs(value) >= 1e9 ? (value / 1e9).ToString(Exact, CultureInfo.InvariantCulture) + "B"
+                    : Math.Abs(value) >= 1e6 ? (value / 1e6).ToString(Exact, CultureInfo.InvariantCulture) + "M"
+                    : Math.Abs(value) >= 1e3 ? (value / 1e3).ToString(Exact, CultureInfo.InvariantCulture) + "k"
+                    : value.ToString(Exact, CultureInfo.InvariantCulture);
             }
         }
         RefineDefaults(values, captions, FormatCompact(0));

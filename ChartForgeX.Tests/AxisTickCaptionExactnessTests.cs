@@ -18,8 +18,16 @@ public sealed class AxisTickCaptionExactnessTests {
     }
 
     [Fact]
-    public void FormatCompactScaleValues_LargeTicksThatWouldRound_KeepTwoDecimalsOfTheUnit() {
+    public void FormatCompactScaleValues_LargeTicksThatWouldRound_KeepTheirUnitWithTheDecimalsTheyNeed() {
         Assert.Equal(new[] { "0", "12.25k", "24.5k", "36.75k" },
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, 12250, 24500, 36750 }));
+    }
+
+    [Theory]
+    [InlineData(12255d, "12.255k")]
+    [InlineData(1250.5d, "1,250.5")]
+    [InlineData(3456789d, "3.456789M")]
+    public void FormatCompactScaleValues_TickThatNeedsMorePrecision_ReadsBackAsItself(double tick, string expected) {
+        Assert.Equal(expected, ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, tick })[1]);
     }
 }
