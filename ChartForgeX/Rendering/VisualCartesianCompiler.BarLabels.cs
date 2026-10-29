@@ -12,13 +12,24 @@ internal static partial class VisualCartesianCompiler {
         var top = 0d; var bottom = 0d; var spacing = Math.Max(2, context.Theme.Spacing);
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar || !(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
+            var waterfall = series.Kind == ChartSeriesKind.Waterfall && !ChartCartesianOrientation.IsHorizontal(chart, series);
+            if (series.Kind != ChartSeriesKind.Bar && !waterfall || !(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                 || ChartStackLayout.Participates(chart, series)) continue;
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below)) continue;
             var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var selectedRange = series.ValueAxis == ChartAxisSide.Secondary ? secondaryRange! : range;
             var map = new ChartMapper(plot, selectedRange, chart.Options.XAxis, axis);
+            if (waterfall) {
+                // A waterfall caption sits at the running balance its step ends on, not at the delta.
+                foreach (var (anchor, label, above) in WaterfallCaptionEnds(chart, context, series, map, axis, colors, placement)) {
+                    if (!ChartMath.IsFinite(anchor) || anchor < plot.Top || anchor > plot.Bottom || label.Text.Length == 0) continue;
+                    var height = builder.MeasureText(label.DisplayedText, DisplayedStyle(label.Style)).Height + BarLabelGap(context);
+                    if (above && anchor - plot.Top < height) top = Math.Max(top, height);
+                    else if (!above && plot.Bottom - anchor < height) bottom = Math.Max(bottom, height);
+                }
+                continue;
+            }
             var style = SeriesLabelStyle(chart, context, series, colors);
             for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var point = series.RenderPoints[pointIndex];
@@ -45,6 +56,21 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         return InsetVerticalLabelGutters(plot, top, bottom, spacing);
+    }
+
+    private static System.Collections.Generic.IEnumerable<(double Anchor, ResolvedPointLabel Label, bool Above)> WaterfallCaptionEnds(Chart chart,
+        VisualRenderContext context, ChartSeries series, ChartMapper map, ChartAxis axis, VisualThemeColors colors, ChartDataLabelPlacement placement) {
+        var steps = ChartWaterfallSteps.Create(series);
+        for (var item = 0; item < steps.Count; item++) {
+            var step = steps[item];
+            // The same caption text DrawPreparedWaterfall writes, so the reserved lane fits it exactly.
+            var label = ResolveObservationLabel(chart, context, series, item, colors,
+                format => (step.Kind != ChartWaterfallItemKind.Delta || step.Value < 0 ? string.Empty : "+") + format("value", step.Value));
+            var start = map.YOrBaseline(step.Start); var end = map.YOrBaseline(step.End);
+            var above = placement == ChartDataLabelPlacement.Above
+                || placement == ChartDataLabelPlacement.Auto && MappedBarDirection(axis, step.Value, start, end, false) >= 0;
+            yield return (end, label, above);
+        }
     }
 
     /// <summary>The gap between a bar end and its value caption: the theme spacing, capped so the caption stays with its bar.</summary>

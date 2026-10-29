@@ -50,6 +50,23 @@ public sealed class BarValueCaptionTests {
     }
 
     [Fact]
+    public void Prepare_WaterfallOpeningBalanceNearTheAxisMaximum_KeepsItsCaptionAboveLikeTheTotals() {
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite()).WithDataLabels()
+            .WithXLabels("Purchased", "Unassigned", "Inactive", "In use")
+            .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("licences"), "Licences", new[] {
+                ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Delta(3, -142), ChartWaterfallItem.Total(4)
+            }));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var levels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label")
+            .Select(label => (Label: label, Bar: prepared.Regions.Single(region => region.Id + "-label" == label.Id)))
+            .Where(caption => caption.Label.Text.Lines.Single().Text is "1,200" or "972").ToArray();
+
+        Assert.Equal(2, levels.Length);
+        Assert.All(levels, caption => Assert.True(Bottom(caption.Label) <= caption.Bar.Bounds.Top,
+            $"Level caption '{caption.Label.Text.Lines.Single().Text}' must sit above its bar."));
+    }
+
+    [Fact]
     public void SeriesCaptionFormat_ValueFarBelowTheUnit_KeepsItsOwnCaption() {
         var format = ChartNumericFormatter.SeriesCaptionFormat(Chart.Create().Options, new[] { 12480d, 40 })!;
 
