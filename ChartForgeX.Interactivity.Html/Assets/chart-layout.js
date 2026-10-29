@@ -33,7 +33,7 @@
       if(!spec.matrix)return null;
       const ns='http://www.w3.org/2000/svg',group=document.createElementNS(ns,'g');
       group.setAttribute('data-cfx-role','matrix-sticky-labels');
-      const background=document.createElementNS(ns,'rect');background.setAttribute('pointer-events','none');
+      const background=document.createElementNS(ns,'rect');background.setAttribute('pointer-events','all');
       const card=svg.querySelector('[data-cfx-role="frame-card"],[data-cfx-role="frame-surface"]');
       let surface=card?.getAttribute('fill');
       if(!surface || surface==='none' || surface==='transparent'){

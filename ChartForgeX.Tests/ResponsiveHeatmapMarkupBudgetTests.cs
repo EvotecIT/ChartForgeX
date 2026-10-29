@@ -116,9 +116,9 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
         Assert.Equal(metrics[2], await page.Locator("[data-cfx-role=heatmap-row-label]").First.EvaluateAsync<double>("e=>e.getBoundingClientRect().left"), .1);
         Assert.True(await page.EvaluateAsync<bool>("""
             ()=>{const host=document.querySelector('[data-cfx-responsive-chart]'),back=host.querySelector('[data-cfx-role=matrix-sticky-labels] > rect'),
-              box=back.getBoundingClientRect();
+              box=back.getBoundingClientRect(),at=document.elementFromPoint(host.getBoundingClientRect().left+2,box.top+40);
               return box.left<=host.getBoundingClientRect().left+.01 && getComputedStyle(back).fill!=='none'
-                && back.getAttribute('fill')!=='transparent' && Number(back.getAttribute('x'))===0;}
+                && back.getAttribute('fill')!=='transparent' && Number(back.getAttribute('x'))===0 && !at?.closest('[data-cfx-role=heatmap-cell]');}
             """));
         var last = page.Locator("[data-cfx-role=heatmap-cell]").Last;
         await last.ClickAsync();

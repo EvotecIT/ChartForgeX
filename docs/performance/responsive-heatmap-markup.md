@@ -15,7 +15,7 @@ measurements and assert the mounted budget, link names and responsive widths.
 | Two complete SVGs | 1,212,469 | not measured | 13,897,172 | not measured | Replaced |
 | One base SVG | 545,156 | not measured | not measured | not measured | Insufficient alone |
 | One SVG, compact linked cells and shared patterns | 244,449 | 255,864 | 2,351,413 | 2,471,801 | Kept; browser proof preserves patterned-edge pixels and link names |
-| Responsive row pitch, missing-cell outlines and key | 242,897 | 254,107 | 2,401,666 | 2,512,913 | 29 October; mounted at 1440 px, with the 360-position budget also checked at 390 and 1024 px |
+| Responsive row pitch, missing-cell outlines and key | 242,896 | 254,105 | 2,401,665 | 2,512,911 | 29 October; mounted at 1440 px, with the 360-position budget also checked at 390 and 1024 px |
 
 Preparing the base at print width made this fixture's fallback text larger, but
 lost responsive legend information and shifted sparse bar captions in the broader
