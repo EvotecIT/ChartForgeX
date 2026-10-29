@@ -37,9 +37,13 @@ Select these names in host scripts and styles. Don't select other roles, element
 - Topology legends use their own `legend-item` role, which is not part of this contract yet.
 - A contract role is renamed only with a release note and, where practical, one release in which both names are emitted.
 
+## Responsive heatmap layout 3
+
+Rectangular heatmaps use `chartforgex/layout-3`, which adds matrix column count, cell gap and row-gutter information to layout 2. The mounted SVG moves row labels, group captions and legend entries into a `matrix-sticky-labels` group; hosts should continue selecting the documented roles rather than relying on their former parent. The plot scrolls within the responsive host when cells would become narrower than 14 px, while the row gutter and legend stay in view. The link role and accessible-name contract from layout 2 is unchanged. Other chart families continue to use layout 2.
+
 ## Responsive layout 2
 
-`HtmlResponsiveChartRenderer` uses the `chartforgex/layout-2` specification and
+`HtmlResponsiveChartRenderer` uses the `chartforgex/layout-2` specification (or layout 3 for rectangular heatmaps) and
 one inline base SVG. A linked heatmap cell is an `<a data-cfx-role="heatmap-cell">`
 with its native `<title>` as the link name and hover tooltip. It retains row,
 column, status and non-default pattern metadata; the former wrapper,

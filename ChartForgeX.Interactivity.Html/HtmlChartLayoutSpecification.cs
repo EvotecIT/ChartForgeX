@@ -16,6 +16,7 @@ internal static class HtmlChartLayoutSpecification {
         chart.Options.YAxis = chart.Options.YAxis.Clone(); chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
         chart.WithSize(maximum, height);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        height = (int)Math.Ceiling(prepared.Size.Height);
         var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles();
         svg = HtmlCompactSvg.Compact(prepared.ToSvg(options), printWidth);
         // A declared plot band stretches with the container while gutters before it stay fixed and gutters after it move
@@ -25,11 +26,14 @@ internal static class HtmlChartLayoutSpecification {
         var stateLanes = chart.Series.Count > 0 && chart.Series.All(series => series.Kind == ChartSeriesKind.StateTimeline);
         var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot" || stateLanes && item.Role == "schedule-plot");
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
-        var output = new StringBuilder("{\"schema\":\"chartforgex/layout-2\",\"width\":").Append(maximum)
+        var matrix = chart.Series.Count > 0 && chart.Series.All(series => series.Kind == ChartSeriesKind.Heatmap);
+        var matrixNode = matrix ? XElement.Parse(svg).Descendants().FirstOrDefault(e => (string?)e.Attribute("data-cfx-role") == "heatmap") : null;
+        var output = new StringBuilder(matrix ? "{\"schema\":\"chartforgex/layout-3\",\"width\":" : "{\"schema\":\"chartforgex/layout-2\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
+            .Append(matrixNode == null ? string.Empty : MatrixSettings(matrixNode, prepared.Regions, plot))
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
@@ -52,6 +56,13 @@ internal static class HtmlChartLayoutSpecification {
             output.Append("]}");
         }
         return output.Append("]}").ToString();
+    }
+    private static string MatrixSettings(XElement matrix, System.Collections.Generic.IEnumerable<VisualSemanticRegion> regions, ChartRect plot) {
+        var labels = regions.Where(item => item.Role == "heatmap-row-label").ToArray();
+        var start = labels.Length == 0 ? plot.Left : labels.Min(item => item.Bounds.Left);
+        var columns = (string?)matrix.Attribute("data-cfx-column-count") ?? "0";
+        var gap = (string?)matrix.Attribute("data-cfx-cell-gap") ?? "0";
+        return ",\"matrix\":[" + columns + "," + gap + "," + N(start) + "]";
     }
     // Schedule lane labels sit in a left gutter sized for the widest drawing. The browser may narrow it down to this
     // minimum and truncate labels there, so a narrow container keeps a usable plot instead of a fixed wide gutter.

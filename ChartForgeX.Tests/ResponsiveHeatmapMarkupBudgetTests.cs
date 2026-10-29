@@ -35,7 +35,7 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
     public void SerializedFixtureStaysWithinBudget() {
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12), 240, 1600);
         Assert.True(Encoding.UTF8.GetByteCount(fragment) <= 256 * 1024);
-        Assert.Contains("chartforgex/layout-2", fragment);
+        Assert.Contains("chartforgex/layout-3", fragment);
     }
 
     [BrowserTheory]
@@ -84,6 +84,38 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
             Directory.CreateDirectory(capture);
             await page.ScreenshotAsync(new() { Path = Path.Combine(capture, "heatmap-responsive-1440.png"), FullPage = true });
         }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task PhoneMatrixScrollsWithStickyNamesAndReachableLinks() {
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12), 240, 1600);
+        await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div id='panel' style='width:390px'>" + fragment + "</div></body></html>", 390, 1000);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-responsive-chart]').cfxResponsive");
+        var metrics = await page.EvaluateAsync<double[]>("""
+            ()=>{const h=document.querySelector('[data-cfx-responsive-chart]'), row=h.querySelector('[data-cfx-role=heatmap-row-label]'),
+              cell=h.querySelector('[data-cfx-role=heatmap-cell] rect');return [h.clientWidth,h.scrollWidth,row.getBoundingClientRect().left,cell.getBoundingClientRect().width]}
+            """);
+        Assert.True(metrics[1] > metrics[0]);
+        Assert.True(metrics[3] >= 14);
+        await page.EvaluateAsync("()=>{const h=document.querySelector('[data-cfx-responsive-chart]');h.scrollLeft=h.scrollWidth}");
+        await page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-role=matrix-sticky-labels]').getAttribute('transform')!=='translate(0 0)'");
+        Assert.Equal(metrics[2], await page.Locator("[data-cfx-role=heatmap-row-label]").First.EvaluateAsync<double>("e=>e.getBoundingClientRect().left"), .1);
+        var last = page.Locator("[data-cfx-role=heatmap-cell]").Last;
+        await last.ClickAsync();
+        await last.FocusAsync();
+        Assert.True(await last.EvaluateAsync<bool>("e=>e===document.activeElement"));
+        var date = await page.Locator("[data-cfx-role=heatmap-column-label]:visible").Last.EvaluateAsync<double[]>("e=>{const b=e.getBoundingClientRect(),h=e.closest('[data-cfx-responsive-chart]').getBoundingClientRect();return [b.left,b.right,h.left,h.right]}");
+        Assert.True(date[0] >= date[2] && date[1] <= date[3]);
+        var reachable = await page.EvaluateAsync<int[]>("""
+            async()=>{const cells=[...document.querySelectorAll('[data-cfx-role=heatmap-cell]')];let hit=0,focus=0;
+              for(const cell of cells){cell.scrollIntoView({block:'nearest',inline:'nearest'});cell.focus();await new Promise(requestAnimationFrame);
+                const b=cell.getBoundingClientRect(),at=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
+                if(at?.closest('[data-cfx-role=heatmap-cell]')===cell)hit++;if(document.activeElement===cell)focus++;}
+              return [hit,focus,cells.length];}
+            """);
+        Assert.Equal(332, reachable[2]); Assert.Equal(reachable[2], reachable[0]); Assert.Equal(reachable[2], reachable[1]);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 

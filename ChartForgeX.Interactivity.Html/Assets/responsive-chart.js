@@ -44,7 +44,7 @@
     const afterPrint=()=>{printing=false;host.style.minWidth=spec.minimum+'px';layout();};
     const media=matchMedia('print'),changed=event=>event.matches?print():afterPrint();
     addEventListener('beforeprint',print);addEventListener('afterprint',afterPrint);media.addEventListener('change',changed);
-    host.cfxResponsive={layout,dispose:()=>{disposed=true;clearTimeout(timer);observer.disconnect();removeEventListener('beforeprint',print);removeEventListener('afterprint',afterPrint);media.removeEventListener('change',changed);delete host.cfxResponsive;delete host.cfxResponsiveReady;}};
+    host.cfxResponsive={layout,dispose:()=>{disposed=true;clearTimeout(timer);observer.disconnect();drawing.dispose?.();removeEventListener('beforeprint',print);removeEventListener('afterprint',afterPrint);media.removeEventListener('change',changed);delete host.cfxResponsive;delete host.cfxResponsiveReady;}};
     layout();
     document.fonts?.ready.then(()=>layout());
   }

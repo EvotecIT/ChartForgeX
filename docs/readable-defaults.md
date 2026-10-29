@@ -29,9 +29,13 @@ Lane labels, lane summaries, group headers and heatmap row labels share one poli
 
 - They never shrink below 10 px. Long names are truncated with an ellipsis; the complete name stays in the chart's semantic regions, and responsive HTML adds a tooltip.
 - They may use the row spacing around a thin band, so a label isn't dropped because the painted band is thinner than a line of text.
-- When even 10 px text doesn't fit the row pitch, the label is hidden rather than drawn over its neighbour.
+- When even 10 px text does not fit the row pitch, heatmaps thin visible row labels and report `matrix.row-label-density`; every row name remains in semantic regions. Other row-based charts hide labels that cannot fit.
 
 Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `WithHeatmapCellRadius` still sets an exact radius.
+
+A caller that can accommodate a taller static frame can use `WithHeatmapNaturalHeight()` to grow a rectangular heatmap until its rows fit readable cells. Fixed-height frames instead retain their size and report row-label density when labels must be thinned.
+
+Rectangular heatmaps use a latest-column window by default when a fixed frame cannot fit every cell at 14 px. Earlier columns are omitted and counted by `matrix.cell-density` and the `matrix-column-window` semantic region. Use `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to show all columns in a fixed frame, including narrow cells. Responsive HTML retains all columns for its interactive layout.
 
 Heatmap column captions that don't fit their columns behave according to what they name:
 

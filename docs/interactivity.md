@@ -295,7 +295,7 @@ retains the source geometry needed at wider panel sizes. The runtime still accep
 
 Text and strokes keep their token sizes. Height stays at the configured chart
 height, or the optional `height` argument. Tick captions thin at a measured regular
-stride from the first caption with at least 1.5 em between neighbours; the last caption is kept only when it falls on that stride. Legends wrap before consuming plot space. An oversized caption truncates with its
+stride from the first caption with at least 1.5 em between neighbours; rectangular heatmaps also keep the last caption. Legends wrap before consuming plot space. An oversized caption truncates with its
 full name in an SVG tooltip; legend rows use at most 35% of the fixed height,
 with a named overflow summary when more entries remain. Regular
 bars use the native 68% category pitch and bounded group gaps, with the configured
@@ -305,6 +305,8 @@ measuring text. The caller's chart size and axis policies are restored after
 serialization. Canonical bar slots and mapped source anchors are serialized, so
 sparse categories retain the same series slots. Every mounted fragment gets
 independent SVG definition IDs, even when two charts have identical content.
+
+Rectangular heatmaps use layout 3. At narrow widths the plot scrolls horizontally, keeping a minimum cell width and a sticky row-label gutter; the full row name remains in a tooltip. The first and last ordered column captions remain visible at the ends of the scroll range. Static fixed-width heatmaps use their configured column-window policy; the responsive host retains all columns.
 
 The specification declares a plot band for Cartesian, matrix and state-timeline charts.
 Content before the band stays in place, the band stretches, and content after it

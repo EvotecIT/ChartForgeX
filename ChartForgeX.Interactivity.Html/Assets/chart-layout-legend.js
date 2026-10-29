@@ -11,7 +11,7 @@
     const top=entries.length?Math.min(...entries.map(e=>e.box.y)):0;
     const bottom=entries.length?Math.max(...entries.map(e=>e.box.y+e.box.height)):0;
     const summary=entries[0]?.label?.cloneNode(true);
-    if(summary){summary.textContent='';summary.setAttribute('data-cfx-role','legend-overflow');summary.removeAttribute('id');svg.appendChild(summary);}
+    if(summary){summary.textContent='';summary.setAttribute('data-cfx-role','legend-overflow');summary.removeAttribute('id');(svg.querySelector('[data-cfx-role=matrix-sticky-labels]')||svg).appendChild(summary);}
     return {entries,summary,top,bottom,above:bottom<=spec.plot[1]+1,below:top>=spec.plot[1]+spec.plot[3]-1};
   }
   function fit(entry,available){

@@ -35,16 +35,17 @@ public sealed class HtmlResponsiveChartRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (minimumWidth < 160 || maximumWidth < minimumWidth || maximumWidth > 8192) throw new ArgumentOutOfRangeException(nameof(minimumWidth));
         if (height <= 0 || printWidth <= 0) throw new ArgumentOutOfRangeException(nameof(height));
-        var size = chart.Options.Size; var x = chart.Options.XAxis; var y = chart.Options.YAxis;
+        var size = chart.Options.Size; var x = chart.Options.XAxis; var y = chart.Options.YAxis; var window = chart.Options.HeatmapColumnWindow;
         var drawingHeight = height ?? size.Height;
         var fallbackWidth = printWidth ?? Math.Max(minimumWidth, Math.Min(maximumWidth, size.Width));
         try {
+            chart.Options.HeatmapColumnWindow = ChartHeatmapColumnWindow.Squeeze;
             var specification = HtmlChartLayoutSpecification.Serialize(chart, minimumWidth, maximumWidth, drawingHeight, fallbackWidth, idScope, out var fallback);
             var payload = compressLayouts ? "<script type=\"application/octet-stream\" data-cfx-spec-gzip>" + Compress(specification)
                 : "<script type=\"application/json\" data-cfx-spec>" + specification;
             return "<div data-cfx-responsive-chart style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
                 "<style>@media print{[data-cfx-responsive-chart]{min-width:0!important}}</style>" + fallback + payload + "</script><script>" + Script.Value + "</script></div>";
-        } finally { chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; }
+        } finally { chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.HeatmapColumnWindow = window; }
     }
     private static string Compress(string text) {
         using var buffer = new MemoryStream();

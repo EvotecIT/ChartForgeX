@@ -85,7 +85,7 @@
     const [left,top,pw,ph]=spec.plot, [nl,nt,nw,nh]=plot;
     const map=(v,low,size,newLow,newSize,totalDelta,before=value=>value)=>v<low? before(v) : v>low+size ? v+totalDelta : newLow+(v-low)*newSize/size;
     // A declared lane gutter narrows proportionally between its start and the plot; content before it stays put.
-    const gutter=spec.gutter, before=!gutter||nl>=left ? v=>v : v=>v<=gutter[0] ? v : gutter[0]+(v-gutter[0])*(nl-gutter[0])/Math.max(.001,left-gutter[0]);
+    const gutter=spec.gutter || (spec.matrix ? [spec.matrix[2]] : null), before=!gutter||nl>=left ? v=>v : v=>v<=gutter[0] ? v : gutter[0]+(v-gutter[0])*(nl-gutter[0])/Math.max(.001,left-gutter[0]);
     const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width,before) : v+(width-spec.width)/2, y=v=>map(v,top,ph,nt,nh,0);
     const maximumBarWidth=spec.barWidthUnbounded ? Infinity : spec.maximumBarWidth;
     for(const recipe of state.recipes){

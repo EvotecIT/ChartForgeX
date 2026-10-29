@@ -42,6 +42,29 @@ internal static partial class VisualMatrixCompiler {
         var categoryGroups = MatrixCategoryGroups.Capture(chart, rows, columns);
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
         var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing, categoryGroups);
+        var allColumns = columns;
+        var omittedColumns = 0;
+        if (kind == ChartSeriesKind.Heatmap && chart.Options.HeatmapColumnWindow == ChartHeatmapColumnWindow.Latest) {
+            // Each retained cell keeps at least 14 pixels of painted width, plus the authored inter-cell gap.
+            var columnGap = Math.Max(0, chart.Options.HeatmapCellGap ?? 2);
+            while (columns.Length > 1) {
+                var capacity = Math.Max(1, (int)Math.Floor((layout.Plot.Width + columnGap) / (14 + columnGap)));
+                if (capacity >= columns.Length) break;
+                var drop = columns.Length - capacity;
+                omittedColumns += drop;
+                columns = columns.Skip(drop).ToArray();
+                categoryGroups = MatrixCategoryGroups.Capture(chart, rows, columns);
+                layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing, categoryGroups);
+            }
+            if (omittedColumns > 0) {
+                var description = omittedColumns + " earlier heatmap columns were omitted to keep cells readable.";
+                builder.AddDiagnostic(new VisualDiagnostic("matrix.cell-density", description));
+                builder.AddRegion(new VisualSemanticRegion("matrix-omitted-columns", "matrix-column-window", layout.Plot, description));
+                if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels)
+                    for (var index = 0; index < omittedColumns; index++)
+                        builder.AddRegion(new VisualSemanticRegion("matrix-column-" + index, "heatmap-column-label", new ChartRect(layout.Plot.Left, layout.Plot.Bottom, 0, 0), formatColumn(allColumns[index])));
+            }
+        }
         var plot = layout.Plot;
         builder.AddRegion(new VisualSemanticRegion("matrix-plot", "matrix-plot", plot));
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
@@ -98,6 +121,7 @@ internal static partial class VisualMatrixCompiler {
                 })) {
                     for (var renderIndex = 0; renderIndex < series.RenderPoints.Count; renderIndex++) {
                         var point = series.RenderPoints[renderIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
+                        if (columnIndex < 0) continue;
                         var pointIndex = categorical ? (int)point.X - 1 : renderIndex;
                         var cellLeft = plot.Left + columnIndex * (cellWidth + gap);
                         if (ReverseColumns(chart)) cellLeft = plot.Left + plot.Right - cellLeft - cellWidth;
@@ -125,7 +149,7 @@ internal static partial class VisualMatrixCompiler {
                         var metadata = state == null ? new Dictionary<string, string>() : VisualStateSceneTools.StateMetadata(chart, state);
                         metadata["data-cfx-series"] = rowIndex.ToString(); metadata["data-cfx-point"] = pointIndex.ToString(); metadata["data-cfx-row"] = rowIndex.ToString();
                         metadata["data-cfx-source-point"] = (pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex).ToString();
-                        metadata["data-cfx-column"] = columnIndex.ToString(); metadata["data-cfx-x"] = VisualStateSceneTools.Number(point.X);
+                        metadata["data-cfx-column"] = (columnIndex + omittedColumns).ToString(); metadata["data-cfx-x"] = VisualStateSceneTools.Number(point.X);
                         metadata["data-cfx-y"] = VisualStateSceneTools.Number(point.Y); metadata["data-cfx-value"] = VisualStateSceneTools.Number(point.Y);
                         if (state == null && presentation.HasOverrides) {
                             metadata["data-cfx-formatted-value"] = readout;
@@ -159,7 +183,7 @@ internal static partial class VisualMatrixCompiler {
                     }
                 }
             }
-            MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
+            MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn, omittedColumns);
             DrawMatrixCategoryGroups(chart, context, builder, categoryGroups, layout, rowLayout, rows.Length, columns.Length, cellWidth, cellHeight, gap, colors);
             if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation, hasDomain, missing);
         }
