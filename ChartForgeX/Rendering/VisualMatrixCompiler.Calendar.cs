@@ -38,7 +38,8 @@ internal static partial class VisualMatrixCompiler {
         })) {
             for (var offset = 0; offset < model.TotalDays; offset++) {
                 var date = model.Start.AddDays(offset); var present = model.TryGetDay(date, out var day);
-                var valueText = present ? presentation.Value(day.Value) : presentation.NoData;
+                // Readouts carry the chart's value unit, like matrix heatmap cells.
+                var valueText = present ? ChartOptions.AppendUnit(presentation.Value(day.Value), chart.Options.ValueUnit) : presentation.NoData;
                 var label = model.Series.Name + ", " + presentation.Labels.FormatDate(date) + ": " + valueText;
                 var id = "calendar-day-" + model.DateText(date);
                 var bounds = new ChartRect(grid.X(model.Column(date)), grid.Y(model.Row(date)), grid.Cell, grid.Cell);
@@ -59,13 +60,13 @@ internal static partial class VisualMatrixCompiler {
                     if (presentation.HasOverrides) {
                         metadata["data-cfx-formatted-value"] = valueText;
                         metadata["data-cfx-label-value"] = presentation.Name;
-                    }
+                    } else if (chart.Options.ValueUnit != null) metadata["data-cfx-formatted-value"] = valueText;
                     if (scale == null) metadata["data-cfx-level"] = model.Level(day.Value).ToString();
                     metadata["data-cfx-source-points"] = string.Join(",", sourceIndices[date]);
                     metadata["data-cfx-observation-index"] = sourceIndices[date][0].ToString(CultureInfo.InvariantCulture);
                 }
                 using (VisualStateSceneTools.Mark(builder, id, "calendar-cell", bounds, label, metadata))
-                using (builder.PushClip(area)) builder.Rect(bounds, blend.Color, radius: Math.Min(grid.Radius, context.Theme.BarRadius), role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));
+                using (builder.PushClip(area)) builder.Rect(bounds, blend.Color, radius: Math.Min(grid.Radius, Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * MaximumThemeCellRounding)), role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));
             }
             if (axes && chart.Options.YAxis.Visible) {
                 for (var row = 0; row < 7; row++) {

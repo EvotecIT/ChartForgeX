@@ -253,6 +253,13 @@ public sealed class ChartAxis {
     /// </summary>
     public TimeZoneInfo? TimeZone { get; set; }
 
+    /// <summary>Gets or sets the culture for time labels on this axis, or null for invariant ISO dates (the default).</summary>
+    /// <remarks>
+    /// With a culture, day labels use its short month-day form (for example "27 Oct", "27. Okt." or "27 paź"),
+    /// times use its short time pattern, and full instants in tooltips and accessible names use its short date and time.
+    /// </remarks>
+    public System.Globalization.CultureInfo? Culture { get; set; }
+
     /// <summary>Gets or sets explicitly included intervals for a compressed time X axis, or null for continuous elapsed time.</summary>
     /// <remarks>Supported vertical Cartesian series share this immutable domain. Closed gaps have no width;
     /// observations and source annotation anchors must belong to included sessions. Raw viewport bounds may lie

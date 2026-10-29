@@ -76,6 +76,13 @@
       }
       label.style.left = centerX + 'px';
       label.style.top = top + 'px';
+      // The live region reads its text in DOM order; separate readouts for screen readers without changing the paint.
+      if (shown.length) {
+        const separator = document.createElement('span');
+        separator.textContent = '; ';
+        separator.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap';
+        layer.insertBefore(separator, label);
+      }
       placed.push({ left: centerX - halfWidth, right: centerX + halfWidth, top, bottom: top + label.offsetHeight });
       shown.push(target);
     });

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
@@ -32,10 +33,14 @@ internal sealed partial class VisualSceneBuilder {
                 return metadata.TryGetValue(key, out var text) && double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number)
                     && !double.IsNaN(number) && !double.IsInfinity(number);
             }
-            string Value(string key, double number) => value(series, number,
-                metadata.TryGetValue(key.Replace("data-cfx-", "data-cfx-formatted-"), out var captured) ? captured : null);
+            // Readouts carry the chart's value unit; axis tick captions stay unit-free.
+            string Value(string key, double number) => chart.Options.WithUnit(value(series, number,
+                metadata.TryGetValue(key.Replace("data-cfx-", "data-cfx-formatted-"), out var captured) ? captured : null));
             if (Number("data-cfx-x", out var x)) {
                 var formatted = category(series, x);
+                // Time readouts announce the complete instant even where the axis caption shows only the time of day.
+                if (chart.Options.XAxis.Scale == ChartScaleKind.Time && !ChartCartesianOrientation.IsHorizontal(chart))
+                    metadata["data-cfx-formatted-instant"] = ChartTimeScale.FormatInstant(chart.Options.XAxis, x);
                 metadata["data-cfx-formatted-x"] = formatted;
                 metadata["data-cfx-display-label"] = metadata.TryGetValue("data-cfx-category-label", out var label) ? label
                     : displayCategory?.Invoke(series, x) ?? formatted;
@@ -70,7 +75,7 @@ internal sealed partial class VisualSceneBuilder {
             // A dimensionless factor must not inherit a measurement axis's units or culture.
             if (Number("data-cfx-iqr-multiplier", out var multiplier))
                 metadata["data-cfx-formatted-iqr-multiplier"] = ChartNumericFormatter.FormatCoordinate(multiplier);
-            if (group.Role == "point" && BoxPlotReadoutDescription(series, metadata) is { } description) {
+            if (group.Role == "point" && (BoxPlotReadoutDescription(series, metadata) ?? FormattedPointDescription(series.Name, metadata, chart.Options.ValueUnit)) is { } description) {
                 metadata["aria-label"] = description;
                 if (regionIndices == null) {
                     regionIndices = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -87,5 +92,29 @@ internal sealed partial class VisualSceneBuilder {
         }
     }
 
+    // Time-axis point names were built from raw coordinates ("dc-03: 56.5 (46316.0035, 56.5)"), which announces OLE dates.
+    // Rebuild that exact raw form from the captured display text: "dc-03, 2026-10-27 20:20 UTC, 56.5 ms". An authored or
+    // compacted caption keeps the exact value beside it. Numeric axes keep their exact round-trip coordinates.
+    internal static string? FormattedPointDescription(string seriesName, IReadOnlyDictionary<string, string> metadata, string? unit) {
+        if (!metadata.TryGetValue("aria-label", out var current) || !metadata.TryGetValue("data-cfx-x", out var rawX)
+            || !metadata.TryGetValue("data-cfx-y", out var rawY)
+            || !double.TryParse(rawX, NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
+            || !double.TryParse(rawY, NumberStyles.Float, CultureInfo.InvariantCulture, out var y)) return null;
+        var exact = ChartNumericFormatter.FormatCoordinate(y);
+        var raw = " (" + ChartNumericFormatter.FormatCoordinate(x) + ", " + exact + ")";
+        if (!current.StartsWith(seriesName + ": ", StringComparison.Ordinal) || !current.EndsWith(raw, StringComparison.Ordinal)) return null;
+        var caption = current.Substring(seriesName.Length + 2, current.Length - seriesName.Length - 2 - raw.Length);
+        var formatted = metadata.TryGetValue("data-cfx-formatted-value", out var value) ? value : string.Empty;
+        var exactWithUnit = ChartOptions.AppendUnit(exact, unit);
+        var numeric = formatted.Length > 0 && (caption.Length == 0 || formatted == ChartOptions.AppendUnit(caption, unit));
+        var amount = numeric ? formatted : caption == exact || caption.Length == 0 ? exactWithUnit : caption + " (" + exactWithUnit + ")";
+        if (metadata.TryGetValue("data-cfx-formatted-instant", out var instant) && instant.Length > 0) {
+            // Time-axis names have no raw coordinates left, so a rounded or compact readout keeps the exact value beside it.
+            if (numeric && formatted != exactWithUnit) amount += " (" + exactWithUnit + ")";
+            return string.Join(", ", new[] { seriesName, instant, amount }.Where(part => part.Length > 0));
+        }
+        if (unit == null) return null;
+        return seriesName + ": " + amount + raw;
+    }
     private static string RangeLabel(string start, string end) => start.Length == 0 && end.Length == 0 ? string.Empty : start + " – " + end;
 }

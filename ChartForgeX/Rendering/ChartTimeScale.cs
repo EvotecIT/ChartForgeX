@@ -112,9 +112,9 @@ internal static partial class ChartTimeScale {
     public static string Format(ChartAxis axis, double value, bool milliseconds = false) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (ToDisplayTime(axis, value, roundToSeconds: !milliseconds) is not { } rounded) return ChartNumericFormatter.FormatCompact(value);
-        if (milliseconds) return rounded.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
-        if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
+        if (milliseconds) return rounded.ToString(axis.Culture == null ? "yyyy-MM-dd HH:mm:ss.fff" : FractionalDateTimePattern(axis, "fff"), LabelCulture(axis));
+        if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString(axis.Culture == null ? "yyyy-MM-dd" : DayPattern(axis, rounded.Month == 1 && rounded.Day == 1), LabelCulture(axis));
+        return rounded.ToString(TimePattern(axis, rounded.Second != 0), LabelCulture(axis));
     }
 
     /// <summary>Formats a full instant with subsecond precision and disambiguates repeated local hours.</summary>
@@ -123,10 +123,10 @@ internal static partial class ChartTimeScale {
         var local = ToDisplayTime(axis, value, roundToSeconds: false);
         if (!local.HasValue) return value.ToString("G17", CultureInfo.InvariantCulture);
         long fractionalTicks = local.Value.Ticks % TimeSpan.TicksPerSecond;
-        var format = fractionalTicks != 0
-            ? fractionalTicks % TimeSpan.TicksPerMillisecond == 0 ? "yyyy-MM-dd HH:mm:ss.fff" : "yyyy-MM-dd HH:mm:ss.ffff"
-            : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
-        var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ZoneDesignator(axis);
+        var fraction = fractionalTicks % TimeSpan.TicksPerMillisecond == 0 ? "fff" : "ffff";
+        var format = fractionalTicks == 0 ? DateTimePattern(axis, local.Value.Second != 0)
+            : axis.Culture == null ? "yyyy-MM-dd HH:mm:ss." + fraction : FractionalDateTimePattern(axis, fraction);
+        var text = local.Value.ToString(format, LabelCulture(axis)) + " " + ZoneDesignator(axis);
         var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
         if (zone.IsAmbiguousTime(local.Value)) {
             var utc = ChartDateTime.FromOrderedOaDate(value);

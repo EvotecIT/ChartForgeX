@@ -7,21 +7,21 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-/// <summary>Protects stable category meaning through reorder, reconstruction and changing series membership.</summary>
+/// <summary>Protects ordinal default colours and the opt-in identity colours for linked views.</summary>
 public sealed class StableSeriesPaletteTests {
     [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
     public void ExplicitIdsKeepMarkAndLegendPaintWhenOrderAndMembershipChange(VisualThemeMode mode) {
         var samples = Series("samples", 1); var reference = Series("reference", 2);
-        var chart = Bare(mode).AddSeries(samples).AddSeries(reference);
+        var chart = Bare(mode, identity: true).AddSeries(samples).AddSeries(reference);
         var before = Paints(chart); var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.NotEqual(before["samples"], before["reference"]);
         chart.MoveSeries(samples, 1); samples.WithName("Localized samples");
         Assert.Equal(before["samples"], Paints(chart)["samples"]);
         chart.AddSeries(Series("another", 3)).RemoveSeries(reference);
         Assert.Equal(before["samples"], Paints(chart)["samples"]);
-        var rebuilt = Paints(Bare(mode).AddSeries(Series("reference", 2)).AddSeries(Series("samples", 1)));
+        var rebuilt = Paints(Bare(mode, identity: true).AddSeries(Series("reference", 2)).AddSeries(Series("samples", 1)));
         Assert.Equal(before["samples"], rebuilt["samples"]); Assert.Equal(before["reference"], rebuilt["reference"]);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -41,6 +41,45 @@ public sealed class StableSeriesPaletteTests {
         Assert.Equal(authored, Paints(chart)["first"]);
         chart.Series[0].WithPointColor(0, color);
         Assert.Contains(color.ToCss(), Prepare(chart).ToSvg(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void ExplicitIdsFollowSeriesOrderByDefault(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        // These identifiers hash to other palette slots; by default they still take the accent and the next colour.
+        var chart = Bare(mode).AddSeries(Series("requests", 1)).AddSeries(Series("errors", 2));
+        var paints = Paints(chart);
+        Assert.Equal(colors.Palette[0].ToCss(), paints["requests"], StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(colors.Palette[1].ToCss(), paints["errors"], StringComparer.OrdinalIgnoreCase);
+        chart.MoveSeries(chart.Series[0], 1);
+        Assert.Equal(colors.Palette[0].ToCss(), Paints(chart)["errors"], StringComparer.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Line)]
+    [InlineData(ChartSeriesKind.Bar)]
+    [InlineData(ChartSeriesKind.Area)]
+    [InlineData(ChartSeriesKind.Scatter)]
+    public void FirstSeriesIsTheThemeAccentInEveryFamily(ChartSeriesKind kind) {
+        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        var series = new ChartSeries(new ChartSeriesId("requests"), "Requests", kind, new[] { new ChartPoint(1, 4), new ChartPoint(2, 7) });
+        var chart = Chart.Create().WithSize(600, 400).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light).AddSeries(series);
+        Assert.Equal(colors.Palette[0], ChartSeriesColours.Resolve(chart, 0, colors));
+    }
+
+    [Fact]
+    public void NativeViewsKeepTheIdentityAssignmentAndValueUnit() {
+        ChartSeries Line(string id) => ChartSeries.CreateLine(new ChartSeriesId(id), id, new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
+        var chart = Bare(VisualThemeMode.Light, identity: true).WithValueUnit("ms").AddSeries(Line("requests")).AddSeries(Line("errors"));
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var view = new ChartVisibilitySource(chart, context).CreateNativeView(null);
+        Assert.Equal(ChartSeriesColorAssignment.Identity, view.Options.SeriesColorAssignment);
+        Assert.Equal("ms", view.Options.ValueUnit);
+        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        Assert.Equal(ChartSeriesColours.Resolve(chart, 0, colors), ChartSeriesColours.Resolve(view, 0, colors));
+        Assert.NotEqual(colors.Palette[0], ChartSeriesColours.Resolve(view, 0, colors));
     }
 
     [Fact]
@@ -73,7 +112,7 @@ public sealed class StableSeriesPaletteTests {
         var difference = ChartSeries.CreateDifferenceArea(new ChartSeriesId("difference"), "Difference", new[] {
             new ChartDifferencePoint(1, 10, 20), new ChartDifferencePoint(2, 30, 20)
         });
-        var chart = Bare(VisualThemeMode.Light).AddSeries(difference).AddSeries(Series("peer", 3));
+        var chart = Bare(VisualThemeMode.Light, identity: true).AddSeries(difference).AddSeries(Series("peer", 3));
         var before = PolarityPaints(Prepare(chart));
         Assert.Equal(2, before.Distinct().Count());
         chart.MoveSeries(difference, 1);
@@ -101,7 +140,8 @@ public sealed class StableSeriesPaletteTests {
     }
 
     private static ChartSeries Series(string id, double value) => ChartSeries.CreateScatter(new ChartSeriesId(id), id, new[] { new ChartPoint(value, value) });
-    private static Chart Bare(VisualThemeMode mode) => Chart.Create().WithSize(600, 400).WithTheme(VisualTheme.Graphite(), mode)
-        .WithHeader(false).WithLegend().WithDataLabels(false).WithAxes(false).WithGrid(false);
+    private static Chart Bare(VisualThemeMode mode, bool identity = false) => Chart.Create().WithSize(600, 400).WithTheme(VisualTheme.Graphite(), mode)
+        .WithHeader(false).WithLegend().WithDataLabels(false).WithAxes(false).WithGrid(false)
+        .WithSeriesColorAssignment(identity ? ChartSeriesColorAssignment.Identity : ChartSeriesColorAssignment.Order);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
 }

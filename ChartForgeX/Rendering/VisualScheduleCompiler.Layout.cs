@@ -81,7 +81,7 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private static void LaneText(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,
-        string name, string? summary, double top, double height, int index) {
+        string name, string? summary, double top, double height, int index, string? group = null, double pitch = 0) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var plot = layout.Plot; var gap = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle();
@@ -91,17 +91,29 @@ internal static partial class VisualScheduleCompiler {
                 paint: VisualChartPaint.Stroke(SvgPaint.Of(context.Theme.Resolve(context.ThemeMode).Border, SvgColorRole.Grid)
                     .WithOpacity(context.Theme.Resolve(context.ThemeMode).Border.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }
+        // Hosts attach lane links and filters through this documented row group (ChartDomRoles).
+        using var row = builder.PushGroup("schedule-lane-row-" + index, ChartDomRoles.ScheduleRow, LaneMetadata(chart, index, group));
         if (chart.Options.ShowAxes && chart.Options.YAxis.Visible) {
             var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap);
-            var fittedName = ChartTextFitting.TrimEnd(name, style.EffectiveFontSize, labelWidth,
-                (text, _) => builder.MeasureText(text, style).Width);
+            var labelStyle = ChartRowText.Style(builder, style, name, height, labelWidth);
+            var fittedName = ChartTextFitting.TrimEnd(name, labelStyle.EffectiveFontSize, labelWidth,
+                (text, _) => builder.MeasureText(text, labelStyle).Width);
             if (fittedName.Length == 0) fittedName = name;
-            VisualStateSceneTools.Text(builder, name, new ChartRect(viewport.Left, top, labelWidth, height), LaneLabelStyle(builder, style, fittedName, height, labelWidth),
-                "schedule-row-label", "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
+            VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, labelStyle, fittedName, viewport.Left, labelWidth, top, height, pitch), labelStyle,
+                ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
         }
-        if (layout.HasSummary && summary != null)
-            VisualStateSceneTools.Text(builder, summary, new ChartRect(layout.SummaryLeft, top, Math.Max(0, viewport.Right - layout.SummaryLeft), height), style,
-                "lane-summary", "schedule-summary-" + index, TextAlignment.Right);
+        if (layout.HasSummary && summary != null) {
+            var summaryStyle = ChartRowText.Style(builder, style, summary, height, Math.Max(0, viewport.Right - layout.SummaryLeft));
+            VisualStateSceneTools.Text(builder, summary, ChartRowText.Bounds(builder, summaryStyle, summary, layout.SummaryLeft, Math.Max(0, viewport.Right - layout.SummaryLeft), top, height, pitch), summaryStyle,
+                ChartDomRoles.LaneSummary, "schedule-summary-" + index, TextAlignment.Right);
+        }
+    }
+
+    private static void GroupHeader(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string name, double left, double width, double top, double height,
+        string role, string id) {
+        var style = ChartRowText.Style(builder, VisualStateSceneTools.TickStyle(chart, context), name, height, width).Clone();
+        style.Font = style.Font.Clone(); style.Font.Weight = Math.Max(style.Font.Weight, 600);
+        VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, style, name, left, width, top, height, height), style, role, id);
     }
 
     private static void Now(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ScheduleLayout layout, double x, double now) {
@@ -152,18 +164,6 @@ internal static partial class VisualScheduleCompiler {
                 new ChartPoint(left + width / 2, top + height / 2), colors.MutedForeground);
         VisualStateSceneTools.Text(builder, text, new ChartRect(left, top, width, height), style, "data-label",
             VisualStateSceneTools.SourceId(chart.IndexOfSeries(series), index) + "-label", TextAlignment.Center, paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
-    }
-
-    private static TextStyle LaneLabelStyle(VisualSceneBuilder builder, TextStyle style, string text, double height, double width) {
-        if (height <= 0 || width <= 0) return style;
-        var fitted = style.Clone();
-        while (fitted.EffectiveFontSize > 1) {
-            var metrics = builder.MeasureText(text, fitted);
-            if (metrics.Height <= height + .001 && metrics.Width <= width + .001) break;
-            var ratio = Math.Min(height / Math.Max(.001, metrics.Height), width / Math.Max(.001, metrics.Width));
-            fitted.FontSize = Math.Max(1, Math.Min(fitted.EffectiveFontSize - .1, fitted.EffectiveFontSize * Math.Min(.9, ratio * .95)));
-        }
-        return fitted;
     }
 
     private sealed class ScheduleLayout {

@@ -292,7 +292,7 @@ The payload contains no sampled width bands or coordinate derivatives.
 
 Text and strokes keep their token sizes. Height stays at the configured chart
 height, or the optional `height` argument. Tick captions thin at a measured regular
-stride, keeping both endpoints. Legends wrap before consuming plot space. An oversized caption truncates with its
+stride from the first caption with at least 1.5 em between neighbours; the last caption is kept only when it falls on that stride. Legends wrap before consuming plot space. An oversized caption truncates with its
 full name in an SVG tooltip; legend rows use at most 35% of the fixed height,
 with a named overflow summary when more entries remain. Regular
 bars use the native 68% category pitch and bounded group gaps, with the configured
@@ -302,6 +302,21 @@ measuring text. The caller's chart size and axis policies are restored after
 serialization. Canonical bar slots and mapped source anchors are serialized, so
 sparse categories retain the same series slots. Every mounted fragment gets
 independent SVG definition IDs, even when two charts have identical content.
+
+The specification declares a plot band for Cartesian, matrix and state-timeline charts.
+Content before the band stays in place, the band stretches, and content after it
+(a lane summary column, for example) moves with the right edge. State timelines also
+declare their lane-label gutter: below the drawing's natural width
+it narrows toward a minimum so the lanes keep about 60% of the remaining width, and
+lane labels, lane summaries, group headers and the chart heading truncate with an
+ellipsis and a full-text tooltip instead of shrinking. Heatmap colour legends and column
+captions move with the plot but keep their own width. Charts without a declared plot band, such
+as radial charts and, for now, Gantt lanes and mixed schedules, stay centred at their native size; their heading keeps its left inset
+and truncates instead of being cropped.
+
+If the layout data is missing, is not valid JSON or cannot be decompressed, the host
+keeps its static drawing and logs one console warning. A specification element added
+to the host later mounts the chart.
 
 Browser printing lays out at the actual print panel width, including below the
 screen scrolling minimum, and restores the screen minimum after printing. `printWidth` chooses

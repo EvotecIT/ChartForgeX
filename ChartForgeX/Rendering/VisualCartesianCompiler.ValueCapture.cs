@@ -57,7 +57,7 @@ internal static partial class VisualCartesianCompiler {
                     VisualMarkerScene.Bounds(source, nativeMap.X(value.X), nativeMap.Y(value.Y), radius, marker));
             }
             rows.Add(new CartesianValueSeries(source.Id.Value, source.Name, source.Kind, source.ValueAxis, source.Interpolation, source.StepPosition, capturedMap,
-                nativeMap.YBaseline(), capturedAxis, Readout, capturedTicks, paintedReadouts, AxisValueKey(capturedAxis), points));
+                nativeMap.YBaseline(), capturedAxis, Readout, capturedTicks, paintedReadouts, AxisValueKey(capturedAxis), points, chart.Options.ValueUnit));
         }
         var projections = CaptureAxisProjections(chart, plot, fullRange, range, fullSecondaryRange, secondaryRange);
         if (!ChartMath.IsFinite(projections.Y.Maximum - projections.Y.Minimum)

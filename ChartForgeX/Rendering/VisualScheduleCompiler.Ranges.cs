@@ -55,7 +55,7 @@ internal static partial class VisualScheduleCompiler {
             axis.Scale == ChartScaleKind.Time ? tick => gantt && axis.TimeTickLabelFormatter != null
                 ? axis.TimeTickLabelFormatter(tick, effectiveInterval)
                 : projectDates && ChartTimeScale.ToDisplayTime(axis, tick) is { } date
-                    ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    ? date.ToString(ChartTimeScale.DayPattern(axis, true), ChartTimeScale.LabelCulture(axis))
                     : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
         var formatCache = new ChartAxisValueFormatter.Cache();
         string Format(double value) => frame != null ? frame.Layout.FormatTick(value) : formatCache.Format(axis, value, formatTick);
@@ -104,7 +104,7 @@ internal static partial class VisualScheduleCompiler {
             foreach (var item in items) {
                 if (item.Marker || frame != null) continue;
                 var center = ScheduleRowCenter(chart, plot, (item.Row + .5) * slot);
-                LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index);
+                LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index, pitch: slot);
             }
             foreach (var item in items) {
                 if (item.Marker) continue;

@@ -117,8 +117,7 @@ public sealed partial class MermaidC4PresentationDepthTests {
         }
     }
     internal static MermaidC4Document Parse(string source) { var parsed = new MermaidParser().ParseC4(source); Assert.False(parsed.HasErrors,string.Join("; ",parsed.Diagnostics.Select(item=>item.Message))); return parsed.Document!; }
-    internal static string Fixture(string name) => File.ReadAllText(Path.Combine(Root(),"tests","mermaid-conformance","fixtures",name+".mmd"));
+    internal static string Fixture(string name) => File.ReadAllText(Path.Combine(TestRepository.Root,"tests","mermaid-conformance","fixtures",name+".mmd"));
     internal static MermaidRenderOptions Options(bool dark,int width) => new() { C4 = new MermaidTopologyRenderOptions { Width=width,Height=800 }, Presentation=new MermaidPresentationOptions { ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light,FontFamily=BrowserProofFonts.Family } };
-    private static string Root() { DirectoryInfo? current=new DirectoryInfo(AppContext.BaseDirectory);while(current!=null&&!File.Exists(Path.Combine(current.FullName,"ChartForgeX.sln")))current=current.Parent;return current?.FullName??throw new InvalidOperationException("Repository root not found."); }
     internal static void Capture(VisualArtifact artifact,string name) { if(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is not { Length:>0 } output)return;Directory.CreateDirectory(output);var stem=Path.Combine(output,name);File.WriteAllText(stem+".svg",artifact.ToSvg());File.WriteAllBytes(stem+".png",artifact.ToPng());File.WriteAllText(stem+".json",artifact.ToInterchangeJson()); }
 }

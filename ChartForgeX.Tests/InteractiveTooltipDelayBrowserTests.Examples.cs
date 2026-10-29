@@ -11,11 +11,8 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     [InlineData("dark", 950)]
     public async Task PromotedGraphiteExamplesShowDelayedPointerAndImmediateKeyboardReadouts(string theme, int width) {
         if (!Enabled) return;
-        var repository = new DirectoryInfo(AppContext.BaseDirectory);
-        while (repository != null && !File.Exists(Path.Combine(repository.FullName, "ChartForgeX.sln"))) repository = repository.Parent;
-        Assert.NotNull(repository);
         var file = "graphite-" + theme + "-line-interactive.html";
-        var html = await File.ReadAllTextAsync(Path.Combine(repository.FullName, "Website", "static", "examples", "generated", file));
+        var html = await File.ReadAllTextAsync(Path.Combine(TestRepository.Root, "Website", "static", "examples", "generated", file));
         await using var session = await OpenAsync(html, width, 760);
         var page = session.Page;
         var pageErrors = new List<string>();

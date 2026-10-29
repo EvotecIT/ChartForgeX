@@ -54,6 +54,78 @@ public sealed class WaterfallInterchangeTests {
     }
 
     [Fact]
+    public void PortablePresentationAndNativeReplayKeepCultureUnitAndIdentityColors() {
+        var original = Model().WithCulture(CultureInfo.GetCultureInfo("de-DE")).WithValueUnit("ms")
+            .WithSeriesColorAssignment(ChartSeriesColorAssignment.Identity);
+        var json = original.ToVisualArtifact().ToInterchangeJson();
+        var imported = VisualArtifactInterchangeEnvelope.FromJson(json).ToWaterfallChart();
+        Assert.Equal("ms", imported.Options.ValueUnit);
+        Assert.Equal(ChartSeriesColorAssignment.Identity, imported.Options.SeriesColorAssignment);
+        Assert.Equal("de-DE", imported.Options.XAxis.Culture?.Name);
+        var legacy = VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"valueUnit\":\"ms\",", "")
+            .Replace("\"seriesColorAssignment\":\"Identity\",", "").Replace("\"culture\":\"de-DE\",", "")).ToWaterfallChart();
+        Assert.Null(legacy.Options.ValueUnit);
+        Assert.Equal(ChartSeriesColorAssignment.Order, legacy.Options.SeriesColorAssignment);
+        Assert.Null(legacy.Options.XAxis.Culture);
+        Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("de-DE", "bad_culture!")));
+
+        var chart = Chart.Create().WithSize(600, 320).WithXAxisTimeScale(TimeZoneInfo.Utc);
+        VisualArtifactInterchangeMapping.RestoreVisibilityPresentation(chart, VisualArtifactInterchangeMapping.CaptureVisibilityPresentation(imported));
+        chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
+        chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", new[] {
+            new ChartPoint(new DateTime(2026, 10, 21, 0, 0, 0, DateTimeKind.Utc), 50),
+            new ChartPoint(new DateTime(2026, 10, 21, 1, 0, 0, DateTimeKind.Utc), 60) }));
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var source = new ChartVisibilitySource(chart, context);
+        var facts = source.CanonicalFacts(context);
+        Assert.Contains("\"valueUnit\":\"ms\"", facts, StringComparison.Ordinal);
+        Assert.Contains("\"seriesColorAssignment\":\"Identity\"", facts, StringComparison.Ordinal);
+        Assert.Contains("\"culture\":\"de-DE\"", facts, StringComparison.Ordinal);
+        var view = source.CreateNativeValueView(new[] { 50d, 61d });
+        Assert.Equal("de-DE", view.Options.XAxis.Culture?.Name);
+        Assert.Equal("ms", view.Options.ValueUnit);
+        Assert.Equal(ChartSeriesColorAssignment.Identity, view.Options.SeriesColorAssignment);
+        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        Assert.Equal(ChartSeriesColours.Resolve(chart, 0, colors), ChartSeriesColours.Resolve(view, 0, colors));
+        Assert.Equal(61d, view.Series[0].Points[1].Y);
+        var point = XDocument.Parse(view.ToSvg()).Descendants().First(node => (string?)node.Attribute("data-cfx-role") == "point");
+        Assert.Equal("50.00\u00A0ms", (string?)point.Attribute("data-cfx-formatted-value"));
+    }
+
+    [Fact]
+    public void PortableTimeCultureKeepsANonDefaultCalendar() {
+        var japanese = (CultureInfo)CultureInfo.GetCultureInfo("ja-JP").Clone();
+        japanese.DateTimeFormat.Calendar = new JapaneseCalendar(); japanese.DateTimeFormat.ShortDatePattern = "gg y/MM/dd";
+        var portable = VisualArtifactInterchangeEnvelope.FromJson(Model().WithCulture(japanese).ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        var restored = portable.Options.XAxis.Culture!;
+        var instant = new DateTime(2026, 10, 28);
+        Assert.IsType<JapaneseCalendar>(restored.DateTimeFormat.Calendar);
+        Assert.Equal(instant.ToString("d", japanese), instant.ToString("d", restored));
+    }
+
+    [Fact]
+    public void PortableTimeCultureKeepsCustomizedPatternsAndRetainsExplicitInvariantCulture() {
+        var modified = (CultureInfo)CultureInfo.GetCultureInfo("de-DE").Clone();
+        modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd"; modified.DateTimeFormat.AbbreviatedMonthNames =
+            new[] { "J1", "F2", "M3", "A4", "M5", "J6", "J7", "A8", "S9", "O10", "N11", "D12", "" };
+        var custom = Model().WithCulture(modified);
+        // User overrides and authored patterns travel with the culture, so the restored view formats time labels identically.
+        var portable = VisualArtifactInterchangeEnvelope.FromJson(custom.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        var restoredCulture = portable.Options.XAxis.Culture!;
+        Assert.Equal("de-DE", restoredCulture.Name);
+        Assert.Equal("yyyy/MM/dd", restoredCulture.DateTimeFormat.ShortDatePattern);
+        Assert.Equal(modified.DateTimeFormat.AbbreviatedMonthNames, restoredCulture.DateTimeFormat.AbbreviatedMonthNames);
+        Assert.Equal(CultureInfo.GetCultureInfo("de-DE").DateTimeFormat.LongTimePattern, restoredCulture.DateTimeFormat.LongTimePattern);
+        var instant = new DateTime(2026, 10, 21);
+        Assert.Equal(instant.ToString("d", modified), instant.ToString("d", restoredCulture));
+        Assert.Equal(instant.ToString("dd MMM", modified), instant.ToString("dd MMM", restoredCulture));
+        var invariant = Model(); invariant.Options.XAxis.Culture = CultureInfo.InvariantCulture;
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(invariant.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        Assert.NotNull(restored.Options.XAxis.Culture);
+        Assert.Equal(string.Empty, restored.Options.XAxis.Culture!.Name);
+    }
+
+    [Fact]
     public void NumericAppendedTotalKeepsDerivedContributorsAndPresentationWithoutBecomingSourceData() {
         var chart = Chart.Create().WithLegend(false).AddWaterfall("Changes", new[] { new ChartPoint(1, 10), new ChartPoint(3, -2) });
         chart.Series[0].WithObservationId(0, new ChartObservationId("first"));
