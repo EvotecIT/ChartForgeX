@@ -30,4 +30,12 @@ public sealed class AxisTickCaptionExactnessTests {
         Assert.Equal(new[] { "10", "31.62", "100", "316.23", "1k" },
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 10d, Math.Pow(10, 1.5), 100, Math.Pow(10, 2.5), 1000 }));
     }
+
+    [Fact]
+    public void AxisCaption_SingleLargeNonRoundTick_ReadsBackAsItself() {
+        var ticks = new[] { 1000000000001d };
+        var format = ChartAxisValueFormatter.Create(new ChartForgeX.Core.ChartAxis(), ticks);
+
+        Assert.Equal("1000000000001", format(ticks[0]));
+    }
 }

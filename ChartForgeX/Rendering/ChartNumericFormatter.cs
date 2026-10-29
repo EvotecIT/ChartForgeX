@@ -93,8 +93,8 @@ internal static class ChartNumericFormatter {
         else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9; number = caption.Substring(0, caption.Length - 1); }
         if (!double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) return false;
         var difference = Math.Abs(shown * unit - value);
-        // Floating-point noise from the unit multiplication is not a rounding the reader would see.
-        return difference <= tolerance || difference <= Math.Abs(value) * 1e-12;
+        // Only the few units of double precision that the unit multiplication itself introduces count as noise.
+        return difference <= tolerance || difference <= Math.Abs(value) * 4 * 2.220446049250313e-16;
     }
     internal static string FormatCompactAxisValue(double value) {
         var caption = FormatCompact(value); var zero = FormatCompact(0);
