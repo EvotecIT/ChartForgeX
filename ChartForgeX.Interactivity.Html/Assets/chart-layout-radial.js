@@ -109,9 +109,23 @@
         group.node.setAttribute('transform',`translate(${cx} ${cy}) scale(${scale}) translate(${-sourceX} ${-sourceY})`);
         if(group.clip){group.clip.setAttribute('x',sourceX+(left-cx)/scale);group.clip.setAttribute('y',sourceY+(plotTop-cy)/scale);group.clip.setAttribute('width',plotWidth/scale);group.clip.setAttribute('height',plotHeight/scale);}
         for(const pattern of group.patterns.values())pattern.node.setAttribute('patternTransform',pattern.transform+` scale(${1/scale})`);
-        if(group.overlay)for(const series of new Set(group.labels.map(label=>label.series)))
-          layoutLabels({...group,labels:group.labels.filter(label=>label.series===series)},r.frames[series],scale,left,plotTop,plotWidth,plotHeight,cx,cy);
-        else layoutLabels(group,frame,scale,left,plotTop,plotWidth,plotHeight,cx,cy);
+        if(group.overlay){
+          // Every ring shares these lanes. Group by disjoint placement band, never by series.
+          const band=label=>['Above','Below'].includes(r.frames[label.series][6])?r.frames[label.series][6]:'Outside';
+          for(const placement of new Set(group.labels.map(band))){
+            const shared=frame.slice();shared[6]=placement;
+            layoutLabels({...group,labels:group.labels.filter(label=>band(label)===placement)},shared,scale,left,plotTop,plotWidth,plotHeight,cx,cy);
+          }
+          // Different bands can meet at a corner. Keep the native priority for the larger sector.
+          const occupied=[];
+          for(const label of [...group.labels].sort((a,b)=>(b.slice?.[6]||0)-(a.slice?.[6]||0))){
+            if(label.owner.style.display==='none')continue;
+            const box=label.text.getBBox(),b={left:box.x,right:box.x+box.width,top:box.y,bottom:box.y+box.height},clearance=2/scale;
+            if(occupied.some(a=>a.left<b.right+clearance&&a.right+clearance>b.left&&a.top<b.bottom+clearance&&a.bottom+clearance>b.top)){
+              label.owner.style.display='none';if(label.connector)label.connector.style.display='none';if(label.halo)label.halo.style.display='none';
+            }else occupied.push(b);
+          }
+        }else layoutLabels(group,frame,scale,left,plotTop,plotWidth,plotHeight,cx,cy);
         if(group.center){
           const value=textOf(group.center.querySelector('[data-cfx-role=donut-total-label]')),caption=textOf(group.center.querySelector('[data-cfx-role=donut-title]'));
           const inner=radius*frame[4];
