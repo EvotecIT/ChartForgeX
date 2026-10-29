@@ -75,6 +75,28 @@ public sealed class BarValueCaptionTests {
     }
 
     [Fact]
+    public void SeriesCaptionFormat_ZeroInALargeSeries_StaysPlainZero() {
+        var format = ChartNumericFormatter.SeriesCaptionFormat(Chart.Create().Options, new[] { 12480d, 0 })!;
+
+        Assert.Equal("0", format(0));
+    }
+
+    [Fact]
+    public void Prepare_WaterfallWithAnOversizedCaptionFont_DoesNotReserveAnUnfittedLane() {
+        Chart Waterfall(bool labels) {
+            var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite()).WithDataLabels(labels)
+                .ConfigureDataLabelStyle(style => style.WithFontSize(256))
+                .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("licences"), "Licences", new[] {
+                    ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Total(3)
+                }));
+            return chart;
+        }
+        ChartRect Plot(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).Regions.Single(region => region.Role == "cartesian-plot").Bounds;
+
+        Assert.Equal(Plot(Waterfall(false)).Height, Plot(Waterfall(true)).Height, 3);
+    }
+
+    [Fact]
     public void SeriesCaptionFormat_AuthoredFormat_IsLeftAlone() {
         var options = Chart.Create().Options; options.ValueFormat = ChartValueFormat.Number("#,0");
 

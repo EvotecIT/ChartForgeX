@@ -12,7 +12,9 @@ public sealed class ShortCategoryTickTests {
 
     [Fact]
     public void ToSvg_NarrowNamedCategories_ShortenEveryNameInsteadOfSkippingAndKeepTheFullNameAsTooltip() {
+        // The bundled Carlito face has Calibri's metrics, so the fit is the same on every platform.
         var chart = Chart.Create().WithSize(360, 300).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXLabels(Steps)
+            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .AddBar("Licences", Steps.Select((_, index) => new ChartPoint(index + 1, 100 + index * 10)).ToArray());
 
         var svg = XDocument.Parse(chart.ToSvg());

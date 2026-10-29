@@ -302,7 +302,7 @@ internal static partial class VisualCartesianCompiler {
         for (var item = 0; item < placed.Count; item++) {
             var label = placed[item];
             // A shortened caption keeps its complete name as a native tooltip.
-            using (label.IsDropped || label.Text.Replace("\n", " ") == complete[item] ? null : builder.PushTooltip(complete[item]))
+            using (label.IsDropped || label.Text.Replace("\n", " ") == complete[item].Replace("\n", " ") ? null : builder.PushTooltip(complete[item]))
                 VisualAxisText.Draw(builder, label, role);
             if (!label.IsDropped && obstacles != null) obstacles.Add(new LabelObstacle(role + "-interior-" + obstacles.Count, label.Bounds));
         }

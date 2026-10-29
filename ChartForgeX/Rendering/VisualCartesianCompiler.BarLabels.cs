@@ -23,7 +23,9 @@ internal static partial class VisualCartesianCompiler {
             if (waterfall) {
                 // A waterfall caption sits at the running balance its step ends on, not at the delta.
                 foreach (var (anchor, label, above) in WaterfallCaptionEnds(chart, context, series, map, axis, colors, placement)) {
-                    if (!ChartMath.IsFinite(anchor) || anchor < plot.Top || anchor > plot.Bottom || label.Text.Length == 0) continue;
+                    // Like column captions, an unfitted oversized font does not reserve a lane before its fitting pass.
+                    if (!ChartMath.IsFinite(anchor) || anchor < plot.Top || anchor > plot.Bottom || label.Text.Length == 0
+                        || label.Style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize) continue;
                     var height = builder.MeasureText(label.DisplayedText, DisplayedStyle(label.Style)).Height + BarLabelGap(context);
                     if (above && anchor - plot.Top < height) top = Math.Max(top, height);
                     else if (!above && plot.Bottom - anchor < height) bottom = Math.Max(bottom, height);
