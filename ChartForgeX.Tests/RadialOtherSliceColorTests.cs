@@ -24,8 +24,21 @@ public sealed class RadialOtherSliceColorTests {
         var other = VisualRadialCompiler.LegendEntries(chart, colors).Last();
 
         Assert.Equal("Other", other.Label);
-        Assert.True(ChartColorMath.ContrastRatio(other.Color, colors.Surface) >= 3 || ChartColorMath.ContrastRatio(colors.Neutral3, colors.Surface) < 3,
+        Assert.True(ChartColorMath.ContrastRatio(other.Color, colors.Surface) >= 3,
             $"{theme} {mode}: the Other slice ({other.Color}) must contrast at least 3:1 with the plot surface ({colors.Surface}).");
     }
 
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void OtherSliceColor_CustomThemeWhoseNeutralsMatchTheSurface_StillContrasts(VisualThemeMode mode) {
+        var builder = new VisualThemeBuilder();
+        var tokens = builder.Colors(mode);
+        tokens.Neutral = tokens.Surface; tokens.Neutral2 = tokens.Surface; tokens.Neutral3 = tokens.Surface;
+        var colors = builder.Build().Resolve(mode);
+
+        var other = VisualRadialCompiler.OtherSliceColor(colors);
+
+        Assert.True(ChartColorMath.ContrastRatio(other, colors.Surface) >= 3, $"Other ({other}) must contrast with the surface ({colors.Surface}).");
+    }
 }

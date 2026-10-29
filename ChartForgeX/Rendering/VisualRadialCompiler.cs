@@ -181,11 +181,13 @@ internal static partial class VisualRadialCompiler {
         double Contrast(ChartColor color) => Math.Min(ChartColorMath.ContrastRatio(color, colors.Surface), ChartColorMath.ContrastRatio(color, colors.Background));
         foreach (var candidate in new[] { colors.Neutral, colors.Neutral2 })
             if (Contrast(candidate) >= 3) return candidate;
-        for (var share = 0.05; share < 1; share += 0.05) {
-            var mixed = ChartColorMath.Blend(colors.Surface, colors.Neutral3, share);
-            if (Contrast(mixed) >= 3) return mixed;
-        }
-        return colors.Neutral3;
+        // A custom theme may set every neutral to the surface; then mix toward the surface's own text ink instead.
+        foreach (var ink in new[] { colors.Neutral3, ChartColorMath.AccessibleTextOnBackground(colors.Surface) })
+            for (var share = 0.05; share <= 1.0001; share += 0.05) {
+                var mixed = ChartColorMath.Blend(colors.Surface, ink, share);
+                if (Contrast(mixed) >= 3) return mixed;
+            }
+        return ChartColorMath.AccessibleTextOnBackground(colors.Surface);
     }
 
     private static List<RadialSlice> GetSourceSlices(Chart chart, VisualThemeColors colors, int seriesIndex) {
