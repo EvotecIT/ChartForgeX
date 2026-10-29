@@ -14,7 +14,7 @@
     }
   }
   function create(host,spec){
-    if(spec.schema!=="chartforgex/layout-1" && spec.schema!=="chartforgex/layout-2" && spec.schema!=="chartforgex/layout-3")throw new Error('Unsupported ChartForgeX layout specification.');
+    if(!/^chartforgex\/layout-[1-4]$/.test(spec.schema))throw new Error('Unsupported ChartForgeX layout specification.');
     let svg;
     if(spec.schema==="chartforgex/layout-1"){
       const parsed=new DOMParser().parseFromString(spec.svg,'image/svg+xml');
@@ -27,6 +27,7 @@
     }
     if(!svg)throw new Error('Missing ChartForgeX paint specification.');
     namespace(svg);
+    if(spec.schema==='chartforgex/layout-4')return window.ChartForgeXLayoutRadial.create(host,spec,svg);
     let source,legend,sticky;
     let lastWidth=0;
     function matrixOverlay(){

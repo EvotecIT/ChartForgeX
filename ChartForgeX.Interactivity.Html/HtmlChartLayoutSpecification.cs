@@ -15,7 +15,10 @@ internal static class HtmlChartLayoutSpecification {
         chart.Options.XAxis = chart.Options.XAxis.Clone(); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         chart.Options.YAxis = chart.Options.YAxis.Clone(); chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
         chart.WithSize(maximum, height);
-        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var authoredHeight = height;
+        var context = VisualExportRequest.ForChart(chart).Context;
+        if (HtmlRadialLayoutSpecification.Supports(chart)) context = HtmlRadialLayoutSpecification.SourceContext(chart, context);
+        var prepared = chart.Prepare(context);
         height = (int)Math.Ceiling(prepared.Size.Height);
         var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles();
         svg = HtmlCompactSvg.Compact(prepared.ToSvg(options), printWidth);
@@ -28,7 +31,7 @@ internal static class HtmlChartLayoutSpecification {
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
         var matrix = chart.Series.Count > 0 && chart.Series.All(series => series.Kind == ChartSeriesKind.Heatmap);
         var matrixNode = matrix ? XElement.Parse(svg).Descendants().FirstOrDefault(e => (string?)e.Attribute("data-cfx-role") == "heatmap") : null;
-        var output = new StringBuilder(matrix ? "{\"schema\":\"chartforgex/layout-3\",\"width\":" : "{\"schema\":\"chartforgex/layout-2\",\"width\":").Append(maximum)
+        var output = new StringBuilder("{\"schema\":\"chartforgex/layout-" + (HtmlRadialLayoutSpecification.Supports(chart) ? "4" : matrix ? "3" : "2") + "\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
@@ -37,6 +40,7 @@ internal static class HtmlChartLayoutSpecification {
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
+        if (HtmlRadialLayoutSpecification.Supports(chart)) HtmlRadialLayoutSpecification.Append(output, chart, context, prepared, authoredHeight);
         // Source values and labels travel with the serialized native scene, including typed observations and category/time formatting.
         HtmlChartLayoutBars.Append(output, chart, prepared);
         var root = XElement.Parse(svg);
