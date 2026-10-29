@@ -21,7 +21,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Native Mermaid compatibility parsing foundations for ChartForgeX visual artifact pipelines.</Description>
-    <PackageReleaseNotes>ChartForgeX 3.1.0 adds core GIF/APNG encoding and aligned terminal story exports while preserving existing Stories encoder references.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.2.0 assigns series colours by series order, adds value units, portable culture formatting and diagnostics, and improves availability lanes, heatmaps and responsive chart readability.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

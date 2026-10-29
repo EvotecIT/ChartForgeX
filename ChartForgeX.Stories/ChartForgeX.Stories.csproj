@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Deterministic visual stories, terminal playback, motion and animation export over ChartForgeX core.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>ChartForgeX 3.1.0 moves GIF/APNG encoding into core and aligns authored terminal appearance and playback with terminal exports.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.2.0 assigns series colours by series order, adds value units, portable culture formatting and diagnostics, and improves availability lanes, heatmaps and responsive chart readability.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
