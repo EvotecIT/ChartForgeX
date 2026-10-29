@@ -55,34 +55,46 @@ internal static class ChartNumericFormatter {
     internal static string[] FormatCompactScaleValues(IReadOnlyList<double> values) {
         var captions = new string[values.Count];
         for (var index = 0; index < values.Count; index++) captions[index] = FormatCompact(values[index]);
-        // A tick must name its own value: 1,250 written as "1.3k" labels a gridline that isn't 1,300.
-        // Such a scale takes the same plain-number fallback that ambiguous default scales use.
+        // A tick must name its own value: 1,250 written as "1.3k" labels a gridline that isn't 1,300 on a 250 step.
+        // A caption may round within 1% of the tick step (a logarithmic 31.62 still reads "31.6"); a coarser one
+        // takes the same plain-number fallback that ambiguous default scales use.
         var zero = FormatCompact(0);
-        if (!AllExact(values, captions)) {
+        var tolerance = TickStep(values) * .01;
+        if (!AllWithin(values, captions, tolerance)) {
             for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);
-            if (!AllExact(values, captions))
+            if (!AllWithin(values, captions, tolerance))
                 for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : values[index].ToString("R", CultureInfo.InvariantCulture);
         }
         RefineDefaults(values, captions, zero);
         return captions;
     }
 
-    private static bool AllExact(IReadOnlyList<double> values, string[] captions) {
-        for (var index = 0; index < values.Count; index++) if (!ReadsBackAs(captions[index], values[index])) return false;
+    // The smallest gap between distinct finite ticks; zero for a single tick, which then has to read back exactly.
+    private static double TickStep(IReadOnlyList<double> values) {
+        var finite = new List<double>();
+        foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) finite.Add(value);
+        finite.Sort();
+        var step = double.PositiveInfinity;
+        for (var index = 1; index < finite.Count; index++) if (finite[index] > finite[index - 1]) step = Math.Min(step, finite[index] - finite[index - 1]);
+        return double.IsInfinity(step) || double.IsNaN(step) ? 0 : step;
+    }
+
+    private static bool AllWithin(IReadOnlyList<double> values, string[] captions, double tolerance) {
+        for (var index = 0; index < values.Count; index++) if (!ReadsBackAs(captions[index], values[index], tolerance)) return false;
         return true;
     }
 
-    // Reads a default caption back as a number, k/M/B suffix included, and compares it exactly.
-    private static bool ReadsBackAs(string caption, double value) {
+    // Reads a default caption back as a number, k/M/B suffix included.
+    private static bool ReadsBackAs(string caption, double value, double tolerance) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value == 0) return true;
-        var unit = 1m; var number = caption;
-        if (caption.EndsWith("k", StringComparison.Ordinal)) { unit = 1e3m; number = caption.Substring(0, caption.Length - 1); }
-        else if (caption.EndsWith("M", StringComparison.Ordinal)) { unit = 1e6m; number = caption.Substring(0, caption.Length - 1); }
-        else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9m; number = caption.Substring(0, caption.Length - 1); }
-        // Beyond decimal's range a caption is a significant-digit approximation; ambiguity refinement owns those.
-        if (Math.Abs(value) >= 7.9e27) return true;
-        if (!decimal.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) return false;
-        try { return shown * unit == (decimal)value; } catch (OverflowException) { return true; }
+        var unit = 1d; var number = caption;
+        if (caption.EndsWith("k", StringComparison.Ordinal)) { unit = 1e3; number = caption.Substring(0, caption.Length - 1); }
+        else if (caption.EndsWith("M", StringComparison.Ordinal)) { unit = 1e6; number = caption.Substring(0, caption.Length - 1); }
+        else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9; number = caption.Substring(0, caption.Length - 1); }
+        if (!double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) return false;
+        var difference = Math.Abs(shown * unit - value);
+        // Floating-point noise from the unit multiplication is not a rounding the reader would see.
+        return difference <= tolerance || difference <= Math.Abs(value) * 1e-12;
     }
     internal static string FormatCompactAxisValue(double value) {
         var caption = FormatCompact(value); var zero = FormatCompact(0);

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-/// <summary>A default value axis never labels a gridline with a number it doesn't sit on.</summary>
+/// <summary>A default value axis never labels a gridline with a number it doesn't sit on, at the precision its step needs.</summary>
 public sealed class AxisTickCaptionExactnessTests {
     [Fact]
     public void FormatCompactScaleValues_QuarterThousandTicks_UsePlainNumbersInsteadOfRoundedCompactOnes() {
@@ -17,13 +17,17 @@ public sealed class AxisTickCaptionExactnessTests {
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, 2500, 5000, 7500, 10000 }));
     }
 
-    [Theory]
-    [InlineData(12255d, "12255")]
-    [InlineData(1250.5d, "1250.5")]
-    [InlineData(1000.0000001d, "1000.0000001")]
-    [InlineData(1000000000.9d, "1000000000.9")]
-    [InlineData(1000000000999d, "1000000000999")]
-    public void FormatCompactScaleValues_TickThatCompactNotationWouldRound_ReadsBackAsItself(double tick, string expected) {
-        Assert.Equal(expected, ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, tick })[1]);
+    [Fact]
+    public void FormatCompactScaleValues_FineStepNearACompactUnit_ShowsEveryTickAsItself() {
+        Assert.Equal(new[] { "12250", "12255", "12260" },
+            ChartNumericFormatter.FormatCompactScaleValues(new[] { 12250d, 12255, 12260 }));
+        Assert.Equal(new[] { "1000", "1000.5", "1001" },
+            ChartNumericFormatter.FormatCompactScaleValues(new[] { 1000d, 1000.5, 1001 }));
+    }
+
+    [Fact]
+    public void FormatCompactScaleValues_LogarithmicTicks_RoundWithinTheirStep() {
+        Assert.Equal(new[] { "10", "31.62", "100", "316.23", "1k" },
+            ChartNumericFormatter.FormatCompactScaleValues(new[] { 10d, Math.Pow(10, 1.5), 100, Math.Pow(10, 2.5), 1000 }));
     }
 }
