@@ -6,8 +6,8 @@ namespace ChartForgeX.Tests;
 /// <summary>A default value axis never labels a gridline with a number it doesn't sit on.</summary>
 public sealed class AxisTickCaptionExactnessTests {
     [Fact]
-    public void FormatCompactScaleValues_QuarterThousandTicks_UseFullNumbersInsteadOfRoundedCompactOnes() {
-        Assert.Equal(new[] { "0", "250", "500", "750", "1,000", "1,250" },
+    public void FormatCompactScaleValues_QuarterThousandTicks_UsePlainNumbersInsteadOfRoundedCompactOnes() {
+        Assert.Equal(new[] { "0", "250", "500", "750", "1000", "1250" },
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, 250, 500, 750, 1000, 1250 }));
     }
 
@@ -17,17 +17,13 @@ public sealed class AxisTickCaptionExactnessTests {
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, 2500, 5000, 7500, 10000 }));
     }
 
-    [Fact]
-    public void FormatCompactScaleValues_LargeTicksThatWouldRound_KeepTheirUnitWithTheDecimalsTheyNeed() {
-        Assert.Equal(new[] { "0", "12.25k", "24.5k", "36.75k" },
-            ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, 12250, 24500, 36750 }));
-    }
-
     [Theory]
-    [InlineData(12255d, "12.255k")]
-    [InlineData(1250.5d, "1,250.5")]
-    [InlineData(3456789d, "3.456789M")]
-    public void FormatCompactScaleValues_TickThatNeedsMorePrecision_ReadsBackAsItself(double tick, string expected) {
+    [InlineData(12255d, "12255")]
+    [InlineData(1250.5d, "1250.5")]
+    [InlineData(1000.0000001d, "1000.0000001")]
+    [InlineData(1000000000.9d, "1000000000.9")]
+    [InlineData(1000000000999d, "1000000000999")]
+    public void FormatCompactScaleValues_TickThatCompactNotationWouldRound_ReadsBackAsItself(double tick, string expected) {
         Assert.Equal(expected, ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, tick })[1]);
     }
 }

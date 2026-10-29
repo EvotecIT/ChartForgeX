@@ -56,36 +56,34 @@ internal static class ChartNumericFormatter {
         var captions = new string[values.Count];
         for (var index = 0; index < values.Count; index++) captions[index] = FormatCompact(values[index]);
         // A tick must name its own value: 1,250 written as "1.3k" labels a gridline that isn't 1,300.
-        var inexact = false;
-        for (var index = 0; index < values.Count && !inexact; index++) inexact = !CompactIsExact(values[index]);
-        if (inexact) {
-            var largest = 0d;
-            foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) largest = Math.Max(largest, Math.Abs(value));
-            // As many decimals as each tick needs, so the caption reads back as the tick itself (12,255 is "12.255k").
-            const string Exact = "0.##########";
-            for (var index = 0; index < values.Count; index++) {
-                var value = values[index];
-                captions[index] = largest < 10000 ? value.ToString("#,0.##########", CultureInfo.InvariantCulture)
-                    : Math.Abs(value) >= 1e9 ? (value / 1e9).ToString(Exact, CultureInfo.InvariantCulture) + "B"
-                    : Math.Abs(value) >= 1e6 ? (value / 1e6).ToString(Exact, CultureInfo.InvariantCulture) + "M"
-                    : Math.Abs(value) >= 1e3 ? (value / 1e3).ToString(Exact, CultureInfo.InvariantCulture) + "k"
-                    : value.ToString(Exact, CultureInfo.InvariantCulture);
-            }
+        // Such a scale takes the same plain-number fallback that ambiguous default scales use.
+        var zero = FormatCompact(0);
+        if (!AllExact(values, captions)) {
+            for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);
+            if (!AllExact(values, captions))
+                for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : values[index].ToString("R", CultureInfo.InvariantCulture);
         }
-        RefineDefaults(values, captions, FormatCompact(0));
+        RefineDefaults(values, captions, zero);
         return captions;
     }
 
-    // Compact notation keeps one decimal of its unit; a value it would round is not exact.
-    private static bool CompactIsExact(double value) {
-        if (double.IsNaN(value) || double.IsInfinity(value)) return true;
-        var magnitude = Math.Abs(value);
-        var unit = magnitude >= 1e9 ? 1e9 : magnitude >= 1e6 ? 1e6 : magnitude >= 1e3 ? 1e3 : 0;
-        if (unit == 0) return true;
-        var scaled = value / unit;
-        return Math.Abs(scaled - Math.Round(scaled, 1)) <= 1e-9 * Math.Max(1, Math.Abs(scaled));
+    private static bool AllExact(IReadOnlyList<double> values, string[] captions) {
+        for (var index = 0; index < values.Count; index++) if (!ReadsBackAs(captions[index], values[index])) return false;
+        return true;
     }
 
+    // Reads a default caption back as a number, k/M/B suffix included, and compares it exactly.
+    private static bool ReadsBackAs(string caption, double value) {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value == 0) return true;
+        var unit = 1m; var number = caption;
+        if (caption.EndsWith("k", StringComparison.Ordinal)) { unit = 1e3m; number = caption.Substring(0, caption.Length - 1); }
+        else if (caption.EndsWith("M", StringComparison.Ordinal)) { unit = 1e6m; number = caption.Substring(0, caption.Length - 1); }
+        else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9m; number = caption.Substring(0, caption.Length - 1); }
+        // Beyond decimal's range a caption is a significant-digit approximation; ambiguity refinement owns those.
+        if (Math.Abs(value) >= 7.9e27) return true;
+        if (!decimal.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) return false;
+        try { return shown * unit == (decimal)value; } catch (OverflowException) { return true; }
+    }
     internal static string FormatCompactAxisValue(double value) {
         var caption = FormatCompact(value); var zero = FormatCompact(0);
         return RefineCompactAxisValue(value, caption, zero);
