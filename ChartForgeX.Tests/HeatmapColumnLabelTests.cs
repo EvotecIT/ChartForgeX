@@ -243,6 +243,19 @@ public sealed class HeatmapColumnLabelTests {
         Assert.All(dates, label => Assert.Null((string?)label.RenderedAttribute("transform")));
     }
 
+    [Fact]
+    public void ShortFrameReportsRowDensityAndKeepsSomeNamesVisibleWithCompleteSemantics() {
+        var chart = Chart.Create().WithSize(360, 180).WithXLabels("One", "Two");
+        var names = Enumerable.Range(1, 20).Select(i => "Target " + i).ToArray();
+        foreach (var name in names) chart.AddHeatmapRow(name, new[] { 1d, 2d });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var visible = ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-row-label");
+        Assert.InRange(visible.Length, 1, names.Length - 1);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.row-label-density");
+        Assert.Equal(names, prepared.Regions.Where(region => region.Role == "heatmap-row-label").Select(region => region.Label));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     private static Chart Matrix(string rowPrefix = "DC0") {
         var chart = Chart.Create().WithSize(520, 380).WithLegendPosition(ChartLegendPosition.Bottom)
             .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("fail", "Failed", ChartColor.FromHex("#d4302f")))

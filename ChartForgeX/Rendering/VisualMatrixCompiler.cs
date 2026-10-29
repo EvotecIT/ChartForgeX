@@ -50,6 +50,11 @@ internal static partial class VisualMatrixCompiler {
                 rows.Length > 1 ? Math.Max(0, plot.Height - rowLayout.HeadersHeight) / rows.Length * .5 : double.PositiveInfinity)));
         var cellWidth = Math.Max(0, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
         var cellHeight = Math.Max(0, (plot.Height - rowLayout.HeadersHeight - gap * (rows.Length - 1)) / rows.Length);
+        var rowPitch = cellHeight + gap;
+        var rowLabelStride = rowPitch > 0 ? Math.Max(1, (int)Math.Ceiling(ChartRowText.MinimumFontSize * 1.2 / rowPitch)) : rows.Length;
+        if (rowLabelStride > 1 && chart.Options.ShowAxes && chart.Options.YAxis.Visible)
+            builder.AddDiagnostic(new VisualDiagnostic("matrix.row-label-density",
+                "Some row names were omitted because the frame is too short for readable labels; complete names remain in semantic regions."));
         // Theme rounding is for bars; small cells keep a rounded-square reading instead of becoming dots.
         var radius = Math.Min(chart.Options.HeatmapCellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) * (chart.Options.HeatmapCellRadius.HasValue ? .5 : MaximumThemeCellRounding));
         var hex = ChartHexbinLayout.Build(plot, rows.Length, columns.Length);
@@ -81,9 +86,12 @@ internal static partial class VisualMatrixCompiler {
                     var rowName = categoryGroups?.RowText(rowIndex, series.Name) ?? series.Name;
                     var labelLeft = viewport.Left + layout.RowGroupWidth;
                     var labelWidth = Math.Max(0, plot.Left - viewport.Left - layout.RowGroupWidth - context.Theme.Spacing);
-                    var labelStyle = ChartRowText.Style(builder, VisualStateSceneTools.TickStyle(chart, context), rowName, cellHeight + gap, labelWidth);
-                    VisualStateSceneTools.Text(builder, rowName, ChartRowText.Bounds(builder, labelStyle, rowName, labelLeft, labelWidth, y, cellHeight, cellHeight + gap),
-                        labelStyle, "heatmap-row-label", "matrix-row-label-" + rowIndex, TextAlignment.Right);
+                    var labelStyle = ChartRowText.Style(builder, VisualStateSceneTools.TickStyle(chart, context), rowName, rowPitch * rowLabelStride, labelWidth);
+                    var labelBounds = ChartRowText.Bounds(builder, labelStyle, rowName, labelLeft, labelWidth, y, cellHeight, rowPitch * rowLabelStride);
+                    if (rowIndex % rowLabelStride == 0)
+                        VisualStateSceneTools.Text(builder, rowName, labelBounds, labelStyle, "heatmap-row-label", "matrix-row-label-" + rowIndex, TextAlignment.Right);
+                    else
+                        builder.AddRegion(new VisualSemanticRegion("matrix-row-label-" + rowIndex, "heatmap-row-label", labelBounds, rowName));
                 }
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
