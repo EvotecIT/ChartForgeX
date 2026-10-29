@@ -7,24 +7,113 @@ on:
       - main
   workflow_dispatch:
 
+# PRs replace only earlier runs for the same PR. Every other event is independent,
+# including queued main pushes and manual full-matrix runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
 jobs:
-  build-test-pack:
-    name: Build, test, examples, pack (${{ matrix.name }})
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 75
+  changes:
+    name: Select Quality coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      build: ${{ steps.plan.outputs.build }}
+    steps:
+      - name: Checkout complete PR history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Detect build and test inputs
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          node <<'NODE'
+          const {execFileSync} = require('node:child_process');
+          const {appendFileSync} = require('node:fs');
+          let build = true;
+          if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
+            const {BASE_SHA: base, HEAD_SHA: head} = process.env;
+            if (![base, head].every(sha => /^[0-9a-f]{40}$/.test(sha || ''))) {
+              throw new Error('Both PR revisions are required for coverage selection.');
+            }
+            // Three-dot diff covers the whole PR. Disabling renames checks both
+            // the removed and added path, so a move out of source cannot hide it.
+            const paths = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z', `${base}...${head}`],
+              {encoding: 'utf8', maxBuffer: 16 * 1024 * 1024}).split('\0').filter(Boolean);
+            const documentation = path => {
+              // These files are packaged, generated, or read by real tests.
+              if (/^README[^/]*\.md$/i.test(path) ||
+                  /(^|\/)(schemas?|generated|fixtures|apidocs)(\/|\.)/i.test(path) ||
+                  /^(ChartForgeX[^/]*|Build|Benchmarks|tests)\//.test(path) ||
+                  /^Website\/(data\/|build\/|powershell\/|static\/examples\/|static\/site\/|site\.json$)/.test(path)) return false;
+              if (/^Website\//.test(path)) return true;
+              if (/^docs\/.*\.md$/i.test(path)) return true;
+              return /^[^/]+\.md$/i.test(path);
+            };
+            build = paths.length === 0 || !paths.every(documentation);
+            console.log(`Compared ${paths.length} PR paths; build/test required: ${build}`);
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, `build=${build}\n`);
+          NODE
+
+  quality-gates:
+    # Keep the PR platform/browser contexts for an explicitly selected docs-only skip.
+    name: ${{ matrix.check }}
+    needs: [changes, build-test-pack, browser-quality, browser-compatibility]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: Linux
-            runner: ubuntu-latest
-          - name: Windows
-            runner: windows-latest
-          - name: macOS
-            runner: macos-latest
+          - check: Build, test, examples, pack (Linux)
+            job: build-test-pack
+          - check: Build, test, examples, pack (Windows)
+            job: build-test-pack
+          - check: Required browser contracts (Windows Chromium)
+            job: browser-quality
+    steps:
+      - name: Require selected coverage
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          BUILD_REQUIRED: ${{ needs.changes.outputs.build }}
+          WORK_RESULT: ${{ needs[matrix.job].result }}
+          COMPATIBILITY_RESULT: ${{ needs.browser-compatibility.result }}
+        shell: bash
+        run: |
+          test "$CHANGES_RESULT" = success || { echo 'Coverage selection failed.'; exit 1; }
+          if [ "$BUILD_REQUIRED" = false ]; then
+            test "$WORK_RESULT" = skipped || { echo 'Unexpected docs-only result.'; exit 1; }
+            echo 'Documentation/website-only PR; heavy coverage is not required.'
+          elif [ "$BUILD_REQUIRED" != true ]; then
+            echo 'Coverage selection did not return a valid decision.'; exit 1
+          else
+            test "$WORK_RESULT" = success || { echo "Selected coverage failed: $WORK_RESULT"; exit 1; }
+            if [ "$GITHUB_EVENT_NAME" != pull_request ]; then
+              test "$COMPATIBILITY_RESULT" = success || { echo 'macOS browser coverage failed.'; exit 1; }
+            fi
+          fi
+
+  build-test-pack:
+    name: Quality work (${{ matrix.name }})
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      # main pushes and manual runs keep every platform; PRs use Linux/Windows.
+      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"name":"Linux","runner":"ubuntu-latest"},{"name":"Windows","runner":"windows-latest"}]}' || '{"include":[{"name":"Linux","runner":"ubuntu-latest"},{"name":"Windows","runner":"windows-latest"},{"name":"macOS","runner":"macos-latest"}]}') }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
@@ -202,7 +291,9 @@ jobs:
           if-no-files-found: error
 
   browser-quality:
-    name: Required browser contracts (Windows Chromium)
+    name: Browser contract work (Windows Chromium)
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
     runs-on: windows-latest
     # The complete maintained suite measured 54 minutes before setup/artifact retention.
     timeout-minutes: 75
@@ -239,6 +330,8 @@ jobs:
 
   browser-compatibility:
     name: Browser compatibility (macOS ${{ matrix.name }})
+    needs: changes
+    if: needs.changes.outputs.build == 'true' && github.event_name != 'pull_request'
     runs-on: macos-latest
     # Includes setup, all 950 serial Compatibility rows and artifact retention.
     # Firefox was still producing captures when the previous 90-minute envelope expired.
