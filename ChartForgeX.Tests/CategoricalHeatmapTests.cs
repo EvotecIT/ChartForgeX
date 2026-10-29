@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -40,6 +41,16 @@ public sealed class CategoricalHeatmapTests {
         var complete = CreateChart().AddHeatmapCategoryRow("DC03", new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"));
         // A missing position in another row still needs one key item, not one item per row.
         Assert.Single(ByRole(XDocument.Parse(complete.ToSvg()), "heatmap-key-missing-swatch"));
+    }
+
+    [Fact]
+    public void MissingCellOutlinesRemainVisibleOnDarkCards() {
+        var chart = CreateChart().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        var colors = chart.Options.Theme.Resolve(VisualThemeMode.Dark);
+        var missing = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-missing-cell"));
+        var stroke = ChartColor.FromHex((string)missing.Attribute("stroke")!);
+        var contrast = ChartColorMath.ContrastRatio(stroke, colors.ElevatedSurface);
+        Assert.InRange(contrast, 1.7, 2.1);
     }
 
     [Fact]
