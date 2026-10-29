@@ -169,10 +169,27 @@ internal static partial class VisualRadialCompiler {
         var patterns = rest.Select(slice => slice.Pattern).Distinct().ToArray();
         result.Add(new RadialSlice(seriesIndex, -1, rest.SelectMany(slice => slice.NativePointIndices).ToArray(), OtherSliceLabel,
             rest.Sum(slice => slice.Value), series.Color.HasValue || series.StateRole != ChartSeriesState.None
-                ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : colors.Neutral, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
+                ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : OtherSliceColor(colors), patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
             rest.Select(slice => slice.Pattern).ToArray(), AggregateRadius(series, rest),
             series.IsVisibilityPreparation ? rest.SelectMany(slice => slice.SourcePointIndices).ToArray() : null));
         return result;
+    }
+
+    /// <summary>
+    /// "Other" can be most of the ring, so it takes the weakest neutral that still reads as a mark on the plot (3:1).
+    /// A theme without neutral roles falls back to the surface itself, which would make the slice invisible.
+    /// When neither soft neutral is strong enough, it mixes the strongest neutral into the surface only as far as 3:1,
+    /// so a large "Other" stays quieter than the named slices.
+    /// </summary>
+    internal static ChartColor OtherSliceColor(VisualThemeColors colors) {
+        double Contrast(ChartColor color) => Math.Min(ChartColorMath.ContrastRatio(color, colors.Surface), ChartColorMath.ContrastRatio(color, colors.Background));
+        foreach (var candidate in new[] { colors.Neutral, colors.Neutral2 })
+            if (Contrast(candidate) >= 3) return candidate;
+        for (var share = 0.05; share < 1; share += 0.05) {
+            var mixed = ChartColorMath.Blend(colors.Surface, colors.Neutral3, share);
+            if (Contrast(mixed) >= 3) return mixed;
+        }
+        return colors.Neutral3;
     }
 
     private static List<RadialSlice> GetSourceSlices(Chart chart, VisualThemeColors colors, int seriesIndex) {
