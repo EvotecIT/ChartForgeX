@@ -28,9 +28,18 @@ public sealed class CategoricalHeatmapTests {
 
         Assert.NotEmpty(ByRole(svg, "heatmap-cell-shape-hatch"));
         Assert.NotEmpty(ByRole(svg, "legend-swatch-hatch"));
-        Assert.Equal(new[] { "Passed", "Critical", "Not evaluated" }, ByRole(svg, "legend-label").Select(label => label.Value).ToArray());
+        Assert.Equal(new[] { "Passed", "Critical", "Not evaluated", "No data" }, ByRole(svg, "legend-label").Select(label => label.Value).ToArray());
+        var missing = Assert.Single(ByRole(svg, "heatmap-missing-cell"));
+        Assert.NotEqual("none", (string?)missing.Attribute("stroke"));
+        Assert.Equal(Number(cells[3], "width"), Number(missing, "width"), .001);
+        Assert.Equal(Number(cells[3], "height"), Number(missing, "height"), .001);
+        Assert.DoesNotContain(missing.Ancestors(), element => element.Attribute("href") != null);
+        Assert.NotEmpty(ByRole(svg, "heatmap-key-missing-hatch"));
         Assert.Empty(ByRole(svg, "legend-item"));
         Assert.Empty(ByRole(svg, "heatmap-scale-step"));
+        var complete = CreateChart().AddHeatmapCategoryRow("DC03", new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"));
+        // A missing position in another row still needs one key item, not one item per row.
+        Assert.Single(ByRole(XDocument.Parse(complete.ToSvg()), "heatmap-key-missing-swatch"));
     }
 
     [Fact]

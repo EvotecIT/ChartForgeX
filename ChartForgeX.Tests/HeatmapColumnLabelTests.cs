@@ -244,6 +244,24 @@ public sealed class HeatmapColumnLabelTests {
     }
 
     [Fact]
+    public void NumericMissingPositionsHaveOutlinesAndOneNoDataKeyWithoutInventedValues() {
+        var chart = Chart.Create().WithSize(520, 380).WithXLabels("One", "Two")
+            .AddHeatmapRow("Complete", new[] { 1d, 2d })
+            .AddHeatmapRow("Partial", new[] { 3d })
+            .AddHeatmapRow("Empty", Array.Empty<double>());
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Equal(3, ByRole(svg, "heatmap-cell").Length);
+        Assert.Equal(3, ByRole(svg, "heatmap-missing-cell").Length);
+        Assert.Single(ByRole(svg, "legend-label"), label => label.Value == "No data");
+        Assert.Single(ByRole(svg, "heatmap-key-missing-swatch"));
+        Assert.NotEmpty(ByRole(svg, "heatmap-key-missing-hatch"));
+        Assert.NotEmpty(chart.ToPng());
+
+        var complete = Chart.Create().WithSize(520, 380).AddHeatmapRow("Complete", new[] { 1d, 2d });
+        Assert.Empty(ByRole(XDocument.Parse(complete.ToSvg()), "heatmap-key-missing-swatch"));
+    }
+
+    [Fact]
     public void ShortFrameReportsRowDensityAndKeepsSomeNamesVisibleWithCompleteSemantics() {
         var chart = Chart.Create().WithSize(360, 180).WithXLabels("One", "Two");
         var names = Enumerable.Range(1, 20).Select(i => "Target " + i).ToArray();
@@ -252,6 +270,9 @@ public sealed class HeatmapColumnLabelTests {
         var visible = ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-row-label");
         Assert.InRange(visible.Length, 1, names.Length - 1);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.row-label-density");
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.cell-density");
+        Assert.Equal(180, prepared.Size.Height);
+        Assert.Equal(40, ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-cell").Length);
         Assert.Equal(names, prepared.Regions.Where(region => region.Role == "heatmap-row-label").Select(region => region.Label));
         Assert.NotEmpty(prepared.ToPng());
     }

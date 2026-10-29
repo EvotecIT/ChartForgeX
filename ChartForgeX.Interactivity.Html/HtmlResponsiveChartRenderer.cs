@@ -25,7 +25,7 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <param name="chart">The caller's chart; authored size and axis policies are restored after preparation.</param>
     /// <param name="minimumWidth">Width below which the container scrolls.</param>
     /// <param name="maximumWidth">Maximum drawing width, at most 8192 pixels.</param>
-    /// <param name="height">Fixed drawing height; defaults to the authored height.</param>
+    /// <param name="height">Native and print drawing height; defaults to the authored height. Responsive heatmaps fit their screen height to readable cells and content.</param>
     /// <param name="idScope">Optional stable SVG identifier scope.</param>
     /// <param name="compressLayouts">Compresses the serialized specification; the static fallback remains available.</param>
     /// <param name="printWidth">Maximum CSS width of the scaled script-free fallback; defaults to the authored width within the bounds.</param>

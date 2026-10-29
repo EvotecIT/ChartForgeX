@@ -33,7 +33,7 @@ internal static class HtmlChartLayoutSpecification {
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
-            .Append(matrixNode == null ? string.Empty : MatrixSettings(matrixNode, prepared.Regions, plot))
+            .Append(matrixNode == null ? string.Empty : MatrixSettings(chart, matrixNode, prepared.Regions, plot))
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
@@ -57,12 +57,21 @@ internal static class HtmlChartLayoutSpecification {
         }
         return output.Append("]}").ToString();
     }
-    private static string MatrixSettings(XElement matrix, System.Collections.Generic.IEnumerable<VisualSemanticRegion> regions, ChartRect plot) {
+    private static string MatrixSettings(Chart chart, XElement matrix, System.Collections.Generic.IEnumerable<VisualSemanticRegion> regions, ChartRect plot) {
         var labels = regions.Where(item => item.Role == "heatmap-row-label").ToArray();
         var start = labels.Length == 0 ? plot.Left : labels.Min(item => item.Bounds.Left);
         var columns = (string?)matrix.Attribute("data-cfx-column-count") ?? "0";
         var gap = (string?)matrix.Attribute("data-cfx-cell-gap") ?? "0";
-        return ",\"matrix\":[" + columns + "," + gap + "," + N(start) + "]";
+        var rowLayout = ChartHeatmapRowLayout.Build(chart.Series.ToArray(), plot.Height, chart.Options.Theme.Typography.AxisSize);
+        var cellGap = double.Parse(gap, CultureInfo.InvariantCulture);
+        var cellHeight = (plot.Height - rowLayout.HeadersHeight - cellGap * (chart.Series.Count - 1)) / chart.Series.Count;
+        var headers = rowLayout.Groups.Select(group => {
+            var top = rowLayout.GroupTop(plot.Top, group, cellHeight, cellGap);
+            if (chart.Options.YAxis.Reversed) top = plot.Top + plot.Bottom - top - group.Height;
+            return new { Top = top, group.Height };
+        }).OrderBy(group => group.Top);
+        return ",\"matrix\":[" + columns + "," + gap + "," + N(start) + "," + chart.Series.Count + ",["
+            + string.Join(",", headers.Select(group => "[" + N(group.Top) + "," + N(group.Height) + "]")) + "]]";
     }
     // Schedule lane labels sit in a left gutter sized for the widest drawing. The browser may narrow it down to this
     // minimum and truncate labels there, so a narrow container keeps a usable plot instead of a fixed wide gutter.

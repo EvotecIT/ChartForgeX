@@ -41,6 +41,10 @@ Select these names in host scripts and styles. Don't select other roles, element
 
 Rectangular heatmaps use `chartforgex/layout-3`, which adds matrix column count, cell gap and row-gutter information to layout 2. The mounted SVG moves row labels, group captions and legend entries into a `matrix-sticky-labels` group; hosts should continue selecting the documented roles rather than relying on their former parent. The plot scrolls within the responsive host when cells would become narrower than 14 px, while the row gutter and legend stay in view. The link role and accessible-name contract from layout 2 is unchanged. Other chart families continue to use layout 2.
 
+The matrix tuple is `[columnCount, cellGap, gutterStart, rowCount, headerBands]`; each header band is `[sourceTop, height]`, ordered by its position in the native plot. The last two fields extend layout 3 and are optional when reading earlier specifications. Responsive screen layout preserves header heights and cell gaps, chooses a row pitch between the readable floor and 32 px (bounded by 1.6 times cell width), and fits the card to its painted content. Print and script-free fallback retain the native frame.
+
+Missing positions render as `heatmap-missing-cell` outlines in both static and responsive output. They carry no value, link or `heatmap-cell` identity. A categorical key includes one hatched, outlined “No data” entry when any position is missing. Numeric keys use the same missing-data swatch. Fixed frames retain every row and report `matrix.cell-density` when their cell height is below 12 px; `WithHeatmapNaturalHeight()` remains the opt-in for a taller static frame.
+
 ## Responsive layout 2
 
 `HtmlResponsiveChartRenderer` uses the `chartforgex/layout-2` specification (or layout 3 for rectangular heatmaps) and

@@ -63,22 +63,29 @@
       const width=spec.matrix && !printing ? Math.max(hostWidth,matrixGutter+right+minimumPlot) : hostWidth;
       if(!source){sticky=matrixOverlay();source=window.ChartForgeXLayoutGeometry.snapshot(svg,spec);legend=window.ChartForgeXLayoutLegend.snapshot(svg,spec);}
       const delta=window.ChartForgeXLayoutLegend.layout(legend,spec,hostWidth);
-      // A lane gutter narrows toward its minimum so lanes keep about 60% of the width left beside fixed right gutters.
+      // Lane gutters narrow to keep 60% of the remaining width for lanes.
       const gutterLeft=spec.matrix ? matrixGutter : spec.gutter ? Math.min(left,Math.max(spec.gutter[1],spec.gutter[0]+(width-right-spec.gutter[0])*.4)) : left;
       const plot=[gutterLeft,top+Math.max(0,delta),Math.max(1,width-(spec.width-pw)+left-gutterLeft),Math.max(1,ph-Math.abs(delta))];
+      if(spec.matrix?.[3] && !printing){
+        const [columns,gap,,rows,headers]=spec.matrix,cellWidth=(plot[2]-gap*(columns-1))/columns;
+        const pitch=Math.max(12+gap,Math.min(32,cellWidth*1.6));
+        plot[3]=headers.reduce((sum,band)=>sum+band[1],0)+rows*pitch-gap;
+      }
+      const verticalShift=plot[1]+plot[3]-top-ph;
+      // Bottom legends already account for wrapping; shift them only by the final plot movement.
+      if(spec.matrix)window.ChartForgeXLayoutLegend.layout(legend,spec,hostWidth,verticalShift-Math.min(0,delta));
       for(const label of source.labels)label.group.style.display='';
       for(const label of source.rotatedLabels)label.style.display='';
       const projection=window.ChartForgeXLayoutGeometry.project(source,spec,width,plot);
       if(sticky){
         host.style.scrollPaddingLeft=gutterLeft+'px';
-        sticky.background.setAttribute('x','1');sticky.background.setAttribute('y',plot[1]);
-        sticky.background.setAttribute('width',Math.max(0,gutterLeft-1));sticky.background.setAttribute('height',Math.max(0,spec.height-plot[1]-1));
-        sticky.header.setAttribute('x',1);sticky.header.setAttribute('y',1);
-        sticky.header.setAttribute('width',Math.max(0,hostWidth-2));sticky.header.setAttribute('height',Math.max(0,plot[1]-1));
+        sticky.background.setAttribute('x','0');sticky.background.setAttribute('y',plot[1]);
+        sticky.background.setAttribute('width',Math.max(0,gutterLeft));sticky.background.setAttribute('height',Math.max(0,spec.height+verticalShift-plot[1]));
+        sticky.header.setAttribute('x',0);sticky.header.setAttribute('y',0);
+        sticky.header.setAttribute('width',hostWidth);sticky.header.setAttribute('height',Math.max(0,plot[1]));
         sticky.scroll();
       }
-      // Measure captions at the projected width and keep a regular stride. Matrix endpoints remain visible
-      // when a preceding stride caption would otherwise collide with the last one.
+      // Thin captions at a regular stride, keeping matrix endpoints clear.
       const labels=source.labels.map(label=>{
         const size=label.text.getComputedTextLength(),projected=projection.x(label.center);
         const center=spec.matrix ? Math.max(gutterLeft+size/2,Math.min(width-size/2,projected)) : projected;
@@ -100,8 +107,10 @@
         label.text.setAttribute('x',labelX);
         if(spec.matrix){const clip=clipRect(label.text);if(clip){clip.setAttribute('x',labelX-1);clip.setAttribute('width',label.width+2);}}
       });
-      svg.setAttribute('width',width);svg.setAttribute('height',spec.height);svg.setAttribute('viewBox',`0 0 ${width} ${spec.height}`);
-      svg.style.cssText=`display:block;width:${width}px;height:${spec.height}px;max-width:none`;
+      let height=spec.matrix && !printing ? spec.height+verticalShift : spec.height;
+      function size(){svg.setAttribute('width',width);svg.setAttribute('height',height);svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+        svg.style.cssText=`display:block;width:${width}px;height:${height}px;max-width:none`;}
+      size();
       // Measure in the current viewport, including reversed columns, and keep a regular source stride.
       const rotated=source.rotatedLabels.map(group=>({group,box:group.getBoundingClientRect()}));
       let rotatedKeep=rotated.map((_,i)=>i);
@@ -109,9 +118,21 @@
       for(let stride=2;!rotatedFits(rotatedKeep)&&stride<=rotated.length;stride++)rotatedKeep=rotated.map((_,i)=>i).filter(i=>i%stride===0);
       const rotatedShown=new Set(rotatedKeep);rotated.forEach((label,index)=>label.group.style.display=rotatedShown.has(index)?'':'none');
       fitText(width);
+      if(spec.matrix?.[3] && !printing){
+        // Fit the footer to painted content.
+        const origin=svg.getBoundingClientRect().top;
+        const bottoms=[...svg.querySelectorAll('text,[data-cfx-role="heatmap-scale"]')]
+          .filter(node=>node.getClientRects().length && getComputedStyle(node).display!=='none' && !node.closest('[style*="display: none"]'))
+          .map(node=>node.getBoundingClientRect().bottom-origin);
+        height=Math.ceil(Math.max(plot[1]+plot[3],...bottoms)+Math.max(12,spec.spacing));
+        for(const frame of svg.querySelectorAll('[data-cfx-role="frame-card"],[data-cfx-role="frame-surface"]'))
+          if(frame.tagName.toLowerCase()==='rect')frame.setAttribute('height',Math.max(0,height-Number(frame.getAttribute('y'))));
+        if(sticky)sticky.background.setAttribute('height',Math.max(0,height-plot[1]));
+        size();
+      }
       host.dataset.cfxLayoutWidth=String(hostWidth);host.dataset.cfxLayoutVersion=spec.schema==='chartforgex/layout-3'?'spec-3':spec.schema==='chartforgex/layout-2'?'spec-2':'spec-1';lastWidth=hostWidth;
     }
-    // Headings and lane captions keep their size and truncate with an ellipsis; the complete text stays in a <title>.
+    // Truncate captions without shrinking text; retain full titles.
     let captions;
     function fitText(width){
       captions ||= [...svg.querySelectorAll('[data-cfx-role^="frame-heading"] text,[data-cfx-role="schedule-row-label"] text,[data-cfx-role="lane-summary"] text,[data-cfx-role="state-timeline-group"] text,[data-cfx-role="gantt-lane-group"] text,[data-cfx-role="heatmap-row-label"] text')]
@@ -119,11 +140,11 @@
       for(const caption of captions){
         const {text,full,clip,right}=caption;
         if(text.textContent!==full)text.textContent=full;
-        // Native right alignment is baked with server metrics; re-anchor it so the browser's own font stays aligned.
+        // Re-anchor with the browser's font metrics.
         if(right && clip){text.setAttribute('text-anchor','end');text.setAttribute('x',Number(clip.getAttribute('x'))+Number(clip.getAttribute('width'))-1);}
         const anchor=text.getAttribute('text-anchor')||getComputedStyle(text).textAnchor;
         const x=Number(text.getAttribute('x'))||0, clipRight=Math.min(width-Math.max(0,spec.spacing||8),clip ? Number(clip.getAttribute('x'))+Number(clip.getAttribute('width')) : Infinity);
-        // Glyph boxes extend slightly past their advance, so keep two pixels of slack inside the clip.
+        // Allow two pixels for glyph overhang.
         const limit=(anchor==='end' ? (clip ? Number(clip.getAttribute('width')) : x) : anchor==='middle' ? 2*Math.min(x,width-x) : clipRight-x)-2;
         if(limit<=0 || text.getComputedTextLength()<=limit+.5)continue;
         let low=0,high=full.length;

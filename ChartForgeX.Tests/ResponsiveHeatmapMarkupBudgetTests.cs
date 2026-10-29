@@ -64,6 +64,18 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
             await page.EvaluateAsync("w=>document.querySelector('#panel').style.width=w+'px'", width);
             await page.WaitForFunctionAsync("w=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===w", width, new() { Timeout = 120000 });
             if (rows == 12) {
+                Assert.True(await page.EvaluateAsync<int>("()=>new TextEncoder().encode(document.querySelector('[data-cfx-responsive-chart]').outerHTML).length") <= 256 * 1024,
+                    $"Mounted markup exceeds 256 KiB at {width}px.");
+                var vertical = await page.EvaluateAsync<double[]>("""
+                    ()=>{const host=document.querySelector('[data-cfx-responsive-chart]'),svg=host.querySelector('svg'),
+                      cell=host.querySelector('[data-cfx-role=heatmap-cell-shape]').getBoundingClientRect(),
+                      text=[...host.querySelectorAll('text')].filter(e=>e.getClientRects().length && !e.closest('[style*="display: none"]')),
+                      bottom=Math.max(...text.map(e=>e.getBoundingClientRect().bottom));
+                      return [cell.width,cell.height,svg.getBoundingClientRect().bottom-bottom,host.querySelectorAll('[data-cfx-role=heatmap-missing-cell]').length];}
+                    """);
+                Assert.InRange(vertical[1], 12, Math.Min(32, vertical[0] * 1.6) + .01);
+                Assert.InRange(vertical[2], 8, 20);
+                Assert.Equal(28, vertical[3]);
                 var clipped = await page.EvaluateAsync<int>("""
                     ()=>[...document.querySelectorAll('[data-cfx-role=heatmap-column-label] text')].filter(text=>{
                       if(getComputedStyle(text.closest('[data-cfx-role=heatmap-column-label]')).display==='none')return false;
@@ -102,6 +114,12 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
         await page.EvaluateAsync("()=>{const h=document.querySelector('[data-cfx-responsive-chart]');h.scrollLeft=h.scrollWidth}");
         await page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-role=matrix-sticky-labels]').getAttribute('transform')!=='translate(0 0)'");
         Assert.Equal(metrics[2], await page.Locator("[data-cfx-role=heatmap-row-label]").First.EvaluateAsync<double>("e=>e.getBoundingClientRect().left"), .1);
+        Assert.True(await page.EvaluateAsync<bool>("""
+            ()=>{const host=document.querySelector('[data-cfx-responsive-chart]'),back=host.querySelector('[data-cfx-role=matrix-sticky-labels] > rect'),
+              box=back.getBoundingClientRect();
+              return box.left<=host.getBoundingClientRect().left+.01 && getComputedStyle(back).fill!=='none'
+                && back.getAttribute('fill')!=='transparent' && Number(back.getAttribute('x'))===0;}
+            """));
         var last = page.Locator("[data-cfx-role=heatmap-cell]").Last;
         await last.ClickAsync();
         await last.FocusAsync();
@@ -152,6 +170,34 @@ public sealed class ResponsiveHeatmapMarkupBudgetTests {
         var before = first.GetProperty("geometry").EnumerateArray().Select(n=>n.GetDouble()).ToArray();
         var after = remounted.GetProperty("geometry").EnumerateArray().Select(n=>n.GetDouble()).ToArray();
         for (var i=0; i<before.Length; i++) Assert.Equal(before[i], after[i], .1);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task WrappedBottomLegendStaysBelowDatesOnScreenAndInPrintIncludingEarlierLayout3() {
+        var chart = Fixture(12); chart.Options.LegendPosition = ChartLegendPosition.BottomLeft;
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
+        await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div style='width:390px'>" + fragment + "</div></body></html>", 390, 1000);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-responsive-chart]').cfxResponsive");
+        foreach (var earlier in new[] { false, true }) {
+            if (earlier) await page.EvaluateAsync("""
+                async()=>{const h=document.querySelector('[data-cfx-responsive-chart]'),node=h.querySelector('[data-cfx-spec]'),spec=JSON.parse(node.textContent);
+                  h.cfxResponsive.dispose();spec.matrix=spec.matrix.slice(0,3);node.textContent=JSON.stringify(spec);await ChartForgeXResponsive.mount(h);}
+                """);
+            foreach (var print in new[] { false, true }) {
+                await page.EmulateMediaAsync(new() { Media = print ? Microsoft.Playwright.Media.Print : Microsoft.Playwright.Media.Screen });
+                await page.EvaluateAsync("()=>document.querySelector('[data-cfx-responsive-chart]').cfxResponsive.layout()");
+                var bands = await page.EvaluateAsync<double[]>("""
+                    ()=>{const visible=role=>[...document.querySelectorAll('[data-cfx-role='+role+']')].filter(e=>getComputedStyle(e).display!=='none').map(e=>e.getBoundingClientRect());
+                      const dates=visible('heatmap-column-label'),legend=visible('legend-entry');
+                      return [Math.max(...dates.map(b=>b.bottom)),Math.min(...legend.map(b=>b.top)),new Set(legend.map(b=>Math.round(b.top))).size];}
+                    """);
+                Assert.True(bands[0] + 4 <= bands[1], $"Dates end at {bands[0]}, legend starts at {bands[1]} (print={print}, earlier={earlier}).");
+                Assert.True(bands[2] >= 2, "The regression requires a wrapped bottom legend.");
+            }
+            await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Screen });
+        }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 

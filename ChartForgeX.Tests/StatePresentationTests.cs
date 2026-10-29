@@ -76,7 +76,7 @@ public sealed class StatePresentationTests {
             .WithXLabels("One", "Two")
             .AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null })
             .AddHeatmapCategoryRow("Something", new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"));
-        Assert.Equal(new[] { "Passed" }, ByRole(XDocument.Parse(emptyFirst.ToSvg()), "legend-label").Select(text => text.Value).ToArray());
+        Assert.Equal(new[] { "Passed", "No data" }, ByRole(XDocument.Parse(emptyFirst.ToSvg()), "legend-label").Select(text => text.Value).ToArray());
         var onlyEmpty = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 260).WithXLabels("One", "Two").AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null });
         Assert.Empty(ByRole(XDocument.Parse(onlyEmpty.ToSvg()), "heatmap-cell"));
         Assert.True(onlyEmpty.ToPng().Length > 64);

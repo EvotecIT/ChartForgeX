@@ -218,15 +218,7 @@ internal static partial class VisualColorScaleLegendScene {
             using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
                 new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
                 // A pale fill alone disappears on both themes, so the no-data key also gets an outline and a hatch.
-                builder.Rect(box, blend.Color, style.Color, .75, radius: 1, role: prefix + "-missing-swatch", paint: VisualChartPaint.Fill(blend.Paint));
-                using (builder.PushClip(box)) {
-                    // Lines sit symmetrically about the centre, which stays clear, so the swatch's own fill is still readable.
-                    var hatch = ChartColorMath.WithOpacity(style.Color, .55); const double spacing = 5;
-                    var centre = (box.Width - box.Height) / 2;
-                    for (var step = spacing / 2; centre - step > -box.Height || centre + step < box.Width; step += spacing)
-                        foreach (var offset in new[] { centre - step, centre + step })
-                            builder.Line(box.Left + offset, box.Bottom, box.Left + offset + box.Height, box.Top, hatch, .75, role: prefix + "-missing-hatch");
-                }
+                VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix);
             }
             Caption(labels.NoData, new ChartRect(lane.Left + row, top, Math.Max(0, lane.Width - row), row), "missing", TextAlignment.Left);
         }

@@ -13,10 +13,21 @@ internal static partial class VisualMatrixCompiler {
     // Largest theme corner radius as a share of a heatmap cell's shorter side.
     private const double MaximumThemeCellRounding = .2;
 
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
-        chart.Options.ShowHeatmapCategoryLegend && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
-            ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray()
-            : Array.Empty<VisualLegendEntry>();
+    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+        var categorical = chart.Series.Any(series => series.IsCategoricalHeatmapRow);
+        if (categorical && !chart.Options.ShowHeatmapCategoryLegend) return Array.Empty<VisualLegendEntry>();
+        var entries = categorical ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i,
+            state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToList() : new List<VisualLegendEntry>();
+        var columns = chart.Series.SelectMany(row => row.RenderPoints.Select(point => point.X)
+            .Concat(Enumerable.Range(1, row.HeatmapColumnCount ?? 0).Select(index => (double)index))).Distinct().Count();
+        if (chart.Series.All(row => row.Kind == ChartSeriesKind.Heatmap) && (categorical || chart.Options.HeatmapColorScale == null)
+            && chart.Series.Any(row => row.RenderPoints.Count < columns)) {
+            var blend = ChartColorScaleSurface.NoData(chart.Options.HeatmapColorScale, colors);
+            entries.Add(new VisualLegendEntry(chart.Options.Labels.NoData, blend.Color, "matrix-missing",
+                marker: (builder, box, context) => VisualMissingDataScene.Swatch(builder, box, blend, colors.MutedForeground, "heatmap-key")));
+        }
+        return entries;
+    }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartColorPresentation? presentation = null) {
         if (viewport.Width <= 0 || viewport.Height <= 0 || chart.Series.Count == 0) return;
@@ -74,6 +85,9 @@ internal static partial class VisualMatrixCompiler {
         var cellWidth = Math.Max(0, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
         var cellHeight = Math.Max(0, (plot.Height - rowLayout.HeadersHeight - gap * (rows.Length - 1)) / rows.Length);
         var rowPitch = cellHeight + gap;
+        if (kind == ChartSeriesKind.Heatmap && cellHeight < ChartRowText.MinimumFontSize * 1.2)
+            builder.AddDiagnostic(new VisualDiagnostic("matrix.cell-density",
+                "The fixed frame is too short for readable heatmap cells; every row is retained. Allow natural height to increase the frame."));
         var rowLabelStride = rowPitch > 0 ? Math.Max(1, (int)Math.Ceiling(ChartRowText.MinimumFontSize * 1.2 / rowPitch)) : rows.Length;
         if (rowLabelStride > 1 && chart.Options.ShowAxes && chart.Options.YAxis.Visible)
             builder.AddDiagnostic(new VisualDiagnostic("matrix.row-label-density",
@@ -119,6 +133,8 @@ internal static partial class VisualMatrixCompiler {
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
                 })) {
+                    if (kind == ChartSeriesKind.Heatmap)
+                        MissingCells(chart, builder, series, columns, plot, y, cellWidth, cellHeight, gap, radius, colors);
                     for (var renderIndex = 0; renderIndex < series.RenderPoints.Count; renderIndex++) {
                         var point = series.RenderPoints[renderIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
                         if (columnIndex < 0) continue;

@@ -33,7 +33,7 @@ Lane labels, lane summaries, group headers and heatmap row labels share one poli
 
 Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `WithHeatmapCellRadius` still sets an exact radius.
 
-A caller that can accommodate a taller static frame can use `WithHeatmapNaturalHeight()` to grow a rectangular heatmap until its rows fit readable cells. Fixed-height frames instead retain their size and report row-label density when labels must be thinned.
+A caller that can accommodate a taller static frame can use `WithHeatmapNaturalHeight()` to grow a rectangular heatmap until its rows fit readable cells. Fixed-height frames retain every row and their authored size, report `matrix.cell-density` for cells shorter than 12 px, and report `matrix.row-label-density` when labels must be thinned. Responsive HTML fits the card to its content and follows cell width with readable row pitches capped at 32 px.
 
 Rectangular heatmaps use a latest-column window by default when a fixed frame cannot fit every cell at 14 px. Earlier columns are omitted and counted by `matrix.cell-density` and the `matrix-column-window` semantic region. Use `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to show all columns in a fixed frame, including narrow cells. Responsive HTML retains all columns for its interactive layout.
 
