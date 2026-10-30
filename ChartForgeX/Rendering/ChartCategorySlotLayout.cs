@@ -12,6 +12,9 @@ internal readonly struct ChartCategorySlotLayout {
     internal double Offset { get; }
     internal double Pitch { get; }
 
+    /// <summary>The share of the category pitch bars occupy: the design band fill, or the dense legacy share for sparkline sample slots.</summary>
+    internal static double BandShare(int sampleSlots) => sampleSlots > 0 ? MaximumCrowdedBandFill : ChartMarkSurface.BandFill;
+
     /// <summary>Resolves slots while allowing scalar bars to retain their minimum thickness at overlapping categories.</summary>
     /// <remarks>When <paramref name="requireMinimumFootprint"/> is true, interval marks must fit their minimum caps and strokes inside the slot.</remarks>
     internal static ChartCategorySlotLayout Create(IEnumerable<double> mappedCategories, double extent, double spacing,
@@ -25,7 +28,7 @@ internal readonly struct ChartCategorySlotLayout {
         count = Math.Max(1, count);
         var minimumFootprint = measuredFootprint?.Invoke(minimumThickness) ?? minimumThickness * footprintRatio + footprintPadding;
         // Sparkline sample slots keep their dense legacy share; charts use the design band fill.
-        var occupied = pitch * (sampleSlots > 0 ? MaximumCrowdedBandFill : ChartMarkSurface.BandFill);
+        var occupied = pitch * BandShare(sampleSlots);
         var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
         var cell = (occupied - gap * (count - 1)) / count;
         if (requireMinimumFootprint && minimumFootprint > cell) {

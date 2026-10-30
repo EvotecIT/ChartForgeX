@@ -30,7 +30,6 @@ internal static class HtmlChartLayoutSpecification {
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
-            .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()))
             .Append(",\"svg\":").Append(HtmlJsonString.Encode(svg));
