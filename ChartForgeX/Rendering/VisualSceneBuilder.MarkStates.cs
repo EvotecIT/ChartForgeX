@@ -53,7 +53,7 @@ internal sealed partial class VisualSceneBuilder {
                     }
                     var current = scope.Group.Metadata.ContainsKey("data-cfx-current");
                     var selected = scope.Group.Metadata.ContainsKey("data-cfx-selected");
-                    if (current || selected) {
+                    if ((current || selected) && scope.Group.Role != ChartDomRoles.ScheduleRow) {
                         // Two contrasting strokes remain visible over both pale and saturated mark fills.
                         var path = VisualStateSceneTools.RoundedRect(extent, Math.Min(3, Math.Min(extent.Width, extent.Height) / 2));
                         output.Add(new VisualScenePath(path, true, null, colors.Background, 4, "mark-state-halo", null));

@@ -22,8 +22,10 @@ internal static partial class VisualScheduleCompiler {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, viewport.Width * .25, Math.Max(0, viewport.Height * .25 - gap)), ticks.Select(format).ToArray(), chart.Options.XAxis.LabelAngle);
         var lineHeight = builder.MeasureText("Mg", style).Height;
-        var nameWidth = names.Select(name => builder.MeasureText(name, style).Width).DefaultIfEmpty(0).Max();
-        var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, style).Width).DefaultIfEmpty(0).Max();
+        var hasRowState = chart.Series.Any(series => HasRowState(series.RowOptions));
+        var rowStyle = hasRowState ? EmphasizedRowStyle(style) : style;
+        var nameWidth = names.Select(name => builder.MeasureText(name, rowStyle).Width).DefaultIfEmpty(0).Max() + (hasRowState ? 6 : 0);
+        var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, rowStyle).Width).DefaultIfEmpty(0).Max();
         summaryWidth = Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width);
         var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var tickHeight = ticks.Select(tick => VisualAxisText.RotatedMetrics(builder.MeasureText(format(tick), style), angle).Height).DefaultIfEmpty(lineHeight).Max();
@@ -98,14 +100,21 @@ internal static partial class VisualScheduleCompiler {
         var summaryText = summary ?? string.Empty;
         var showSummary = layout.HasSummary && !string.IsNullOrWhiteSpace(summaryText);
         if (!showName && !showSummary) return;
+        var state = chart.Series[index].RowOptions;
+        var emphasized = HasRowState(state);
+        if (emphasized) {
+            ScheduleRowState(chart, context, builder, viewport, plot, top, height, pitch, index, state!);
+            style = EmphasizedRowStyle(style);
+        }
         using var row = builder.PushGroup("schedule-lane-row-" + index, ChartDomRoles.ScheduleRow, LaneMetadata(chart, index, group));
         if (showName) {
-            var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap);
+            var inset = emphasized ? 6 : 0;
+            var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap - inset);
             var labelStyle = ChartRowText.Style(builder, style, name, height, labelWidth);
             var fittedName = ChartTextFitting.TrimEnd(name, labelStyle.EffectiveFontSize, labelWidth,
                 (text, _) => builder.MeasureText(text, labelStyle).Width);
             if (fittedName.Length == 0) fittedName = name;
-            VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, labelStyle, fittedName, viewport.Left, labelWidth, top, height, pitch), labelStyle,
+            VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, labelStyle, fittedName, viewport.Left + inset, labelWidth, top, height, pitch), labelStyle,
                 ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
         }
         if (showSummary) {

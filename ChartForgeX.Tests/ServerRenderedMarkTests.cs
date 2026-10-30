@@ -31,7 +31,7 @@ public sealed class ServerRenderedMarkTests {
     [InlineData(false, " ")] [InlineData(true, " ")]
     public void HiddenLabelsAndBlankSummariesLeaveNoUnpaintedRowLink(bool gantt, string? emptySummary) {
         var chart = Categories(Chart.Create()).WithAxes(false).WithSize(600, 240);
-        foreach (var summary in new[] { "Published support", emptySummary }) {
+        foreach (var summary in new[] { "Support", emptySummary }) {
             if (gantt) chart.AddGanttLane("Release", new[] { new ChartGanttLaneItem(Day, Day.AddDays(2), "up") }, summary: summary);
             else chart.AddStateTimelineLane("Availability", new[] { new ChartStateTimelineSegment(Day, Day.AddDays(2), "up") }, summary: summary);
         }
@@ -40,7 +40,7 @@ public sealed class ServerRenderedMarkTests {
         var document = XDocument.Parse(chart.ToSvg());
         var link = Assert.Single(document.Descendants(), element => element.Name.LocalName == "a");
         Assert.Equal("/visible", (string?)link.Attribute("href"));
-        Assert.Contains(link.Descendants(), element => element.Name.LocalName == "text" && element.Value == "Published support");
+        Assert.Contains(link.Descendants(), element => element.Name.LocalName == "text" && element.Value == "Support");
     }
 
     [Theory]

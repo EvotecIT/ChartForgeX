@@ -30,11 +30,22 @@ var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
 
 Use `linkTarget: VisualSvgLinkTarget.NewContext` for a publisher's page. New-context links receive `target="_blank"` and `rel="noopener noreferrer"`. Other authored links use the current context, independently of the render-wide default. Links receive a keyboard tab stop, `role="link"` and an accessible name. `Tooltip` becomes a plain-text SVG `<title>`; `AccessibleLabel` takes precedence over the generated name.
 
+Give keyboard focus a visible treatment in the host stylesheet. SVG links use the page's CSS; ChartForgeX does not inject a focus stylesheet. For example:
+
+```css
+svg a:focus-visible {
+  outline: 3px solid var(--accent, #2563eb);
+  outline-offset: 3px;
+}
+```
+
+Choose a focus colour that contrasts with both page themes, and check the links using Tab. Keep this focus treatment distinct from the chart's current or selected state.
+
 `series.WithMarkOptions(options)` supplies series hooks and defaults for its marks. An item's non-null options replace those defaults. `series.WithRowOptions(options)` independently decorates the schedule label/summary row or matrix row. Put row navigation on that row, or keep the label link in HTML when using strips. The renderer avoids nested SVG links.
 
 State-timeline items with authored mark options retain their interval boundaries. Unadorned adjacent intervals may still merge into one run; a series default then applies to the run without assigning it one contributor's observation ID. Plot-only strips omit the SVG label/summary row, including its navigation.
 
-Class names are ASCII CSS identifiers separated by single spaces. Complete `data-*` names must use lowercase ASCII letters, digits, underscores and hyphens after `data-`, beginning with a letter. `data-cfx` and `data-cfx-*` are reserved. Invalid hooks throw rather than being rewritten. Values are escaped as text; valid class names, attribute names and values retain their spelling. `Current` and `Selected` identify the page's active item with `aria-current="true"`. Current uses a dashed outline and `data-cfx-current`; selected uses a solid outline and `data-cfx-selected`. The outlines also appear in raster output. Links retain navigation semantics rather than becoming selection widgets.
+Class names are ASCII CSS identifiers separated by single spaces. Complete `data-*` names must use lowercase ASCII letters, digits, underscores and hyphens after `data-`, beginning with a letter. `data-cfx` and `data-cfx-*` are reserved. Invalid hooks throw rather than being rewritten. Values are escaped as text; valid class names, attribute names and values retain their spelling. `Current` and `Selected` identify the page's active item with `aria-current="true"` and the `data-cfx-current` or `data-cfx-selected` hook. Schedule rows use a subtle band across the label and track, a left accent and semibold row text. Individual marks use dashed current or solid selected outlines. These state treatments also appear in raster output. Links retain navigation semantics rather than becoming selection widgets.
 
 ## Shared scales and HTML row labels
 

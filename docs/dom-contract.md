@@ -51,6 +51,8 @@ Class tokens use ASCII CSS identifiers separated by single spaces. Complete host
 
 Fluid-width output can place text and marker shapes inside nested SVG viewports. Continue selecting the contract role and your authored hooks rather than assuming a direct child or a `<g>` element. The outer SVG has `width="100%"`, a fixed logical height and no viewBox; stretched strokes have `vector-effect="non-scaling-stroke"`. Proportional responsive output retains its existing viewBox contract.
 
+Current and selected schedule rows paint a band and left accent behind their label and track, with semibold row text. The band roles are `schedule-current-row-band` and `schedule-selected-row-band`; the accent roles use the corresponding `-accent` suffix instead of `-band`. The `schedule-row` group retains the row's hooks and navigation around its label and summary. Hosts style keyboard focus separately through `svg a:focus-visible`.
+
 See [embedding charts in server-rendered pages](https://chartforgex.com/docs/embedding/) for links, shared-scale strips, page fonts and colours, data tables, CSP and ID scopes.
 
 ## Migration

@@ -58,8 +58,6 @@ h2 { margin: 0 0 8px; font-size: 24px; line-height: 1.25; letter-spacing: -.015e
 .swatch.notes { background: var(--publisher-notes); }
 figcaption { margin-top: 12px; }
 .activity-mark:hover, .publisher-mark:hover, .support-mark:hover { filter: brightness(1.12); cursor: pointer; }
-.support-row [data-cfx-role="mark-state-halo"] { stroke: var(--page-surface); }
-.support-row [data-cfx-role="mark-current-outline"] { stroke: var(--page-ink); }
 details { margin-top: 16px; }
 summary { cursor: pointer; color: var(--updates); font-weight: 600; width: fit-content; }
 table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }

@@ -31,6 +31,11 @@ public sealed class ServerRenderedPageBrowserTests {
                 const mark = document.querySelector('.activity-mark');
                 const text = document.querySelector('svg text');
                 const fill = [...mark.querySelectorAll('[fill]')].find(node => node.getAttribute('fill').includes('var(--updates'));
+                const currentRow = document.querySelector('.support-row[aria-current="true"]');
+                const schedule = currentRow.closest('svg');
+                const rowLabel = currentRow.querySelector('[data-cfx-role="schedule-row-label"] text');
+                const rowMark = schedule.querySelector('.support-mark[data-release="release-2026"]');
+                const band = schedule.querySelector('[data-cfx-role="schedule-current-row-band"]');
                 return { scripts:document.querySelectorAll('script').length, overflow:document.documentElement.scrollWidth > innerWidth,
                     tracks, links:document.querySelectorAll('.activity-mark,.publisher-mark').length,
                     font:getComputedStyle(text).fontSize, color:getComputedStyle(fill).fill,
@@ -39,6 +44,10 @@ public sealed class ServerRenderedPageBrowserTests {
                         last:getComputedStyle(gradient.lastElementChild).stopColor,
                         opacity:getComputedStyle(gradient.lastElementChild).stopOpacity })),
                     current:document.querySelector('.support-row[aria-current="true"]')?.getAttribute('data-release'),
+                    rowState:{ band:band?.getBoundingClientRect().toJSON() ?? null,
+                        label:rowLabel.getBoundingClientRect().toJSON(), mark:rowMark.getBoundingClientRect().toJSON(),
+                        weight:Number(getComputedStyle(rowLabel).fontWeight),
+                        outlines:currentRow.querySelectorAll('[data-cfx-role="mark-current-outline"],[data-cfx-role="mark-selected-outline"]').length },
                     css:getComputedStyle(document.documentElement).getPropertyValue('--updates').trim() };
             }
             """);
@@ -51,6 +60,16 @@ public sealed class ServerRenderedPageBrowserTests {
             Assert.Equal(stop.GetProperty("first").GetString(), stop.GetProperty("last").GetString());
         });
         Assert.Equal("release-2026", measured.GetProperty("current").GetString());
+        var state = measured.GetProperty("rowState");
+        var band = state.GetProperty("band");
+        Assert.NotEqual(JsonValueKind.Null, band.ValueKind);
+        var labelBounds = state.GetProperty("label"); var markBounds = state.GetProperty("mark");
+        Assert.True(band.GetProperty("left").GetDouble() < labelBounds.GetProperty("left").GetDouble());
+        Assert.True(band.GetProperty("right").GetDouble() >= markBounds.GetProperty("right").GetDouble() - 1);
+        Assert.True(band.GetProperty("top").GetDouble() < labelBounds.GetProperty("top").GetDouble());
+        Assert.True(band.GetProperty("bottom").GetDouble() > labelBounds.GetProperty("bottom").GetDouble());
+        Assert.True(state.GetProperty("weight").GetInt32() >= 600);
+        Assert.Equal(0, state.GetProperty("outlines").GetInt32());
         Assert.Equal(theme == "dark" ? "rgb(110, 174, 255)" : "rgb(42, 120, 214)", measured.GetProperty("color").GetString());
         foreach (var row in measured.GetProperty("tracks").EnumerateArray()) {
             var label = row.GetProperty("label"); var track = row.GetProperty("track");
