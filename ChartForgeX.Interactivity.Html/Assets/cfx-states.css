@@ -1,0 +1,36 @@
+/* ChartForgeX interaction states (design language section 3) and the shared tooltip. Colours come from the page's --hfx-* roles. */
+:root{--cfx-e-info:var(--hfx-color-status-info-fg,light-dark(#2b5fc0,#74a2f7));--cfx-e-surface:var(--hfx-color-surface-card,light-dark(#fff,#16181c));--cfx-e-accent:var(--hfx-color-accent,light-dark(#2a78d6,#5598e7));--cfx-e-focus:var(--hfx-color-focus-ring,light-dark(#1d64b8,#86b6ef));--cfx-e-ink:var(--hfx-color-text,light-dark(#16181c,#eceef1));--cfx-e-muted:var(--hfx-color-text-secondary,light-dark(#5c626c,#a3a9b3));--cfx-e-line:var(--hfx-color-surface-line-strong,light-dark(#cdd0d5,#363a42))}
+.cfx-e-hover{filter:brightness(1.08)}
+.cfx-e-hover :is(rect,path,circle,ellipse,polygon){stroke:var(--cfx-e-surface);stroke-width:2px;paint-order:stroke}
+.cfx-e-faded{opacity:.25}
+.cfx-e-dim{opacity:.3}
+.cfx-e-unlinked,.cfx-e-filtered{opacity:.35}
+.cfx-e-hidden,.cfx-e-gone{visibility:hidden}
+.cfx-e-linked{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--cfx-e-info) 55%,transparent))}
+.cfx-e-sel{fill:none;stroke:var(--cfx-e-accent);stroke-width:2px}
+.cfx-e-focus{fill:none;stroke:var(--cfx-e-focus);stroke-width:2px}
+.cfx-e-bar{fill:var(--cfx-e-info)}
+.cfx-e-ring{display:none}
+.cfx-e-cross{stroke:var(--cfx-e-muted);stroke-width:1px;shape-rendering:crispEdges}
+.cfx-e-dot{stroke:var(--cfx-e-surface);stroke-width:2px}
+.cfx-e-brush{fill:var(--cfx-e-info);fill-opacity:.12;stroke:var(--cfx-e-info);stroke-opacity:.5}
+.cfx-e-tip{position:fixed;z-index:2147483000;pointer-events:none;min-width:140px;max-width:260px;padding:8px 10px;border-radius:8px;background:var(--cfx-e-surface);color:var(--cfx-e-ink);border:1px solid var(--cfx-e-line);box-shadow:0 8px 24px -10px rgba(0,0,0,.35);font:13px/1.4 var(--hfx-font-sans,inherit)}
+.cfx-e-tip[hidden]{display:none}
+.cfx-e-tip-head{color:var(--cfx-e-muted);font-size:12px;margin-bottom:4px}
+.cfx-e-tip-row{display:grid;grid-template-columns:14px auto 1fr;align-items:center;gap:6px}
+.cfx-e-tip-key{width:12px;height:2px;border-radius:1px}
+.cfx-e-tip-value{font-weight:600;font-variant-numeric:tabular-nums}
+.cfx-e-tip-name{color:var(--cfx-e-muted)}
+.cfx-e-tip-hint{margin-top:6px;color:var(--cfx-e-muted);font-size:12px}
+.cfx-e-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){[data-cfx-mark],[data-cfx-series]{transition:opacity .25s ease-out,filter .15s ease-out}}
+@media (forced-colors:active){
+.cfx-e-faded,.cfx-e-dim,.cfx-e-unlinked,.cfx-e-filtered{opacity:1}
+.cfx-e-faded :is(rect,path,circle,ellipse,polygon),.cfx-e-dim :is(rect,path,circle,ellipse,polygon){fill:GrayText;stroke:GrayText}
+.cfx-e-hover :is(rect,path,circle,ellipse,polygon){stroke:Highlight}
+.cfx-e-sel,.cfx-e-focus{stroke:Highlight}
+.cfx-e-bar{fill:Highlight}
+.cfx-e-ring{display:inline;fill:none;stroke:Highlight;stroke-width:2px;stroke-dasharray:4 3}
+.cfx-e-linked{filter:none}
+[data-cfx-role$="current-row-band"]{fill:Mark}
+.cfx-e-tip{border-color:CanvasText}}

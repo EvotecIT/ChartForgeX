@@ -16,7 +16,7 @@ public static partial class V2Examples {
             schemaVersion = 1,
             matrixScope = curated ? "selected" : "full",
             pipeline = "model-to-prepared-scene-to-svg-or-raster",
-            assets = CatalogAssets(artifacts),
+            assets = CatalogAssets(artifacts).Concat(EnhanceExamples.Files(output)).Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray(),
             chartKinds = artifacts.SelectMany(ArtifactKinds).Distinct().OrderBy(kind => kind).ToArray(),
             groups = CatalogGroups.Select(group => new { id = group.Id, label = group.Label }),
             fonts = new[] { "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf" }.Select(file => new {
