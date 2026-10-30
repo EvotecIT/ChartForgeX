@@ -114,7 +114,9 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("style", "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
+            .Attribute("data-cfx-theme-mode", chart.ThemeMode == VisualThemeMode.Dark ? "dark" : "light")
+            .Attribute("data-cfx-theme-adaptive", options.SvgColorVariables != null ? "true" : null)
+            .Attribute("style", ThemeVariables(theme) + "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
             .EndStartElement();
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
@@ -149,6 +151,11 @@ public sealed partial class TopologyHtmlRenderer {
         writer.EndElement();
         return writer.Build();
     }
+
+    // Controls and panels take the chart's own surface, ink and accent, so they match the diagram in either theme.
+    private static string ThemeVariables(TopologyPaint theme) =>
+        "--cfx-topology-canvas:" + theme.Background + ";--cfx-topology-card:" + theme.Card + ";--cfx-topology-elevated:" + theme.Surface + ";--cfx-topology-ink:" + theme.Foreground +
+        ";--cfx-topology-muted-ink:" + theme.MutedForeground + ";--cfx-topology-line:" + theme.Border + ";--cfx-topology-chart-accent:" + theme.Accent + ";";
 
     private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
         var nativeOptions = EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls);
