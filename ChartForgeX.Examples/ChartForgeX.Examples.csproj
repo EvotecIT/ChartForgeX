@@ -19,7 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- The linked-views example pairs enhanced charts with a real CanopyX grid; CanopyX stays out of every ChartForgeX package. -->
-    <PackageReference Include="CanopyX.Html" Version="0.3.3" />
+    <PackageReference Include="CanopyX.Html" Version="0.3.3" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
