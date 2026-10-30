@@ -57,6 +57,8 @@
       m.xv = instant ? iso(m.x) : raw == null ? null : m.raw;
       if (!series[s]) series[s] = { key: attr(el, "data-cfx-series-key") };
       (bySeries[s] = bySeries[s] || []).push(m);
+      // A point mark (a lone marker, or a line point without one) takes a ring, like its static selected look.
+      m.dot = !!el.querySelector('[data-cfx-role="marker"],[data-cfx-role$="-marker"]');
       el._cfx = m;
       el.setAttribute("tabindex", "-1");
       if (!el.hasAttribute("role")) el.setAttribute("role", "img");
@@ -79,6 +81,10 @@
     });
     var tops = all(svg, "[data-cfx-series]").filter(function (el) { return !el.parentNode.closest("[data-cfx-series]") && !el.matches(LEGEND); })
       .map(function (el) { return { el: el, s: +attr(el, "data-cfx-series") }; });
+    // Series ink outside the marks (lines, area washes) dims with them, so a line never stays at full ink.
+    var inks = [].concat.apply([], tops.map(function (t) {
+      return all(t.el, "path,line,polyline,polygon,rect,circle,ellipse").filter(function (n) { return !n.closest(MARK) && !n.closest("defs,clipPath,mask,pattern"); });
+    }));
     var current = marks.filter(function (m) { return attr(m.el, "aria-current") === "true"; })[0] || marks[0];
     if (current) current.el.setAttribute("tabindex", "0");
 
@@ -96,8 +102,9 @@
       if (!geometry) geometry = marks.map(function (m) {
         var r = m.el.getBoundingClientRect(), b = m.box;
         // Unpainted marks (line points without markers) use their logical anchor from data-cfx-bounds.
-        if (!r.width && !r.height && b.length === 4) { var a = client(b[0], b[1]), z = client(b[0] + b[2], b[1] + b[3]); r = { left: a.x, top: a.y, right: z.x, bottom: z.y }; }
-        return { l: r.left, t: r.top, r: r.right, b: r.bottom, x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
+        var dot = m.dot && Math.abs(r.width - r.height) <= 1.5;
+        if (!r.width && !r.height && b.length === 4) { var a = client(b[0], b[1]), z = client(b[0] + b[2], b[1] + b[3]); r = { left: a.x, top: a.y, right: z.x, bottom: z.y }; dot = true; }
+        return { l: r.left, t: r.top, r: r.right, b: r.bottom, x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2, dot: dot };
       });
       return geometry;
     }
@@ -211,7 +218,10 @@
       var selected = selection.length > 0, linked = highlight.size > 0;
       states.textContent = "";
       // Halos paint under every outline so neighbouring selected marks never cover each other's ink.
-      var halos = make("g", null, states), rings = make("g", null, states);
+      var halos = make("g", null, states), rings = make("g", null, states), active = selected || linked;
+      // A brushed range draws its own selection over the series, so the lines it covers stay readable.
+      var band = selected && !linked && ask("outline", selection[0]) === false;
+      inks.forEach(function (n) { n.classList.toggle("cfx-e-dim", active && !band); });
       tops.forEach(function (t) {
         t.el.classList.toggle("cfx-e-hidden", !!series[t.s].hidden);
         t.el.classList.toggle("cfx-e-faded", emphasis != null && t.s !== emphasis);
@@ -221,21 +231,21 @@
         m.out = !passes(m);
         c.toggle("cfx-e-selected", on); c.toggle("cfx-e-linked", link);
         // Selected and linked marks share the static look; every other mark dims while either is active.
-        c.toggle("cfx-e-dim", (selected || linked) && !on && !link);
+        c.toggle("cfx-e-dim", active && !on && !link);
         c.toggle("cfx-e-filtered", m.out && api.filterMode !== "hide");
         c.toggle("cfx-e-gone", !!m.off || m.out && api.filterMode === "hide");
         if (!visible(m) || !(on || link) || on && !link && ask("outline", m) === false) return;
-        // The static mark-selected-outline: a 2px ink outline over a 4px surface halo, offset 2px around the whole mark.
-        var b = box(rects()[m.n]), r = { x: b.x - 2, y: b.y - 2, width: b.w + 4, height: b.h + 4, rx: Math.min(4, (Math.min(b.w, b.h) + 4) / 2) };
-        set(make("rect", "cfx-e-halo", halos), r);
-        set(make("rect", on ? "cfx-e-sel" : "cfx-e-sel cfx-e-ring", rings), r);
+        // The static mark-selected-outline: a 2px ink outline over a 4px surface halo, offset 2px around the whole mark,
+        // or a ring around a point. Outlines may overflow the plot; the layer is never clipped.
+        var g = rects()[m.n], s = outline(g, 2), kind = g.dot ? "circle" : "rect";
+        set(make(kind, "cfx-e-halo", halos), s);
+        set(make(kind, on ? "cfx-e-sel" : "cfx-e-sel cfx-e-ring", rings), s);
       });
       var focus = d.activeElement;
       if (keyboard && focus && focus !== svg && svg.contains(focus)) {
-        var fm = markOf(focus), r = fm ? null : focus.getBoundingClientRect();
-        var f = box(fm ? rects()[fm.n] : { l: r.left, t: r.top, r: r.right, b: r.bottom });
+        var fm = markOf(focus), r = fm ? null : focus.getBoundingClientRect(), fg = fm ? rects()[fm.n] : { l: r.left, t: r.top, r: r.right, b: r.bottom };
         // Focus sits outside the selection halo in the focus-ring colour, so the two never look alike.
-        set(make("rect", "cfx-e-focus", states), { x: f.x - 5, y: f.y - 5, width: f.w + 10, height: f.h + 10, rx: 6 });
+        set(make(fg.dot ? "circle" : "rect", "cfx-e-focus", states), outline(fg, 5));
       }
       legends.forEach(function (l) {
         var off = l.mark ? !!l.mark.off : !!series[l.s].hidden;
@@ -243,6 +253,12 @@
         l.el.classList.toggle("cfx-e-legend-off", off);
       });
       ask("paint");
+    }
+    // A rectangle `gap` px outside a mark's client box, or a circle for a point.
+    function outline(g, gap) {
+      var b = box(g);
+      if (g.dot) return { cx: b.x + b.w / 2, cy: b.y + b.h / 2, r: Math.max(b.w, b.h) / 2 + gap };
+      return { x: b.x - gap, y: b.y - gap, width: b.w + gap * 2, height: b.h + gap * 2, rx: gap > 2 ? 6 : Math.min(4, (Math.min(b.w, b.h) + 4) / 2) };
     }
     function setHover(m, x, y) {
       if (hover && hover !== m) hover.el.classList.remove("cfx-e-hover");
