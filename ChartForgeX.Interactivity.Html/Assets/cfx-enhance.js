@@ -257,7 +257,8 @@
     // A rectangle `gap` px outside a mark's client box, or a circle for a point.
     function outline(g, gap) {
       var b = box(g);
-      if (g.dot) return { cx: b.x + b.w / 2, cy: b.y + b.h / 2, r: Math.max(b.w, b.h) / 2 + gap };
+      // A fluid root stretches a logical point anchor horizontally only; its height keeps the true size.
+      if (g.dot) return { cx: b.x + b.w / 2, cy: b.y + b.h / 2, r: Math.min(b.w, b.h) / 2 + gap };
       return { x: b.x - gap, y: b.y - gap, width: b.w + gap * 2, height: b.h + gap * 2, rx: gap > 2 ? 6 : Math.min(4, (Math.min(b.w, b.h) + 4) / 2) };
     }
     function setHover(m, x, y) {
