@@ -77,6 +77,22 @@ public sealed class BarValueCaptionTests {
     }
 
     [Fact]
+    public void SeriesCaptionFormat_ValueJustBelowTheUnit_KeepsItsOwnCaption() {
+        var format = ChartNumericFormatter.SeriesCaptionFormat(Chart.Create().Options, new[] { 12480d, 999 })!;
+
+        Assert.Equal("999", format(999));
+        Assert.Equal("-999", format(-999));
+    }
+
+    [Fact]
+    public void SeriesCaptionFormat_SubUnitValue_DoesNotAddDecimalsToTheCompactOnes() {
+        var format = ChartNumericFormatter.SeriesCaptionFormat(Chart.Create().Options, new[] { 12000d, 450 })!;
+
+        Assert.Equal("12k", format(12000));
+        Assert.Equal("450", format(450));
+    }
+
+    [Fact]
     public void SeriesCaptionFormat_ZeroInALargeSeries_StaysPlainZero() {
         var format = ChartNumericFormatter.SeriesCaptionFormat(Chart.Create().Options, new[] { 12480d, 0 })!;
 

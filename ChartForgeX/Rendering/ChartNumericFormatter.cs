@@ -23,13 +23,14 @@ internal static class ChartNumericFormatter {
         foreach (var value in finite) largest = Math.Max(largest, Math.Abs(value));
         if (largest < 10000) return null;
         var (divisor, suffix) = largest >= 1e9 ? (1e9, "B") : largest >= 1e6 ? (1e6, "M") : (1e3, "k");
+        // A value below one unit would round too far (149 as "0.1k", 999 as "1.0k"); it keeps its own caption
+        // and doesn't decide whether the compact ones need a decimal.
         var decimals = false;
-        foreach (var value in finite) if (Math.Round(value / divisor, 1) != Math.Round(value / divisor)) decimals = true;
+        foreach (var value in finite) if (Math.Abs(value) >= divisor && Math.Round(value / divisor, 1) != Math.Round(value / divisor)) decimals = true;
         var pattern = decimals ? "0.0" : "0";
         return value => {
             var scaled = Math.Round(value / divisor, 1);
-            // A value below one unit would round too far (149 as "0.1k", zero as "0.0k"); it keeps its own caption.
-            if (Math.Abs(scaled) < 1 || Math.Abs(scaled) >= 10000) return format.Format(value);
+            if (Math.Abs(value) < divisor || Math.Abs(scaled) >= 10000) return format.Format(value);
             return scaled.ToString(pattern, CultureInfo.InvariantCulture) + suffix;
         };
     }
