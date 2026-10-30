@@ -243,7 +243,7 @@ internal static partial class VisualRadialCompiler {
 
     private static VisualScenePaintBinding ConnectorPaint(Chart chart, RadialSlice slice, ChartColor actual) {
         var source = chart.Options.DataLabelConnectorColor.HasValue ? SvgPaint.Of(chart.Options.DataLabelConnectorColor.Value, SvgColorRole.Series)
-            : VisualChartPaint.Series(chart.Series[slice.SeriesIndex], slice.Color, slice.PointIndex);
+            : SlicePaint(chart, slice);
         return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabelConnectorOpacity));
     }
 

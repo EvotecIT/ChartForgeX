@@ -23,7 +23,7 @@ internal static partial class VisualRadialCompiler {
             var slices = GetSlices(chart, colors, seriesIndex); var total = Total(chart, slices, seriesIndex);
             entries.AddRange(slices.Select(slice => new VisualLegendEntry(chart.Series.Count > 1 ? series.Name + ": " + slice.Label : slice.Label,
                 slice.Color, SliceId(slice), series.Kind, slice.Pattern, series.StateRole, series.InteractionIdentityKey,
-                paint: VisualChartPaint.Series(series, slice.Color, slice.PointIndex),
+                paint: SlicePaint(chart, slice),
                 value: chart.Options.PieLegendContent == ChartPieLegendContent.Label ? null : DisplayValue(chart, slice),
                 percentage: chart.Options.PieLegendContent.HasValue ? null : FormatPercentage(Fraction(chart, slice, total)),
                 metadata: Metadata(chart, slice, Fraction(chart, slice, total), null, !total.FiniteTotal.HasValue, bands[seriesIndex]))));
@@ -52,6 +52,9 @@ internal static partial class VisualRadialCompiler {
             builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-offsets", "An aggregate Other slice uses the default position; its source slice offsets remain available in the original data."));
         if (slices.Any(slice => slice.SourcePatterns.Distinct().Count() > 1))
             builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-patterns", "The Other slice combines different source patterns and uses a solid fill; source patterns remain in its metadata."));
+        var automatic = series.Color.HasValue || series.StateRole != ChartSeriesState.None ? 0
+            : slices.Count(slice => slice.PointIndex >= 0 && !ChartMarkSurface.SliceHasPointColor(series, slice.PointIndex));
+        if (automatic > colors.Palette.Count) builder.AddDiagnostic(VisualChartCompiler.PaletteReused(automatic, colors.Palette.Count, "slices"));
         var total = Total(chart, slices, seriesIndex);
         if (!total.FiniteTotal.HasValue)
             builder.AddDiagnostic(new VisualDiagnostic("radial.total-overflow", "The total exceeds the finite numeric range. Proportions and authored source values remain available; the default total caption shows a lower bound."));
@@ -167,11 +170,12 @@ internal static partial class VisualRadialCompiler {
         var result = (chart.Options.PiePreserveSourceOrder ? retainedSlices.OrderBy(slice => slice.PointIndex)
             : retainedSlices.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex)).ToList();
         var patterns = rest.Select(slice => slice.Pattern).Distinct().ToArray();
+        // Other is the neutral aggregate (never a categorical hue) and is always last, also with source order.
+        var seriesPaint = series.Color.HasValue || series.StateRole != ChartSeriesState.None;
         result.Add(new RadialSlice(seriesIndex, -1, rest.SelectMany(slice => slice.NativePointIndices).ToArray(), OtherSliceLabel,
-            rest.Sum(slice => slice.Value), series.Color.HasValue || series.StateRole != ChartSeriesState.None
-                ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : colors.Neutral, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
+            rest.Sum(slice => slice.Value), seriesPaint ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : colors.Other, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
             rest.Select(slice => slice.Pattern).ToArray(), AggregateRadius(series, rest),
-            series.IsVisibilityPreparation ? rest.SelectMany(slice => slice.SourcePointIndices).ToArray() : null));
+            series.IsVisibilityPreparation ? rest.SelectMany(slice => slice.SourcePointIndices).ToArray() : null) { Paint = seriesPaint ? null : colors.OtherPaint });
         return result;
     }
 
@@ -274,5 +278,10 @@ internal static partial class VisualRadialCompiler {
         internal ChartColor Color { get; }
         internal ChartFillPattern Pattern { get; }
         internal ChartFillPattern[] SourcePatterns { get; }
+        /// <summary>The paint of the neutral Other aggregate; null paints <see cref="Color"/> by its series role.</summary>
+        internal SvgPaint? Paint { get; set; }
     }
+
+    private static SvgPaint SlicePaint(Chart chart, RadialSlice slice) =>
+        slice.Paint ?? VisualChartPaint.Series(chart.Series[slice.SeriesIndex], slice.Color, slice.PointIndex);
 }

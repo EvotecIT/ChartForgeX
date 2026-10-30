@@ -139,6 +139,16 @@ public sealed partial class VisualThemeColors {
     public ChartColor Grid => _tokens.Grid ?? _tokens.Border;
     /// <summary>Gets the weakest neutral data surface.</summary>
     public ChartColor Neutral => _tokens.Neutral ?? _tokens.Surface;
+    /// <summary>
+    /// Gets the neutral gray of the aggregate "Other" category, always drawn last and never a categorical hue: the
+    /// authored <see cref="VisualDesignTokens.Neutral"/> aggregate fill, otherwise the secondary text colour at 45% over
+    /// the plot surface.
+    /// </summary>
+    public ChartColor Other => _tokens.Neutral ?? ChartForgeX.Rendering.ChartColorMath.Blend(_tokens.Surface, _tokens.MutedForeground, OtherShare);
+    internal const double OtherShare = 0.45;
+    /// <summary>The Other paint: the authored neutral role, or a <c>color-mix()</c> of the text and surface roles.</summary>
+    internal SvgPaint OtherPaint => _tokens.Neutral.HasValue ? SvgPaint.Of(_tokens.Neutral.Value, SvgColorRole.Status)
+        : SvgPaint.Mix(Other, _tokens.Surface, SvgColorRole.Surface, _tokens.MutedForeground, SvgColorRole.Text, OtherShare);
     /// <summary>Gets the middle neutral data surface.</summary>
     public ChartColor Neutral2 => _tokens.Neutral2 ?? _tokens.Border;
     /// <summary>Gets the strongest neutral data surface.</summary>
