@@ -26,6 +26,10 @@ public sealed class SequenceArtifactPaint {
     public ChartColor? MessageLine { get; set; }
     /// <summary>Gets or sets the explicit message caption color.</summary>
     public ChartColor? MessageText { get; set; }
+    /// <summary>Gets or sets a pill drawn behind every message caption; null keeps captions without a backplate.</summary>
+    public ChartColor? MessageLabelFill { get; set; }
+    /// <summary>Gets or sets the border of the message caption pill; null draws the pill without a border.</summary>
+    public ChartColor? MessageLabelBorder { get; set; }
     /// <summary>Gets or sets the distinct number text ink; an explicit Number typography color takes precedence.</summary>
     public ChartColor? NumberText { get; set; }
     /// <summary>Gets or sets the number badge fill; null resolves through MessageLine and the native theme.</summary>

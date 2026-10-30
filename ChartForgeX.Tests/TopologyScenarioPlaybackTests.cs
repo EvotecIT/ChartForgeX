@@ -106,8 +106,15 @@ public sealed class TopologyScenarioPlaybackTests {
         var sequence = ReplicationChart().ToSequenceArtifact("replicate");
 
         Assert.Equal(new[] { "admin", "dc01", "dc02" }, sequence.Participants.Select(participant => participant.Id));
-        Assert.Equal(SequenceArtifactParticipantKind.Actor, sequence.Participants[0].Kind);
-        Assert.Equal(SequenceArtifactParticipantKind.Database, sequence.Participants[2].Kind);
+        Assert.All(sequence.Participants, participant => Assert.NotNull(participant.Card));
+        Assert.Equal(TopologyNodeKind.Person, sequence.Participants[0].Card!.IconKind);
+        Assert.Equal("PDC emulator", sequence.Participants[1].Card!.Subtitle);
+        Assert.Equal(TopologyNodeKind.Database, sequence.Participants[2].Card!.IconKind);
+        Assert.Single(sequence.ParticipantGroups);
+        Assert.Equal((1, 2), (sequence.ParticipantGroups[0].FirstParticipantIndex, sequence.ParticipantGroups[0].LastParticipantIndex));
+        Assert.NotNull(sequence.Paint.MessageLabelFill);
+        Assert.NotNull(sequence.Messages[4].Color);
+        Assert.Null(sequence.Messages[0].Color);
         Assert.Equal(5, sequence.Messages.Count);
         Assert.Single(sequence.Notes);
         Assert.Equal(SequenceArtifactMessageKind.Async, sequence.Messages[1].Kind);
@@ -118,6 +125,8 @@ public sealed class TopologyScenarioPlaybackTests {
         Assert.Equal("3", sequence.Messages[2].Metadata[TopologyChartExtensions.ScenarioStepMetadataKey]);
         var svg = sequence.ToSvg();
         Assert.Contains("data-cfx-scenario-step=\"3\"", svg, StringComparison.Ordinal);
+        Assert.Contains("sequence-participant-icon", svg, StringComparison.Ordinal);
+        Assert.Contains("sequence-message-label-pill", svg, StringComparison.Ordinal);
     }
 
     [Fact]

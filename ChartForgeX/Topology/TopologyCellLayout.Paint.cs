@@ -73,8 +73,10 @@ public sealed partial class TopologyCellLayout {
             if (toSource && ArrowAt(path, fromEnd: false, out var sourceArrow, out var sourceDirection)) arrows.Add((sourceArrow, sourceDirection, edge, emphasis));
         }
 
+        var crossings = new HashSet<TopologyCellPoint>();
         foreach (var item in masks) {
             var edgeCell = item.Value;
+            if (canvas.InBounds(item.Key.Column, item.Key.Row) && canvas.Get(item.Key.Column, item.Key.Row).Role == TopologyCellRole.GroupBorder) crossings.Add(item.Key);
             canvas.Set(item.Key.Column, item.Key.Row, Cell(LineGlyph(edgeCell.Bits, edgeCell.Heavy, edgeCell.AllDashed, ascii), TopologyCellRole.Edge, edgeCell.Edge!.Id, edgeCell.Edge.Status, edgeCell.Emphasis));
         }
 
@@ -88,8 +90,8 @@ public sealed partial class TopologyCellLayout {
             var at = edge.LabelPosition.Value;
             var text = " " + edge.Label!.Trim() + " ";
             if (edge.LabelOnLine) {
-                var limit = at.Column + TerminalTextWidth.Measure(text);
-                if (CanWrite(canvas, at.Column, at.Row, limit, allowEdges: true)) WriteText(canvas, at.Column, at.Row, text, limit, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
+                var width = TerminalTextWidth.Measure(text);
+                if (LineLabelStart(canvas, edge, at, width, crossings) is int start) WriteText(canvas, start, at.Row, text, start + width, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
             } else {
                 var fitted = TerminalTextWidth.Fit(edge.Label!.Trim(), Math.Max(0, Columns - at.Column));
                 var limit = at.Column + TerminalTextWidth.Measure(fitted);
@@ -165,6 +167,36 @@ public sealed partial class TopologyCellLayout {
                 column = WriteText(canvas, column + 1, firstRow + index, item.Text, canvas.Columns, TopologyCellRole.LegendText, null, item.Status, TopologyCellEmphasis.Normal) + 3;
             }
         }
+    }
+
+    /// <summary>
+    /// Finds where a label fits on its own horizontal run: only over the edge's line, never over a group border it
+    /// crosses or an arrowhead, as close to the middle of the run as possible.
+    /// </summary>
+    private static int? LineLabelStart(TopologyCellCanvas canvas, TopologyCellEdge edge, TopologyCellPoint at, int width, HashSet<TopologyCellPoint> crossings) {
+        for (var i = 0; i + 1 < edge.Points.Count; i++) {
+            var a = edge.Points[i];
+            var b = edge.Points[i + 1];
+            if (a.Row != at.Row || b.Row != at.Row) continue;
+            var left = Math.Min(a.Column, b.Column) + 1;
+            var right = Math.Max(a.Column, b.Column) - 1;
+            var center = at.Column + width / 2;
+            if (center < left - 1 || center > right + 1) continue;
+            int? best = null;
+            for (var start = left; start + width - 1 <= right; start++) {
+                var fits = true;
+                for (var column = start; column < start + width && fits; column++) {
+                    var cell = canvas.Get(column, at.Row);
+                    fits = cell.Role == TopologyCellRole.Edge && cell.ElementId == edge.Id && !crossings.Contains(new TopologyCellPoint(column, at.Row));
+                }
+
+                if (fits && (best == null || Math.Abs(start + width / 2 - (left + right) / 2) < Math.Abs(best.Value + width / 2 - (left + right) / 2))) best = start;
+            }
+
+            return best;
+        }
+
+        return null;
     }
 
     private bool InsideNode(TopologyCellPoint cell) => Nodes.Any(node => node.Contains(cell.Column, cell.Row));

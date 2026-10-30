@@ -102,7 +102,8 @@ internal static partial class TopologyRenderPrimitives {
                     var routeBox = monitoring ? box.Expand(MonitoringRouteLabelMargin) : box;
                     var score = (OverlapScore(box, obstacles) + OverlapScore(box, placedLabels, monitoring ? 8 : 3)) * 100
                         + OverlapScore(box, obstacles, RouteLabelCardMargin)
-                        + Distance(middle, center) * 0.05;
+                        + Distance(middle, center) * 0.05
+                        + (monitoring ? 0 : JunctionPenalty(box, points, edgeSegments));
                     var crossesOwnRoute = false;
                     foreach (var segment in edgeSegments) {
                         if (!routeBox.Intersects(segment.Start, segment.End)) continue;
@@ -124,6 +125,25 @@ internal static partial class TopologyRenderPrimitives {
         // A short connected stair can carry a badge even when none of its individual runs can.
         // Monitoring labels retain their normal-clearance search rather than moving onto the route.
         return monitoring ? null : PlaceLabelOnPolyline(chart, options, edge, points, width, height, obstacles, placedLabels, edgeSegments);
+    }
+
+    // A label beside a bend or a split reads as belonging to the wrong branch, so each route vertex near the box costs.
+    private const double RouteLabelJunctionClearance = 10;
+    private const double RouteLabelJunctionCost = 30;
+
+    private static double JunctionPenalty(LabelBox box, IReadOnlyList<ChartPoint> ownRoute, IReadOnlyList<EdgeSegment> edgeSegments) {
+        var zone = box.Expand(RouteLabelJunctionClearance);
+        var first = ownRoute[0];
+        var last = ownRoute[ownRoute.Count - 1];
+        var cost = 0.0;
+        foreach (var segment in edgeSegments) {
+            foreach (var point in new[] { segment.Start, segment.End }) {
+                if (Distance(point, first) < .5 || Distance(point, last) < .5) continue;
+                if (zone.Contains(point)) cost += RouteLabelJunctionCost;
+            }
+        }
+
+        return cost;
     }
 
     private static (ChartPoint Center, ChartPoint Anchor)? PlaceLabelOnPolyline(TopologyChart chart, TopologyRenderOptions options,

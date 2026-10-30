@@ -41,6 +41,7 @@ internal static class ArchitectureExamples {
             var sequence = chart.ToSequenceArtifact(scenario.Id);
             File.WriteAllText(Path.Combine(output, name + "-" + scenario.Id + "-sequence.svg"), sequence.ToSvg(), Encoding.UTF8);
             File.WriteAllBytes(Path.Combine(output, name + "-" + scenario.Id + "-sequence.png"), sequence.ToPng());
+            sequence.ToVisualArtifact().SaveHtml(Path.Combine(output, name + "-" + scenario.Id + "-sequence.html"));
         }
     }
 

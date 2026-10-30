@@ -188,10 +188,14 @@ internal static partial class SequencePreparedCompiler {
                 : new[] { new ChartPoint(item.X1, item.Y), new ChartPoint(item.X2, item.Y) });
             using (Group(builder, item, "sequence-message", message.Text, MessageAttributes(message))) {
                 builder.Path(item.CapturedRoute?.Path ?? new ChartPath(points.Select((p, i) => i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)).ToArray()),
-                    stroke: paint.MessageLine ?? colors.Accent, strokeWidth: context.Theme.SeriesStrokeWidth, role: "sequence-message-line", dash: message.LineStyle == SequenceArtifactMessageLineStyle.Dashed ? new[] { 6d, 5d } : null);
-                MessageArrows(builder, message, points, colors, context.Theme.SeriesStrokeWidth, paint.MessageLine ?? colors.Accent,
+                    stroke: message.Color ?? paint.MessageLine ?? colors.Accent, strokeWidth: context.Theme.SeriesStrokeWidth, role: "sequence-message-line", dash: message.LineStyle == SequenceArtifactMessageLineStyle.Dashed ? new[] { 6d, 5d } : null);
+                MessageArrows(builder, message, points, colors, context.Theme.SeriesStrokeWidth, message.Color ?? paint.MessageLine ?? colors.Accent,
                     item.CapturedRoute?.Curved == true, item.CapturedRoute?.Center);
-                if (model.ParticipantGroups.Count > 0 && item.Text.Length > 0)
+                if (paint.MessageLabelFill is ChartColor pill && item.Text.Length > 0) {
+                    var pillHeight = item.LabelBounds.Height + 4;
+                    builder.Rect(new ChartRect(item.LabelBounds.X - 7, item.LabelBounds.Y - 2, item.LabelBounds.Width + 14, pillHeight), pill, paint.MessageLabelBorder,
+                        paint.MessageLabelBorder.HasValue ? context.Theme.AxisStrokeWidth : 0, pillHeight / 2, "sequence-message-label-pill");
+                } else if (model.ParticipantGroups.Count > 0 && item.Text.Length > 0)
                     builder.Rect(new ChartRect(item.LabelBounds.X - 3, item.LabelBounds.Y - 1, item.LabelBounds.Width + 6, item.LabelBounds.Height + 2), colors.Surface);
                 if (item.NumberBadgeBounds.HasValue) {
                     PaintNumberBadge(builder,layout,item,paint,colors);

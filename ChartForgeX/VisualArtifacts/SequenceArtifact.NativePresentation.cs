@@ -14,6 +14,11 @@ public sealed partial class SequenceArtifactParticipant {
     public string? Symbol { get; set; }
     /// <summary>Gets or sets this participant's explicit native fill; null uses the sequence role paint.</summary>
     public ChartColor? Fill { get; set; }
+    /// <summary>
+    /// Gets or sets an optional card presentation (icon, subtitle, status dot) for ordinary participants, matching the
+    /// topology node card; null keeps the ordinary participant box. Other participant kinds keep their notation.
+    /// </summary>
+    public SequenceParticipantCard? Card { get; set; }
     /// <summary>Gets or sets an optional participant border; null retains the shared role border.</summary>
     public ChartColor? Border {get;set;}
     /// <summary>Gets or sets an optional activation surface for this participant; null retains the shared activation paint.</summary>

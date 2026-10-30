@@ -234,6 +234,7 @@ public sealed partial class TopologyCellLayout {
 
         var edgeModels = chart.Edges.GroupBy(edge => edge.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         var labelSegments = new Dictionary<string, int>(StringComparer.Ordinal);
+        var labelRanges = new Dictionary<string, (double From, double To)>(StringComparer.Ordinal);
         var boundsById = nodeBounds.ToDictionary(item => item.Node.Id, item => item.Bounds, StringComparer.Ordinal);
         var routes = new Dictionary<string, List<ChartPoint>>(StringComparer.Ordinal);
         foreach (var diagnostic in report.Edges) {
@@ -244,9 +245,9 @@ public sealed partial class TopologyCellLayout {
             var segment = LongestHorizontalRun(points);
             if (segment < 0) continue;
             labelSegments[diagnostic.Id] = segment;
-            var a = points[segment];
-            var c = points[segment + 1];
-            x.Span(Math.Min(a.X, c.X), Math.Max(a.X, c.X), TerminalTextWidth.Measure(edge.Label!.Trim()) + 6);
+            var range = LabelGap(points[segment], points[segment + 1], groupBounds.Values);
+            labelRanges[diagnostic.Id] = range;
+            x.Span(range.From, range.To, TerminalTextWidth.Measure(edge.Label!.Trim()) + 6);
         }
 
         SeparateFromGroups(chart, nodeBounds, groupBounds, routes.Values, x, y);
@@ -289,9 +290,9 @@ public sealed partial class TopologyCellLayout {
             if (options.IncludeEdgeLabels && !string.IsNullOrWhiteSpace(edge.Label)) {
                 if (labelSegments.TryGetValue(diagnostic.Id, out var segment)) {
                     var a = mapped[segment];
-                    var c = mapped[segment + 1];
+                    var range = labelRanges[diagnostic.Id];
                     var width = TerminalTextWidth.Measure(edge.Label!.Trim()) + 2;
-                    labelAt = new TopologyCellPoint((a.Column + c.Column) / 2 - width / 2, a.Row);
+                    labelAt = new TopologyCellPoint((mapX.Map(range.From) + mapX.Map(range.To)) / 2 - width / 2, a.Row);
                     onLine = true;
                 } else {
                     labelAt = VerticalLabelPosition(route);
@@ -475,6 +476,30 @@ public sealed partial class TopologyCellLayout {
             points[end] = new TopologyCellPoint(column, point.Row);
             points[neighbour] = new TopologyCellPoint(column, next.Row);
         }
+    }
+
+    /// <summary>The widest part of a horizontal run that crosses no group border, so a label never covers a boundary.</summary>
+    private static (double From, double To) LabelGap(ChartPoint a, ChartPoint b, IEnumerable<ChartRect> groups) {
+        var from = Math.Min(a.X, b.X);
+        var to = Math.Max(a.X, b.X);
+        var cuts = new List<double> { from, to };
+        foreach (var group in groups) {
+            if (a.Y < group.Top || a.Y > group.Bottom) continue;
+            foreach (var border in new[] { group.Left, group.Right }) {
+                if (border > from + .25 && border < to - .25) cuts.Add(border);
+            }
+        }
+
+        cuts.Sort();
+        var best = (From: from, To: to);
+        var widest = -1.0;
+        for (var i = 0; i + 1 < cuts.Count; i++) {
+            if (cuts[i + 1] - cuts[i] <= widest) continue;
+            widest = cuts[i + 1] - cuts[i];
+            best = (cuts[i], cuts[i + 1]);
+        }
+
+        return best;
     }
 
     private static int LongestHorizontalRun(IReadOnlyList<ChartPoint> points) {

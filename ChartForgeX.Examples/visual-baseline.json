@@ -98,6 +98,150 @@
       }
     },
     {
+      "name": "architecture-ad-replication",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1808,
+      "height": 332,
+      "logicalWidth": 1808.0,
+      "logicalHeight": 332.0,
+      "svg": {
+        "minVisualNodes": 39,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 300128,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 737,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "architecture-ad-replication-link-down-sequence",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 570,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "architecture-ad-replication-replicate-sequence",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1139,
+      "height": 812,
+      "logicalWidth": 1139.2,
+      "logicalHeight": 811.65,
+      "svg": {
+        "minVisualNodes": 52,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 462840,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 852,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "architecture-tierbridge-file-journey",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1637,
+      "height": 484,
+      "logicalWidth": 1637.0,
+      "logicalHeight": 484.0,
+      "svg": {
+        "minVisualNodes": 51,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 396154,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 706,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "architecture-tierbridge-file-journey-approved-sequence",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1572,
+      "height": 788,
+      "logicalWidth": 1572.0,
+      "logicalHeight": 787.65,
+      "svg": {
+        "minVisualNodes": 56,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 619368,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 654,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "architecture-tierbridge-file-journey-blocked-sequence",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1330,
+      "height": 572,
+      "logicalWidth": 1330.0,
+      "logicalHeight": 571.65,
+      "svg": {
+        "minVisualNodes": 44,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 380380,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 655,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "audience-pictorial-candy",
       "layout": {
         "heightMode": "fixed",

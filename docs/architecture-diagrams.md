@@ -6,7 +6,9 @@ response payloads. The parser produces an ordinary `TopologyChart`, so the same 
 
 - the static diagram (SVG, PNG, static HTML);
 - the interactive player: step list, previous/play/next, a scrubber, keyboard keys, the active step's payload, and the
-  matching sequence diagram kept in step;
+  matching sequence diagram kept in step, drawn in the topology's visual language (node cards with icons, subtitles and
+  status dots as participants, groups as participant bands, neutral message lines with label pills, dashed replies, and
+  the critical colour only for failed calls);
 - one highlighted frame per step (SVG or PNG), a step-by-step visual story (SVG, PNG, GIF, APNG, HTML);
 - a terminal drawing that text output and ConsoleMonster share.
 
@@ -137,7 +139,7 @@ Text output covers architecture, topology and flow diagrams. HTML opens the inte
 var chart = new MarkupArchitectureParser().Parse(markdown).Document!;
 
 var scenario = chart.ResolveScenario("create");          // source, target, label and payload per step
-var sequence = chart.ToSequenceArtifact("create");       // the matching sequence diagram
+var sequence = chart.ToSequenceArtifact("create");       // the matching sequence diagram, as topology-style cards
 var frame = chart.PrepareScenarioStep("create", 1);      // step 2 highlighted, same layout as chart.Prepare()
 File.WriteAllBytes("step-2.png", frame.ToPng());
 
