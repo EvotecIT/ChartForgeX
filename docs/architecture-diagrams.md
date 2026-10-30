@@ -1,3 +1,8 @@
+---
+title: Architecture diagrams
+description: Render architecture diagrams and use case playback from typed markup, with matching sequence diagrams, static exports and terminal output.
+---
+
 # Architecture diagrams and use case playback
 
 `chartforgex architecture v1` describes a system and the request flows that run through it in one text block:
