@@ -12,6 +12,9 @@ namespace ChartForgeX.Interactivity.Html;
 // The portable layout IR retains native paint and source semantics. It contains no sampled widths or coordinate derivatives.
 internal static class HtmlChartLayoutSpecification {
     internal static string Serialize(Chart chart, int minimum, int maximum, int height, int printWidth, string? scope, out string svg) {
+        var matrixWindow = chart.Options.HeatmapColumnWindow;
+        // Serialize every source column, retaining the caller's opening position independently of native preparation.
+        chart.Options.HeatmapColumnWindow = ChartHeatmapColumnWindow.Squeeze;
         chart.Options.XAxis = chart.Options.XAxis.Clone(); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         chart.Options.YAxis = chart.Options.YAxis.Clone(); chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
         chart.WithSize(maximum, height);
@@ -36,7 +39,7 @@ internal static class HtmlChartLayoutSpecification {
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
-            .Append(matrixNode == null ? string.Empty : MatrixSettings(chart, matrixNode, prepared.Regions, plot))
+            .Append(matrixNode == null ? string.Empty : MatrixSettings(chart, matrixNode, prepared.Regions, plot, matrixWindow))
             .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
@@ -61,7 +64,7 @@ internal static class HtmlChartLayoutSpecification {
         }
         return output.Append("]}").ToString();
     }
-    private static string MatrixSettings(Chart chart, XElement matrix, System.Collections.Generic.IEnumerable<VisualSemanticRegion> regions, ChartRect plot) {
+    private static string MatrixSettings(Chart chart, XElement matrix, System.Collections.Generic.IEnumerable<VisualSemanticRegion> regions, ChartRect plot, ChartHeatmapColumnWindow window) {
         var labels = regions.Where(item => item.Role == "heatmap-row-label").ToArray();
         var start = labels.Length == 0 ? plot.Left : labels.Min(item => item.Bounds.Left);
         var columns = (string?)matrix.Attribute("data-cfx-column-count") ?? "0";
@@ -75,7 +78,8 @@ internal static class HtmlChartLayoutSpecification {
             return new { Top = top, group.Height };
         }).OrderBy(group => group.Top);
         return ",\"matrix\":[" + columns + "," + gap + "," + N(start) + "," + chart.Series.Count + ",["
-            + string.Join(",", headers.Select(group => "[" + N(group.Top) + "," + N(group.Height) + "]")) + "]]";
+            + string.Join(",", headers.Select(group => "[" + N(group.Top) + "," + N(group.Height) + "]")) + "]],\"matrixWindow\":"
+            + HtmlJsonString.Encode(window.ToString()) + ",\"matrixReversed\":" + (chart.Options.XAxis.Reversed ? "true" : "false");
     }
     // Schedule lane labels sit in a left gutter sized for the widest drawing. The browser may narrow it down to this
     // minimum and truncate labels there, so a narrow container keeps a usable plot instead of a fixed wide gutter.

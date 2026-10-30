@@ -65,7 +65,6 @@ public sealed class HtmlResponsiveChartRenderer {
         var drawingHeight = height ?? size.Height;
         var fallbackWidth = printWidth ?? Math.Max(minimumWidth, Math.Min(maximumWidth, size.Width));
         try {
-            chart.Options.HeatmapColumnWindow = ChartHeatmapColumnWindow.Squeeze;
             var specification = HtmlChartLayoutSpecification.Serialize(chart, minimumWidth, maximumWidth, drawingHeight, fallbackWidth, idScope, out var fallback);
             var data = compressLayouts ? Compress(specification) : specification;
             var attribute = compressLayouts ? "data-cfx-spec-gzip" : "data-cfx-spec";

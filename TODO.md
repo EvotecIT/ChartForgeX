@@ -36,6 +36,12 @@ Source coverage, API usability, whole-chart appearance, interaction, language fi
 
 Mermaid correctness, API design, and quality infrastructure can proceed independently where their owners do not overlap. A pending review or release holds only the dependent step. Keep one coherent implementation PR per requested outcome; the rows above are planning stages, not automatic PR boundaries.
 
+## Wave 3 visual polish
+
+- [ ] Match the static light heatmap's missing-cell marks to their key: use the same faint hatch, or use plain outlines in both. Verify native SVG/PNG and compact responsive markup size.
+- [ ] Give the availability gallery's maximum band an endpoint caption such as `100%` rather than `Complete ≥ 100%`. Its caption is generated from a generic discrete threshold, so preserve exact band semantics without an availability-specific formatter rule.
+- [ ] Align the value and percentage columns across pie/donut legend rows in native and responsive output, including wrapped rows and long names.
+
 ## 1. Correctness and quality evidence
 
 The [quality loop](README.md#development-and-quality-checks) and `Build/Test-BrowserQuality.ps1` cover native and browser contracts, paired output, frameworks, AOT and packed consumers. The required Windows package gate includes net472 execution and CLI installation. Browser/platform prerequisites remain explicit skips in the ordinary loop; required browser proof rejects skips and missing setup. Native touch and browser-emulated accessibility settings do not qualify physical pinch or actual assistive technology.

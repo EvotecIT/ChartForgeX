@@ -308,6 +308,8 @@ independent SVG definition IDs, even when two charts have identical content.
 
 Rectangular heatmaps use layout 3. At narrow widths the plot scrolls horizontally, keeping a minimum cell width and a sticky row-label gutter; the full row name remains in a tooltip. The first and last ordered column captions remain visible at the ends of the scroll range. Static fixed-width heatmaps use their configured column-window policy; the responsive host retains all columns.
 
+Responsive heatmaps initially show the latest columns. Set `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to open at the left edge instead. A reader at the newest edge stays there through resize; scrolling back into the history preserves the same first visible column when the card changes width. Print sizing preserves the screen position for the return to the page.
+
 The specification declares a plot band for Cartesian, matrix and state-timeline charts.
 Content before the band stays in place, the band stretches, and content after it
 (a lane summary column, for example) moves with the right edge. State timelines also

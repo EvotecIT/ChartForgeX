@@ -45,6 +45,8 @@ The matrix tuple is `[columnCount, cellGap, gutterStart, rowCount, headerBands]`
 
 Explicit layout widths and automatic host measurements use CSS layout pixels, so a scaled container keeps the same gutter and captions through resize and print passes.
 
+The optional `matrixWindow` field retains the caller's `HeatmapColumnWindow` policy (`Latest` by default); `matrixReversed` retains the X-axis direction. A scrolling heatmap initially exposes its latest source column, at the right edge unless the axis is reversed. `Squeeze` opens at the left edge. Resizing keeps readers at the end when they were pinned there, otherwise it preserves the first visible column, including through a temporarily non-scrolling width or a print pass. Programmatic scrolling also updates the pinned-label transform.
+
 Missing positions render as `heatmap-missing-cell` outlines in both static and responsive output. They carry no value, link or `heatmap-cell` identity. A categorical key includes one hatched, outlined “No data” entry when any position is missing. Numeric keys use the same missing-data swatch. Fixed frames retain every row and report `matrix.cell-density` when their cell height is below 12 px; `WithHeatmapNaturalHeight()` remains the opt-in for a taller static frame.
 
 ## Responsive layout 2

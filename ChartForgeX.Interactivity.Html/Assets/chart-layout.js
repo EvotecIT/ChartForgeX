@@ -29,7 +29,7 @@
     namespace(svg);
     if(spec.schema==='chartforgex/layout-4')return window.ChartForgeXLayoutRadial.create(host,spec,svg);
     let source,legend,sticky;
-    let lastWidth=0;
+    let lastWidth=0,matrixViewport;
     function matrixOverlay(){
       if(!spec.matrix)return null;
       const ns='http://www.w3.org/2000/svg',group=document.createElementNS(ns,'g');
@@ -51,10 +51,20 @@
       const previousOverflow=host.style.overflowX,previousPadding=host.style.scrollPaddingLeft;
       host.style.overflowX='auto';
       const scroll=()=>group.setAttribute('transform',`translate(${host.scrollLeft} 0)`);
-      host.addEventListener('scroll',scroll,{passive:true});
-      return {group,background,header,scroll,dispose:()=>{host.removeEventListener('scroll',scroll);host.style.overflowX=previousOverflow;host.style.scrollPaddingLeft=previousPadding;}};
+      const remember=()=>{
+        scroll();
+        // Ignore layout/clamping events; only a scroll in the current viewport changes the retained column.
+        if(matrixViewport && !matrixViewport.printing && host.clientWidth===matrixViewport.width && matrixViewport.maximum>0 && Math.abs(host.scrollLeft-matrixViewport.assigned)>.5){
+          matrixViewport.end=matrixViewport.maximum-host.scrollLeft<=1;
+          matrixViewport.column=host.scrollLeft/matrixViewport.pitch;
+          matrixViewport.assigned=host.scrollLeft;
+        }
+      };
+      host.addEventListener('scroll',remember,{passive:true});
+      return {group,background,header,scroll,dispose:()=>{host.removeEventListener('scroll',remember);host.style.overflowX=previousOverflow;host.style.scrollPaddingLeft=previousPadding;}};
     }
     function layout(requestedWidth,printing=false){
+      if(matrixViewport)matrixViewport.printing=printing;
       const available=requestedWidth||host.clientWidth;
       if(!host.isConnected || !available || (typeof host.checkVisibility === "function" ? !host.checkVisibility() : !host.getClientRects().length))return;
       const hostWidth=printing ? available : Math.min(spec.maximum,Math.max(spec.minimum,available));
@@ -130,6 +140,15 @@
           if(frame.tagName.toLowerCase()==='rect')frame.setAttribute('height',Math.max(0,height-Number(frame.getAttribute('y'))));
         if(sticky)sticky.background.setAttribute('height',Math.max(0,height-plot[1]));
         size();
+      }
+      if(sticky && !printing){
+        matrixViewport ||= {end:spec.matrixWindow!=='Squeeze' && !spec.matrixReversed,column:0};
+        matrixViewport.width=host.clientWidth;
+        matrixViewport.maximum=Math.max(0,host.scrollWidth-host.clientWidth);
+        matrixViewport.pitch=(plot[2]+spec.matrix[1])/spec.matrix[0];
+        host.scrollLeft=matrixViewport.end?matrixViewport.maximum:matrixViewport.column*matrixViewport.pitch;
+        matrixViewport.assigned=host.scrollLeft;
+        sticky.scroll();
       }
       host.dataset.cfxLayoutWidth=String(hostWidth);host.dataset.cfxLayoutVersion=spec.schema==='chartforgex/layout-3'?'spec-3':spec.schema==='chartforgex/layout-2'?'spec-2':'spec-1';lastWidth=hostWidth;
     }

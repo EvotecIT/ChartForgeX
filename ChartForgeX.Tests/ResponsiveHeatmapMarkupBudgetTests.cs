@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace ChartForgeX.Tests;
 
-public sealed class ResponsiveHeatmapMarkupBudgetTests {
+public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     private readonly ITestOutputHelper output;
     public ResponsiveHeatmapMarkupBudgetTests(ITestOutputHelper output) => this.output = output;
 
