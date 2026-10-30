@@ -18,6 +18,15 @@ public static class ChartDomRoles {
     /// <summary>The attribute that carries a group name on schedule group headers and on the rows inside that group.</summary>
     public const string LaneGroupAttribute = "data-cfx-lane-group";
 
+    /// <summary>A shared-domain axis strip without plot marks or frame.</summary>
+    public const string StripAxis = "strip-axis";
+    /// <summary>The full-width horizontal line in an axis strip.</summary>
+    public const string StripAxisLine = "strip-axis-line";
+    /// <summary>A shared-domain tick line in an axis strip.</summary>
+    public const string StripAxisTick = "strip-axis-tick";
+    /// <summary>A text group for an axis-strip caption.</summary>
+    public const string StripAxisLabel = "strip-axis-label";
+
     /// <summary>A group wrapping one schedule lane's label and summary text. It identifies the lane but is not an interaction target.</summary>
     public const string ScheduleRow = "schedule-row";
 

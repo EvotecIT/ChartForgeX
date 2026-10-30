@@ -7,8 +7,6 @@ namespace ChartForgeX.Core;
 /// optional short text drawn in the cell, an optional tooltip, and an optional link.
 /// </summary>
 public readonly struct ChartHeatmapCell {
-    private static readonly char[] PathDelimiters = { '/', '?', '#' };
-
     /// <summary>Initializes a categorical heatmap cell.</summary>
     /// <param name="state">The state key, for example <c>pass</c> or <c>critical</c>.</param>
     /// <param name="text">Optional short text drawn inside the cell, for example a count.</param>
@@ -18,7 +16,7 @@ public readonly struct ChartHeatmapCell {
     /// <c>https</c>, and <c>mailto</c> links are accepted; other schemes such as <c>javascript:</c> are rejected.</param>
     public ChartHeatmapCell(string state, string? text = null, string? tooltip = null, string? href = null) {
         if (string.IsNullOrWhiteSpace(state)) throw new ArgumentException("Heatmap cell state must not be empty.", nameof(state));
-        if (href != null && !IsSafeHref(href)) throw new ArgumentException("Heatmap cell links must be relative, fragment, http, https, or mailto links.", nameof(href));
+        if (href != null && ChartHyperlink.SafeHref(href) == null) throw new ArgumentException("Heatmap cell links must be relative, fragment, http, https, or mailto links.", nameof(href));
         State = state;
         Text = text;
         Tooltip = tooltip;
@@ -37,20 +35,16 @@ public readonly struct ChartHeatmapCell {
     /// <summary>Gets the optional link target.</summary>
     public string? Href { get; }
 
-    private static bool IsSafeHref(string href) {
-        var value = href.Trim();
-        if (value.Length == 0) return false;
-        foreach (var character in value) {
-            if (char.IsControl(character) || char.IsWhiteSpace(character)) return false;
-        }
+    /// <summary>Gets optional immutable navigation, accessibility and host metadata.</summary>
+    public ChartMarkOptions? MarkOptions { get; }
 
-        var colon = value.IndexOf(':');
-        if (colon < 0) return true;
-        var delimiter = value.IndexOfAny(PathDelimiters);
-        if (delimiter >= 0 && delimiter < colon) return true;
-        var scheme = value.Substring(0, colon);
-        return scheme.Equals("http", StringComparison.OrdinalIgnoreCase) ||
-            scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ||
-            scheme.Equals("mailto", StringComparison.OrdinalIgnoreCase);
+    /// <summary>Returns a copy with replacement mark metadata, retaining all authored values.</summary>
+    /// <param name="options">Immutable metadata, or null to clear it.</param>
+    /// <returns>A new observation. The current observation is unchanged.</returns>
+    public ChartHeatmapCell WithMarkOptions(ChartMarkOptions? options) => new(this, options);
+
+    private ChartHeatmapCell(ChartHeatmapCell source, ChartMarkOptions? options) {
+        this = source;
+        MarkOptions = options;
     }
 }

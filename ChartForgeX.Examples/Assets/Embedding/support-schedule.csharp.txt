@@ -1,0 +1,11 @@
+var current = ChartGanttItem.OpenEnded(
+    new DateTime(2026, 3, 1));
+series.ReplaceGanttItems(new[] { current });
+series.WithRowOptions(new ChartMarkOptions(
+    current: true,
+    accessibleLabel: "2026, current"));
+chart.WithGanttOpenEndStyle(
+    ChartGanttOpenEndStyle.Fade);
+chart.WithXAxisBounds(
+    new DateTime(2026, 1, 1).ToOADate(),
+    new DateTime(2027, 1, 1).ToOADate());

@@ -11,6 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSceneSvgRenderer {
     private static string ResolvePaint(ChartColor? color, SvgPaint? paint, VisualSvgOptions? options) {
         if (!color.HasValue) return "none";
+        if (color.Value.CssVariable != null) return color.Value.ToCss();
         // Unbound paints stay literal. A renderer must retain provenance explicitly instead of
         // guessing whether an equal RGB value is a theme token, derived contrast ink or highlight.
         if (!paint.HasValue || paint.Value.Value == null) return color.Value.ToCss();
@@ -33,8 +34,8 @@ internal static partial class VisualSceneSvgRenderer {
             (options.EffectProfile != VisualSvgEffectProfile.Baked || options.EffectRasterOptions != null);
         var textRasterOptions = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic && options.EffectRasterOptions != null;
         if (colorScopes == null && (options == null || options.Variables == null &&
-            options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive &&
-            !options.PatternTiles && !effectOptions && !textRasterOptions)) return identity;
+            options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive && !options.FluidWidth &&
+            !options.PatternTiles && !effectOptions && !textRasterOptions && !options.HasPageFonts)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
@@ -52,7 +53,11 @@ internal static partial class VisualSceneSvgRenderer {
             }
             writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
             if (options?.Responsive == true) writer.Write("responsive");
+            if (options?.FluidWidth == true) writer.Write("fluid-width");
             if (options?.PatternTiles == true) writer.Write("pattern-tiles");
+            if (options?.HasPageFonts == true) {
+                writer.Write("page-fonts"); writer.Write(options.PageFontFamily!); writer.Write(options.PageFontSize!);
+            }
             for (var i = 0; i < scene.Nodes.Count; i++) {
                 var node = scene.Nodes[i];
                 var paintOptions = colorScopes == null ? options : colorScopes[i];
@@ -89,10 +94,7 @@ internal static partial class VisualSceneSvgRenderer {
         for (var i = 0; i < scene.Nodes.Count; i++) {
             if (scene.Nodes[i] is VisualSceneGroup group) {
                 stack.Push(current);
-                if (group.ColorScope != null) current = new VisualSvgOptions(colorVariables: group.ColorScope.Variables,
-                    linkTarget: options?.LinkTarget ?? VisualSvgLinkTarget.SameContext,
-                    effectProfile: options?.EffectProfile ?? VisualSvgEffectProfile.Baked, effectRasterOptions: options?.EffectRasterOptions)
-                    .WithTextPresentation(options?.TextPresentation ?? VisualSvgTextPresentation.Browser);
+                if (group.ColorScope != null) current = (current ?? new VisualSvgOptions()).WithColorScope(group.ColorScope.Variables);
             }
             result[i] = current;
             if (scene.Nodes[i] is VisualSceneEndGroup) current = stack.Pop();

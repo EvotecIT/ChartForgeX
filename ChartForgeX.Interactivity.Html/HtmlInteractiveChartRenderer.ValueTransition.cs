@@ -63,8 +63,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             for (var index = 0; index < frames.Count; index++) {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (index > 0) json.Append(',');
-                var svg = new VisualSvgOptions((from.SvgOptions.IdPrefix ?? "cfx-native-value") + "-motion-" + drawing + "-" + index.ToString(CultureInfo.InvariantCulture),
-                    from.SvgOptions.ColorVariables, from.SvgOptions.LinkTarget, from.SvgOptions.Responsive, from.SvgOptions.EffectProfile, from.SvgOptions.EffectRasterOptions).WithPatternTiles(from.SvgOptions.PatternTiles).WithTextPresentation(from.SvgOptions.TextPresentation);
+                var svg = from.SvgOptions.WithIdPrefix((from.SvgOptions.IdPrefix ?? "cfx-native-value") + "-motion-" + drawing + "-" + index.ToString(CultureInfo.InvariantCulture));
                 json.Append(HtmlJsonString.Encode(frames[index].ToSvg(svg)));
                 if (json.Length > 1024 * 1024) throw new InvalidOperationException("Native value transition presentation budget exceeded.");
             }

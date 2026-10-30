@@ -98,6 +98,8 @@
         "visual-blocks.md",
         "visual-canvas.md",
         "raster-animation.md",
+        "embedding.md",
+        "dom-contract.md",
         "label-placement.md",
         "chord.md",
         "topology-icon-packs.md",

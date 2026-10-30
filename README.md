@@ -345,6 +345,8 @@ chart.SaveInteractiveHtml("explore.html", options => {
 
 The adapter also offers legend controls, crosshairs, brushing, synchronized charts, and zoom/pan. Connected applications can request native X and primary-Y/XY windows for supported numeric/time Cartesian and financial families: C# prepares fresh ticks and geometry, retains full-data domains, and returns the matching HTML section and detached scene. Optional overview/range controls and explicit included-time sessions use those native source domains. Source-coordinate notes, lines and channels render through the same native scene. Standalone zoom transforms the rendered SVG. See [interactivity](docs/interactivity.md#connected-native-x-windows) for the connected callback and feature policies, and [graph explorer](docs/graph-explorer.md) for large topology navigation.
 
+For static ASP.NET Core and Blazor SSR pages, use [linked marks, shared-scale strips and fluid-width SVG](docs/embedding.md). The page can supply colours and fonts, keep row labels in HTML, and include an accessible data table without script.
+
 For a page that refreshes data, prepare a new chart section in C# and pass it to the adapter's `ChartForgeXCharts` controller. Its `mount`, `update`, `resize` and `dispose` methods manage the browser view and its resources. Updates retain surviving explicit series and observation IDs; see the [chart lifecycle example](docs/interactivity.md#updating-embedded-charts).
 
 ## Choose the packages you need

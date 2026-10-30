@@ -16,6 +16,7 @@
       {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "Native families, safe styles, bounded grammar, diagnostics and pinned reference limits.", "source": "mermaid-support-matrix.md"}
     ] },
     { "title": "Compose output", "summary": "Choose a composition surface for exact facts or deliberately placed artwork.", "guides": [
+      {"slug": "embedding", "title": "Server-rendered pages", "summary": "Native mark links, page themes, readable fluid SVG and shared-domain HTML-labelled strips.", "source": "embedding.md"},
       {"slug": "visual-blocks", "title": "Visual blocks", "summary": "Tables, lists, metric cards, timelines and mixed visual grids.", "source": "visual-blocks.md"},
       {"slug": "visual-canvas", "title": "Visual canvas", "summary": "Layered text, images and rendered visuals on a fixed-size canvas.", "source": "visual-canvas.md"},
       {"slug": "raster-animation", "title": "Encode RGBA animation frames", "summary": "GIF/APNG frame timing, source lifetime and bounded encoding.", "source": "raster-animation.md"}
@@ -27,6 +28,7 @@
       {"slug": "graph-explorer", "title": "Graph explorer", "summary": "Host-neutral scenes, hierarchy, patches and native browser backends.", "source": "graph-explorer.md"}
     ] },
     { "title": "API contracts and migration", "summary": "Select compatible combinations and follow the public ownership and editing contracts.", "guides": [
+      {"slug": "dom-contract", "source": "dom-contract.md", "title": "DOM contract", "summary": "Stable chart roles, validated host hooks and accessible mark navigation."},
       {"slug": "api-conventions", "source": "v2/api-conventions.md", "title": "Public API conventions", "summary": "Preparation, transactions, identity, ordinal/calendar-unit spacing and explicit concentric bands."},
       {"slug": "chart-combinations", "source": "v2/chart-combinations.md", "title": "Chart combinations and axes", "summary": "Vertical and horizontal mixtures, independent physical value axes and native limits."},
       {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."}

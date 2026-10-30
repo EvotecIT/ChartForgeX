@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO;
+using System.Collections.Generic;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.Rendering;
@@ -8,8 +9,18 @@ internal static partial class VisualSceneSvgRenderer {
     private static void WriteGradientDefinition(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index, VisualSvgOptions? options) {
         writer.StartElement("linearGradient").Attribute("id", GradientId(prefix, index)).Attribute("gradientUnits", "userSpaceOnUse")
             .Attribute("x1", gradient.Start.X).Attribute("y1", gradient.Start.Y).Attribute("x2", gradient.End.X).Attribute("y2", gradient.End.Y).EndStartElement();
-        foreach (var stop in gradient.Stops) writer.StartElement("stop").Attribute("offset", stop.Offset).Attribute("stop-color", ResolvePaint(stop.Color, stop.Paint, options)).EndEmptyElement();
+        WriteGradientStops(writer, gradient.Stops, options);
         writer.EndElement();
+    }
+
+    private static void WriteGradientStops(SvgMarkupWriter writer, IReadOnlyList<VisualGradientStop> stops, VisualSvgOptions? options) {
+        foreach (var stop in stops) {
+            // Keep the colour channels at a transparent endpoint: SVG interpolates stop colours separately from opacity.
+            var color = stop.Color.A == 0 ? stop.Color.WithAlpha(255) : stop.Color;
+            writer.StartElement("stop").Attribute("offset", stop.Offset).Attribute("stop-color", ResolvePaint(color, stop.Paint, options));
+            if (stop.Color.A == 0) writer.Attribute("stop-opacity", 0);
+            writer.EndEmptyElement();
+        }
     }
 
     private static void WriteGradientShape(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index, VisualSvgOptions? options) {

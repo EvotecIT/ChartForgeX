@@ -78,7 +78,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartRangeBand ValidateRange(ChartRangeBand value) => new ChartRangeBand(value.X, value.Lower, value.Upper, value.BreakBefore);
+    private static ChartRangeBand ValidateRange(ChartRangeBand value) => new ChartRangeBand(value.X, value.Lower, value.Upper, value.BreakBefore).WithMarkOptions(value.MarkOptions);
 
     private IReadOnlyList<ChartInterval> _intervals = Array.Empty<ChartInterval>();
     /// <summary>Gets immutable authored intervals, one item per observation in input order.</summary>
@@ -103,7 +103,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartInterval ValidateInterval(ChartInterval value) => new ChartInterval(value.X, value.Start, value.End);
+    private static ChartInterval ValidateInterval(ChartInterval value) => new ChartInterval(value.X, value.Start, value.End).WithMarkOptions(value.MarkOptions);
 
     private IReadOnlyList<ChartErrorBar> _errorBars = Array.Empty<ChartErrorBar>();
     /// <summary>Gets immutable authored error bars, one item per observation in input order.</summary>
@@ -180,7 +180,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartDumbbell ValidateDumbbell(ChartDumbbell value) => new ChartDumbbell(value.X, value.Start, value.End);
+    private static ChartDumbbell ValidateDumbbell(ChartDumbbell value) => new ChartDumbbell(value.X, value.Start, value.End).WithMarkOptions(value.MarkOptions);
 
     private IReadOnlyList<ChartDifferencePoint> _differencePoints = Array.Empty<ChartDifferencePoint>();
     /// <summary>Gets immutable authored difference points, one item per observation in input order.</summary>

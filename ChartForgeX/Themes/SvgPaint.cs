@@ -58,7 +58,8 @@ internal readonly partial struct SvgPaint {
     public static SvgPaint Literal(ChartColor color) => new(Start + "L" + Hex(color) + End, raw: true);
 
     /// <summary>A token colour written for <paramref name="role"/>.</summary>
-    public static SvgPaint Of(ChartColor color, SvgColorRole role) => new(Start + "P" + Digit(role) + Hex(color) + End, raw: true);
+    public static SvgPaint Of(ChartColor color, SvgColorRole role) => color.CssVariable == null
+        ? new(Start + "P" + Digit(role) + Hex(color) + End, raw: true) : DirectVariable(color);
 
     /// <summary>Retains canonical theme identity until scoped SVG export, with an ordinary role mapping as fallback.</summary>
     internal static SvgPaint ThemeToken(ChartColor color, VisualThemeColorToken token, SvgColorRole role) =>
@@ -74,8 +75,12 @@ internal readonly partial struct SvgPaint {
     /// variable applies, so the literal output equals the raster output exactly. A null role marks an operand the
     /// renderer derives (white, black) that is always written literally.
     /// </summary>
-    public static SvgPaint Mix(ChartColor result, ChartColor from, SvgColorRole? fromRole, ChartColor to, SvgColorRole? toRole, double amount) =>
-        new(Start + "M" + Hex(result) + Digit(fromRole) + Hex(from) + Digit(toRole) + Hex(to) + Clamp(amount).ToString("R", CultureInfo.InvariantCulture) + End, raw: true);
+    public static SvgPaint Mix(ChartColor result, ChartColor from, SvgColorRole? fromRole, ChartColor to, SvgColorRole? toRole, double amount) {
+        if (fromRole.HasValue && from.CssVariable != null || toRole.HasValue && to.CssVariable != null)
+            return Mix(result, fromRole.HasValue ? Of(from, fromRole.Value) : Literal(from),
+                toRole.HasValue ? Of(to, toRole.Value) : Literal(to), amount);
+        return new(Start + "M" + Hex(result) + Digit(fromRole) + Hex(from) + Digit(toRole) + Hex(to) + Clamp(amount).ToString("R", CultureInfo.InvariantCulture) + End, raw: true);
+    }
 
     /// <summary>Multiplies a source paint's opacity without losing its role or blend operands.</summary>
     /// <param name="result">The exact resolved raster colour, retained as the static fallback.</param>

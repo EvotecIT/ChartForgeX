@@ -8,7 +8,7 @@ namespace ChartForgeX.Html;
 /// <summary>
 /// Renders charts as dependency-free HTML with inline SVG.
 /// </summary>
-public sealed class HtmlChartRenderer {
+public sealed partial class HtmlChartRenderer {
     /// <summary>
     /// Renders a chart as an embeddable HTML fragment.
     /// </summary>
@@ -27,10 +27,26 @@ public sealed class HtmlChartRenderer {
     private string RenderFragment(Chart chart, string idScope, bool constrainMaxWidth) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
+        var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
+        return RenderFragment(chart, new VisualSvgOptions(prefix, chart.Options.SvgColorVariables, responsive: true), ChartDataTableMode.None, constrainMaxWidth);
+    }
+
+    /// <summary>Renders inline SVG with an optional accessible table of authored display observations.</summary>
+    /// <param name="chart">The chart to render.</param>
+    /// <param name="svgOptions">The SVG export policy, including its deterministic ID scope.</param>
+    /// <param name="dataTable">Whether data tables are omitted, disclosed in details, or visually hidden on screen and visible in print.</param>
+    /// <returns>An HTML fragment containing SVG and, when requested, one captioned table per series.</returns>
+    /// <exception cref="NotSupportedException">A requested table contains a typed series without a table representation.</exception>
+    public string RenderFragment(Chart chart, VisualSvgOptions svgOptions, ChartDataTableMode dataTable = ChartDataTableMode.None) =>
+        RenderFragment(chart, svgOptions, dataTable, constrainMaxWidth: true);
+
+    private string RenderFragment(Chart chart, VisualSvgOptions svgOptions, ChartDataTableMode dataTable, bool constrainMaxWidth) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        if (svgOptions == null) throw new ArgumentNullException(nameof(svgOptions));
+        if (dataTable < ChartDataTableMode.None || dataTable > ChartDataTableMode.VisuallyHidden) throw new ArgumentOutOfRangeException(nameof(dataTable));
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
-        var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
-        var svg = prepared.ToSvg(new VisualSvgOptions(prefix, chart.Options.SvgColorVariables, responsive: true));
+        var svg = prepared.ToSvg(svgOptions);
         var style = (constrainMaxWidth ? "width:100%;max-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;" : string.Empty) + "box-sizing:border-box;overflow:visible";
         return new HtmlMarkupWriter()
             .StartElement("div")
@@ -38,6 +54,7 @@ public sealed class HtmlChartRenderer {
             .Attribute("style", style)
             .EndStartElement()
             .RawTrusted(svg)
+            .RawTrusted(dataTable == ChartDataTableMode.None ? null : RenderDataTables(chart, dataTable))
             .EndElement()
             .Build();
     }

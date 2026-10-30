@@ -52,6 +52,8 @@ public static partial class V2Examples {
         WriteSequencePresetAppearance(output,artifacts);
         WriteSequenceSurfaceShadows(output, artifacts);
         WriteOwnedHtmlFonts(output, artifacts);
+        ServerRenderedChartExamples.Write(output);
+        WriteEmbedding(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

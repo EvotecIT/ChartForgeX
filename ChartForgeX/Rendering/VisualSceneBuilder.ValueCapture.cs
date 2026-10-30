@@ -29,7 +29,8 @@ internal sealed partial class VisualSceneBuilder {
     internal void CompleteValueIdentity() {
         var bind = _pendingValuePlan; if (bind == null) return;
         _pendingValuePlan = null; var plan = bind(Build());
-        if (plan != null) _valueCapture = new VisualValueCapture(plan, _valueFirst.Node, _valueLast.Node,
+        if (plan is IVisualCompleteValuePlan) _valueCapture = new VisualValueCapture(plan, 0, _nodes.Count, 0, _regions.Count, 0, _diagnostics.Count);
+        else if (plan != null) _valueCapture = new VisualValueCapture(plan, _valueFirst.Node, _valueLast.Node,
             _valueFirst.Region, _valueLast.Region, _valueFirst.Diagnostic, _valueLast.Diagnostic);
     }
 }

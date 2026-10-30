@@ -22,8 +22,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         PreparedVisual Mode(PreparedVisual value) => source.CapturePngText ? value.ForInteractivePngExport() : value;
         if (Mode(from).ToSvg(source.Options) != source.Svg || Mode(to).ToSvg(destination.Options) != destination.Svg)
             throw new NotSupportedException("Native transition endpoints must exactly reproduce the same-emission HTML export facts.");
-        var sourceWithDestinationPolicy = new VisualSvgOptions(source.Prefix, destination.Options.ColorVariables, destination.Options.LinkTarget, destination.Options.Responsive, destination.Options.EffectProfile, destination.Options.EffectRasterOptions)
-            .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation);
+        var sourceWithDestinationPolicy = destination.Options.WithIdPrefix(source.Prefix);
         if (Mode(from).ToSvg(sourceWithDestinationPolicy) != source.Svg)
             throw new NotSupportedException("Native transition export paint, link, responsive and pattern policy must remain captured and unchanged.");
         var initialFade = options.Effect == HtmlNativeTransitionEffect.InitialFade;
@@ -40,8 +39,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         for (var index = 0; index < frames.Count; index++) {
             cancellation.ThrowIfCancellationRequested(); if (index > 0) json.Append(',');
             var prefix = destination.Prefix + "-native-presentation-" + name + "-" + index.ToString(CultureInfo.InvariantCulture);
-            var policy = new VisualSvgOptions(prefix, destination.Options.ColorVariables, destination.Options.LinkTarget, destination.Options.Responsive, destination.Options.EffectProfile, destination.Options.EffectRasterOptions)
-                .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation);
+            var policy = destination.Options.WithIdPrefix(prefix);
             json.Append("{\"prefix\":").Append(HtmlJsonString.Encode(prefix)).Append(",\"svg\":").Append(HtmlJsonString.Encode(Mode(frames[index]).ToSvg(policy)));
             if (reflow) {
                 var fact = reflowFrames![index];

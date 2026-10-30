@@ -105,7 +105,8 @@ internal sealed class ChartStateTimelineModel {
                 var detail = source.Detail;
                 var last = segments.Count - 1;
                 // Contiguous rollup buckets in the same state draw as one run so bucket seams do not read as state changes.
-                if (last >= 0 && ReferenceEquals(segments[last].State, state) && segments[last].End == source.Start && string.Equals(segments[last].Detail, detail, StringComparison.Ordinal)) {
+                if (last >= 0 && source.MarkOptions == null && series.StateTimelineSegments[segments[last].PointIndex].MarkOptions == null
+                    && ReferenceEquals(segments[last].State, state) && segments[last].End == source.Start && string.Equals(segments[last].Detail, detail, StringComparison.Ordinal)) {
                     runSources!.Add(i);
                     segments[last] = new ChartStateTimelineResolvedSegment(segments[last].PointIndex, segments[last].Start, source.End, state, detail, runSources);
                 } else {

@@ -1,0 +1,57 @@
+Charts for a server-rendered page
+Mark links, an open support window and an HTML-friendly shared-domain strip, with their C# source.
+
+1. Give each stacked segment its own destination
+   C# source
+   Language: csharp
+   // Every point owns its ChartMarkOptions.
+   var chart =
+       ServerRenderedRecipe.LinkedColumns();
+   var policy = new VisualSvgOptions("activity")
+       .WithFluidWidth()
+       .WithFontVariables(
+           "--page-font", "--chart-font-size");
+   var svg = chart.Prepare(context).ToSvg(policy);
+   // Day links stay on this page.
+   // Publisher links use NewContext.
+   Static chart snapshot:
+   Five stacked columns. Updates link to daily summaries; publisher notes open in a new tab.
+
+2. Mark the current row and let open support continue
+   C# source
+   Language: csharp
+   var current = ChartGanttItem.OpenEnded(
+       new DateTime(2026, 3, 1));
+   series.ReplaceGanttItems(new[] { current });
+   series.WithRowOptions(new ChartMarkOptions(
+       current: true,
+       accessibleLabel: "2026, current"));
+   chart.WithGanttOpenEndStyle(
+       ChartGanttOpenEndStyle.Fade);
+   chart.WithXAxisBounds(
+       new DateTime(2026, 1, 1).ToOADate(),
+       new DateTime(2027, 1, 1).ToOADate());
+   Static chart snapshot:
+   Three release rows. The 2026 row is current and its open support bar fades to the right.
+
+3. Keep the label in HTML and share the scale
+   C# source
+   Language: csharp
+   var scale =
+       ServerRenderedRecipe.SharedScale();
+   // Bounds: 1 Jan 2026 to 1 Jan 2027.
+   var row =
+       ServerRenderedRecipe.CreateStrip(1);
+   var track = row.PrepareStrip(context, scale);
+   var axis = scale.PrepareAxis(axisContext);
+   var policy = new VisualSvgOptions("release")
+       .WithFluidWidth()
+       .WithFontVariables(
+           "--page-font", "--chart-font-size");
+   var svg = track.ToSvg(policy);
+   // HTML owns the label. Reuse this scale.
+   Static chart snapshot:
+   The 2026 release track against the shared January 2026 to January 2027 domain.
+
+Outcomes:
+- The chart output and its embedding source are visible

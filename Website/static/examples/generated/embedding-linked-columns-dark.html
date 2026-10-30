@@ -1,0 +1,512 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="dark" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Linked update columns &#183; Bar</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Bar</p><h1>Linked update columns</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-bar-wide-light.html" data-theme-link data-light-href="family-bar-wide-light.html" data-dark-href="family-bar-wide-dark.html">Standard</a></span><span><a href="family-bar-compact-light.html" data-theme-link data-light-href="family-bar-compact-light.html" data-dark-href="family-bar-compact-dark.html">Compact</a></span><span><a href="family-bar-compact-issuers-light.html" data-theme-link data-light-href="family-bar-compact-issuers-light.html" data-dark-href="family-bar-compact-issuers-dark.html">Compact Issuers</a></span><span><a href="embedding-compact-linked-columns-light.html" data-theme-link data-light-href="embedding-compact-linked-columns-light.html" data-dark-href="embedding-compact-linked-columns-dark.html">Compact Linked Columns</a></span><span><a href="family-bar-compact-options-light.html" data-theme-link data-light-href="family-bar-compact-options-light.html" data-dark-href="family-bar-compact-options-dark.html">Compact options</a></span><span><a href="family-bar-issuers-light.html" data-theme-link data-light-href="family-bar-issuers-light.html" data-dark-href="family-bar-issuers-dark.html">Issuers</a></span><span class="current-variant"><a href="embedding-linked-columns-light.html" data-theme-link data-light-href="embedding-linked-columns-light.html" data-dark-href="embedding-linked-columns-dark.html" aria-current="page">Linked Columns</a></span><span><a href="family-bar-options-light.html" data-theme-link data-light-href="family-bar-options-light.html" data-dark-href="family-bar-options-dark.html">Configured options</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:800px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="360" viewBox="0 0 800 360" stroke-linecap="round" stroke-linejoin="round" role="group" aria-label="Linked update columns" aria-labelledby="embedding-linked-columns-light-title" aria-describedby="embedding-linked-columns-light-description"><title id="embedding-linked-columns-light-title">Linked update columns</title><desc id="embedding-linked-columns-light-description">Chart with 2 data series: Updates, Publisher notes.</desc><defs><clipPath id="embedding-linked-columns-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="312"/></clipPath><clipPath id="embedding-linked-columns-light-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="752" height="260.35"/></clipPath><clipPath id="embedding-linked-columns-light-clip-24" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="84.439" width="716.39" height="221.983"/></clipPath><clipPath id="embedding-linked-columns-light-clip-27" clipPathUnits="userSpaceOnUse"><path d="M 87.803 213.929 L 151.803 213.929 L 151.803 306.422 L 87.803 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-33" clipPathUnits="userSpaceOnUse"><path d="M 231.081 167.683 L 295.081 167.683 L 295.081 306.422 L 231.081 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-39" clipPathUnits="userSpaceOnUse"><path d="M 374.359 223.178 L 438.359 223.178 L 438.359 306.422 L 374.359 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-45" clipPathUnits="userSpaceOnUse"><path d="M 517.637 121.436 L 581.637 121.436 L 581.637 306.422 L 517.637 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-51" clipPathUnits="userSpaceOnUse"><path d="M 660.915 204.68 L 724.915 204.68 L 724.915 306.422 L 660.915 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-61" clipPathUnits="userSpaceOnUse"><path d="M 87.803 213.929 L 151.803 213.929 L 151.803 306.422 L 87.803 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-67" clipPathUnits="userSpaceOnUse"><path d="M 231.081 167.683 L 295.081 167.683 L 295.081 306.422 L 231.081 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-73" clipPathUnits="userSpaceOnUse"><path d="M 374.359 223.178 L 438.359 223.178 L 438.359 306.422 L 374.359 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-79" clipPathUnits="userSpaceOnUse"><path d="M 517.637 121.436 L 581.637 121.436 L 581.637 306.422 L 517.637 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-light-clip-85" clipPathUnits="userSpaceOnUse"><path d="M 660.915 204.68 L 724.915 204.68 L 724.915 306.422 L 660.915 306.422 Z" clip-rule="evenodd"/></clipPath></defs><rect x="0" y="0" width="800" height="360" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#embedding-linked-columns-light-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Linked update columns</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">A destination, accessible name and host hooks on every segment</text></g></g></g><g clip-path="url(#embedding-linked-columns-light-clip-9)"><line x1="48.164" y1="306.422" x2="764.554" y2="306.422" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="213.929" x2="764.554" y2="213.929" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="121.436" x2="764.554" y2="121.436" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="306.422" x2="764.554" y2="306.422" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="108.357" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Mon</text></g><g data-cfx-role="axis-x-label"><text x="254.392" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Tue</text></g><g data-cfx-role="axis-x-label"><text x="395.103" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Wed</text></g><g data-cfx-role="axis-x-label"><text x="540.408" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Thu</text></g><g data-cfx-role="axis-x-label"><text x="686.689" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Fri</text></g><line x1="48.164" y1="84.439" x2="48.164" y2="306.422" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="309.059" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="216.566" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">10</text></g><g data-cfx-role="axis-y-label"><text x="24" y="124.073" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g></g><g clip-path="url(#embedding-linked-columns-light-clip-24)"><g id="embedding-linked-columns-light-node-25" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Updates" class="activity-series" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bar" data-cfx-pin-state-colors="false" data-cfx-rendered-points="5" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-name="Updates" data-cfx-series-scope="local" data-cfx-source-points="5" data-cfx-state="none" data-feed="daily-updates"><a id="embedding-linked-columns-light-node-26" data-cfx-source-id="series-0-point-0" data-cfx-role="point" href="embedding/light.html#day-2026-07-13" tabindex="0" focusable="true" aria-label="2026-07-13: 8 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="8" data-cfx-formatted-x="Mon" data-cfx-label="8" data-cfx-point="0" data-cfx-rendered-y="8" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="8" data-cfx-stack-group="" data-cfx-stack-source-total="10" data-cfx-stack-total="10" data-cfx-state="none" data-cfx-x="1" data-cfx-y="8" data-day="2026-07-13" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-light-clip-27)"><rect x="87.803" y="232.428" width="64" height="73.994" rx="0" data-cfx-role="bar" fill="var(--updates, #2A78D6)" stroke="none" stroke-width="1"/></g><rect x="87.803" y="232.428" width="64" height="73.994" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-32" data-cfx-source-id="series-0-point-1" data-cfx-role="point" href="embedding/light.html#day-2026-07-14" tabindex="0" focusable="true" aria-label="2026-07-14: 12 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="12" data-cfx-formatted-x="Tue" data-cfx-label="12" data-cfx-point="1" data-cfx-rendered-y="12" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="12" data-cfx-stack-group="" data-cfx-stack-source-total="15" data-cfx-stack-total="15" data-cfx-state="none" data-cfx-x="2" data-cfx-y="12" data-day="2026-07-14" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-light-clip-33)"><rect x="231.081" y="195.43" width="64" height="110.991" rx="0" data-cfx-role="bar" fill="var(--updates, #2A78D6)" stroke="none" stroke-width="1"/></g><rect x="231.081" y="195.43" width="64" height="110.991" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-38" data-cfx-source-id="series-0-point-2" data-cfx-role="point" href="embedding/light.html#day-2026-07-15" tabindex="0" focusable="true" aria-label="2026-07-15: 7 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="7" data-cfx-formatted-x="Wed" data-cfx-label="7" data-cfx-point="2" data-cfx-rendered-y="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="7" data-cfx-stack-group="" data-cfx-stack-source-total="9" data-cfx-stack-total="9" data-cfx-state="none" data-cfx-x="3" data-cfx-y="7" data-day="2026-07-15" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-light-clip-39)"><rect x="374.359" y="241.677" width="64" height="64.745" rx="0" data-cfx-role="bar" fill="var(--updates, #2A78D6)" stroke="none" stroke-width="1"/></g><rect x="374.359" y="241.677" width="64" height="64.745" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-44" data-cfx-source-id="series-0-point-3" data-cfx-role="point" href="embedding/light.html#day-2026-07-16" tabindex="0" focusable="true" aria-label="2026-07-16: 16 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="16" data-cfx-formatted-x="Thu" data-cfx-label="16" data-cfx-point="3" data-cfx-rendered-y="16" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="16" data-cfx-stack-group="" data-cfx-stack-source-total="20" data-cfx-stack-total="20" data-cfx-state="none" data-cfx-x="4" data-cfx-y="16" data-day="2026-07-16" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-light-clip-45)"><rect x="517.637" y="158.433" width="64" height="147.989" rx="0" data-cfx-role="bar" fill="var(--updates, #2A78D6)" stroke="none" stroke-width="1"/></g><rect x="517.637" y="158.433" width="64" height="147.989" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-50" data-cfx-source-id="series-0-point-4" data-cfx-role="point" href="embedding/light.html#day-2026-07-17" tabindex="0" focusable="true" aria-label="2026-07-17: 10 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="10" data-cfx-formatted-x="Fri" data-cfx-label="10" data-cfx-point="4" data-cfx-rendered-y="10" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="10" data-cfx-stack-group="" data-cfx-stack-source-total="11" data-cfx-stack-total="11" data-cfx-state="none" data-cfx-x="5" data-cfx-y="10" data-day="2026-07-17" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-light-clip-51)"><rect x="660.915" y="213.929" width="64" height="92.493" rx="0" data-cfx-role="bar" fill="var(--updates, #2A78D6)" stroke="none" stroke-width="1"/></g><rect x="660.915" y="213.929" width="64" height="92.493" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a></g></g><g clip-path="url(#embedding-linked-columns-light-clip-24)"><g id="embedding-linked-columns-light-node-59" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Publisher notes" class="publisher-series" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bar" data-cfx-pin-state-colors="false" data-cfx-rendered-points="5" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-name="Publisher notes" data-cfx-series-scope="local" data-cfx-source-points="5" data-cfx-state="none" data-feed="publisher-notes"><a id="embedding-linked-columns-light-node-60" data-cfx-source-id="series-1-point-0" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-13: 2 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="8" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="2" data-cfx-formatted-x="Mon" data-cfx-label="2" data-cfx-point="0" data-cfx-rendered-y="2" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="10" data-cfx-stack-group="" data-cfx-stack-source-total="10" data-cfx-stack-total="10" data-cfx-state="none" data-cfx-x="1" data-cfx-y="2" data-day="2026-07-13" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-light-clip-61)"><rect x="87.803" y="213.929" width="64" height="18.499" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #A95712)" stroke="none" stroke-width="1"/></g><rect x="87.803" y="213.929" width="64" height="18.499" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-66" data-cfx-source-id="series-1-point-1" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-14: 3 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="12" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="3" data-cfx-formatted-x="Tue" data-cfx-label="3" data-cfx-point="1" data-cfx-rendered-y="3" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="15" data-cfx-stack-group="" data-cfx-stack-source-total="15" data-cfx-stack-total="15" data-cfx-state="none" data-cfx-x="2" data-cfx-y="3" data-day="2026-07-14" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-light-clip-67)"><rect x="231.081" y="167.683" width="64" height="27.748" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #A95712)" stroke="none" stroke-width="1"/></g><rect x="231.081" y="167.683" width="64" height="27.748" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-72" data-cfx-source-id="series-1-point-2" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-15: 2 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="7" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="2" data-cfx-formatted-x="Wed" data-cfx-label="2" data-cfx-point="2" data-cfx-rendered-y="2" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="9" data-cfx-stack-group="" data-cfx-stack-source-total="9" data-cfx-stack-total="9" data-cfx-state="none" data-cfx-x="3" data-cfx-y="2" data-day="2026-07-15" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-light-clip-73)"><rect x="374.359" y="223.178" width="64" height="18.499" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #A95712)" stroke="none" stroke-width="1"/></g><rect x="374.359" y="223.178" width="64" height="18.499" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-78" data-cfx-source-id="series-1-point-3" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-16: 4 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="16" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="4" data-cfx-formatted-x="Thu" data-cfx-label="4" data-cfx-point="3" data-cfx-rendered-y="4" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="20" data-cfx-stack-group="" data-cfx-stack-source-total="20" data-cfx-stack-total="20" data-cfx-state="none" data-cfx-x="4" data-cfx-y="4" data-day="2026-07-16" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-light-clip-79)"><rect x="517.637" y="121.436" width="64" height="36.997" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #A95712)" stroke="none" stroke-width="1"/></g><rect x="517.637" y="121.436" width="64" height="36.997" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-light-node-84" data-cfx-source-id="series-1-point-4" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-17: 1 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="10" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="1" data-cfx-formatted-x="Fri" data-cfx-label="1" data-cfx-point="4" data-cfx-rendered-y="1" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="11" data-cfx-stack-group="" data-cfx-stack-source-total="11" data-cfx-stack-total="11" data-cfx-state="none" data-cfx-x="5" data-cfx-y="1" data-day="2026-07-17" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-light-clip-85)"><rect x="660.915" y="204.68" width="64" height="9.249" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #A95712)" stroke="none" stroke-width="1"/></g><rect x="660.915" y="204.68" width="64" height="9.249" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a></g></g></svg></div><div class="full" style="--example-width:800px" data-visual-theme="light" data-output-format="png"><img src="embedding-linked-columns-light.png" width="800" height="360" alt="Linked update columns" loading="lazy" decoding="async"></div><div class="full" style="--example-width:800px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="360" viewBox="0 0 800 360" stroke-linecap="round" stroke-linejoin="round" role="group" aria-label="Linked update columns" aria-labelledby="embedding-linked-columns-dark-title" aria-describedby="embedding-linked-columns-dark-description"><title id="embedding-linked-columns-dark-title">Linked update columns</title><desc id="embedding-linked-columns-dark-description">Chart with 2 data series: Updates, Publisher notes.</desc><defs><clipPath id="embedding-linked-columns-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="312"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="752" height="260.35"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-24" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="84.439" width="716.39" height="221.983"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-27" clipPathUnits="userSpaceOnUse"><path d="M 87.803 213.929 L 151.803 213.929 L 151.803 306.422 L 87.803 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-33" clipPathUnits="userSpaceOnUse"><path d="M 231.081 167.683 L 295.081 167.683 L 295.081 306.422 L 231.081 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-39" clipPathUnits="userSpaceOnUse"><path d="M 374.359 223.178 L 438.359 223.178 L 438.359 306.422 L 374.359 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-45" clipPathUnits="userSpaceOnUse"><path d="M 517.637 121.436 L 581.637 121.436 L 581.637 306.422 L 517.637 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-51" clipPathUnits="userSpaceOnUse"><path d="M 660.915 204.68 L 724.915 204.68 L 724.915 306.422 L 660.915 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-61" clipPathUnits="userSpaceOnUse"><path d="M 87.803 213.929 L 151.803 213.929 L 151.803 306.422 L 87.803 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-67" clipPathUnits="userSpaceOnUse"><path d="M 231.081 167.683 L 295.081 167.683 L 295.081 306.422 L 231.081 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-73" clipPathUnits="userSpaceOnUse"><path d="M 374.359 223.178 L 438.359 223.178 L 438.359 306.422 L 374.359 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-79" clipPathUnits="userSpaceOnUse"><path d="M 517.637 121.436 L 581.637 121.436 L 581.637 306.422 L 517.637 306.422 Z" clip-rule="evenodd"/></clipPath><clipPath id="embedding-linked-columns-dark-clip-85" clipPathUnits="userSpaceOnUse"><path d="M 660.915 204.68 L 724.915 204.68 L 724.915 306.422 L 660.915 306.422 Z" clip-rule="evenodd"/></clipPath></defs><rect x="0" y="0" width="800" height="360" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#embedding-linked-columns-dark-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Linked update columns</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="CFX Proof Carlito|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">A destination, accessible name and host hooks on every segment</text></g></g></g><g clip-path="url(#embedding-linked-columns-dark-clip-9)"><line x1="48.164" y1="306.422" x2="764.554" y2="306.422" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="213.929" x2="764.554" y2="213.929" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="121.436" x2="764.554" y2="121.436" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="306.422" x2="764.554" y2="306.422" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="108.357" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Mon</text></g><g data-cfx-role="axis-x-label"><text x="254.392" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Tue</text></g><g data-cfx-role="axis-x-label"><text x="395.103" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Wed</text></g><g data-cfx-role="axis-x-label"><text x="540.408" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Thu</text></g><g data-cfx-role="axis-x-label"><text x="686.689" y="329.848" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Fri</text></g><line x1="48.164" y1="84.439" x2="48.164" y2="306.422" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="309.059" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="216.566" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">10</text></g><g data-cfx-role="axis-y-label"><text x="24" y="124.073" font-family="CFX Proof Carlito, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">20</text></g></g><g clip-path="url(#embedding-linked-columns-dark-clip-24)"><g id="embedding-linked-columns-dark-node-25" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Updates" class="activity-series" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bar" data-cfx-pin-state-colors="false" data-cfx-rendered-points="5" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-name="Updates" data-cfx-series-scope="local" data-cfx-source-points="5" data-cfx-state="none" data-feed="daily-updates"><a id="embedding-linked-columns-dark-node-26" data-cfx-source-id="series-0-point-0" data-cfx-role="point" href="embedding/dark.html#day-2026-07-13" tabindex="0" focusable="true" aria-label="2026-07-13: 8 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="8" data-cfx-formatted-x="Mon" data-cfx-label="8" data-cfx-point="0" data-cfx-rendered-y="8" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="8" data-cfx-stack-group="" data-cfx-stack-source-total="10" data-cfx-stack-total="10" data-cfx-state="none" data-cfx-x="1" data-cfx-y="8" data-day="2026-07-13" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-dark-clip-27)"><rect x="87.803" y="232.428" width="64" height="73.994" rx="0" data-cfx-role="bar" fill="var(--updates, #6EAEFF)" stroke="none" stroke-width="1"/></g><rect x="87.803" y="232.428" width="64" height="73.994" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-32" data-cfx-source-id="series-0-point-1" data-cfx-role="point" href="embedding/dark.html#day-2026-07-14" tabindex="0" focusable="true" aria-label="2026-07-14: 12 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="12" data-cfx-formatted-x="Tue" data-cfx-label="12" data-cfx-point="1" data-cfx-rendered-y="12" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="12" data-cfx-stack-group="" data-cfx-stack-source-total="15" data-cfx-stack-total="15" data-cfx-state="none" data-cfx-x="2" data-cfx-y="12" data-day="2026-07-14" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-dark-clip-33)"><rect x="231.081" y="195.43" width="64" height="110.991" rx="0" data-cfx-role="bar" fill="var(--updates, #6EAEFF)" stroke="none" stroke-width="1"/></g><rect x="231.081" y="195.43" width="64" height="110.991" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-38" data-cfx-source-id="series-0-point-2" data-cfx-role="point" href="embedding/dark.html#day-2026-07-15" tabindex="0" focusable="true" aria-label="2026-07-15: 7 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="7" data-cfx-formatted-x="Wed" data-cfx-label="7" data-cfx-point="2" data-cfx-rendered-y="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="7" data-cfx-stack-group="" data-cfx-stack-source-total="9" data-cfx-stack-total="9" data-cfx-state="none" data-cfx-x="3" data-cfx-y="7" data-day="2026-07-15" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-dark-clip-39)"><rect x="374.359" y="241.677" width="64" height="64.745" rx="0" data-cfx-role="bar" fill="var(--updates, #6EAEFF)" stroke="none" stroke-width="1"/></g><rect x="374.359" y="241.677" width="64" height="64.745" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-44" data-cfx-source-id="series-0-point-3" data-cfx-role="point" href="embedding/dark.html#day-2026-07-16" tabindex="0" focusable="true" aria-label="2026-07-16: 16 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="16" data-cfx-formatted-x="Thu" data-cfx-label="16" data-cfx-point="3" data-cfx-rendered-y="16" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="16" data-cfx-stack-group="" data-cfx-stack-source-total="20" data-cfx-stack-total="20" data-cfx-state="none" data-cfx-x="4" data-cfx-y="16" data-day="2026-07-16" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-dark-clip-45)"><rect x="517.637" y="158.433" width="64" height="147.989" rx="0" data-cfx-role="bar" fill="var(--updates, #6EAEFF)" stroke="none" stroke-width="1"/></g><rect x="517.637" y="158.433" width="64" height="147.989" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-50" data-cfx-source-id="series-0-point-4" data-cfx-role="point" href="embedding/dark.html#day-2026-07-17" tabindex="0" focusable="true" aria-label="2026-07-17: 10 updates; read the daily summary" class="activity-mark" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="10" data-cfx-formatted-x="Fri" data-cfx-label="10" data-cfx-point="4" data-cfx-rendered-y="10" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="10" data-cfx-stack-group="" data-cfx-stack-source-total="11" data-cfx-stack-total="11" data-cfx-state="none" data-cfx-x="5" data-cfx-y="10" data-day="2026-07-17" data-kind="update" role="link" target="_self"><title>Read this day's update summary</title><g clip-path="url(#embedding-linked-columns-dark-clip-51)"><rect x="660.915" y="213.929" width="64" height="92.493" rx="0" data-cfx-role="bar" fill="var(--updates, #6EAEFF)" stroke="none" stroke-width="1"/></g><rect x="660.915" y="213.929" width="64" height="92.493" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a></g></g><g clip-path="url(#embedding-linked-columns-dark-clip-24)"><g id="embedding-linked-columns-dark-node-59" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Publisher notes" class="publisher-series" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Bar" data-cfx-pin-state-colors="false" data-cfx-rendered-points="5" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-name="Publisher notes" data-cfx-series-scope="local" data-cfx-source-points="5" data-cfx-state="none" data-feed="publisher-notes"><a id="embedding-linked-columns-dark-node-60" data-cfx-source-id="series-1-point-0" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-13: 2 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="8" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="2" data-cfx-formatted-x="Mon" data-cfx-label="2" data-cfx-point="0" data-cfx-rendered-y="2" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="10" data-cfx-stack-group="" data-cfx-stack-source-total="10" data-cfx-stack-total="10" data-cfx-state="none" data-cfx-x="1" data-cfx-y="2" data-day="2026-07-13" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-dark-clip-61)"><rect x="87.803" y="213.929" width="64" height="18.499" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #F3B36B)" stroke="none" stroke-width="1"/></g><rect x="87.803" y="213.929" width="64" height="18.499" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-66" data-cfx-source-id="series-1-point-1" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-14: 3 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="12" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="3" data-cfx-formatted-x="Tue" data-cfx-label="3" data-cfx-point="1" data-cfx-rendered-y="3" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="15" data-cfx-stack-group="" data-cfx-stack-source-total="15" data-cfx-stack-total="15" data-cfx-state="none" data-cfx-x="2" data-cfx-y="3" data-day="2026-07-14" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-dark-clip-67)"><rect x="231.081" y="167.683" width="64" height="27.748" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #F3B36B)" stroke="none" stroke-width="1"/></g><rect x="231.081" y="167.683" width="64" height="27.748" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-72" data-cfx-source-id="series-1-point-2" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-15: 2 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="7" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="2" data-cfx-formatted-x="Wed" data-cfx-label="2" data-cfx-point="2" data-cfx-rendered-y="2" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="9" data-cfx-stack-group="" data-cfx-stack-source-total="9" data-cfx-stack-total="9" data-cfx-state="none" data-cfx-x="3" data-cfx-y="2" data-day="2026-07-15" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-dark-clip-73)"><rect x="374.359" y="223.178" width="64" height="18.499" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #F3B36B)" stroke="none" stroke-width="1"/></g><rect x="374.359" y="223.178" width="64" height="18.499" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-78" data-cfx-source-id="series-1-point-3" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-16: 4 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="16" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="4" data-cfx-formatted-x="Thu" data-cfx-label="4" data-cfx-point="3" data-cfx-rendered-y="4" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="20" data-cfx-stack-group="" data-cfx-stack-source-total="20" data-cfx-stack-total="20" data-cfx-state="none" data-cfx-x="4" data-cfx-y="4" data-day="2026-07-16" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-dark-clip-79)"><rect x="517.637" y="121.436" width="64" height="36.997" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #F3B36B)" stroke="none" stroke-width="1"/></g><rect x="517.637" y="121.436" width="64" height="36.997" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a><a id="embedding-linked-columns-dark-node-84" data-cfx-source-id="series-1-point-4" data-cfx-role="point" href="https://github.com/EvotecIT/ChartForgeX/releases" tabindex="0" focusable="true" rel="noopener noreferrer" aria-label="2026-07-17: 1 publisher notes; opens in a new tab" class="publisher-mark" data-cfx-axis="primary" data-cfx-base="10" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="1" data-cfx-formatted-x="Fri" data-cfx-label="1" data-cfx-point="4" data-cfx-rendered-y="1" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="11" data-cfx-stack-group="" data-cfx-stack-source-total="11" data-cfx-stack-total="11" data-cfx-state="none" data-cfx-x="5" data-cfx-y="1" data-day="2026-07-17" data-kind="publisher" role="link" target="_blank"><title>Open publisher release notes in a new tab</title><g clip-path="url(#embedding-linked-columns-dark-clip-85)"><rect x="660.915" y="204.68" width="64" height="9.249" rx="0" data-cfx-role="bar" fill="var(--publisher-notes, #F3B36B)" stroke="none" stroke-width="1"/></g><rect x="660.915" y="204.68" width="64" height="9.249" rx="0" data-cfx-role="mark-link-hit-area" fill="rgba(0,0,0,0)" stroke="none" stroke-width="0"/></a></g></g></svg></div><div class="full" style="--example-width:800px" data-visual-theme="dark" data-output-format="png"><img src="embedding-linked-columns-dark.png" width="800" height="360" alt="Linked update columns" loading="lazy" decoding="async"></div></section><div class="export-row"><span>800 × 360 pixels</span><nav aria-label="Download outputs"><a href="embedding-linked-columns-dark.svg" data-theme-link data-light-href="embedding-linked-columns-light.svg" data-dark-href="embedding-linked-columns-dark.svg" download>Download SVG</a><a href="embedding-linked-columns-dark.png" data-theme-link data-light-href="embedding-linked-columns-light.png" data-dark-href="embedding-linked-columns-dark.png" download>Download PNG</a><a href="embedding-linked-columns-dark.csharp.txt" data-theme-link data-light-href="embedding-linked-columns-light.csharp.txt" data-dark-href="embedding-linked-columns-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p><p>For the same typography as the gallery, <a href="embedding-linked-columns-dark.gallery.csharp.txt" data-theme-link data-light-href="embedding-linked-columns-light.gallery.csharp.txt" data-dark-href="embedding-linked-columns-dark.gallery.csharp.txt" download>download the gallery-font recipe</a> and copy the gallery’s fonts directory beside your program.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = ServerRenderedRecipe.Create(&quot;linked-columns&quot;, mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 360)), theme, mode,
+    new VisualFrame(&quot;Linked update columns&quot;, &quot;A destination, accessible name and host hooks on every segment&quot;, showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+
+/// &lt;summary&gt;Illustrative page charts with mark navigation, a current schedule row and a shared strip domain.&lt;/summary&gt;
+public static class ServerRenderedRecipe {
+    /// &lt;summary&gt;Creates a catalog model; page hosts can prepare the shared-strip variant with &lt;see cref=&quot;SharedScale&quot;/&gt;.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;linked-columns&quot;, VisualThemeMode mode = VisualThemeMode.Light) =&gt; variant switch {
+        &quot;linked-columns&quot; or &quot;compact-linked-columns&quot; =&gt; LinkedColumns(mode, GalleryPage(mode)),
+        &quot;support-schedule&quot; or &quot;compact-support-schedule&quot; =&gt; SupportSchedule(mode, GalleryPage(mode)),
+        &quot;shared-strip&quot; or &quot;compact-shared-strip&quot; =&gt; CreateStrip(1, mode, GalleryPage(mode)),
+        _ =&gt; throw new ArgumentException(&quot;Unknown embedding example.&quot;, nameof(variant))
+    };
+
+    /// &lt;summary&gt;Creates five linked stacked columns. Publisher notes open separately from the local daily summaries.&lt;/summary&gt;
+    public static Chart LinkedColumns(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = &quot;&quot;) {
+        var updates = new[] { 8d, 12, 7, 16, 10 };
+        var notes = new[] { 2d, 3, 2, 4, 1 };
+        ChartPoint Point(int index, double value, bool publisher) {
+            var day = new DateTime(2026, 7, 13).AddDays(index).ToString(&quot;yyyy-MM-dd&quot;, CultureInfo.InvariantCulture);
+            return new ChartPoint(index + 1, value).WithMarkOptions(new ChartMarkOptions(
+                href: publisher ? &quot;https://github.com/EvotecIT/ChartForgeX/releases&quot; : summaryPage + &quot;#day-&quot; + day,
+                linkTarget: publisher ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext,
+                tooltip: publisher ? &quot;Open publisher release notes in a new tab&quot; : &quot;Read this day&#39;s update summary&quot;,
+                accessibleLabel: day + &quot;: &quot; + value.ToString(&quot;0&quot;, CultureInfo.InvariantCulture)
+                    + (publisher ? &quot; publisher notes; opens in a new tab&quot; : &quot; updates; read the daily summary&quot;),
+                cssClass: publisher ? &quot;publisher-mark&quot; : &quot;activity-mark&quot;,
+                dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-day&quot;] = day, [&quot;data-kind&quot;] = publisher ? &quot;publisher&quot; : &quot;update&quot; }));
+        }
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithBarStyle(ChartBarStyle.Flat)
+            .WithLegend(false).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;)
+            .WithYAxisBounds(0, 24).ConfigureYAxis(axis =&gt; { axis.TickCount = 4; axis.IntegerTicks = true; })
+            .AddBar(&quot;Updates&quot;, updates.Select((value, index) =&gt; Point(index, value, false)), Color(&quot;--updates&quot;, mode))
+            .AddBar(&quot;Publisher notes&quot;, notes.Select((value, index) =&gt; Point(index, value, true)), Color(&quot;--publisher-notes&quot;, mode));
+        chart.Series[0].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;activity-series&quot;,
+            dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;daily-updates&quot; }));
+        chart.Series[1].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;publisher-series&quot;,
+            dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;publisher-notes&quot; }));
+        return chart;
+    }
+
+    /// &lt;summary&gt;Creates three support rows, including an open task and independently current row metadata.&lt;/summary&gt;
+    public static Chart SupportSchedule(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = &quot;&quot;) {
+        var chart = Schedule(mode);
+        for (var row = 0; row &lt; 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
+        return chart.WithGanttToday(new DateTime(2026, 7, 15));
+    }
+
+    /// &lt;summary&gt;Creates one support row for plot-only preparation; HTML owns the row label.&lt;/summary&gt;
+    public static Chart CreateStrip(int row, VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = &quot;&quot;) =&gt;
+        Schedule(mode).AddSeries(SupportRow(row, mode, summaryPage));
+
+    /// &lt;summary&gt;Creates an explicit 1 January 2026 to 1 January 2027 domain shared by every strip and the axis.&lt;/summary&gt;
+    public static ChartStripScale SharedScale() {
+        var axis = new ChartAxis();
+        ConfigureTimeAxis(axis);
+        return new ChartStripScale(axis);
+    }
+
+    private static Chart Schedule(VisualThemeMode mode) =&gt; Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
+        .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
+        .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
+        .ConfigureXAxis(ConfigureTimeAxis);
+
+    private static void ConfigureTimeAxis(ChartAxis axis) {
+        axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2027, 1, 1).ToOADate();
+        axis.Scale = ChartScaleKind.Time; axis.TickCount = 3;
+        axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM yy&quot;, CultureInfo.InvariantCulture));
+        axis.Labels.Clear();
+        foreach (var date in new[] { new DateTime(2026, 1, 1), new DateTime(2026, 7, 1), new DateTime(2027, 1, 1) })
+            axis.Labels.Add(new ChartAxisLabel(date.ToOADate(), date.ToString(&quot;MMM yy&quot;, CultureInfo.InvariantCulture)));
+    }
+
+    private static string GalleryPage(VisualThemeMode mode) =&gt; &quot;embedding/&quot; + (mode == VisualThemeMode.Dark ? &quot;dark&quot; : &quot;light&quot;) + &quot;.html&quot;;
+
+    private static ChartSeries SupportRow(int row, VisualThemeMode mode, string summaryPage) {
+        var (name, key, start, end) = row switch {
+            0 =&gt; (&quot;2025&quot;, &quot;release-2025&quot;, new DateTime(2026, 1, 1), new DateTime(2026, 5, 31)),
+            1 =&gt; (&quot;2026&quot;, &quot;release-2026&quot;, new DateTime(2026, 3, 1), new DateTime(2027, 1, 1)),
+            2 =&gt; (&quot;Next&quot;, &quot;release-next&quot;, new DateTime(2026, 9, 1), new DateTime(2026, 12, 31)),
+            _ =&gt; throw new ArgumentOutOfRangeException(nameof(row))
+        };
+        var current = row == 1;
+        var item = current ? ChartGanttItem.OpenEnded(start) : new ChartGanttItem(start, end);
+        item = item.WithMarkOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key,
+            tooltip: current ? &quot;Current release; support has no fixed end date&quot; : &quot;Read this release&#39;s support summary&quot;,
+            accessibleLabel: name + (current ? &quot;: support from March 2026, no fixed end date&quot; : &quot;: view support dates&quot;),
+            cssClass: &quot;support-mark&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }));
+        return ChartSeries.CreateGanttTask(new ChartSeriesId(key), name, start, end, color: Color(current ? &quot;--updates&quot; : &quot;--support&quot;, mode))
+            .ReplaceGanttItems(new[] { item })
+            .WithMarkOptions(new ChartMarkOptions(cssClass: &quot;support-series&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }))
+            .WithRowOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key, accessibleLabel: name + (current ? &quot;, current release&quot; : &quot;, support summary&quot;),
+                cssClass: &quot;support-row&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }, current: current));
+    }
+
+    private static ChartColor Color(string token, VisualThemeMode mode) {
+        var dark = mode == VisualThemeMode.Dark;
+        return ChartColor.FromHex(token switch {
+            &quot;--updates&quot; =&gt; dark ? &quot;#6EAEFF&quot; : &quot;#2A78D6&quot;,
+            &quot;--publisher-notes&quot; =&gt; dark ? &quot;#F3B36B&quot; : &quot;#A95712&quot;,
+            _ =&gt; dark ? &quot;#9CA7B5&quot; : &quot;#697789&quot;
+        }).WithCssVariable(token);
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = ServerRenderedRecipe.Create(&quot;linked-columns&quot;, mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 360)), theme, mode,
+    new VisualFrame(&quot;Linked update columns&quot;, &quot;A destination, accessible name and host hooks on every segment&quot;, showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+
+/// &lt;summary&gt;Illustrative page charts with mark navigation, a current schedule row and a shared strip domain.&lt;/summary&gt;
+public static class ServerRenderedRecipe {
+    /// &lt;summary&gt;Creates a catalog model; page hosts can prepare the shared-strip variant with &lt;see cref=&quot;SharedScale&quot;/&gt;.&lt;/summary&gt;
+    public static Chart Create(string variant = &quot;linked-columns&quot;, VisualThemeMode mode = VisualThemeMode.Light) =&gt; variant switch {
+        &quot;linked-columns&quot; or &quot;compact-linked-columns&quot; =&gt; LinkedColumns(mode, GalleryPage(mode)),
+        &quot;support-schedule&quot; or &quot;compact-support-schedule&quot; =&gt; SupportSchedule(mode, GalleryPage(mode)),
+        &quot;shared-strip&quot; or &quot;compact-shared-strip&quot; =&gt; CreateStrip(1, mode, GalleryPage(mode)),
+        _ =&gt; throw new ArgumentException(&quot;Unknown embedding example.&quot;, nameof(variant))
+    };
+
+    /// &lt;summary&gt;Creates five linked stacked columns. Publisher notes open separately from the local daily summaries.&lt;/summary&gt;
+    public static Chart LinkedColumns(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = &quot;&quot;) {
+        var updates = new[] { 8d, 12, 7, 16, 10 };
+        var notes = new[] { 2d, 3, 2, 4, 1 };
+        ChartPoint Point(int index, double value, bool publisher) {
+            var day = new DateTime(2026, 7, 13).AddDays(index).ToString(&quot;yyyy-MM-dd&quot;, CultureInfo.InvariantCulture);
+            return new ChartPoint(index + 1, value).WithMarkOptions(new ChartMarkOptions(
+                href: publisher ? &quot;https://github.com/EvotecIT/ChartForgeX/releases&quot; : summaryPage + &quot;#day-&quot; + day,
+                linkTarget: publisher ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext,
+                tooltip: publisher ? &quot;Open publisher release notes in a new tab&quot; : &quot;Read this day&#39;s update summary&quot;,
+                accessibleLabel: day + &quot;: &quot; + value.ToString(&quot;0&quot;, CultureInfo.InvariantCulture)
+                    + (publisher ? &quot; publisher notes; opens in a new tab&quot; : &quot; updates; read the daily summary&quot;),
+                cssClass: publisher ? &quot;publisher-mark&quot; : &quot;activity-mark&quot;,
+                dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-day&quot;] = day, [&quot;data-kind&quot;] = publisher ? &quot;publisher&quot; : &quot;update&quot; }));
+        }
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithBarStyle(ChartBarStyle.Flat)
+            .WithLegend(false).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;)
+            .WithYAxisBounds(0, 24).ConfigureYAxis(axis =&gt; { axis.TickCount = 4; axis.IntegerTicks = true; })
+            .AddBar(&quot;Updates&quot;, updates.Select((value, index) =&gt; Point(index, value, false)), Color(&quot;--updates&quot;, mode))
+            .AddBar(&quot;Publisher notes&quot;, notes.Select((value, index) =&gt; Point(index, value, true)), Color(&quot;--publisher-notes&quot;, mode));
+        chart.Series[0].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;activity-series&quot;,
+            dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;daily-updates&quot; }));
+        chart.Series[1].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;publisher-series&quot;,
+            dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;publisher-notes&quot; }));
+        return chart;
+    }
+
+    /// &lt;summary&gt;Creates three support rows, including an open task and independently current row metadata.&lt;/summary&gt;
+    public static Chart SupportSchedule(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = &quot;&quot;) {
+        var chart = Schedule(mode);
+        for (var row = 0; row &lt; 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
+        return chart.WithGanttToday(new DateTime(2026, 7, 15));
+    }
+
+    /// &lt;summary&gt;Creates one support row for plot-only preparation; HTML owns the row label.&lt;/summary&gt;
+    public static Chart CreateStrip(int row, VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = &quot;&quot;) =&gt;
+        Schedule(mode).AddSeries(SupportRow(row, mode, summaryPage));
+
+    /// &lt;summary&gt;Creates an explicit 1 January 2026 to 1 January 2027 domain shared by every strip and the axis.&lt;/summary&gt;
+    public static ChartStripScale SharedScale() {
+        var axis = new ChartAxis();
+        ConfigureTimeAxis(axis);
+        return new ChartStripScale(axis);
+    }
+
+    private static Chart Schedule(VisualThemeMode mode) =&gt; Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
+        .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
+        .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
+        .ConfigureXAxis(ConfigureTimeAxis);
+
+    private static void ConfigureTimeAxis(ChartAxis axis) {
+        axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2027, 1, 1).ToOADate();
+        axis.Scale = ChartScaleKind.Time; axis.TickCount = 3;
+        axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM yy&quot;, CultureInfo.InvariantCulture));
+        axis.Labels.Clear();
+        foreach (var date in new[] { new DateTime(2026, 1, 1), new DateTime(2026, 7, 1), new DateTime(2027, 1, 1) })
+            axis.Labels.Add(new ChartAxisLabel(date.ToOADate(), date.ToString(&quot;MMM yy&quot;, CultureInfo.InvariantCulture)));
+    }
+
+    private static string GalleryPage(VisualThemeMode mode) =&gt; &quot;embedding/&quot; + (mode == VisualThemeMode.Dark ? &quot;dark&quot; : &quot;light&quot;) + &quot;.html&quot;;
+
+    private static ChartSeries SupportRow(int row, VisualThemeMode mode, string summaryPage) {
+        var (name, key, start, end) = row switch {
+            0 =&gt; (&quot;2025&quot;, &quot;release-2025&quot;, new DateTime(2026, 1, 1), new DateTime(2026, 5, 31)),
+            1 =&gt; (&quot;2026&quot;, &quot;release-2026&quot;, new DateTime(2026, 3, 1), new DateTime(2027, 1, 1)),
+            2 =&gt; (&quot;Next&quot;, &quot;release-next&quot;, new DateTime(2026, 9, 1), new DateTime(2026, 12, 31)),
+            _ =&gt; throw new ArgumentOutOfRangeException(nameof(row))
+        };
+        var current = row == 1;
+        var item = current ? ChartGanttItem.OpenEnded(start) : new ChartGanttItem(start, end);
+        item = item.WithMarkOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key,
+            tooltip: current ? &quot;Current release; support has no fixed end date&quot; : &quot;Read this release&#39;s support summary&quot;,
+            accessibleLabel: name + (current ? &quot;: support from March 2026, no fixed end date&quot; : &quot;: view support dates&quot;),
+            cssClass: &quot;support-mark&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }));
+        return ChartSeries.CreateGanttTask(new ChartSeriesId(key), name, start, end, color: Color(current ? &quot;--updates&quot; : &quot;--support&quot;, mode))
+            .ReplaceGanttItems(new[] { item })
+            .WithMarkOptions(new ChartMarkOptions(cssClass: &quot;support-series&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }))
+            .WithRowOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key, accessibleLabel: name + (current ? &quot;, current release&quot; : &quot;, support summary&quot;),
+                cssClass: &quot;support-row&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }, current: current));
+    }
+
+    private static ChartColor Color(string token, VisualThemeMode mode) {
+        var dark = mode == VisualThemeMode.Dark;
+        return ChartColor.FromHex(token switch {
+            &quot;--updates&quot; =&gt; dark ? &quot;#6EAEFF&quot; : &quot;#2A78D6&quot;,
+            &quot;--publisher-notes&quot; =&gt; dark ? &quot;#F3B36B&quot; : &quot;#A95712&quot;,
+            _ =&gt; dark ? &quot;#9CA7B5&quot; : &quot;#697789&quot;
+        }).WithCssVariable(token);
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

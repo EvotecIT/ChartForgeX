@@ -127,6 +127,7 @@ foreach (var source in mermaidSources) {
 }
 
 PreparedPipelineSmoke.Run(portableFontFamily);
+EmbeddingSmoke.Run(portableFontFamily);
 var coreAnimationFrame = new ChartForgeX.Raster.RasterAnimationFrame(
     new ChartForgeX.Raster.RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }), TimeSpan.FromSeconds(1));
 foreach (var format in new[] { ChartForgeX.Raster.RasterAnimationFormat.Gif, ChartForgeX.Raster.RasterAnimationFormat.Apng }) {

@@ -6,6 +6,13 @@ using ChartForgeX.SvgRaster;
 namespace ChartForgeX.Themes;
 
 internal readonly partial struct SvgPaint {
+    // Bind before the RGBA-only role tokens are serialized, so later opacity/tint operations retain the caller's name.
+    private static SvgPaint DirectVariable(ChartColor color) {
+        var fallback = ChartColor.FromRgb(color.R, color.G, color.B);
+        TryCssVariable("var(" + color.CssVariable + ", " + fallback.ToHex() + ")", fallback, out _, out var paint);
+        return color.A == 255 ? paint : paint.WithOpacity(color, color.A / 255.0);
+    }
+
     /// <summary>Retains an authored CSS variable with an explicit, identical standalone SVG and raster fallback.</summary>
     internal static bool TryCssVariable(string? css, ChartColor defaultFallback, out ChartColor resolved, out SvgPaint paint) {
         resolved = defaultFallback;

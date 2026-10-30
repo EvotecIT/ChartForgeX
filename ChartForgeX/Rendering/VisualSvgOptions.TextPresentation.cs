@@ -10,8 +10,6 @@ public sealed partial class VisualSvgOptions {
     internal VisualSvgTextPresentation TextPresentation => _textPresentation;
     internal VisualSvgOptions WithTextPresentation(VisualSvgTextPresentation presentation) {
         if (!Enum.IsDefined(typeof(VisualSvgTextPresentation), presentation)) throw new ArgumentOutOfRangeException(nameof(presentation));
-        return new VisualSvgOptions(IdPrefix, _colorVariables, LinkTarget, Responsive, EffectProfile, EffectRasterOptions) {
-            _patternTiles = _patternTiles, _textPresentation = presentation
-        };
+        var copy = Copy(); copy._textPresentation = presentation; return copy;
     }
 }

@@ -11,6 +11,8 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScheduleCompiler {
     private static ScheduleLayout LaneLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
         IEnumerable<string> names, IEnumerable<string?> summaries, bool hasSummary, bool now, IReadOnlyList<double> ticks, Func<double, string> format, bool hasFixedTicks = false) {
+        if (chart.IsStrip) return new ScheduleLayout(viewport, false, viewport.Right, 0, viewport,
+            VisualStateSceneTools.TickStyle(chart, context), format, hasFixedTicks);
         var cache = new Dictionary<double, string>(); var originalFormat = format;
         string Format(double value) {
             if (!cache.TryGetValue(value, out var text)) cache.Add(value, text = originalFormat(value));
@@ -92,8 +94,12 @@ internal static partial class VisualScheduleCompiler {
                     .WithOpacity(context.Theme.Resolve(context.ThemeMode).Border.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }
         // Hosts attach lane links and filters through this documented row group (ChartDomRoles).
+        var showName = chart.Options.ShowAxes && chart.Options.YAxis.Visible && !string.IsNullOrWhiteSpace(name);
+        var summaryText = summary ?? string.Empty;
+        var showSummary = layout.HasSummary && !string.IsNullOrWhiteSpace(summaryText);
+        if (!showName && !showSummary) return;
         using var row = builder.PushGroup("schedule-lane-row-" + index, ChartDomRoles.ScheduleRow, LaneMetadata(chart, index, group));
-        if (chart.Options.ShowAxes && chart.Options.YAxis.Visible) {
+        if (showName) {
             var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap);
             var labelStyle = ChartRowText.Style(builder, style, name, height, labelWidth);
             var fittedName = ChartTextFitting.TrimEnd(name, labelStyle.EffectiveFontSize, labelWidth,
@@ -102,9 +108,9 @@ internal static partial class VisualScheduleCompiler {
             VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, labelStyle, fittedName, viewport.Left, labelWidth, top, height, pitch), labelStyle,
                 ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
         }
-        if (layout.HasSummary && summary != null) {
-            var summaryStyle = ChartRowText.Style(builder, style, summary, height, Math.Max(0, viewport.Right - layout.SummaryLeft));
-            VisualStateSceneTools.Text(builder, summary, ChartRowText.Bounds(builder, summaryStyle, summary, layout.SummaryLeft, Math.Max(0, viewport.Right - layout.SummaryLeft), top, height, pitch), summaryStyle,
+        if (showSummary) {
+            var summaryStyle = ChartRowText.Style(builder, style, summaryText, height, Math.Max(0, viewport.Right - layout.SummaryLeft));
+            VisualStateSceneTools.Text(builder, summaryText, ChartRowText.Bounds(builder, summaryStyle, summaryText, layout.SummaryLeft, Math.Max(0, viewport.Right - layout.SummaryLeft), top, height, pitch), summaryStyle,
                 ChartDomRoles.LaneSummary, "schedule-summary-" + index, TextAlignment.Right);
         }
     }
@@ -124,6 +130,7 @@ internal static partial class VisualScheduleCompiler {
         using (builder.PushClip(plot))
             builder.Line(x, plot.Top, x, plot.Bottom, strokeColor, TodayWidth(chart, context), "gantt-now-line",
                 dash: strokeStyle?.ResolveDash(new[] { 4d, 3d }) ?? new[] { 4d, 3d }, paint: stroke);
+        if (chart.IsStrip) return;
         var style = VisualStateSceneTools.TickStyle(chart, context);
         var availableHeight = Math.Max(0, plot.Top - layout.Viewport.Top - 4);
         style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, plot.Width, availableHeight), new[] { chart.Options.Labels.Now });

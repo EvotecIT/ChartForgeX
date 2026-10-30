@@ -142,6 +142,7 @@ public sealed partial class Chart {
             if (row == null) throw new ArgumentException("Heatmap row collection must not contain null entries.", nameof(rows));
             if (kind == ChartSeriesKind.Heatmap) AddHeatmapRow(row.Name, row.Cells, color);
             else AddHexbinHeatmapRow(row.Name, row.Cells, color);
+            Series[Series.Count - 1].WithRowOptions(row.MarkOptions);
         }
 
         return this;
