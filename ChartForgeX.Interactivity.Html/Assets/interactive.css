@@ -771,3 +771,6 @@ body {
 }
 
 .cfx-interactive-chart[data-cfx-progress-connected="true"] [data-cfx-role="progress-handle"] { cursor: ew-resize; touch-action: none; }
+
+/* A marker's surface ring (design rule 5) is backdrop: the pointer reaches the marker or whatever lies beneath it. */
+.cfx-interactive-chart :is([data-cfx-role="marker-ring"], [data-cfx-role$="-marker-ring"]) { pointer-events: none; }
