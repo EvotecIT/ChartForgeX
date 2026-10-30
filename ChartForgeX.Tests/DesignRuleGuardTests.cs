@@ -139,6 +139,21 @@ public sealed class DesignRuleGuardTests {
         }
     }
 
+    /// <summary>Rule 9: a numeric heatmap's colour key has a title and starts at the plot's left edge, under the first column.</summary>
+    [Theory]
+    [MemberData(nameof(GalleryFamilies))]
+    public void HeatmapColorKey_HasATitleAndStartsAtThePlot(ChartSeriesKind kind, string variant) {
+        foreach (var mode in Modes) {
+            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var nodes = prepared.Scene.Nodes;
+            var steps = nodes.OfType<VisualSceneRectangle>().Where(node => node.Id != null && node.Id.StartsWith("matrix-scale", StringComparison.Ordinal)).ToArray();
+            if (steps.Length == 0) continue;
+            Assert.Contains(nodes.OfType<VisualSceneText>(), text => text.Role == "heatmap-scale-title" && Words(text).Length > 0);
+            var plot = prepared.Regions.Single(region => region.Role == "matrix-plot").Bounds;
+            Assert.InRange(steps.Min(step => step.Bounds.Left) - plot.Left, -.5, 12.5);
+        }
+    }
+
     /// <summary>Rule 8: a label drawn on a mark fits inside it; labels that do not fit move outside or to the tooltip, never clipped.</summary>
     [Theory]
     [MemberData(nameof(GalleryFamilies))]

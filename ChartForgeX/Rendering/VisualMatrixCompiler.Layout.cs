@@ -72,7 +72,7 @@ internal static partial class VisualMatrixCompiler {
         var scaleHeight = !categorical && ScaleVisible(context, presentation)
             ? chart.Options.HeatmapColorScale != null
                 ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35, presentation, missing: missing, hasDomain: hasDomain, min: min, max: max)
-                : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;
+                : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.Name)) : 0;
         var plot = new ChartRect(plotLeft, viewport.Top + top, Math.Max(0, viewport.Width - left - side), Math.Max(0, viewport.Height - top - labels - titleHeight - scaleHeight));
         return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle,
             angle, displayed);
@@ -166,7 +166,8 @@ internal static partial class VisualMatrixCompiler {
         if (chart.Options.HeatmapColorScale != null) { ColorScale(chart, context, builder, bounds, min, max, "heatmap-scale", presentation, missing: missing, hasDomain: hasDomain); return; }
         if (bounds.Height <= 0 || bounds.Width <= 0) return;
         var colors = context.Theme.Resolve(context.ThemeMode); var style = VisualStateSceneTools.TickStyle(chart, context);
-        if (presentation.HasName) {
+        // Design rule 9: the key always has a title, the authored value name or the localized value label.
+        {
             VisualColorScaleLegendScene.Heading(builder, bounds, style, "heatmap-scale", presentation.Name);
             var heading = Math.Min(bounds.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, context.Theme.Spacing / 2, presentation.Name));
             bounds = new ChartRect(bounds.Left, bounds.Top + heading, bounds.Width, Math.Max(0, bounds.Height - heading));
@@ -185,7 +186,8 @@ internal static partial class VisualMatrixCompiler {
         var noData = missing ? chart.Options.Labels.NoData : string.Empty;
         var missingWidth = missing ? Math.Min(bounds.Width * .3, Math.Max(12, builder.MeasureText(noData, style).Width) + context.Theme.Spacing) : 0;
         var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth - missingWidth), 160) : 0;
-        var scaleLeft = bounds.Left + (bounds.Width - zeroWidth - rampWidth - missingWidth) / 2;
+        // The key starts at the plot's left edge, under the first column, like its title.
+        var scaleLeft = bounds.Left;
         using (builder.PushGroup("matrix-scale", "heatmap-scale", new Dictionary<string, string> {
             ["data-cfx-min-value"] = VisualStateSceneTools.Number(floor), ["data-cfx-max-value"] = VisualStateSceneTools.Number(max)
         })) {

@@ -108,7 +108,9 @@ public static class EnhanceRecipe {
     public static Chart Heatmap(IReadOnlyList<Record> records, VisualThemeMode mode = VisualThemeMode.Light) {
         var weeks = records.Select(r => r.Week).Distinct().OrderBy(w => w).ToArray();
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(false)
-            .WithXLabels(weeks.Select(w => w.ToString("d MMM", CultureInfo.InvariantCulture)).ToArray());
+            .WithXLabels(weeks.Select(w => w.ToString("d MMM", CultureInfo.InvariantCulture)).ToArray())
+            // The colour key names what a cell counts.
+            .ConfigureHeatmapColorDimension(colors => colors.Name = "Records");
         foreach (var product in Products) {
             var cells = weeks.Select((week, i) => {
                 var marks = Marks(records.Where(r => r.Product == product.Name && r.Week == week), new Dictionary<string, object> { ["week"] = week });
