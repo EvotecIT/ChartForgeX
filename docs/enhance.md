@@ -105,7 +105,9 @@ Every enhanced chart implements the LinkedView methods with CanopyX's names and 
 
 A mark's values come from `data-cfx-fields`, and its keys from `data-cfx-keys` (or the data island). Set them with `ChartMarkOptions(keys: …, fields: …)`; series fields are inherited by their marks.
 
-Selecting dispatches `cfx:linkchange` with the `canopyx:linkchange` shape: `{ view, action: "select" | "clear", scope: "select", keys, values, label, range? }`. A brush or a time column adds `range: { column, from, to }` with `to` exclusive, as a CanopyX calendar reports it. Applied filters and highlights never dispatch `cfx:linkchange`, so two views that follow each other cannot echo.
+Selecting dispatches `cfx:linkchange` with the `canopyx:linkchange` shape: `{ view, action: "select" | "clear", scope: "select", keys, values, label, range? }`. A brush or a time column adds `range: { column, from, to }` with `to` exclusive, as a CanopyX calendar reports it. `texts` adds, for each field, what a reader calls each value: a date reads as its mark's label ("Thu 29"), a value the whole series shares as the series name ("Updates"), anything else as itself. Applied filters and highlights never dispatch `cfx:linkchange`, so two views that follow each other cannot echo.
+
+Field values that are dates match by instant, so a CanopyX filter on `"2026-10-29T00:00:00Z"` matches a mark whose field is `"2026-10-29T00:00:00.000Z"`.
 
 `CfxLink.connect(source, target, options)` wires two views both ways:
 
@@ -116,10 +118,19 @@ CfxLink.connect(trendChart, versionsChart, { field: "day" });            // char
 CfxLink.connect(chart, tableView, { mode: "highlight" });                   // any object with the LinkedView methods
 ```
 
-- The source's selection filters the target by `field` (a time range becomes an inclusive `range`), or highlights its keys with `mode: "highlight"`.
+- The source's selection filters the target by `field` (a time range becomes an inclusive `range`), or highlights its keys with `mode: "highlight"`. `field` may list several fields that together define a mark, such as `["day", "kind"]` for a stacked segment: the target gets one filter per field, and its chip reads "Filtered by Changes this week: Thu 29; Updates".
 - The target's selection highlights the source; its own conditions (`action: "filter"`) filter the source.
 - When the reader removes the source's chip in the target (`externalfilter` with `reason: "user"`), the source clears its selection silently.
-- The target may be a CanopyX host element (its `.canopyx` API is used), a ChartForgeX chart (its `cfx:` events are used), or any LinkedView object with a `host` or `element`. `options.events` names other event types. `connect` returns a `disconnect` function.
+- The target may be a CanopyX host element (its `.canopyx` API is used), a page element that holds one (CanopyX fragments carry no id on their host), a ChartForgeX chart (its `cfx:` events are used), or any LinkedView object with a `host` or `element`. A CanopyX host that has not mounted yet is linked when it reports `canopyx:ready`. `options.events` names other event types. `connect` returns a `disconnect` function.
+
+### With a CanopyX grid
+
+The [linked-views example](https://chartforgex.com/examples/generated/enhance/index.html) links four chart families (stacked columns, a time trend with a brush, a heatmap and a support schedule) to a CanopyX data grid of the same records with one `connect` call per pair; its page shows the whole script. On the CanopyX side:
+
+- Write the grid with `ToHtmlFragment` and `CanopyHtmlOptions.Parts.Add("link")`, and serve the entry point `CanopyHtmlAssets.GetRuntime(grid)` names, with the parts it loads beside it.
+- Grid row ids are the record keys the marks carry, and every linked field is a declared column (it may be hidden). Date columns link by ISO instants, which chart fields already are.
+- A flat grid selects rows by pointer only with `Reporting = new CanopyGridReporting { SelectionControls = true }` (row check boxes); without it, reader selection, and so grid-to-chart highlighting, is unavailable.
+- Define the page's `--hfx-*` roles once; the grid reads `--hfx-color-surface`, `--hfx-color-border` and `--hfx-color-text-muted`, so map them to the chart roles (`--hfx-color-surface-card`, `--hfx-color-surface-line`, `--hfx-color-text-secondary`) for one look in both schemes.
 
 ## Shared parts
 
