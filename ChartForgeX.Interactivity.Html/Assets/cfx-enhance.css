@@ -1,0 +1,6 @@
+/* ChartForgeX enhance runtime: pointer and legend affordances for enhanced SVG. States live in cfx-states.css. */
+svg[data-cfx-enhance] [data-cfx-mark],svg[data-cfx-enhance] [role="button"]{cursor:pointer;outline:none}
+svg[data-cfx-brush]{touch-action:pan-y}
+svg[data-cfx-crosshair] [data-cfx-mark]{cursor:crosshair}
+.cfx-e-legend-off{opacity:.45}
+.cfx-e-legend-off text{text-decoration:line-through}
