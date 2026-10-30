@@ -1,0 +1,6 @@
+<Project>
+  <Import Project="../../Directory.Build.props" Condition="Exists('../../Directory.Build.props')" />
+  <PropertyGroup>
+    <PackageVersion Condition="'$(PackageVersion)' == '' And '$(ChartForgeXProductVersion)' != ''">$(ChartForgeXProductVersion)</PackageVersion>
+  </PropertyGroup>
+</Project>
