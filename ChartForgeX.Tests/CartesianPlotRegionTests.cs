@@ -110,7 +110,8 @@ public sealed partial class CartesianPlotRegionTests {
         var region = prepared.Regions.Single(r => r.Id == "plot-region-1").Bounds;
         Assert.Equal(plot.Width * .4, region.Width, 6); Assert.Equal(plot.Height * .5, region.Height, 6);
         Assert.Equal(plot.Left + (reversed ? plot.Width * .6 : 0), region.Left, 6);
-        Assert.Equal(plot.Top + (reversed ? 0 : plot.Height * .5), region.Top, 6);
+        // Named horizontal categories read top-down, so the first category band sits at the top unless reversed.
+        Assert.Equal(plot.Top + (reversed ? plot.Height * .5 : 0), region.Top, 6);
         Assert.Contains("data-cfx-y-minimum=\"-2\"", prepared.ToSvg());
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "point"));
         Capture(prepared.ToSvg(), prepared.ToPng(), "horizontal-region-" + reversed);

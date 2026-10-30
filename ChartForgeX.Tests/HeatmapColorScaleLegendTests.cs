@@ -120,7 +120,8 @@ public sealed class HeatmapColorScaleLegendTests {
         Assert.True(missingSwatch.Bounds.Height > 0);
         Assert.InRange(missingSwatch.Bounds.Left, key.Left, key.Right); Assert.InRange(missingSwatch.Bounds.Right, key.Left, key.Right + .01);
         Assert.InRange(missingSwatch.Bounds.Top, key.Top, key.Bottom); Assert.InRange(missingSwatch.Bounds.Bottom, key.Top, key.Bottom + .01);
-        Assert.Equal(missingSwatch.Fill!.Value, Pixel(image, missingSwatch.Bounds));
+        // The no-data key wears the shared missing-data hatch over its fill (design rule 9).
+        Assert.Contains(prepared.Scene.Nodes, node => node.Role == "heatmap-scale-missing-swatch-hatch");
         ScatterBubbleColorRenderingTests.Capture(prepared, "legacy-key-compact-hexbin-" + (dark ? "dark" : "light"));
     }
 

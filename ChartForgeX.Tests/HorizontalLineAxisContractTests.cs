@@ -135,7 +135,8 @@ public sealed class HorizontalLineAxisContractTests {
             return text + " (" + text + ")";
         });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        Assert.Equal(expected.Count(), System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants()
+        // Gridlines follow the value axis (design rule 2): the category axis of a horizontal chart draws no rules.
+        Assert.Equal(0, System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants()
             .Count(element => (string?)element.Attribute("data-cfx-role") == "grid-y"));
         Assert.Equal(expected, prepared.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label));
         Assert.Equal(1.1, chart.Options.YAxis.Minimum);

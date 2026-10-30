@@ -36,7 +36,8 @@ public sealed class V2RadialScalarVisualDefaultsTests {
         var context = new VisualRenderContext(); var colors = context.Theme.Resolve(context.ThemeMode);
         var chart = Chart.Create().AddGauge("Declared bands", 40).ConfigureGauge(options => options.Bands.Add(new ChartGaugeBand(0, 100, state)));
         var scene = Compile(chart, context);
-        var expected = state == ChartSeriesState.Success ? colors.Palette[0] : ChartSeriesColours.State(state, colors, colors.Palette[0]);
+        // Bands carry the status; the value arc stays the measurement unless the series itself declares a state (design rule 10).
+        var expected = colors.Palette[0];
         Assert.Equal(expected, Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-value").Fill);
         Assert.Equal(context.Theme.GaugeBandWidth, Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-band").Outer
             - Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-band").Inner, 8);
@@ -106,15 +107,17 @@ public sealed class V2RadialScalarVisualDefaultsTests {
         var chart = Chart.Create().AddBullet("Below", 60, 80).AddBullet("Reached", 90, 80);
         var scene = Compile(chart, context);
         var ranges = scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bullet-range").ToArray();
-        Assert.Equal(new[] { colors.Neutral, colors.Neutral2, colors.Neutral3 }, ranges.Take(3).Select(mark => mark.Fill!.Value));
+        // Qualitative bands run darkest (poor) to lightest (good) in secondary ink, so the target reads on every band.
+        Assert.Equal(new[] { 0, 1, 2 }.Select(band => ChartColorMath.WithOpacity(colors.MutedForeground, VisualScalarProgressCompiler.BulletBandOpacity(band, 3))), ranges.Take(3).Select(mark => mark.Fill!.Value));
         Assert.Equal(ranges.Take(3).Select(mark => mark.Fill), ranges.Skip(3).Select(mark => mark.Fill));
         var measures = scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bullet-value").ToArray();
         Assert.All(measures, mark => Assert.Equal(colors.Foreground, mark.Fill));
         Assert.Equal(ranges[0].Bounds.Height / 3, measures[0].Bounds.Height, 8);
+        Assert.InRange(ranges[3].Bounds.Top - ranges[0].Bounds.Top, ChartRowDensity.MinimumRow - .001, ChartRowDensity.MaximumRow + .001);
         Assert.DoesNotContain(scene.Nodes, mark => mark.Role == "bullet-status-marker");
         var values = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "bullet-value-label").ToArray();
         var targets = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "bullet-target-label").ToArray();
-        Assert.Equal(colors.Status.Critical.Ink, values[0].Color); Assert.Equal(colors.Foreground, values[1].Color);
+        Assert.All(values, value => Assert.Equal(colors.Foreground, value.Color));
         for (var index = 0; index < values.Length; index++) {
             Assert.Equal(TextAlignment.Left, values[index].Alignment);
             Assert.Equal(values[index].Baseline - values[index].Text.Ascent + values[index].Text.Metrics.Height / 2,

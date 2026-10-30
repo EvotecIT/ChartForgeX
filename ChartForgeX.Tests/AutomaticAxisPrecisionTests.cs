@@ -104,7 +104,9 @@ public sealed class AutomaticAxisPrecisionTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = secondary ? "axis-secondary-y-label" : "axis-y-label";
         var captions = Captions(prepared, role);
-        Assert.Equal(new[] { "-0.0009", "-0.0008", "-0.0007", "-0.0006", "-0.0005" }, captions);
+        // The automatic value axis ends on clean ticks (design rule 1); small signed captions stay distinct and exact.
+        Assert.Equal("-0.001", captions[0]); Assert.Equal("-0.0005", captions[captions.Length - 1]);
+        Assert.Contains("-0.0009", captions); Assert.Equal(captions.Length, captions.Distinct().Count());
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal(captions, Texts(svg, role));
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithLabelFormatter(_ => throw new InvalidOperationException("Late formatter"));

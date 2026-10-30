@@ -130,6 +130,10 @@ public sealed class MarkerGeometryTests {
         var chart = Family(kind).WithLegend();
         chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Fill = Blue; marker.Stroke = Ink; marker.StrokeWidth = 2; });
         var prepared = Prepare(chart);
+        // A dumbbell's legend names its two ends with one glyph each (design rule 8); the others keep a line hint.
+        if (kind == ChartSeriesKind.Dumbbell) {
+            Assert.Single(prepared.Scene.Nodes, node => node.Role == "legend-dumbbell-end"); return;
+        }
         Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "legend-line");
         var glyph = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "legend-swatch");
         Assert.Equal(Blue, glyph.Fill); Assert.Equal(Ink, glyph.Stroke); Assert.Equal(2, glyph.StrokeWidth);

@@ -50,7 +50,8 @@ public sealed class AxisReversalTests {
         horizontal.Options.XAxis.WithScale(ChartScaleKind.Logarithmic).WithBounds(1, 100).WithReversal();
         horizontal.Options.YAxis.WithReversal();
         var h = Prepare(horizontal); var marks = h.Scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "horizontal-bar").ToArray();
-        Assert.Equal(marks[0].Bounds.Right, marks[1].Bounds.Right, 10); Assert.True(marks[0].Bounds.Top < marks[1].Bounds.Top);
+        // Named horizontal categories read top-down; an authored reversal puts the first at the bottom.
+        Assert.Equal(marks[0].Bounds.Right, marks[1].Bounds.Right, 10); Assert.True(marks[0].Bounds.Top > marks[1].Bounds.Top);
         Assert.True(marks[1].Bounds.Width > marks[0].Bounds.Width);
     }
 

@@ -170,7 +170,8 @@ public sealed class GroupedCategoryAxisLayoutTests {
         line.Series[0].ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 16; });
         var wide = Prepare(line); line.WithSize(390, 450); var compact = Prepare(line);
         var wideGroup = Assert.Single(Groups(wide)); var compactGroup = Assert.Single(Groups(compact));
-        Assert.Equal("1.5", wideGroup.Metadata["data-cfx-group-start"]); Assert.Equal("7.5", wideGroup.Metadata["data-cfx-group-end"]);
+        // A line over named categories keeps half-band outer padding (design rule 3); the group spans that padded domain.
+        Assert.Equal("-1.5", wideGroup.Metadata["data-cfx-group-start"]); Assert.Equal("10.5", wideGroup.Metadata["data-cfx-group-end"]);
         Assert.Equal(wideGroup.Metadata, compactGroup.Metadata);
         Assert.True(wide.XProjection!.FullMinimum < 1.5); Assert.True(compact.XProjection!.FullMinimum < 1.5);
     }

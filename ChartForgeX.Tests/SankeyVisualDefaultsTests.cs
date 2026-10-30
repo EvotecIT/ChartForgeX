@@ -19,7 +19,8 @@ public sealed class SankeyVisualDefaultsTests {
         var prepared = chart.Prepare(context);
         var nodes = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "sankey-node-mark").ToArray();
         Assert.Equal(3, nodes.Length);
-        Assert.All(nodes, node => { Assert.Equal(10, node.Bounds.Width); Assert.Equal(colors.Status.Neutral.Fill, node.Fill); });
+        // Thin secondary-ink nodes: the flows are the data, nodes only anchor them (no status colour).
+        Assert.All(nodes, node => { Assert.Equal(6, node.Bounds.Width); Assert.Equal(colors.MutedForeground, node.Fill); });
         var ribbons = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "sankey-ribbon").ToArray();
         Assert.Equal(ChartColorMath.WithOpacity(colors.Palette[0], .35), ribbons[0].Fill);
         Assert.Equal(ChartColorMath.WithOpacity(colors.Palette[2 % colors.Palette.Count], .35), ribbons[1].Fill);
@@ -82,12 +83,12 @@ public sealed class SankeyVisualDefaultsTests {
         Assert.All(labels.Where(label => label != source), label => { Assert.Equal(12, label.Text.Size); Assert.Equal(TextAlignment.Left, label.Alignment); });
         Assert.Equal(5, prepared.Regions.Count(region => region.Role == "sankey-node"));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "sankey.label-overflow");
-        var backgrounds = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(rect => rect.Role == "sankey-label-backdrop").ToArray();
-        Assert.Equal(labels.Length, backgrounds.Length);
-        Assert.All(backgrounds, background => {
-            Assert.InRange(background.Bounds.Left, chart.Options.Padding.Left, prepared.Size.Width - chart.Options.Padding.Right);
-            Assert.InRange(background.Bounds.Right, chart.Options.Padding.Left, prepared.Size.Width - chart.Options.Padding.Right);
-        });
+        // Outlined by default: no caption boxes, and every caption stays inside the padded frame.
+        Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "sankey-label-backdrop");
+        Assert.All(labels, label => Assert.All(label.Text.Lines, line => {
+            Assert.InRange(label.LineLeft(line), chart.Options.Padding.Left - .5, prepared.Size.Width - chart.Options.Padding.Right + .5);
+            Assert.InRange(label.LineLeft(line) + line.Width, chart.Options.Padding.Left - .5, prepared.Size.Width - chart.Options.Padding.Right + .5);
+        }));
     }
 
     [Fact]

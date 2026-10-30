@@ -114,7 +114,7 @@ public sealed class MermaidSankeyPaintTests {
     public void NewLabelPolicyRejectsInvalidValuesWithoutReplacingTheInstalledSnapshot() {
         var chart = SankeyFlowColorTests.Model(null, null, null); var original = chart.Options.Sankey;
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureSankey(options => options.LabelStyle = (ChartSankeyLabelStyle)99));
-        Assert.Same(original, chart.Options.Sankey); Assert.Equal(ChartSankeyLabelStyle.Backdrop, original.LabelStyle);
+        Assert.Same(original, chart.Options.Sankey); Assert.Equal(ChartSankeyLabelStyle.Outlined, original.LabelStyle);
         Assert.Equal(0, (int)ChartSankeyFlowColorMode.Source); Assert.Equal(1, (int)ChartSankeyFlowColorMode.Target);
         Assert.Equal(2, (int)ChartSankeyFlowColorMode.Quantitative); Assert.Equal(3, (int)ChartSankeyFlowColorMode.Gradient);
     }

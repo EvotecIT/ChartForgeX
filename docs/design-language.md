@@ -54,6 +54,22 @@ Ranked by impact from the critique.
 9. **Sequential and missing data.** Sequential ramps start near the surface; the legend has a title and units; missing data has one library-wide look (hatched 45°, secondary ink) that is visibly different from zero.
 10. **Density by row count.** Bullet, progress, Gantt, state and strip rows get a fixed 28–40px slot; chart height follows row count instead of stretching to the canvas. Group headers sit 8px above their first row.
 
+In code, each rule has one owner that every family uses, so a new family inherits it:
+
+| Rule | Shared mechanism |
+|---|---|
+| 1 Round axis ranges | `ChartValueAxisRange` snaps every automatic linear value axis (Y, horizontal X, scatter X) to its next tick after the readable step is chosen; count data gets whole-number steps. The old 8% headroom is gone. |
+| 2 Gridlines, category order | `ChartGridPolicy` turns the default grid into value gridlines for transposed charts and tick guides for schedules; `ChartCartesianOrientation.HorizontalCategoryProjection` puts named horizontal categories first-at-top for marks, projection and viewports alike. |
+| 3 Outer padding | `ChartRange.ApplyCategoryPadding` gives lines, areas and strips over named categories half-band padding; marker padding includes the 2px ring. |
+| 4 Bars | `ChartMarkSurface.BandFill`, `BarCorners`/`VisualCorners` (data-end radius on a scene rectangle, drawn the same in SVG and PNG), `StackSegmentBounds` (2px surface gap), `MaximumThickness` (stacks at most 24px unless authored). |
+| 5–6 Lines, markers, areas | Theme defaults (2px line, 8px marker), the marker surface ring in `VisualMarkerScene`, `VisualTheme.AreaWash(mode)`; no automatic last-point dot unless labelled. |
+| 7 Type | Typography defaults (16/13/12/12), title weight 600, secondary legend ink, `tabular-nums` on axis ticks; once one category caption wraps, every two-word caption wraps the same way. |
+| 8 Labels | `ChartLegendVisibility.RepeatsRowLabels` / `UsesDirectSeriesLabels`, slope end labels, dumbbell Before/After legend (`ChartDumbbellOptions.StartLabel`/`EndLabel`). |
+| 9 Missing data | `ChartMissingData` paints the one hatched no-data look (heatmap, calendar, treemap, legend keys); sequential heatmaps span their observed range. |
+| 10 Density, status | `ChartRowDensity` (28–40px rows, rows stack from the top) for bullet, progress, Gantt, timeline and state timeline; totals, gauge arcs, bullet values and neutral flow nodes no longer wear status colours. |
+
+`DesignRuleGuardTests` runs the rules over every gallery family (wide and compact, light and dark): nice value-axis ends, a sequential ramp that stays visible on both surfaces, square bar baselines, stacked gaps, status roles only on status-encoded data, no legend repeating row labels, no text overflowing its mark or the canvas.
+
 House-style references: the dark support schedule with its "Now" line and current row, and the bar/column family once rule 4 is applied. Not references until fixed: gauge, bullet, progress, treemap (dark), sankey, the restaurant dashboard.
 
 ## 3. States: one visual language
@@ -65,9 +81,9 @@ Every interactive chart uses the same five states, rendered the same way in ever
 | Rest | as specified above | system colours |
 | Hover / focus | mark lifts: +8% lightness and a 2px surface ring; everything else stays | `Highlight` outline |
 | Emphasis (hovering a series or legend entry) | other series dim to 25% opacity | others `GrayText` |
-| Selected (clicked) | 2px `--hfx-color-accent` outline, offset 2px; persists | `Highlight` outline |
+| Selected (clicked) | 2px primary-ink outline, offset 2px, on a 2px surface halo; persists. Never a series colour | `Highlight` outline |
 | Linked (highlighted from another view) | info-tone fill wash + a 3px bar at the mark's start, the same tone CanopyX uses for linked rows; non-linked marks dim to 35% | dashed `Highlight` outline |
-| Current (`aria-current`) | a band across the row or a 3px start accent + semibold label; never a dashed box around a label (that reads as focus) | `Mark` band |
+| Current (`aria-current`) | a band across the row (schedules), or on a mark a 2px secondary-ink outline offset 2px on a surface halo, + semibold label; never a dashed box (that reads as focus) | `Mark` band |
 
 Focus rings are `:focus-visible` only, 2px `--hfx-color-focus-ring`, offset 2px. Selection and focus never look alike.
 

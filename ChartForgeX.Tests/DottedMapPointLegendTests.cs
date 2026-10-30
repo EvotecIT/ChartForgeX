@@ -43,7 +43,8 @@ public sealed class DottedMapPointLegendTests {
         var image = ChartForgeX.Raster.RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         var glyphs = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "legend-swatch").ToArray();
         Assert.Equal(3, glyphs.Length);
-        var expected = new[] { chart.Series[0].PointColors[0]!.Value, chart.Options.Theme.Resolve(chart.Options.ThemeMode).Status.Pass.Fill };
+        // Unstated points take the first series slot, not a status (design rule 10).
+        var expected = new[] { chart.Series[0].PointColors[0]!.Value, chart.Options.Theme.Resolve(chart.Options.ThemeMode).Palette[0] };
         for (var index = 0; index < expected.Length; index++) {
             var pixel = ((int)glyphs[index].Cy * image.Width + (int)glyphs[index].Cx) * 4;
             Assert.Equal(expected[index], ChartColor.FromRgba(image.Pixels[pixel], image.Pixels[pixel + 1], image.Pixels[pixel + 2], image.Pixels[pixel + 3]));
@@ -58,7 +59,7 @@ public sealed class DottedMapPointLegendTests {
         var context = VisualExportRequest.ForChart(chart).Context;
         var variables = new SvgColorVariables()
             .Add("--map-explicit", chart.Series[0].PointColors[0]!.Value, SvgColorRole.Series)
-            .Add("--map-status", context.Theme.Resolve(context.ThemeMode).Status.Pass.Fill, SvgColorRole.Status);
+            .Add("--map-status", context.Theme.Resolve(context.ThemeMode).Palette[0], SvgColorRole.Series);
         var xml = XDocument.Parse(chart.Prepare(context).ToSvg(new VisualSvgOptions("map-points", variables)));
         Assert.Contains("var(--map-explicit,", (string?)Entries(xml)[0].Descendants().Single(node => Role(node) == "legend-swatch").Attribute("fill"));
         Assert.Contains("var(--map-status,", (string?)Entries(xml)[1].Descendants().Single(node => Role(node) == "legend-swatch").Attribute("fill"));
@@ -73,8 +74,8 @@ public sealed class DottedMapPointLegendTests {
         var chart = Create(dark).WithPointLegend(false).WithLegend();
         if (explicitColor) chart.Series[0].Color = ChartColor.FromRgb(17, 53, 97);
         var context = VisualExportRequest.ForChart(chart).Context;
-        var expected = chart.Series[0].Color ?? context.Theme.Resolve(context.ThemeMode).Status.Pass.Fill;
-        var role = explicitColor ? SvgColorRole.Series : SvgColorRole.Status;
+        var expected = chart.Series[0].Color ?? context.Theme.Resolve(context.ThemeMode).Palette[0];
+        var role = SvgColorRole.Series;
         var prepared = chart.Prepare(context);
         var xml = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions("map-series",
             new SvgColorVariables().Add("--map-default", expected, role))));

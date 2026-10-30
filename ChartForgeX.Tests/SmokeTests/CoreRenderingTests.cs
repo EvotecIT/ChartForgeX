@@ -391,7 +391,7 @@ internal static partial class SmokeTests {
         var editorial = Chart.Create().WithTheme(VisualTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
         var dashboard = Chart.Create().WithTheme(VisualTheme.Dashboard()).AddBar("KPI", Points(8, 9, 7)).ToSvg();
-        Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && dashboard.Contains("rx=\"14\"", StringComparison.Ordinal), "Dashboard themes should preserve their palette and shared frame corner geometry.");
+        Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && VisualTheme.Dashboard().BarRadius == 14 && VisualTheme.Dashboard().PlotRadius == 14, "Dashboard themes should preserve their palette and shared frame corner geometry.");
         var saasChart = Chart.Create().WithTheme(VisualTheme.SaasDashboard()).WithLineMarkers(ChartLineMarkerMode.All).AddSmoothLine("MRR", Points(104, 112, 126));
         var saas = saasChart.ToSvg();
         Assert(saas.Contains("#356AF4", StringComparison.Ordinal) && PreparedFamily(saasChart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "marker").All(mark => mark.Rx == 4.2), "SaaS dashboard themes should retain their series palette and explicit endpoint marker radius.");
@@ -589,8 +589,10 @@ internal static partial class SmokeTests {
             var source = prepared.Regions.Single(region => region.Role == "axis-x-label" && region.Label!.StartsWith(text + " (", StringComparison.Ordinal));
             Assert(Math.Abs(label.X + label.Text.Metrics.Width / 2 - source.Bounds.Left) <= .5, "Edge labels should stay centered on their own tick instead of moving inside the plot.");
         }
-        Assert(labels.Any(label => label.X < plot.Left) && labels.Any(label => label.X + label.Text.Metrics.Width > plot.Right),
-            "The first and last centered captions should use the frame padding reserved around the plot.");
+        // Named categories keep half-band outer padding (design rule 3), so the first and last points and their centred
+        // captions sit inside the plot instead of on its edges.
+        Assert(labels.All(label => label.X >= plot.Left - .5 && label.X + label.Text.Metrics.Width <= plot.Right + .5),
+            "Edge captions of a padded category axis stay inside the plot.");
     }
 
     private static void XAxisLabelsCanBeRotated() {
