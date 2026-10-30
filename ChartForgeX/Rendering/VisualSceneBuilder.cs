@@ -29,9 +29,9 @@ internal sealed partial class VisualSceneBuilder {
     internal VisualSize Size => _size;
 
     internal void Rect(ChartRect bounds, ChartColor? fill, ChartColor? stroke = null, double strokeWidth = 1,
-        double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double opacity = 1) {
+        double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double opacity = 1, VisualCorners corners = VisualCorners.All) {
         ValidateRect(bounds); NonNegative(radius, nameof(radius)); NonNegative(strokeWidth, nameof(strokeWidth));
-        _nodes.Add(new VisualSceneRectangle(bounds, Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2), fill, stroke, strokeWidth, role, id, paint, opacity));
+        _nodes.Add(new VisualSceneRectangle(bounds, Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2), fill, stroke, strokeWidth, role, id, paint, opacity, corners));
     }
 
     internal void Line(double x1, double y1, double x2, double y2, ChartColor color, double width = 1,

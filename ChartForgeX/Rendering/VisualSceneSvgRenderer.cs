@@ -140,7 +140,8 @@ internal static partial class VisualSceneSvgRenderer {
             }
             else if (fluid != null && WriteFluidNode(writer, scene, i, prefix, paintOptions, fluid, pngText, capturePngText, fonts, textImages)) { }
             else if (node is VisualSceneRectangle rect) {
-                writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
+                if (rect.HasPartialCorners) writer.StartElement("path").Attribute("d", RectanglePathData(rect));
+                else writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
                     .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
                 Paint(writer, rect, prefix, i, options: paintOptions); writer.EndEmptyElement();
             } else if (node is VisualSceneEllipse ellipse) {
@@ -298,6 +299,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
             css += style.OpenTypeLanguageTag == null ? ";font-language-override:normal" : ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
             css += ";font-palette:" + (style.Font.ColorPaletteIndex == 0 ? "normal" : ChartForgeX.Typography.TypographyPaletteCss.Name(style.Font.ColorPaletteIndex));
+            if (ChartDomRoles.IsAxisTick(node.Role)) css += ";font-variant-numeric:tabular-nums"; // design rule 7: axis numbers align
             writer.Attribute("style", css).Text(line.Text).EndElement();
         }
         writer.EndElement();
@@ -316,6 +318,7 @@ internal static partial class VisualSceneSvgRenderer {
     }
 
     private static string PathData(VisualScenePath path) => new SvgPathDataBuilder().Append(path.Commands, path.Close).Build();
+    private static string RectanglePathData(VisualSceneRectangle rect) => new SvgPathDataBuilder().Append(rect.Outline().Commands, true).Build();
 
     private static string N(double value) => SvgMarkupWriter.FormatNumber(value);
 
@@ -372,7 +375,7 @@ internal static partial class VisualSceneSvgRenderer {
                     // The immutable scene sorts metadata with ordinal keys before export.
                     foreach (var item in group.Metadata) { writer.Write(item.Key); writer.Write(item.Value); }
                 } else if (node is VisualSceneEndGroup) { }
-                else if (node is VisualSceneRectangle rect) { Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); }
+                else if (node is VisualSceneRectangle rect) { Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); writer.Write((int)rect.Corners); }
                 else if (node is VisualSceneEllipse ellipse) {
                     writer.Write(ellipse.Cx); writer.Write(ellipse.Cy); writer.Write(ellipse.Rx); writer.Write(ellipse.Ry);
                 } else if (node is VisualSceneLine line) {

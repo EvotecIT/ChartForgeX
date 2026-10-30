@@ -101,8 +101,9 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void RectGradient(ChartRect bounds, ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
-        Rect(bounds, null, stroke, strokeWidth, radius, role, id, paint);
+        ChartColor? stroke = null, double strokeWidth = 1, double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null,
+        VisualCorners corners = VisualCorners.All) {
+        Rect(bounds, null, stroke, strokeWidth, radius, role, id, paint, corners: corners);
         ReplaceWithGradient(start, end, stops);
     }
 

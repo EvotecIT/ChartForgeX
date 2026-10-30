@@ -123,10 +123,18 @@ internal sealed class VisualSceneRectangle : VisualSceneMark {
     internal VisualSceneRectangle(ChartRect bounds, double radius, ChartColor? fill, ChartColor? stroke,
         double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint = null) : this(bounds, radius, fill, stroke, strokeWidth, role, id, paint, 1) { }
     internal VisualSceneRectangle(ChartRect bounds, double radius, ChartColor? fill, ChartColor? stroke,
-        double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint, double opacity)
+        double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint, double opacity, VisualCorners corners = VisualCorners.All)
         : base(fill, stroke, strokeWidth, role, id, paint, opacity) {
-        Bounds = bounds; Radius = radius;
+        Bounds = bounds; Radius = radius; Corners = corners;
     }
+    /// <summary>Which corners take <see cref="Radius"/>; bars round only their data end (design rule 4).</summary>
+    internal VisualCorners Corners { get; }
+    /// <summary>Whether the rectangle rounds only some of its corners and so needs path geometry.</summary>
+    internal bool HasPartialCorners => Radius > 0 && Corners != VisualCorners.All;
+    /// <summary>The exact outline, shared by the SVG and raster exporters.</summary>
+    internal ChartPath Outline() => ChartPathBuilder.RoundedRectangle(Bounds,
+        (Corners & VisualCorners.TopLeft) != 0 ? Radius : 0, (Corners & VisualCorners.TopRight) != 0 ? Radius : 0,
+        (Corners & VisualCorners.BottomRight) != 0 ? Radius : 0, (Corners & VisualCorners.BottomLeft) != 0 ? Radius : 0);
     internal ChartRect Bounds { get; }
     internal double Radius { get; }
 }

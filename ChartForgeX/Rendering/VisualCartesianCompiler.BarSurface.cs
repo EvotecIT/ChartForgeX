@@ -10,7 +10,8 @@ internal static partial class VisualCartesianCompiler {
     private sealed class BarSurfacePolicy {
         internal BarSurfacePolicy(Chart chart, VisualRenderContext context, ChartSeries series, int pointIndex, VisualThemeColors colors, SvgColorRole? sourceRole = null) {
             Style = chart.Options.ResolvePreparedBarVisualStyle().Clone();
-            CornerRadius = chart.Options.HasPreparedBarCornerRadius ? Style.CornerRadius : context.Theme.BarRadius;
+            // Sparkline bars are micro marks on a sample grid: square, unless a radius is authored.
+            CornerRadius = chart.Options.HasPreparedBarCornerRadius ? Style.CornerRadius : chart.Options.IsSparkline ? 0 : context.Theme.BarRadius;
             Role = sourceRole ?? VisualChartPaint.SeriesRole(series, pointIndex);
             Pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                 ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
@@ -41,17 +42,20 @@ internal static partial class VisualCartesianCompiler {
             // one pixel of ink. Its outer clip must include that painted extent.
             var left = Math.Min(envelope.Left, bounds.Left); var top = Math.Min(envelope.Top, bounds.Top);
             stackBounds = new ChartRect(left, top, Math.Max(envelope.Right, bounds.Right) - left, Math.Max(envelope.Bottom, bounds.Bottom) - top);
+            // Stacked segments are separate marks: a surface gap where they meet (design rule 4).
+            bounds = ChartMarkSurface.StackSegmentBounds(bounds, stackBounds.Value, horizontal);
         }
-        // Every signed stack has one rounded envelope. Segment bodies stay square at shared boundaries.
-        using var stackClip = stackBounds.HasValue ? builder.PushClip(RoundedRectanglePath(stackBounds.Value,
-            Math.Min(policy.CornerRadius,
-                Math.Min(stackBounds.Value.Width, stackBounds.Value.Height) / 2))) : null;
+        // Every signed stack has one envelope, rounded at its data end only. Segment bodies stay square at shared boundaries.
+        using var stackClip = stackBounds.HasValue ? builder.PushClip(ChartMarkSurface.BarPath(stackBounds.Value,
+            Math.Min(policy.CornerRadius, Math.Min(stackBounds.Value.Width, stackBounds.Value.Height) / 2), horizontal, direction)) : null;
         if (stackBounds.HasValue) radius = 0;
         var pattern = policy.Pattern;
+        var corners = ChartMarkSurface.BarCorners(horizontal, direction, bothEnds: range);
+        var outline = ChartMarkSurface.BarPath(bounds, radius, horizontal, direction, bothEnds: range);
         if (style.Kind == ChartBarStyle.SegmentedCapsule) {
-            builder.Rect(bounds, ChartColorMath.WithOpacity(color, style.BodyOpacity), radius: radius, role: role,
+            builder.Rect(bounds, ChartColorMath.WithOpacity(color, style.BodyOpacity), radius: radius, role: role, corners: corners,
                 paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, style.BodyOpacity), style.BodyOpacity)));
-            DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), policy.Backdrop, role + "-pattern");
+            DrawPattern(builder, outline, pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), policy.Backdrop, role + "-pattern");
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
             var outerEnd = !stackBounds.HasValue || (horizontal
                 ? direction > 0 ? bounds.Right >= stackBounds.Value.Right - .001 : bounds.Left <= stackBounds.Value.Left + .001
@@ -68,15 +72,15 @@ internal static partial class VisualCartesianCompiler {
                             VisualChartPaint.BarGradient(color, resolvedRole, true, ChartVisualPrimitives.BarFillOpacity, sourcePaint)),
                         new VisualGradientStop(1, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientBottom(color).WithAlpha(color.A), ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity),
                             VisualChartPaint.BarGradient(color, resolvedRole, false, ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity, sourcePaint)) },
-                    radius: radius, role: role);
+                    radius: radius, role: role, corners: corners);
                 if (ChartMarkSurface.HasBarHighlight(bounds.Width, bounds.Height)) {
                     var inset = ChartVisualPrimitives.BarHighlightInset;
                     builder.Line(bounds.Left + inset, bounds.Top + inset, bounds.Right - inset, bounds.Top + inset,
                         ChartColorMath.WithOpacity(ChartColor.White.WithAlpha(color.A), ChartVisualPrimitives.BarHighlightOpacity), ChartVisualPrimitives.BarHighlightStrokeWidth, role: role + "-highlight",
                         paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.WithOpacity(ChartColor.White.WithAlpha(color.A), ChartVisualPrimitives.BarHighlightOpacity))));
                 }
-            } else builder.Rect(bounds, color, radius: radius, role: role, paint: VisualChartPaint.Fill(sourcePaint));
-            DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, color, policy.Backdrop, role + "-pattern");
+            } else builder.Rect(bounds, color, radius: radius, role: role, paint: VisualChartPaint.Fill(sourcePaint), corners: corners);
+            DrawPattern(builder, outline, pattern, color, policy.Backdrop, role + "-pattern");
         }
     }
 

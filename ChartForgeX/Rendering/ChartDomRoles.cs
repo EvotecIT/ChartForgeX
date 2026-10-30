@@ -63,6 +63,11 @@ public static class ChartDomRoles {
     /// <summary>A value-axis tick label on the primary Y axis.</summary>
     public const string AxisYLabel = "axis-y-label";
 
+    /// <summary>Whether a role names an axis tick caption (Cartesian, schedule, strip, bullet or radial scale).</summary>
+    internal static bool IsAxisTick(string? role) => role != null && (role.StartsWith("axis-", System.StringComparison.Ordinal)
+        && role.EndsWith("-label", System.StringComparison.Ordinal) && !role.Contains("title")
+        || role is StripAxisLabel or "schedule-tick-label" or "bullet-axis-label" or "radial-axis-label");
+
     /// <summary>A topology node.</summary>
     public const string TopologyNode = "topology-node";
 

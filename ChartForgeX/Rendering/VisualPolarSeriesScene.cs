@@ -22,12 +22,12 @@ internal static class VisualPolarSeriesScene {
     internal static void Draw(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
         ChartPath path, ChartColor color, bool radar, bool closed = true) {
         if (closed && (radar ? series.Radar.Form : series.Polar.Form) == ChartLineAreaForm.Area) {
-            var opacity = (radar ? series.Radar.FillOpacity : series.Polar.FillOpacity) ?? context.Theme.AreaOpacity;
+            var opacity = (radar ? series.Radar.FillOpacity : series.Polar.FillOpacity) ?? context.Theme.AreaWash(context.ThemeMode);
             var fill = ChartColorMath.WithOpacity(color, opacity);
             builder.Path(path, fill, role: radar ? "radar-area" : "polar-area", close: true,
                 paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, opacity)));
             if (series.FillPattern != ChartFillPattern.None && opacity > 0) {
-                var hatchOpacity = Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity));
+                var hatchOpacity = Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaWash(context.ThemeMode)));
                 builder.Pattern(path, series.FillPattern, ChartColorMath.WithOpacity(ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), hatchOpacity), role: radar ? "radar-pattern" : "polar-pattern");
             }
         }

@@ -53,23 +53,34 @@ internal sealed partial class VisualSceneBuilder {
                     }
                     var current = scope.Group.Metadata.ContainsKey("data-cfx-current");
                     var selected = scope.Group.Metadata.ContainsKey("data-cfx-selected");
-                    if ((current || selected) && scope.Group.Role != ChartDomRoles.ScheduleRow) {
-                        // Two contrasting strokes remain visible over both pale and saturated mark fills.
-                        var path = VisualStateSceneTools.RoundedRect(extent, Math.Min(3, Math.Min(extent.Width, extent.Height) / 2));
-                        output.Add(new VisualScenePath(path, true, null, colors.Background, 4, "mark-state-halo", null));
-                        output.Add(new VisualScenePath(path, true, null, colors.Foreground, 2, selected ? "mark-selected-outline" : "mark-current-outline", null,
-                            current && !selected ? new[] { 4d, 3d } : null));
-                        if (current && selected) {
-                            var inset = new ChartRect(extent.X + 3, extent.Y + 3, Math.Max(0, extent.Width - 6), Math.Max(0, extent.Height - 6));
-                            output.Add(new VisualScenePath(VisualStateSceneTools.RoundedRect(inset, 1), true, null, colors.Foreground, 1,
-                                "mark-current-outline", null, new[] { 3d, 2d }));
-                        }
-                    }
+                    if ((current || selected) && scope.Group.Role != ChartDomRoles.ScheduleRow) AddStaticStateLook(output, extent, current, selected, colors);
                 }
             }
             output.Add(node);
         }
         _nodes.Clear(); _nodes.AddRange(output);
+    }
+
+    /// <summary>
+    /// The static looks of design-language §3, identical in SVG, PNG and the enhance runtime, for every mark family (bars,
+    /// cells, schedule bars, points): a 2px surface halo and a 2px outline offset 2px from the mark. Selected uses the
+    /// primary ink, current the secondary ink, so the two never look alike and neither borrows a series colour or reads
+    /// as focus (no dashes; focus rings stay a browser :focus-visible concern). Roles stay mark-selected-outline and
+    /// mark-current-outline so hosts and the enhance runtime select them unchanged.
+    /// </summary>
+    private static void AddStaticStateLook(List<VisualSceneNode> output, ChartRect extent, bool current, bool selected, Themes.VisualThemeColors colors) {
+        var ring = new ChartRect(extent.X - 2, extent.Y - 2, extent.Width + 4, extent.Height + 4);
+        var path = VisualStateSceneTools.RoundedRect(ring, Math.Min(4, Math.Min(ring.Width, ring.Height) / 2));
+        output.Add(new VisualScenePath(path, true, null, colors.Background, 4, "mark-state-halo", null,
+            paint: VisualChartPaint.Stroke(Themes.SvgPaint.Of(colors.Background, Themes.SvgColorRole.Surface))));
+        if (selected) output.Add(new VisualScenePath(path, true, null, colors.Foreground, 2, "mark-selected-outline", null,
+            paint: VisualChartPaint.Stroke(Themes.SvgPaint.Of(colors.Foreground, Themes.SvgColorRole.Text))));
+        if (current) {
+            var inner = selected ? new ChartRect(extent.X + 2, extent.Y + 2, Math.Max(0, extent.Width - 4), Math.Max(0, extent.Height - 4)) : ring;
+            output.Add(new VisualScenePath(VisualStateSceneTools.RoundedRect(inner, Math.Min(4, Math.Min(inner.Width, inner.Height) / 2)), true, null,
+                colors.MutedForeground, 2, "mark-current-outline", null,
+                paint: VisualChartPaint.Stroke(Themes.SvgPaint.Of(colors.MutedForeground, Themes.SvgColorRole.Text))));
+        }
     }
 
     private static Dictionary<string, string> NonLinkMarkMetadata(VisualSceneGroup group) {

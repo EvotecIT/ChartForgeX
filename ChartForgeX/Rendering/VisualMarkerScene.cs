@@ -43,6 +43,10 @@ internal static partial class VisualMarkerScene {
         return markers.OutlineStroke?.Width ?? markers.StrokeWidth ?? familyWidth;
     }
 
+    /// <summary>Design rule 5: a default marker sits on a 2px surface ring; an authored outline (even a zero width) or a bubble does not.</summary>
+    internal static bool HasSurfaceRing(ChartSeries series, ChartMarkerOptions markers, bool hasBackdrop, double width) =>
+        hasBackdrop && width <= 0 && !markers.StrokeWidth.HasValue && markers.OutlineStroke == null && series.Kind != ChartSeriesKind.Bubble;
+
     internal static double Extent(ChartSeries series, double radius, ChartMarkerOptions? markerOptions = null) {
         var markers = markerOptions ?? series.Markers;
         if (radius <= 0 || markers.Enabled == false) return 0;
@@ -98,6 +102,6 @@ internal static partial class VisualMarkerScene {
         if (width <= 0) { stroke = null; strokePaint = null; }
         var dash = outline?.ResolveDash(System.Array.Empty<double>());
         return new NativeMarkerPaint(markers, fill, stroke, width, new VisualScenePaintBinding(fillPaint, strokePaint),
-            dash, role, pattern, backdrop ?? ChartColor.White, patternRole ?? role + "-pattern");
+            dash, role, pattern, backdrop ?? ChartColor.White, patternRole ?? role + "-pattern", ring: HasSurfaceRing(series, markers, backdrop.HasValue, width));
     }
 }

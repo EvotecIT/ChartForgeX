@@ -7,7 +7,9 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualMarkerScene {
     private static double OutlineExtent(ChartSeries series, ChartMarkerOptions markers) {
         var width = FamilyStrokeWidth(series);
-        return StrokeWidth(series, width > 0, width > 0 ? width : 1, markers) / 2;
+        var outline = StrokeWidth(series, width > 0, width > 0 ? width : 1, markers) / 2;
+        // An unoutlined marker paints its surface ring (design rule 5); padding and label obstacles include it.
+        return outline > 0 || !HasSurfaceRing(series, markers, true, 0) ? outline : ChartMarkSurface.MarkerRing;
     }
 
     /// <summary>Keeps hidden source footprints while measuring custom geometry rather than its normalization multiplier.</summary>

@@ -63,7 +63,7 @@ internal sealed partial class VisualValueCapture {
             var fill = Blend(mark.Fill); var stroke = Blend(mark.Stroke);
             var paint = new VisualScenePaintBinding(Binding(mark.Fill, mark.Paint?.Fill), Binding(mark.Stroke, mark.Paint?.Stroke));
             return mark switch {
-                VisualSceneRectangle rect => new VisualSceneRectangle(rect.Bounds, rect.Radius, fill, stroke, rect.StrokeWidth, rect.Role, rect.Id, paint, rect.Opacity),
+                VisualSceneRectangle rect => new VisualSceneRectangle(rect.Bounds, rect.Radius, fill, stroke, rect.StrokeWidth, rect.Role, rect.Id, paint, rect.Opacity, rect.Corners),
                 VisualSceneEllipse ellipse => new VisualSceneEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, fill, stroke, ellipse.StrokeWidth, ellipse.Role, ellipse.Id, paint, ellipse.Opacity),
                 VisualSceneLine line => new VisualSceneLine(line.Start, line.End, stroke!.Value, line.StrokeWidth, line.Role, line.Id, line.Dash?.ToArray(), paint, line.DashOffset, line.Opacity),
                 VisualScenePath path => new VisualScenePath(new ChartPath(path.Commands), path.Close, fill, stroke, path.StrokeWidth, path.Role, path.Id, path.Dash?.ToArray(), path.Cap, path.Join, paint, path.DashOffset, path.Opacity),

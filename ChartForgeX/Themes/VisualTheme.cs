@@ -14,8 +14,8 @@ public sealed partial class VisualTheme {
     private readonly VisualThemeColors _dark;
     /// <summary>Creates a paired theme from independent token snapshots and geometry settings.</summary>
     public VisualTheme(VisualDesignTokens light, VisualDesignTokens dark, VisualTypography? typography = null,
-        double spacing = 12, double seriesStrokeWidth = 2, double markerRadius = 3,
-        double areaOpacity = 0.18, double barRadius = 3, double gridStrokeWidth = 1, double axisStrokeWidth = 1,
+        double spacing = 12, double seriesStrokeWidth = 2, double markerRadius = 4,
+        double areaOpacity = 0.12, double barRadius = 4, double gridStrokeWidth = 1, double axisStrokeWidth = 1,
         double cardRadius = DefaultCardRadius, double cardShadowOpacity = 0, ChartColor? cardShadowColor = null,
         double gaugeStrokeWidth = 14, double gaugeBandWidth = 4, double plotRadius = 3)
         : this(light, dark, typography, spacing, seriesStrokeWidth, markerRadius, areaOpacity, barRadius, gridStrokeWidth,
@@ -51,8 +51,13 @@ public sealed partial class VisualTheme {
     public double SeriesStrokeWidth { get; }
     /// <summary>Gets the default point radius.</summary>
     public double MarkerRadius { get; }
-    /// <summary>Gets the area fill opacity.</summary>
+    /// <summary>Gets the area fill opacity on light surfaces (0.12 by default).</summary>
     public double AreaOpacity { get; }
+    /// <summary>
+    /// Gets the area wash for a mode (design rule 6): <see cref="AreaOpacity"/> on light surfaces and half as much again
+    /// on dark ones (0.12 / 0.18 by default), where the same opacity reads weaker.
+    /// </summary>
+    internal double AreaWash(VisualThemeMode mode) => mode == VisualThemeMode.Dark ? Math.Min(1, AreaOpacity * 1.5) : AreaOpacity;
     /// <summary>Gets the bar corner radius.</summary>
     public double BarRadius { get; }
     /// <summary>Gets the maximum regular bar thickness in drawing pixels (64 by default).</summary>
@@ -196,7 +201,7 @@ public sealed class VisualTypography {
 
     /// <summary>Creates a validated immutable font scale including VisualCanvas tile sizes.</summary>
     public VisualTypography(string family = "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif",
-        double titleSize = 17, double subtitleSize = 13.5, double axisSize = 12, double legendSize = 13, double dataLabelSize = 12,
+        double titleSize = 16, double subtitleSize = 13, double axisSize = 12, double legendSize = 12, double dataLabelSize = 12,
         double scalarValueSize = 34, double centerValueSize = 20, double? axisTitleSize = null,
         string monospaceFamily = "Cascadia Mono, Consolas, monospace",
         double tileLabelSize = 14, double tileValueSize = 22, double tileDetailSize = 13) {

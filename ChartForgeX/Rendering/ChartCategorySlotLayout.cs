@@ -6,6 +6,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Divides mapped category pitch into stable series slots, including marks that extend beyond their body.</summary>
 internal readonly struct ChartCategorySlotLayout {
+    private const double MaximumCrowdedBandFill = .68;
     private ChartCategorySlotLayout(double thickness, double offset, double pitch) { Thickness = thickness; Offset = offset; Pitch = pitch; }
     internal double Thickness { get; }
     internal double Offset { get; }
@@ -22,10 +23,17 @@ internal readonly struct ChartCategorySlotLayout {
             for (var index = 1; index < centers.Length; index++) pitch = Math.Min(pitch, centers[index] - centers[index - 1]);
         pitch = Math.Min(pitch, maximumPitch);
         count = Math.Max(1, count);
-        var occupied = pitch * .68;
+        var minimumFootprint = measuredFootprint?.Invoke(minimumThickness) ?? minimumThickness * footprintRatio + footprintPadding;
+        // Sparkline sample slots keep their dense legacy share; charts use the design band fill.
+        var occupied = pitch * (sampleSlots > 0 ? MaximumCrowdedBandFill : ChartMarkSurface.BandFill);
         var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
         var cell = (occupied - gap * (count - 1)) / count;
-        var minimumFootprint = measuredFootprint?.Invoke(minimumThickness) ?? minimumThickness * footprintRatio + footprintPadding;
+        if (requireMinimumFootprint && minimumFootprint > cell) {
+            // A mark whose minimum painted footprint needs more of a crowded band may use up to the legacy share before failing.
+            occupied = pitch * MaximumCrowdedBandFill;
+            gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
+            cell = (occupied - gap * (count - 1)) / count;
+        }
         if (requireMinimumFootprint && minimumFootprint > cell)
             throw new InvalidOperationException("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.");
         var thickness = Math.Max(minimumThickness, Math.Min(maximumThickness, (cell - footprintPadding) / footprintRatio));
