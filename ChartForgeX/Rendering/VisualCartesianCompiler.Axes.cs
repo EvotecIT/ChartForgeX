@@ -23,6 +23,10 @@ internal static partial class VisualCartesianCompiler {
         private readonly Dictionary<ChartAxis, (IReadOnlyList<double> Ticks, double TrackLength)> _categoryPlan = new();
         private IReadOnlyList<double>? _regularTimeBarObservations;
         private bool _hasTimeBarObservations;
+        internal HashSet<ChartAxis> CountAxes { get; } = new();
+        internal HashSet<ChartAxis> SnapAxes { get; } = new();
+        internal bool FreezeDomains { get; set; }
+        internal Dictionary<ChartAxis, (double Minimum, double Maximum)> SnappedDomains { get; } = new();
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
         internal CategoryGroupSource? CategoryGroups { get; set; }

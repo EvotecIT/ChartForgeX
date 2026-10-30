@@ -36,6 +36,18 @@ internal static class ChartCartesianOrientation {
         return !chart.Series.Any(series => IsHorizontalLine(chart, series) && (series.RenderPoints.Count > 0 || !hasObservations));
     }
 
+    /// <summary>
+    /// The category projection of a horizontal chart. Named categories read in their natural order, first at the top
+    /// like a table (design rule 2); an authored <see cref="ChartAxis.Reversed"/> flips that order. Calendar and
+    /// continuous category scales keep their ordinary upward direction.
+    /// </summary>
+    internal static ChartAxis HorizontalCategoryProjection(Chart chart) {
+        var axis = chart.Options.YAxis;
+        if (axis.Scale == ChartScaleKind.Time) return axis;
+        var named = chart.Series.Any(series => IsHorizontal(chart, series) && !IsHorizontalLine(chart, series)) || CategoryLabels(chart).Count > 0;
+        return new ChartAxis { Reversed = axis.Reversed ^ named, PreparedViewportWindow = axis.PreparedViewportWindow };
+    }
+
     internal static IReadOnlyList<ChartAxisLabel> CategoryLabels(Chart chart) => UsesLegacyCategoryLabels(chart) && chart.Options.YAxis.Labels.Count == 0
         ? chart.Options.XAxis.Labels : CategoryAxis(chart).Labels;
 

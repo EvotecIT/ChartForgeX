@@ -221,6 +221,7 @@ internal sealed partial class ChartRange {
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0 && horizontalScalarCategories.Count == 0)
             (range.MinY, range.MaxY) = ExpandedSingleton(range.MinY, hasHorizontalSeries ? new ChartAxis() : chart.Options.YAxis);
         range.ApplyBarPadding(barXValues, chart.Options.XAxis, scalarBarXValues);
+        if (barXValues.Count == 0 && scalarBarXValues.Count == 0 && !hasHorizontalSeries) range.ApplyCategoryPadding(chart);
         range.ApplyHorizontalBarPadding(horizontalBarYValues, horizontalScalarCategories);
         if (!hasHorizontalSeries) {
             if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.YAxis);
@@ -403,6 +404,8 @@ internal sealed partial class ChartRange {
 
     private static (double Minimum, double Maximum) PaddedValueBounds(double minimum, double maximum, ChartAxis axis) {
         if (axis.Scale == ChartScaleKind.Logarithmic) return (minimum, maximum);
+        // Linear value axes take their headroom from the next clean tick (ChartValueAxisRange), not a fixed fraction.
+        if (ChartValueAxisRange.Applies(axis)) return (minimum > 0 ? 0 : minimum, maximum);
         var padding = (maximum - minimum) * .08;
         if (!ChartMath.IsFinite(padding)) return (minimum, maximum);
         if (axis.Scale == ChartScaleKind.Time) {
