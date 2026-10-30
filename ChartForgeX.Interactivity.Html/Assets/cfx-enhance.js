@@ -210,6 +210,8 @@
     function paint() {
       var selected = selection.length > 0, linked = highlight.size > 0;
       states.textContent = "";
+      // Halos paint under every outline so neighbouring selected marks never cover each other's ink.
+      var halos = make("g", null, states), rings = make("g", null, states);
       tops.forEach(function (t) {
         t.el.classList.toggle("cfx-e-hidden", !!series[t.s].hidden);
         t.el.classList.toggle("cfx-e-faded", emphasis != null && t.s !== emphasis);
@@ -218,23 +220,22 @@
         var on = selection.indexOf(m) >= 0, link = linked && m.keys.some(function (k) { return highlight.has(k); }), c = m.el.classList;
         m.out = !passes(m);
         c.toggle("cfx-e-selected", on); c.toggle("cfx-e-linked", link);
-        c.toggle("cfx-e-dim", selected && !on);
-        c.toggle("cfx-e-unlinked", !selected && linked && !link);
+        // Selected and linked marks share the static look; every other mark dims while either is active.
+        c.toggle("cfx-e-dim", (selected || linked) && !on && !link);
         c.toggle("cfx-e-filtered", m.out && api.filterMode !== "hide");
         c.toggle("cfx-e-gone", !!m.off || m.out && api.filterMode === "hide");
-        if (!visible(m) || !(on || link)) return;
-        var b = box(rects()[m.n]);
-        if (on) set(make("rect", "cfx-e-sel", states), { x: b.x - 2, y: b.y - 2, width: b.w + 4, height: b.h + 4, rx: 4 });
-        if (link) {
-          set(make("rect", "cfx-e-bar", states), { x: b.x - 6, y: b.y, width: 3, height: b.h, rx: 1.5 });
-          set(make("rect", "cfx-e-ring", states), { x: b.x - 2, y: b.y - 2, width: b.w + 4, height: b.h + 4, rx: 4 });
-        }
+        if (!visible(m) || !(on || link) || on && !link && ask("outline", m) === false) return;
+        // The static mark-selected-outline: a 2px ink outline over a 4px surface halo, offset 2px around the whole mark.
+        var b = box(rects()[m.n]), r = { x: b.x - 2, y: b.y - 2, width: b.w + 4, height: b.h + 4, rx: Math.min(4, (Math.min(b.w, b.h) + 4) / 2) };
+        set(make("rect", "cfx-e-halo", halos), r);
+        set(make("rect", on ? "cfx-e-sel" : "cfx-e-sel cfx-e-ring", rings), r);
       });
       var focus = d.activeElement;
       if (keyboard && focus && focus !== svg && svg.contains(focus)) {
         var fm = markOf(focus), r = fm ? null : focus.getBoundingClientRect();
         var f = box(fm ? rects()[fm.n] : { l: r.left, t: r.top, r: r.right, b: r.bottom });
-        set(make("rect", "cfx-e-focus", states), { x: f.x - 3, y: f.y - 3, width: f.w + 6, height: f.h + 6, rx: 5 });
+        // Focus sits outside the selection halo in the focus-ring colour, so the two never look alike.
+        set(make("rect", "cfx-e-focus", states), { x: f.x - 5, y: f.y - 5, width: f.w + 10, height: f.h + 10, rx: 6 });
       }
       legends.forEach(function (l) {
         var off = l.mark ? !!l.mark.off : !!series[l.s].hidden;
@@ -456,7 +457,7 @@
     return svg ? svg.cfx || enhance(svg) : null;
   }
   // Registers a family gesture or keyboard model: { match(kit) -> boolean, attach(kit) -> hooks }. Charts already
-  // enhanced receive it too. Hooks: pointer, down, drag, up, leave, click, targets, key, focus, group, describe, tooltip, select, paint.
+  // enhanced receive it too. Hooks: pointer, down, drag, up, leave, click, targets, key, focus, group, describe, tooltip, select, outline, paint.
   function behaviour(name, definition) {
     var b = { name: name, match: definition.match, attach: definition.attach };
     behaviours = behaviours.filter(function (x) { return x.name !== name; }).concat(b);

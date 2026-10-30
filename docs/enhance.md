@@ -31,7 +31,7 @@ The runtime has no dependencies, uses no `eval` or HTML parsing, fills every tex
 
 The core works from `data-cfx-mark`, which the hooks write on the interaction target of every family: points, bars, slices, cells, tiles, regions, words, flow and hierarchy nodes and links, schedule items, gauges and rows. So every family gets the same behaviour with no per-family code:
 
-- **States** (design language section 3): hover lifts a mark; hovering a legend entry fades the other series to 25%; a selection is a 2px accent outline and dims the rest; marks highlighted from another view get an info-tone start bar and glow while the rest dim to 35%; focus rings appear only for the keyboard. Forced-colours mode uses system colours, and transitions run only without a reduced-motion preference.
+- **States** (design language section 3): hover lifts a mark; hovering a legend entry fades the other series to 25%; selected marks and marks highlighted from another view take the same look as a static selection (a 2px ink outline, `--hfx-color-text-primary`, over a surface halo, around the whole bar, cell or segment) while every other mark dims to 35%; keyboard focus is a separate ring in `--hfx-color-focus-ring` outside that halo and appears only for the keyboard. Forced-colours mode uses system colours (a linked outline is dashed), and transitions run only without a reduced-motion preference.
 - **Tooltip**: one per page, `role="tooltip"`, tied to the focused mark with `aria-describedby`. The value comes first, the series second, with a short line key in the series colour. It reads the chart's own formatted readouts (`data-cfx-formatted-value`, `data-cfx-range-label` and the rest); an authored mark tooltip becomes its hint. It flips and clamps to the viewport. On touch, the first tap shows it and a second tap follows the link or selects.
 - **Hit targets** are at least 24px, and a pointer inside a painted mark always wins.
 - **Keyboard**: one tab stop per chart. Arrows move along a series and between series, Home and End jump, Enter follows a mark's link, Space selects (Shift adds), and Escape clears. A polite live region announces each mark.
@@ -64,6 +64,7 @@ The kit holds `api`, `svg`, `marks` (each with `el`, `s`, `p`, `role`, `x`, `hea
 | `group(mark)` | Space or Enter, and announcements | The marks that act together |
 | `describe(marks)` | A selection | `{ label, range }` for the link payload |
 | `tooltip(marks, content)` | Before showing | The tooltip content |
+| `outline(mark)` | Painting a selected mark | `false` when the behaviour draws the selection itself (the crosshair's brush band) |
 | `select(selection)`, `paint()`, `leave()` | State changes | Nothing |
 
 ### Example: jump a week in calendar heatmaps

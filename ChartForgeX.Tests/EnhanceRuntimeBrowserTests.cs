@@ -123,6 +123,8 @@ public sealed class EnhanceRuntimeBrowserTests {
         var activity = Activity().Prepare(Context()).ToSvg(new VisualSvgOptions("activity").WithEnhanceHooks());
         await using var session = await OpenAsync(Page("<section id=\"activity-host\">" + activity + "</section>"), 900, 600);
         var page = session.Page;
+        // Reduced motion lets the state assertions read settled opacity without waiting out the fade.
+        await page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         Assert.Equal("activity", await page.EvaluateAsync<string>(StandIn));
         const string segment = "#activity-host [data-cfx-mark][data-cfx-series='1'][data-cfx-point='1']";
 
@@ -140,7 +142,14 @@ public sealed class EnhanceRuntimeBrowserTests {
         var before = await page.EvaluateAsync<int>("() => echo");
         await page.EvaluateAsync("() => grid.host.dispatchEvent(new CustomEvent('canopyx:linkchange', { detail: { view: 'records', action: 'select', scope: 'select', keys: ['update-2-0', 'note-2-0'], values: {}, label: '' } }))");
         Assert.Equal(2, await page.Locator("#activity-host .cfx-e-linked").CountAsync());
-        Assert.Equal(2, await page.Locator("#activity-host .cfx-e-bar").CountAsync());
+        // Selected and linked marks share the static look: a primary-ink outline over a surface halo, never accent or a
+        // series colour; every other mark dims to 35%.
+        Assert.Equal("3 rgb(22, 24, 28) 3 rgb(255, 255, 255) 5 0.35", await page.EvaluateAsync<string>("""
+            () => { const s = document.querySelector('#activity-host svg'), look = c => [...s.querySelectorAll(c)];
+              const stroke = c => [...new Set(look(c).map(e => getComputedStyle(e).stroke))].join('|');
+              const dim = [...new Set(look('.cfx-e-dim').map(e => getComputedStyle(e).opacity))].join('|');
+              return [look('.cfx-e-sel').length, stroke('.cfx-e-sel'), look('.cfx-e-halo').length, stroke('.cfx-e-halo'), look('.cfx-e-dim').length, dim].join(' '); }
+            """));
         await page.EvaluateAsync("() => grid.host.dispatchEvent(new CustomEvent('canopyx:linkchange', { detail: { view: 'records', action: 'filter', scope: 'filter', keys: [], values: { kind: ['note'] }, label: 'note' } }))");
         Assert.Equal(4, await page.Locator("#activity-host .cfx-e-filtered").CountAsync());
         // CanopyX reports date cells as "…T00:00:00Z"; the chart wrote "…T00:00:00.000Z". Dates match by instant.

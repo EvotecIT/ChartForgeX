@@ -113,6 +113,8 @@
         },
         click: function () { if (suppress) { suppress = false; return true; } },
         select: function () { if (!brushing) range = null; },
+        // A brushed range is drawn by its band; outlining every point inside it would bury the line.
+        outline: function () { if (range) return false; },
         paint: function () {
           if (range) draw(cx(range[0]), cx(range[1]));
           else if (!brush || !brush.on) band.setAttribute("visibility", "hidden");
