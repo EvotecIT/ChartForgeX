@@ -31,8 +31,9 @@ internal static partial class VisualMapCompiler {
             foreach (var point in source) ValidateCoordinate(point);
             var visible = source.All(visiblePoint); var id = (seriesIndex == 0 ? "map-route-" : "series-" + N(seriesIndex) + "-map-route-") + index;
             var route = projectRoute != null ? projectRoute(source) : source.Select(project).ToArray(); var sourceBounds = Bounds(route);
-            var color = connector.Color ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Medium.Fill);
-            var paint = SvgPaint.Of(color, connector.Color.HasValue || series.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status);
+            // A route is a flow, not a warning: unstated routes take the accent; only a declared state is a status (design rule 10).
+            var color = connector.Color ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Accent);
+            var paint = SvgPaint.Of(color, connector.Color.HasValue || series.Color.HasValue || series.StateRole == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status);
             var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : Math.Max(1.2, dot * .78);
             var length = 0d;
             var geometry = visible || projectRoute != null ? MapRouteGeometry(route, waypoints.Count > 0, map, series, source, weights, dot, min, max,

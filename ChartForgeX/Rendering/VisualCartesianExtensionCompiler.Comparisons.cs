@@ -84,4 +84,14 @@ internal static partial class VisualCartesianCompiler {
         return dumbbell ? ViewportObservationVisible(xViewport, yViewport, category, Math.Min(first, end), Math.Max(first, end), map)
             : ViewportObservationVisible(xViewport, null, category, end, end, map) && ViewportLogicalYVisible(yViewport, plot, startPixel, endPixel);
     }
+
+    /// <summary>Design rule 8: a dumbbell's legend names its two ends (Before, After) instead of the series alone.</summary>
+    private static IEnumerable<VisualLegendEntry> DumbbellLegendEntries(Chart chart, ChartSeries series, int index, VisualThemeColors colors) {
+        var start = colors.MutedForeground; var startPaint = SvgPaint.Of(start, SvgColorRole.Text);
+        var end = Color(series, index, colors); var endPaint = VisualChartPaint.Series(series, end);
+        yield return new VisualLegendEntry(series.Dumbbell.StartLabel, start, SeriesId(index) + "-start", series.Kind, series.FillPattern, series.StateRole,
+            series.InteractionIdentityKey, marker: VisualMarkerScene.DumbbellEndpointLegend(chart, series, start, startPaint, start: true), paint: startPaint);
+        yield return new VisualLegendEntry(series.Dumbbell.EndLabel, end, SeriesId(index) + "-end", series.Kind, series.FillPattern, series.StateRole,
+            series.InteractionIdentityKey, marker: VisualMarkerScene.DumbbellEndpointLegend(chart, series, end, endPaint, start: false), paint: endPaint);
+    }
 }

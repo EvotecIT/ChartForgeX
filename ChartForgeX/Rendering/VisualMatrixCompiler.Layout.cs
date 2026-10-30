@@ -181,11 +181,22 @@ internal static partial class VisualMatrixCompiler {
         if (nonZero.Length == 0) zeroWidth = bounds.Width;
         // Keep the complete key together: captions belong to the swatches, rather
         // than the unrelated edges of a wide matrix plotting area.
-        var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth), 160) : 0;
-        var scaleLeft = bounds.Left + (bounds.Width - zeroWidth - rampWidth) / 2;
+        // Missing cells get their own hatched key (design rule 9), distinct from the zero swatch and the weakest step.
+        var noData = missing ? chart.Options.Labels.NoData : string.Empty;
+        var missingWidth = missing ? Math.Min(bounds.Width * .3, Math.Max(12, builder.MeasureText(noData, style).Width) + context.Theme.Spacing) : 0;
+        var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth - missingWidth), 160) : 0;
+        var scaleLeft = bounds.Left + (bounds.Width - zeroWidth - rampWidth - missingWidth) / 2;
         using (builder.PushGroup("matrix-scale", "heatmap-scale", new Dictionary<string, string> {
             ["data-cfx-min-value"] = VisualStateSceneTools.Number(floor), ["data-cfx-max-value"] = VisualStateSceneTools.Number(max)
         })) {
+            if (missing && missingWidth > 0) {
+                var missingLeft = scaleLeft + zeroWidth + rampWidth + context.Theme.Spacing / 2;
+                var box = new ChartRect(missingLeft + (missingWidth - context.Theme.Spacing / 2 - Math.Min(12, missingWidth)) / 2, bounds.Top, Math.Min(12, missingWidth), swatch);
+                using (VisualStateSceneTools.Mark(builder, "matrix-scale-missing", "heatmap-scale-missing", box, noData, new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
+                    ChartMissingData.Paint(builder, box, 1, colors, "heatmap-scale-missing-swatch");
+                VisualStateSceneTools.Text(builder, noData, new ChartRect(missingLeft, bounds.Top + swatch, Math.Max(0, missingWidth - context.Theme.Spacing / 2), textHeight),
+                    style, "heatmap-scale-missing-label", "matrix-scale-missing-label", TextAlignment.Center);
+            }
             if (zero) {
                 var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, 0, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
                 var box = new ChartRect(scaleLeft + (zeroWidth - Math.Min(12, zeroWidth)) / 2, bounds.Top, Math.Min(12, zeroWidth), swatch);

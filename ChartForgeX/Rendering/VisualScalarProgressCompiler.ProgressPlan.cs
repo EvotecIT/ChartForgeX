@@ -116,7 +116,7 @@ internal static partial class VisualScalarProgressCompiler {
         internal void Paint(VisualSceneBuilder builder, double[]? readings = null, bool captured = false) {
             var values = readings == null ? Rows.Select(row => row.Display).ToArray()
                 : readings.Select((value, index) => Display(index, value)).ToArray();
-            var gap = _context.Theme.Spacing; var rowHeight = _plot.Height / Rows.Length;
+            var gap = _context.Theme.Spacing; var rowHeight = ChartRowDensity.Pitch(_plot.Height, Rows.Length); // design rule 10
             double Measure(string text, TextStyle style, VisualSceneTextFace face) => captured
                 ? face.Prepare(text, style.EffectiveFontSize).Metrics.Width : builder.MeasureText(text, style).Width;
             var labelWidth = Math.Min(_plot.Width * .3, Rows.Max(row => Measure(row.Label, _tickMeasureStyle, _tickMeasureFace)) + gap);
@@ -155,10 +155,11 @@ internal static partial class VisualScalarProgressCompiler {
                 using (builder.PushGroup(Id(0, index), "progress-row", metadata)) {
                     VisualRadialPrimitives.Text(builder, row.Label, new ChartRect(_plot.Left, bounds.Top, Math.Max(0, labelWidth - gap / 2), rowHeight),
                         _tickPaintStyle, "progress-label", Id(0, index) + "-label", capturedFace: captured ? _tickPaintFace : null);
-                    builder.Rect(new ChartRect(left, y - thickness / 2, width, thickness), ChartColorMath.WithOpacity(_colors.Border, _trackOpacity), radius: thickness / 2, role: "progress-track",
+                    var corner = Math.Min(ChartMarkSurface.DataEndRadius, thickness / 2);
+                    builder.Rect(new ChartRect(left, y - thickness / 2, width, thickness), ChartColorMath.WithOpacity(_colors.Border, _trackOpacity), radius: corner, role: "progress-track",
                         paint: VisualChartPaint.Fill(SvgPaint.Of(_colors.Border, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(_colors.Border, _trackOpacity), _trackOpacity)));
                     builder.Rect(new ChartRect(left, y - thickness / 2, width * ratio, thickness), row.Color,
-                        radius: Math.Min(thickness / 2, width * ratio / 2), role: "progress-fill", paint: VisualChartPaint.Fill(row.Paint));
+                        radius: Math.Min(corner, width * ratio / 2), role: "progress-fill", paint: VisualChartPaint.Fill(row.Paint));
                     if (_showHandles) builder.Ellipse(left + width * ratio, y, handleRadius, handleRadius, _colors.Surface, row.Color,
                         handleStroke, "progress-handle", paint: new VisualScenePaintBinding(SvgPaint.Of(_colors.Surface, SvgColorRole.Surface), row.Paint));
                     if (_showValues) VisualRadialPrimitives.Text(builder, values[index],

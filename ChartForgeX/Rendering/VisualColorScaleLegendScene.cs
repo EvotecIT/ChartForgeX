@@ -170,7 +170,11 @@ internal static partial class VisualColorScaleLegendScene {
             var box = new ChartRect(lane.Left, top + row * .15, row * .7, row * .7);
             using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
                 new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
+            {
                 builder.Rect(box, blend.Color, radius: 1, role: prefix + "-missing-swatch", paint: VisualChartPaint.Fill(blend.Paint));
+                // An authored no-data colour is the author's look; otherwise the shared hatch (design rule 9).
+                if (scale.NoDataColor == null) ChartMissingData.Hatch(builder, ChartPathBuilder.RoundedRectangle(box, 1), style.Color, prefix + "-missing-swatch");
+            }
             Caption(labels.NoData, new ChartRect(lane.Left + row, top, Math.Max(0, lane.Width - row), row), "missing", TextAlignment.Left);
         }
 

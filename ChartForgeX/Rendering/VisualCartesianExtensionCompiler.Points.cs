@@ -108,5 +108,14 @@ internal static partial class VisualCartesianCompiler {
             }
             if (visible) ObservationLabel(chart, context, series, index, endpoint, point, bounds, source.Y, label, labels, obstacles);
         }
+        // Design rule 8: a slope chart labels its line ends directly (series name beside the last point) instead of a legend.
+        if (!trend && !horizontal && ChartLegendVisibility.UsesDirectSeriesLabels(chart) && series.Name.Length > 0) {
+            var end = points[points.Length - 1]; var offset = radius + ChartMarkSurface.MarkerRing + 6;
+            var style = SeriesLabelStyle(chart, context, series, colors);
+            var candidates = new[] { 0d, -8, 8, -16, 16, -24, 24 }.Select(dy => new LabelCandidate(offset, dy, 0, .5)).ToArray();
+            labels.Add(new LabelPlacementRequest(series.Name, end, style, candidates, priority: 1) {
+                Fallback = LabelFallbackRule.Drop, AssociatedMarkId = SeriesId(index) + "-end-label"
+            });
+        }
     }
 }

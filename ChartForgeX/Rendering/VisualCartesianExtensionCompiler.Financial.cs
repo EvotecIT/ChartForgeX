@@ -31,7 +31,9 @@ internal static partial class VisualCartesianCompiler {
             var bounds = FinancialBounds(candle, body, highY, lowY, openY, closeY, style);
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("close", close));
             var visible = ViewportObservationVisible(xViewport, yViewport, xValue, low, high, map);
-            using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, visible, null,
+            // Rising/falling is the encoding the paired colours carry (with hollow/filled bodies); the DOM names it.
+            var direction = new Dictionary<string, string> { ["data-cfx-direction"] = close >= open ? "rising" : "falling" };
+            using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, visible, direction,
                 ("x", xValue), ("open", open), ("high", high), ("low", low), ("close", close))) {
                 if (visible) DrawFinancialMark(builder, candle, body, highY, lowY, openY, closeY, style,
                     ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame));

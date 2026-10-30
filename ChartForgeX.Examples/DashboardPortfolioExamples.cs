@@ -170,7 +170,7 @@ internal static class DashboardPortfolioExamples {
             .WithAxisLines(false)
             .WithLegendPosition(ChartLegendPosition.TopRight)
             .WithXAxisLabelDensity(ChartLabelDensity.Dense)
-            .WithXLabels("OCT 1", "OCT 4", "OCT 8", "OCT 11", "OCT 15", "OCT 18", "OCT 22", "OCT 25", "OCT 29")
+            .WithXLabels("Oct 1", "Oct 4", "Oct 8", "Oct 11", "Oct 15", "Oct 18", "Oct 22", "Oct 25", "Oct 29")
             .WithYAxisBounds(100000, 130000)
             .WithValueFormatter(CurrencyK)
             .AddSmoothArea("Actual", Points(actual), Blue)

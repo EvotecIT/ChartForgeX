@@ -51,7 +51,7 @@ internal static partial class VisualScheduleCompiler {
         var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
         var model = ChartStateTimelineModel.Build(chart, colors.MutedForeground, frame == null ? null : (frame.Model.Min, frame.Model.Max));
         var layout = frame?.Layout ?? LaneLayout(chart, context, builder, viewport, model.Lanes.Select(lane => lane.Name), model.Lanes.Select(lane => lane.Summary),
-            model.HasSummary, false, model.Ticks, model.FormatTick);
+            model.HasSummary, false, model.Ticks, model.FormatTick, units: model.Units);
         var plot = layout.Plot;
         if (frame == null) {
             builder.DataProjection = ChartDataProjection.TryCreate(plot, model.Min, model.Max, chart.Options.XAxis, linearOnly: true);
@@ -104,7 +104,7 @@ internal static partial class VisualScheduleCompiler {
         // Both builds happen during preparation. The supplied current-time value is read once and never consulted by exporters.
         var model = frame?.Model ?? ChartGanttLaneModel.Build(chart, viewport.Width, colors.MutedForeground);
         var layout = frame?.Layout ?? LaneLayout(chart, context, builder, viewport, model.Rows.Where(row => !row.IsGroup).Select(row => row.Name),
-            model.Rows.Where(row => !row.IsGroup).Select(row => row.Summary), model.HasSummary, model.NowVisible, model.Ticks, model.FormatTick);
+            model.Rows.Where(row => !row.IsGroup).Select(row => row.Summary), model.HasSummary, model.NowVisible, model.Ticks, model.FormatTick, units: model.Units);
         var outlined = model.Rows.SelectMany(row => row.Items).Any(item => item.Category.Pattern == ChartStatePattern.Outlined);
         var open = model.Rows.SelectMany(row => row.Items).Any(item => item.Item.IsOpen);
         var outlineExtent = outlined ? ChartStateMark.OutlineWidth / 2 : 0;

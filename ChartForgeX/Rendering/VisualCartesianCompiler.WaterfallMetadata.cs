@@ -16,7 +16,13 @@ internal static partial class VisualCartesianCompiler {
 
     private static ChartColor WaterfallColor(ChartSeries series, int seriesIndex, ChartWaterfallStep step, VisualThemeColors colors) =>
         HasSeriesPaint(series, step.ItemIndex) ? PointColor(series, seriesIndex, step.ItemIndex, colors)
-        : step.Kind != ChartWaterfallItemKind.Delta ? colors.Status.Medium.Fill : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
+        // Totals and checkpoints are ordinary quantities, not a status: they take the series colour (design rule 10).
+        // Only the signed deltas carry the increase/decrease encoding, and their labels show the sign.
+        : step.Kind != ChartWaterfallItemKind.Delta ? Color(series, seriesIndex, colors) : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
+
+    /// <summary>The paint role of a waterfall step: series for totals, status only for the signed deltas.</summary>
+    private static SvgColorRole WaterfallPaintRole(ChartSeries series, ChartWaterfallStep step) =>
+        step.Kind != ChartWaterfallItemKind.Delta && !HasSeriesPaint(series, step.ItemIndex) ? VisualChartPaint.SeriesRole(series, step.ItemIndex) : SemanticMarkPaintRole(series, step.ItemIndex);
 
     private static Dictionary<string, string> WaterfallMetadata(Chart chart, int seriesIndex, ChartWaterfallStep step, string category) {
         var metadata = new Dictionary<string, string> {

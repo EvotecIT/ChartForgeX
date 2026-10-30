@@ -88,6 +88,20 @@ internal static partial class VisualMatrixCompiler {
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
                 })) {
+                    // Design rule 9: a gap in a matrix is drawn as missing data, distinct from zero and the lightest step.
+                    if (kind == ChartSeriesKind.Heatmap && series.RenderPoints.Count < columns.Length) {
+                        var present = new HashSet<int>(series.RenderPoints.Select(point => Array.BinarySearch(columns, point.X)));
+                        using (builder.PushClip(plot)) for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
+                            if (present.Contains(columnIndex)) continue;
+                            var cellLeft = plot.Left + columnIndex * (cellWidth + gap);
+                            if (ReverseColumns(chart)) cellLeft = plot.Left + plot.Right - cellLeft - cellWidth;
+                            var missingBounds = new ChartRect(cellLeft, y, cellWidth, cellHeight);
+                            builder.AddRegion(new VisualSemanticRegion("heatmap-missing-" + rowIndex + "-" + columnIndex, "heatmap-missing", missingBounds,
+                                series.Name + ", " + formatColumn(columns[columnIndex]) + ": " + presentation.NoData));
+                            if (chart.Options.HeatmapColorScale?.NoDataColor == null) ChartMissingData.Paint(builder, missingBounds, radius, colors, "heatmap-missing");
+                            else { var noData = ChartColorScaleSurface.NoData(chart.Options.HeatmapColorScale, colors); builder.Rect(missingBounds, noData.Color, radius: radius, role: "heatmap-missing", paint: VisualChartPaint.Fill(noData.Paint)); }
+                        }
+                    }
                     for (var renderIndex = 0; renderIndex < series.RenderPoints.Count; renderIndex++) {
                         var point = series.RenderPoints[renderIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
                         var pointIndex = categorical ? (int)point.X - 1 : renderIndex;

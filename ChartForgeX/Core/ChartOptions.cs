@@ -374,9 +374,10 @@ public sealed partial class ChartOptions {
     public bool ShowProgressValues { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether progress-bar rows render slider handles.
+    /// Gets or sets a value indicating whether progress-bar rows render slider handles. Off by default: a static
+    /// progress bar is a measure, and a knob reads as an input control.
     /// </summary>
-    public bool ShowProgressHandles { get; set; } = true;
+    public bool ShowProgressHandles { get; set; }
 
     /// <summary>
     /// Gets or sets the progress-bar thickness as a ratio of each row height.

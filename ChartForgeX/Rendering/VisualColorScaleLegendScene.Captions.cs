@@ -50,10 +50,10 @@ internal static partial class VisualColorScaleLegendScene {
                 }
                 PaintCaptionPlan(builder, plan, captionArea, strip, prefix, gap, vertical);
                 if (missingHeight > 0) CaptionedMissing(builder, labels, style,
-                    new ChartRect(body.Left, body.Bottom - Math.Min(row, missingHeight), body.Width, Math.Min(row, missingHeight)), prefix, missingBlend);
+                    new ChartRect(body.Left, body.Bottom - Math.Min(row, missingHeight), body.Width, Math.Min(row, missingHeight)), prefix, missingBlend, scale.NoDataColor == null);
             }
             if (missing && missingBounds.HasValue) using (builder.PushClip(missingBounds.Value))
-                CaptionedMissing(builder, labels, style, missingBounds.Value, prefix, missingBlend);
+                CaptionedMissing(builder, labels, style, missingBounds.Value, prefix, missingBlend, scale.NoDataColor == null);
         }
         if (plan.Omitted) builder.AddDiagnostic(new VisualDiagnostic("color-scale.caption-overflow",
             "Some numeric color captions do not fit at their value positions; complete captions remain in descriptive regions."));
@@ -110,13 +110,15 @@ internal static partial class VisualColorScaleLegendScene {
     }
 
     private static void CaptionedMissing(VisualSceneBuilder builder, ChartLabels labels, TextStyle style, ChartRect area,
-        string prefix, ChartColorBlend blend) {
+        string prefix, ChartColorBlend blend, bool hatch) {
         var row = builder.MeasureText("Mg", style).Height;
         var size = Math.Min(row * .7, Math.Min(area.Width, area.Height));
         var box = new ChartRect(area.Left, area.Top + Math.Max(0, (area.Height - size) / 2), size, size);
         using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
-            new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
+            new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
             builder.Rect(box, blend.Color, radius: 1, role: prefix + "-missing-swatch", paint: VisualChartPaint.Fill(blend.Paint));
+            if (hatch) ChartMissingData.Hatch(builder, ChartPathBuilder.RoundedRectangle(box, 1), style.Color, prefix + "-missing-swatch");
+        }
         VisualStateSceneTools.Text(builder, labels.NoData, new ChartRect(area.Left + row, area.Top, Math.Max(0, area.Width - row), area.Height),
             style, prefix + "-label", prefix + "-label-missing");
     }
