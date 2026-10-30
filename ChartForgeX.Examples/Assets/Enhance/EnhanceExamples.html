@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="{{THEME}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="light dark">
+  <title>Charts and grids that follow each other · ChartForgeX</title>
+  <link rel="stylesheet" href="enhance-page.css">
+  {{RUNTIME}}
+  <script defer src="enhance-page.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to examples</a>
+  <header class="page-header">
+    <nav aria-label="Page appearance"><a class="brand" href="index.html">ChartForgeX</a><span class="appearance"><a href="index.html">System</a><a href="light.html">Light</a><a href="dark.html">Dark</a></span></nav>
+    <p class="eyebrow">Enhanced static SVG</p>
+    <h1>Charts and grids that follow each other.</h1>
+    <p class="lead">Each chart is static SVG that works without script. One small runtime adds states, tooltips, keyboard focus, legend toggles and linked views. Click a segment, a day or a release and the records filter; tick records and the charts light up the marks they belong to.</p>
+    <p class="sample-note">Illustrative data for October 2026. Not real records.</p>
+  </header>
+  <main id="main">
+    <div class="charts">
+      <section class="panel" aria-labelledby="week-heading">
+        <h2 id="week-heading">Changes this week</h2>
+        <p>Records per day by kind. Click a segment to filter the records; Shift+click adds. Legend entries toggle a kind.</p>
+        <div class="chart">{{WEEK}}</div>
+      </section>
+      <section class="panel" aria-labelledby="support-heading">
+        <h2 id="support-heading">Support windows</h2>
+        <p>The current release is banded; an open end fades. Click a release to filter.</p>
+        <div class="chart">{{SUPPORT}}</div>
+      </section>
+    </div>
+    <section class="panel" aria-labelledby="month-heading">
+      <h2 id="month-heading">Records per day, October</h2>
+      <p>Hover or use the arrow keys for every series at a date. Click a day, or drag across days, to filter the records to that range.</p>
+      <div class="chart">{{MONTH}}</div>
+    </section>
+    <section class="panel" aria-labelledby="records-heading">
+      <h2 id="records-heading">Records</h2>
+      <p>A plain table standing in for a CanopyX grid. It implements the same LinkedView methods and events, so a real grid replaces it without changing the chart code.</p>
+      <div class="query"><span id="chips" class="chips"></span><span id="count" class="count" aria-live="polite"></span></div>
+      <div class="table-wrap">
+        <table id="records" aria-labelledby="records-heading">
+          <thead><tr><th scope="col"><span class="visually-hidden">Highlight</span></th><th scope="col">Date</th><th scope="col">Kind</th><th scope="col">Product</th><th scope="col">Record</th></tr></thead>
+          <tbody>{{ROWS}}</tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel source" aria-labelledby="source-heading">
+      <h2 id="source-heading">How the page is built</h2>
+      <pre><code>var svg = chart.Prepare(context).ToSvg(new VisualSvgOptions("week")
+    .WithFluidWidth().WithEnhanceHooks(includeData: true));
+// marks: new ChartMarkOptions(keys: recordIds, fields: { ["day"] = day })
+
+CfxLink.connect(CfxEnhance.get(weekSvg), recordsTable, { field: "day" });</code></pre>
+    </section>
+  </main>
+  <footer><span>ChartForgeX · enhanced static charts</span><a href="#main">Back to examples ↑</a></footer>
+</body>
+</html>

@@ -6,6 +6,8 @@
   if (w.CfxLink) return;
   function quiet(promise) { if (promise && promise.catch) promise.catch(function () { }); }
   function iso(ms) { return new Date(ms).toISOString(); }
+  // A time crosshair chart reports its X as the linked field; other charts link through their marks' fields.
+  function crosshair(api) { return api.timeX && api.svg.hasAttribute("data-cfx-crosshair"); }
   // A view is a ChartForgeX chart api (or its svg/host), a CanopyX host element (.canopyx), or any LinkedView object.
   function resolve(view, host) {
     if (view && !view.setHighlight && w.CfxEnhance) view = w.CfxEnhance.get(view) || view;
@@ -21,9 +23,9 @@
     if (o.events) { b.change = o.events.change || b.change; b.filter = o.events.filter || b.filter; }
     if (a.api.svg) {
       a.api.selectOnClick = true;
-      a.api.xField = o.xField || a.api.xField || (a.api.timeX ? field : null);
+      a.api.xField = o.xField || a.api.xField || (crosshair(a.api) ? field : null);
     }
-    if (b.api.svg && !b.api.xField && b.api.timeX) b.api.xField = o.xField || field;
+    if (b.api.svg && !b.api.xField && crosshair(b.api)) b.api.xField = o.xField || field;
     // Source to target: the source's selection filters or highlights the target.
     function forward(e) {
       var t = e.detail, r = t.range, filter = null;

@@ -22,6 +22,7 @@
     <EmbeddedResource Include="ExampleRecipeImports.cs" LogicalName="ChartForgeX.Examples.ExampleRecipeImports.cs" WithCulture="false" />
     <EmbeddedResource Include="Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Assets\Embedding\*" LogicalName="ChartForgeX.Examples.Embedding.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="Assets\Enhance\*" LogicalName="ChartForgeX.Examples.Enhance.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Snippets\ServerRenderedStripProgram.cs.txt" LogicalName="ChartForgeX.Examples.ServerRenderedStripProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="NativeMaskExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskExample.cs" WithCulture="false" />
     <EmbeddedResource Include="NativeMaskBlendCompositionExample.cs" LogicalName="ChartForgeX.Examples.NativeMaskBlendCompositionExample.cs" WithCulture="false" />
