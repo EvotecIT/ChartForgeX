@@ -100,6 +100,9 @@ public sealed class VisualMarkupParser {
             case VisualMarkupKind.Sequence:
                 ParseSequence(result, block);
                 break;
+            case VisualMarkupKind.Architecture:
+                ParseArchitecture(result, block);
+                break;
             case VisualMarkupKind.Mermaid:
                 Add(result, block.FenceLine, MarkupDiagnosticSeverity.Warning, "No parser is registered for '" + block.FenceName + "' visual fences.");
                 break;
@@ -118,6 +121,20 @@ public sealed class VisualMarkupParser {
         var chart = document.ToTopologyChart();
         var artifactId = string.IsNullOrWhiteSpace(document.Id) ? "topology-" + (result.Artifacts.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : document.Id!;
         chart.Id = artifactId;
+        var artifact = chart.ToVisualArtifact(VisualArtifactSourceLanguage.ChartForgeX);
+        artifact.Metadata["fence"] = block.FenceName;
+        artifact.Metadata["schemaVersion"] = block.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        artifact.Metadata["sourceLine"] = block.FenceLine.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        result.Artifacts.Add(artifact);
+    }
+
+    private static void ParseArchitecture(VisualMarkupParseResult result, VisualMarkupBlock block) {
+        var architecture = new MarkupArchitectureParser().ParseBlock(block);
+        foreach (var diagnostic in architecture.Diagnostics) result.Diagnostics.Add(diagnostic);
+
+        if (architecture.HasErrors || architecture.Document == null) return;
+        var chart = architecture.Document;
+        if (string.IsNullOrWhiteSpace(chart.Id)) chart.Id = "architecture-" + (result.Artifacts.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         var artifact = chart.ToVisualArtifact(VisualArtifactSourceLanguage.ChartForgeX);
         artifact.Metadata["fence"] = block.FenceName;
         artifact.Metadata["schemaVersion"] = block.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);

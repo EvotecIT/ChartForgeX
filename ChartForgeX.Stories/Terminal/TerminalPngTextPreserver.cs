@@ -9,8 +9,8 @@ namespace ChartForgeX.Terminal;
 internal static class TerminalPngTextPreserver {
     private const double ColumnWidthFactor = 0.61;
     private const int MaximumFallbackLabels = 4;
-    internal const char EscapeStart = '\uFDD0';
-    internal const char EscapeEnd = '\uFDD1';
+    internal const char EscapeStart = TerminalTextWidth.PreservedEscapeStart;
+    internal const char EscapeEnd = TerminalTextWidth.PreservedEscapeEnd;
 
     public static string Preserve(string value, TrueTypeFont? font) {
         if (value == null) {

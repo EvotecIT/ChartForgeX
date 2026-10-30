@@ -34,6 +34,7 @@ internal sealed class TopologyHtmlText {
         ["ExplorerRelatedNodes"] = "Related nodes",
         ["ExplorerRelatedEdges"] = "Related edges",
         ["TopologyControls"] = "Topology controls",
+        ["TopologyDiagram"] = "Topology diagram",
         ["TopologyFit"] = "Fit topology",
         ["TopologyResetViewport"] = "Reset viewport",
         ["TopologyOpenFullscreen"] = "Open topology fullscreen",

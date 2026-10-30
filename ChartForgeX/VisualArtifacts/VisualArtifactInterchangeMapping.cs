@@ -223,6 +223,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 Label = participant.Label,
                 Href = SafeHref(participant.Href),
                 Sequence = new VisualArtifactInterchangeSequenceNode {
+                    Card = participant.Card?.Copy(),
                     SurfaceShadow = participant.SurfaceShadow,Stereotype=participant.Stereotype,Symbol=participant.Symbol,MinimumWidth=participant.MinimumWidth,Fill=participant.Fill?.ToCss(),
                     Border=participant.Border?.ToCss(),ActivationFill=participant.ActivationFill?.ToCss(),ActivationBorder=participant.ActivationBorder?.ToCss(),
                     Kind = participant.Kind,
@@ -253,6 +254,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 SourceId = sourceId,
                 TargetId = targetId,
                 Label = message.Text,
+                Color = message.Color?.ToCss(),
                 Order = index,
                 Sequence = new VisualArtifactInterchangeSequenceEdge {
                     Kind = message.Kind,
@@ -490,7 +492,11 @@ public static partial class VisualArtifactInterchangeMapping {
                     Kind = step.Kind,
                     Label = step.Label,
                     Description = step.Description,
-                    DurationMilliseconds = step.DurationMilliseconds
+                    DurationMilliseconds = step.DurationMilliseconds,
+                    Interaction = step.Interaction,
+                    Reverse = step.Reverse,
+                    Payload = step.Payload,
+                    PayloadFormat = step.PayloadFormat
                 };
                 Copy(step.Metadata, mappedStep.Extensions);
                 mapped.Steps.Add(mappedStep);

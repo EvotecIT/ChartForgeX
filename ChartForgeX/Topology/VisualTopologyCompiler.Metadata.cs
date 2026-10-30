@@ -19,7 +19,7 @@ internal sealed partial class VisualTopologyCompiler {
         ["data-cfx-viewport"] = _chart.LayoutMode == TopologyLayoutMode.Geographic ? _chart.MapViewport.Name : string.Empty,
         ["data-cfx-map-background-style"] = UseSoftMapBackground(_options) ? "SoftSilhouette" : "Dots",
         ["data-cfx-scenario-count"] = _chart.Scenarios.Count.ToString(CultureInfo.InvariantCulture),
-        ["data-cfx-scenarios"] = TopologyScenarioJson.Summaries(_chart) ?? "[]", ["data-cfx-scenario-ids"] = TopologyScenarioJson.ScenarioIds(_chart) ?? string.Empty,
+        ["data-cfx-scenarios"] = TopologyScenarioJson.Summaries(_chart, _options.EnableHtmlInteractions) ?? "[]", ["data-cfx-scenario-ids"] = TopologyScenarioJson.ScenarioIds(_chart) ?? string.Empty,
         ["data-cfx-active-scenario"] = _highlight.ActiveScenarioId ?? string.Empty
     };
 

@@ -63,12 +63,19 @@ internal sealed partial class SequencePreparedLayout {
             var i = visible[column]; var participant = model.Participants[i];
             var participantWidth = Math.Max(boxWidth, participant.MinimumWidth ?? 0);
             if (participantWidth > laneWidth - participantSpacing + 1e-8 || policy?.ParticipantMinimumWidth > participantWidth + 1e-8) throw new NotSupportedException("The explicit context cannot fit the authored participant minimum width.");
-            string text = layout.Presentation.Wrap(ParticipantCaption(participant), participantWidth - wrapSides * 2, builder, SequenceTextRole.Participant, size);
+            var card = participant.Card != null && participant.Kind == SequenceArtifactParticipantKind.Participant;
+            var textWidth = card ? Math.Max(24, participantWidth - SequencePreparedCompiler.CardTextLeft - SequencePreparedCompiler.CardTextRight) : participantWidth - wrapSides * 2;
+            string text = layout.Presentation.Wrap(ParticipantCaption(participant), textWidth, builder, SequenceTextRole.Participant, size);
             var stereotypeHeight=string.IsNullOrEmpty(participant.Stereotype) ? 0 : layout.Presentation.Measure(layout.Presentation.Wrap("«"+participant.Stereotype+"»", participantWidth-wrapSides*2, builder, SequenceTextRole.Participant, size, .85), builder, SequenceTextRole.Participant, size, .85).Height+4;
             double iconHeight = participant.Kind == SequenceArtifactParticipantKind.Participant ? 0 : 44;
             double height = policy?.ParticipantBands is {} bands
                 ? Math.Max(policy.ParticipantMinimumHeight??38,bands.StackHeight(layout.Presentation.Measure(text,builder,SequenceTextRole.Participant,size).Height+stereotypeHeight))
                 : Math.Max(policy?.ParticipantMinimumHeight ?? 38, layout.Presentation.Measure(text, builder, SequenceTextRole.Participant, size).Height + 16 + iconHeight + stereotypeHeight);
+            if (card && policy?.ParticipantBands == null) {
+                var subtitle = string.IsNullOrWhiteSpace(participant.Card!.Subtitle) ? 0
+                    : layout.Presentation.Measure(layout.Presentation.Wrap(participant.Card.Subtitle!.Trim(), textWidth, builder, SequenceTextRole.Participant, size, SequencePreparedCompiler.CardSubtitleRatio), builder, SequenceTextRole.Participant, size, SequencePreparedCompiler.CardSubtitleRatio).Height + 2;
+                height = Math.Max(Math.Max(policy?.ParticipantMinimumHeight ?? 38, 48), layout.Presentation.Measure(text, builder, SequenceTextRole.Participant, size).Height + subtitle + 18);
+            }
             participantHeight = Math.Max(participantHeight, height);
             double x = left + laneWidth * (column + 0.5);
             layout.Lanes.Add(participant.Id, x);

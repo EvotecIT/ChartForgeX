@@ -60,6 +60,7 @@ public static partial class VisualArtifactInterchangeMapping {
             target.NavigationLinks=source.Sequence.NavigationLinks;
             target.CreatedAtMessageIndex=source.Sequence.CreatedAtMessageIndex;target.DestroyedAtMessageIndex=source.Sequence.DestroyedAtMessageIndex;
             target.Stereotype=source.Sequence.Stereotype;target.Symbol=source.Sequence.Symbol;target.MinimumWidth=source.Sequence.MinimumWidth;
+            target.Card = source.Sequence.Card?.Copy();
             target.Fill=source.Sequence.Fill==null?null:PortableColor(source.Sequence.Fill);
             target.SurfaceShadow = source.Sequence.SurfaceShadow;
             target.Border=source.Sequence.Border==null?null:PortableColor(source.Sequence.Border);target.ActivationFill=source.Sequence.ActivationFill==null?null:PortableColor(source.Sequence.ActivationFill);target.ActivationBorder=source.Sequence.ActivationBorder==null?null:PortableColor(source.Sequence.ActivationBorder);
@@ -67,10 +68,11 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         foreach(var source in messages) {
             if(source.Kind!="SequenceMessage"||source.Status!=null||source.SecondaryLabel!=null||source.TertiaryLabel!=null||source.SourceLabel!=null||source.TargetLabel!=null
-                ||source.SourcePortId!=null||source.TargetPortId!=null||source.Color!=null||source.LabelColor!=null||source.Href!=null||source.Tooltip!=null||source.Metrics.Count>0)
+                ||source.SourcePortId!=null||source.TargetPortId!=null||source.LabelColor!=null||source.Href!=null||source.Tooltip!=null||source.Metrics.Count>0)
                 throw new NotSupportedException("A sequence message carries unrepresentable common fields.");
             sequence.AddMessage(source.SourceId,source.TargetId,source.Label,source.Sequence!.LineStyle,source.Sequence.Kind);
             var target=sequence.Messages[sequence.Messages.Count-1];target.ActivatesTarget=source.Sequence.ActivatesTarget;target.Deactivates=source.Sequence.Deactivates;
+            target.Color=source.Color==null?null:PortableColor(source.Color);
             CopyFacts(source.Extensions,target.Metadata);
         }
         foreach(var group in envelope.Groups) {
@@ -156,6 +158,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static void RestoreSequencePaint(SequenceArtifact sequence,IReadOnlyDictionary<string,string> values) {
         ChartColor? Get(string name)=>values.TryGetValue("chartforgex.sequence.paint."+name,out var text)?PortableColor(text):(ChartColor?)null;
         var paint=sequence.Paint;
+        paint.MessageLabelFill=Get("messageLabelFill");paint.MessageLabelBorder=Get("messageLabelBorder");
         paint.ParticipantFill=Get("participantFill");paint.ParticipantBorder=Get("participantBorder");paint.ParticipantText=Get("participantText");paint.Lifeline=Get("lifeline");
         paint.MessageLine=Get("messageLine");paint.MessageText=Get("messageText");paint.NumberText=Get("numberText");paint.NumberFill=Get("numberFill");paint.NoteFill=Get("noteFill");paint.NoteBorder=Get("noteBorder");paint.NoteText=Get("noteText");
         paint.ActivationFill=Get("activationFill");paint.ActivationBorder=Get("activationBorder");paint.FragmentFill=Get("fragmentFill");paint.FragmentBorder=Get("fragmentBorder");paint.FragmentText=Get("fragmentText");paint.FragmentTitleText=Get("fragmentTitleText");

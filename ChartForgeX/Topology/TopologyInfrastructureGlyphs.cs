@@ -126,7 +126,12 @@ internal static class TopologyInfrastructureGlyphs {
             case TopologyIconShape.Domain:
                 return new[] { TopologyGlyphMark.Path("M " + F(cx) + " " + F(cy - 9) + " L " + F(cx + 8) + " " + F(cy - 3) + " V " + F(cy + 5) + " L " + F(cx) + " " + F(cy + 9) + " L " + F(cx - 8) + " " + F(cy + 5) + " V " + F(cy - 3) + " Z M " + F(cx - 8) + " " + F(cy - 3) + " L " + F(cx) + " " + F(cy + 2) + " L " + F(cx + 8) + " " + F(cy - 3) + " M " + F(cx) + " " + F(cy + 2) + " V " + F(cy + 9), 1.4) };
             case TopologyIconShape.Badge:
-                return null;
+                // A process step (job, worker, inspection) reads as the flowchart step arrow rather than a letter.
+                if (kind != TopologyNodeKind.Process) return null;
+                return new[] {
+                    TopologyGlyphMark.Path("M " + F(cx - 9) + " " + F(cy - 6) + " H " + F(cx + 3) + " L " + F(cx + 9) + " " + F(cy) + " L " + F(cx + 3) + " " + F(cy + 6) + " H " + F(cx - 9) + " L " + F(cx - 4) + " " + F(cy) + " Z", 1.6),
+                    TopologyGlyphMark.Path("M " + F(cx - 1) + " " + F(cy - 2.5) + " L " + F(cx + 1.5) + " " + F(cy) + " L " + F(cx - 1) + " " + F(cy + 2.5), 1.5)
+                };
             default:
                 if (kind != TopologyNodeKind.Queue) return null;
                 return new[] { TopologyGlyphMark.Path("M " + F(cx - 7) + " " + F(cy - 6) + " H " + F(cx + 7) + " M " + F(cx - 7) + " " + F(cy) + " H " + F(cx + 7) + " M " + F(cx - 7) + " " + F(cy + 6) + " H " + F(cx + 7), 2, fillNone: false, roundJoin: false) };

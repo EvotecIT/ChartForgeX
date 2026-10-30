@@ -1,4 +1,29 @@
 {
+  "Architecture fence": {
+    "prefix": "cfx-architecture",
+    "body": [
+      "```chartforgex architecture v1 {#${1:orders} title=\"${2:Order flow}\"}",
+      "direction right",
+      "",
+      "user ${3:client} \"${4:Customer}\"",
+      "group ${5:backend} \"${6:Backend}\"",
+      "  service ${7:api} \"${8:Orders API}\"",
+      "  database ${9:db} \"${10:Orders DB}\"",
+      "end",
+      "",
+      "${3:client} -> ${7:api} \"HTTPS\"",
+      "${7:api} -> ${9:db} \"SQL\"",
+      "",
+      "usecase ${11:create} \"${12:Create an order}\"",
+      "  ${3:client} -> ${7:api} \"POST /orders\" json { \"sku\": \"A1\" }",
+      "  ${7:api} -> ${9:db} \"INSERT order\"",
+      "  ${9:db} --> ${7:api} \"1 row\"",
+      "  ${7:api} --> ${3:client} \"201 Created\" json { \"id\": 42 }",
+      "end",
+      "```"
+    ],
+    "description": "Insert a ChartForgeX architecture fence with a use case"
+  },
   "Topology fence": {
     "prefix": "cfx-topology",
     "body": [

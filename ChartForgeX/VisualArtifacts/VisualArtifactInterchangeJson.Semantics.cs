@@ -268,6 +268,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (sequence == null) return;
         writer.Property("sequence");
         writer.StartObject();
+        SequenceCard(writer, sequence.Card);
         OptionalString(writer,"stereotype",sequence.Stereotype);OptionalString(writer,"symbol",sequence.Symbol);
         OptionalNumber(writer,"minimumWidth",sequence.MinimumWidth);OptionalString(writer,"fill",sequence.Fill);
         DropShadow(writer,"surfaceShadow",sequence.SurfaceShadow);
@@ -525,6 +526,7 @@ internal static partial class VisualArtifactInterchangeJson {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "sequence");
         if(item==null)return null;
         var node=new VisualArtifactInterchangeSequenceNode {
+            Card = ReadSequenceCard(item),
             Stereotype=OptionalString(item,"stereotype"),Symbol=OptionalString(item,"symbol"),MinimumWidth=OptionalNumber(item,"minimumWidth"),Fill=OptionalString(item,"fill"),
             SurfaceShadow = ReadDropShadow(item,"surfaceShadow"),Border=OptionalString(item,"border"),ActivationFill=OptionalString(item,"activationFill"),ActivationBorder=OptionalString(item,"activationBorder"),
             Kind = RequiredEnum<SequenceArtifactParticipantKind>(item, "kind"),

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Themes;
 using System.Globalization;
 using System.Linq;
@@ -83,6 +84,15 @@ public sealed partial class TopologyHtmlRenderer {
             }
             preparedWidth = prepared.Width;
         }
+        // The SVG can be wider than the authored viewport when its content needs the room, so the wrapper follows the SVG.
+        var svgMarkup = preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls);
+        var topologyWidth = preparedWidth ?? SvgWidth(svgMarkup) ?? chart.Viewport.Width;
+        var sequences = enableScenarioInteractions && options.EnableHtmlScenarioSequence ? ScenarioSequenceFigures(chart, id) : new List<ScenarioSequenceFigure>();
+        // The playback page shows the topology above sequence diagrams, so they share one type scale: each fits the column
+        // only while that costs at most an eighth of its size, and otherwise scrolls in its own frame. Anything placed over
+        // the diagram (zoom, export and fullscreen controls, the selection panel) keeps the regular fitted view.
+        var keepTextSize = sequences.Count > 0 && !enableViewportControls && !enableExportControls && !enableFullscreenControl && !enableSelectionPanel;
+        var displayWidth = Math.Max(topologyWidth, sequences.Select(sequence => sequence.Width).DefaultIfEmpty(0).Max());
         var writer = new HtmlMarkupWriter();
         if (includeAssets) {
             writer.StartElement("style")
@@ -114,12 +124,20 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("style", "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
+            .Attribute("data-cfx-theme-mode", chart.ThemeMode == VisualThemeMode.Dark ? "dark" : "light")
+            .Attribute("data-cfx-theme-adaptive", options.SvgColorVariables != null ? "true" : null)
+            .Attribute("data-cfx-text-size", keepTextSize ? "kept" : null)
+            .Attribute("style", ThemeVariables(theme) + (keepTextSize ? "--cfx-topology-min-width:" + (topologyWidth * MinimumTextScale).ToString("0.###", CultureInfo.InvariantCulture) + "px;" : string.Empty)
+                + "width:100%;max-width:" + displayWidth.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
             .EndStartElement();
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
         if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options, messages);
-        writer.StartElement("div").Attribute("class", viewportClass).EndStartElement();
+        writer.StartElement("div").Attribute("class", viewportClass)
+            .Attribute("tabindex", keepTextSize ? "0" : null)
+            .Attribute("role", keepTextSize ? "region" : null)
+            .Attribute("aria-label", keepTextSize ? chart.Title ?? messages["TopologyDiagram"] : null)
+            .EndStartElement();
         if (enableViewportControls || enableExportControls || enableFullscreenControl) {
             writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", messages["TopologyControls"]).EndStartElement();
             if (enableViewportControls) {
@@ -143,10 +161,25 @@ public sealed partial class TopologyHtmlRenderer {
 
         if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel", messages);
 
-        writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
-        writer.EndElement().EndElement();
+        writer.RawTrusted(svgMarkup);
+        writer.EndElement();
+        if (enableScenarioInteractions && options.EnableHtmlScenarioSequence) WriteScenarioSequences(writer, cssPrefix + "-scenario-sequences", sequences, activeScenarioId, keepTextSize);
+        writer.EndElement();
         return writer.Build();
     }
+
+    /// <summary>The smallest scale the playback page applies to the topology before it scrolls instead.</summary>
+    internal const double MinimumTextScale = 0.875;
+
+    private static double? SvgWidth(string svg) {
+        var match = System.Text.RegularExpressions.Regex.Match(svg, "^\\s*<svg\\b[^>]*?\\swidth=\"([0-9.]+)\"");
+        return match.Success && double.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var width) && width > 0 ? width : null;
+    }
+
+    // Controls and panels take the chart's own surface, ink and accent, so they match the diagram in either theme.
+    private static string ThemeVariables(TopologyPaint theme) =>
+        "--cfx-topology-canvas:" + theme.Background + ";--cfx-topology-card:" + theme.Card + ";--cfx-topology-elevated:" + theme.Surface + ";--cfx-topology-ink:" + theme.Foreground +
+        ";--cfx-topology-muted-ink:" + theme.MutedForeground + ";--cfx-topology-line:" + theme.Border + ";--cfx-topology-chart-accent:" + theme.Accent + ";";
 
     private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
         var nativeOptions = EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls);
@@ -346,6 +379,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Replace(".cfx-topology-controls", "." + cssPrefix + "-controls")
             .Replace(".cfx-topology-scenarios", "." + cssPrefix + "-scenarios")
             .Replace(".cfx-topology-scenario-panel", "." + cssPrefix + "-scenario-panel")
+            .Replace(".cfx-topology-scenario-sequences", "." + cssPrefix + "-scenario-sequences")
             .Replace(".cfx-topology-selection-panel", "." + cssPrefix + "-selection-panel")
             .Replace(".cfx-topology-force-controls", "." + cssPrefix + "-force-controls")
             .Replace(".cfx-topology__edge--premium-layer", "[data-cfx-role^='topology-edge-line-']")

@@ -618,4 +618,6 @@ public enum HtmlChartText {
     HierarchyCollapse,
     /// <summary>Expands one organization branch. Template: {label}.</summary>
     HierarchyExpand,
+    /// <summary>UI text: Topology diagram</summary>
+    TopologyDiagram,
 }

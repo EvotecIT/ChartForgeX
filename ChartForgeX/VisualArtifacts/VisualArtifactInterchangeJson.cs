@@ -360,6 +360,10 @@ internal static partial class VisualArtifactInterchangeJson {
                 OptionalString(writer, "label", step.Label);
                 OptionalString(writer, "description", step.Description);
                 OptionalNumber(writer, "durationMilliseconds", step.DurationMilliseconds);
+                if (step.Interaction != ChartForgeX.Topology.TopologyScenarioInteraction.None) String(writer, "interaction", step.Interaction.ToString());
+                if (step.Reverse) Boolean(writer, "reverse", true);
+                OptionalString(writer, "payload", step.Payload);
+                if (step.Payload != null && step.PayloadFormat != ChartForgeX.Topology.TopologyScenarioPayloadFormat.Text) String(writer, "payloadFormat", step.PayloadFormat.ToString());
                 Extensions(writer, step.Extensions);
                 writer.EndObject();
             }
@@ -497,7 +501,11 @@ internal static partial class VisualArtifactInterchangeJson {
                     Kind = RequiredEnum<ChartForgeX.Topology.TopologyScenarioStepKind>(stepItem, "kind"),
                     Label = OptionalString(stepItem, "label"),
                     Description = OptionalString(stepItem, "description"),
-                    DurationMilliseconds = OptionalInt(stepItem, "durationMilliseconds")
+                    DurationMilliseconds = OptionalInt(stepItem, "durationMilliseconds"),
+                    Interaction = OptionalEnum<ChartForgeX.Topology.TopologyScenarioInteraction>(stepItem, "interaction") ?? ChartForgeX.Topology.TopologyScenarioInteraction.None,
+                    Reverse = OptionalBool(stepItem, "reverse") ?? false,
+                    Payload = OptionalString(stepItem, "payload"),
+                    PayloadFormat = OptionalEnum<ChartForgeX.Topology.TopologyScenarioPayloadFormat>(stepItem, "payloadFormat") ?? ChartForgeX.Topology.TopologyScenarioPayloadFormat.Text
                 };
                 ReadExtensions(stepItem, step.Extensions);
                 scenario.Steps.Add(step);

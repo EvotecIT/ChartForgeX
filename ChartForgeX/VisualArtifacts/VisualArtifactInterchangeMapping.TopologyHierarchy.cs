@@ -41,7 +41,8 @@ public static partial class VisualArtifactInterchangeMapping {
             mapped.Steps.Clear();
             foreach (var step in scenario.Steps) {
                 var retained = new VisualArtifactInterchangeScenarioStep { TargetId = step.Kind == TopologyScenarioStepKind.Node ? nodeIds[step.Id] : edgeIds[step.Id],
-                    Kind = step.Kind, Label = step.Label, Description = step.Description, DurationMilliseconds = step.DurationMilliseconds };
+                    Kind = step.Kind, Label = step.Label, Description = step.Description, DurationMilliseconds = step.DurationMilliseconds,
+                    Interaction = step.Interaction, Reverse = step.Reverse, Payload = step.Payload, PayloadFormat = step.PayloadFormat };
                 CopyRawMetadata(step.Metadata, retained.Extensions); mapped.Steps.Add(retained);
             }
         }

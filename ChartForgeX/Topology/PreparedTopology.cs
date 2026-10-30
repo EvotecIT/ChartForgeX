@@ -26,6 +26,7 @@ public sealed class PreparedTopology {
     private readonly Func<TopologyLayoutDiagnosticReport> _diagnostics;
     internal ResolvedTopologyGeometry Geometry => _geometry.Value;
     internal VisualRenderOptions RasterOptions => _rasterOptions;
+    internal TopologyChart LayoutChart => _chart;
 
     internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions) {
         _chart = compiler.LayoutSnapshot(); _options = compiler.OptionsSnapshot();
@@ -72,6 +73,16 @@ public sealed class PreparedTopology {
         source.Title = _title; source.Subtitle = _subtitle;
         source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
         var compiler = new VisualTopologyCompiler(source, context, _options, resolvedLayout: true);
+        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions);
+    }
+
+    /// <summary>Recompiles the resolved layout with changed paint (colors, emphasis, arrows) without running layout again.</summary>
+    internal PreparedTopology Restyle(Action<TopologyChart> restyle, TopologyRenderOptions options) {
+        var source = TopologyLayoutEngine.Clone(_chart);
+        source.Title = _title; source.Subtitle = _subtitle;
+        source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
+        restyle(source);
+        var compiler = new VisualTopologyCompiler(source, _context, source.ResolveRenderOptions(options).CloneForRendering(), resolvedLayout: true);
         return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions);
     }
 

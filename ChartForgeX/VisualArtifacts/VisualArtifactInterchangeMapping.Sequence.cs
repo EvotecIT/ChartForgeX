@@ -11,6 +11,8 @@ public static partial class VisualArtifactInterchangeMapping {
         if (sequence.Paint.Lifeline.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.lifeline", sequence.Paint.Lifeline.Value.ToCss());
         if (sequence.Paint.MessageLine.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.messageLine", sequence.Paint.MessageLine.Value.ToCss());
         if (sequence.Paint.MessageText.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.messageText", sequence.Paint.MessageText.Value.ToCss());
+        if (sequence.Paint.MessageLabelFill.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.messageLabelFill", sequence.Paint.MessageLabelFill.Value.ToCss());
+        if (sequence.Paint.MessageLabelBorder.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.messageLabelBorder", sequence.Paint.MessageLabelBorder.Value.ToCss());
         if (sequence.Paint.NumberText.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.numberText", sequence.Paint.NumberText.Value.ToCss());
         if (sequence.Paint.NumberFill.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.numberFill", sequence.Paint.NumberFill.Value.ToCss());
         if (sequence.Paint.NoteFill.HasValue) TrySetBoundedExtension(envelope.Extensions, "chartforgex.sequence.paint.noteFill", sequence.Paint.NoteFill.Value.ToCss());

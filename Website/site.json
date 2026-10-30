@@ -93,6 +93,7 @@
       "Include": [
         "markup.md",
         "markup-v1-reference.md",
+        "architecture-diagrams.md",
         "visual-artifacts.md",
         "mermaid-support-matrix.md",
         "visual-blocks.md",

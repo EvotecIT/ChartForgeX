@@ -12,6 +12,7 @@
     { "title": "Author visuals", "summary": "Write visual blocks in Markdown, or pass typed artifacts between renderers and hosts.", "guides": [
       {"slug": "markup", "title": "Markup authoring", "summary": "Native fences, host parsers, diagnostics and artifact conversion.", "source": "markup.md"},
       {"slug": "markup-v1-reference", "title": "Markup v1 reference", "summary": "The supported fence grammar, models and static preview contract.", "source": "markup-v1-reference.md"},
+      {"slug": "architecture-diagrams", "title": "Architecture diagrams and playback", "summary": "Components, routes and use cases rendered as diagrams, sequence views and terminal text.", "source": "architecture-diagrams.md"},
       {"slug": "visual-artifacts", "title": "Visual artifacts", "summary": "Typed models, metadata and reusable export capabilities.", "source": "visual-artifacts.md"},
       {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "Native families, safe styles, bounded grammar, diagnostics and pinned reference limits.", "source": "mermaid-support-matrix.md"}
     ] },
@@ -96,6 +97,8 @@
     }
   ],
   "guideLinkTargets": [
+    {"from": "../ChartForgeX.Examples/Assets/Architecture/ad-replication.md", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Assets/Architecture/ad-replication.md"},
+    {"from": "../ChartForgeX.Examples/Assets/Architecture/tierbridge-file-journey.md", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Assets/Architecture/tierbridge-file-journey.md"},
     {"from": "label-placement.md#authored-letter-spacing", "to": "/docs/label-placement/#authored-letter-spacing"},
     {"from": "../../ChartForgeX.Examples/MermaidMixedCaptionSourceExample.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/MermaidMixedCaptionSourceExample.cs"},
     {"from": "../../ChartForgeX.Examples/Recipes/AlignedDifferenceRecipe.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Recipes/AlignedDifferenceRecipe.cs"},
@@ -155,6 +158,8 @@
     {"from": "../visual-artifacts.md#static-producers-and-raster-limits", "to": "/docs/visual-artifacts/#static-producers-and-raster-limits"},
     {"from": "../visual-canvas.md", "to": "/docs/visual-canvas/"},
     {"from": "api-conventions.md", "to": "/docs/api-conventions/"},
+    {"from": "architecture-diagrams.md", "to": "/docs/architecture-diagrams/"},
+    {"from": "architecture-diagrams.md#rendering-from-the-command-line", "to": "/docs/architecture-diagrams/#rendering-from-the-command-line"},
     {"from": "api-conventions.md#bubble-size-scale", "to": "/docs/api-conventions/#bubble-size-scale"},
     {"from": "api-conventions.md#cartesian-viewports", "to": "/docs/api-conventions/#cartesian-viewports"},
     {"from": "api-conventions.md#configuration-callback-ownership", "to": "/docs/api-conventions/#configuration-callback-ownership"},
