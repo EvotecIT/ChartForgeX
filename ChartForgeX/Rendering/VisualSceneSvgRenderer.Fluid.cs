@@ -36,7 +36,7 @@ internal static partial class VisualSceneSvgRenderer {
             OpenDefinitions();
             writer.StartElement("clipPath").Attribute("id", prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture))
                 .Attribute("clipPathUnits", "userSpaceOnUse").EndStartElement();
-            WriteFluidRectangleGeometry(writer, new ChartRect(x, y, clip.Bounds.Width, clip.Bounds.Height), clip.Radius, layout.Width);
+            WriteFluidRectangleGeometry(writer, new ChartRect(x, y, clip.Bounds.Width, clip.Bounds.Height), clip.Radius, layout.Width, layout.FixedClips.Contains(i));
             writer.EndEmptyElement(); writer.EndElement();
         }
         if (opened) writer.EndElement();
@@ -77,7 +77,7 @@ internal static partial class VisualSceneSvgRenderer {
         var viewport = false;
         if (mark is VisualSceneRectangle rect) {
             WriteFluidRectangleGeometry(writer, new ChartRect(rect.Bounds.X + transform.E, rect.Bounds.Y + transform.F,
-                rect.Bounds.Width, rect.Bounds.Height), rect.Radius, layout.Width);
+                rect.Bounds.Width, rect.Bounds.Height), rect.Radius, layout.Width, layout.FixedMarks[index]);
         } else if (mark is VisualSceneEllipse ellipse) {
             writer.StartElement("ellipse").Attribute("cx", FluidPercent(ellipse.Cx + transform.E, layout.Width))
                 .Attribute("cy", ellipse.Cy + transform.F).Attribute("rx", ellipse.Rx).Attribute("ry", ellipse.Ry);
@@ -111,9 +111,20 @@ internal static partial class VisualSceneSvgRenderer {
         return true;
     }
 
-    private static void WriteFluidRectangleGeometry(SvgMarkupWriter writer, ChartRect bounds, double radius, double width) =>
-        writer.StartElement("rect").Attribute("x", FluidPercent(bounds.X, width)).Attribute("y", bounds.Y)
-            .Attribute("width", FluidPercent(bounds.Width, width)).Attribute("height", bounds.Height).Attribute("rx", radius).Attribute("ry", radius);
+    /// <summary>
+    /// A stretched rectangle scales with the host width. A fixed one (a column's body) keeps its pixel width centred on its
+    /// fluid position, so mark thickness never grows with the scale factor.
+    /// </summary>
+    private static void WriteFluidRectangleGeometry(SvgMarkupWriter writer, ChartRect bounds, double radius, double width, bool fixedWidth = false) {
+        if (!fixedWidth) {
+            writer.StartElement("rect").Attribute("x", FluidPercent(bounds.X, width)).Attribute("y", bounds.Y)
+                .Attribute("width", FluidPercent(bounds.Width, width)).Attribute("height", bounds.Height).Attribute("rx", radius).Attribute("ry", radius);
+            return;
+        }
+        writer.StartElement("rect").Attribute("x", FluidPercent(bounds.X + bounds.Width / 2, width)).Attribute("y", bounds.Y)
+            .Attribute("width", bounds.Width).Attribute("height", bounds.Height).Attribute("rx", radius).Attribute("ry", radius)
+            .Attribute("transform", "translate(" + N(-bounds.Width / 2) + " 0)");
+    }
 
     /// <summary>Anchors a pixel-sized viewport at a fluid position, then applies rigid orientation relative to that anchor.</summary>
     private static void WriteFluidFixedViewport(SvgMarkupWriter writer, ChartPoint anchor, VisualSceneTransform transform, FluidSvgLayout layout) {
@@ -137,6 +148,7 @@ internal static partial class VisualSceneSvgRenderer {
         internal readonly VisualSceneTransform[] Transforms;
         internal readonly bool[] FixedMarks;
         internal readonly Dictionary<int, (ChartRect Bounds, double Radius)> Clips = new();
+        internal readonly HashSet<int> FixedClips = new();
 
         internal FluidSvgLayout(VisualScene scene, VisualSvgOptions options) {
             Width = scene.Size.Width; Height = scene.Size.Height;
@@ -165,6 +177,7 @@ internal static partial class VisualSceneSvgRenderer {
                             if (!TryFluidRectangleClip(pathClip, out var clip)) throw FluidUnsupported("arbitrary path clips");
                             Clips.Add(i, clip);
                         } else Clips.Add(i, (group.Clip!.Value, 0));
+                        if (fixedMark) FixedClips.Add(i);
                     }
                 } else {
                     if (node is VisualSceneImage || node is VisualSceneProceduralSource) throw FluidUnsupported("images or procedural sources");
@@ -181,8 +194,11 @@ internal static partial class VisualSceneSvgRenderer {
         }
 
         // A custom semantic role may replace "marker"; the native point group still identifies its quantitative mark.
+        // A column's body keeps its prepared thickness: its category position stretches, its width does not (design rule 4).
+        // Histogram bins span their bin, so they keep stretching.
         private static bool IsPointGroup(VisualSceneGroup group, string? seriesKind) => group.Role is "scatter-point" or "bubble-point" or "line-marker"
-            || group.Role == "point" && (seriesKind == null || seriesKind is "Line" or "StepLine" or "Area" or "StepArea" or "StackedArea" or "Scatter" or "Bubble");
+            || group.Role == "point" && (seriesKind == null || seriesKind is "Line" or "StepLine" or "Area" or "StepArea" or "StackedArea" or "Scatter" or "Bubble"
+                || seriesKind == "Bar" && !(group.Metadata.TryGetValue("data-cfx-derived", out var derived) && derived == "histogram-bin"));
         private static bool IsPointRole(string? role) => role != null && (role == "marker" || role.EndsWith("-marker", StringComparison.Ordinal)
             || role == "gantt-milestone-shape" || role == "legend-marker" || role == "legend-symbol" || IsFluidArrow(role));
     }

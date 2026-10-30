@@ -242,6 +242,30 @@ public sealed class ScriptFreeFluidSvgTests {
         static void Near(double expected, double actual) => Assert.InRange(actual - expected, -.05, .05);
     }
 
+    /// <summary>Design rule 4 under fluid width: a column keeps its prepared thickness while its category position stretches.</summary>
+    [BrowserFact]
+    [Trait("BrowserSuite", "Compatibility")]
+    public async Task FluidColumns_KeepTheirPreparedThicknessAtEveryHostWidth() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = Core.Chart.Create().WithStackedBars().WithXLabels("Mon", "Tue", "Wed")
+            .AddBar("Updates", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5), new ChartPoint(3, 2) })
+            .AddBar("Notes", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 4) });
+        var svg = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 240), 8))).ToSvg(new VisualSvgOptions("columns").WithFluidWidth());
+        await using var session = await InteractiveChartBrowser.OpenAsync("<style>html,body{margin:0}</style><main>" + svg + "</main>", 320, 300);
+        double? prepared = null; double? previousCenter = null;
+        foreach (var width in new[] { 320, 900 }) {
+            await session.Page.SetViewportSizeAsync(width, 300);
+            var column = await session.Page.EvaluateAsync<double[]>(
+                "() => { const r = document.querySelector('main svg [data-cfx-point=\"1\"] [data-cfx-role=\"bar\"]').getBoundingClientRect(); return [r.width, r.left + r.width / 2]; }");
+            prepared ??= column[0];
+            Assert.InRange(column[0], prepared.Value - .05, prepared.Value + .05);
+            Assert.True(column[0] <= 24.05, "A stacked column is at most 24px thick.");
+            if (previousCenter is { } before) Assert.True(column[1] > before * 2, "The column's category position stretches with the host.");
+            previousCenter = column[1];
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
     private static VisualSceneBuilder Builder() => new(new VisualSize(400, 140), FontSpec.SystemSans());
     private static XElement Render(VisualScene scene, VisualSvgOptions? options = null) =>
         XDocument.Parse(VisualSceneSvgRenderer.Render(scene, title: "Chart", options: options ?? new VisualSvgOptions().WithFluidWidth())).Root!;
