@@ -69,7 +69,7 @@ public sealed partial class Chart : IVisualRenderable {
         var captureFinancial = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc);
         var captureCompleteCartesian = family == VisualChartFamily.Cartesian && viewport == null && VisualCartesianCompiler.NeedsCompleteCartesianValues(this);
         var textCapture = context.NativeTextCapture ?? (family == VisualChartFamily.Radial || captureHierarchy || captureCompleteCartesian || captureBubble || captureRange || captureError || captureFinancial ? new VisualSceneTextCapture() : null);
-        context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithNativeValueSource(context.CaptureNativeValueSource);
+        context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithRequestsOf(context);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition

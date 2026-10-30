@@ -58,7 +58,7 @@ internal static partial class VisualScalarProgressCompiler {
             _context = context; _plot = plot; _colors = colors;
             _seriesKey = series.Id.Value; _local = series.Id.IsAutomatic; _typed = series.IsTypedProgress;
             _maximum = chart.Options.ProgressMaximum; _thicknessRatio = chart.Options.ProgressBarThicknessRatio;
-            _trackOpacity = chart.Options.ProgressTrackOpacity; _showHandles = chart.Options.ShowProgressHandles;
+            _trackOpacity = chart.Options.ProgressTrackOpacity; _showHandles = chart.Options.ShowProgressHandles || context.EditableProgress;
             _showValues = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressValues;
             _format = chart.Options.ValueFormat.CapturedValuePolicy;
             if (_format != null) {
