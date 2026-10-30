@@ -20,6 +20,45 @@ Select these names in host scripts and styles. Don't select other roles, element
 | `data-cfx-current`, `data-cfx-selected` | Authored current/selected mark or row | `true` for each enabled visual state. Navigation remains a link, without selection-widget roles or aria-selected. |
 | `href`, `target`, `rel`, `tabindex`, `aria-label` | Linked mark or row | A semantic target becomes `<a role="link" tabindex="0" focusable="true">`. New-context links use `_blank` and `noopener noreferrer`; other authored links use `_self`. |
 
+### Mark identity and readouts
+
+These attributes identify data marks in every family and carry the display text the chart already formatted. Hosts and the enhance runtime read them instead of re-formatting values.
+
+| Attribute | Where | Value |
+|---|---|---|
+| `data-cfx-series` | Series groups and marks | The series ordinal. |
+| `data-cfx-point` | Point-like marks | The mark's ordinal in its series. |
+| `data-cfx-series-key` | Series groups, marks and legend entries | The series identifier (`ChartSeriesId`). |
+| `data-cfx-series-name` | Series groups | The series display name. |
+| `data-cfx-x` | Cartesian and radial marks | The raw category coordinate; an OLE date on time axes. |
+| `data-cfx-x-instant` | Time-axis marks | The coordinate as an ISO 8601 instant. |
+| `data-cfx-formatted-value` | Marks | The value as the chart formats it, with its unit. |
+| `data-cfx-formatted-x` | Marks | The category coordinate as the axis formats it. |
+| `data-cfx-display-label` | Marks | What a reader sees for the category: the authored label or the formatted coordinate. |
+| `data-cfx-range-label` | Range, schedule and bucket marks | A formatted interval such as `Jan 26 – May 26`. |
+| `data-cfx-keys` | Marks with `ChartMarkOptions.Keys` | The record keys the mark represents, as a JSON array of strings (for example grid row ids). |
+| `data-cfx-fields` | Marks with `ChartMarkOptions.Fields` (or series fields) | The values that define the mark, as a JSON object of strings, numbers and booleans; dates are ISO 8601 UTC instants. An item's fields extend its series' fields. |
+
+### Enhance hooks
+
+`VisualSvgOptions.WithEnhanceHooks()` adds the hooks the [enhance runtime](enhance.md) reads. Without it the SVG is byte-for-byte what it was. With it the SVG gains attributes and, optionally, one inert `<metadata>` element; it never gains script.
+
+| Attribute | Where | Value |
+|---|---|---|
+| `data-cfx-enhance` | Root `<svg>` | The hook version, `1`. |
+| `data-cfx-view` | Root | The view id used in linked-view payloads: the export's ID namespace. |
+| `data-cfx-size` | Root | The logical width and height. Fluid roots have no viewBox, so the runtime maps logical X by the rendered width. |
+| `data-cfx-plot` | Root of Cartesian and schedule charts | The logical plot rectangle: x, y, width, height. |
+| `data-cfx-x-domain` | Root | The category-axis minimum and maximum. |
+| `data-cfx-x-kind` | Root | `linear`, `time`, `log` or `symlog`. |
+| `data-cfx-orientation` | Root | `horizontal` when categories run vertically. |
+| `data-cfx-crosshair` | Root | `true` for vertical line and area charts: a shared-X crosshair applies. |
+| `data-cfx-brush` | Root | `true` when the crosshair axis is linear or time: dragging selects a range. |
+| `data-cfx-mark` | Every interaction target in every family | `true`. The innermost series group that identifies one datum: points, bars, slices, cells, tiles, flow and hierarchy nodes and links, schedule items, single-value gauges and rows. Legend entries are never marks. |
+| `data-cfx-bounds` | Marks | The logical semantic extent (x, y, width, height), so marks without painted geometry, such as line points without markers, still have an anchor. |
+| `data-cfx-legend-for` | Legend entries | The series ordinal the entry controls. Entries that also carry `data-cfx-point` control one slice. |
+| `data-cfx-enhance-data` | `<metadata>` element (with `WithEnhanceHooks(includeData: true)`) | `true`; its text is JSON: `{ v, series: [{ i, key, name, color }], points: [{ s, p, x, xi, l, v, k }] }`, points sorted by X. |
+
 ## Roles
 
 | Role | Element | Notes |
@@ -42,6 +81,8 @@ Select these names in host scripts and styles. Don't select other roles, element
 | `strip-axis-line` | Horizontal axis line | The full strip width. |
 | `strip-axis-tick` | Tick line | Source positions map to the shared horizontal domain. |
 | `strip-axis-label` | Group wrapping tick text | Boundary captions align into the strip. |
+
+Families that render other target roles (for example `heatmap-cell`, `radial-point`, `sankey-node`, `treemap-tile` or `gantt-task`) are not separate contract roles: select `[data-cfx-mark]` under enhance hooks, or `[data-cfx-series][data-cfx-point]` without them.
 
 ## Navigation, state and host styling
 
