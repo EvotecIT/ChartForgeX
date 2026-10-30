@@ -123,6 +123,8 @@ internal static class ChartPathBuilder {
         var limit = Math.Min(bounds.Width, bounds.Height) / 2;
         double Clamp(double value) => Math.Max(0, Math.Min(value, limit));
         topLeft = Clamp(topLeft); topRight = Clamp(topRight); bottomRight = Clamp(bottomRight); bottomLeft = Clamp(bottomLeft);
+        if (topLeft == 0 && topRight == 0 && bottomRight == 0 && bottomLeft == 0) return RoundedRectangle(bounds, 0);
+        if (topLeft == topRight && topRight == bottomRight && bottomRight == bottomLeft) return RoundedRectangle(bounds, topLeft);
         const double k = .5522847498307936;
         var x = bounds.Left; var y = bounds.Top; var right = bounds.Right; var bottom = bounds.Bottom;
         var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(x + topLeft, y), ChartPathCommand.LineTo(right - topRight, y) };

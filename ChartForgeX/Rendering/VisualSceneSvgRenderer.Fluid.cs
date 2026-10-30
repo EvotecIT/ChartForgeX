@@ -193,6 +193,26 @@ internal static partial class VisualSceneSvgRenderer {
         clip = (bounds, radius);
         if (!path.Close || radius < 0) return false;
         var expected = ChartPathBuilder.RoundedRectangle(bounds, radius).Commands;
-        return expected.SequenceEqual(path.Commands);
+        if (expected.SequenceEqual(path.Commands)) return true;
+        // A stack envelope rounded at its data end only (design rule 4) clips as its rectangle in fluid output.
+        var candidates = path.Commands.SelectMany(command => new[] { command.X - bounds.Left, bounds.Right - command.X, command.Y - bounds.Top, bounds.Bottom - command.Y })
+            .Where(value => value > 0 && value <= Math.Min(bounds.Width, bounds.Height) / 2 + 1e-9).Distinct().ToArray();
+        foreach (var corners in new[] { VisualCorners.Top, VisualCorners.Bottom, VisualCorners.Left, VisualCorners.Right })
+            foreach (var candidate in candidates) {
+                var partial = ChartPathBuilder.RoundedRectangle(bounds, (corners & VisualCorners.TopLeft) != 0 ? candidate : 0, (corners & VisualCorners.TopRight) != 0 ? candidate : 0,
+                    (corners & VisualCorners.BottomRight) != 0 ? candidate : 0, (corners & VisualCorners.BottomLeft) != 0 ? candidate : 0).Commands;
+                if (SameCommands(partial, path.Commands)) { clip = (bounds, 0); return true; }
+            }
+        return false;
+    }
+
+    private static bool SameCommands(IReadOnlyList<ChartPathCommand> left, IReadOnlyList<ChartPathCommand> right) {
+        if (left.Count != right.Count) return false;
+        for (var index = 0; index < left.Count; index++) {
+            var a = left[index]; var b = right[index];
+            if (a.Kind != b.Kind || Math.Abs(a.X - b.X) > 1e-6 || Math.Abs(a.Y - b.Y) > 1e-6 || Math.Abs(a.Control1X - b.Control1X) > 1e-6
+                || Math.Abs(a.Control1Y - b.Control1Y) > 1e-6 || Math.Abs(a.Control2X - b.Control2X) > 1e-6 || Math.Abs(a.Control2Y - b.Control2Y) > 1e-6) return false;
+        }
+        return true;
     }
 }
