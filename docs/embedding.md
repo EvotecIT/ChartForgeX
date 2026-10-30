@@ -169,6 +169,10 @@ Static SVG, native links, fluid tracks and data tables need no inline script. Th
 
 Test links and hooks against the [DOM contract](https://chartforgex.com/docs/dom-contract/), not child order or generated definition IDs. Check each link's URL, target, accessible label and tab stop; check host attributes verbatim; resize the HTML track column and measure text and marker dimensions. Inspect desktop and phone output in both page themes, and test the actual rendered page's keyboard navigation and data disclosure. Try the [linked columns, support schedule and shared strips](https://chartforgex.com/examples/generated/embedding/light.html), or open their companion source-and-output story.
 
+## Optional enhancement
+
+The page stays complete without script. To add hover and focus states, tooltips, keyboard navigation, legend toggles and linked views (for example with a CanopyX grid), export with `WithEnhanceHooks()`, give marks record `keys` and `fields` in `ChartMarkOptions`, and include the [enhance runtime](enhance.md) once per page.
+
 ## Updating existing applications
 
 `ChartPoint` and `ChartColor` now contain optional managed metadata, so they are no longer unmanaged memory records. Code that treated point or colour arrays as raw memory must use the public coordinates or packed/RGBA colour conversions instead. The existing `SparklineData` and `ChartGanttItem` constructor signatures remain available to previously compiled consumers.

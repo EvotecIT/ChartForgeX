@@ -29,6 +29,7 @@
     ] },
     { "title": "API contracts and migration", "summary": "Select compatible combinations and follow the public ownership and editing contracts.", "guides": [
       {"slug": "dom-contract", "source": "dom-contract.md", "title": "DOM contract", "summary": "Stable chart roles, validated host hooks and accessible mark navigation."},
+      {"slug": "enhance", "source": "enhance.md", "title": "Enhancing static charts", "summary": "States, tooltips, keyboard focus, family behaviours and linked views for static SVG from one small script."},
       {"slug": "api-conventions", "source": "v2/api-conventions.md", "title": "Public API conventions", "summary": "Preparation, transactions, identity, ordinal/calendar-unit spacing and explicit concentric bands."},
       {"slug": "chart-combinations", "source": "v2/chart-combinations.md", "title": "Chart combinations and axes", "summary": "Vertical and horizontal mixtures, independent physical value axes and native limits."},
       {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."}
