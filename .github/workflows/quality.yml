@@ -51,7 +51,9 @@ jobs:
               {encoding: 'utf8', maxBuffer: 16 * 1024 * 1024}).split('\0').filter(Boolean);
             const documentation = path => {
               // These files are packaged, generated, or read by real tests.
-              if (/^README[^/]*\.md$/i.test(path) ||
+              if (/^(README[^/]*|CONTRIBUTING|TODO|AGENTS|CHANGELOG)\.md$/i.test(path) ||
+                  /^docs\/dom-contract\.md$/i.test(path) ||
+                  /^docs\/dashboard-pattern-expansion-plan\.md$/i.test(path) ||
                   /(^|\/)(schemas?|generated|fixtures|apidocs)(\/|\.)/i.test(path) ||
                   /^(ChartForgeX[^/]*|Build|Benchmarks|tests)\//.test(path) ||
                   /^Website\/(data\/|build\/|powershell\/|static\/examples\/|static\/site\/|site\.json$)/.test(path)) return false;

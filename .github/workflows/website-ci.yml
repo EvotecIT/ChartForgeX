@@ -47,6 +47,7 @@ concurrency:
 
 jobs:
   verify-site:
+    if: github.event_name == 'pull_request'
     uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-ci.yml@7cbb9594e6590b41f0d20f528550848c519855e8
     with:
       website_root: Website
@@ -54,3 +55,17 @@ jobs:
       powerforge_lock_path: ./Website/.powerforge/engine-lock.json
       powerforge_repository_override: ${{ vars.POWERFORGE_REPOSITORY }}
       powerforge_ref_override: ${{ vars.POWERFORGE_REF }}
+
+  verify-site-trusted:
+    if: github.event_name != 'pull_request'
+    # Use the canonical runner directly; the CI wrapper cancels by branch.
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-run.yml@7cbb9594e6590b41f0d20f528550848c519855e8
+    with:
+      website_root: Website
+      pipeline_config: Website/pipeline.json
+      powerforge_lock_path: ./Website/.powerforge/engine-lock.json
+      powerforge_repository_override: ${{ vars.POWERFORGE_REPOSITORY }}
+      powerforge_ref_override: ${{ vars.POWERFORGE_REF }}
+      pipeline_mode: ci
+      credential_mode: standard
+      use_playwright_cache: true
