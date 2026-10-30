@@ -686,8 +686,8 @@
     "enhance/canopyx-ui-menu.29b983c01571b5c3.css",
     "enhance/canopyx-ui-overlays.83acc4346a232940.js",
     "enhance/canopyx-ui-overlays.bc49b6f13527aecd.css",
-    "enhance/cfx-enhance.2c6e294906b0.js",
     "enhance/cfx-enhance.d38eb6a099cb.css",
+    "enhance/cfx-enhance.da84b0367c05.js",
     "enhance/enhance-page.css",
     "enhance/enhance-page.js",
     "enhance/enhance-story.html",
@@ -16128,7 +16128,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-compact-light",
@@ -16162,7 +16162,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-color-scale-light",
@@ -16608,7 +16608,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-compact-dark",
@@ -16642,7 +16642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-color-scale-dark",
@@ -17088,7 +17088,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-compact-light",
@@ -17122,7 +17122,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-color-scale-light",
@@ -17224,7 +17224,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-compact-dark",
@@ -17258,7 +17258,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-color-scale-dark",
