@@ -23,7 +23,8 @@ public sealed class EnhanceCanopyXBrowserTests {
             var errors = new List<string>();
             session.Page.PageError += (_, error) => errors.Add(error);
             session.Page.Console += (_, message) => { if (message.Type == "error") errors.Add(message.Text); };
-            if (theme != null) await session.Page.EmulateMediaAsync(new() { ColorScheme = theme == "dark" ? ColorScheme.Dark : ColorScheme.Light });
+            // Review shots read settled states: reduced motion skips the 250ms dimming fade.
+            if (theme != null) await session.Page.EmulateMediaAsync(new() { ColorScheme = theme == "dark" ? ColorScheme.Dark : ColorScheme.Light, ReducedMotion = ReducedMotion.Reduce });
             await session.Page.GotoAsync(new Uri(Path.Combine(output, "enhance", "index.html")).AbsoluteUri);
             await session.Page.WaitForFunctionAsync("s => { const h = document.querySelector(s); return h && h.canopyx && h.querySelector('.cx-row'); }", Grid);
             Assert.Empty(errors);
@@ -170,7 +171,7 @@ public sealed class EnhanceCanopyXBrowserTests {
             await page.ScreenshotAsync(new() { Path = name + "-segment.png", FullPage = true });
             await page.Locator(Grid + " .cx-link-chip").ClickAsync();
             // Rows are pooled, so pick them by their row index rather than their DOM order.
-        ILocator Check(int row) => page.Locator(Grid + " .cx-row[aria-rowindex=\"" + row + "\"] input[type=checkbox]");
+            ILocator Check(int row) => page.Locator(Grid + " .cx-row[aria-rowindex=\"" + row + "\"] input[type=checkbox]");
             await Check(2).ClickAsync();
             await Check(5).ClickAsync();
             await page.Mouse.MoveAsync(1, 1);
