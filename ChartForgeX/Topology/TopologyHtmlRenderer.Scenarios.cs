@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Html;
 
 namespace ChartForgeX.Topology;
@@ -24,7 +25,7 @@ public sealed partial class TopologyHtmlRenderer {
                     .Attribute("data-cfx-scenario-loop", scenario.LoopPlayback)
                     .Attribute("data-cfx-scenario-autoplay", scenario.AutoPlay)
                     .Attribute("data-cfx-scenario-focus-mode", scenario.Spotlight ? "spotlight" : "highlight")
-                    .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario))
+                    .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario, chart))
                     .Attribute("data-cfx-scenario-metadata", TopologyScenarioJson.Metadata(scenario))
                     .Attribute("title", string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description)
                     .Attribute("aria-label", scenario.Label)
@@ -52,7 +53,7 @@ public sealed partial class TopologyHtmlRenderer {
                 .Attribute("data-cfx-scenario-loop", scenario.LoopPlayback)
                 .Attribute("data-cfx-scenario-autoplay", scenario.AutoPlay)
                 .Attribute("data-cfx-scenario-focus-mode", scenario.Spotlight ? "spotlight" : "highlight")
-                .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario))
+                .Attribute("data-cfx-scenario-steps", TopologyScenarioJson.Steps(scenario, chart))
                 .Attribute("data-cfx-scenario-metadata", TopologyScenarioJson.Metadata(scenario))
                 .Attribute("title", string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description)
                 .Attribute("aria-label", scenario.Label)
@@ -107,6 +108,10 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("aria-label", messages["TopologyTimelineStep"])
             .BooleanAttribute("disabled", activeScenario == null || activeScenario.Steps.Count == 0)
             .EndVoidElement();
+        writer.StartElement("div").Attribute("class", panelClass + "__payload").Attribute("data-cfx-scenario-payload", "true").BooleanAttribute("hidden", true).EndStartElement();
+        writer.StartElement("div").Attribute("class", panelClass + "__payload-route").Attribute("data-cfx-scenario-payload-route", "true").EndStartElement().EndElement();
+        writer.StartElement("pre").Attribute("class", panelClass + "__payload-body").Attribute("data-cfx-scenario-payload-body", "true").EndStartElement().EndElement();
+        writer.EndElement();
         writer.StartElement("ol").Attribute("class", panelClass + "__steps").Attribute("data-cfx-scenario-panel-steps", "true").EndStartElement();
         if (activeScenario != null) {
             for (var index = 0; index < activeScenario.Steps.Count; index++) {
@@ -126,6 +131,31 @@ public sealed partial class TopologyHtmlRenderer {
 
         writer.EndElement();
         writer.EndElement();
+    }
+
+    private static void WriteScenarioSequences(HtmlMarkupWriter writer, string sequencesClass, TopologyChart chart, string chartId, string? activeScenarioId) {
+        writer.StartElement("div").Attribute("class", sequencesClass).Attribute("data-cfx-scenario-sequences", "true").EndStartElement();
+        for (var index = 0; index < chart.Scenarios.Count; index++) {
+            var scenario = chart.Scenarios[index];
+            if (TopologyScenarioResolver.TryResolve(chart, scenario) is not { } resolved || resolved.Steps.All(step => step.TargetNodeId == null)) continue;
+            var sequence = chart.ToSequenceArtifact(scenario.Id);
+            var prefix = "cfx-seq-" + SafeIdPart(chartId) + "-" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            writer.StartElement("figure")
+                .Attribute("data-cfx-scenario-sequence", scenario.Id)
+                .Attribute("aria-label", scenario.Label)
+                .BooleanAttribute("hidden", !string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal))
+                .EndStartElement()
+                .RawTrusted(VisualArtifacts.SequencePreparedCompiler.PrepareDefault(sequence).ToSvg(prefix))
+                .EndElement();
+        }
+
+        writer.EndElement();
+    }
+
+    private static string SafeIdPart(string value) {
+        var builder = new System.Text.StringBuilder(value.Length);
+        foreach (var ch in value) builder.Append(ch < 128 && char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-');
+        return builder.ToString();
     }
 
     private static void WriteScenarioPanelButton(HtmlMarkupWriter writer, string action, string title, string text, bool? pressed = null) {

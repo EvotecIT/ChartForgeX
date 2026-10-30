@@ -194,6 +194,10 @@ internal static partial class VisualArtifactInterchangeSnapshot {
             Label = source.Label,
             Description = source.Description,
             DurationMilliseconds = source.DurationMilliseconds,
+            Interaction = source.Interaction,
+            Reverse = source.Reverse,
+            Payload = source.Payload,
+            PayloadFormat = source.PayloadFormat,
         };
         foreach (var item in source.Extensions) copy.Extensions.Add(item.Key, item.Value);
         return copy;

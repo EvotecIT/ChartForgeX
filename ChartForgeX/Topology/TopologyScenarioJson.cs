@@ -11,7 +11,7 @@ internal static class TopologyScenarioJson {
         return chart.Scenarios.Count == 0 ? null : string.Join(" ", chart.Scenarios.Select(scenario => scenario.Id));
     }
 
-    public static string? Summaries(TopologyChart chart) {
+    public static string? Summaries(TopologyChart chart, bool includeFlow = false) {
         if (chart.Scenarios.Count == 0) return null;
         var builder = new StringBuilder();
         builder.Append('[');
@@ -39,7 +39,7 @@ internal static class TopologyScenarioJson {
             builder.Append(",\"focusMode\":");
             AppendJsonString(builder, scenario.Spotlight ? "spotlight" : "highlight");
             if (scenario.Metadata.Count > 0) builder.Append(",\"metadata\":").Append(Metadata(scenario.Metadata));
-            builder.Append(",\"steps\":").Append(Steps(scenario));
+            builder.Append(",\"steps\":").Append(Steps(scenario, includeFlow ? chart : null));
             builder.Append('}');
         }
 
@@ -47,7 +47,9 @@ internal static class TopologyScenarioJson {
         return builder.ToString();
     }
 
-    public static string Steps(TopologyScenario scenario) {
+    /// <summary>Writes the step JSON. With a chart, request-flow steps also carry their route ends and payload for interactive hosts.</summary>
+    public static string Steps(TopologyScenario scenario, TopologyChart? chart = null) {
+        var resolved = chart == null ? null : TopologyScenarioResolver.TryResolve(chart, scenario);
         var builder = new StringBuilder();
         builder.Append('[');
         for (var i = 0; i < scenario.Steps.Count; i++) {
@@ -69,6 +71,29 @@ internal static class TopologyScenarioJson {
             }
 
             if (step.DurationMilliseconds.HasValue) builder.Append(",\"durationMilliseconds\":").Append(step.DurationMilliseconds.Value.ToString(CultureInfo.InvariantCulture));
+            if (step.Interaction != TopologyScenarioInteraction.None) {
+                builder.Append(",\"interaction\":");
+                AppendJsonString(builder, step.Interaction.ToString().ToLowerInvariant());
+            }
+
+            if (step.Reverse) builder.Append(",\"reverse\":true");
+            // Route ends are emitted only for request-flow steps, so plain route scenarios keep their compact JSON.
+            if (resolved != null && i < resolved.Steps.Count && (step.Interaction != TopologyScenarioInteraction.None || !string.IsNullOrEmpty(step.Payload))) {
+                var hop = resolved.Steps[i];
+                builder.Append(",\"source\":");
+                AppendJsonString(builder, hop.SourceLabel);
+                if (hop.TargetLabel != null) {
+                    builder.Append(",\"target\":");
+                    AppendJsonString(builder, hop.TargetLabel);
+                }
+            }
+
+            if (resolved != null && !string.IsNullOrEmpty(step.Payload)) {
+                builder.Append(",\"payload\":");
+                AppendJsonString(builder, step.Payload!);
+                builder.Append(",\"payloadFormat\":");
+                AppendJsonString(builder, step.PayloadFormat.ToString().ToLowerInvariant());
+            }
 
             if (step.Metadata.Count > 0) builder.Append(",\"metadata\":").Append(Metadata(step.Metadata));
             builder.Append('}');

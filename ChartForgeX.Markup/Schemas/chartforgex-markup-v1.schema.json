@@ -242,6 +242,46 @@
       }
     },
     {
+      "kind": "architecture",
+      "fence": "chartforgex architecture v1",
+      "artifactKind": "Topology",
+      "model": "TopologyChart",
+      "commands": [
+        "title",
+        "subtitle",
+        "direction",
+        "layout",
+        "viewport",
+        "legend",
+        "group",
+        "boundary",
+        "node",
+        "user",
+        "service",
+        "server",
+        "database",
+        "storage",
+        "queue",
+        "gateway",
+        "connect",
+        "usecase",
+        "visit",
+        "end"
+      ],
+      "stepArrows": {
+        "->": "request",
+        "->>": "message",
+        "-->": "response",
+        "-x": "failure"
+      },
+      "payloadFormats": [
+        "json",
+        "xml",
+        "text"
+      ],
+      "diagnosticCodes": "CFXA001-CFXA015"
+    },
+    {
       "kind": "sequence",
       "fence": "chartforgex sequence v1",
       "artifactKind": "Sequence",

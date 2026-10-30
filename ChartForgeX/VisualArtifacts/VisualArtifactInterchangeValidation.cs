@@ -221,6 +221,10 @@ internal static partial class VisualArtifactInterchangeValidation {
                 if (step.DurationMilliseconds.HasValue && (step.DurationMilliseconds.Value < 200 || step.DurationMilliseconds.Value > 60000)) {
                     throw new ArgumentOutOfRangeException(nameof(envelope), step.DurationMilliseconds.Value, "Scenario step durations must be between 200 and 60000 milliseconds.");
                 }
+                Defined(step.Interaction, "scenario step interaction", envelope);
+                Defined(step.PayloadFormat, "scenario step payload format", envelope);
+                if (nodeStep && (step.Interaction != TopologyScenarioInteraction.None || step.Reverse)) throw new ArgumentException("Interchange node steps cannot declare an interaction or travel direction.", nameof(envelope));
+                if (step.Payload != null && step.Payload.Length > TopologyScenarioStep.MaximumPayloadLength) throw new ArgumentOutOfRangeException(nameof(envelope), step.Payload.Length, "Scenario step payloads support at most " + TopologyScenarioStep.MaximumPayloadLength + " characters.");
                 Extensions(step.Extensions, "scenario step extensions");
             }
         }

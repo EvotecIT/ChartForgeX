@@ -144,7 +144,9 @@ public sealed partial class TopologyHtmlRenderer {
         if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel", messages);
 
         writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
-        writer.EndElement().EndElement();
+        writer.EndElement();
+        if (enableScenarioInteractions && options.EnableHtmlScenarioSequence) WriteScenarioSequences(writer, cssPrefix + "-scenario-sequences", chart, id, activeScenarioId);
+        writer.EndElement();
         return writer.Build();
     }
 

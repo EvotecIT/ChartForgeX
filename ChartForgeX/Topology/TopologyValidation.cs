@@ -236,6 +236,10 @@ public sealed partial class TopologyChartValidator {
                     continue;
                 }
 
+                if (step.Kind == TopologyScenarioStepKind.Node && (step.Interaction != TopologyScenarioInteraction.None || step.Reverse)) {
+                    Add(result, "scenario-step-interaction", "Scenario '" + scenario.Id + "' node step '" + step.Id + "' cannot declare an interaction or travel direction; only edge steps travel between nodes.", scenario.Id);
+                }
+
                 if (!validateScenarioReferences) continue;
                 if (step.Kind == TopologyScenarioStepKind.Node && !nodeIds.Contains(step.Id)) {
                     Add(result, "missing-scenario-node", "Scenario '" + scenario.Id + "' references missing node '" + step.Id + "'.", scenario.Id);

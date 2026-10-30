@@ -213,6 +213,7 @@ These are later lanes selected by real consumers; they do not block making the c
 - [ ] Extend topology compound groups, group endpoints, ports, self/parallel edges, local direction, and obstacle-aware labels where real fixtures expose gaps. Preserve icon-pack provenance and artwork-loss diagnostics.
 - [ ] Extend factual block presets, shared chips/status symbols, and composition primitives only where several report/image consumers need the same geometry. Do not create chart series for exact tables, lists, or KPI facts.
 - [ ] Extend advanced font/Unicode/variation/color-font behavior only with concrete reference fonts and visible regressions. Preserve logical typography across raster densities and report font substitution limits.
+- [ ] Finish use case playback in interactive HTML: turn the active edge's arrow for steps that travel back (responses), and translate the request/message/response/failed-call labels in the topology UI catalogs. Static step frames, stories and terminal output already show the travel direction.
 - [ ] Consider animated WebP and MP4 only against a real delivery requirement. Stories already supplies bounded RGBA frames and GIF/APNG; platform codecs belong behind approved optional adapters. PDF, Office, and Visio delivery stays in OfficeIMO.
 
 ## Consumer and release qualification

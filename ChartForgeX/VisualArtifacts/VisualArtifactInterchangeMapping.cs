@@ -490,7 +490,11 @@ public static partial class VisualArtifactInterchangeMapping {
                     Kind = step.Kind,
                     Label = step.Label,
                     Description = step.Description,
-                    DurationMilliseconds = step.DurationMilliseconds
+                    DurationMilliseconds = step.DurationMilliseconds,
+                    Interaction = step.Interaction,
+                    Reverse = step.Reverse,
+                    Payload = step.Payload,
+                    PayloadFormat = step.PayloadFormat
                 };
                 Copy(step.Metadata, mappedStep.Extensions);
                 mapped.Steps.Add(mappedStep);

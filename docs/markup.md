@@ -95,6 +95,29 @@ edges:
 
 This layer intentionally describes the topology model rather than raw drawing instructions. ChartForgeX owns deterministic layout, validation, SVG/HTML/PNG rendering, and generated fluent builder code.
 
+## Architecture
+
+`chartforgex architecture v1` describes a system and its request flows together: typed nodes (`user`, `service`, `server`, `database`, ...), `group ... end` and dashed `boundary ... end` blocks, labelled connections, and `usecase ... end` blocks whose steps use `->` (request), `->>` (message), `-->` (response) and `-x` (failure) with optional JSON, XML or text payloads. It produces a `TopologyChart` whose scenarios drive the interactive player, the matching sequence diagram, per-step frames, stories and terminal output. Diagnostics carry stable `CFXA0xx` codes.
+
+````markdown
+```chartforgex architecture v1 {#orders title="Order flow"}
+user client "Customer"
+service api "Orders API"
+database db "Orders DB"
+client -> api "HTTPS"
+api -> db "SQL"
+
+usecase create "Create an order"
+  client -> api "POST /orders" json { "sku": "A1" }
+  api -> db "INSERT order"
+  db --> api "1 row"
+  api --> client "201 Created"
+end
+```
+````
+
+The full grammar, diagnostics, rendering commands and APIs are in [Architecture diagrams and use case playback](architecture-diagrams.md).
+
 ## Flow
 
 `chartforgex flow v1` emits a typed `FlowArtifact` wrapped as `VisualArtifactKind.Flow`. Use it when the authored visual is a process, routing, approval, handoff, or dependency flow. Static SVG/PNG previews currently project the flow model through the deterministic topology renderer, but API consumers receive flow-specific lanes, steps, and connectors rather than topology groups, nodes, and edges.
@@ -528,6 +551,17 @@ dotnet run --project .\ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj -c R
 dotnet run --project .\ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj -c Release -- export .\diagram.md --output .\diagram.svg
 dotnet run --project .\ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj -c Release -- emit .\diagram.md --target csharp --output .\diagram.cs
 ```
+
+`render` draws one diagram for people and agents, including a terminal text drawing:
+
+```powershell
+chartforgex-markup render ./orders.md                                   # text, with the list of use cases
+chartforgex-markup render ./orders.md --scenario create --step 2        # one step highlighted, with its payload
+chartforgex-markup render ./orders.md --format png --scenario create --step all --output ./frames
+chartforgex-markup render ./orders.md --format html --output ./orders.html
+```
+
+`--format` accepts `text`, `svg`, `png` and `html`. Text covers architecture, topology and flow diagrams; `--columns` and `--ascii` adjust it. A file without fences is read as one architecture diagram. See [Architecture diagrams](architecture-diagrams.md#rendering-from-the-command-line).
 
 For Mermaid Gantt input formats without a year, pass an explicit calendar date to each rendering command:
 

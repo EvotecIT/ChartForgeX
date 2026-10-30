@@ -186,7 +186,7 @@ internal static partial class SequencePreparedCompiler {
             double loopX = item.PresentedLoopX ?? Math.Max(item.X1, item.X2) + 56;
             var points = item.CapturedRoute?.Terminals ?? (self ? new[] { new ChartPoint(item.X1, item.Y), new ChartPoint(loopX, item.Y), new ChartPoint(loopX, endY), new ChartPoint(item.X2, endY) }
                 : new[] { new ChartPoint(item.X1, item.Y), new ChartPoint(item.X2, item.Y) });
-            using (Group(builder, item, "sequence-message", message.Text, new Dictionary<string, string> { ["data-source"] = message.SourceId, ["data-target"] = message.TargetId, ["data-kind"] = message.Kind.ToString() })) {
+            using (Group(builder, item, "sequence-message", message.Text, MessageAttributes(message))) {
                 builder.Path(item.CapturedRoute?.Path ?? new ChartPath(points.Select((p, i) => i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)).ToArray()),
                     stroke: paint.MessageLine ?? colors.Accent, strokeWidth: context.Theme.SeriesStrokeWidth, role: "sequence-message-line", dash: message.LineStyle == SequenceArtifactMessageLineStyle.Dashed ? new[] { 6d, 5d } : null);
                 MessageArrows(builder, message, points, colors, context.Theme.SeriesStrokeWidth, paint.MessageLine ?? colors.Accent,
@@ -230,6 +230,12 @@ internal static partial class SequencePreparedCompiler {
         semantics.AccessibleName = accessibility.Name; semantics.AccessibleDescription = accessibility.Description;
         semantics.Language = accessibility.Language; semantics.IsDecorative = accessibility.IsDecorative;
         return new PreparedVisual(builder.Build(), accessibility, semanticInterchange: semantics);
+    }
+
+    private static Dictionary<string, string> MessageAttributes(SequenceArtifactMessage message) {
+        var attributes = new Dictionary<string, string> { ["data-source"] = message.SourceId, ["data-target"] = message.TargetId, ["data-kind"] = message.Kind.ToString() };
+        if (message.Metadata.TryGetValue(ChartForgeX.Topology.TopologyChartExtensions.ScenarioStepMetadataKey, out var step)) attributes["data-cfx-scenario-step"] = step;
+        return attributes;
     }
 
     private static IDisposable Group(VisualSceneBuilder builder, SequencePreparedLayout.Item item, string role, string label, Dictionary<string, string>? metadata = null) {

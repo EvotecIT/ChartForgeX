@@ -64,6 +64,10 @@ File.WriteAllText("long-story.svg", prepared.ToAnimatedSvg(longFrames));
 
 Choose a faster cadence for short chapters. Explicit budgets support up to 3,600 frames; the SVG document and chapter-readability limits still apply. Static posters and timestamp frames do not need sampled-animation options.
 
+## Topology use case stories
+
+`chart.ToScenarioStory(scenarioId)` turns a topology scenario into a story with one scene per step: the topology with that step highlighted (same layout in every scene) and the step's payload beside or below it. Steps use their own duration or `TopologyScenarioStoryOptions.StepSeconds`; scenarios with more than 24 steps are rejected. Chapters are the steps, so `story.Prepare().ToPng(chapter.Start + ...)` gives one image per step and `ToGif()` the whole flow. See [Architecture diagrams and use case playback](architecture-diagrams.md).
+
 ## Desktop appearance and colored typing
 
 Stories use the same immutable `VisualTheme` as charts, diagrams and canvases. Select the light or dark palette with `VisualThemeMode`; the mode also sets the HTML page's color scheme. Common colors and proportional and monospace fonts belong to the theme. Window chrome, gradients and syntax colors belong to `VisualStoryStyleOptions`.

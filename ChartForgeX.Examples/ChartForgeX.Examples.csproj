@@ -113,6 +113,7 @@
     <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\usecase-native-source-depth.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.usecase-native-source-depth.mmd" WithCulture="false" />
     <EmbeddedResource Include="..\Build\PackageConsumers\Adapters\xychart-native-source-depth.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.xychart-native-source-depth.mmd" WithCulture="false" />
     <EmbeddedResource Include="Assets\Mermaid\*.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="Assets\Architecture\*.md" LogicalName="ChartForgeX.Examples.Architecture.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\agentflow-native-workflow.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\state-native-safe-styles.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\state-concurrent-regions.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />

@@ -452,6 +452,19 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Shows each scenario's matching sequence diagram below the topology and keeps its active message in step with playback.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render scenario sequence diagrams.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlScenarioSequence(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlScenarioSequence = enabled;
+        if (enabled) options.EnableHtmlInteractions = true;
+        return options;
+    }
+
+    /// <summary>
     /// Enables or disables the built-in selected-record panel in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>

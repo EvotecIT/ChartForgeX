@@ -124,3 +124,15 @@
 
 /* Counts and scenario messages may use an English fallback inside RTL controls. */
 .cfx-topology-wrapper :where([data-cfx-force-summary],[data-cfx-scenario-panel-meta]){unicode-bidi:plaintext;text-align:match-parent}
+.cfx-topology-scenario-panel__payload{display:grid;gap:6px;padding:8px 10px;border:1px solid var(--cfx-topology-control-border,rgba(148,163,184,.4));border-left:3px solid var(--cfx-topology-scenario-color,#2563eb);border-radius:6px;background:var(--cfx-topology-control-bg,#fff)}
+.cfx-topology-scenario-panel__payload[hidden],.cfx-topology-scenario-panel__payload-body[hidden],.cfx-topology-scenario-sequences figure[hidden]{display:none}
+.cfx-topology-scenario-panel__payload[data-cfx-scenario-interaction='failure']{border-left-color:#dc2626}
+.cfx-topology-scenario-panel__payload-route{font:700 12px/1.35 __CFX_FONT_FAMILY__;color:var(--cfx-topology-control-text,#0f172a)}
+.cfx-topology-scenario-panel__payload-body{margin:0;max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:500 12px/1.45 ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',monospace;color:var(--cfx-topology-control-text,#0f172a)}
+.cfx-topology-scenario-panel__steps li[data-cfx-scenario-step-interaction='failure']:before{background:#dc2626}
+.cfx-topology-scenario-sequences{margin:12px 0 0}
+.cfx-topology-scenario-sequences figure{margin:0;overflow:hidden;border:1px solid var(--cfx-topology-control-border,rgba(148,163,184,.42));border-radius:8px}
+.cfx-topology-scenario-sequences svg{display:block;max-width:100%;height:auto;margin:0 auto}
+.cfx-topology-wrapper .cfx-topology-html-sequence-step-muted{opacity:.38}
+.cfx-topology-wrapper .cfx-topology-html-sequence-step-active{opacity:1}
+.cfx-topology-wrapper .cfx-topology-html-sequence-step-active path{stroke:var(--cfx-topology-active-scenario-color,#2563eb);stroke-width:3}
