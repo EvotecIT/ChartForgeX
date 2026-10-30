@@ -9446,8 +9446,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -9480,8 +9484,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -10200,8 +10208,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -10234,8 +10246,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
