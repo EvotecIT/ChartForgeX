@@ -41,8 +41,8 @@ internal static partial class VisualMarkerScene {
             if (_ring) {
                 var ring = radius + ChartMarkSurface.MarkerRing;
                 var surface = VisualChartPaint.Fill(SvgPaint.Of(_backdrop, SvgColorRole.Surface));
-                if (_markers.CustomPath == null && _markers.Shape == ChartMarkerShape.Circle) builder.Ellipse(x, y, ring, ring, _backdrop, null, 0, _role + "-ring", paint: surface);
-                else builder.Path(ChartMarkerGeometry.Path(_markers, x, y, ring), _backdrop, role: _role + "-ring", close: true, paint: surface);
+                if (_markers.CustomPath == null && _markers.Shape == ChartMarkerShape.Circle) builder.Ellipse(x, y, ring, ring, _backdrop, null, 0, _role + RingSuffix, paint: surface);
+                else builder.Path(ChartMarkerGeometry.Path(_markers, x, y, ring), _backdrop, role: _role + RingSuffix, close: true, paint: surface);
             }
             if (_markers.CustomPath == null && _markers.Shape == ChartMarkerShape.Circle && (_dash == null || _dash.Length == 0))
                 builder.Ellipse(x, y, radius, radius, _fill, _stroke, _width, _role, paint: _paint);

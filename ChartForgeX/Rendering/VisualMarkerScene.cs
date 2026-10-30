@@ -6,6 +6,9 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Resolves marker paint once and emits the shared native geometry consumed by both static exporters.</summary>
 internal static partial class VisualMarkerScene {
+    /// <summary>The role suffix of a marker's surface ring (design rule 5): backdrop, never the observation's ink.</summary>
+    internal const string RingSuffix = "-ring";
+
     internal static bool Enabled(ChartSeries series, bool familyDefault = true, ChartMarkerOptions? markerOptions = null) => (markerOptions ?? series.Markers).Enabled ?? familyDefault;
 
     internal static double Radius(ChartSeries series, VisualRenderContext context, ChartMarkerOptions? markerOptions = null) {
