@@ -155,6 +155,8 @@ Console.WriteLine(layout.Paint(TopologyCellPaintOptions.ForStep(scenario.Steps[1
 Console.WriteLine(scenario.ToText(1));
 ```
 
+Sequence interchange preserves participant cards, their subtitle and icon/status colours, and message-caption pill paint when exported to JSON and restored with `ToSequenceArtifact()`.
+
 On the `ToInteractiveHtmlPage` page with `WithHtmlScenarioSequence()`, the topology and the sequence diagrams share one type scale. Each fits the column while that costs at most an eighth of its size; past that it keeps its text size and scrolls inside its own frame, so a phone shows readable text instead of a thumbnail. Pages with zoom, export or fullscreen controls, or the selection panel, keep the fitted view.
 
 Scenarios built in code use the same model: `AddMessageStep(edgeId, TopologyScenarioInteraction.Response, "201", reverse: true)`

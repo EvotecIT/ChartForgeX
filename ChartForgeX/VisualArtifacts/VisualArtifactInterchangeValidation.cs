@@ -510,6 +510,11 @@ internal static partial class VisualArtifactInterchangeValidation {
         if (node.Sequence != null) {
             ValidateSequenceParticipantPresentation(node.Sequence);
             Defined(node.Sequence.Kind, "sequence participant kind", envelope);
+            if (node.Sequence.Card != null) {
+                Defined(node.Sequence.Card.IconShape, "sequence card icon shape", envelope);
+                Defined(node.Sequence.Card.IconKind, "sequence card icon kind", envelope);
+                OptionalText(node.Sequence.Card.Subtitle, "sequence card subtitle");
+            }
             if (node.Sequence.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Sequence.Order, "Sequence participant order must not be negative.");
             var created = node.Sequence.CreatedAtMessageIndex;
             var destroyed = node.Sequence.DestroyedAtMessageIndex;

@@ -70,7 +70,14 @@ public sealed class TopologyCellLayoutTests {
 
     [Fact]
     public void Paint_Ascii_UsesOnlyAsciiCharacters() {
-        var text = TopologyCellLayout.Create(Example("tierbridge-file-journey").Prepare()).Paint(new TopologyCellPaintOptions { Glyphs = TopologyCellGlyphSet.Ascii }).ToText();
+        var chart = Example("tierbridge-file-journey");
+        chart.Nodes[0].Label = new string('A', 50);
+        chart.Nodes[0].Subtitle = new string('B', 50);
+        var layout = TopologyCellLayout.Create(chart.Prepare());
+        var text = layout.Paint(new TopologyCellPaintOptions { Glyphs = TopologyCellGlyphSet.Ascii }).ToText();
+        Assert.Contains("AAA", text, StringComparison.Ordinal);
+        Assert.Contains("BBB", text, StringComparison.Ordinal);
+        Assert.All(text.Split('\n'), line => Assert.True(line.TrimEnd('\r').Length <= layout.Columns));
 
         Assert.All(text, ch => Assert.True(ch < 128, "Non-ASCII character U+" + ((int)ch).ToString("X4") + " in ASCII output."));
         Assert.Contains("Quarantine", text, StringComparison.Ordinal);

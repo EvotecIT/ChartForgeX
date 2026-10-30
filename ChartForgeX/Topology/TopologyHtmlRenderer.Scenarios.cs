@@ -161,6 +161,8 @@ public sealed partial class TopologyHtmlRenderer {
             writer.StartElement("figure")
                 .Attribute("data-cfx-scenario-sequence", figure.Id)
                 .Attribute("aria-label", figure.Label)
+                .Attribute("tabindex", keepTextSize ? "0" : null)
+                .Attribute("role", keepTextSize ? "region" : null)
                 // Like the topology above it, a sequence keeps its type scale: it shrinks at most an eighth, then scrolls in its frame.
                 .Attribute("style", keepTextSize ? "--cfx-sequence-min-width:" + (figure.Width * MinimumTextScale).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "px" : null)
                 .BooleanAttribute("hidden", !string.Equals(activeScenarioId, figure.Id, StringComparison.Ordinal))

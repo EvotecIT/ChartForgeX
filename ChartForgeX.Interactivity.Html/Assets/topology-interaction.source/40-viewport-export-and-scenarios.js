@@ -301,6 +301,20 @@
       if (!svg) return null;
       const clone = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
+      // Payloads belong to the live player, not to a downloaded static diagram.
+      [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
+        if (!node.hasAttribute('data-cfx-scenarios')) return;
+        try {
+          const scenarios = JSON.parse(node.getAttribute('data-cfx-scenarios'));
+          scenarios.forEach(scenario => (scenario.steps || []).forEach(step => {
+            delete step.payload;
+            delete step.payloadFormat;
+          }));
+          node.setAttribute('data-cfx-scenarios', JSON.stringify(scenarios));
+        } catch {
+          node.removeAttribute('data-cfx-scenarios');
+        }
+      });
       const defs = clone.querySelector('defs') || clone.insertBefore(document.createElementNS('http://www.w3.org/2000/svg', 'defs'), clone.firstChild);
       const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
       style.setAttribute('data-cfx-export-style', 'force-filters');

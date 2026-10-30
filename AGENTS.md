@@ -32,6 +32,8 @@ ChartForgeX is a dependency-free rendering engine. Keep changes generic, testabl
 
 ## Validation
 
+Before adding or changing tests, apply the shared [test-audit authoring gate](skills/test-audit/SKILL.md#authoring-gate), then use [contract-focused tests](skills/contract-focused-tests/SKILL.md) for proof design. Resolve these shared links under `CODEX_HOME` (default `~/.codex`).
+
 Use the repository quality loop before trusting visual or packaging changes:
 
 ```powershell

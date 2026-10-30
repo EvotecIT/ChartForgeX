@@ -133,7 +133,11 @@ public sealed partial class TopologyHtmlRenderer {
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
         if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options, messages);
-        writer.StartElement("div").Attribute("class", viewportClass).EndStartElement();
+        writer.StartElement("div").Attribute("class", viewportClass)
+            .Attribute("tabindex", keepTextSize ? "0" : null)
+            .Attribute("role", keepTextSize ? "region" : null)
+            .Attribute("aria-label", keepTextSize ? chart.Title ?? messages["TopologyDiagram"] : null)
+            .EndStartElement();
         if (enableViewportControls || enableExportControls || enableFullscreenControl) {
             writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", messages["TopologyControls"]).EndStartElement();
             if (enableViewportControls) {

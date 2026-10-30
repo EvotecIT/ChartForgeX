@@ -18,4 +18,9 @@ public sealed class SequenceParticipantCard {
     public ChartColor? IconColor { get; set; }
     /// <summary>Gets or sets the status dot color; null draws no dot.</summary>
     public ChartColor? StatusColor { get; set; }
+
+    internal SequenceParticipantCard Copy() => new() {
+        Subtitle = Subtitle, IconShape = IconShape, IconKind = IconKind,
+        IconColor = IconColor, StatusColor = StatusColor
+    };
 }

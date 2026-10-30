@@ -161,6 +161,47 @@ public sealed class TopologyScenarioPlaybackTests {
     }
 
     [Fact]
+    public void SequenceInterchange_RoundTrip_KeepsMessageAndCaptionPaint() {
+        var sequence = ReplicationChart().ToSequenceArtifact("replicate");
+        sequence.Paint.MessageLabelFill = ChartColor.FromRgb(12, 34, 56);
+        sequence.Paint.MessageLabelBorder = ChartColor.FromRgb(78, 90, 123);
+        var source = sequence.ToVisualArtifact().ToInterchangeEnvelope();
+
+        var envelope = VisualArtifactInterchangeJson.Deserialize(VisualArtifactInterchangeJson.Serialize(source));
+
+        var restored = envelope.ToSequenceArtifact();
+        Assert.Equal(ChartColor.FromRgb(12, 34, 56), restored.Paint.MessageLabelFill);
+        Assert.Equal(ChartColor.FromRgb(78, 90, 123), restored.Paint.MessageLabelBorder);
+        Assert.Equal(sequence.Messages[4].Color, restored.Messages[4].Color);
+        Assert.NotNull(restored.Messages[4].Color);
+        Assert.Null(restored.Messages[0].Color);
+    }
+
+    [Fact]
+    public void SequenceInterchange_RoundTrip_KeepsDetachedParticipantCards() {
+        var sequence = ReplicationChart().ToSequenceArtifact("replicate");
+        var sourceCard = sequence.Participants[0].Card!;
+        sourceCard.Subtitle = "Directory principal";
+        sourceCard.IconShape = TopologyIconShape.Database;
+        sourceCard.IconColor = ChartColor.FromRgb(12, 34, 56);
+        sourceCard.StatusColor = ChartColor.FromRgb(78, 90, 123);
+        var source = sequence.ToVisualArtifact().ToInterchangeEnvelope();
+        sourceCard.Subtitle = "Changed after export";
+        var envelope = VisualArtifactInterchangeJson.Deserialize(VisualArtifactInterchangeJson.Serialize(source));
+
+        var restored = envelope.ToSequenceArtifact();
+        var card = restored.Participants[0].Card!;
+        Assert.NotNull(card);
+        Assert.Equal("Directory principal", card.Subtitle);
+        Assert.Equal(TopologyIconShape.Database, card.IconShape);
+        Assert.Equal(TopologyNodeKind.Person, card.IconKind);
+        Assert.Equal(ChartColor.FromRgb(12, 34, 56), card.IconColor);
+        Assert.Equal(ChartColor.FromRgb(78, 90, 123), card.StatusColor);
+        envelope.Nodes[0].Sequence!.Card!.Subtitle = "Changed after restore";
+        Assert.Equal("Directory principal", card.Subtitle);
+    }
+
+    [Fact]
     public void InteractiveHtml_ScenarioSequence_RendersPayloadPanelSequenceFiguresAndStepData() {
         var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel().WithHtmlScenarioSequence();
         var html = ReplicationChart().ToInteractiveHtmlPage(options);

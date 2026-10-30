@@ -45,7 +45,7 @@ public sealed partial class TopologyCellLayout {
         canvas.Set(right, group.Row, Cell(ascii ? "." : "╮", TopologyCellRole.GroupBorder, group.Id, group.Status, emphasis));
         canvas.Set(group.Column, bottom, Cell(ascii ? "'" : "╰", TopologyCellRole.GroupBorder, group.Id, group.Status, emphasis));
         canvas.Set(right, bottom, Cell(ascii ? "'" : "╯", TopologyCellRole.GroupBorder, group.Id, group.Status, emphasis));
-        WriteText(canvas, group.Column + 2, group.Row, " " + TerminalTextWidth.Fit(group.Label, Math.Max(1, group.Width - 6)) + " ", group.Column + group.Width - 2,
+        WriteText(canvas, group.Column + 2, group.Row, " " + FitCellText(group.Label, Math.Max(1, group.Width - 6), ascii) + " ", group.Column + group.Width - 2,
             TopologyCellRole.GroupLabel, group.Id, group.Status, emphasis);
     }
 
@@ -93,7 +93,7 @@ public sealed partial class TopologyCellLayout {
                 var width = TerminalTextWidth.Measure(text);
                 if (LineLabelStart(canvas, edge, at, width, crossings) is int start) WriteText(canvas, start, at.Row, text, start + width, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
             } else {
-                var fitted = TerminalTextWidth.Fit(edge.Label!.Trim(), Math.Max(0, Columns - at.Column));
+                var fitted = FitCellText(edge.Label!.Trim(), Math.Max(0, Columns - at.Column), ascii);
                 var limit = at.Column + TerminalTextWidth.Measure(fitted);
                 if (fitted.Length > 0 && CanWrite(canvas, at.Column, at.Row, limit, allowEdges: false)) WriteText(canvas, at.Column, at.Row, fitted, limit, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
             }
@@ -121,16 +121,21 @@ public sealed partial class TopologyCellLayout {
 
         var marker = StatusGlyph(status, ascii);
         var labelWidth = Math.Max(1, node.Width - (marker.Length > 0 ? 5 : 4));
-        var label = TerminalTextWidth.Fit(node.Label, labelWidth);
+        var label = FitCellText(node.Label, labelWidth, ascii);
         var start = node.Column + 2 + Math.Max(0, (labelWidth - TerminalTextWidth.Measure(label)) / 2);
         if (node.Height >= 3) WriteText(canvas, start, node.Row + 1, label, node.Column + 2 + labelWidth, TopologyCellRole.NodeLabel, node.Id, status, emphasis);
         if (marker.Length > 0 && node.Height >= 3) canvas.Set(right - 1, node.Row + 1, Cell(marker, TopologyCellRole.NodeStatus, node.Id, status, emphasis));
         var detail = options.NodeValues.TryGetValue(node.Id, out var value) ? value : node.Subtitle;
         if (node.Height >= 4 && !string.IsNullOrWhiteSpace(detail)) {
             var width = Math.Max(1, node.Width - 4);
-            var fitted = TerminalTextWidth.Fit(detail!.Trim(), width);
+            var fitted = FitCellText(detail!.Trim(), width, ascii);
             WriteText(canvas, node.Column + 2 + Math.Max(0, (width - TerminalTextWidth.Measure(fitted)) / 2), node.Row + 2, fitted, node.Column + 2 + width, TopologyCellRole.NodeDetail, node.Id, status, emphasis);
         }
+    }
+
+    private static string FitCellText(string value, int width, bool ascii) {
+        var fitted = TerminalTextWidth.Fit(value, width);
+        return ascii ? fitted.Replace('…', '.') : fitted;
     }
 
     private List<(string Marker, string Text, TopologyHealthStatus Status, TopologyCellEmphasis Emphasis)> LegendItems(TopologyCellPaintOptions options, bool highlighting, bool ascii) {
