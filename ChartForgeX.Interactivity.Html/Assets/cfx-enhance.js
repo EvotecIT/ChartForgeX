@@ -168,19 +168,26 @@
       var parts = ms.slice(0, 3).map(function (m) { var name = series[m.s].name; return m.head && name && order.length > 1 ? m.head + " · " + name : m.head || name || m.value; });
       return parts.join(", ") + (ms.length > 3 ? " +" + (ms.length - 3) : "");
     }
+    // What a reader calls a field value: a date reads as the mark's own label, a value shared by the whole series as the
+    // series name, anything else as itself. Link targets use it for chips; the raw values stay the filter.
+    function said(m, name, v) {
+      var own = bySeries[m.s], info = series[m.s];
+      if (DATE.test(v)) return m.head || String(v);
+      return info.name && own.every(function (x) { return String(x.fields[name]) === String(v); }) ? info.name : String(v);
+    }
     function detail(ms, range, label) {
-      var keys = [], seen = {}, values = {}, extra = ms.length && ask("describe", ms) || {};
+      var keys = [], seen = {}, values = {}, texts = {}, extra = ms.length && ask("describe", ms) || {};
       ms.forEach(function (m) {
         m.keys.forEach(function (k) { if (!seen[k]) { seen[k] = 1; keys.push(k); } });
         var fields = {}, name;
         for (name in m.fields) fields[name] = m.fields[name];
         if (api.xField && fields[api.xField] === undefined && m.xv != null) fields[api.xField] = m.xv;
         for (name in fields) {
-          var target = values[name] = values[name] || [];
-          [].concat(fields[name]).forEach(function (v) { if (target.indexOf(v) < 0) target.push(v); });
+          var target = values[name] = values[name] || [], text = texts[name] = texts[name] || [], field = name;
+          [].concat(fields[name]).forEach(function (v) { if (target.indexOf(v) < 0) { target.push(v); text.push(said(m, field, v)); } });
         }
       });
-      var result = { view: api.view, action: ms.length ? "select" : "clear", scope: "select", keys: keys, values: values, label: label || extra.label || labelFor(ms) };
+      var result = { view: api.view, action: ms.length ? "select" : "clear", scope: "select", keys: keys, values: values, texts: texts, label: label || extra.label || labelFor(ms) };
       if (ms.length && (range || extra.range)) result.range = range || extra.range;
       return result;
     }
@@ -190,7 +197,8 @@
         if (!filters[source].every(function (f) {
           var v = value(m, f.field);
           return v == null || [].concat(v).some(function (x) {
-            if (f.values) return f.values.some(function (y) { return String(y) === String(x); });
+            // Dates match by instant: CanopyX reports "…T00:00:00Z" where a chart writes "…T00:00:00.000Z".
+            if (f.values) return f.values.some(function (y) { return String(y) === String(x) || DATE.test(x) && DATE.test(y) && Date.parse(x) === Date.parse(y); });
             var n = number(x);
             return (f.range[0] == null || n >= number(f.range[0])) && (f.range[1] == null || n <= number(f.range[1]));
           });

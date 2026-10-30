@@ -131,6 +131,8 @@ public sealed class EnhanceRuntimeBrowserTests {
         Assert.Contains("\"field\":\"day\"", call, StringComparison.Ordinal);
         Assert.Contains("2026-10-02T00:00:00.000Z", call, StringComparison.Ordinal);
         Assert.Contains("Fri · Notes", call, StringComparison.Ordinal);
+        // Each field also reads as a reader would say it: a date as its mark's label, a series-wide value as the series name.
+        Assert.Equal("{\"day\":[\"Fri\"],\"kind\":[\"Notes\"]}", await page.EvaluateAsync<string>("() => JSON.stringify(CfxEnhance.get(document.getElementById('activity-host')).getSelection().texts)"));
         Assert.Equal("true", await page.Locator(segment).EvaluateAsync<string>("e => String(e.classList.contains('cfx-e-selected'))"));
         Assert.Equal(1, await page.Locator("#activity-host .cfx-e-sel").CountAsync());
 
@@ -141,6 +143,10 @@ public sealed class EnhanceRuntimeBrowserTests {
         Assert.Equal(2, await page.Locator("#activity-host .cfx-e-bar").CountAsync());
         await page.EvaluateAsync("() => grid.host.dispatchEvent(new CustomEvent('canopyx:linkchange', { detail: { view: 'records', action: 'filter', scope: 'filter', keys: [], values: { kind: ['note'] }, label: 'note' } }))");
         Assert.Equal(4, await page.Locator("#activity-host .cfx-e-filtered").CountAsync());
+        // CanopyX reports date cells as "…T00:00:00Z"; the chart wrote "…T00:00:00.000Z". Dates match by instant.
+        await page.EvaluateAsync("() => grid.host.dispatchEvent(new CustomEvent('canopyx:linkchange', { detail: { view: 'records', action: 'filter', scope: 'filter', keys: [], values: { day: ['2026-10-02T00:00:00Z'] }, label: '' } }))");
+        Assert.Equal(6, await page.Locator("#activity-host .cfx-e-filtered").CountAsync());
+        Assert.Equal(0, await page.Locator(segment + ".cfx-e-filtered").CountAsync());
         Assert.Equal(before, await page.EvaluateAsync<int>("() => echo"));
 
         // Removing the chart's chip in the grid is the reader's choice; the chart drops its selection silently.

@@ -1,6 +1,5 @@
-/*! ChartForgeX linked views: wires two views that implement the LinkedView methods (setExternalFilter, clearExternalFilters,
-    getExternalFilters, setHighlight, clearHighlight, getHighlight) and report reader changes as linkchange events.
-    ChartForgeX charts, CanopyX grids and trees, or any host object with the same shape. Applied links never echo. */
+/*! ChartForgeX linked views: wires two views with the LinkedView methods and linkchange events (ChartForgeX charts,
+    CanopyX grids and trees, or any object of that shape). Applied links never echo. */
 (function (w) {
   "use strict";
   if (w.CfxLink) return;
@@ -8,7 +7,7 @@
   function iso(ms) { return new Date(ms).toISOString(); }
   // A time crosshair chart reports its X as the linked field; other charts link through their marks' fields.
   function crosshair(api) { return api.timeX && api.svg.hasAttribute("data-cfx-crosshair"); }
-  // A view is a ChartForgeX chart api (or its svg/host), a CanopyX host element (.canopyx), or any LinkedView object.
+  // A view: a chart api (or its svg or host), a CanopyX host element, or any LinkedView object.
   function resolve(view, host) {
     if (view && !view.setHighlight && w.CfxEnhance) view = w.CfxEnhance.get(view) || view;
     var api = view && view.canopyx || view, el = host || (view && view.nodeType === 1 ? view : api.svg || api.host || api.element);
@@ -16,9 +15,21 @@
     return { api: api, el: el, id: api.view || el && el.id || "view", label: api.label || el && el.id || "view",
       change: chart ? "cfx:linkchange" : "canopyx:linkchange", filter: chart ? "cfx:externalfilter" : "canopyx:externalfilter" };
   }
+  // A CanopyX host that has not mounted yet is linked on its canopyx:ready.
+  function unmounted(view) { return view && view.nodeType === 1 && !view.canopyx && !view.cfx && !(w.CfxEnhance && w.CfxEnhance.get(view)); }
+  // Like CfxEnhance.get, accept the page element that holds a CanopyX host.
+  function canopy(view) { var inner = unmounted(view) && !view.hasAttribute("data-canopyx-host") && view.querySelector("[data-canopyx-host]"); return inner || view; }
   function connect(from, to, options) {
-    var o = options || {}, a = resolve(from, o.sourceHost), b = resolve(to, o.host);
-    var field = o.field, mode = o.mode || "filter", source = o.source || a.id, label = o.sourceLabel || a.label;
+    var o = options || {};
+    to = canopy(to);
+    if (unmounted(to)) {
+      var off = null, wait = function () { to.removeEventListener("canopyx:ready", wait); if (to.canopyx) off = connect(from, to, o); };
+      to.addEventListener("canopyx:ready", wait);
+      return function disconnect() { to.removeEventListener("canopyx:ready", wait); if (off) off(); };
+    }
+    var a = resolve(from, o.sourceHost), b = resolve(to, o.host);
+    // field: one field, or several that together define a mark (a segment's day and kind).
+    var fields = [].concat(o.field || []), field = fields[0], mode = o.mode || "filter", source = o.source || a.id, label = o.sourceLabel || a.label;
     var targetSource = o.targetSource || o.gridSource || b.id, targetLabel = o.targetLabel || o.gridLabel || b.label;
     if (o.events) { b.change = o.events.change || b.change; b.filter = o.events.filter || b.filter; }
     if (a.api.svg) {
@@ -26,16 +37,21 @@
       a.api.xField = o.xField || a.api.xField || (crosshair(a.api) ? field : null);
     }
     if (b.api.svg && !b.api.xField && crosshair(b.api)) b.api.xField = o.xField || field;
+    // Chip text: one field shows the selection's label, several show each field's texts.
+    function text(t, f) { var s = (t.texts || {})[f] || []; return s.slice(0, 3).join(", ") + (s.length > 3 ? " +" + (s.length - 3) : ""); }
     // Source to target: the source's selection filters or highlights the target.
     function forward(e) {
       var t = e.detail, r = t.range, filter = null;
       if (mode === "highlight") return quiet(t.action === "clear" ? b.api.clearHighlight() : b.api.setHighlight(t.keys, { source: label }));
       if (t.action !== "clear") {
-        if (r && (!field || r.column === field)) filter = { field: field || r.column, range: [r.from, typeof r.to === "string" ? iso(Date.parse(r.to) - 1) : r.to] };
-        else if (field && t.values[field] && t.values[field].length) filter = { field: field, values: t.values[field].slice(0, 1000) };
+        if (r && (!field || r.column === field)) filter = [{ field: field || r.column, range: [r.from, typeof r.to === "string" ? iso(Date.parse(r.to) - 1) : r.to], label: t.label }];
+        else filter = fields.filter(function (f) { return t.values[f] && t.values[f].length; }).map(function (f) {
+          return { field: f, values: t.values[f].slice(0, 1000), label: fields.length > 1 ? text(t, f) : t.label };
+        });
       }
-      if (filter) { filter.label = t.label; filter.sourceLabel = label; }
-      quiet(b.api.setExternalFilter(source, filter));
+      if (filter && filter.length) filter.forEach(function (f) { f.sourceLabel = label; if (!f.label) delete f.label; });
+      else filter = null;
+      quiet(b.api.setExternalFilter(source, filter && filter.length === 1 ? filter[0] : filter));
     }
     // Target to source: the target's selection highlights the source; its own conditions filter the source.
     function back(e) {
@@ -45,7 +61,7 @@
         return { field: k, values: t.values[k], sourceLabel: targetLabel };
       }).filter(function (f) { return f.values.length; })));
     }
-    // A reader who removes this source's chip in the target has cleared the selection that made it.
+    // A reader who removes this source's chip has cleared the selection that made it.
     function removed(e) {
       var t = e.detail;
       if (t.reason === "user" && !t.filters.some(function (f) { return f.source === source; }) && a.api.clearSelection) a.api.clearSelection({ silent: true });

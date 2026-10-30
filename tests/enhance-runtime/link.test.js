@@ -66,3 +66,32 @@ test('highlight mode and chart-to-chart links use the same neutral protocol; dis
   emit(b.el, 'cfx:linkchange', { action: 'clear', scope: 'select', keys: [], values: {}, label: '' });
   assert.equal(a.api.calls.length + b.api.calls.filter(c => c[0] !== 'start').length, 0);
 });
+
+test('several fields filter by each, labelled with the texts a reader sees', () => {
+  const CfxLink = load(), chart = view('week', true), grid = view('records');
+  CfxLink.connect(chart.api, grid.api, { field: ['day', 'kind'], sourceLabel: 'Changes this week' });
+  emit(chart.el, 'cfx:linkchange', { action: 'select', scope: 'select', keys: ['r1'], label: 'Thu 29 · Updates',
+    values: { day: ['2026-10-29T00:00:00.000Z'], kind: ['Update'] }, texts: { day: ['Thu 29'], kind: ['Updates'] } });
+  assert.deepEqual(grid.api.calls.pop(), ['filter', 'week', [
+    { field: 'day', values: ['2026-10-29T00:00:00.000Z'], label: 'Thu 29', sourceLabel: 'Changes this week' },
+    { field: 'kind', values: ['Update'], label: 'Updates', sourceLabel: 'Changes this week' }]]);
+  // A field the selection does not define is left out; none at all clears the source's filter.
+  emit(chart.el, 'cfx:linkchange', { action: 'select', scope: 'select', keys: ['r2'], label: 'x', values: { kind: ['Note'] } });
+  assert.deepEqual(grid.api.calls.pop(), ['filter', 'week', { field: 'kind', values: ['Note'], sourceLabel: 'Changes this week' }]);
+  emit(chart.el, 'cfx:linkchange', { action: 'select', scope: 'select', keys: [], label: 'x', values: {} });
+  assert.deepEqual(grid.api.calls.pop(), ['filter', 'week', null]);
+});
+
+test('a page element holding a CanopyX host links once the grid mounts', () => {
+  const CfxLink = load(), chart = view('week', true), grid = view('records');
+  const host = grid.el; host.hasAttribute = name => name === 'data-canopyx-host';
+  const slot = new EventTarget(); slot.nodeType = 1; slot.hasAttribute = () => false; slot.querySelector = () => host;
+  CfxLink.connect(chart.api, slot, { field: 'day' });
+  emit(chart.el, 'cfx:linkchange', { action: 'select', scope: 'select', keys: ['r1'], label: 'x', values: { day: ['d'] } });
+  assert.equal(grid.api.calls.length, 0);
+  host.canopyx = grid.api;
+  emit(host, 'canopyx:ready', {});
+  assert.deepEqual(grid.api.calls.shift(), ['start']);
+  emit(chart.el, 'cfx:linkchange', { action: 'select', scope: 'select', keys: ['r1'], label: 'Thu 29', values: { day: ['d'] } });
+  assert.deepEqual(grid.api.calls.pop(), ['filter', 'week', { field: 'day', values: ['d'], label: 'Thu 29', sourceLabel: 'week' }]);
+});
