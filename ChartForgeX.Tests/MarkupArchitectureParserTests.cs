@@ -39,6 +39,32 @@ public sealed class MarkupArchitectureParserTests {
         Assert.Equal(TopologyScenarioInteraction.Failure, chart.Scenarios[1].Steps[0].Interaction);
     }
 
+    [Theory]
+    [InlineData("ad-replication", "right")]
+    [InlineData("tierbridge-file-journey", "right")]
+    [InlineData("ad-replication", "down")]
+    [InlineData("tierbridge-file-journey", "left")]
+    public void Parse_WithoutViewport_DiagramKeepsItsNaturalSizeAlongTheFlow(string example, string direction) {
+        var source = File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Architecture", example + ".md")).Replace("direction right", "direction " + direction);
+        var chart = new MarkupArchitectureParser().Parse(source).Document!;
+        var vertical = direction == "down";
+        var natural = vertical ? chart.Prepare().Height : chart.Prepare().Width;
+        if (vertical) chart.WithViewport(chart.Viewport.Width, 300, chart.Viewport.Padding);
+        else chart.WithViewport(480, chart.Viewport.Height, chart.Viewport.Padding);
+
+        // The estimate is a lower bound along the flow: the layout's own spacing sets the length, nothing spreads it further.
+        Assert.Equal(natural, vertical ? chart.Prepare().Height : chart.Prepare().Width, 1);
+    }
+
+    [Fact]
+    public void StaticHtml_DiagramWiderThanItsViewport_WrapperFollowsTheSvgWidth() {
+        var chart = TopologyCellLayoutTests.Example("ad-replication");
+        var html = chart.ToHtmlPage();
+        var svgWidth = double.Parse(System.Text.RegularExpressions.Regex.Match(html, "<svg[^>]*?\\swidth=\"([0-9.]+)\"").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+        Assert.True(svgWidth > chart.Viewport.Width);
+        Assert.Contains("max-width:" + svgWidth.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "px", html, StringComparison.Ordinal);
+    }
     [Fact]
     public void Parse_TierBridgeExample_KeepsBoundariesDashedAndUncPathsReadable() {
         var chart = TopologyCellLayoutTests.Example("tierbridge-file-journey");

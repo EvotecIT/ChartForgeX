@@ -56,7 +56,7 @@ from a Tier 2 share to a Tier 0 share through inspection, quarantine and approva
 | Title | `title "Text"`, `subtitle "Text"` | Fence attributes `title=` and `subtitle=` work too. |
 | Direction | `direction right\|down\|left\|up` | Default `right`. `lr`, `td`, `rl` and `bt` are accepted. |
 | Layout | `layout <mode> [direction]` | Any `TopologyLayoutMode`; default `layered`. |
-| Viewport | `viewport 1200x700` | Optional. Without it the viewport is sized from the layer count. |
+| Viewport | `viewport 1200x700` | Optional. Without it the diagram takes its natural size: the layout spaces layers by their labels and the canvas grows to fit. |
 | Legend | `legend auto\|none` | `auto` infers a legend from node kinds and statuses. |
 | Node | `<type> <id> ["Label"] [attributes]` | Types below. Attributes: `status`, `icon`, `symbol`, `subtitle` (or `note`, `description`), `color`, `badge`, `tooltip`, `href`, `display`, `kind`. |
 | Group | `group <id> ["Label"] [attributes]` ... `end` | Nodes and groups inside belong to it. Attributes: `status`, `color`, `icon`, `subtitle`, `direction`. |
@@ -154,6 +154,8 @@ var layout = TopologyCellLayout.Create(chart.Prepare(), new TopologyCellLayoutOp
 Console.WriteLine(layout.Paint(TopologyCellPaintOptions.ForStep(scenario.Steps[1])).ToText());
 Console.WriteLine(scenario.ToText(1));
 ```
+
+On the `ToInteractiveHtmlPage` page with `WithHtmlScenarioSequence()`, the topology and the sequence diagrams share one type scale. Each fits the column while that costs at most an eighth of its size; past that it keeps its text size and scrolls inside its own frame, so a phone shows readable text instead of a thumbnail. Pages with zoom, export or fullscreen controls, or the selection panel, keep the fitted view.
 
 Scenarios built in code use the same model: `AddMessageStep(edgeId, TopologyScenarioInteraction.Response, "201", reverse: true)`
 and `WithPayload(json, TopologyScenarioPayloadFormat.Json)` on a step.

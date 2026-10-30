@@ -6,26 +6,28 @@ using ChartForgeX.Topology;
 namespace ChartForgeX.Markup;
 
 /// <summary>Chooses a viewport that fits an architecture diagram without large empty margins.</summary>
-/// <remarks>The layered layout spreads layers across the viewport, so the viewport is sized from the layer count
-/// along the flow and the widest layer across it.</remarks>
+/// <remarks>The layered layout spreads layers across whatever length the viewport gives the flow, and the canvas
+/// grows when the layers need more room. The length along the flow is therefore a lower bound: the layout's own
+/// label-driven spacing decides it, so diagrams stay at their natural size and keep the sequence diagram's type
+/// scale when a page fits them to its width. The size across the flow comes from the widest layer.</remarks>
 internal static class MarkupArchitectureViewport {
     public static (double Width, double Height) Estimate(TopologyChart chart) {
         var ranks = Ranks(chart);
         var layers = ranks.Count == 0 ? 1 : ranks.Values.Max() + 1;
         var widest = ranks.Count == 0 ? 1 : ranks.Values.GroupBy(rank => rank).Max(group => group.Count());
-        var label = chart.Edges.Select(edge => (edge.Label ?? string.Empty).Length).DefaultIfEmpty(0).Max();
-        var gap = Math.Max(110, label * 7 + 70);
         var nesting = chart.Groups.Count == 0 ? 0 : chart.Groups.Max(group => Depth(chart, group)) + 1;
         var horizontal = chart.LayoutDirection == TopologyLayoutDirection.LeftToRight || chart.LayoutDirection == TopologyLayoutDirection.RightToLeft;
-        var along = layers * 150 + (layers - 1) * gap + nesting * 40;
+        var along = layers * 96 + (layers - 1) * 56;
         var across = widest * 72 + (widest - 1) * 56 + nesting * 64 + Math.Min(chart.Groups.Count, 4) * 24;
         if (!horizontal) {
-            along = layers * 72 + (layers - 1) * Math.Max(90, gap / 2) + nesting * 64;
+            along = layers * 48 + (layers - 1) * 48;
             across = widest * 150 + (widest - 1) * 48 + nesting * 40 + Math.Min(chart.Groups.Count, 4) * 24;
         }
 
         var title = (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72) + (string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 20);
-        var width = (horizontal ? along : across) + 56;
+        // The canvas grows for the diagram but not for its heading, so leave room for the title and subtitle on one line each.
+        var heading = Math.Max((chart.Title ?? string.Empty).Length * 10.0, (chart.Subtitle ?? string.Empty).Length * 7.5) + 56;
+        var width = Math.Max((horizontal ? along : across) + 56, heading);
         var height = (horizontal ? across : along) + 56 + title;
         return (Clamp(width, 480, 3200), Clamp(height, 300, 2000));
     }

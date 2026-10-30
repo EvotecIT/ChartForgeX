@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Html;
 
@@ -133,25 +134,43 @@ public sealed partial class TopologyHtmlRenderer {
         writer.EndElement();
     }
 
-    private static void WriteScenarioSequences(HtmlMarkupWriter writer, string sequencesClass, TopologyChart chart, string chartId, string? activeScenarioId) {
-        writer.StartElement("div").Attribute("class", sequencesClass).Attribute("data-cfx-scenario-sequences", "true").EndStartElement();
+    private sealed class ScenarioSequenceFigure {
+        public ScenarioSequenceFigure(string id, string label, string svg, double width) { Id = id; Label = label; Svg = svg; Width = width; }
+        public string Id { get; }
+        public string Label { get; }
+        public string Svg { get; }
+        public double Width { get; }
+    }
+
+    private static List<ScenarioSequenceFigure> ScenarioSequenceFigures(TopologyChart chart, string chartId) {
+        var figures = new List<ScenarioSequenceFigure>();
         for (var index = 0; index < chart.Scenarios.Count; index++) {
             var scenario = chart.Scenarios[index];
             if (TopologyScenarioResolver.TryResolve(chart, scenario) is not { } resolved || resolved.Steps.All(step => step.TargetNodeId == null)) continue;
-            var sequence = chart.ToSequenceArtifact(scenario.Id);
             var prefix = "cfx-seq-" + SafeIdPart(chartId) + "-" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var prepared = VisualArtifacts.SequencePreparedCompiler.PrepareDefault(chart.ToSequenceArtifact(scenario.Id));
+            figures.Add(new ScenarioSequenceFigure(scenario.Id, scenario.Label, prepared.ToSvg(prefix), prepared.Size.Width));
+        }
+
+        return figures;
+    }
+
+    private static void WriteScenarioSequences(HtmlMarkupWriter writer, string sequencesClass, IReadOnlyList<ScenarioSequenceFigure> figures, string? activeScenarioId, bool keepTextSize) {
+        writer.StartElement("div").Attribute("class", sequencesClass).Attribute("data-cfx-scenario-sequences", "true").EndStartElement();
+        foreach (var figure in figures) {
             writer.StartElement("figure")
-                .Attribute("data-cfx-scenario-sequence", scenario.Id)
-                .Attribute("aria-label", scenario.Label)
-                .BooleanAttribute("hidden", !string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal))
+                .Attribute("data-cfx-scenario-sequence", figure.Id)
+                .Attribute("aria-label", figure.Label)
+                // Like the topology above it, a sequence keeps its type scale: it shrinks at most an eighth, then scrolls in its frame.
+                .Attribute("style", keepTextSize ? "--cfx-sequence-min-width:" + (figure.Width * MinimumTextScale).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "px" : null)
+                .BooleanAttribute("hidden", !string.Equals(activeScenarioId, figure.Id, StringComparison.Ordinal))
                 .EndStartElement()
-                .RawTrusted(VisualArtifacts.SequencePreparedCompiler.PrepareDefault(sequence).ToSvg(prefix))
+                .RawTrusted(figure.Svg)
                 .EndElement();
         }
 
         writer.EndElement();
     }
-
     private static string SafeIdPart(string value) {
         var builder = new System.Text.StringBuilder(value.Length);
         foreach (var ch in value) builder.Append(ch < 128 && char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-');

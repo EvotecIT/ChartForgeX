@@ -148,3 +148,9 @@
 .cfx-topology-wrapper .cfx-topology-scenario-panel__payload-route,.cfx-topology-wrapper .cfx-topology-scenario-panel__payload-body{color:var(--cfx-topology-control-text)}
 .cfx-topology-wrapper .cfx-topology-scenario-panel__scrubber{accent-color:var(--cfx-topology-scenario-color,#2563eb)}
 .cfx-topology-wrapper .cfx-topology-scenario-sequences figure{background:var(--cfx-topology-canvas,transparent);border-color:var(--cfx-topology-control-border)}
+/* Playback pages keep the topology's text at the sequence diagram's size: fit down to 87.5 %, then scroll inside the frame. */
+.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-viewport{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;direction:ltr}
+.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-viewport>svg{min-width:var(--cfx-topology-min-width);margin:0 auto}
+.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure{overflow-x:auto;overscroll-behavior-x:contain;direction:ltr}
+.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure>svg{min-width:var(--cfx-sequence-min-width,0)}
+@media print{.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure{overflow:visible!important}.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure>svg{min-width:0!important}}

@@ -178,6 +178,23 @@ public sealed class TopologyScenarioPlaybackTests {
     }
 
     [Fact]
+    public void InteractiveHtml_ScenarioSequence_KeepsTheTopologyAndSequenceTypeScale() {
+        var chart = ReplicationChart();
+        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel().WithHtmlScenarioSequence();
+        var html = chart.ToInteractiveHtmlPage(options);
+        var topologyWidth = chart.Prepare().Width;
+        var sequenceWidth = VisualArtifacts.SequencePreparedCompiler.PrepareDefault(chart.ToSequenceArtifact("replicate")).Size.Width;
+        double Minimum(string name) => double.Parse(System.Text.RegularExpressions.Regex.Match(html, "--" + name + ":([0-9.]+)px").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+        // The topology and its sequence shrink at most an eighth to fit the column; past that they scroll in their frames.
+        Assert.Contains("data-cfx-text-size=\"kept\"", html, StringComparison.Ordinal);
+        Assert.Equal(topologyWidth * 0.875, Minimum("cfx-topology-min-width"), 1);
+        Assert.Equal(sequenceWidth * 0.875, Minimum("cfx-sequence-min-width"), 1);
+        Assert.Contains("max-width:" + Math.Max(topologyWidth, sequenceWidth).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "px", html, StringComparison.Ordinal);
+        Assert.Contains("[data-cfx-text-size='kept'] .cfx-topology-viewport{overflow-x:auto", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-cfx-text-size=\"", chart.ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlScenarioPanel()), StringComparison.Ordinal);
+    }
+    [Fact]
     public void ScenarioStory_OneScenePerStep_RendersEveryChapter() {
         var story = ReplicationChart().ToScenarioStory("replicate").Prepare();
 
