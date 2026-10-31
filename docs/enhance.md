@@ -123,7 +123,7 @@ CfxLink.connect(chart, tableView, { mode: "highlight" });                   // a
 - The source's selection filters the target by `field` (a time range becomes an inclusive `range`), or highlights its keys with `mode: "highlight"`. `field` may list several fields that together define a mark, such as `["day", "kind"]` for a stacked segment: the target gets one filter per field, and its chip reads "Filtered by Changes this week: Thu 29; Updates".
 - The target's selection highlights the source; its own conditions (`action: "filter"`) filter the source.
 - When the reader removes the source's chip in the target (`externalfilter` with `reason: "user"`), the source clears its selection silently.
-- The target may be a CanopyX host element (its `.canopyx` API is used), a page element that holds one (CanopyX fragments carry no id on their host), a ChartForgeX chart (its `cfx:` events are used), or any LinkedView object with a `host` or `element`. A CanopyX host that has not mounted yet is linked when it reports `canopyx:ready`. `options.events` names other event types. `connect` returns a `disconnect` function.
+- The target may be a CanopyX host element (its `.canopyx` API is used), a page element that holds one (CanopyX fragments carry no id on their host), a ChartForgeX chart (its `cfx:` events are used), or any LinkedView object with a `host` or `element`. A CanopyX host that has not mounted yet is linked when it reports `canopyx:ready`. `options.events` names other event types. `connect` returns a `disconnect` function. After the chart's last connection closes, its previous click mode is restored so native mark links work again.
 
 ### With a CanopyX grid
 

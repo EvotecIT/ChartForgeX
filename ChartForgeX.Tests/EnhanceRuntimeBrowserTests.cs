@@ -297,6 +297,26 @@ public sealed class EnhanceRuntimeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserFact]
+    public async Task DisconnectingLinkedViews_RestoresNativeMarkNavigation() {
+        if (!Enabled) return;
+        var source = Chart.Create().WithLegend(false).AddBar("Source", new[] {
+            new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(href: "#record-detail", keys: new[] {"record"}))
+        }).Prepare(Context()).ToSvg(new VisualSvgOptions("source").WithEnhanceHooks());
+        var target = Activity().Prepare(Context()).ToSvg(new VisualSvgOptions("target").WithEnhanceHooks());
+        await using var session = await OpenAsync(Page("<section id=\"source-host\">" + source + "</section><section id=\"target-host\">" + target + "</section><p id=\"record-detail\">Record detail</p>"), 900, 800);
+        var page = session.Page;
+        await page.EvaluateAsync("() => { window.disconnect = CfxLink.connect(CfxEnhance.get(document.getElementById('source-host')), CfxEnhance.get(document.getElementById('target-host')), {mode:'highlight'}); }");
+        var link = page.Locator("#source-host a[data-cfx-mark]");
+        await link.ClickAsync();
+        Assert.False(page.Url.EndsWith("#record-detail", StringComparison.Ordinal));
+        Assert.Equal(1, await page.Locator("#source-host .cfx-e-selected").CountAsync());
+        await page.EvaluateAsync("() => disconnect()");
+        await link.ClickAsync();
+        Assert.EndsWith("#record-detail", page.Url, StringComparison.Ordinal);
+        AssertNoConsoleErrors(session);
+    }
+
     private sealed class EnhanceRow {
         public string Name { get; set; } = "";
         public bool Enhanced { get; set; }

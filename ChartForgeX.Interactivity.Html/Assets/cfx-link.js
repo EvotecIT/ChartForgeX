@@ -3,11 +3,20 @@
 (function (w) {
   "use strict";
   if (w.CfxLink) return;
+  var clickModes = new WeakMap();
+  function selectClicks(api) {
+    var state = clickModes.get(api), active = true;
+    if (!state) { state = { count: 0, value: api.selectOnClick }; clickModes.set(api, state); }
+    state.count++; api.selectOnClick = true;
+    return function () {
+      if (!active) return;
+      active = false;
+      if (--state.count === 0) { api.selectOnClick = state.value; clickModes.delete(api); }
+    };
+  }
   function quiet(promise) { if (promise && promise.catch) promise.catch(function () { }); }
   function iso(ms) { return new Date(ms).toISOString(); }
-  // A time crosshair chart reports its X as the linked field; other charts link through their marks' fields.
   function crosshair(api) { return api.timeX && api.svg.hasAttribute("data-cfx-crosshair"); }
-  // A view: a chart api (or its svg or host), a CanopyX host element, or any LinkedView object.
   function resolve(view, host) {
     if (view && !view.setHighlight && w.CfxEnhance) view = w.CfxEnhance.get(view) || view;
     var api = view && view.canopyx || view, el = host || (view && view.nodeType === 1 ? view : api.svg || api.host || api.element);
@@ -17,7 +26,6 @@
   }
   // A CanopyX host that has not mounted yet is linked on its canopyx:ready.
   function unmounted(view) { return view && view.nodeType === 1 && !view.canopyx && !view.cfx && !(w.CfxEnhance && w.CfxEnhance.get(view)); }
-  // Like CfxEnhance.get, accept the page element that holds a CanopyX host.
   function canopy(view) { var inner = unmounted(view) && !view.hasAttribute("data-canopyx-host") && view.querySelector("[data-canopyx-host]"); return inner || view; }
   function connect(from, to, options) {
     var o = options || {};
@@ -28,18 +36,15 @@
       return function disconnect() { to.removeEventListener("canopyx:ready", wait); if (off) off(); };
     }
     var a = resolve(from, o.sourceHost), b = resolve(to, o.host);
-    // field: one field, or several that together define a mark (a segment's day and kind).
     var fields = [].concat(o.field || []), field = fields[0], mode = o.mode || "filter", source = o.source || a.id, label = o.sourceLabel || a.label;
     var targetSource = o.targetSource || o.gridSource || b.id, targetLabel = o.targetLabel || o.gridLabel || b.label;
     if (o.events) { b.change = o.events.change || b.change; b.filter = o.events.filter || b.filter; }
+    var releaseClicks = a.api.svg ? selectClicks(a.api) : null;
     if (a.api.svg) {
-      a.api.selectOnClick = true;
       a.api.xField = o.xField || a.api.xField || (crosshair(a.api) ? field : null);
     }
     if (b.api.svg && !b.api.xField && crosshair(b.api)) b.api.xField = o.xField || field;
-    // Chip text: one field shows the selection's label, several show each field's texts.
     function text(t, f) { var s = (t.texts || {})[f] || []; return s.slice(0, 3).join(", ") + (s.length > 3 ? " +" + (s.length - 3) : ""); }
-    // Source to target: the source's selection filters or highlights the target.
     function forward(e) {
       var t = e.detail, r = t.range, filter = null;
       if (mode === "highlight") return quiet(t.action === "clear" ? b.api.clearHighlight() : b.api.setHighlight(t.keys, { source: label }));
@@ -53,7 +58,6 @@
       else filter = null;
       quiet(b.api.setExternalFilter(source, filter && filter.length === 1 ? filter[0] : filter));
     }
-    // Target to source: the target's selection highlights the source; its own conditions filter the source.
     function back(e) {
       var t = e.detail;
       if (t.scope === "select") return quiet(t.action === "clear" ? a.api.clearHighlight() : a.api.setHighlight(t.keys, { source: targetLabel }));
@@ -70,6 +74,7 @@
     if (b.el) { b.el.addEventListener(b.change, back); b.el.addEventListener(b.filter, removed); }
     if (b.api.startLinkEvents) quiet(b.api.startLinkEvents());
     return function disconnect() {
+      if (releaseClicks) releaseClicks();
       a.el.removeEventListener(a.change, forward);
       if (b.el) { b.el.removeEventListener(b.change, back); b.el.removeEventListener(b.filter, removed); }
     };

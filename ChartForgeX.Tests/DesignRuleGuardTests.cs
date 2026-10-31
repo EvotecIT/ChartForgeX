@@ -10,8 +10,8 @@ namespace ChartForgeX.Tests;
 
 /// <summary>
 /// Guards the library-wide visual rules of <c>docs/design-language.md</c> §2 over every chart family in the gallery
-/// (every <see cref="ChartSeriesKind"/> with a gallery recipe, wide and compact, light and dark). A new family inherits
-/// these checks as soon as it has a gallery recipe; a renderer that bypasses the shared mechanisms fails here.
+/// (every <see cref="ChartSeriesKind"/>, wide and compact, light and dark). Missing recipes and failures to create
+/// a model fail the guards; a renderer that bypasses the shared mechanisms fails here.
 /// </summary>
 public sealed class DesignRuleGuardTests {
     private static readonly string[] Variants = { "wide", "compact" };
@@ -19,16 +19,13 @@ public sealed class DesignRuleGuardTests {
     public static IEnumerable<object[]> GalleryFamilies() {
         foreach (var kind in Enum.GetValues(typeof(ChartSeriesKind)).Cast<ChartSeriesKind>())
             foreach (var variant in Variants)
-                if (TryCreate(kind, variant, VisualThemeMode.Light) != null) yield return new object[] { kind, variant };
+                yield return new object[] { kind, variant };
     }
 
     [Fact]
-    public void GalleryManifest_CoversTheCartesianScheduleScalarHierarchyAndMatrixFamilies() {
-        var kinds = GalleryFamilies().Select(row => (ChartSeriesKind)row[0]).Distinct().ToArray();
-        Assert.True(kinds.Length >= 40, "Only " + kinds.Length + " gallery families resolved.");
-        foreach (var kind in new[] { ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.Line, ChartSeriesKind.Waterfall,
-            ChartSeriesKind.Gantt, ChartSeriesKind.Bullet, ChartSeriesKind.Heatmap, ChartSeriesKind.Treemap, ChartSeriesKind.Gauge })
-            Assert.Contains(kind, kinds);
+    public void GalleryManifest_CoversEveryChartSeriesKind() {
+        var expected = Enum.GetValues(typeof(ChartSeriesKind)).Cast<ChartSeriesKind>().Distinct().OrderBy(kind => kind);
+        Assert.Equal(expected, ExampleRecipes.ChartFamilies.Select(family => family.Key).OrderBy(kind => kind));
     }
 
     /// <summary>Rule 1: an automatic linear value axis ends on a gridline (its next clean tick), never between ticks.</summary>
@@ -36,7 +33,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void ValueAxis_EndsOnANiceTick(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var chart = TryCreate(kind, variant, mode)!;
+            var chart = V2GalleryModels.Create(kind, variant, mode);
             var prepared = Prepare(chart, mode);
             if (prepared.Scene.Regions.FirstOrDefault(region => region.Role == "cartesian-plot") is not { } plotRegion) continue;
             var plot = plotRegion.Bounds;
@@ -63,7 +60,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void Bars_AreSquareAtTheBaseline(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var chart = TryCreate(kind, variant, mode)!;
+            var chart = V2GalleryModels.Create(kind, variant, mode);
             var prepared = Prepare(chart, mode);
             foreach (var sceneNode in prepared.Scene.Nodes) {
                 VisualSceneNode node = sceneNode is VisualSceneGradient gradient ? gradient.Shape : sceneNode;
@@ -94,7 +91,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void AdjacentBars_KeepASurfaceGap(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var prepared = Prepare(V2GalleryModels.Create(kind, variant, mode), mode);
             var boxes = prepared.Scene.Nodes.Where(node => node.Role is "bar" or "horizontal-bar")
                 .Select(node => node is VisualSceneRectangle rectangle ? rectangle.Bounds : node is VisualScenePath path ? Box(Vertices(path).ToArray()) : default)
                 .Where(box => box.Width >= 1 && box.Height >= 1).ToArray();
@@ -115,7 +112,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void StatusRoles_OnlyPaintStatusEncodedData(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var svg = TryCreate(kind, variant, mode)!.WithThemeMode(mode).WithSvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
+            var svg = V2GalleryModels.Create(kind, variant, mode).WithThemeMode(mode).WithSvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
             foreach (var element in XDocument.Parse(svg).Descendants()) {
                 var paint = string.Join(" ", element.Attributes().Where(attribute => attribute.Name.LocalName is "fill" or "stroke").Select(attribute => attribute.Value));
                 if (!StatusVariable.IsMatch(paint)) continue;
@@ -130,7 +127,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void Legend_DoesNotRepeatRowLabels(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var prepared = Prepare(V2GalleryModels.Create(kind, variant, mode), mode);
             var texts = prepared.Scene.Nodes.OfType<VisualSceneText>().ToArray();
             var legend = texts.Where(text => text.Role == "legend-label").Select(Words).Distinct().ToArray();
             if (legend.Length < 2) continue;
@@ -144,7 +141,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void HeatmapColorKey_HasATitleAndStartsAtThePlot(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var prepared = Prepare(V2GalleryModels.Create(kind, variant, mode), mode);
             var nodes = prepared.Scene.Nodes;
             var steps = nodes.OfType<VisualSceneRectangle>().Where(node => node.Id != null && node.Id.StartsWith("matrix-scale", StringComparison.Ordinal)).ToArray();
             if (steps.Length == 0) continue;
@@ -160,7 +157,7 @@ public sealed class DesignRuleGuardTests {
     public void AccessibleNames_NeverExposeACoordinateTuple(ChartSeriesKind kind, string variant) {
         var tuple = new System.Text.RegularExpressions.Regex(@"\(\s*-?[\d.,E+-]+\s*,\s*-?[\d.,E+-]+\s*\)");
         foreach (var mode in Modes) {
-            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var prepared = Prepare(V2GalleryModels.Create(kind, variant, mode), mode);
             var names = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Select(group => group.Metadata.TryGetValue("aria-label", out var name) ? name : null)
                 .Concat(prepared.Regions.Select(region => region.Label)).Where(name => !string.IsNullOrEmpty(name));
             var raw = names.FirstOrDefault(name => tuple.IsMatch(name!));
@@ -173,7 +170,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void Text_DoesNotOverflowItsMark(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var prepared = Prepare(V2GalleryModels.Create(kind, variant, mode), mode);
             var size = prepared.Scene.Size;
             var marks = prepared.Scene.Nodes.Where(node => MarkRoles.Contains(node.Role ?? string.Empty))
                 .Select(node => node is VisualSceneRectangle rectangle ? rectangle.Bounds : node is VisualScenePath path ? Box(Vertices(path).ToArray()) : default)
@@ -274,8 +271,4 @@ public sealed class DesignRuleGuardTests {
     private static PreparedVisual Prepare(Chart chart, VisualThemeMode mode) =>
         chart.WithThemeMode(mode).Prepare(new VisualRenderContext(theme: chart.Options.Theme, themeMode: mode));
 
-    private static Chart? TryCreate(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
-        try { return V2GalleryModels.Create(kind, variant, mode); }
-        catch (Exception exception) when (exception is ArgumentException or KeyNotFoundException or NotSupportedException or InvalidOperationException) { return null; }
-    }
 }

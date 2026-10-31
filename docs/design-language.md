@@ -1,6 +1,6 @@
 # ChartForgeX design language
 
-One look and one way of behaving for every chart we ship: ChangeIntel's pages, HtmlForgeX reports, CanopyX grids' companions, TestimoX dashboards, OfficeIMO documents, ImagePlayground images. A reader who learns one ChartForgeX chart can read them all. This is the acceptance bar for chart work: a chart that breaks a rule here isn't done.
+One look and one way of behaving for every chart we ship: server-rendered pages, HTML reports, linked grids, dashboards, documents and images. A reader who learns one ChartForgeX chart can read them all. This is the acceptance bar for chart work: a chart that breaks a rule here isn't done.
 
 Sources: a critique of 41 rendered examples across ~30 families (light and dark), an audit of `ChartForgeX.Interactivity.Html`, a survey of 13 products using ChartForgeX and ~30 drawing charts another way, and CanopyX's linked-views contract. Palette checks are computed, not eyeballed.
 
@@ -134,7 +134,7 @@ One chart definition, rendered for where it goes. The profile picks behaviour; t
 
 | Profile | Used by | Output | Interaction |
 |---|---|---|---|
-| Web page | ChangeIntel, Licensing | inline SVG, fluid width, inherited fonts, CSP-safe (no inline script or style attributes the host forbids) | `cfx-enhance.js` |
+| Web page | Server-rendered pages and web applications | inline SVG, fluid width, inherited fonts, CSP-safe (no inline script or style attributes the host forbids) | `cfx-enhance.js` |
 | Offline report | HtmlForgeX, PSWriteHTML successors, CanopyX reports, TestimoX | inline SVG + inlined enhance runtime once per document | enhance, or full runtime for dashboards |
 | Dashboard | TestimoX monitoring, HtmlForgeX dark themes | inline SVG | full runtime (zoom, brush, compare) |
 | Email | HtmlForgeX.Email consumers | PNG at 2x with alt text and a table; no SVG, no script | none |

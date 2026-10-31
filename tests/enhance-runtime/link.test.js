@@ -62,9 +62,24 @@ test('highlight mode and chart-to-chart links use the same neutral protocol; dis
   emit(b.el, 'cfx:linkchange', { action: 'select', scope: 'select', keys: ['k2'], values: {}, label: 'y' });
   assert.deepEqual(a.api.calls.pop(), ['highlight', ['k2'], { source: 'activity' }]);
   disconnect();
+  assert.equal(a.api.selectOnClick, undefined);
   emit(a.el, 'cfx:linkchange', { action: 'clear', scope: 'select', keys: [], values: {}, label: '' });
   emit(b.el, 'cfx:linkchange', { action: 'clear', scope: 'select', keys: [], values: {}, label: '' });
   assert.equal(a.api.calls.length + b.api.calls.filter(c => c[0] !== 'start').length, 0);
+});
+
+test('disconnect restores native click mode only after the last connection and preserves an authored selection mode', () => {
+  const CfxLink = load(), chart = view('activity', true), first = view('first'), second = view('second');
+  const offFirst = CfxLink.connect(chart.api, first.api, { field: 'day' });
+  const offSecond = CfxLink.connect(chart.api, second.api, { field: 'day' });
+  offFirst(); offFirst();
+  assert.equal(chart.api.selectOnClick, true);
+  offSecond();
+  assert.equal(chart.api.selectOnClick, undefined);
+  chart.api.selectOnClick = true;
+  const offAuthored = CfxLink.connect(chart.api, first.api, { field: 'day' });
+  offAuthored();
+  assert.equal(chart.api.selectOnClick, true);
 });
 
 test('several fields filter by each, labelled with the texts a reader sees', () => {
