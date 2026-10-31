@@ -564,7 +564,7 @@ internal static partial class SmokeTests {
     }
 
     private static void EdgeXAxisLabelsUseReservedFramePadding() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
+        var chart = Chart.Create().WithTheme(VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family)).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
         var prepared = PreparedFamily(chart);
         var scopes = new System.Collections.Generic.Stack<VisualSceneGroup>();
         var plot = default(ChartRect);
