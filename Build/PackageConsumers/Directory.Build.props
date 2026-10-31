@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Standalone scans use published packages; isolated qualification supplies its candidate explicitly. -->
+    <PackageVersion Condition="'$(PackageVersion)' == ''">3.2.0</PackageVersion>
+  </PropertyGroup>
+</Project>
