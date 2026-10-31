@@ -68,6 +68,7 @@ public static partial class V2Examples {
         new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt", "cfx-native-text.js" }
             .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".gallery.csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
             .Concat(artifacts.Where(artifact => artifact.HtmlAdapter).Select(artifact => artifact.Id + ".interactive.html"))
+            .Concat(EmbeddingAssets)
             .Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray();
 
     private static IEnumerable<ProofArtifact> PairedArtifacts(IReadOnlyList<ProofArtifact> artifacts, ProofArtifact selected) =>

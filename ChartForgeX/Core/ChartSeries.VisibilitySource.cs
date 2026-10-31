@@ -16,13 +16,13 @@ public sealed partial class ChartSeries {
         if (source.Kind != ChartSeriesKind.BoxPlot) for (var index = 0; index < source.Points.Count; index++) {
             var point = source.Points[index]; breakBefore |= point.BreakBefore;
             if (!selectedSet.Contains(index)) continue;
-            numeric.Add(new ChartPoint(point.X, values == null ? point.Y : values[index], source.Kind == ChartSeriesKind.Line ? breakBefore : point.BreakBefore)); breakBefore = false;
+            numeric.Add(new ChartPoint(point.X, values == null ? point.Y : values[index], source.Kind == ChartSeriesKind.Line ? breakBefore : point.BreakBefore).WithColorValue(point.ColorValue).WithMarkOptions(point.MarkOptions)); breakBefore = false;
         }
         var model = new ChartSeries(source.Id, source.Name, source.Kind, numeric) {
             _visibilityPreparation = true, Color = source.Color, StateRole = source.State, FillPattern = source.Pattern,
             ValueAxis = source.ValueAxis, ShowInLegend = source.ShowInLegend, SemanticRole = source.SemanticRole,
             ShowDataLabels = source.Labels, DataLabelPlacement = source.Placement, DataLabelStyle = source.CopyLabelStyle(), Markers = source.CopyMarkers(),
-            Interpolation = source.Interpolation, StepPosition = source.Step
+            Interpolation = source.Interpolation, StepPosition = source.Step, MarkOptions = source.MarkOptions, RowOptions = source.RowOptions
         };
         if (source.IsHierarchy) model.RestoreVisibilityHierarchy(source, values);
         if (source.Kind == ChartSeriesKind.Bubble) model.ReplaceBubbles(selected.Select(index => {
@@ -31,7 +31,7 @@ public sealed partial class ChartSeries {
         }));
         if (source.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) model.ReplaceRanges(selected.Select(index => {
             var range = source.Ranges[index];
-            return new ChartRangeBand(range.X, values == null ? range.Lower : values[index * 2], values == null ? range.Upper : values[index * 2 + 1], range.BreakBefore);
+            return new ChartRangeBand(range.X, values == null ? range.Lower : values[index * 2], values == null ? range.Upper : values[index * 2 + 1], range.BreakBefore).WithMarkOptions(range.MarkOptions);
         }));
         if (source.Kind == ChartSeriesKind.ErrorBar) model.ReplaceErrorBars(selected.Select(index => {
             var error = source.ErrorBars[index]; if (values == null) return error; var offset = source.ErrorOffsets[index];

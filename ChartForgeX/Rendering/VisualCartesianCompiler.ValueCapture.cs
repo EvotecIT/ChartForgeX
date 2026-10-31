@@ -14,7 +14,7 @@ internal static partial class VisualCartesianCompiler {
         ChartBarCoordinateMap coordinates, ChartStackLayout stacks, AxisLabelCache labels,
         VisualSceneBuilder.VisualValueBoundary first, VisualSceneBuilder.VisualValueBoundary last, ChartCartesianViewport? viewport) {
         // This is an optional finite capture, not a new ordinary-render admission rule. Unsupported charts still render normally.
-        if (viewport != null || chart.Options.IsSparkline || ChartCartesianOrientation.IsHorizontal(chart) || chart.Series.Count == 0
+        if (viewport != null || chart.Options.IsSparkline || ChartCartesianOrientation.IsHorizontal(chart) || chart.Series.Count == 0 || NeedsCompleteCartesianValues(chart)
             || chart.Annotations.Count != 0 || chart.PlotRegions.Count != 0 || chart.Options.ShowPointLegend
             || chart.Series.Any(series => series.Kind is not (ChartSeriesKind.Line or ChartSeriesKind.Bar or ChartSeriesKind.Scatter) || series.Id.IsAutomatic
                 || series.IsVisibilityPreparation || series.RenderPoints.Count == 0 || series.DecimationMode != null || series.HistogramBinLayout != null

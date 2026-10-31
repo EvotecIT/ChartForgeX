@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
-    <PackageReleaseNotes>ChartForgeX 3.2.0 assigns series colours by series order, adds value units, portable culture formatting and diagnostics, and improves availability lanes, heatmaps and responsive chart readability.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.2.0: server-rendered charts support per-mark navigation and host hooks, shared-domain strips, script-free fluid width, page fonts and colour variables, open-ended schedule fades, and optional data tables. Native value frames preserve mark policies and adjacent timeline items retain their authored navigation.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;svg;png;html;topology;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>

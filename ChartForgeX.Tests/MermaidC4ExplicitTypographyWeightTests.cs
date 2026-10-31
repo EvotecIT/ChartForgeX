@@ -11,6 +11,7 @@ public sealed class MermaidC4ExplicitTypographyWeightTests {
     [Fact]
     public void MaintainedSourceWeightsReachNativePaintWhileUnspecifiedHeadingKeepsItsDefault() {
         var chart = MermaidC4ConfigurationDepthTests.Parse(MermaidC4ConfigurationDepthTests.Fixture()).ToTopologyChart();
+        chart.WithTheme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));
         Assert.Equal("500", chart.Nodes.Single(node => node.Id == "operator").TextStyle!.FontWeight);
         Assert.Equal("400", chart.Nodes.Single(node => node.Id == "service").TextStyle!.FontWeight);
         Assert.Null(chart.Nodes.Single(node => node.Id == "partner").TextStyle!.FontWeight);

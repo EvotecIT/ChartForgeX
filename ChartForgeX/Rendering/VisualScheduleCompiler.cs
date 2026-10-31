@@ -58,6 +58,7 @@ internal static partial class VisualScheduleCompiler {
             builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         }
         using (builder.PushGroup("state-timeline", "state-timeline", Window(model.Min, model.Max))) {
+            if (frame == null) ScheduleBands(chart, context, builder, plot, value => model.X(value, plot));
             if (frame == null) Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, plot), model.FormatTick);
             if (frame == null && chart.Options.ShowAxes && chart.Options.YAxis.Visible) foreach (var group in model.Groups)
                 using (builder.PushGroup(null, null, group.Name.Length == 0 ? null : new Dictionary<string, string> { [ChartDomRoles.LaneGroupAttribute] = group.Name }))
@@ -85,6 +86,7 @@ internal static partial class VisualScheduleCompiler {
                     if (!string.IsNullOrWhiteSpace(segment.Detail)) metadata["data-cfx-meta-detail"] = segment.Detail!;
                     metadata["data-cfx-source-points"] = string.Join(",", segment.SourceIndices);
                     metadata["data-cfx-derived"] = "timeline-run";
+                    if (!visible) metadata["data-cfx-visible"] = "false";
                     var id = VisualStateSceneTools.SourceId(lane.SeriesIndex, segment.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, ChartDomRoles.StateTimelineSegment, bounds, model.SegmentSummary(lane, segment), metadata)) {
                         if (!visible) continue;
@@ -119,6 +121,7 @@ internal static partial class VisualScheduleCompiler {
             builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         }
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
+            if (frame == null) ScheduleBands(chart, context, builder, plot, value => model.X(value, projection));
             if (frame == null) Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick);
             string? currentGroup = null;
             for (var rowIndex = 0; rowIndex < model.Rows.Count; rowIndex++) {
@@ -147,18 +150,18 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(placed.End - placed.Item.Start);
                     if (!string.IsNullOrWhiteSpace(placed.Item.Detail)) metadata["data-cfx-meta-detail"] = placed.Item.Detail!;
                     metadata["data-cfx-open"] = placed.Item.IsOpen ? "true" : "false"; metadata["data-cfx-sub-row"] = placed.SubRow.ToString();
+                    if (!item.Visible) metadata["data-cfx-visible"] = "false";
                     using (VisualStateSceneTools.Mark(builder, id, ChartDomRoles.GanttLaneItem, bounds, model.ItemSummary(row, placed), metadata)) {
                         if (!item.Visible) continue;
                         var mark = ChartStateMark.For(placed.Category, backdrop);
                         using (builder.PushClip(plot)) {
-                            VisualStateSceneTools.StateRect(builder, bounds, mark, ChartGanttLaneModel.BarRadius, "gantt-lane-item-shape");
-                            if (placed.Item.IsOpen) {
-                                var extent = Math.Min(bounds.Height / 3, bounds.Width / 2);
-                                var tip = chart.Options.XAxis.Reversed ? bounds.Left : bounds.Right; var direction = chart.Options.XAxis.Reversed ? -1 : 1;
-                                builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(tip - direction * extent, bounds.Top + bounds.Height / 2 - extent),
-                                    ChartPathCommand.LineTo(tip, bounds.Top + bounds.Height / 2), ChartPathCommand.LineTo(tip - direction * extent, bounds.Top + bounds.Height / 2 + extent) }),
-                                    stroke: ChartColorMath.AccessibleTextOnBackground(mark.Surface), strokeWidth: GanttLaneOpenEndStrokeWidth, role: "gantt-lane-open-end",
-                                    paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.AccessibleTextOnBackground(mark.Surface))));
+                            if (placed.Item.IsOpen && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade)
+                                OpenEndFade(chart, builder, bounds, mark.Color.WithOpacity(mark.FillOpacity),
+                                    SvgPaint.Of(mark.Color, SvgColorRole.Status).WithOpacity(mark.Color.WithOpacity(mark.FillOpacity), mark.FillOpacity),
+                                    ChartGanttLaneModel.BarRadius, "gantt-lane-item-shape");
+                            else {
+                                VisualStateSceneTools.StateRect(builder, bounds, mark, ChartGanttLaneModel.BarRadius, "gantt-lane-item-shape");
+                                if (placed.Item.IsOpen) OpenEndArrow(chart, builder, bounds, ChartColorMath.AccessibleTextOnBackground(mark.Surface));
                             }
                         }
                         DrawGanttLaneLabel(chart, context, builder, series, placed.PointIndex, item, colors, mark);

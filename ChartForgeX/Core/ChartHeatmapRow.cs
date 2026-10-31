@@ -76,6 +76,14 @@ public sealed class ChartHeatmapRow {
     /// <returns>A masked heatmap row.</returns>
     public static ChartHeatmapRow CreateMasked(string name, params double?[] values) => new(name, values, true);
 
+    /// <summary>Gets optional immutable host metadata for this row.</summary>
+    public ChartMarkOptions? MarkOptions { get; private set; }
+
+    /// <summary>Returns an independent row with replacement host metadata and the same values and masks.</summary>
+    /// <param name="options">Immutable row metadata, or null to clear it.</param>
+    /// <returns>A new row.</returns>
+    public ChartHeatmapRow WithMarkOptions(ChartMarkOptions? options) => new ChartHeatmapRow(Name, _cells, true) { MarkOptions = options };
+
     private static IEnumerable<double?> ToNullableValues(IEnumerable<double> values) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         foreach (var value in values) yield return value;

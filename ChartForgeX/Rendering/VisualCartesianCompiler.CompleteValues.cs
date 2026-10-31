@@ -12,10 +12,11 @@ internal static partial class VisualCartesianCompiler {
 
     internal static bool SupportsJointSeriesValues(IVisualValuePlan plan) => plan is not CompleteCartesianValuePlan complete || complete.SupportsJointSeriesValues;
 
-    /// <summary>The incumbent fragment plan remains exact for labels-off unstacked Line/Bar/Scatter.</summary>
+    /// <summary>Host-decorated marks use complete native compilation so links, hit areas and state extents follow each frame.</summary>
     internal static bool NeedsCompleteCartesianValues(Chart chart) => chart.Series.All(series => SupportsCompleteValueKind(series.Kind)) && chart.Series.Any(series =>
         series.Kind is ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea
-        || series.ResolveDataLabels(chart.Options, defaultVisible: false) || ChartStackLayout.Participates(chart, series));
+        || series.ResolveDataLabels(chart.Options, defaultVisible: false) || ChartStackLayout.Participates(chart, series)
+        || series.MarkOptions != null || series.RowOptions != null || series.Points.Any(point => point.MarkOptions != null));
 
     /// <summary>Captures complete native stack, area and caption owners without retaining a caller model or matching primitives.</summary>
     internal static IVisualValuePlan? TryCaptureCompleteValues(Chart chart, VisualRenderContext context,

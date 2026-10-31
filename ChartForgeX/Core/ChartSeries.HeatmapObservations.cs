@@ -31,7 +31,7 @@ public sealed partial class ChartSeries {
     }
 
     private static ChartHeatmapCell? ValidateHeatmapCell(ChartHeatmapCell? value) => value.HasValue
-        ? new ChartHeatmapCell(value.Value.State, value.Value.Text, value.Value.Tooltip, value.Value.Href) : null;
+        ? new ChartHeatmapCell(value.Value.State, value.Value.Text, value.Value.Tooltip, value.Value.Href).WithMarkOptions(value.Value.MarkOptions) : null;
 
     /// <summary>Creates an independently configurable categorical row. Null cells retain their masked column positions.</summary>
     public static ChartSeries CreateHeatmapCategoryRow(ChartSeriesId id, string name, IEnumerable<ChartHeatmapCell?> cells, string? group = null) =>

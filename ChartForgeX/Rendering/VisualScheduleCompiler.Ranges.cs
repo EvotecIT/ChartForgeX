@@ -20,6 +20,11 @@ internal static partial class VisualScheduleCompiler {
             var task = sourceGantt ? series.GanttItems[0] : default;
             var start = sourceGantt ? task.Start : series.RenderPoints[0].X;
             var end = sourceGantt ? task.End : series.RenderPoints[0].Y;
+            if (sourceGantt && task.IsOpenEnded) {
+                if (!chart.Options.XAxis.Maximum.HasValue)
+                    throw new InvalidOperationException("An open-ended Gantt task requires an explicit X-axis maximum.");
+                end = Math.Max(start, chart.Options.XAxis.Maximum.Value);
+            }
             if (!ChartMath.IsFinite(start) || !ChartMath.IsFinite(end) || end < start) throw new InvalidOperationException("Schedule endpoints must be finite and ordered.");
             var progress = sourceGantt ? task.Progress : 0;
             if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1)
@@ -98,6 +103,7 @@ internal static partial class VisualScheduleCompiler {
         if (frame == null) builder.DataProjection = ChartDataProjection.TryCreate(projection, min, max, axis);
         double Project(double value) => ScheduleX(axis, value, min, max, projection);
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
+            if (frame == null) ScheduleBands(chart, context, builder, plot, Project);
             var obstacles = new List<LabelObstacle>();
             if (frame == null) Axis(chart, context, builder, viewport, layout, ticks, Project, Format,
                 minimum: gantt ? min : null, maximum: gantt ? max : null, calendarAnchor: gantt ? items.Min(item => item.Start) : null);
@@ -116,7 +122,9 @@ internal static partial class VisualScheduleCompiler {
                 if (visible) obstacles.Add(new LabelObstacle(id, bounds));
                 var duration = chart.Options.ValueFormatter?.Invoke(item.End - item.Start) ?? ChartStateTimelineModel.FormatDuration(item.End - item.Start);
                 var completion = (item.Progress * 100).ToString("0.#", chart.Options.ValueFormat.Culture) + "%";
-                var summary = series.Name + ": " + Format(item.Start) + " – " + Format(item.End) + ", " + (item.Gantt ? completion : duration);
+                var openEnded = item.Gantt && series.GanttItems[0].IsOpenEnded;
+                var summary = series.Name + ": " + Format(item.Start) + " – " + (openEnded ? chart.Options.Labels.Ongoing : Format(item.End))
+                    + ", " + (item.Gantt ? completion : duration);
                 var metadata = new Dictionary<string, string> {
                     ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
                     ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
@@ -124,6 +132,8 @@ internal static partial class VisualScheduleCompiler {
                     ["data-cfx-progress"] = VisualStateSceneTools.Number(item.Progress), ["data-cfx-milestone"] = item.Milestone ? "true" : "false",
                     ["data-cfx-series-key"] = series.InteractionIdentityKey
                 };
+                if (openEnded) metadata["data-cfx-open"] = "true";
+                if (!visible) metadata["data-cfx-visible"] = "false";
                 DependencyMetadata(metadata, predecessors, item.Index);
                 using (VisualStateSceneTools.Mark(builder, id, item.Milestone ? "gantt-milestone" : item.Gantt ? "gantt-task" : "timeline-item", bounds, summary, metadata)) {
                     if (!visible) continue;
@@ -140,7 +150,9 @@ internal static partial class VisualScheduleCompiler {
                             var style = chart.Options.ResolvePreparedBarVisualStyle();
                             var bodyColor = item.Gantt ? ChartColorMath.Blend(colors.Surface, fill, .25) : fill;
                             var bodyPaint = item.Gantt ? SvgPaint.Mix(bodyColor, colors.Surface, SvgColorRole.Surface, fill, fillRole, .25) : fillPaint;
-                            if (style.Kind == ChartBarStyle.Solid)
+                            if (openEnded && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade)
+                                OpenEndFade(chart, builder, bounds, bodyColor, bodyPaint, radius, "gantt-task-shape");
+                            else if (style.Kind == ChartBarStyle.Solid)
                                 builder.RectGradient(bounds, new ChartPoint(bounds.Left, bounds.Top), new ChartPoint(bounds.Left, bounds.Bottom),
                                     new[] { new VisualGradientStop(0, ChartMarkSurface.BarGradientTop(bodyColor),
                                         item.Gantt ? SvgPaint.Literal(ChartMarkSurface.BarGradientTop(bodyColor)) : VisualChartPaint.BarGradient(fill, fillRole, true, 1)),
@@ -148,6 +160,8 @@ internal static partial class VisualScheduleCompiler {
                                         item.Gantt ? SvgPaint.Literal(ChartMarkSurface.BarGradientBottom(bodyColor)) : VisualChartPaint.BarGradient(fill, fillRole, false, 1)) },
                                     radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape");
                             else builder.Rect(bounds, bodyColor, radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape", paint: VisualChartPaint.Fill(bodyPaint));
+                            if (openEnded && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Arrow)
+                                OpenEndArrow(chart, builder, bounds, ChartColorMath.AccessibleTextOnBackground(bodyColor));
                             if (item.Gantt && item.Progress > 0) {
                                 var progressEnd = ChartHeatmapSurface.InterpolateObservedRange(item.Start, item.End, item.Progress);
                                 var progressLeft = axis.Reversed ? Project(progressEnd) : bounds.Left;

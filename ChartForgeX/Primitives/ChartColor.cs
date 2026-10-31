@@ -4,9 +4,9 @@ using System.Globalization;
 namespace ChartForgeX.Primitives;
 
 /// <summary>
-/// Represents an RGBA color used by ChartForgeX renderers.
+/// Represents an RGBA color with an optional page CSS custom property used by SVG rendering.
 /// </summary>
-public readonly struct ChartColor {
+public readonly partial struct ChartColor {
     /// <summary>
     /// Gets the red channel.
     /// </summary>
@@ -27,6 +27,9 @@ public readonly struct ChartColor {
     /// </summary>
     public readonly byte A;
 
+    /// <summary>Gets the explicitly named CSS custom property, or null for a literal color.</summary>
+    public string? CssVariable { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartColor"/> struct.
     /// </summary>
@@ -34,7 +37,7 @@ public readonly struct ChartColor {
     /// <param name="g">The green channel.</param>
     /// <param name="b">The blue channel.</param>
     /// <param name="a">The alpha channel.</param>
-    public ChartColor(byte r, byte g, byte b, byte a = 255) { R = r; G = g; B = b; A = a; }
+    public ChartColor(byte r, byte g, byte b, byte a = 255) { R = r; G = g; B = b; A = a; CssVariable = null; }
 
     /// <summary>
     /// Creates an opaque RGB color.
@@ -87,11 +90,11 @@ public readonly struct ChartColor {
     public static ChartColor FromRgba(uint rgba) => new((byte)(rgba >> 24), (byte)(rgba >> 16), (byte)(rgba >> 8), (byte)rgba);
 
     /// <summary>
-    /// Creates a copy of this color with a different alpha channel.
+    /// Creates a copy of this color with a different alpha channel, retaining its CSS custom property if present.
     /// </summary>
     /// <param name="alpha">The alpha channel.</param>
     /// <returns>A chart color with the requested alpha channel.</returns>
-    public ChartColor WithAlpha(byte alpha) => new(R, G, B, alpha);
+    public ChartColor WithAlpha(byte alpha) => new(R, G, B, alpha, CssVariable);
 
     /// <summary>
     /// Creates a copy of this color with opacity expressed as a unit interval.
@@ -205,13 +208,13 @@ public readonly struct ChartColor {
     }
 
     /// <summary>
-    /// Converts the color to a hexadecimal RGB string.
+    /// Converts the fallback color to a hexadecimal RGB string, without its CSS custom property.
     /// </summary>
     /// <returns>A CSS-compatible hexadecimal color string.</returns>
     public string ToHex() => $"#{R:X2}{G:X2}{B:X2}";
 
     /// <summary>
-    /// Converts the color to a hexadecimal RGBA string.
+    /// Converts the fallback color to a hexadecimal RGBA string, without its CSS custom property.
     /// </summary>
     /// <returns>A CSS-compatible hexadecimal color string with alpha.</returns>
     public string ToHexRgba() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
@@ -251,8 +254,8 @@ public readonly struct ChartColor {
     /// <summary>
     /// Converts the color to a CSS color string.
     /// </summary>
-    /// <returns>A hexadecimal or rgba CSS color string.</returns>
-    public string ToCss() => A == 255 ? ToHex() : FormattableString.Invariant($"rgba({R},{G},{B},{A / 255.0:0.###})");
+    /// <returns>A hexadecimal or rgba CSS color string, or the directly named custom property with its fallback.</returns>
+    public string ToCss() => CssVariable == null ? FallbackCss() : VariableCss();
 
     /// <summary>
     /// Gets a fully transparent color.
