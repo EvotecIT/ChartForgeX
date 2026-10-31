@@ -84,7 +84,7 @@ public sealed class LegendDensityTests {
             .ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase).WithFontSize(18));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(ByRole(svg, "legend-label"), element => element.Value.Contains("MORE ENTRIES"));
-        Assert.Contains(ByRole(svg, "legend-entry-omitted"), element => ((string?)element.Attribute("aria-label"))?.StartsWith("Service", StringComparison.Ordinal) == true);
+        Assert.Contains(ByRole(svg, "legend-entry-omitted"), element => ((string?)element.Attribute("data-cfx-description"))?.StartsWith("Service", StringComparison.Ordinal) == true);
         Assert.All(ByRole(svg, "legend-label").SelectMany(element => element.Descendants().Where(child => child.Name.LocalName == "text")),
             text => Assert.Equal("18", text.Attribute("font-size")?.Value));
     }

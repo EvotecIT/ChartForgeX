@@ -44,7 +44,7 @@ public sealed class GeographicMapCompositionTests {
         var target = Target(prepared, "gateways", "west");
         Assert.Equal("0", target.Attribute("data-cfx-value")!.Value);
         Assert.Equal("-10", target.Attribute("data-cfx-color-value")!.Value);
-        Assert.Contains("Delay", target.Attribute("aria-label")!.Value);
+        Assert.Contains("Delay", target.Attribute("data-cfx-description")!.Value);
         Assert.Equal(1, prepared.Scene.Nodes.OfType<VisualScenePath>().Count(node => node.Role == "dotted-map-connector"));
         var originalSvg = prepared.ToSvg(); var originalPng = prepared.ToPng();
         sites.ReplaceMapPoints(new[] {

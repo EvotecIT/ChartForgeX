@@ -67,7 +67,7 @@ public sealed class ReadableDefaultsTests {
     [Fact]
     public void ToSvg_TimeSeriesPoint_AnnouncesFormattedDateAndValueInsteadOfRawCoordinates() {
         var points = ByRole(XDocument.Parse(Latency().ToSvg()), "point");
-        var label = (string)points[1].Attribute("aria-label")!;
+        var label = (string)points[1].Attribute("data-cfx-description")!;
         Assert.StartsWith("dc-03, ", label, StringComparison.Ordinal);
         Assert.Contains("04:00", label, StringComparison.Ordinal);
         Assert.DoesNotContain("46316", label, StringComparison.Ordinal);
@@ -82,7 +82,7 @@ public sealed class ReadableDefaultsTests {
 
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
 
-        Assert.Equal("dc1, 14 Oct: 99.5%", (string?)cell.Attribute("aria-label"));
+        Assert.Equal("dc1, 14 Oct: 99.5%", (string?)cell.Attribute("data-cfx-description"));
         Assert.Equal("99.5%", (string?)cell.Attribute("data-cfx-formatted-value"));
     }
 
@@ -97,7 +97,7 @@ public sealed class ReadableDefaultsTests {
 
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
 
-        Assert.Equal("dc1, 14 Oct: " + expected, (string?)cell.Attribute("aria-label"));
+        Assert.Equal("dc1, 14 Oct: " + expected, (string?)cell.Attribute("data-cfx-description"));
         Assert.Equal(expected, (string?)cell.Attribute("data-cfx-formatted-value"));
     }
 
@@ -111,7 +111,7 @@ public sealed class ReadableDefaultsTests {
 
         var day = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-cell").First(cell => (string?)cell.Attribute("data-cfx-empty") == "false");
 
-        Assert.EndsWith(": " + expected, (string?)day.Attribute("aria-label"));
+        Assert.EndsWith(": " + expected, (string?)day.Attribute("data-cfx-description"));
         Assert.Equal(expected, (string?)day.Attribute("data-cfx-formatted-value"));
     }
 
@@ -138,7 +138,7 @@ public sealed class ReadableDefaultsTests {
 
         Assert.Equal("-20\u00A0ms", (string?)change.Attribute("data-cfx-formatted-delta"));
         Assert.Equal("80\u00A0ms", (string?)change.Attribute("data-cfx-formatted-end"));
-        Assert.Equal("Budget: Change -20 start=100 end=80 Change=-20", (string?)change.Attribute("aria-label"));
+        Assert.Equal("Budget: Change -20 start=100 end=80 Change=-20", (string?)change.Attribute("data-cfx-description"));
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public sealed class ReadableDefaultsTests {
 
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
 
-        Assert.Equal("dc1, 14 Oct: Up", (string?)cell.Attribute("aria-label"));
+        Assert.Equal("dc1, 14 Oct: Up", (string?)cell.Attribute("data-cfx-description"));
         Assert.Null(cell.Attribute("data-cfx-formatted-value"));
     }
 
@@ -175,7 +175,7 @@ public sealed class ReadableDefaultsTests {
 
         var point = ByRole(XDocument.Parse(chart.ToSvg()), "point").First();
 
-        Assert.EndsWith("52.7 ms (52.734 ms)", (string?)point.Attribute("aria-label"));
+        Assert.EndsWith("52.7 ms (52.734 ms)", (string?)point.Attribute("data-cfx-description"));
     }
 
     [Theory]
@@ -192,7 +192,7 @@ public sealed class ReadableDefaultsTests {
 
         var point = ByRole(XDocument.Parse(line.ToSvg()), "point").First();
         Assert.Equal("12", (string?)point.Attribute("data-cfx-formatted-value") ?? "12");
-        Assert.Equal("dc1, Mon: 99.5", (string?)ByRole(XDocument.Parse(heatmap.ToSvg()), "heatmap-cell").First().Attribute("aria-label"));
+        Assert.Equal("dc1, Mon: 99.5", (string?)ByRole(XDocument.Parse(heatmap.ToSvg()), "heatmap-cell").First().Attribute("data-cfx-description"));
         Assert.NotEmpty(restored.ToSvg());
     }
 
@@ -201,7 +201,7 @@ public sealed class ReadableDefaultsTests {
         var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
         var point = ByRole(svg, "point")[1];
         Assert.Equal("51.5\u00A0ms", (string?)point.Attribute("data-cfx-formatted-value"));
-        Assert.EndsWith("51.5\u00A0ms", (string)point.Attribute("aria-label")!, StringComparison.Ordinal);
+        Assert.EndsWith("51.5\u00A0ms", (string)point.Attribute("data-cfx-description")!, StringComparison.Ordinal);
         Assert.DoesNotContain(ByRole(svg, "axis-y-label"), tick => tick.Value.Contains("ms", StringComparison.Ordinal));
     }
 
@@ -232,7 +232,7 @@ public sealed class ReadableDefaultsTests {
     public void TimeSeriesPoint_AuthoredCaptionThatPrefixesTheValueKeepsBothCaptionAndValue() {
         var chart = Latency().WithValueUnit("ms").WithDataLabels();
         chart.Series[0].WithPointLabel(0, "5");
-        var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("aria-label")!;
+        var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("data-cfx-description")!;
         Assert.EndsWith(", 5 (50\u00A0ms)", label, StringComparison.Ordinal);
     }
 
@@ -245,7 +245,7 @@ public sealed class ReadableDefaultsTests {
             .AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", kind,
                 new[] { new ChartPoint(1.125, 50.25), new ChartPoint(2, 60) }));
         var point = ByRole(XDocument.Parse(chart.ToSvg()), "point")[0];
-        var label = (string)point.Attribute("aria-label")!;
+        var label = (string)point.Attribute("data-cfx-description")!;
         Assert.Contains("50.25\u00A0ms", label, StringComparison.Ordinal);
         Assert.EndsWith("(1.125, 50.25)", label, StringComparison.Ordinal);
     }
@@ -279,7 +279,7 @@ public sealed class ReadableDefaultsTests {
         var chart = Chart.Create().WithSize(800, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
             .AddLine("dc-03", Enumerable.Range(0, 4).Select(index => new ChartPoint(Start.AddSeconds(index + .25), 50 + index)))
             .WithCulture(CultureInfo.GetCultureInfo("de-DE"));
-        var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("aria-label")!;
+        var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("data-cfx-description")!;
         Assert.Contains("21.10.2026 00:00:00,250", label, StringComparison.Ordinal);
     }
 

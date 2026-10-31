@@ -42,7 +42,7 @@ public sealed class SupportedCombinationLifecycleTests {
         }
         if (layout != "mixed-radial") {
             var source = Assert.Single(points, point => Fact(point, "series-key") == "observed" && Fact(point, "observation-id") == "north-central");
-            Assert.Contains("North / Central", (string?)source.Attribute("aria-label"));
+            Assert.Contains("North / Central", (string?)source.Attribute("data-cfx-description"));
             Assert.Contains(before.Scene.Nodes, node => node.Role == (layout == "horizontal" ? "axis-y-category-group" : "axis-x-category-group"));
         }
         // Changing real source/configuration after preparation must not alter either exported artifact.

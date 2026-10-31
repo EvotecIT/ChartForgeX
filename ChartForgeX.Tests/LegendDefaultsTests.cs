@@ -58,7 +58,7 @@ public sealed class LegendDefaultsTests {
             Assert.Contains(name.Value, new[] { "Completed", "Pending" });
             Assert.Equal(name.Value == "Completed" ? "70" : "30", value.Value);
             Assert.Equal(value.Value + "%", percentage.Value);
-            Assert.Equal(name.Value + ": " + value.Value + " (" + percentage.Value + ")", (string?)item.Attribute("aria-label"));
+            Assert.Equal(name.Value + ": " + value.Value + " (" + percentage.Value + ")", (string?)item.Attribute("data-cfx-description"));
             Assert.Equal(context.Theme.Resolve(context.ThemeMode).MutedForeground.ToCss(), (string?)percentage.Attribute("fill"));
             var style = new TextStyle {
                 Font = new FontSpec { Family = (string)name.Attribute("font-family")!, Weight = (int)name.Attribute("font-weight")! },

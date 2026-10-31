@@ -21,6 +21,6 @@ public sealed class CartesianCoordinateCaptionTests {
         Assert.Equal(y, double.Parse(group.Metadata["data-cfx-y"], CultureInfo.InvariantCulture));
         Assert.Equal(description, prepared.Regions.Single(region => region.Id == group.Id).Label);
         var point = XDocument.Parse(prepared.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point");
-        Assert.Equal(description, (string?)point.Attribute("aria-label"));
+        Assert.Equal(description, (string?)point.Attribute("data-cfx-description"));
     }
 }

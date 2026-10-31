@@ -95,7 +95,20 @@
       "criticalCss": "./themes/chartforgex/critical.css",
       "minifyHtml": true,
       "minifyCss": true,
-      "minifyJs": true
+      "minifyJs": true,
+      "optimizeImages": true,
+      "imageInclude": [
+        "/site/dashboard-*.png"
+      ],
+      "imageGenerateWebp": true,
+      "imagePreferNextGen": true,
+      "imageWidths": [
+        640,
+        960,
+        1280,
+        1920,
+        2560
+      ]
     },
     {
       "task": "seo-doctor",

@@ -23,7 +23,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (Mode(from).ToSvg(source.Options) != source.Svg || Mode(to).ToSvg(destination.Options) != destination.Svg)
             throw new NotSupportedException("Native transition endpoints must exactly reproduce the same-emission HTML export facts.");
         var sourceWithDestinationPolicy = new VisualSvgOptions(source.Prefix, destination.Options.ColorVariables, destination.Options.LinkTarget, destination.Options.Responsive, destination.Options.EffectProfile, destination.Options.EffectRasterOptions)
-            .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation);
+            .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation).WithExplorableSemantics(destination.Options.Explorable);
         if (Mode(from).ToSvg(sourceWithDestinationPolicy) != source.Svg)
             throw new NotSupportedException("Native transition export paint, link, responsive and pattern policy must remain captured and unchanged.");
         var initialFade = options.Effect == HtmlNativeTransitionEffect.InitialFade;
@@ -41,8 +41,15 @@ public sealed partial class HtmlInteractiveChartRenderer {
             cancellation.ThrowIfCancellationRequested(); if (index > 0) json.Append(',');
             var prefix = destination.Prefix + "-native-presentation-" + name + "-" + index.ToString(CultureInfo.InvariantCulture);
             var policy = new VisualSvgOptions(prefix, destination.Options.ColorVariables, destination.Options.LinkTarget, destination.Options.Responsive, destination.Options.EffectProfile, destination.Options.EffectRasterOptions)
-                .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation);
-            json.Append("{\"prefix\":").Append(HtmlJsonString.Encode(prefix)).Append(",\"svg\":").Append(HtmlJsonString.Encode(Mode(frames[index]).ToSvg(policy)));
+                .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation).WithExplorableSemantics(destination.Options.Explorable);
+            var presentation = frames[index];
+            if (presentation.Regions.Count == 0 && (reflow || initialFade)) {
+                // An invisible frame has no hit regions, but its serialized drawing retains the endpoint's names and roles.
+                var basis = reflow && reflowFrames![index].Source ? from : to;
+                var scene = presentation.Scene;
+                presentation = presentation.WithNativeFrame(new VisualScene(scene.Size, scene.Nodes, scene.Diagnostics, basis.Scene.Regions, scene.DataProjection));
+            }
+            json.Append("{\"prefix\":").Append(HtmlJsonString.Encode(prefix)).Append(",\"svg\":").Append(HtmlJsonString.Encode(Mode(presentation).ToSvg(policy)));
             if (reflow) {
                 var fact = reflowFrames![index];
                 json.Append(",\"basis\":").Append(HtmlJsonString.Encode(fact.Source ? "source" : "destination"))
