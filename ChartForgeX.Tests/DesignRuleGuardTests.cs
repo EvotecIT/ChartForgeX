@@ -154,6 +154,20 @@ public sealed class DesignRuleGuardTests {
         }
     }
 
+    /// <summary>Accessible names read like the chart ("Sat 24, Updates: 2"), never as a bare "(x, y)" coordinate tuple.</summary>
+    [Theory]
+    [MemberData(nameof(GalleryFamilies))]
+    public void AccessibleNames_NeverExposeACoordinateTuple(ChartSeriesKind kind, string variant) {
+        var tuple = new System.Text.RegularExpressions.Regex(@"\(\s*-?[\d.,E+-]+\s*,\s*-?[\d.,E+-]+\s*\)");
+        foreach (var mode in Modes) {
+            var prepared = Prepare(TryCreate(kind, variant, mode)!, mode);
+            var names = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Select(group => group.Metadata.TryGetValue("aria-label", out var name) ? name : null)
+                .Concat(prepared.Regions.Select(region => region.Label)).Where(name => !string.IsNullOrEmpty(name));
+            var raw = names.FirstOrDefault(name => tuple.IsMatch(name!));
+            Assert.True(raw == null, $"{kind}/{variant}/{mode}: \"{raw}\" exposes a coordinate tuple.");
+        }
+    }
+
     /// <summary>Rule 8: a label drawn on a mark fits inside it; labels that do not fit move outside or to the tooltip, never clipped.</summary>
     [Theory]
     [MemberData(nameof(GalleryFamilies))]
