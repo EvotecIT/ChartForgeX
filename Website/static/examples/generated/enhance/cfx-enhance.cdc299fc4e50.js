@@ -125,6 +125,10 @@
       if (!series[s]) series[s] = { key: attr(el, "data-cfx-series-key") };
       (bySeries[s] = bySeries[s] || []).push(m);
       // A point mark (a lone marker, or a line point without one) takes a ring, like its static selected look.
+      // An empty calendar day, a missing radar spoke or a retained off-window fact is not a mark a reader can reach.
+      m.absent = attr(el, "data-cfx-empty") === "true" || attr(el, "data-cfx-missing") === "true" || attr(el, "data-cfx-visible") === "false";
+      // A bare mark paints nothing of its own (a line or band vertex): it is there at its logical anchor.
+      m.bare = !el.querySelector("rect:not([data-cfx-role$=hit-area]),path,circle,ellipse,polygon,polyline,line,text");
       m.dot = !!el.querySelector('[data-cfx-role="marker"],[data-cfx-role$="-marker"]');
       el._cfx = m;
       el.setAttribute("tabindex", "-1");
@@ -152,7 +156,7 @@
     var inks = [].concat.apply([], tops.map(function (t) {
       return all(t.el, "path,line,polyline,polygon,rect,circle,ellipse").filter(function (n) { return !n.closest(MARK) && !n.closest("defs,clipPath,mask,pattern"); });
     }));
-    var current = marks.filter(function (m) { return attr(m.el, "aria-current") === "true"; })[0] || marks[0];
+    var current = marks.filter(function (m) { return attr(m.el, "aria-current") === "true"; })[0] || marks.filter(visible)[0] || marks[0];
     if (current) current.el.setAttribute("tabindex", "0");
 
     var layer = set(make("g", "cfx-e-layer", svg), { "aria-hidden": "true", "pointer-events": "none" });
@@ -170,8 +174,9 @@
         var r = m.el.getBoundingClientRect(), b = m.box;
         // Unpainted marks (line points without markers) use their logical anchor from data-cfx-bounds.
         var dot = m.dot && Math.abs(r.width - r.height) <= 1.5;
-        if (!r.width && !r.height && b.length === 4) { var a = client(b[0], b[1]), z = client(b[0] + b[2], b[1] + b[3]); r = { left: a.x, top: a.y, right: z.x, bottom: z.y }; dot = true; }
-        return { l: r.left, t: r.top, r: r.right, b: r.bottom, x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2, dot: dot };
+        var anchor = m.bare && !r.width && !r.height && b.length === 4;
+        if (anchor) { var a = client(b[0], b[1]), z = client(b[0] + b[2], b[1] + b[3]); r = { left: a.x, top: a.y, right: z.x, bottom: z.y }; dot = true; }
+        return { l: r.left, t: r.top, r: r.right, b: r.bottom, x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2, dot: dot, anchor: anchor };
       });
       return geometry;
     }
@@ -195,7 +200,13 @@
       return { l: a.x, t: a.y, r: b.x, b: b.y };
     }
     function inside(p, e, pad) { pad = pad || 0; return e.clientX >= p.l - pad && e.clientX <= p.r + pad && e.clientY >= p.t - pad && e.clientY <= p.b + pad; }
-    function visible(m) { return !series[m.s].hidden && !m.off && !(m.out && api.filterMode === "hide"); }
+    // A mark is there when its series is shown and it has something to see: zero-height stack segments and absent
+    // observations are skipped by the keyboard, the pointer and selection alike.
+    function visible(m) {
+      if (series[m.s].hidden || m.off || m.out && api.filterMode === "hide" || m.absent) return false;
+      var g = rects()[m.n];
+      return g.anchor || g.r - g.l > .01 && g.b - g.t > .01;
+    }
     function color(s) {
       var info = series[s];
       if (info.color == null) {
@@ -339,6 +350,10 @@
     }
     function same(a, b) { return a.length === b.length && a.every(function (m) { return b.indexOf(m) >= 0; }); }
     function choose(ms, add, range, label) {
+      // An empty selection never reaches a link: marks that are not there cannot be selected.
+      var there = ms.filter(visible);
+      if (ms.length && !there.length) return;
+      ms = there;
       if (add) ms.forEach(function (m) { var i = selection.indexOf(m); if (i >= 0) selection.splice(i, 1); else selection.push(m); });
       else selection = same(selection, ms) && !range ? [] : ms.slice();
       ask("select", selection);
@@ -370,13 +385,20 @@
       var own = seriesMarks(m.s), i = own.indexOf(m) + step;
       return own[Math.max(0, Math.min(own.length - 1, i))];
     }
+    // Up and Down move between series at the same category (a stack, a group, a heatmap column, lines sharing X),
+    // skipping series with nothing there. Series sampled at other X positions take the nearest mark.
     function switchSeries(m, step) {
-      var shown = order.filter(function (s) { return seriesMarks(s).length; }), i = shown.indexOf(m.s) + step;
-      if (i < 0 || i >= shown.length) return m;
-      return seriesMarks(shown[i]).reduce(function (best, x) {
-        function gap(y) { return isNaN(m.x) ? Math.abs(y.p - m.p) : Math.abs(y.x - m.x); }
-        return gap(x) < gap(best) ? x : best;
-      });
+      function key(x) { return isNaN(m.x) ? x.p : x.x; }
+      var own = seriesMarks(m.s);
+      for (var i = order.indexOf(m.s) + step; i >= 0 && i < order.length; i += step) {
+        var next = seriesMarks(order[i]);
+        if (!next.length) continue;
+        var same = next.filter(function (x) { return key(x) === key(m); })[0];
+        if (same) return same;
+        var aligned = next.some(function (x) { return own.some(function (o) { return key(o) === key(x); }); });
+        if (!aligned) return next.reduce(function (best, x) { return Math.abs(key(x) - key(m)) < Math.abs(key(best) - key(m)) ? x : best; });
+      }
+      return m;
     }
     function toggle(l, isolate) {
       var name = l.mark ? l.mark.head || l.mark.value : series[l.s].name;
