@@ -16,7 +16,7 @@ public sealed class ChartMarkOptions {
     /// <param name="accessibleLabel">Explicit accessible name; otherwise a chart-generated name is used.</param>
     /// <param name="cssClass">Space-separated CSS identifier tokens, retained without rewriting.</param>
     /// <param name="dataAttributes">Complete lowercase data-* attribute names and plain text values.</param>
-    /// <param name="current">Whether this is the current item, shown with a dashed outline.</param>
+    /// <param name="current">Whether this is the current item, shown with its current-state treatment.</param>
     /// <param name="selected">Whether this is the page's selected item, shown with a solid outline and aria-current.
     /// This static state does not turn navigation links into selection widgets.</param>
     /// <param name="keys">Record keys this mark represents, for linked views (for example grid row ids). Emitted as <c>data-cfx-keys</c>.</param>
