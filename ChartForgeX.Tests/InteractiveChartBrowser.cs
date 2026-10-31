@@ -27,7 +27,8 @@ internal static partial class InteractiveChartBrowser {
     };
 
     internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false, Action<IPage>? configurePage = null, Func<IPage, Task>? configurePageAsync = null, bool waitForOwnedFonts = true) {
-        var session = await HtmlBrowser.OpenSessionAsync(OriginPage(), new HtmlBrowserLaunchOptions {
+        var origin = OriginPage();
+        var session = await HtmlBrowser.OpenSessionForNavigationAsync(new HtmlBrowserLaunchOptions {
             Browser = Engine,
             Headless = true,
             Timeout = 15000,
@@ -37,6 +38,16 @@ internal static partial class InteractiveChartBrowser {
             IsMobile = touch
         });
         try {
+            if (origin != "about:blank") {
+                // Keep a secure, same-origin document without allocating a TCP connection
+                // for every test. Gallery assets still use the real shared HTTP server.
+                await session.Page.RouteAsync(origin, route => route.FulfillAsync(new() {
+                    ContentType = "text/html; charset=utf-8",
+                    Body = "<!doctype html><html><head><meta charset=\"utf-8\"></head><body></body></html>"
+                }));
+                await session.Page.GotoAsync(origin, new() { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 15000 });
+                await session.Page.UnrouteAsync(origin);
+            }
             configurePage?.Invoke(session.Page);
             if (configurePageAsync != null) await configurePageAsync(session.Page);
             await session.Page.SetContentAsync(html);
@@ -51,7 +62,7 @@ internal static partial class InteractiveChartBrowser {
     }
 
     // The maintained gallery supplies a real loopback origin for crypto-backed owned fonts.
-    // Use a small same-origin document before installing the exact test HTML.
+    // Fulfill a small same-origin document before installing the exact test HTML.
     // The gallery manifest can be large and is unrelated to these font-origin fixtures.
     private static string OriginPage() {
         var gallery = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
