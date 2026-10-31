@@ -9,7 +9,7 @@ public sealed class SvgAccessibilitySemanticsTests {
     [Fact]
     public void SceneLabelsFollowStaticAndExplorableSvgSemantics() {
         var metadata = new Dictionary<string, string> {
-            ["aria-label"] = "Passkey: 800 sign-ins", ["data-cfx-label"] = "800",
+            ["aria-label"] = "Passkey: 800 sign-ins", ["data-cfx-label"] = "800", ["role"] = "",
             ["data-cfx-series"] = "0", ["data-cfx-point"] = "0", ["data-cfx-y"] = "800"
         };
         var scene = new VisualScene(new VisualSize(100, 60), new VisualSceneNode[] {
@@ -24,6 +24,7 @@ public sealed class SvgAccessibilitySemanticsTests {
         Assert.Equal("Weekly methods", root.Elements().Single(node => node.Name.LocalName == "desc").Value);
         var mark = Assert.Single(root.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "point");
         Assert.Null(mark.Attribute("aria-label"));
+        Assert.Null(mark.Attribute("role"));
         Assert.Equal("Passkey: 800 sign-ins", (string?)mark.Attribute("data-cfx-description"));
         Assert.Equal("800", (string?)mark.Attribute("data-cfx-label"));
         Assert.Equal("800", (string?)mark.Attribute("data-cfx-y"));

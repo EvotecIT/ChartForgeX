@@ -26,7 +26,7 @@ Select these names in host scripts and styles. Don't select other roles, element
 | `state-timeline-segment-shape` | Painted shape inside a segment | |
 | `gantt-lane-item` | `<g>` Gantt-lane item target | Carries the same identity attributes as a segment. |
 | `point` | Cartesian data point target | |
-| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier) and `data-cfx-description`. |
+| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier). Static entries carry `data-cfx-description`; labelled explorable entries carry `aria-label` instead. |
 | `axis-y-label` | Primary value-axis tick label | |
 | `topology-node` | Topology node | |
 | `topology-edge` | Topology edge | |

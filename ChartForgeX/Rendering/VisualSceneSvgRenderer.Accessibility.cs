@@ -14,7 +14,7 @@ internal static partial class VisualSceneSvgRenderer {
             namedRole = true;
         }
         foreach (var item in group.Metadata) {
-            if (item.Key != "aria-label") writer.Attribute(item.Key, item.Value);
+            if (item.Key != "aria-label" && (item.Key != "role" || !string.IsNullOrEmpty(item.Value))) writer.Attribute(item.Key, item.Value);
         }
         if (!labelled) return;
         var accessible = !decorative && (namedRole || group.Href != null);
