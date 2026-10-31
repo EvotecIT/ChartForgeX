@@ -250,10 +250,19 @@ public sealed class FamilyLabelLayoutRegressionTests {
             var region = new ChartRect(corners.Min(point => point.X), corners.Min(point => point.Y),
                 corners.Max(point => point.X) - corners.Min(point => point.X), corners.Max(point => point.Y) - corners.Min(point => point.Y));
             // Search the painted footprint after its scene transform; semantic regions keep unrotated layout bounds.
-            Assert.True(Enumerable.Range(Math.Max(0, (int)region.Top), Math.Max(0, Math.Min(image.Height, (int)Math.Ceiling(region.Bottom)) - Math.Max(0, (int)region.Top)))
-                .Any(y => Enumerable.Range(Math.Max(0, (int)region.Left), Math.Max(0, Math.Min(image.Width, (int)Math.Ceiling(region.Right)) - Math.Max(0, (int)region.Left)))
-                    .Any(x => { var pixel = (y * image.Width + x) * 4; return Math.Abs(image.Pixels[pixel] - text.Color.R) < 20
-                        && Math.Abs(image.Pixels[pixel + 1] - text.Color.G) < 20 && Math.Abs(image.Pixels[pixel + 2] - text.Color.B) < 20; })), "The caption must be painted by the native PNG backend.");
+            // A rotated glyph can be entirely antialiased. Isolate its contribution instead of requiring
+            // a nearly unblended ink pixel, or accidentally counting a nearby mark with the same colour.
+            var scene = prepared.Scene;
+            var without = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size,
+                scene.Nodes.Where(node => !ReferenceEquals(node, text)).ToArray(), scene.Diagnostics, scene.Regions), supersampling: 1);
+            var painted = false;
+            for (var y = Math.Max(0, (int)Math.Floor(region.Top)); y < Math.Min(image.Height, (int)Math.Ceiling(region.Bottom)); y++)
+                for (var x = Math.Max(0, (int)Math.Floor(region.Left)); x < Math.Min(image.Width, (int)Math.Ceiling(region.Right)); x++) {
+                    var offset = (y * image.Width + x) * 4;
+                    for (var channel = 0; channel < 4; channel++)
+                        painted |= image.Pixels[offset + channel] != without.Pixels[offset + channel];
+                }
+            Assert.True(painted, $"Caption '{string.Join(" ", text.Text.Lines.Select(line => line.Text))}' must be painted by the native PNG backend.");
         }
     }
 

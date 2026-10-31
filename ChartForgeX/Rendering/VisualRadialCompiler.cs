@@ -67,15 +67,11 @@ internal static partial class VisualRadialCompiler {
 
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var framePlacement = chart.Series.Count > 1 ? outerPlacement : placement;
-        var outside = framePlacement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
-        var frameVertical = framePlacement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
         // Positive-radius source slices contribute to the envelope; Other has no source offset.
         var maximumOffset = slices.Where(slice => slice.Value > 0 && slice.RadiusRatio.GetValueOrDefault(1) > 0 && slice.PointIndex >= 0 && slice.PointIndex < series.PointSliceOffsets.Count)
             .Select(slice => series.PointSliceOffsets[slice.PointIndex]).DefaultIfEmpty(0).Max();
-        var horizontalBudget = outside ? plot.Width * 0.57 : plot.Width;
-        var verticalBudget = frameVertical ? plot.Height * 0.76 : plot.Height;
-        var radius = frame?.Radius ?? Math.Max(0, (Math.Min(horizontalBudget, verticalBudget) / 2 - context.Theme.Spacing) / (1 + maximumOffset));
+        var radius = frame?.Radius ?? Sizing(framePlacement, 1 + maximumOffset).Radius(plot, context.Theme.Spacing);
         if (radius < 1) {
             builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "The frame leaves insufficient space for a radial chart."));
             return;
@@ -169,10 +165,29 @@ internal static partial class VisualRadialCompiler {
         var patterns = rest.Select(slice => slice.Pattern).Distinct().ToArray();
         result.Add(new RadialSlice(seriesIndex, -1, rest.SelectMany(slice => slice.NativePointIndices).ToArray(), OtherSliceLabel,
             rest.Sum(slice => slice.Value), series.Color.HasValue || series.StateRole != ChartSeriesState.None
-                ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : colors.Neutral, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
+                ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : OtherSliceColor(colors), patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
             rest.Select(slice => slice.Pattern).ToArray(), AggregateRadius(series, rest),
             series.IsVisibilityPreparation ? rest.SelectMany(slice => slice.SourcePointIndices).ToArray() : null));
         return result;
+    }
+
+    /// <summary>
+    /// "Other" can be most of the ring, so it takes the weakest neutral that still reads as a mark on the plot (3:1).
+    /// A theme without neutral roles falls back to the surface itself, which would make the slice invisible.
+    /// When neither soft neutral is strong enough, it mixes the strongest neutral into the surface only as far as 3:1,
+    /// so a large "Other" stays quieter than the named slices.
+    /// </summary>
+    internal static ChartColor OtherSliceColor(VisualThemeColors colors) {
+        double Contrast(ChartColor color) => Math.Min(ChartColorMath.ContrastRatio(color, colors.Surface), ChartColorMath.ContrastRatio(color, colors.Background));
+        foreach (var candidate in new[] { colors.Neutral, colors.Neutral2 })
+            if (Contrast(candidate) >= 3) return candidate;
+        // A custom theme may set every neutral to the surface; then mix toward the surface's own text ink instead.
+        foreach (var ink in new[] { colors.Neutral3, ChartColorMath.AccessibleTextOnBackground(colors.Surface) })
+            for (var share = 0.05; share <= 1.0001; share += 0.05) {
+                var mixed = ChartColorMath.Blend(colors.Surface, ink, share);
+                if (Contrast(mixed) >= 3) return mixed;
+            }
+        return ChartColorMath.AccessibleTextOnBackground(colors.Surface);
     }
 
     private static List<RadialSlice> GetSourceSlices(Chart chart, VisualThemeColors colors, int seriesIndex) {

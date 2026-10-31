@@ -56,7 +56,6 @@
     // colour steps and shrinks each caption's clip until one character remains.
     const rigid=new Map();
     for(const group of svg.querySelectorAll('[data-cfx-role="heatmap-scale"],[data-cfx-role="heatmap-column-label"]')){
-      if(group.closest('[transform*="rotate("]'))continue;
       const box=group.getBBox(),anchor={center:box.x+box.width/2,width:box.width};
       for(const node of [group,...group.querySelectorAll('*')])rigid.set(node,anchor);
       // A caption's own clip may sit on the wrapper around it; take it only when that wrapper holds this caption alone.
@@ -79,14 +78,34 @@
     });
     const centers=[...new Set(spec.bars.map(slot=>slot.categoryAnchor))].sort((a,b)=>a-b);
     const pitch=Math.min(spec.barPitch ?? plot[2],centers.slice(1).reduce((p,c,i)=>Math.min(p,c-centers[i]),plot[2]));
-    return {recipes,labels,pitch,plot};
+    const rotatedLabels=[...svg.querySelectorAll('[data-cfx-role="heatmap-column-label"]')].filter(group=>group.closest('[transform*="rotate("]'));
+    return {recipes,labels,rotatedLabels,pitch,plot};
+  }
+  // Keep headers and gaps fixed while resizing cells.
+  function matrixY(spec, plot) {
+    if(!spec.matrix?.[3])return null;
+    const count=spec.matrix[3],headers=spec.matrix[4],[,top,,ph]=spec.plot,[,nt,,nh]=plot,gap=spec.matrix[1];
+    const headerHeight=headers.reduce((sum,band)=>sum+band[1],0),pitch=(ph-headerHeight+gap)/count,newPitch=(nh-headerHeight+gap)/count;
+    const cells=v=>{const row=Math.min(count-1,Math.max(0,Math.floor(v/pitch))),inside=v-row*pitch;
+      return row*newPitch+(inside<=pitch-gap ? inside*(newPitch-gap)/(pitch-gap) : newPitch-gap+inside-(pitch-gap));};
+    return value=>{
+      if(value<top)return value;
+      if(value>top+ph)return value+nt+nh-top-ph;
+      let before=0;
+      for(const [start,height] of headers){
+        if(value<start)break;
+        if(value<=start+height)return nt+cells(start-top-before)+before+value-start;
+        before+=height;
+      }
+      return nt+cells(value-top-before)+before;
+    };
   }
   function project(state, spec, width, plot) {
     const [left,top,pw,ph]=spec.plot, [nl,nt,nw,nh]=plot;
     const map=(v,low,size,newLow,newSize,totalDelta,before=value=>value)=>v<low? before(v) : v>low+size ? v+totalDelta : newLow+(v-low)*newSize/size;
     // A declared lane gutter narrows proportionally between its start and the plot; content before it stays put.
-    const gutter=spec.gutter, before=!gutter||nl>=left ? v=>v : v=>v<=gutter[0] ? v : gutter[0]+(v-gutter[0])*(nl-gutter[0])/Math.max(.001,left-gutter[0]);
-    const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width,before) : v+(width-spec.width)/2, y=v=>map(v,top,ph,nt,nh,0);
+    const gutter=spec.gutter || (spec.matrix ? [spec.matrix[2]] : null), before=!gutter||nl>=left ? v=>v : v=>v<=gutter[0] ? v : gutter[0]+(v-gutter[0])*(nl-gutter[0])/Math.max(.001,left-gutter[0]);
+    const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width,before) : v+(width-spec.width)/2, y=matrixY(spec,plot)|| (v=>map(v,top,ph,nt,nh,spec.matrix?nt+nh-top-ph:0));
     const maximumBarWidth=spec.barWidthUnbounded ? Infinity : spec.maximumBarWidth;
     for(const recipe of state.recipes){
       const {node,attributes:a,bar}=recipe;

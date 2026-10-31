@@ -113,6 +113,16 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart WithHeatmapColumnLabels(bool visible = true) { Options.ShowHeatmapColumnLabels = visible; return this; }
 
+    /// <summary>Allows rectangular heatmaps to grow beyond the requested frame to fit readable rows.</summary>
+    /// <param name="enabled">Whether the chart may grow vertically.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithHeatmapNaturalHeight(bool enabled = true) { Options.HeatmapNaturalHeight = enabled; return this; }
+
+    /// <summary>Sets the policy for heatmap columns that do not fit at a readable width.</summary>
+    /// <param name="window">Show the latest columns or explicitly squeeze all columns.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithHeatmapColumnWindow(ChartHeatmapColumnWindow window) { Options.HeatmapColumnWindow = window; return this; }
+
     /// <summary>
     /// Sets the heatmap cell gap in pixels. Pass null to use the automatic dashboard-safe gap.
     /// </summary>

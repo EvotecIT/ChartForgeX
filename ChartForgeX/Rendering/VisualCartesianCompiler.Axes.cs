@@ -266,7 +266,7 @@ internal static partial class VisualCartesianCompiler {
         }
         var visible = labels.PlannedCategoryTicks(axis) is { } planned ? new HashSet<double>(planned)
             : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
-        var requests = new List<LabelPlacementRequest>();
+        var requests = new List<LabelPlacementRequest>(); var complete = new List<string>();
         var role = horizontal ? secondary ? "axis-secondary-x-label" : "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
         var index = 0;
         foreach (var tick in labels.SemanticTicks(axis, ticks)) {
@@ -281,6 +281,7 @@ internal static partial class VisualCartesianCompiler {
             if (!visible.Contains(tick)) continue;
             var tickStyle = style;
             if (horizontal && !secondary && options.TryGetXAxisLabelHighlight(tick, out var highlight)) { tickStyle = style.Clone(); tickStyle.Color = highlight; }
+            complete.Add(TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture));
             requests.Add(new LabelPlacementRequest(Display(tick), anchor, tickStyle, horizontal
                 ? new[] { new LabelCandidate(0, 0, .5, 0) }
                 : new[] { new LabelCandidate(0, 0, secondary ? 0 : 1, .5) }) { Fallback = LabelFallbackRule.Drop });
@@ -298,8 +299,11 @@ internal static partial class VisualCartesianCompiler {
             : placement.Place(requests, bounds, obstacles, gap, builder.MeasureText);
         if (shortenedCategories || placed.Any(label => label.IsDropped))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "An axis caption was shortened or could not fit at its tick inside the available frame."));
-        foreach (var label in placed) {
-            VisualAxisText.Draw(builder, label, role);
+        for (var item = 0; item < placed.Count; item++) {
+            var label = placed[item];
+            // A shortened caption keeps its complete name as a native tooltip.
+            using (label.IsDropped || label.Text.Replace("\n", " ") == complete[item].Replace("\n", " ") ? null : builder.PushTooltip(complete[item]))
+                VisualAxisText.Draw(builder, label, role);
             if (!label.IsDropped && obstacles != null) obstacles.Add(new LabelObstacle(role + "-interior-" + obstacles.Count, label.Bounds));
         }
     }

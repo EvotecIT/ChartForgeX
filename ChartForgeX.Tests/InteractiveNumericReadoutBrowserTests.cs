@@ -21,9 +21,10 @@ public sealed class InteractiveNumericReadoutBrowserTests {
             new ChartPoint(.025, 5.15), new ChartPoint(1e-10, -1e-12),
             new ChartPoint(.10000000000000002, .10000000000000003)
         };
-        var expectedX = new[] { "0.03", "1E-10", "0.1" };
+        // Readouts share the axis captions, and an axis no longer rounds 0.025 to a value it isn't (0.03).
+        var expectedX = new[] { "0.025", "1E-10", "0.1" };
         var expectedY = new[] { "5.15", "-1E-12", "0.1" };
-        var expectedTitles = new[] { "0.03", "1E-10", "0.1" };
+        var expectedTitles = new[] { "0.025", "1E-10", "0.1" };
         var compact = mode == HtmlChartTooltipMode.SharedX;
         var chart = Chart.Create().WithSize(compact ? 316 : 596, 338).WithLegend(false)
             .WithTheme(VisualTheme.Graphite(), compact ? VisualThemeMode.Dark : VisualThemeMode.Light)

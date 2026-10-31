@@ -15987,7 +15987,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-heatmap-compact-light",
@@ -16021,7 +16021,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-heatmap-color-scale-light",
@@ -16225,7 +16225,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-light",
@@ -16293,7 +16293,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-light",
@@ -16361,7 +16361,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-availability-light",
@@ -16467,7 +16467,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-heatmap-compact-dark",
@@ -16501,7 +16501,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-heatmap-color-scale-dark",
@@ -16705,7 +16705,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-dark",
@@ -16773,7 +16773,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-dark",
@@ -16841,7 +16841,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-availability-dark",
@@ -21599,8 +21599,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 19
     },
     {
@@ -21707,7 +21711,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-waterfall-compact-licence-waste-light",
@@ -21745,7 +21749,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-options-light",
@@ -21811,8 +21815,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 19
     },
     {
@@ -22019,8 +22027,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 19
     },
     {
@@ -22127,7 +22139,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-waterfall-compact-licence-waste-dark",
@@ -22165,7 +22177,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-options-dark",
@@ -22231,8 +22243,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 19
     },
     {
@@ -40243,7 +40259,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "heatmap-hierarchical-axes-states-compact-light",
@@ -40277,7 +40293,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "topology-path-decorations-wide-dark",
@@ -43555,7 +43571,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "heatmap-hierarchical-axes-states-compact-dark",
@@ -43589,7 +43605,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "topology-table-content-wide-light",

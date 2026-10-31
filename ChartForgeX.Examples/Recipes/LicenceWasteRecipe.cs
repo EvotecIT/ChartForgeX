@@ -7,7 +7,15 @@ public static class LicenceWasteRecipe {
             ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Delta(3, -142),
             ChartWaterfallItem.Delta(4, -57), ChartWaterfallItem.Total(5), ChartWaterfallItem.Delta(6, -38), ChartWaterfallItem.Total(7)
         });
-        return Chart.Create().WithXLabels("Purchased", "Unassigned", "Inactive", "Disabled", "In use", "Duplicates", "Effective")
-            .AddSeries(bridge).WithYAxis("Licences").WithDataLabels().WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().WithXLabels("Purchased", "Unassigned", "Inactive", "Disabled", "In use", "Duplicates", "Effective")
+            .AddSeries(bridge).WithDataLabels().WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        // Seven named steps read better as rows on a phone than as shortened column captions.
+        if (variant == "compact-licence-waste") {
+            chart.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal).WithXAxis("Licences");
+            // Read the bridge top to bottom, from purchased seats to effective use.
+            chart.Options.YAxis.WithReversal();
+            return chart;
+        }
+        return chart.WithYAxis("Licences");
     }
 }
