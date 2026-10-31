@@ -10,8 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     /// <summary>Plans named X captions before the first gutter measurement and after each plot-width change.</summary>
-    /// <remarks>Full captions stay in the axis cache. Only ordinary multiword category displays may wrap or shorten;
-    /// numeric/calendar scales, single-token captions and explicit presentation retain their existing policy.</remarks>
+    /// <remarks>Full captions stay in the axis cache. Ordinary category displays may wrap or shorten;
+    /// numeric/calendar scales and explicit presentation retain their existing policy.</remarks>
     private static void RefreshCategoryDisplay(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect track, ChartRect frame, ChartRange range, VisualThemeColors colors, AxisLabelCache labels) {
         var axis = chart.Options.XAxis;
@@ -54,6 +54,9 @@ internal static partial class VisualCartesianCompiler {
             // Empty or ellipsis-only captions cannot identify a category. Keep their complete
             // source display so the existing regular-stride owner can select useful captions.
             if (display.Replace("…", string.Empty).Trim().Length == 0) continue;
+            // A shortened name must keep enough of itself to identify the category ("Una…", not "J…");
+            // short names such as months thin out at the regular stride instead.
+            if (shortened && display.Split('\n').Any(line => line.EndsWith("…", StringComparison.Ordinal) && line.TrimEnd('…').Trim().Length < MinimumShortenedCategoryCharacters)) continue;
             displays[ticks[index]] = (display, shortened);
         }
         // Do not turn different complete names into the same shortened prefix merely to
@@ -112,6 +115,10 @@ internal static partial class VisualCartesianCompiler {
         return (Math.Max(0, left), Math.Max(0, right));
     }
 
+    // Category names identify their bar, so a categorical axis shortens a name (single words too) rather than skipping it;
+    // the axis label keeps the full name as its tooltip. Authored line breaks keep their own layout.
+    private const int MinimumShortenedCategoryCharacters = 3;
+
     private static bool CanWrapCategory(string source) => source.IndexOf('\n') < 0 && source.IndexOf('\r') < 0
-        && source.Trim().IndexOf(' ') > 0;
+        && source.Trim().Length > 0;
 }

@@ -35,7 +35,26 @@ public sealed partial class Chart : IVisualRenderable {
         view.HierarchyPreparation = ChartHierarchyPreparation.Resolve(view, hierarchyView ?? view.NativeHierarchyVisibility?.HierarchyView, requireHierarchy, view.NativeHierarchyVisibility);
         ChartTimeSpacingPreparation.Capture(view);
         view.PolarPreparation = ChartPolarPreparation.Resolve(view, polarViewport, requirePolar);
-        return view.PrepareScene(context, viewport, fullDomain);
+        if (!view.Options.HeatmapNaturalHeight || viewport != null || view.Series.Count == 0 || view.Series.Any(series => series.Kind != ChartSeriesKind.Heatmap))
+            return view.PrepareScene(context, viewport, fullDomain);
+        // Measure the real frame and group headers. Repeat only while the caller permits growth and rows still need space.
+        for (var attempt = 0; attempt < 5; attempt++) {
+            var prepared = view.PrepareScene(context, viewport, fullDomain);
+            var plot = prepared.Regions.FirstOrDefault(region => region.Role == "matrix-plot")?.Bounds;
+            if (!plot.HasValue) return prepared;
+            var rows = view.Series.ToArray();
+            var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Value.Height, context.Theme.Typography.AxisSize);
+            var gap = Math.Max(0, view.Options.HeatmapCellGap ?? 2);
+            var wanted = rowLayout.HeadersHeight + rows.Length * 12 + Math.Max(0, rows.Length - 1) * gap;
+            if (wanted <= plot.Value.Height + .001) return prepared;
+            var height = context.Layout.Size.Height + Math.Ceiling((wanted - plot.Value.Height) * 1.25 + 1);
+            if (attempt == 4 || height > 32768) return prepared;
+            var layout = new VisualLayoutOptions(new VisualSize(context.Layout.Size.Width, height), context.Layout.PaddingEdges);
+            context = new VisualRenderContext(layout, context.Theme, context.ThemeMode, context.Frame, context.Font)
+                .WithNativeTextCapture(context.NativeTextCapture).WithNativeValueSource(context.CaptureNativeValueSource);
+            view.Options = Options.PresentationView(context);
+        }
+        throw new InvalidOperationException("Heatmap natural height preparation did not converge.");
     }
 
     private PreparedVisual PrepareScene(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain) {
@@ -49,11 +68,8 @@ public sealed partial class Chart : IVisualRenderable {
         var axisLabels = family is VisualChartFamily.NumericRadial or VisualChartFamily.Cartesian ? new ChartAxisValueFormatter.Cache() : null;
         var entries = _visibilityLegendEntries?.Invoke(context)
             ?? VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale, colorScales);
-        TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
-            var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
-            if (configured == null) fallback.Font.Weight = weight;
-            return model.Resolve(fallback);
-        }
+        TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) =>
+            ResolveFrameTextStyle(context, configured, model, size, color, weight);
         var frame = new VisualFrame(sourceFrame.Title ?? Title, sourceFrame.Subtitle ?? Subtitle,
             sourceFrame.HasExplicitLegend ? sourceFrame.ShowLegend : ChartLegendVisibility.ForPreparedContent(this, entries.Count, colorScales),
             sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.LegendPosition,
@@ -108,5 +124,13 @@ public sealed partial class Chart : IVisualRenderable {
             secondaryXProjection: projection?.SecondaryX, secondaryYProjection: projection?.SecondaryY, viewport: viewport,
             cartesianOrientation: projection == null ? null : projection.Horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical,
             hierarchyPreparation: HierarchyPreparation, polarProjection: PolarPreparation?.Projection, polarViewport: PolarPreparation?.Request).WithCapturedText(textCapture?.Freeze());
+    }
+
+    /// <summary>Resolves frame typography identically for native preparation and portable layout measurements.</summary>
+    internal static TextStyle ResolveFrameTextStyle(VisualRenderContext context, TextStyle? configured, TextStyleOverride model,
+        double size, ChartColor color, int weight) {
+        var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
+        if (configured == null) fallback.Font.Weight = weight;
+        return model.Resolve(fallback);
     }
 }

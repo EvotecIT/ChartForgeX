@@ -38,7 +38,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var steps = Role(document, prefix + "-step");
         Assert.Equal(mode, Role(document, prefix).Single().Attribute("data-cfx-scale-mode")?.Value);
         if (mode == "discrete") {
-            Assert.Equal(new[] { "Niski · < 10", "Średni · 10 ≤ wartość < 20", "Wysoki · ≥ 20" }, steps.Select(step => (string?)step.Attribute("data-cfx-label")));
+            Assert.Equal(new[] { "Niski < 10", "Średni 10–20", "Wysoki ≥ 20" }, steps.Select(step => (string?)step.Attribute("data-cfx-label")));
             Assert.Equal(new[] { "", "10", "20" }, steps.Select(step => (string?)step.Attribute("data-cfx-lower-bound")));
             Assert.Equal(new[] { "10", "20", "" }, steps.Select(step => (string?)step.Attribute("data-cfx-upper-bound")));
             Assert.All(steps, step => Assert.Equal("true", (string?)step.Attribute("data-cfx-upper-exclusive")));
@@ -89,7 +89,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var labelGroups = Role(document, "heatmap-scale-label");
         var captions = labelGroups.Where(group => ((string?)group.Attribute("data-cfx-source-id"))?.StartsWith("heatmap-scale-label-band-", StringComparison.Ordinal) == true)
             .SelectMany(group => group.Descendants().Where(element => element.Name.LocalName == "text")).ToArray();
-        Assert.Equal(new[] { "Low · < 40", "Medium · 40 ≤ value < 80", "High · ≥ 80" }, captions.Select(caption => caption.Value));
+        Assert.Equal(new[] { "Low < 40", "Medium 40–80", "High ≥ 80" }, captions.Select(caption => caption.Value));
         Assert.All(captions, caption => Assert.True(double.Parse(caption.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) >= 10));
         var missing = Assert.Single(labelGroups, group => (string?)group.Attribute("data-cfx-source-id") == "heatmap-scale-label-missing");
         Assert.Equal("No data", Assert.Single(missing.Descendants(), element => element.Name.LocalName == "text").Value);
@@ -120,7 +120,8 @@ public sealed class HeatmapColorScaleLegendTests {
         Assert.True(missingSwatch.Bounds.Height > 0);
         Assert.InRange(missingSwatch.Bounds.Left, key.Left, key.Right); Assert.InRange(missingSwatch.Bounds.Right, key.Left, key.Right + .01);
         Assert.InRange(missingSwatch.Bounds.Top, key.Top, key.Bottom); Assert.InRange(missingSwatch.Bounds.Bottom, key.Top, key.Bottom + .01);
-        Assert.Equal(missingSwatch.Fill!.Value, Pixel(image, missingSwatch.Bounds));
+        // The no-data swatch is hatched, so its fill shows between the hatch lines rather than at every pixel.
+        Assert.True(Paints(image, missingSwatch.Bounds, missingSwatch.Fill!.Value), "The no-data fill stays visible in the hatched swatch.");
         ScatterBubbleColorRenderingTests.Capture(prepared, "legacy-key-compact-hexbin-" + (dark ? "dark" : "light"));
     }
 
@@ -222,7 +223,7 @@ public sealed class HeatmapColorScaleLegendTests {
             Assert.Equal(customMissing.ToHex(), HeatmapColorScaleTests.Fill(cell)); Assert.Null(cell.Attribute("data-cfx-value"));
         });
         var swatch = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "calendar-scale-missing-swatch");
-        Assert.Equal(customMissing, Pixel(RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1))), swatch.Bounds));
+        Assert.True(Paints(RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1))), swatch.Bounds, customMissing), "The authored no-data colour fills the hatched swatch.");
         Assert.Equal("1", (string?)Role(document, "calendar-heatmap").Single().Attribute("data-cfx-zero-count"));
     }
 
@@ -240,6 +241,15 @@ public sealed class HeatmapColorScaleLegendTests {
     }
 
     private static XElement[] Role(XDocument document, string role) => document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
+    private static bool Paints(RgbaImage image, ChartRect bounds, ChartColor color) {
+        for (var y = (int)Math.Ceiling(bounds.Top) + 1; y < (int)Math.Floor(bounds.Bottom) - 1; y++)
+            for (var x = (int)Math.Ceiling(bounds.Left) + 1; x < (int)Math.Floor(bounds.Right) - 1; x++) {
+                var offset = (y * image.Width + x) * 4;
+                if (ChartColor.FromRgba(image.Pixels[offset], image.Pixels[offset + 1], image.Pixels[offset + 2], image.Pixels[offset + 3]).Equals(color)) return true;
+            }
+        return false;
+    }
+
     private static ChartColor Pixel(RgbaImage image, ChartRect bounds) {
         var offset = ((int)(bounds.Top + bounds.Height / 2) * image.Width + (int)(bounds.Left + bounds.Width / 2)) * 4;
         return ChartColor.FromRgba(image.Pixels[offset], image.Pixels[offset + 1], image.Pixels[offset + 2], image.Pixels[offset + 3]);

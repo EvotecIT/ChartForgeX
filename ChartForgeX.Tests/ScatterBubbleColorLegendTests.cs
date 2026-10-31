@@ -74,7 +74,7 @@ public sealed class ScatterBubbleColorLegendTests {
         Assert.Equal(discrete ? 3 : 5, steps.Length);
         Assert.True(steps.Select(step => (string?)step.Attribute("aria-label")).Distinct().Count() > 1);
         if (discrete) {
-            Assert.Contains("reading", (string)steps[1].Attribute("data-cfx-label")!);
+            Assert.Contains("–", (string)steps[1].Attribute("data-cfx-label")!);
             Assert.Equal("2E-07", (string?)steps[1].Attribute("data-cfx-lower-bound"));
             Assert.Equal("true", (string?)steps[1].Attribute("data-cfx-upper-exclusive"));
         }

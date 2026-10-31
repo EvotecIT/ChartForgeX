@@ -53,8 +53,9 @@ internal static partial class VisualCartesianCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         foreach (var series in chart.Series) {
             var style = SeriesLabelStyle(chart, context, series, colors);
+            var format = SeriesCaptionFormat(chart, series);
             for (var point = 0; point < series.Points.Count; point++) {
-                var label = ResolvePointLabel(chart, series, point, style);
+                var label = ResolvePointLabel(chart, series, point, style, format);
                 builder.MeasureText(label.Text, label.Style); builder.MeasureText("Mg", label.Style); builder.TextAscent(label.Style);
             }
         }

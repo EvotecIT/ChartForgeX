@@ -12,15 +12,36 @@ Automatic numeric axes choose their tick step from the axis length, then keep th
 
 In responsive HTML, tick captions thin at one regular stride from the first caption with at least 1.5 em between neighbours. The last caption stays only when it falls on that stride.
 
+## Category captions
+
+A named category identifies its bar, so a categorical axis keeps every name rather than skipping some:
+
+- A name that doesn't fit wraps to two lines.
+- If it still doesn't fit, it is shortened with an ellipsis, and the full name becomes the caption's tooltip.
+- A shortened name keeps at least three characters. Short names such as month abbreviations would lose their meaning, so they thin out at a regular stride instead.
+- Continuous and time axes thin their ticks as described above.
+
+When many named steps have to fit a phone-width chart, a horizontal orientation usually reads better than shortened names.
+
 ## Row labels
 
 Lane labels, lane summaries, group headers and heatmap row labels share one policy:
 
 - They never shrink below 10 px. Long names are truncated with an ellipsis; the complete name stays in the chart's semantic regions, and responsive HTML adds a tooltip.
 - They may use the row spacing around a thin band, so a label isn't dropped because the painted band is thinner than a line of text.
-- When even 10 px text doesn't fit the row pitch, the label is hidden rather than drawn over its neighbour.
+- When even 10 px text does not fit the row pitch, heatmaps thin visible row labels and report `matrix.row-label-density`; every row name remains in semantic regions. Other row-based charts hide labels that cannot fit.
 
 Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `WithHeatmapCellRadius` still sets an exact radius.
+
+A caller that can accommodate a taller static frame can use `WithHeatmapNaturalHeight()` to grow a rectangular heatmap until its rows fit readable cells. Fixed-height frames retain every row and their authored size, report `matrix.cell-density` for cells shorter than 12 px, and report `matrix.row-label-density` when labels must be thinned. Responsive HTML fits the card to its content and follows cell width with readable row pitches capped at 32 px.
+
+Rectangular heatmaps use a latest-column window by default when a fixed frame cannot fit every cell at 14 px. Earlier columns are omitted and counted by `matrix.cell-density` and the `matrix-column-window` semantic region. Use `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to show all columns in a fixed frame, including narrow cells. Responsive HTML retains all columns for its interactive layout.
+
+Heatmap column captions that don't fit their columns behave according to what they name:
+
+- Dates and numbers stay horizontal and thin out at a regular stride, always keeping the first and last column.
+- Named columns, such as check or service names, wrap to two lines and rotate only as a last resort, because skipping a name would hide that column.
+- `WithXAxisLabelAngle` still sets an exact angle.
 
 ## Series colours
 
@@ -33,6 +54,17 @@ chart.WithSeriesColorAssignment(ChartSeriesColorAssignment.Identity);
 ```
 
 Each series with an explicit `ChartSeriesId` then derives its palette slot from that identifier. Two series can share a colour in that mode; `WithColor` sets an exact colour when it matters.
+
+Waterfall changes carry a direction: increases use the positive status colour and decreases the negative one. Opening balances, subtotals and totals are levels rather than changes, so they take the series colour (the accent for the first series) instead of a warning colour.
+
+## Colour keys with named bands
+
+A discrete colour scale reads as a key.
+
+- **Layout:** each band is a square swatch with a short caption beside it. Entries sit left to right at their natural width and wrap only when a row is full, like a series legend.
+- **Captions:** they read as the band name followed by its interval, for example "Outage < 95%", "Short loss 95–100%" and "Complete ≥ 100%". Each band includes its lower bound and excludes its upper bound; the neighbouring captions and the band metadata keep that exact.
+- **Units:** heatmaps add the chart's value unit. A colour-dimension format that already writes the unit keeps a single copy.
+- **No data:** the entry has an outline and a hatch, so it stays visible on light and dark surfaces. When adding it would cost a row of its own, it moves beside the key's heading.
 
 ## Units
 

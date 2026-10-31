@@ -176,14 +176,18 @@ internal static partial class VisualCartesianCompiler {
             Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
         }));
 
-    private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
+    // Only automatic captions of a series' own points share a unit; authored labels and histogram gaps keep their text.
+    private static Func<double, string>? SeriesCaptionFormat(Chart chart, ChartSeries series) =>
+        ChartNumericFormatter.SeriesCaptionFormat(chart.Options, series.RenderPoints.Select(point => point.Y));
+
+    private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle, Func<double, string>? seriesFormat) {
         var value = series.RenderPoints[pointIndex].Y;
         var authored = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null;
         var numeric = !authored
             && !(series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
-                ? chart.Options.Labels.NoData : ChartNumericFormatter.FormatValue(chart.Options, value);
+                ? chart.Options.Labels.NoData : seriesFormat?.Invoke(value) ?? ChartNumericFormatter.FormatValue(chart.Options, value);
         var style = seriesStyle;
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
@@ -223,6 +227,9 @@ internal static partial class VisualCartesianCompiler {
             if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(anchor.X, mark.Bottom);
         }
         var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar or ChartSeriesKind.Waterfall;
+        // A column's value caption belongs to its bar end; the theme's layout spacing would float it away.
+        // Horizontal bars keep the wider gap: their beside-captions must clear longer neighbouring rows.
+        var endGap = bar && !horizontal ? BarLabelGap(context) : spacing;
         if (placement == ChartDataLabelPlacement.Auto && bar && ChartStackLayout.Participates(chart, series))
             placement = ChartDataLabelPlacement.Inside;
         var candidates = new List<LabelCandidate>();
@@ -241,7 +248,7 @@ internal static partial class VisualCartesianCompiler {
         }
         else if (placement == ChartDataLabelPlacement.Below || placement == ChartDataLabelPlacement.Above) {
             var above = placement == ChartDataLabelPlacement.Above;
-            foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -spacing : spacing, alignment, above ? 1 : 0));
+            foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -endGap : endGap, alignment, above ? 1 : 0));
         }
         else if (horizontal) {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
@@ -257,13 +264,13 @@ internal static partial class VisualCartesianCompiler {
         }
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
-            candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, .5, positive ? 1 : 0));
+            candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, .5, positive ? 1 : 0));
             if (bar && placement == ChartDataLabelPlacement.Auto) {
                 // Keep a bar caption centered on its own mark before trying sideways fallbacks.
                 candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
             } else if (bar) {
-                candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 0, positive ? 1 : 0));
-                candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 1, positive ? 1 : 0));
+                candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, 0, positive ? 1 : 0));
+                candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, 1, positive ? 1 : 0));
             }
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));

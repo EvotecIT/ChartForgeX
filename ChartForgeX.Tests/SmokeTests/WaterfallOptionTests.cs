@@ -78,7 +78,8 @@ internal static partial class SmokeTests {
         foreach (var dark in new[] { false, true })
         foreach (var style in new[] { ChartBarStyle.Flat, ChartBarStyle.SegmentedCapsule })
         foreach (var paint in new[] { "status", "series", "point" }) {
-            var chart = WaterfallLabelSample(180, dark).WithPngFont(font).WithBarStyle(style)
+            // Automatic captions take a reserved lane outside full-height levels; this checks the contained ink.
+            var chart = WaterfallLabelSample(180, dark).WithPngFont(font).WithBarStyle(style).WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
                 .AddWaterfall("Delta", Points(100), paint == "series" ? ChartColor.FromHex("#172554") : null);
             if (paint == "point") chart.Series[0].WithPointColor(0, ChartColor.FromHex("#172554"));
             chart.Options.YAxis.WithBounds(0, 100).WithReversal();
@@ -113,7 +114,9 @@ internal static partial class SmokeTests {
                     (int)System.Math.Floor(bounds.Width), (int)System.Math.Floor(bounds.Height), expected.R, expected.G, expected.B, 8) > 0,
                     "Native PNG must paint the contrasting contained caption.");
                 if (style == ChartBarStyle.Flat) {
-                    var role = paint == "series" || paint == "point" && label.Id!.Contains("-point-") ? SvgColorRole.Series : SvgColorRole.Status;
+                    // A derived total is a level, so it takes the series role; changes keep their status role unless painted.
+                    var role = paint == "series" || region.Role == "waterfall-total" || paint == "point" && label.Id!.Contains("-point-")
+                        ? SvgColorRole.Series : SvgColorRole.Status;
                     var variables = new SvgColorVariables().AddInk("--drawn-ink", fill, expected, role);
                     var svg = System.Xml.Linq.XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: variables)));
                     var text = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-source-id") == label.Id).Descendants()
@@ -124,7 +127,7 @@ internal static partial class SmokeTests {
         }
 
         foreach (var level in new[] { "chart", "series", "point" }) {
-            var chart = WaterfallLabelSample(180, false).WithPngFont(font).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
+            var chart = WaterfallLabelSample(180, false).WithPngFont(font).WithDataLabelPlacement(ChartDataLabelPlacement.Inside).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
             chart.Options.YAxis.WithBounds(0, 100).WithReversal();
             if (level == "chart") chart.ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
             else if (level == "series") chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));

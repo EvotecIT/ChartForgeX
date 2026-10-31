@@ -110,7 +110,7 @@ public sealed class TreemapColorTests {
             Pixel(native, Bounds(steps[0]), Red); Pixel(native, Bounds(steps[^1]), Blue);
             var missingSwatch = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-color-scale-missing"); Pixel(native, Bounds(missingSwatch), Missing);
             if (scale.Mode == ChartColorScaleMode.Discrete) {
-                Assert.Contains(prepared.Regions, region => region.Label == "Lower · < 50"); Assert.Contains(prepared.Regions, region => region.Label == "Upper · ≥ 50");
+                Assert.Contains(prepared.Regions, region => region.Label == "Lower < 50"); Assert.Contains(prepared.Regions, region => region.Label == "Upper ≥ 50");
             } else {
                 var legend = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-color-scale");
                 Assert.Equal("0", (string?)legend.Attribute("data-cfx-min-value")); Assert.Equal("100", (string?)legend.Attribute("data-cfx-max-value"));

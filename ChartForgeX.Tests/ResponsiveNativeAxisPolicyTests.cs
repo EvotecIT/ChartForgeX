@@ -21,8 +21,9 @@ public sealed class ResponsiveNativeAxisPolicyTests {
     public void SerializedBarAnchorsMatchTheNativePaintedSourcePolicy(string mode, bool reversed) {
         var chart = Create(mode, 760, reversed); var source = Source(chart); var axis = chart.Options.XAxis;
         Assert.NotEmpty(Bars(chart.ToSvg())); // Establish the supported native path before responsive serialization.
-        using var spec = Specification(new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600));
-        var painted = Bars(spec.RootElement.GetProperty("svg").GetString()!);
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
+        using var spec = Specification(fragment);
+        var painted = Bars(Regex.Match(fragment, "<svg.*?</svg>", RegexOptions.Singleline).Value);
         var bars = spec.RootElement.GetProperty("bars").EnumerateArray().ToArray();
         Assert.NotEmpty(painted); Assert.Equal(painted.Count, bars.Length);
         foreach (var bar in bars) {
@@ -38,9 +39,10 @@ public sealed class ResponsiveNativeAxisPolicyTests {
     [InlineData(true)]
     public void OrdinaryAndSparklineBarsRemainUsableWithoutChangingCallerPolicies(bool sparkline) {
         var chart = Create("numeric", 760, sparkline: sparkline); var source = Source(chart); var axis = chart.Options.XAxis;
-        using var spec = Specification(new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600));
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
+        using var spec = Specification(fragment);
         Assert.Equal(3, spec.RootElement.GetProperty("bars").GetArrayLength());
-        Assert.Equal(3, Bars(spec.RootElement.GetProperty("svg").GetString()!).Count);
+        Assert.Equal(3, Bars(Regex.Match(fragment, "<svg.*?</svg>", RegexOptions.Singleline).Value).Count);
         Assert.Same(axis, chart.Options.XAxis); Assert.Equal(760, chart.Options.Size.Width); Assert.Equal(source, Source(chart));
     }
 
