@@ -87,7 +87,7 @@ public sealed class AutomaticAxisPrecisionTests {
         Assert.Equal(captions.OrderBy(caption => caption, StringComparer.Ordinal), Texts(svg, "data-label").OrderBy(caption => caption, StringComparer.Ordinal));
         for (var index = 0; index < points.Length; index++) {
             Assert.Equal(points[index].Y, double.Parse((string)marks[index].Attribute("data-cfx-value")!, CultureInfo.InvariantCulture));
-            Assert.Contains(captions[index], (string?)marks[index].Attribute("aria-label"));
+            Assert.Contains(captions[index], (string?)marks[index].Attribute("data-cfx-description"));
         }
         chart.WithValueFormatter(_ => throw new InvalidOperationException("Late formatter"));
         chart.ClearSeries();

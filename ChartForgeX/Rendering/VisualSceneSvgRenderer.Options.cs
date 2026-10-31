@@ -34,7 +34,7 @@ internal static partial class VisualSceneSvgRenderer {
         var textRasterOptions = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic && options.EffectRasterOptions != null;
         if (colorScopes == null && (options == null || options.Variables == null &&
             options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive &&
-            !options.PatternTiles && !effectOptions && !textRasterOptions)) return identity;
+            !options.PatternTiles && !options.Explorable && !effectOptions && !textRasterOptions)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
@@ -53,6 +53,7 @@ internal static partial class VisualSceneSvgRenderer {
             writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
             if (options?.Responsive == true) writer.Write("responsive");
             if (options?.PatternTiles == true) writer.Write("pattern-tiles");
+            if (options?.Explorable == true) writer.Write("explorable");
             for (var i = 0; i < scene.Nodes.Count; i++) {
                 var node = scene.Nodes[i];
                 var paintOptions = colorScopes == null ? options : colorScopes[i];

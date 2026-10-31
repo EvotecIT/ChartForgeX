@@ -24,7 +24,7 @@ public sealed class HierarchyCaptionPolicyTests {
         foreach (var arc in arcs) {
             var text = string.Concat(arc.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value));
             Assert.Equal((string?)arc.Attribute("data-cfx-full-label"), text);
-            Assert.Equal(text, (string?)arc.Attribute("aria-label"));
+            Assert.Equal(text, (string?)arc.Attribute("data-cfx-description"));
         }
         AssertArcInkInsideNativeMarks(prepared);
         var source = chart.Series[0].HierarchyItems.Select(item => (item.Id, item.ParentId, item.Label, item.Value)).ToArray();

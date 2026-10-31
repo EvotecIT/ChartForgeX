@@ -26,10 +26,16 @@ Select these names in host scripts and styles. Don't select other roles, element
 | `state-timeline-segment-shape` | Painted shape inside a segment | |
 | `gantt-lane-item` | `<g>` Gantt-lane item target | Carries the same identity attributes as a segment. |
 | `point` | Cartesian data point target | |
-| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier) and an `aria-label`. |
+| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier) and `data-cfx-description`. |
 | `axis-y-label` | Primary value-axis tick label | |
 | `topology-node` | Topology node | |
 | `topology-edge` | Topology edge | |
+
+## Accessible SVG semantics
+
+Static charts use `role="img"` with their title and description references. Generic descendant groups carry their complete scene description in `data-cfx-description`, alongside the existing labels, coordinates and identity attributes; they do not carry `aria-label`. Hosts can read these facts for tooltips without treating every mark as an accessible control.
+
+Keyboard-enabled HTML charts and SVG scenes containing focusable links use a `graphics-document` root. Labelled generic groups receive `role="group"` and retain their `aria-label`; links retain native link semantics. Explicit semantic roles remain intact, while `generic`, `none` and `presentation` groups are not named. Decorative SVGs remain hidden from assistive technology.
 
 ## Migration
 

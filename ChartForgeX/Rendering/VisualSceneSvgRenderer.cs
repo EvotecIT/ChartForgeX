@@ -41,6 +41,9 @@ internal static partial class VisualSceneSvgRenderer {
         var textImages = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic
             ? NativeLineInkResources.Prepare(scene, options, effects, cancellation, maximumCharacters, imageCharacters) : null;
         var surfaces = effects?.Shadows;
+        var explorable = !decorative && (options?.Explorable == true || scene.Nodes.OfType<VisualSceneGroup>().Any(group => group.Href != null));
+        var regionLabels = explorable ? new Dictionary<string, string?>(StringComparer.Ordinal) : null;
+        if (regionLabels != null) foreach (var region in scene.Regions) regionLabels[region.Id] = region.Label;
         var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
         resolvedPrefix = prefix;
         fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
@@ -57,7 +60,7 @@ internal static partial class VisualSceneSvgRenderer {
         if (options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
         if (decorative) writer.Attribute("aria-hidden", true).Attribute("focusable", false);
         else {
-            writer.Attribute("role", "img").Attribute("aria-label", title);
+            writer.Attribute("role", explorable ? "graphics-document" : "img").Attribute("aria-label", title);
             if (!string.IsNullOrEmpty(title)) writer.Attribute("aria-labelledby", prefix + "-title");
             if (!string.IsNullOrEmpty(description)) writer.Attribute("aria-describedby", prefix + "-description");
         }
@@ -86,7 +89,9 @@ internal static partial class VisualSceneSvgRenderer {
                     writer.Attribute("href", group.Href).Attribute("tabindex", decorative ? -1 : 0);
                     if (options?.LinkTarget == VisualSvgLinkTarget.NewContext) writer.Attribute("target", "_blank").Attribute("rel", "noopener noreferrer");
                 }
-                foreach (var item in group.Metadata) writer.Attribute(item.Key, item.Value);
+                string? regionLabel = null;
+                var semanticTarget = group.Id != null && regionLabels != null && regionLabels.TryGetValue(group.Id, out regionLabel);
+                WriteGroupMetadata(writer, group, explorable, decorative, semanticTarget, regionLabel);
                 if (group.Opacity != 1) writer.Attribute("opacity", group.Opacity);
                 if (group.Metadata.TryGetValue("data-cfx-passive-overlay", out var passive) && passive == "true") writer.Attribute("pointer-events", "none");
                 if (group.Metadata.TryGetValue("data-cfx-pin-state-colors", out var pin) && pin == "true") writer.Attribute("style", "forced-color-adjust:none");
@@ -168,7 +173,7 @@ internal static partial class VisualSceneSvgRenderer {
                 if (image.Opacity != 1) writer.Attribute("opacity", image.Opacity);
                 Semantics(writer, image, prefix, i); writer.EndEmptyElement();
             } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i, paintOptions);
-            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, paintOptions, pngText, capturePngText, fonts, textImages);
+            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, paintOptions, pngText, capturePngText, fonts, textImages, explorable);
         }
         pngText?.Write(writer);
         cancellation.ThrowIfCancellationRequested();
@@ -241,12 +246,13 @@ internal static partial class VisualSceneSvgRenderer {
         writer.Attribute("data-cfx-role", node.Role);
     }
 
-    private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options, PngTextResources? pngText, bool capturePngText, VisualSvgFontResources? fonts, NativeLineInkResources? textImages) {
+    private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options, PngTextResources? pngText, bool capturePngText, VisualSvgFontResources? fonts, NativeLineInkResources? textImages, bool explorable) {
         var prepared = node.Text; var style = prepared.Style;
         writer.StartElement("g"); Semantics(writer, node, prefix, index);
         if (textImages?.ForNode(node) is {} capturedImage) {
             var caption = string.Join("\n", prepared.Lines.Select(line => line.Text));
-            writer.Attribute("aria-label", caption).Attribute("data-cfx-caption", caption).EndStartElement();
+            if (explorable) writer.Attribute("role", "graphics-symbol").Attribute("aria-label", caption);
+            writer.Attribute("data-cfx-caption", caption).EndStartElement();
             writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
                 .Attribute("data-cfx-native-raster-text-ink", "true").EndStartElement();
             writer.StartElement("image").Attribute("x", capturedImage.Bounds.X).Attribute("y", capturedImage.Bounds.Y)

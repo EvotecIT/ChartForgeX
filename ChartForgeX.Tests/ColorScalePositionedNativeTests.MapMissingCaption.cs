@@ -64,7 +64,7 @@ public sealed partial class ColorScalePositionedNativeTests {
                 Assert.DoesNotContain(unshared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Id == caption.Id);
                 Assert.Equal("Not sampled", unshared.Regions.Single(region => region.Id == caption.Id).Label);
                 Assert.Contains(unshared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
-                Assert.Contains("aria-label=\"Not sampled\"", unshared.ToSvg());
+                Assert.Contains("data-cfx-description=\"Not sampled\"", unshared.ToSvg());
                 if (dark) ScatterBubbleColorRenderingTests.Capture(unshared, "missing-heading-unshared-" + family + "-" + legendStyle.ToString().ToLowerInvariant());
             } else {
                 Assert.Equal(missing.Bounds, unshared.Regions.Single(region => region.Id == caption.Id).Bounds);

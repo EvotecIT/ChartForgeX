@@ -22,7 +22,7 @@ internal static partial class SmokeTests {
             Assert(regions.Length > 0, "Static SVG must retain source regions for " + role + ".");
             foreach (var region in regions) {
                 Assert(!string.IsNullOrWhiteSpace((string?)region.Attribute("data-cfx-source-id")), "Static regions must retain stable source identities.");
-                Assert(!string.IsNullOrWhiteSpace((string?)region.Attribute("aria-label")), "Static regions must retain accessible source descriptions.");
+                Assert(!string.IsNullOrWhiteSpace((string?)region.Attribute("data-cfx-description")), "Static regions must retain complete source descriptions.");
             }
             var ids = document.Descendants().Select(element => (string?)element.Attribute("id")).Where(id => id != null).ToArray();
             Assert(ids.Distinct(StringComparer.Ordinal).Count() == ids.Length, "Every SVG node identity must be unique.");
