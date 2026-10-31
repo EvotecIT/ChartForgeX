@@ -1,0 +1,7 @@
+<Project>
+  <Import Project="../../Directory.Build.props" />
+  <PropertyGroup>
+    <!-- Standalone dependency scans need a real package version; qualification supplies its candidate explicitly. -->
+    <PackageVersion Condition="'$(PackageVersion)' == ''">$(ChartForgeXProductVersion)</PackageVersion>
+  </PropertyGroup>
+</Project>
