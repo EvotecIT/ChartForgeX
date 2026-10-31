@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
         && (string?)element.Attribute("data-cfx-point") == point.ToString(CultureInfo.InvariantCulture));
 
     private static double CartesianMarkAttribute(string svg, int series, int point, string role, string attribute) =>
-        double.Parse((string)CartesianPoint(svg, series, point).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == role).Attribute(attribute)!, CultureInfo.InvariantCulture);
+        SvgMarkGeometry.Attribute(CartesianPoint(svg, series, point).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == role), attribute);
 
     private static void CartesianMetadata(XElement element, params (string Name, string Value)[] values) {
         foreach (var value in values) Assert((string?)element.Attribute("data-cfx-" + value.Name) == value.Value,

@@ -24,6 +24,20 @@ public sealed partial class SvgColorVariables {
         return true;
     }
 
+    /// <summary>
+    /// Resolves a series paint by its palette slot (ordinal modulo the slot count) while that slot holds the colour, so
+    /// equal RGB values in two slots keep their own properties; otherwise by the series role and colour.
+    /// </summary>
+    internal bool TrySeriesSlotPaint(ChartColor color, int ordinal, out string paint) {
+        paint = string.Empty;
+        if (_paletteSlots != null && _paletteSlots.Length > 0 && color.A != 0) {
+            var slot = _paletteSlots[ordinal % _paletteSlots.Length];
+            if (slot.HasValue && slot.Value.Color.R == color.R && slot.Value.Color.G == color.G && slot.Value.Color.B == color.B
+                && TryWrite(slot.Value, color.A / 255d, out paint)) return true;
+        }
+        return TryPaint(color, SvgColorRole.Series, out paint);
+    }
+
     internal bool TryPaletteVariable(ChartColor color, int index, out SvgColorVariable variable) {
         variable = default;
         if (_paletteSlots == null) {

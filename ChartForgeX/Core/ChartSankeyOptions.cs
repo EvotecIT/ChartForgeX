@@ -9,12 +9,12 @@ public sealed class ChartSankeyOptions {
     private ChartSankeyNodeOrder _nodeOrder = ChartSankeyNodeOrder.Auto;
     private ChartSankeyLabelPlacement _labelPlacement = ChartSankeyLabelPlacement.Right;
     private ChartSankeyEdgeLabelPlacement? _edgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
-    private double _nodeWidth = 10;
+    private double _nodeWidth = 6;
     private double? _nodeGap, _nodeCornerRadius;
     private double _ribbonOpacity = .35;
     private double _ribbonVisibilityThreshold;
     private ChartSankeyFlowColorMode _flowColorMode;
-    private ChartSankeyLabelStyle _labelStyle;
+    private ChartSankeyLabelStyle _labelStyle = ChartSankeyLabelStyle.Outlined;
 
     /// <summary>Gets or sets ribbon color inheritance. Source is the default and retains the existing source-node paint policy.</summary>
     public ChartSankeyFlowColorMode FlowColorMode {
@@ -22,7 +22,7 @@ public sealed class ChartSankeyOptions {
         set { Defined(value); _flowColorMode = value; }
     }
 
-    /// <summary>Gets or sets label paint. Backdrop preserves the native default; Plain and Outlined do not add a rectangular label surface.</summary>
+    /// <summary>Gets or sets label paint. Outlined (the default) keeps captions readable over flows with a surface-coloured text halo instead of a box; Backdrop adds a rectangular surface; Plain adds neither.</summary>
     public ChartSankeyLabelStyle LabelStyle {
         get => _labelStyle;
         set { Defined(value); _labelStyle = value; }

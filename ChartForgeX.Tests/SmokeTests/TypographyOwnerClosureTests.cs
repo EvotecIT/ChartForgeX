@@ -15,6 +15,7 @@ internal static partial class SmokeTests {
     private static void SvgAxisLayoutUsesResolvedTypography() {
         static Chart AxisChart() => Chart.Create()
             .WithSize(900, 300)
+            .ConfigureTickLabelStyle(style => style.WithFontSize(10))
             .WithXAxis("delivery status")
             .WithXLabels("mmmm one", "mmmm two", "mmmm three", "mmmm four", "mmmm five", "mmmm six", "mmmm seven", "mmmm eight", "mmmm nine")
             .AddLine("Values", Points(1, 2, 3, 4, 5, 6, 7, 8, 9));

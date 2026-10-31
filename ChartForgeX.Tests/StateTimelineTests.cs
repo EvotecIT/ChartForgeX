@@ -239,7 +239,8 @@ public sealed class StateTimelineTests {
         var vertical = CreateChart().ConfigureGridStyle(style => style.ShowVerticalLines = false);
         var global = CreateChart(); global.Options.ShowGrid = false;
         Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-grid"));
-        Assert.NotEmpty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-row-grid"));
+        // Schedules draw no row rules by default (design rule 2); only tick guides are optional.
+        Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-row-grid"));
         vertical.ConfigureGridStyle(style => style.ShowHorizontalLines = false);
         Assert.Equal(global.ToPng(), vertical.ToPng());
     }
@@ -308,7 +309,8 @@ public sealed class StateTimelineTests {
         var rotated = CreateChart().ConfigureXAxis(axis => axis.LabelAngle = angle);
         var svg = XDocument.Parse(rotated.ToSvg());
         Assert.All(ByRole(svg, "schedule-tick-label"), label => Assert.Contains("rotate(" + angle.ToString(CultureInfo.InvariantCulture), (string?)label.RenderedAttribute("transform") ?? ""));
-        Assert.True(Lanes(rotated).Last().Bounds.Bottom < Lanes(normal).Last().Bounds.Bottom);
+        // Rows keep their fixed slot from the top (design rule 10); rotated captions reserve their height below them.
+        Assert.True(Lanes(rotated).Last().Bounds.Bottom <= Lanes(normal).Last().Bounds.Bottom);
         Assert.NotEqual(normal.ToPng(), rotated.ToPng());
     }
 

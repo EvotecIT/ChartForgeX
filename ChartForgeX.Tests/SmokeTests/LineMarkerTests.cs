@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
         var color = ChartColor.FromRgb(37, 99, 235);
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 30), new ChartPoint(3, 20) };
         var referenceSvg = Chart.Create().WithTheme(VisualTheme.Report())
-            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All).WithYAxisBounds(0, 40)
             .ConfigureTheme(builder => builder.MarkerRadius = 4)
             .AddLine("Values", points, color)
             .ToSvg();
@@ -24,7 +24,7 @@ internal static partial class SmokeTests {
         Assert(referenceMarkers.Length == points.Length, "Positive marker radii should preserve one SVG marker per line point.");
 
         var markerless = Chart.Create().WithTheme(VisualTheme.Report())
-            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All).WithYAxisBounds(0, 40)
             .ConfigureTheme(builder => builder.MarkerRadius = 0)
             .AddLine("Values", points, color);
         var markerlessSvg = markerless.ToSvg();
@@ -45,12 +45,12 @@ internal static partial class SmokeTests {
 
         var markedArea = Chart.Create().WithTheme(VisualTheme.Report())
             .WithLegend(true)
-            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All).WithYAxisBounds(0, 40)
             .ConfigureTheme(builder => builder.MarkerRadius = 4)
             .AddArea("Area", points, color);
         var markerlessArea = Chart.Create().WithTheme(VisualTheme.Report())
             .WithLegend(true)
-            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All).WithYAxisBounds(0, 40)
             .ConfigureTheme(builder => builder.MarkerRadius = 0)
             .AddArea("Area", points, color);
         Assert(!SvgDocument.Parse(markerlessArea.ToSvg()).Root.FindByTag("ellipse").Any(), "A markerless area should not advertise a point marker in its SVG legend.");

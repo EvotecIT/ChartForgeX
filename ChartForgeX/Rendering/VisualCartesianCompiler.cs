@@ -44,6 +44,10 @@ internal static partial class VisualCartesianCompiler {
         }
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
+            if (series.ShowInLegend && series.Kind == ChartSeriesKind.Dumbbell) {
+                entries.AddRange(DumbbellLegendEntries(chart, series, index, colors));
+                continue;
+            }
             if (series.ShowInLegend) {
                 var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
                 entries.Add(new VisualLegendEntry(series.Name, color, SeriesId(index), series.Kind, series.FillPattern, series.StateRole,
@@ -124,7 +128,7 @@ internal static partial class VisualCartesianCompiler {
         // Capture the final mapping extent after every measured axis and total lane.
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
-        var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+        var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var hasPrimaryDomain = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Primary && series.HasSourceData)
             || chart.Annotations.Any(annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontal) is ChartAnnotationKind.HorizontalLine or ChartAnnotationKind.HorizontalBand)
             || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Primary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
@@ -134,10 +138,10 @@ internal static partial class VisualCartesianCompiler {
         // A screen coordinate has no single value-domain meaning when both Y axes contain observations.
         builder.DataProjection = ChartDataProjection.TryCreate(plot, secondaryOnly ? secondaryRange! : range,
             horizontal && secondaryOnly ? chart.Options.SecondaryXAxis : chart.Options.XAxis,
-            !horizontal && secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
+            horizontal ? ChartCartesianOrientation.HorizontalCategoryProjection(chart) : secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
             includeY: horizontal || !(hasPrimaryDomain && hasSecondaryDomain), includeX: !horizontal || !(hasPrimaryDomain && hasSecondaryDomain));
         var secondaryMap = secondaryRange == null ? null : horizontal
-            ? ChartMapper.ForHorizontalBars(plot, secondaryRange, chart.Options.SecondaryXAxis, chart.Options.YAxis)
+            ? ChartMapper.ForHorizontalBars(plot, secondaryRange, chart.Options.SecondaryXAxis, chart)
             : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         if (sourceViewport != null) ValidateFiniteViewportProjection(chart, map, secondaryMap);
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);

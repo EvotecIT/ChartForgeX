@@ -118,6 +118,26 @@ internal static class ChartPathBuilder {
         });
     }
 
+    /// <summary>A rectangle with an independent radius per corner (top-left, top-right, bottom-right, bottom-left).</summary>
+    internal static ChartPath RoundedRectangle(ChartRect bounds, double topLeft, double topRight, double bottomRight, double bottomLeft) {
+        var limit = Math.Min(bounds.Width, bounds.Height) / 2;
+        double Clamp(double value) => Math.Max(0, Math.Min(value, limit));
+        topLeft = Clamp(topLeft); topRight = Clamp(topRight); bottomRight = Clamp(bottomRight); bottomLeft = Clamp(bottomLeft);
+        if (topLeft == 0 && topRight == 0 && bottomRight == 0 && bottomLeft == 0) return RoundedRectangle(bounds, 0);
+        if (topLeft == topRight && topRight == bottomRight && bottomRight == bottomLeft) return RoundedRectangle(bounds, topLeft);
+        const double k = .5522847498307936;
+        var x = bounds.Left; var y = bounds.Top; var right = bounds.Right; var bottom = bounds.Bottom;
+        var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(x + topLeft, y), ChartPathCommand.LineTo(right - topRight, y) };
+        if (topRight > 0) commands.Add(ChartPathCommand.CubicTo(right - topRight + topRight * k, y, right, y + topRight - topRight * k, right, y + topRight));
+        commands.Add(ChartPathCommand.LineTo(right, bottom - bottomRight));
+        if (bottomRight > 0) commands.Add(ChartPathCommand.CubicTo(right, bottom - bottomRight + bottomRight * k, right - bottomRight + bottomRight * k, bottom, right - bottomRight, bottom));
+        commands.Add(ChartPathCommand.LineTo(x + bottomLeft, bottom));
+        if (bottomLeft > 0) commands.Add(ChartPathCommand.CubicTo(x + bottomLeft - bottomLeft * k, bottom, x, bottom - bottomLeft + bottomLeft * k, x, bottom - bottomLeft));
+        commands.Add(ChartPathCommand.LineTo(x, y + topLeft));
+        if (topLeft > 0) commands.Add(ChartPathCommand.CubicTo(x, y + topLeft - topLeft * k, x + topLeft - topLeft * k, y, x + topLeft, y));
+        return new ChartPath(commands);
+    }
+
     internal static ChartPath Ellipse(double x, double y, double rx, double ry) {
         const double k = .5522847498307936;
         return new ChartPath(new[] {

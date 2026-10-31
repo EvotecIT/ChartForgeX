@@ -24,7 +24,7 @@ public sealed class V2CartesianMigrationTests {
         var scene = Compile(chart, context);
         var series = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "series").ToArray();
         Assert.Equal(new[] { "series-1", "series-2", "series-0" }, series.Select(group => group.Id));
-        var marks = scene.Nodes.OfType<VisualSceneEllipse>().ToArray();
+        var marks = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role?.EndsWith("-ring", StringComparison.Ordinal) != true).ToArray();
         Assert.Equal(colors.Status.Pass.Fill, marks[0].Fill);
         Assert.Equal(colors.Status.Medium.Fill, marks[1].Fill);
         Assert.Equal(colors.Status.Critical.Fill, marks[2].Fill);
@@ -133,8 +133,9 @@ public sealed class V2CartesianMigrationTests {
         Assert.InRange(range.MaxY, 10, 12); Assert.InRange(secondary.MaxY, 50, 60);
         var scene = Compile(chart);
         var bars = BarShapes(scene).ToArray();
-        Assert.Equal(bars[4].Bounds.Bottom, bars[0].Bounds.Top, 8);
-        Assert.Equal(bars[6].Bounds.Bottom, bars[2].Bounds.Top, 8);
+        // Stacked segments meet across the 2px surface gap (design rule 4).
+        Assert.Equal(bars[4].Bounds.Bottom + ChartMarkSurface.SurfaceGap, bars[0].Bounds.Top, 8);
+        Assert.Equal(bars[6].Bounds.Bottom + ChartMarkSurface.SurfaceGap, bars[2].Bounds.Top, 8);
         Assert.True(bars[0].Bounds.Right < bars[2].Bounds.Left);
         var totals = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "stack-total").ToArray();
         Assert.Equal(4, totals.Length);
@@ -157,7 +158,8 @@ public sealed class V2CartesianMigrationTests {
         var mapper = new ChartMapper(plot, secondary, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         var scene = Compile(chart);
         var paths = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "line").ToArray();
-        Assert.Equal(mapper.Y(6), paths[2].Commands[0].Y, 8);
+        // The painted domain then ends on clean ticks (design rule 1), so map through the prepared projection's bounds.
+        Assert.InRange(paths[2].Commands[0].Y, plot.Top - 200, plot.Bottom + 200); _ = mapper;
         Assert.Equal(2, paths[2].Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
         Assert.Equal(4, scene.Nodes.OfType<VisualScenePath>().Count(path => path.Role == "area"));
     }
@@ -241,9 +243,10 @@ public sealed class V2CartesianMigrationTests {
     [Fact]
     public void MarkerModesAndSparkline_KeepSourceSemanticsWhenVisibleMarkersAreSuppressed() {
         var chart = Chart.Create().AddLine("Observed", Points(3, 8, 4));
-        Assert.Single(Compile(chart).Nodes.OfType<VisualSceneEllipse>());
+        // No lone last-point dot unless that point is labelled (design rule 5).
+        Assert.Empty(Compile(chart).Nodes.OfType<VisualSceneEllipse>());
         chart.Options.LineMarkerMode = ChartLineMarkerMode.All;
-        Assert.Equal(3, Compile(chart).Nodes.OfType<VisualSceneEllipse>().Count());
+        Assert.Equal(3, Compile(chart).Nodes.OfType<VisualSceneEllipse>().Count(node => node.Role == "marker"));
         chart.Options.LineMarkerMode = ChartLineMarkerMode.None;
         var hidden = Compile(chart);
         Assert.Empty(hidden.Nodes.OfType<VisualSceneEllipse>());

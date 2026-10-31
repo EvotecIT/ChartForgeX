@@ -59,6 +59,13 @@ internal static partial class VisualCartesianCompiler {
             if (shortened && display.Split('\n').Any(line => line.EndsWith("…", StringComparison.Ordinal) && line.TrimEnd('…').Trim().Length < MinimumShortenedCategoryCharacters)) continue;
             displays[ticks[index]] = (display, shortened);
         }
+        // One rhythm per axis (design rule 7): once any caption wraps, every two-word caption breaks the same way,
+        // so "Fri 30" never sits on one line beside "Thu"/"29".
+        if (displays.Values.Any(display => display.Text.IndexOf('\n') >= 0))
+            foreach (var key in displays.Keys.ToArray()) {
+                var text = displays[key].Text; var space = text.IndexOf(' ');
+                if (text.IndexOf('\n') < 0 && space > 0) displays[key] = (text.Substring(0, space) + "\n" + text.Substring(space + 1), displays[key].Shortened);
+            }
         // Do not turn different complete names into the same shortened prefix merely to
         // paint more captions. The existing stride remains the fallback for that group.
         var ambiguous = ticks.GroupBy(tick => displays.TryGetValue(tick, out var display) ? display.Text : sources[tick], StringComparer.Ordinal)

@@ -30,7 +30,7 @@ internal static class HtmlCompactSvg {
         if (root.Descendants().Any(e => e.Name.LocalName == "a" && e.Attribute("href") != null) && (string?)root.Attribute("role") == "img")
             root.SetAttributeValue("role", "group");
         DeduplicatePatterns(root);
-        RemoveUnneededRectangleClips(root);
+        RemoveUnneededClips(root);
         return root.ToString(SaveOptions.DisableFormatting);
     }
     // Keep 96 bits of generated identity; replace only references to IDs in this drawing, never user text.
@@ -75,9 +75,26 @@ internal static class HtmlCompactSvg {
         }
         RewriteReferences(root, aliases, false);
     }
-    private static void RemoveUnneededRectangleClips(XElement root) {
+    private static void RemoveUnneededClips(XElement root) {
         var clips = root.Descendants().Where(e => e.Name.LocalName == "clipPath" && e.Attribute("id") != null)
             .ToDictionary(e => (string)e.Attribute("id")!, e => e, StringComparer.Ordinal);
+        foreach (var group in root.Descendants().Where(e => e.Attribute("data-cfx-pattern-kind") != null && e.Attribute("clip-path") != null)) {
+            var reference = (string)group.Attribute("clip-path")!;
+            if (!reference.StartsWith("url(#", StringComparison.Ordinal) || !reference.EndsWith(")", StringComparison.Ordinal)
+                || !clips.TryGetValue(reference.Substring(5, reference.Length - 6), out var clip)) continue;
+            var shapes = group.Elements().Where(e => e.Name.LocalName != "defs").ToArray();
+            var outline = clip.Elements().SingleOrDefault();
+            if ((string?)clip.Attribute("clipPathUnits") == "userSpaceOnUse" && shapes.Length == 1 && shapes[0].Name.LocalName == "path"
+                && (string?)shapes[0].Attribute("stroke") == "none" && outline?.Name.LocalName == "path"
+                && outline.Attributes().All(attribute => attribute.Name.LocalName is "d" or "clip-rule")
+                && (string?)outline.Attribute("d") == (string?)shapes[0].Attribute("d")) {
+                var id = ((string)clip.Attribute("id")!).Replace("-clip-", "-p");
+                outline.SetAttributeValue("id", id);
+                shapes[0].ReplaceWith(new XElement(root.Name.Namespace + "use", new XAttribute("href", "#" + id), shapes[0].Attributes().Where(attribute => attribute.Name.LocalName != "d")));
+                group.Attribute("data-cfx-pattern-kind")!.Remove();
+                group.Attribute("data-cfx-pattern-spacing")?.Remove();
+            }
+        }
         foreach (var group in root.Descendants().Where(e => e.Name.LocalName == "g" && e.Attributes().Count() == 1 && e.Attribute("clip-path") != null).ToArray()) {
             var clipRef = (string)group.Attribute("clip-path")!;
             if (!clipRef.StartsWith("url(#", StringComparison.Ordinal) || !clipRef.EndsWith(")", StringComparison.Ordinal)) continue;
@@ -87,6 +104,19 @@ internal static class HtmlCompactSvg {
             if ((string?)clip.Attribute("clipPathUnits") != "userSpaceOnUse" || bounds.Name.LocalName != "rect" || rect.Name.LocalName != "rect" || (string?)rect.Attribute("stroke") != "none") continue;
             if (Contains(bounds, rect)) group.ReplaceWith(rect);
         }
+        // Pattern tiles replace their clipped line scopes; retire the now-unreferenced outlines as well.
+        var references = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var attribute in root.DescendantsAndSelf().Attributes()) {
+            foreach (Match match in Regex.Matches(attribute.Value, @"url\(#([^)]+)\)")) references.Add(match.Groups[1].Value);
+            if (attribute.Name.LocalName == "href" && attribute.Value.StartsWith("#", StringComparison.Ordinal)) references.Add(attribute.Value.Substring(1));
+        }
+        foreach (var clip in clips.Where(pair => !references.Contains(pair.Key)).Select(pair => pair.Value)) {
+            var parent = clip.Parent; clip.Remove();
+            if (parent != null && parent.Name.LocalName == "defs" && !parent.HasElements) parent.Remove();
+        }
+        // userSpaceOnUse is SVG's default; every retained reference keeps the same coordinate system.
+        foreach (var clip in clips.Values)
+            if ((string?)clip.Attribute("clipPathUnits") == "userSpaceOnUse") clip.Attribute("clipPathUnits")!.Remove();
     }
     private static bool Contains(XElement outer, XElement inner) {
         double Number(XElement e, string name) => double.TryParse((string?)e.Attribute(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : double.NaN;

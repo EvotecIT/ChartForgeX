@@ -15,13 +15,13 @@ internal static partial class VisualRadialCompiler {
         var policy = chart.Options.PieSliceOutline;
         if (policy == null && !chart.Options.PieSliceOpacity.HasValue) {
             builder.Slice(cx, cy, outer, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice),
-                paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, slice.Color, slice.PointIndex), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
+                paint: new VisualScenePaintBinding(SlicePaint(chart, slice), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
             return;
         }
         var stroke = VisualReferenceStroke.Paint(policy, colors.Surface, SvgColorRole.Surface, out var sourceStroke);
         var color = SlicePaintColor(chart, sourceStroke); var fillColor = SlicePaintColor(chart, slice.Color);
         var width = VisualReferenceStroke.PaintedWidth(policy, colors.Surface, 2);
-        var fill = VisualChartPaint.Series(series, slice.Color, slice.PointIndex);
+        var fill = SlicePaint(chart, slice);
         if (chart.Options.PieSliceOpacity.HasValue) {
             var opacity = chart.Options.PieSliceOpacity.Value;
             fill = fill.WithOpacity(fillColor, opacity);

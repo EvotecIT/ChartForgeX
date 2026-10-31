@@ -116,14 +116,25 @@ public sealed class VisualRenderContext {
     internal bool CaptureNativeValueSource { get; private set; }
     internal VisualRenderContext WithNativeValueSource(bool capture) {
         if (capture == CaptureNativeValueSource) return this;
-        var copy = new VisualRenderContext(Layout, Theme, ThemeMode, Frame, _font);
-        copy.NativeTextCapture = NativeTextCapture; copy.CaptureNativeValueSource = capture; return copy;
+        var copy = Copy(); copy.CaptureNativeValueSource = capture; return copy;
     }
+    /// <summary>Whether the host lets readers edit progress rows: an editable progress chart shows its handles.</summary>
+    internal bool EditableProgress { get; private set; }
+    internal VisualRenderContext WithEditableProgress(bool editable) {
+        if (editable == EditableProgress) return this;
+        var copy = Copy(); copy.EditableProgress = editable; return copy;
+    }
+    /// <summary>Carries the host's preparation requests onto a context rebuilt with another layout or frame.</summary>
+    internal VisualRenderContext WithRequestsOf(VisualRenderContext source) =>
+        WithNativeValueSource(source.CaptureNativeValueSource).WithEditableProgress(source.EditableProgress);
     internal VisualSceneTextCapture? NativeTextCapture { get; private set; }
     internal VisualRenderContext WithNativeTextCapture(VisualSceneTextCapture? capture) {
         if (ReferenceEquals(capture, NativeTextCapture)) return this;
-        var copy = new VisualRenderContext(Layout, Theme, ThemeMode, Frame, _font); copy.NativeTextCapture = capture; copy.CaptureNativeValueSource = CaptureNativeValueSource; return copy;
+        var copy = Copy(); copy.NativeTextCapture = capture; return copy;
     }
+    private VisualRenderContext Copy() => new(Layout, Theme, ThemeMode, Frame, _font) {
+        NativeTextCapture = NativeTextCapture, CaptureNativeValueSource = CaptureNativeValueSource, EditableProgress = EditableProgress
+    };
     /// <summary>Gets the resolved layout.</summary>
     public VisualLayoutOptions Layout { get; }
     /// <summary>Gets the paired theme.</summary>

@@ -45,7 +45,8 @@ public sealed class CompactCalendarAxisTests {
             var dates = labels.Select(label => DateTime.ParseExact(year + " " + label.Text.Lines.Single().Text,
                 "yyyy MMM d", CultureInfo.InvariantCulture)).ToArray();
             var days = (dates[1] - dates[0]).Days;
-            Assert.True(dates[0].ToOADate() >= sourceMinimum && dates[0].ToOADate() < sourceMinimum + days);
+            // The axis opens on the first item's day, so the first caption is that day or the next step (design rule 1).
+            Assert.True(dates[0].ToOADate() >= Math.Floor(sourceMinimum) && dates[0].ToOADate() < sourceMinimum + days);
             Assert.All(dates, date => Assert.Equal(0, date.Ticks / TimeSpan.TicksPerDay % days));
         }
         AssertPortable(prepared, labels, "schedule-tick-label", $"compact-calendar-{family}-{width}-{mode}");

@@ -47,7 +47,7 @@ internal sealed partial class VisualValueCapture {
                 if (group.Role == "radial-point") current.Other = group.Metadata.TryGetValue("data-cfx-point", out var point) && point == "-1";
             } else if (node is VisualSceneEndGroup) current = scopes.Pop();
             else if (current.Series != null && node.Role != null &&
-                (current.Observation != null && changed.Readings.Contains((current.Series, current.Observation)) && (changed.CartesianPointInk && current.Point && (node is VisualSceneMark or VisualSceneGradient) || FlashRoles.Contains(node.Role) || CartesianPointFlashRoles.Contains(node.Role) || RadialFlashRoles.Contains(node.Role))
+                (current.Observation != null && changed.Readings.Contains((current.Series, current.Observation)) && (changed.CartesianPointInk && current.Point && (node is VisualSceneMark or VisualSceneGradient) && !node.Role.EndsWith(VisualMarkerScene.RingSuffix, StringComparison.Ordinal) || FlashRoles.Contains(node.Role) || CartesianPointFlashRoles.Contains(node.Role) || RadialFlashRoles.Contains(node.Role))
                 || changed.Series.Contains(current.Series) && !current.Point && (SharedLineFlashRoles.Contains(node.Role) || SharedAreaFlashRoles.Contains(node.Role) || changed.RangeEnvelopeInk && SharedRangeFlashRoles.Contains(node.Role))
                 || current.Node != null && changed.Nodes.Contains((current.Series, current.Node)) && HierarchyFlashRoles.Contains(node.Role)
                 || current.Other && changed.OtherSeries.Contains(current.Series) && RadialFlashRoles.Contains(node.Role))) {
@@ -63,7 +63,7 @@ internal sealed partial class VisualValueCapture {
             var fill = Blend(mark.Fill); var stroke = Blend(mark.Stroke);
             var paint = new VisualScenePaintBinding(Binding(mark.Fill, mark.Paint?.Fill), Binding(mark.Stroke, mark.Paint?.Stroke));
             return mark switch {
-                VisualSceneRectangle rect => new VisualSceneRectangle(rect.Bounds, rect.Radius, fill, stroke, rect.StrokeWidth, rect.Role, rect.Id, paint, rect.Opacity),
+                VisualSceneRectangle rect => new VisualSceneRectangle(rect.Bounds, rect.Radius, fill, stroke, rect.StrokeWidth, rect.Role, rect.Id, paint, rect.Opacity, rect.Corners),
                 VisualSceneEllipse ellipse => new VisualSceneEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, fill, stroke, ellipse.StrokeWidth, ellipse.Role, ellipse.Id, paint, ellipse.Opacity),
                 VisualSceneLine line => new VisualSceneLine(line.Start, line.End, stroke!.Value, line.StrokeWidth, line.Role, line.Id, line.Dash?.ToArray(), paint, line.DashOffset, line.Opacity),
                 VisualScenePath path => new VisualScenePath(new ChartPath(path.Commands), path.Close, fill, stroke, path.StrokeWidth, path.Role, path.Id, path.Dash?.ToArray(), path.Cap, path.Join, paint, path.DashOffset, path.Opacity),

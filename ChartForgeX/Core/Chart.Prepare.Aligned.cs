@@ -28,7 +28,8 @@ public sealed partial class Chart {
         for (var pass = 0; pass <= maximumDomainPasses; pass++) {
             if (domain.Matches(scenes[0]) && domain.Matches(scenes[1])) {
                 if (viewport == null) return (scenes[0], scenes[1], retainFullDrawings ? scenes[0] : null, retainFullDrawings ? scenes[1] : null);
-                return (PrepareCore(firstContext, viewport, domain), PrepareCore(secondContext, viewport, domain),
+                return (PrepareCore(firstContext, viewport, domain.WithTickStepsFrom(scenes[0])),
+                    PrepareCore(secondContext, viewport, domain.WithTickStepsFrom(scenes[1])),
                     retainFullDrawings ? scenes[0] : null, retainFullDrawings ? scenes[1] : null);
             }
             if (pass == maximumDomainPasses)

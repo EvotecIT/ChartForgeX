@@ -1,0 +1,43 @@
+Charts and a CanopyX grid that follow each other
+Four chart families and one data grid of the same illustrative records, wired with one call per pair.
+
+1. Click a segment and the grid filters to its day and kind
+   Host code
+   Language: javascript
+   // Four ChartForgeX charts and one CanopyX grid of the same records follow each other: one call per pair.
+   document.addEventListener("DOMContentLoaded", () => {
+     const grid = document.getElementById("records");                    // the element holding the CanopyX grid
+     const chart = id => CfxEnhance.get(document.getElementById(id));    // the LinkedView API of the chart inside
+   
+     CfxLink.connect(chart("week"), grid, { field: ["day", "kind"], sourceLabel: "Changes this week" });
+     CfxLink.connect(chart("trend"), grid, { field: "day", sourceLabel: "Daily trend" });
+     CfxLink.connect(chart("heatmap"), grid, { field: ["week", "product"], sourceLabel: "Products by week" });
+     CfxLink.connect(chart("support"), grid, { field: "product", sourceLabel: "Support windows" });
+   
+     // Chart to chart: brushing the trend highlights the heatmap cells that hold the same records.
+     CfxLink.connect(chart("trend"), chart("heatmap"), { mode: "highlight", sourceLabel: "Daily trend" });
+   });
+   Static chart snapshot:
+   Records per day by kind for the last seven days of October 2026 (example data).
+
+2. Select grid rows and every chart marks their records
+   Host code
+   Language: javascript
+   // Four ChartForgeX charts and one CanopyX grid of the same records follow each other: one call per pair.
+   document.addEventListener("DOMContentLoaded", () => {
+     const grid = document.getElementById("records");                    // the element holding the CanopyX grid
+     const chart = id => CfxEnhance.get(document.getElementById(id));    // the LinkedView API of the chart inside
+   
+     CfxLink.connect(chart("week"), grid, { field: ["day", "kind"], sourceLabel: "Changes this week" });
+     CfxLink.connect(chart("trend"), grid, { field: "day", sourceLabel: "Daily trend" });
+     CfxLink.connect(chart("heatmap"), grid, { field: ["week", "product"], sourceLabel: "Products by week" });
+     CfxLink.connect(chart("support"), grid, { field: "product", sourceLabel: "Support windows" });
+   
+     // Chart to chart: brushing the trend highlights the heatmap cells that hold the same records.
+     CfxLink.connect(chart("trend"), chart("heatmap"), { mode: "highlight", sourceLabel: "Daily trend" });
+   });
+   Static chart snapshot:
+   Records per product and week, October 2026 (example data).
+
+Outcomes:
+- Each chart and the grid follow each other with one connect call per pair

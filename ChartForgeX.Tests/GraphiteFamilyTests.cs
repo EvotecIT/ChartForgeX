@@ -79,8 +79,8 @@ public sealed class GraphiteFamilyTests {
         });
         var context = VisualExportRequest.ForChart(chart).Context;
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var expected = state is ChartSeriesState.Warning or ChartSeriesState.Danger
-            ? ChartSeriesColours.State(state, colors, colors.Palette[0]) : colors.Palette[0];
+        // The bands carry the status; the value arc stays the measurement in the series colour (design rule 10).
+        var expected = colors.Palette[0];
         foreach (var form in new[] { ChartGaugeForm.Arc, ChartGaugeForm.Needle, ChartGaugeForm.Linear }) {
             chart.Options.Gauge.Form = form; var svg = Literal(chart);
             if (form == ChartGaugeForm.Needle)
@@ -111,8 +111,8 @@ public sealed class GraphiteFamilyTests {
         var colors = VisualExportRequest.ForChart(chart).Context.Theme.Resolve(VisualThemeMode.Light);
         Assert.All(geometry, mark => Assert.Equal(colors.Foreground, mark.Fill));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(label => label.Role == "bullet-value-label").ToArray();
-        Assert.Equal(colors.Status.Critical.Ink, labels[0].Color);
-        Assert.Equal(colors.Foreground, labels[1].Color);
+        // The value is a quantity: below-target stays in data-cfx-status, never in the ink (design rule 10).
+        Assert.All(labels, label => Assert.Equal(colors.Foreground, label.Color));
     }
 
     [Fact]

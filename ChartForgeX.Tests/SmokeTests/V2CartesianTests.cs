@@ -137,7 +137,7 @@ public sealed class V2CartesianTests {
         chart.WithAxes(false);
         builder = new VisualSceneBuilder(new VisualSize(640, 400), context.Font);
         VisualCartesianCompiler.BuildInViewport(chart, context, builder, viewport);
-        var hidden = builder.Build().Nodes.OfType<VisualSceneEllipse>().ToArray();
+        var hidden = builder.Build().Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
         Assert.Equal(viewport.Left, hidden[0].Cx, 10);
         Assert.Equal(viewport.Bottom, hidden[0].Cy, 10);
         Assert.Equal(viewport.Right, hidden[1].Cx, 10);
@@ -155,10 +155,11 @@ public sealed class V2CartesianTests {
         var stacked = Compile(chart).Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bar").ToArray();
         Assert.Equal(stacked[0].Bounds.Left, stacked[2].Bounds.Left, 10);
         Assert.Equal(stacked[1].Bounds.Left, stacked[3].Bounds.Left, 10);
-        Assert.Equal(stacked[2].Bounds.Bottom, stacked[0].Bounds.Top, 10);
-        Assert.Equal(stacked[1].Bounds.Bottom, stacked[3].Bounds.Top, 10);
-        Assert.Equal(4d / 6, stacked[0].Bounds.Height / stacked[2].Bounds.Height, 10);
-        Assert.Equal(3d / 7, stacked[1].Bounds.Height / stacked[3].Bounds.Height, 10);
+        // Stacked segments meet across a 2px surface gap; each gives up half of it at the shared boundary (design rule 4).
+        Assert.Equal(stacked[2].Bounds.Bottom + ChartMarkSurface.SurfaceGap, stacked[0].Bounds.Top, 10);
+        Assert.Equal(stacked[1].Bounds.Bottom + ChartMarkSurface.SurfaceGap, stacked[3].Bounds.Top, 10);
+        Assert.Equal(4d / 6, (stacked[0].Bounds.Height + 1) / (stacked[2].Bounds.Height + 1), 10);
+        Assert.Equal(3d / 7, (stacked[1].Bounds.Height + 1) / (stacked[3].Bounds.Height + 1), 10);
     }
 
     [Fact]
@@ -205,7 +206,7 @@ public sealed class V2CartesianTests {
         chart.Series[0].PointColors.Clear();
         chart.Series[0].WithName("Changed");
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
-        Assert.Equal(color, scene.Nodes.OfType<VisualSceneEllipse>().First().Fill);
+        Assert.Equal(color, scene.Nodes.OfType<VisualSceneEllipse>().First(node => node.Role == "marker").Fill);
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.TryGetValue("data-cfx-series-key", out var key) && key == "measurements");
         Assert.Equal("series-0-point-0", scene.Regions.First(region => region.Role == "point").Id);
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.TryGetValue("data-cfx-source-point", out var point) && point == "0");

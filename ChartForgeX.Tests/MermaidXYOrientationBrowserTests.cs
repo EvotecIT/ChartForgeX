@@ -33,7 +33,8 @@ public sealed class MermaidXYOrientationBrowserTests {
         await page.WaitForSelectorAsync(Point(0, 0));
         if (kind == "bar") Assert.Equal(new[] { "Jan", "Feb", "Mar" }, await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']")));
         var points = new[] { await BoxAsync(page, Point(0, 0)), await BoxAsync(page, Point(0, 1)), await BoxAsync(page, Point(0, 2)) };
-        Assert.True(points[0].Y > points[1].Y && points[1].Y > points[2].Y);
+        // Named categories read like a table, first at the top, as Mermaid draws a horizontal xychart.
+        Assert.True(points[0].Y < points[1].Y && points[1].Y < points[2].Y);
         Assert.True(points[0].X + points[0].Width < points[1].X + points[1].Width && points[1].X + points[1].Width < points[2].X + points[2].Width);
         Assert.Equal("Jan", await page.Locator(Point(0, 0)).GetAttributeAsync("data-cfx-x-label"));
         await MoveToAsync(page, Point(0, 0));

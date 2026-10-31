@@ -12,7 +12,7 @@ namespace ChartForgeX.Rendering;
 internal sealed partial class ChartGanttLaneModel {
     public const double BandMaximum = 22;
     public const double BandMinimum = 4;
-    public const double GroupRowUnits = 0.9;
+    public const double GroupRowUnits = 0.8; // a group header sits close above its first row (design rule 10)
     public const double SeparatorRowUnits = 0.4;
     public const double OpenEndExtension = 0.04;
     public const double BarRadius = 3;

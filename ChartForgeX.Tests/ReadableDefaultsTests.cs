@@ -247,7 +247,7 @@ public sealed class ReadableDefaultsTests {
         var point = ByRole(XDocument.Parse(chart.ToSvg()), "point")[0];
         var label = (string)point.Attribute("aria-label")!;
         Assert.Contains("50.25\u00A0ms", label, StringComparison.Ordinal);
-        Assert.EndsWith("(1.125, 50.25)", label, StringComparison.Ordinal);
+        Assert.StartsWith("Requests: x 1.125, y ", label, StringComparison.Ordinal);
     }
 
     [Theory]

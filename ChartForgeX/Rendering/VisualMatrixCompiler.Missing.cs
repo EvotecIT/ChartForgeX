@@ -12,6 +12,13 @@ internal static partial class VisualMatrixCompiler {
         ChartRect plot, double top, double width, double height, double gap, double radius, VisualThemeColors colors) {
         var stroke = colors.Border;
         var paint = SvgPaint.Of(stroke, SvgColorRole.Grid);
+        var authored = chart.Options.HeatmapColorScale?.NoDataColor != null;
+        var fill = colors.Surface;
+        var fillPaint = SvgPaint.Of(fill, SvgColorRole.Surface);
+        if (authored) {
+            var blend = ChartColorScaleSurface.NoData(chart.Options.HeatmapColorScale, colors);
+            fill = blend.Color; fillPaint = blend.Paint;
+        }
         // Thin dark outlines need more separation from the card to survive antialiasing.
         if (ChartColorMath.RelativeLuminance(colors.ElevatedSurface) < .5) {
             stroke = ChartColorMath.Blend(colors.Border, colors.MutedForeground, .18);
@@ -23,8 +30,9 @@ internal static partial class VisualMatrixCompiler {
             var left = plot.Left + column * (width + gap);
             if (ReverseColumns(chart)) left = plot.Left + plot.Right - left - width;
             var bounds = new ChartRect(left, top, width, height);
-            builder.Rect(bounds, null, stroke, .75, radius, "heatmap-missing-cell",
-                paint: VisualChartPaint.Stroke(paint));
+            builder.Rect(bounds, fill, stroke, .75, radius, "heatmap-missing-cell",
+                paint: new VisualScenePaintBinding(fill: fillPaint, stroke: paint));
+            if (!authored) ChartMissingData.Hatch(builder, ChartPathBuilder.RoundedRectangle(bounds, radius), colors.MutedForeground, "heatmap-missing-cell");
         }
     }
 }

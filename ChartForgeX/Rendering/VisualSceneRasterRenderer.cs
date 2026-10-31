@@ -56,6 +56,7 @@ internal static partial class VisualSceneRasterRenderer {
 if (node is VisualSceneImage image) PaintImage(canvas, image, transform);
         else if (node is VisualSceneGradient gradient) PaintGradient(canvas, gradient, transform);
         else if (!transform.IsIdentity && node is VisualSceneMark transformedMark) PaintContours(canvas, transform.Apply(Contours(transformedMark, canvas.PixelsPerUnit)), transformedMark);
+        else if (node is VisualSceneRectangle partial && partial.HasPartialCorners) PaintContours(canvas, Contours(partial, canvas.PixelsPerUnit), partial);
         else if (node is VisualSceneRectangle rect) {
             var b = rect.Bounds;
             // Only an un-clipped first opaque viewport paint can replace contour blending.

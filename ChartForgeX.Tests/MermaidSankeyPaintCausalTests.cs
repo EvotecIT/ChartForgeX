@@ -62,7 +62,9 @@ public sealed class MermaidSankeyPaintCausalTests {
         var prepared = SankeyFlowColorTests.Prepare(chart); Capture("causal-default-" + dark, prepared);
         Assert.Equal(ChartSankeyFlowColorMode.Source, chart.Options.Sankey.FlowColorMode);
         Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "sankey-ribbon");
-        Assert.Contains(prepared.Scene.Nodes, node => node.Role == "sankey-label-backdrop");
+        // Captions read over flows through a surface halo, not a box (design rule 8).
+        Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "sankey-label-backdrop");
+        Assert.Equal(ChartSankeyLabelStyle.Outlined, chart.Options.Sankey.LabelStyle);
     }
 
     private static MermaidParseResult<MermaidSankeyDocument> Parse(string settings) => new MermaidParser().ParseSankey("%%{init: {\"sankey\":{" + settings + "}}}%%\nsankey-beta\nA,B,6");

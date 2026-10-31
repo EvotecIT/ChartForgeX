@@ -104,9 +104,9 @@ public sealed class WaterfallOpeningBalanceTests {
         Assert.Contains(prepared.Regions, region => region.Role == "axis-x-label" && region.Label == "Initial balance (1)");
         var colors = context.Theme.Resolve(context.ThemeMode);
         var legends = VisualCartesianCompiler.LegendEntries(chart, colors);
-        Assert.Equal("Initial balance", legends[0].Label); Assert.Equal(ChartSeriesColours.Resolve(chart.Series[0], 0, colors), legends[0].Color);
+        Assert.Equal("Initial balance", legends[0].Label); Assert.Equal(colors.Palette[0], legends[0].Color); // balances are quantities, not a status
         Assert.Equal(groups[0].Metadata["data-cfx-source-point"], legends[0].Metadata!["data-cfx-source-point"]);
-        Assert.Equal(ChartSeriesColours.Resolve(chart.Series[0], 0, colors), prepared.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "waterfall-bar").Fill);
+        Assert.Equal(colors.Palette[0], prepared.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "waterfall-bar").Fill);
         var accent = ChartColor.FromHex("#A5358A");
         chart.Series[0].WithPointColor(0, accent).WithPointFillPattern(0, ChartFillPattern.Crosshatch).WithPointLabel(0, "Opening caption")
             .ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFFFF"));

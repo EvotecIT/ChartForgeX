@@ -34,7 +34,8 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     [Fact]
     public void SerializedFixtureStaysWithinBudget() {
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12), 240, 1600);
-        Assert.True(Encoding.UTF8.GetByteCount(fragment) <= 256 * 1024);
+        var bytes = Encoding.UTF8.GetByteCount(fragment);
+        Assert.True(bytes <= 256 * 1024, $"Serialized markup is {bytes} bytes.");
         Assert.Contains("chartforgex/layout-3", fragment);
     }
 
@@ -208,6 +209,8 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     [BrowserFact]
     public async Task WrappedBottomLegendStaysBelowDatesOnScreenAndInPrintIncludingEarlierLayout3() {
         var chart = Fixture(12); chart.Options.LegendPosition = ChartLegendPosition.BottomLeft;
+        chart.WithStateCategories(chart.Options.StateCategories.Select(category => new ChartStateCategory(category.Key,
+            "Service status: " + category.Label, category.Color, category.Pattern, category.Emphasis)).ToArray());
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
         await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div style='width:390px'>" + fragment + "</div></body></html>", 390, 1000);
         var page = session.Page;

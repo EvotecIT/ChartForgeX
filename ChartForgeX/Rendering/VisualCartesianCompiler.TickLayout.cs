@@ -38,10 +38,36 @@ internal static partial class VisualCartesianCompiler {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
-        for (var count = NumericFittingCount(axis, minimum, maximum, length, horizontal, style); count >= 2; count--) {
+        // Count data (every observation a whole number) reads in whole-number steps: no "2.5 incidents".
+        if (labels.CountAxes.Contains(axis) && axis.Scale == ChartScaleKind.Linear && maximum - minimum >= 2) policy.IntegerTicks = true;
+        // A snapped value axis (design rule 1) checks the captions it will actually paint: the candidate's clean ends
+        // included, positioned on the snapped domain. A later pass over that domain then selects the same ticks.
+        var snap = labels.SnapAxes.Contains(axis) && ChartValueAxisRange.Applies(axis);
+        labels.SnappedDomains.Remove(axis);
+        // A frozen domain (a source viewport) reuses the full pass's clean step, so both show the same value ticks.
+        if (snap && labels.FreezeDomains && axis.PreparedValueTickStep is double frozenStep && frozenStep > 0 && (maximum - minimum) / frozenStep <= 1000) {
+            var frozen = new List<double>();
+            for (var index = 0; minimum + index * frozenStep <= maximum + frozenStep * 1e-6; index++) frozen.Add(Math.Round((minimum + index * frozenStep) / frozenStep) * frozenStep);
+            if (frozen.Count >= 2) { labels.SetFittedTicks(axis, frozen); return; }
+        }
+        var first = NumericFittingCount(axis, minimum, maximum, length, horizontal, style);
+        if (snap && !labels.FreezeDomains) axis.PreparedValueTickStep = null;
+        for (var count = first; count >= 2; count--) {
             policy.TickCount = count;
             ticks = ChartTicks.GenerateInside(policy, minimum, maximum);
-            if (AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
+            if (!snap) {
+                if (AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
+                continue;
+            }
+            var low = minimum; var high = maximum;
+            var snapped = ChartValueAxisRange.Snap(axis, ref low, ref high, labels.FreezeDomains ? WithinDomain(ticks, minimum, maximum) : ticks);
+            // A frozen (already clean) domain only accepts a step whose ticks land on its existing ends.
+            var tolerance = (maximum - minimum) * 1e-6;
+            if (labels.FreezeDomains && (Math.Abs(low - minimum) > tolerance || Math.Abs(high - maximum) > tolerance)) continue;
+            ticks = snapped;
+            if (!labels.FreezeDomains) { labels.SnappedDomains[axis] = (low, high); axis.PreparedValueTickStep = snapped.Count >= 2 ? snapped[1] - snapped[0] : null; }
+            if (AxisLabelSequenceFits(builder, axis, snapped, value => ChartScaleTransform.Normalize(value, low, high, axis) * length,
+                horizontal, style, gap, fallback, labels)) break;
         }
         labels.SetFittedTicks(axis, ticks);
     }
@@ -101,6 +127,71 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.YAxis.Visible) FitGeneratedAxisTicks(builder, chart.Options.YAxis, range.MinY, range.MaxY, plot.Height, false, style, spacing, chart.Options.ValueFormatter, labels);
         if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible)
             FitGeneratedAxisTicks(builder, chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY, plot.Height, false, style, spacing, chart.Options.ValueFormatter, labels);
+    }
+
+    /// <summary>
+    /// Applies the library-wide value-axis rule after the readable tick step is chosen: every automatic linear value axis
+    /// (Y on vertical charts, X on horizontal ones, and X for scatter/bubble) ends on its next clean tick.
+    /// </summary>
+    private static void SnapValueDomains(Chart chart, ChartRange range, ChartRange? secondaryRange, AxisLabelCache labels, bool horizontal) {
+        if (chart.Options.IsSparkline) return;
+        if (horizontal) {
+            var axes = HorizontalAxes(chart, labels);
+            SnapX(axes.Value, range);
+            if (secondaryRange != null) SnapX(chart.Options.SecondaryXAxis, secondaryRange);
+            return;
+        }
+        SnapY(chart.Options.YAxis, range);
+        if (secondaryRange != null) SnapY(chart.Options.SecondaryYAxis, secondaryRange);
+        if (chart.Series.Count > 0 && chart.Series.All(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble)) {
+            SnapX(chart.Options.XAxis, range);
+            if (secondaryRange != null) secondaryRange.SetXBounds(range.MinX, range.MaxX);
+        }
+
+        void SnapY(ChartAxis axis, ChartRange target) {
+            if (!ChartValueAxisRange.Applies(axis)) return;
+            if (labels.SnappedDomains.TryGetValue(axis, out var fitted)) { target.SetYBounds(fitted.Minimum, fitted.Maximum); return; }
+            var minimum = target.MinY; var maximum = target.MaxY;
+            var ticks = ChartValueAxisRange.Snap(axis, ref minimum, ref maximum, labels.Ticks(axis, target.MinY, target.MaxY));
+            target.SetYBounds(minimum, maximum);
+            labels.SetFittedTicks(axis, ticks);
+        }
+        void SnapX(ChartAxis axis, ChartRange target) {
+            if (!ChartValueAxisRange.Applies(axis)) return;
+            if (labels.SnappedDomains.TryGetValue(axis, out var fitted)) { target.SetXBounds(fitted.Minimum, fitted.Maximum); return; }
+            var minimum = target.MinX; var maximum = target.MaxX;
+            var ticks = ChartValueAxisRange.Snap(axis, ref minimum, ref maximum, labels.Ticks(axis, target.MinX, target.MaxX));
+            target.SetXBounds(minimum, maximum);
+            labels.SetFittedTicks(axis, ticks);
+        }
+    }
+
+    /// <summary>Treats ticks within a millionth of the span of a frozen domain's ends as those ends.</summary>
+    private static IReadOnlyList<double> WithinDomain(IReadOnlyList<double> ticks, double minimum, double maximum) {
+        var tolerance = (maximum - minimum) * 1e-6;
+        return ticks.Select(tick => Math.Abs(tick - minimum) <= tolerance ? minimum : Math.Abs(tick - maximum) <= tolerance ? maximum : tick).ToArray();
+    }
+
+    /// <summary>Names the value axes that snap to clean ticks, so the tick fitter measures the captions they will paint.</summary>
+    private static void CollectSnapAxes(Chart chart, AxisLabelCache labels, bool horizontal) {
+        labels.SnapAxes.Clear();
+        if (chart.Options.IsSparkline) return;
+        if (horizontal) { labels.SnapAxes.Add(HorizontalAxes(chart, labels).Value); labels.SnapAxes.Add(chart.Options.SecondaryXAxis); return; }
+        labels.SnapAxes.Add(chart.Options.YAxis); labels.SnapAxes.Add(chart.Options.SecondaryYAxis);
+        if (chart.Series.Count > 0 && chart.Series.All(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble)) labels.SnapAxes.Add(chart.Options.XAxis);
+    }
+
+    /// <summary>Marks value axes whose observations are all whole numbers so their generated ticks stay whole.</summary>
+    private static void CollectCountAxes(Chart chart, AxisLabelCache labels, bool horizontal) {
+        foreach (var side in new[] { ChartAxisSide.Primary, ChartAxisSide.Secondary }) {
+            var series = chart.Series.Where(item => item.ValueAxis == side && item.RenderPoints.Count > 0).ToArray();
+            if (series.Length == 0) continue;
+            var values = series.SelectMany(item => item.Kind == ChartSeriesKind.Bubble
+                ? item.RenderPoints.Where((_, index) => index % 2 == 0).Select(point => point.Y) : item.RenderPoints.Select(point => point.Y));
+            if (!ChartValueAxisRange.IsCountData(values)) continue;
+            labels.CountAxes.Add(horizontal ? side == ChartAxisSide.Primary ? HorizontalAxes(chart, labels).Value : chart.Options.SecondaryXAxis
+                : side == ChartAxisSide.Primary ? chart.Options.YAxis : chart.Options.SecondaryYAxis);
+        }
     }
 
     private static IReadOnlyList<double>? RegularTimeBarObservations(Chart chart) {

@@ -44,7 +44,7 @@ public sealed class HorizontalWaterfallTests {
         var starts = new[] { 0d, 0, 100, 100, -40, -40, 0, -15 };
         var ends = new[] { 100d, 100, -40, -40, -40, -15, -15, -5 };
         double X(double value) => (reverseValue ? (150 - value) : (value + 50)) * 4;
-        double Y(double value) => (reverseCategory ? value : 9 - value) / 9 * 400;
+        double Y(double value) => (reverseCategory ? 9 - value : value) / 9 * 400; // named categories read top-down
         Assert.Equal(coordinates.Length, regions.Length);
         for (var index = 0; index < regions.Length; index++) {
             var bounds = regions[index].Bounds;

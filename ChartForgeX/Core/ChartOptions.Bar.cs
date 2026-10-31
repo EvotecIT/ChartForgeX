@@ -54,6 +54,9 @@ public sealed partial class ChartOptions {
     /// <summary>Snapshots the chart's canonical grid treatment for detached preparation.</summary>
     internal ChartGridLineStyle ResolvePreparedGridLineStyle() => _gridLineStyle.Clone();
 
+    /// <summary>Whether the grid style was set as a whole; schedules then honour its row lines literally.</summary>
+    internal bool HasExplicitGridLineStyle => _hasExplicitGridStyle;
+
     internal bool HasPreparedGridStrokeWidth => _hasExplicitGridStyle || _gridLineStyle.HasExplicitStrokeWidth;
 
     /// <summary>Snapshots the chart's canonical bar treatment for detached preparation.</summary>

@@ -65,7 +65,7 @@ public sealed class VisualThemeJsonTests {
     [Fact]
     public void DefaultTypographySeparatesFrameTitlesFromScalarAndCenterValues() {
         var theme = VisualTheme.Graphite();
-        Assert.Equal(new[] { 17d, 13.5, 12, 13, 12, 34, 20 }, new[] {
+        Assert.Equal(new[] { 16d, 13, 12, 12, 12, 34, 20 }, new[] {
             theme.Typography.TitleSize, theme.Typography.SubtitleSize, theme.Typography.AxisSize,
             theme.Typography.LegendSize, theme.Typography.DataLabelSize,
             theme.Typography.ScalarValueSize, theme.Typography.CenterValueSize

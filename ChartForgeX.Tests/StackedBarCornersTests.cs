@@ -58,7 +58,8 @@ public sealed class StackedBarCornersTests {
             // Near both sides of each internal boundary, neither segment loses its corner to a notch.
             foreach (var bar in new[] { (Bounds: a, Color: red), (Bounds: b, Color: blue) }) {
                 var join = horizontal ? (a.Left < b.Left ? a.Right : a.Left) : (a.Top < b.Top ? a.Bottom : a.Top);
-                var inward = horizontal ? (bar.Bounds.Left < join ? -2 : 2) : (bar.Bounds.Top < join ? -2 : 2);
+                // Segments meet across a 2px surface gap (design rule 4); sample 2px inside each segment's own edge.
+                var inward = horizontal ? (bar.Bounds.Left < join ? -4 : 4 + ChartMarkSurface.SurfaceGap) : (bar.Bounds.Top < join ? -4 : 4 + ChartMarkSurface.SurfaceGap);
                 var x = horizontal ? join + inward : bar.Bounds.Left + 2;
                 var y = horizontal ? bar.Bounds.Top + 2 : join + inward;
                 var offset = ((int)y * image.Width + (int)x) * 4;

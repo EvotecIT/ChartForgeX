@@ -10,8 +10,10 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScheduleCompiler {
     private static void Dependencies(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         IReadOnlyDictionary<int, RangeItem> items, IReadOnlyList<ChartGanttOrdinalDependency> links, Func<double, double> project, double slot, double height, double minimum, double maximum, IReadOnlyList<ChartRect>? otherSurfaces = null) {
-        var color = context.Theme.Resolve(context.ThemeMode).MutedForeground;
-        var paint = VisualChartPaint.Stroke(color, SvgColorRole.Text);
+        // Connectors are context, not data: a light 1px secondary-ink route with a small chevron, so bars stay the subject.
+        var ink = context.Theme.Resolve(context.ThemeMode).MutedForeground;
+        var color = ChartColorMath.WithOpacity(ink, DependencyOpacity);
+        var paint = VisualChartPaint.Stroke(SvgPaint.Of(ink, SvgColorRole.Text).WithOpacity(color, DependencyOpacity));
         var surfaces = items.Values.Where(item => !item.Marker && item.End >= minimum && item.Start <= maximum)
             .Select(item => RangeBounds(chart, item, plot, project, slot, height)).Concat(otherSurfaces ?? Array.Empty<ChartRect>())
             .Select(surface => ScheduleCanonicalX(chart, plot, surface)).ToArray();
@@ -58,7 +60,8 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private static double DependencyClearance(VisualRenderContext context) => context.Theme.AxisStrokeWidth / 2 + Math.Max(2, context.Theme.Spacing / 4);
-    private static double DependencyArrowExtent(double height) => Math.Min(5, height / 3);
+    private const double DependencyOpacity = .55;
+    private static double DependencyArrowExtent(double height) => Math.Min(3, height / 4);
     private static double DependencyStubLength(VisualRenderContext context, double arrow) => Math.Max(arrow, context.Theme.Spacing);
 
 }
