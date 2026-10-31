@@ -94,7 +94,7 @@
 
     var layer = set(make("g", "cfx-e-layer", svg), { "aria-hidden": "true", "pointer-events": "none" });
     var states = make("g", null, layer);
-    var geometry = null, hover = null, selection = [], highlight = new Set(), filters = {}, emphasis = null;
+    var geometry = null, hover = null, selection = [], highlight = new Set(), filters = Object.create(null), emphasis = null;
     var keyboard = false, pointerType = "", tapped = null;
 
     // Ask attached behaviours in registration order; the first defined answer wins.
@@ -194,10 +194,10 @@
       return info.name && own.every(function (x) { return String(x.fields[name]) === String(v); }) ? info.name : String(v);
     }
     function detail(ms, range, label) {
-      var keys = [], seen = {}, values = {}, texts = {}, extra = ms.length && ask("describe", ms) || {};
+      var keys = [], seen = Object.create(null), values = Object.create(null), texts = Object.create(null), extra = ms.length && ask("describe", ms) || {};
       ms.forEach(function (m) {
         m.keys.forEach(function (k) { if (!seen[k]) { seen[k] = 1; keys.push(k); } });
-        var fields = {}, name;
+        var fields = Object.create(null), name;
         for (name in m.fields) fields[name] = m.fields[name];
         if (api.xField && fields[api.xField] === undefined && m.xv != null) fields[api.xField] = m.xv;
         for (name in fields) {
@@ -431,14 +431,15 @@
         if (f.label) copy.label = f.label;
         return copy;
       });
-      if (next && next.length) filters[source] = next; else delete filters[source];
+      if (next && !next.length) next = null;
+      if (next) filters[source] = next; else delete filters[source];
       paint();
       announce(next ? format(L.filtered, { source: next[0].sourceLabel }) : L.unfiltered);
       fire(svg, "cfx:externalfilter", { filters: api.getExternalFilters(), reason: "api" });
       return Promise.resolve(true);
     };
     api.clearExternalFilters = function (source) {
-      if (source) delete filters[source]; else filters = {};
+      if (source) delete filters[source]; else filters = Object.create(null);
       paint();
       fire(svg, "cfx:externalfilter", { filters: api.getExternalFilters(), reason: "api" });
       return Promise.resolve(true);

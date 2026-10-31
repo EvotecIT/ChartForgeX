@@ -250,6 +250,53 @@ public sealed class EnhanceRuntimeBrowserTests {
         Assert.NotEqual(moved, await page.EvaluateAsync<string>("() => document.activeElement.getAttribute('data-cfx-date')"));
     }
 
+    [BrowserFact]
+    public async Task EmptyExternalFilter_ClearsItsSourceWithoutEchoingSelection() {
+        if (!Enabled) return;
+        var svg = Activity().Prepare(Context()).ToSvg(new VisualSvgOptions("activity").WithEnhanceHooks());
+        await using var session = await OpenAsync(Page(svg));
+        var page = session.Page;
+        await page.EvaluateAsync("""
+            async () => {
+              window.chart = document.querySelector('svg').cfx;
+              window.echo = 0;
+              chart.svg.addEventListener('cfx:linkchange', () => echo++);
+              await chart.setExternalFilter('records', {field:'kind', values:['note']});
+            }
+            """);
+        Assert.Equal(4, await page.Locator(".cfx-e-filtered").CountAsync());
+        await page.EvaluateAsync("async () => { await chart.setExternalFilter('records', []); }");
+        Assert.Equal(0, await page.Locator(".cfx-e-filtered").CountAsync());
+        Assert.Equal("[]", await page.EvaluateAsync<string>("() => JSON.stringify(chart.getExternalFilters())"));
+        Assert.Equal(0, await page.EvaluateAsync<int>("() => echo"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task LinkedRecords_KeepKeysAndFieldsThatMatchObjectPropertyNames() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithLegend(false).AddBar("Records", new[] {
+            new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(keys: new[] {"__proto__", "constructor", "toString"},
+                fields: new Dictionary<string, object> { ["__proto__"] = "keep", ["constructor"] = "record" })),
+            new ChartPoint(2, 4).WithMarkOptions(new ChartMarkOptions(keys: new[] {"other"},
+                fields: new Dictionary<string, object> { ["__proto__"] = "exclude", ["constructor"] = "record" }))
+        });
+        var svg = chart.Prepare(Context()).ToSvg(new VisualSvgOptions("records").WithEnhanceHooks());
+        await using var session = await OpenAsync(Page(svg));
+        var page = session.Page;
+        await page.Locator("[data-cfx-mark]").First.ClickAsync();
+        Assert.Equal("[\"__proto__\",\"constructor\",\"toString\"]", await page.EvaluateAsync<string>(
+            "() => JSON.stringify(document.querySelector('svg').cfx.getSelection().keys)"));
+        Assert.Equal("{\"__proto__\":[\"keep\"],\"constructor\":[\"record\"]}", await page.EvaluateAsync<string>(
+            "() => JSON.stringify(document.querySelector('svg').cfx.getSelection().values)"));
+        await page.EvaluateAsync("async () => { await document.querySelector('svg').cfx.setExternalFilter('__proto__', {field:'__proto__',values:['keep']}); }");
+        Assert.Equal(1, await page.Locator(".cfx-e-filtered").CountAsync());
+        Assert.Equal("__proto__", await page.EvaluateAsync<string>("() => document.querySelector('svg').cfx.getExternalFilters()[0].source"));
+        await page.EvaluateAsync("async () => { await document.querySelector('svg').cfx.clearExternalFilters('__proto__'); }");
+        Assert.Equal(0, await page.Locator(".cfx-e-filtered").CountAsync());
+        AssertNoConsoleErrors(session);
+    }
+
     private sealed class EnhanceRow {
         public string Name { get; set; } = "";
         public bool Enhanced { get; set; }
