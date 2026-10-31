@@ -1,10 +1,18 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
+    /// <summary>Whether every column caption is a number or a date, so thinning them loses no column identity.</summary>
+    private static bool OrderedColumnCaptions(IReadOnlyList<string> captions) => captions.Count > 1 && captions.All(caption => caption.Trim().Length > 0
+        && (double.TryParse(caption, NumberStyles.Float, CultureInfo.InvariantCulture, out _)
+            || DateTime.TryParse(caption, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out _)));
+
     /// <summary>Draws measured wrapped captions while keeping the original category in descriptive exports.</summary>
     private static void MatrixColumnText(VisualSceneBuilder builder, string caption, string displayed, ChartRect bounds,
         TextStyle style, string id) {

@@ -19,12 +19,14 @@ internal static partial class VisualMatrixCompiler {
         var widest = captions
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var lineHeight = builder.MeasureText("Mg", style).Height;
-        var left = y ? Math.Min(viewport.Width * .3, rows.Select((row, index) => builder.MeasureText(rowLabels == null ? row.Name : rowLabels[index], style).Width).DefaultIfEmpty(0).Max() + gap) : 0;
+        var left = y ? Math.Min(viewport.Width * .3, rows.Select((row, index) => builder.MeasureText(rowLabels == null ? row.Name : rowLabels[index], style).Width).DefaultIfEmpty(0).Max() + gap + 8) : 0;
         var hexagonal = rows[0].Kind == ChartSeriesKind.HexbinHeatmap;
         var pitch = Math.Max(0, viewport.Width - left) / (columns.Length + (hexagonal ? .5 : 0));
         var angle = ChartHeatmapColumnLabels.Angle(chart);
         var displayed = captions;
-        if (x && !chart.Options.XAxis.HasExplicitLabelAngle && Math.Abs(angle) < .001 && widest + LabelPlacementService.DefaultGap > pitch) {
+        // Dates and numbers are ordered, so they stay horizontal and thin out at a regular stride in MatrixAxes;
+        // named columns wrap or rotate, because skipping a name would hide that column.
+        if (x && !chart.Options.XAxis.HasExplicitLabelAngle && Math.Abs(angle) < .001 && widest + LabelPlacementService.DefaultGap > pitch && !OrderedColumnCaptions(captions)) {
             var wrapped = captions.Select(text => string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
                 Math.Max(0, pitch - LabelPlacementService.DefaultGap), (value, _) => builder.MeasureText(value, style).Width))).ToArray();
             // Wrap at word boundaries when every full caption fits; otherwise use the same measured rotated band
@@ -79,13 +81,16 @@ internal static partial class VisualMatrixCompiler {
     }
 
     private static void MatrixAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartRect plot,
-        double[] columns, double cellWidth, double gap, MatrixLayout layout, Func<double, string> formatColumn) {
+        double[] columns, double cellWidth, double gap, MatrixLayout layout, Func<double, string> formatColumn, int sourceOffset) {
         var style = VisualStateSceneTools.TickStyle(chart, context);
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels) {
             var angle = layout.LabelAngle;
             var width = columns.Select(value => builder.MeasureText(formatColumn(value), style).Width).DefaultIfEmpty(0).Max();
             var pitch = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Width / (columns.Length + .5) : cellWidth + gap;
-            var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, viewport, pitch, builder.MeasureText("Mg", style).Height, width, angle);
+            var shown = layout.ColumnLabels.Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
+            var step = Math.Abs(angle) >= .001 ? ChartHeatmapColumnLabels.Step(chart, viewport, pitch, builder.MeasureText("Mg", style).Height, width, angle)
+                : shown + LabelPlacementService.DefaultGap > pitch && pitch > 0 ? (int)Math.Ceiling((shown + LabelPlacementService.DefaultGap) / pitch) : 1;
+            var thinned = Math.Abs(angle) < .001 && step > 1; var last = columns.Length - 1;
             if (step > 1) builder.AddDiagnostic(new VisualDiagnostic("matrix.column-label-density",
                 "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."));
             for (var index = 0; index < columns.Length; index++) {
@@ -93,16 +98,32 @@ internal static partial class VisualMatrixCompiler {
                 var x = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (index + .5) * plot.Width / (columns.Length + .5)
                     : plot.Left + index * (cellWidth + gap) + cellWidth / 2;
                 if (ReverseColumns(chart)) x = plot.Left + plot.Right - x;
-                if (index % step != 0) {
+                // Thinned horizontal captions keep the first and the last column; a stride caption too close to the last gives way.
+                var hidden = thinned ? index != last && (index % step != 0 || index != 0 && last - index < step) : index % step != 0;
+                if (thinned && index != 0 && index != last && !hidden) {
+                    // Edge clamping moves the final caption inward. Compare its actual centered position,
+                    // not merely the source stride, before keeping the preceding caption.
+                    var span = Math.Min(pitch * step, viewport.Width);
+                    var lastX = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (last + .5) * plot.Width / (columns.Length + .5)
+                        : plot.Left + last * (cellWidth + gap) + cellWidth / 2;
+                    if (ReverseColumns(chart)) lastX = plot.Left + plot.Right - lastX;
+                    var center = Math.Max(viewport.Left + span / 2, Math.Min(viewport.Right - span / 2, x));
+                    var lastCenter = Math.Max(viewport.Left + span / 2, Math.Min(viewport.Right - span / 2, lastX));
+                    hidden = Math.Abs(center - lastCenter) < shown + LabelPlacementService.DefaultGap;
+                }
+                if (hidden) {
                     // Density limits only visible labels. Retain the omitted column's complete caption
                     // and descriptive slot just as fitted visible labels retain their full source text.
-                    builder.AddRegion(new VisualSemanticRegion("matrix-column-" + index, "heatmap-column-label",
+                    builder.AddRegion(new VisualSemanticRegion("matrix-column-" + (index + sourceOffset), "heatmap-column-label",
                         new ChartRect(x - cellWidth / 2, plot.Bottom, cellWidth, layout.LabelHeight), text));
                     continue;
                 }
                 if (Math.Abs(angle) < .001) {
-                    MatrixColumnText(builder, text, layout.ColumnLabels[index], new ChartRect(x - pitch / 2 + 1, plot.Bottom, Math.Max(0, pitch - 2), layout.LabelHeight),
-                        style, "matrix-column-" + index);
+                    // A thinned caption may use the columns it stands for, kept inside the chart.
+                    var span = thinned ? Math.Min(pitch * step, viewport.Width) : pitch;
+                    var spanLeft = thinned ? Math.Max(viewport.Left, Math.Min(viewport.Right - span, x - span / 2)) : x - pitch / 2;
+                    MatrixColumnText(builder, text, layout.ColumnLabels[index], new ChartRect(spanLeft + 1, plot.Bottom, Math.Max(0, span - 2), layout.LabelHeight),
+                        style, "matrix-column-" + (index + sourceOffset));
                 } else {
                     var radians = Math.Abs(angle) * Math.PI / 180;
                     var height = builder.MeasureText(text, style).Height;
@@ -117,7 +138,7 @@ internal static partial class VisualMatrixCompiler {
                     using (builder.PushClip(viewport))
                     using (builder.PushRotation(angle, x, plot.Bottom + 8))
                         VisualStateSceneTools.Text(builder, text, new ChartRect(left, plot.Bottom + 8, textWidth, height), style,
-                            "heatmap-column-label", "matrix-column-" + index, angle < 0 ? TextAlignment.Right : TextAlignment.Left);
+                            "heatmap-column-label", "matrix-column-" + (index + sourceOffset), angle < 0 ? TextAlignment.Right : TextAlignment.Left);
                 }
             }
             VisualStateSceneTools.Text(builder, layout.XTitle, new ChartRect(plot.Left, plot.Bottom + layout.LabelHeight + layout.ColumnGroupHeight, plot.Width, layout.TitleHeight),

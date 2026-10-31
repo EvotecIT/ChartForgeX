@@ -191,7 +191,7 @@
     function said(m, name, v) {
       var own = bySeries[m.s], info = series[m.s];
       if (DATE.test(v)) return m.head || String(v);
-      return info.name && own.every(function (x) { return String(x.fields[name]) === String(v); }) ? info.name : String(v);
+      return info.name && own.every(function (x) { return String(value(x, name)) === String(v); }) ? info.name : String(v);
     }
     function detail(ms, range, label) {
       var keys = [], seen = Object.create(null), values = Object.create(null), texts = Object.create(null), extra = ms.length && ask("describe", ms) || {};
@@ -209,7 +209,7 @@
       if (ms.length && (range || extra.range)) result.range = range || extra.range;
       return result;
     }
-    function value(m, field) { var v = m.fields[field]; return v === undefined && field === api.xField ? m.xv : v; }
+    function value(m, field) { var v = Object.prototype.hasOwnProperty.call(m.fields, field) ? m.fields[field] : undefined; return v === undefined && field === api.xField ? m.xv : v; }
     function passes(m) {
       for (var source in filters) {
         if (!filters[source].every(function (f) {
@@ -252,7 +252,10 @@
         set(make(kind, "cfx-e-halo", halos), s);
         set(make(kind, on ? "cfx-e-sel" : "cfx-e-sel cfx-e-ring", rings), s);
       });
-      var focus = d.activeElement;
+      var tab = marks.filter(function (m) { return m.el.getAttribute("tabindex") === "0" && visible(m); })[0] || marks.filter(visible)[0];
+      marks.forEach(function (m) { m.el.setAttribute("tabindex", m === tab ? "0" : "-1"); });
+      var focus = d.activeElement, focused = svg.contains(focus) ? markOf(focus) : null;
+      if (focused && !visible(focused) && tab) { go(tab); return; }
       if (keyboard && focus && focus !== svg && svg.contains(focus)) {
         var fm = markOf(focus), r = fm ? null : focus.getBoundingClientRect(), fg = fm ? rects()[fm.n] : { l: r.left, t: r.top, r: r.right, b: r.bottom };
         // Focus sits outside the selection halo in the focus-ring colour, so the two never look alike.
@@ -372,13 +375,13 @@
     svg.addEventListener("click", function (e) {
       if (ask("click", e)) { e.preventDefault(); e.stopPropagation(); return; }
       if (e.target.closest(LEGEND)) return;
-      var own = markOf(e.target) || hit(e.clientX, e.clientY), ms = ask("targets", e) || (own && visible(own) ? [own] : []);
+      var target = markOf(e.target), own = target || hit(e.clientX, e.clientY), ms = ask("targets", e) || (own && visible(own) ? [own] : []);
       var id = ms.map(function (m) { return m.n; }).join();
-      if (pointerType === "touch" && ms.length && tapped !== id) { tapped = id; e.preventDefault(); return; }
+      if (pointerType === "touch" && e.detail !== 0 && !e.ctrlKey && !e.metaKey && ms.length && tapped !== id) { tapped = id; e.preventDefault(); return; }
       tapped = null;
       if (!ms.length) { if (inside(plot(), e)) clear(); return; }
       // Keyboard Enter (detail 0) and modified clicks on a linked mark keep native navigation.
-      if (ms.length === 1 && ms[0].href && (!api.selectOnClick || e.detail === 0 || e.ctrlKey || e.metaKey)) return;
+      if (target && visible(target) && target.href && (!api.selectOnClick || e.detail === 0 || e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       choose(ms, e.shiftKey);
     }, true);

@@ -9,6 +9,9 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
+    // The key uses the chart's value unit, like the cell readouts; a format that already writes it keeps one copy.
+    private static string? KeyUnit(Chart chart, ChartColorPresentation presentation) => chart.Options.ValueUnit;
+
     private static TextStyle ColorScaleStyle(Chart chart, VisualRenderContext context) =>
         context.Frame.LegendStyle ?? VisualStateSceneTools.TickStyle(chart, context);
 
@@ -21,7 +24,7 @@ internal static partial class VisualMatrixCompiler {
         bool missing = false, bool hasDomain = true, double min = 0, double max = 0) =>
         VisualColorScaleLegendScene.Height(builder, chart.Options.HeatmapColorScale!, presentation.Labels, ColorScaleStyle(chart, context),
             context.Theme.Spacing / 2, width, maximum, missing, presentation.ScaleValues, hasDomain: hasDomain, min: min, max: max,
-            heading: presentation.HasName ? presentation.Name : null, legendStyle: presentation.LegendStyle);
+            heading: presentation.HasName ? presentation.Name : null, legendStyle: presentation.LegendStyle, unit: KeyUnit(chart, presentation));
 
     private static void ColorScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds,
         double min, double max, string prefix, ChartColorPresentation presentation, bool missing = false, ChartColorBlend? missingBlend = null, bool hasDomain = true) {
@@ -29,6 +32,6 @@ internal static partial class VisualMatrixCompiler {
         var scale = chart.Options.HeatmapColorScale!;
         VisualColorScaleLegendScene.Draw(builder, scale, presentation.Labels, ColorScaleStyle(chart, context), context.Theme.Spacing / 2,
             bounds, min, max, prefix, missing, missingBlend ?? ChartColorScaleSurface.NoData(scale, context.Theme.Resolve(context.ThemeMode)),
-            presentation.ScaleValues, hasDomain: hasDomain, heading: presentation.HasName ? presentation.Name : null, valueName: presentation.HasOverrides ? presentation.Name : null, legendStyle: presentation.LegendStyle);
+            presentation.ScaleValues, hasDomain: hasDomain, heading: presentation.HasName ? presentation.Name : null, valueName: presentation.HasOverrides ? presentation.Name : null, legendStyle: presentation.LegendStyle, unit: KeyUnit(chart, presentation));
     }
 }

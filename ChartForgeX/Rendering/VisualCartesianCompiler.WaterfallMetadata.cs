@@ -14,15 +14,14 @@ internal static partial class VisualCartesianCompiler {
         : step.Kind == ChartWaterfallItemKind.Subtotal ? chart.Options.Labels.Subtotal
         : step.Kind == ChartWaterfallItemKind.OpeningBalance ? chart.Options.Labels.OpeningBalance : chart.Options.Labels.Change;
 
+    // Balances and checkpoints are levels, so they take the series colour (the accent for the first series); only changes
+    // carry a direction. A warning colour on a total would read as a problem.
     private static ChartColor WaterfallColor(ChartSeries series, int seriesIndex, ChartWaterfallStep step, VisualThemeColors colors) =>
         HasSeriesPaint(series, step.ItemIndex) ? PointColor(series, seriesIndex, step.ItemIndex, colors)
-        // Totals and checkpoints are ordinary quantities, not a status: they take the series colour (design rule 10).
-        // Only the signed deltas carry the increase/decrease encoding, and their labels show the sign.
-        : step.Kind != ChartWaterfallItemKind.Delta ? Color(series, seriesIndex, colors) : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
+        : step.Kind != ChartWaterfallItemKind.Delta ? ChartSeriesColours.Resolve(series, seriesIndex, colors) : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
 
-    /// <summary>The paint role of a waterfall step: series for totals, status only for the signed deltas.</summary>
-    private static SvgColorRole WaterfallPaintRole(ChartSeries series, ChartWaterfallStep step) =>
-        step.Kind != ChartWaterfallItemKind.Delta && !HasSeriesPaint(series, step.ItemIndex) ? VisualChartPaint.SeriesRole(series, step.ItemIndex) : SemanticMarkPaintRole(series, step.ItemIndex);
+    private static SvgColorRole WaterfallPaintRole(ChartSeries series, ChartWaterfallStep step, int observation) =>
+        step.Kind != ChartWaterfallItemKind.Delta && !HasSeriesPaint(series, observation) ? VisualChartPaint.SeriesRole(series, observation) : SemanticMarkPaintRole(series, observation);
 
     private static Dictionary<string, string> WaterfallMetadata(Chart chart, int seriesIndex, ChartWaterfallStep step, string category) {
         var metadata = new Dictionary<string, string> {
@@ -57,7 +56,7 @@ internal static partial class VisualCartesianCompiler {
             var label = categories[step.X];
             var point = step.ItemIndex;
             var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
-            var color = WaterfallColor(series, 0, step, colors); var paint = SvgPaint.Of(color, SemanticMarkPaintRole(series, point));
+            var color = WaterfallColor(series, 0, step, colors); var paint = SvgPaint.Of(color, WaterfallPaintRole(series, step, point));
             entries.Add(new VisualLegendEntry(label, color, WaterfallId(0, step), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
                 marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint, metadata: WaterfallMetadata(chart, 0, step, label)));
         }

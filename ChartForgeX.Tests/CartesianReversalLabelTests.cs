@@ -44,8 +44,9 @@ public sealed class CartesianReversalLabelTests {
         var prepared = Prepare(chart);
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
         var mark = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
-        Assert.True(LabelPlacementService.Contains(mark, Bounds(label)));
-        Assert.Equal(ChartColorMath.AccessibleTextOnBackground(fill), label.Color);
+        // Columns reserve a caption lane at the value end; horizontal bars still fall back inside their own mark.
+        Assert.Equal(horizontal, LabelPlacementService.Contains(mark, Bounds(label)));
+        if (horizontal) Assert.Equal(ChartColorMath.AccessibleTextOnBackground(fill), label.Color);
         Assert.True(prepared.ToPng().Length > 64);
         chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
         Assert.Equal(ChartColor.FromHex("#FFFF00"), Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label").Color);

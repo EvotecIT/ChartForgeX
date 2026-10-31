@@ -686,7 +686,7 @@
     "enhance/canopyx-ui-menu.29b983c01571b5c3.css",
     "enhance/canopyx-ui-overlays.83acc4346a232940.js",
     "enhance/canopyx-ui-overlays.bc49b6f13527aecd.css",
-    "enhance/cfx-enhance.cdc299fc4e50.js",
+    "enhance/cfx-enhance.19ced771f953.js",
     "enhance/cfx-enhance.d38eb6a099cb.css",
     "enhance/enhance-page.css",
     "enhance/enhance-page.js",
@@ -10480,7 +10480,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 29
     },
     {
       "id": "family-bubble-plot-regions-light",
@@ -10890,7 +10890,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 29
     },
     {
       "id": "family-bubble-plot-regions-dark",
@@ -16196,7 +16196,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-compact-color-scale-light",
@@ -16230,7 +16230,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-positioned-color-scale-light",
@@ -16264,7 +16264,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 44
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-compact-positioned-color-scale-light",
@@ -16298,7 +16298,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 44
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-color-dimension-light",
@@ -16332,7 +16332,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 45
+      "semanticRegions": 43
     },
     {
       "id": "family-heatmap-compact-color-dimension-light",
@@ -16366,7 +16366,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-light",
@@ -16400,7 +16400,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 38
     },
     {
       "id": "family-heatmap-compact-gradient-color-legend-light",
@@ -16434,7 +16434,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-light",
@@ -16468,7 +16468,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 45
+      "semanticRegions": 43
     },
     {
       "id": "family-heatmap-compact-swatch-color-legend-light",
@@ -16502,7 +16502,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-availability-light",
@@ -16536,7 +16536,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 175
+      "semanticRegions": 172
     },
     {
       "id": "family-heatmap-compact-availability-light",
@@ -16574,7 +16574,7 @@
       "diagnosticMessages": [
         "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."
       ],
-      "semanticRegions": 175
+      "semanticRegions": 172
     },
     {
       "id": "family-heatmap-wide-dark",
@@ -16676,7 +16676,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-compact-color-scale-dark",
@@ -16710,7 +16710,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-positioned-color-scale-dark",
@@ -16744,7 +16744,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 44
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-compact-positioned-color-scale-dark",
@@ -16778,7 +16778,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 44
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-color-dimension-dark",
@@ -16812,7 +16812,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 45
+      "semanticRegions": 43
     },
     {
       "id": "family-heatmap-compact-color-dimension-dark",
@@ -16846,7 +16846,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-dark",
@@ -16880,7 +16880,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 38
     },
     {
       "id": "family-heatmap-compact-gradient-color-legend-dark",
@@ -16914,7 +16914,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-dark",
@@ -16948,7 +16948,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 45
+      "semanticRegions": 43
     },
     {
       "id": "family-heatmap-compact-swatch-color-legend-dark",
@@ -16982,7 +16982,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-availability-dark",
@@ -17016,7 +17016,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 175
+      "semanticRegions": 172
     },
     {
       "id": "family-heatmap-compact-availability-dark",
@@ -17054,7 +17054,7 @@
       "diagnosticMessages": [
         "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."
       ],
-      "semanticRegions": 175
+      "semanticRegions": 172
     },
     {
       "id": "family-hexbin-heatmap-wide-light",
@@ -21712,8 +21712,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 21
     },
     {
@@ -21820,7 +21824,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-compact-licence-waste-light",
@@ -21858,7 +21862,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-options-light",
@@ -21924,8 +21928,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 21
     },
     {
@@ -22132,8 +22140,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 21
     },
     {
@@ -22240,7 +22252,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-compact-licence-waste-dark",
@@ -22278,7 +22290,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-options-dark",
@@ -22344,8 +22356,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
       "semanticRegions": 21
     },
     {
@@ -40312,7 +40328,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 47
+      "semanticRegions": 41
     },
     {
       "id": "heatmap-hierarchical-axes-compact-light",
@@ -40346,7 +40362,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 47
+      "semanticRegions": 41
     },
     {
       "id": "heatmap-hierarchical-axes-states-wide-light",
@@ -40380,7 +40396,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 34
     },
     {
       "id": "heatmap-hierarchical-axes-states-compact-light",
@@ -40414,7 +40430,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 34
     },
     {
       "id": "topology-path-decorations-wide-dark",
@@ -43624,7 +43640,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 47
+      "semanticRegions": 41
     },
     {
       "id": "heatmap-hierarchical-axes-compact-dark",
@@ -43658,7 +43674,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 47
+      "semanticRegions": 41
     },
     {
       "id": "heatmap-hierarchical-axes-states-wide-dark",
@@ -43692,7 +43708,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 34
     },
     {
       "id": "heatmap-hierarchical-axes-states-compact-dark",
@@ -43726,7 +43742,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 34
     },
     {
       "id": "topology-table-content-wide-light",

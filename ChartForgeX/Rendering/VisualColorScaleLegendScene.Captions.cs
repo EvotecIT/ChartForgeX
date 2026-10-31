@@ -115,10 +115,8 @@ internal static partial class VisualColorScaleLegendScene {
         var size = Math.Min(row * .7, Math.Min(area.Width, area.Height));
         var box = new ChartRect(area.Left, area.Top + Math.Max(0, (area.Height - size) / 2), size, size);
         using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
-            new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
-            builder.Rect(box, blend.Color, radius: 1, role: prefix + "-missing-swatch", paint: VisualChartPaint.Fill(blend.Paint));
-            if (hatch) ChartMissingData.Hatch(builder, ChartPathBuilder.RoundedRectangle(box, 1), style.Color, prefix + "-missing-swatch");
-        }
+            new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
+            VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix, hatch);
         VisualStateSceneTools.Text(builder, labels.NoData, new ChartRect(area.Left + row, area.Top, Math.Max(0, area.Width - row), area.Height),
             style, prefix + "-label", prefix + "-label-missing");
     }

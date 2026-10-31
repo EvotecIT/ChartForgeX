@@ -271,6 +271,20 @@ public sealed partial class ChartOptions {
         }
     }
 
+    private ChartHeatmapColumnWindow _heatmapColumnWindow = ChartHeatmapColumnWindow.Latest;
+
+    /// <summary>Gets or sets whether rectangular heatmaps may grow beyond the requested frame to fit readable rows.</summary>
+    public bool HeatmapNaturalHeight { get; set; }
+
+    /// <summary>Gets or sets the policy for rectangular heatmap columns that do not fit at a readable width.</summary>
+    public ChartHeatmapColumnWindow HeatmapColumnWindow {
+        get => _heatmapColumnWindow;
+        set {
+            if (!Enum.IsDefined(typeof(ChartHeatmapColumnWindow), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            _heatmapColumnWindow = value;
+        }
+    }
+
     /// <summary>
     /// Gets or sets whether categorical heatmap state keys are rendered when the chart legend is enabled. Numeric keys use HeatmapColorDimension.ShowLegend.
     /// </summary>

@@ -12,14 +12,26 @@ internal static partial class VisualCartesianCompiler {
         var top = 0d; var bottom = 0d; var spacing = Math.Max(2, context.Theme.Spacing);
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar || !(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
+            var waterfall = series.Kind == ChartSeriesKind.Waterfall && !ChartCartesianOrientation.IsHorizontal(chart, series);
+            if (series.Kind != ChartSeriesKind.Bar && !waterfall || !(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                 || ChartStackLayout.Participates(chart, series)) continue;
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below)) continue;
             var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var selectedRange = series.ValueAxis == ChartAxisSide.Secondary ? secondaryRange! : range;
             var map = new ChartMapper(plot, selectedRange, chart.Options.XAxis, axis);
-            var barLayout = ResolveBarLayout(chart, context, plot, coordinates, map, stacks, seriesIndex);
+            if (waterfall) {
+                // A waterfall caption sits at the running balance its step ends on, not at the delta.
+                foreach (var (anchor, label, above) in WaterfallCaptionEnds(chart, context, series, map, axis, colors, placement)) {
+                    // Like column captions, an unfitted oversized font does not reserve a lane before its fitting pass.
+                    if (!ChartMath.IsFinite(anchor) || anchor < plot.Top || anchor > plot.Bottom || label.Text.Length == 0
+                        || label.Style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize) continue;
+                    var height = builder.MeasureText(label.DisplayedText, DisplayedStyle(label.Style)).Height + BarLabelGap(context);
+                    if (above && anchor - plot.Top < height) top = Math.Max(top, height);
+                    else if (!above && plot.Bottom - anchor < height) bottom = Math.Max(bottom, height);
+                }
+                continue;
+            }
             var style = SeriesLabelStyle(chart, context, series, colors);
             for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var point = series.RenderPoints[pointIndex];
@@ -33,14 +45,9 @@ internal static partial class VisualCartesianCompiler {
                 // candidates. Do not allocate an unfitted font's height before that pass.
                 if (label.Style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize) continue;
                 var metrics = builder.MeasureText(label.DisplayedText, DisplayedStyle(label.Style));
-                var width = barLayout.Width;
-                if (ChartHistogramBarSlot.TryResolve(chart, coordinates, stacks, seriesIndex, pointIndex, map, out _, out var histogramWidth))
-                    width = histogramWidth;
-                // Auto retains its contained alternative when the complete caption already fits.
-                // Narrow marks need a separate lane so their only full-text option is not lost.
-                if (placement == ChartDataLabelPlacement.Auto && metrics.Width + 4 <= width
-                    && metrics.Height + 4 <= Math.Abs(anchor - map.YBaseline())) continue;
-                var height = metrics.Height + spacing;
+                // Auto keeps every caption of a series on the same side of its bars, so the tallest
+                // bar reserves its lane instead of moving its caption inside (and into a shorter format).
+                var height = metrics.Height + BarLabelGap(context);
                 var above = placement == ChartDataLabelPlacement.Above
                     || placement == ChartDataLabelPlacement.Auto && BarValueDirection(axis, point.Y) >= 0;
                 // Reserving a partial deficit would change that same deficit when the
@@ -52,6 +59,24 @@ internal static partial class VisualCartesianCompiler {
         }
         return InsetVerticalLabelGutters(plot, top, bottom, spacing);
     }
+
+    private static System.Collections.Generic.IEnumerable<(double Anchor, ResolvedPointLabel Label, bool Above)> WaterfallCaptionEnds(Chart chart,
+        VisualRenderContext context, ChartSeries series, ChartMapper map, ChartAxis axis, VisualThemeColors colors, ChartDataLabelPlacement placement) {
+        var steps = ChartWaterfallSteps.Create(series);
+        for (var item = 0; item < steps.Count; item++) {
+            var step = steps[item];
+            // The same caption text DrawPreparedWaterfall writes, so the reserved lane fits it exactly.
+            var label = ResolveObservationLabel(chart, context, series, item, colors,
+                format => (step.Kind != ChartWaterfallItemKind.Delta || step.Value < 0 ? string.Empty : "+") + format("value", step.Value));
+            var start = map.YOrBaseline(step.Start); var end = map.YOrBaseline(step.End);
+            var above = placement == ChartDataLabelPlacement.Above
+                || placement == ChartDataLabelPlacement.Auto && MappedBarDirection(axis, step.Value, start, end, false) >= 0;
+            yield return (end, label, above);
+        }
+    }
+
+    /// <summary>The gap between a bar end and its value caption: the theme spacing, capped so the caption stays with its bar.</summary>
+    private static double BarLabelGap(VisualRenderContext context) => Math.Min(context.Theme.Spacing, 6);
 
     private static ChartRect InsetVerticalLabelGutters(ChartRect bounds, double top, double bottom, double spacing) {
         var available = bounds.Height - Math.Min(bounds.Height / 2, Math.Max(1, spacing));

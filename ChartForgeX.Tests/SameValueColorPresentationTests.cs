@@ -92,7 +92,7 @@ public sealed class SameValueColorPresentationTests {
         } else if (scaleKind == "discrete") {
             var bands = Role(document, prefix == "map-scale" ? "map-scale-step-source" : prefix + "-step");
             Assert.Equal(new[] { "5", "" }, bands.Select(band => (string?)band.Attribute("data-cfx-upper-bound")));
-            Assert.Equal(new[] { "Cool · < 5,00 °C", "Warm · ≥ 5,00 °C" }, bands.Select(band => (string?)band.Attribute("data-cfx-label")));
+            Assert.Equal(new[] { "Cool < 5,00 °C", "Warm ≥ 5,00 °C" }, bands.Select(band => (string?)band.Attribute("data-cfx-label")));
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "calendar.scale-overflow");
     }

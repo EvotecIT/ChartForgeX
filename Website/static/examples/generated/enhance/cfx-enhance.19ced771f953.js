@@ -161,7 +161,7 @@
 
     var layer = set(make("g", "cfx-e-layer", svg), { "aria-hidden": "true", "pointer-events": "none" });
     var states = make("g", null, layer);
-    var geometry = null, hover = null, selection = [], highlight = new Set(), filters = {}, emphasis = null;
+    var geometry = null, hover = null, selection = [], highlight = new Set(), filters = Object.create(null), emphasis = null;
     var keyboard = false, pointerType = "", tapped = null;
 
     // Ask attached behaviours in registration order; the first defined answer wins.
@@ -258,13 +258,13 @@
     function said(m, name, v) {
       var own = bySeries[m.s], info = series[m.s];
       if (DATE.test(v)) return m.head || String(v);
-      return info.name && own.every(function (x) { return String(x.fields[name]) === String(v); }) ? info.name : String(v);
+      return info.name && own.every(function (x) { return String(value(x, name)) === String(v); }) ? info.name : String(v);
     }
     function detail(ms, range, label) {
-      var keys = [], seen = {}, values = {}, texts = {}, extra = ms.length && ask("describe", ms) || {};
+      var keys = [], seen = Object.create(null), values = Object.create(null), texts = Object.create(null), extra = ms.length && ask("describe", ms) || {};
       ms.forEach(function (m) {
         m.keys.forEach(function (k) { if (!seen[k]) { seen[k] = 1; keys.push(k); } });
-        var fields = {}, name;
+        var fields = Object.create(null), name;
         for (name in m.fields) fields[name] = m.fields[name];
         if (api.xField && fields[api.xField] === undefined && m.xv != null) fields[api.xField] = m.xv;
         for (name in fields) {
@@ -276,7 +276,7 @@
       if (ms.length && (range || extra.range)) result.range = range || extra.range;
       return result;
     }
-    function value(m, field) { var v = m.fields[field]; return v === undefined && field === api.xField ? m.xv : v; }
+    function value(m, field) { var v = Object.prototype.hasOwnProperty.call(m.fields, field) ? m.fields[field] : undefined; return v === undefined && field === api.xField ? m.xv : v; }
     function passes(m) {
       for (var source in filters) {
         if (!filters[source].every(function (f) {
@@ -319,7 +319,10 @@
         set(make(kind, "cfx-e-halo", halos), s);
         set(make(kind, on ? "cfx-e-sel" : "cfx-e-sel cfx-e-ring", rings), s);
       });
-      var focus = d.activeElement;
+      var tab = marks.filter(function (m) { return m.el.getAttribute("tabindex") === "0" && visible(m); })[0] || marks.filter(visible)[0];
+      marks.forEach(function (m) { m.el.setAttribute("tabindex", m === tab ? "0" : "-1"); });
+      var focus = d.activeElement, focused = svg.contains(focus) ? markOf(focus) : null;
+      if (focused && !visible(focused) && tab) { go(tab); return; }
       if (keyboard && focus && focus !== svg && svg.contains(focus)) {
         var fm = markOf(focus), r = fm ? null : focus.getBoundingClientRect(), fg = fm ? rects()[fm.n] : { l: r.left, t: r.top, r: r.right, b: r.bottom };
         // Focus sits outside the selection halo in the focus-ring colour, so the two never look alike.
@@ -439,13 +442,13 @@
     svg.addEventListener("click", function (e) {
       if (ask("click", e)) { e.preventDefault(); e.stopPropagation(); return; }
       if (e.target.closest(LEGEND)) return;
-      var own = markOf(e.target) || hit(e.clientX, e.clientY), ms = ask("targets", e) || (own && visible(own) ? [own] : []);
+      var target = markOf(e.target), own = target || hit(e.clientX, e.clientY), ms = ask("targets", e) || (own && visible(own) ? [own] : []);
       var id = ms.map(function (m) { return m.n; }).join();
-      if (pointerType === "touch" && ms.length && tapped !== id) { tapped = id; e.preventDefault(); return; }
+      if (pointerType === "touch" && e.detail !== 0 && !e.ctrlKey && !e.metaKey && ms.length && tapped !== id) { tapped = id; e.preventDefault(); return; }
       tapped = null;
       if (!ms.length) { if (inside(plot(), e)) clear(); return; }
       // Keyboard Enter (detail 0) and modified clicks on a linked mark keep native navigation.
-      if (ms.length === 1 && ms[0].href && (!api.selectOnClick || e.detail === 0 || e.ctrlKey || e.metaKey)) return;
+      if (target && visible(target) && target.href && (!api.selectOnClick || e.detail === 0 || e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       choose(ms, e.shiftKey);
     }, true);
@@ -498,14 +501,15 @@
         if (f.label) copy.label = f.label;
         return copy;
       });
-      if (next && next.length) filters[source] = next; else delete filters[source];
+      if (next && !next.length) next = null;
+      if (next) filters[source] = next; else delete filters[source];
       paint();
       announce(next ? format(L.filtered, { source: next[0].sourceLabel }) : L.unfiltered);
       fire(svg, "cfx:externalfilter", { filters: api.getExternalFilters(), reason: "api" });
       return Promise.resolve(true);
     };
     api.clearExternalFilters = function (source) {
-      if (source) delete filters[source]; else filters = {};
+      if (source) delete filters[source]; else filters = Object.create(null);
       paint();
       fire(svg, "cfx:externalfilter", { filters: api.getExternalFilters(), reason: "api" });
       return Promise.resolve(true);
@@ -740,11 +744,20 @@
 (function (w) {
   "use strict";
   if (w.CfxLink) return;
+  var clickModes = new WeakMap();
+  function selectClicks(api) {
+    var state = clickModes.get(api), active = true;
+    if (!state) { state = { count: 0, value: api.selectOnClick }; clickModes.set(api, state); }
+    state.count++; api.selectOnClick = true;
+    return function () {
+      if (!active) return;
+      active = false;
+      if (--state.count === 0) { api.selectOnClick = state.value; clickModes.delete(api); }
+    };
+  }
   function quiet(promise) { if (promise && promise.catch) promise.catch(function () { }); }
   function iso(ms) { return new Date(ms).toISOString(); }
-  // A time crosshair chart reports its X as the linked field; other charts link through their marks' fields.
   function crosshair(api) { return api.timeX && api.svg.hasAttribute("data-cfx-crosshair"); }
-  // A view: a chart api (or its svg or host), a CanopyX host element, or any LinkedView object.
   function resolve(view, host) {
     if (view && !view.setHighlight && w.CfxEnhance) view = w.CfxEnhance.get(view) || view;
     var api = view && view.canopyx || view, el = host || (view && view.nodeType === 1 ? view : api.svg || api.host || api.element);
@@ -754,7 +767,6 @@
   }
   // A CanopyX host that has not mounted yet is linked on its canopyx:ready.
   function unmounted(view) { return view && view.nodeType === 1 && !view.canopyx && !view.cfx && !(w.CfxEnhance && w.CfxEnhance.get(view)); }
-  // Like CfxEnhance.get, accept the page element that holds a CanopyX host.
   function canopy(view) { var inner = unmounted(view) && !view.hasAttribute("data-canopyx-host") && view.querySelector("[data-canopyx-host]"); return inner || view; }
   function connect(from, to, options) {
     var o = options || {};
@@ -765,18 +777,15 @@
       return function disconnect() { to.removeEventListener("canopyx:ready", wait); if (off) off(); };
     }
     var a = resolve(from, o.sourceHost), b = resolve(to, o.host);
-    // field: one field, or several that together define a mark (a segment's day and kind).
     var fields = [].concat(o.field || []), field = fields[0], mode = o.mode || "filter", source = o.source || a.id, label = o.sourceLabel || a.label;
     var targetSource = o.targetSource || o.gridSource || b.id, targetLabel = o.targetLabel || o.gridLabel || b.label;
     if (o.events) { b.change = o.events.change || b.change; b.filter = o.events.filter || b.filter; }
+    var releaseClicks = a.api.svg ? selectClicks(a.api) : null;
     if (a.api.svg) {
-      a.api.selectOnClick = true;
       a.api.xField = o.xField || a.api.xField || (crosshair(a.api) ? field : null);
     }
     if (b.api.svg && !b.api.xField && crosshair(b.api)) b.api.xField = o.xField || field;
-    // Chip text: one field shows the selection's label, several show each field's texts.
     function text(t, f) { var s = (t.texts || {})[f] || []; return s.slice(0, 3).join(", ") + (s.length > 3 ? " +" + (s.length - 3) : ""); }
-    // Source to target: the source's selection filters or highlights the target.
     function forward(e) {
       var t = e.detail, r = t.range, filter = null;
       if (mode === "highlight") return quiet(t.action === "clear" ? b.api.clearHighlight() : b.api.setHighlight(t.keys, { source: label }));
@@ -790,7 +799,6 @@
       else filter = null;
       quiet(b.api.setExternalFilter(source, filter && filter.length === 1 ? filter[0] : filter));
     }
-    // Target to source: the target's selection highlights the source; its own conditions filter the source.
     function back(e) {
       var t = e.detail;
       if (t.scope === "select") return quiet(t.action === "clear" ? a.api.clearHighlight() : a.api.setHighlight(t.keys, { source: targetLabel }));
@@ -807,6 +815,7 @@
     if (b.el) { b.el.addEventListener(b.change, back); b.el.addEventListener(b.filter, removed); }
     if (b.api.startLinkEvents) quiet(b.api.startLinkEvents());
     return function disconnect() {
+      if (releaseClicks) releaseClicks();
       a.el.removeEventListener(a.change, forward);
       if (b.el) { b.el.removeEventListener(b.change, back); b.el.removeEventListener(b.filter, removed); }
     };

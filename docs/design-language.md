@@ -31,7 +31,7 @@ ChartForgeX reads the shared design roles CanopyX and HtmlForgeX already use, wi
 | 4 clay (new) | `#a0522d` | `#c06a42` |
 | 5 magenta (was 4) | `#c24fa8` | `#c9579f` |
 | 6 green (was 5) | `#5b7f00` | `#6f9120` |
-| Other | `--hfx-color-text-secondary` at 45% over the plot surface | same |
+| Other | `--hfx-color-text-secondary` over the plot surface, strengthened from 45% when needed for 3:1 contrast | same |
 
 Validated with the dataviz palette validator: lightness band, chroma floor, adjacent CVD separation (worst ΔE 10.6 light / 12.6 dark), normal-vision floor (≥15.9), contrast ≥3:1 on both surfaces. A 7th series is never generated: it folds into "Other" (always gray, always last) or the chart becomes small multiples. Pie and donut fold automatically (at most `MaximumPieSlices`, 6 by default, the last being Other). Other families do not regroup data: when more series or slices take automatic colours than the palette has slots, preparation reports an informational `palette.reused` diagnostic, and the host groups the rest into Other, colours them explicitly, or switches to small multiples.
 

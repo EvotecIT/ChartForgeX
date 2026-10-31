@@ -37,15 +37,15 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [InlineData(ChartSeriesKind.Waterfall, "waterfall-bar", "fill")]
     public void FinancialDefaultsUseStatusAndExplicitPointsUseSeriesPaint(ChartSeriesKind kind, string role, string attribute) {
         var chart = V2GalleryModels.Create(kind).WithBarStyle(ChartBarStyle.Flat);
-        // A waterfall's derived total is a quantity, not a status: it keeps the series role (design rule 10).
-        var totals = kind == ChartSeriesKind.Waterfall ? 1 : 0;
+        // A waterfall's derived total is a level, not a change, so it takes the series role.
+        var levels = kind == ChartSeriesKind.Waterfall ? 1 : 0;
         var defaults = Paints(chart.Prepare(Context()), Variables(), role, attribute);
-        Assert.All(defaults.Take(defaults.Length - totals), paint => Assert.Contains("var(--status,", paint));
-        Assert.All(defaults.Skip(defaults.Length - totals), paint => Assert.DoesNotContain("var(--status,", paint));
+        Assert.All(defaults.Take(defaults.Count() - levels), paint => Assert.Contains("var(--status,", paint));
+        Assert.All(defaults.Skip(defaults.Count() - levels), paint => Assert.Contains("var(--series,", paint));
         chart.Series[0].WithPointColor(0, Shared);
         var paints = Paints(chart.Prepare(Context()), Variables(), role, attribute);
         Assert.Contains("var(--series,", paints[0]);
-        Assert.All(paints.Skip(1).Take(paints.Length - 1 - totals), paint => Assert.Contains("var(--status,", paint));
+        Assert.All(paints.Skip(1).Take(paints.Count() - 1 - levels), paint => Assert.Contains("var(--status,", paint));
     }
 
     [Fact]
@@ -94,9 +94,9 @@ public sealed partial class V2PreparedFamilyPaintTests {
         var document = XDocument.Parse(chart.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: Variables())));
         var stops = document.Descendants().Where(element => element.Name.LocalName == "stop").Select(element => element.Attribute("stop-color")!.Value).ToArray();
         Assert.NotEmpty(stops);
-        // Delta stops mix the status roles; the derived total's stops mix its series role.
-        Assert.All(stops, paint => { Assert.Contains("color-mix(in srgb,", paint); Assert.Contains("var(--", paint); });
-        Assert.Equal(2, stops.Count(paint => !paint.Contains("var(--status,", StringComparison.Ordinal)));
+        // Changes keep their status roles; the derived total is a level and takes the series role.
+        Assert.All(stops, paint => { Assert.Contains("color-mix(in srgb,", paint); Assert.True(paint.Contains("var(--status,") || paint.Contains("var(--series,"), paint); });
+        Assert.Contains(stops, paint => paint.Contains("var(--status,")); Assert.Contains(stops, paint => paint.Contains("var(--series,"));
         var range = V2GalleryModels.Create(ChartSeriesKind.RangeBar).WithBarStyle(ChartBarStyle.SegmentedCapsule);
         range.Series[0].StateRole = ChartSeriesState.Danger; range.Series[0].WithPointColor(0, Shared);
         var caps = Paints(range.Prepare(Context()), Variables(), "range-bar-cap", "stroke");

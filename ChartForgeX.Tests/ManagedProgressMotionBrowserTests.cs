@@ -76,7 +76,7 @@ public sealed partial class ManagedProgressMotionBrowserTests {
         if (!Enabled) return;
         var host = new ProgressHost(760, false);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, 784, 640);
-        var page = session.Page; await ConnectAsync(page, host);
+        var page = session.Page; await ConnectAsync(page, host); await PauseAsync(page);
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.Reduce });
         await RequestAsync(page, .6); var basis = await ResolveAsync(page, 0);
         Assert.Equal(0, await page.Locator(Layer).CountAsync()); Assert.Equal("0.6", await page.Locator(LiveRow).GetAttributeAsync("data-cfx-value"));

@@ -56,7 +56,7 @@ public sealed class SharedDesignRoleTests {
             var fill = XDocument.Parse(svg).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "pie-slice"
                 && (string?)e.Attribute("data-cfx-source-id") == "series-0-point-other").Attribute("fill")!.Value;
             Assert.Contains("var(--hfx-color-text-secondary,", fill, StringComparison.Ordinal);
-            Assert.Contains("45%", fill, StringComparison.Ordinal);
+            Assert.Contains("var(--hfx-color-surface-card-alt,", fill, StringComparison.Ordinal);
             Assert.DoesNotContain(prepared.Diagnostics, d => d.Code == "palette.reused");
         }
     }

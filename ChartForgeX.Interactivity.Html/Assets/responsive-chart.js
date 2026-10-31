@@ -31,8 +31,8 @@
     if(!host.isConnected){delete host.cfxResponsiveReady;return;}
     await document.fonts?.ready;
     if(!host.isConnected){delete host.cfxResponsiveReady;return;}
-    const fallback=host.querySelector(':scope > svg');let drawing;
-    try{drawing=window.ChartForgeXLayout.create(host,spec);}catch{return unavailable(host,'the layout data does not match this drawing.');}
+    const currentSvg=host.querySelector(':scope > svg'),fallback=(currentSvg?.cfxBaseSvg||currentSvg)?.cloneNode(true);let drawing;
+    try{drawing=window.ChartForgeXLayout.create(host,spec);}catch{const current=host.querySelector(':scope > svg');if(fallback&&current)current.replaceWith(fallback);return unavailable(host,'the layout data does not match this drawing.');}
     let timer=0,disposed=false,printing=matchMedia('print').matches;
     host.style.minWidth=printing?'0':spec.minimum+'px';
     // Every layout, including later resize, print and font passes, falls back to the static drawing on failure.
@@ -40,11 +40,11 @@
     const layout=(width,forPrint=printing)=>{if(disposed)return;try{drawing.layout(width,forPrint);}catch{fail();}};
     const schedule=()=>{clearTimeout(timer);timer=setTimeout(()=>layout(),60);};
     const observer=new ResizeObserver(schedule);observer.observe(host);
-    const print=()=>{printing=true;host.style.minWidth='0';clearTimeout(timer);layout(host.getBoundingClientRect().width||spec.printWidth);};
+    const print=()=>{printing=true;host.style.minWidth='0';clearTimeout(timer);layout(host.clientWidth||spec.printWidth);};
     const afterPrint=()=>{printing=false;host.style.minWidth=spec.minimum+'px';layout();};
     const media=matchMedia('print'),changed=event=>event.matches?print():afterPrint();
     addEventListener('beforeprint',print);addEventListener('afterprint',afterPrint);media.addEventListener('change',changed);
-    host.cfxResponsive={layout,dispose:()=>{disposed=true;clearTimeout(timer);observer.disconnect();removeEventListener('beforeprint',print);removeEventListener('afterprint',afterPrint);media.removeEventListener('change',changed);delete host.cfxResponsive;delete host.cfxResponsiveReady;}};
+    host.cfxResponsive={layout,dispose:()=>{disposed=true;clearTimeout(timer);observer.disconnect();drawing.dispose?.();removeEventListener('beforeprint',print);removeEventListener('afterprint',afterPrint);media.removeEventListener('change',changed);delete host.cfxResponsive;delete host.cfxResponsiveReady;}};
     layout();
     document.fonts?.ready.then(()=>layout());
   }

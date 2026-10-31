@@ -72,7 +72,8 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
                 if(!faces.length||!text)return false;
                 const clip=text.closest('[clip-path]'),id=clip.getAttribute('clip-path').slice(5,-1);
                 const rect=svg.querySelector('#'+CSS.escape(id)+' rect'),box=text.getBBox();
-                return box.x>=rect.x.baseVal.value-.01&&box.x+box.width<=rect.x.baseVal.value+rect.width.baseVal.value+.01;
+                // Browser font advances and serialized native positions can differ by a fraction of a CSS pixel.
+                return box.x>=rect.x.baseVal.value-.05&&box.x+box.width<=rect.x.baseVal.value+rect.width.baseVal.value+.05;
             }
             """), "The self-contained linked example must load its native font and keep the complete final date inside its text clip.");
         await page.EvaluateAsync("() => ChartForgeXCharts.get(document.querySelector('[data-cfx-chart-id=linked-time]')).select({observationIds:['api-2','worker-2']})");

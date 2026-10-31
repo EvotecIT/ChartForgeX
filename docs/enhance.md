@@ -20,7 +20,8 @@ var svg = chart.Prepare(context).ToSvg(new VisualSvgOptions("activity")
     .WithFluidWidth().WithInheritedFonts().WithEnhanceHooks(includeData: true));
 
 var document = new HtmlEnhanceDocument(nonce: cspNonce);   // or new HtmlEnhanceDocument(assets: new HtmlAssetReferences("assets/"))
-var html = svg + document.Assets();                         // later charts on the same page: document.Assets() returns ""
+var html = "<section id=\"activity\">" + svg + "</section>" + document.Assets();
+// Later charts on the same page: document.Assets() returns "".
 ```
 
 `HtmlEnhanceAssets.InlineMarkup(nonce)` returns the `<style>` and `<script>` pair, and `HtmlEnhanceAssets.ReferenceMarkup(assets)` links the shared files that `HtmlInteractiveAssetFiles.WriteTo(folder, HtmlEnhanceAssets.Files())` writes. On a hand-written page, one `<script src="cfx-enhance.….js" defer>` and its stylesheet are enough: every `svg[data-cfx-enhance]` is enhanced when the document loads. Add `data-cfx-manual` to the script element to call `CfxEnhance.scan(root)` or `CfxEnhance.enhance(svg, options)` yourself.

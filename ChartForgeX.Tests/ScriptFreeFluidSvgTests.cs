@@ -266,6 +266,35 @@ public sealed class ScriptFreeFluidSvgTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
+    [BrowserFact]
+    [Trait("BrowserSuite", "Compatibility")]
+    public async Task FluidBarsAndStackClips_KeepTheirDataEndCornersAndSquareBaselinesWhenResized() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var builder = Builder();
+        using (builder.PushGroup("column", "point"))
+            builder.Rect(new ChartRect(40, 20, 24, 70), ChartColor.Black, radius: 8, role: "column-shape", corners: VisualCorners.Top);
+        using (builder.PushGroup("stack", "point"))
+        using (builder.PushClip(ChartPathBuilder.RoundedRectangle(new ChartRect(100, 20, 24, 70), 8, 8, 0, 0)))
+            builder.Rect(new ChartRect(100, 20, 24, 70), ChartColor.Black, role: "stack-shape");
+        builder.Rect(new ChartRect(180, 100, 120, 20), ChartColor.Black, radius: 6, role: "horizontal-shape", corners: VisualCorners.Right);
+        var svg = VisualSceneSvgRenderer.Render(builder.Build(), title: "Corners", options: new VisualSvgOptions("corners").WithFluidWidth());
+        await using var session = await InteractiveChartBrowser.OpenAsync("<style>html,body{margin:0}</style>" + svg, 400, 160);
+        foreach (var width in new[] { 400, 800, 390 }) {
+            await session.Page.SetViewportSizeAsync(width, 160);
+            var hits = await session.Page.EvaluateAsync<bool[]>("""
+                () => {
+                  const at=(role, right, bottom)=>{const e=document.querySelector('[data-cfx-role="'+role+'"]'),r=e.getBoundingClientRect();
+                    return document.elementFromPoint(right?r.right-.2:r.left+.2,bottom?r.bottom-.2:r.top+.2)?.getAttribute('data-cfx-role')===role;};
+                  return [at('column-shape',false,false),at('column-shape',false,true),
+                    at('stack-shape',false,false),at('stack-shape',false,true),
+                    at('horizontal-shape',true,false),at('horizontal-shape',false,false)];
+                }
+                """);
+            Assert.Equal(new[] { false, true, false, true, false, true }, hits);
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
     private static VisualSceneBuilder Builder() => new(new VisualSize(400, 140), FontSpec.SystemSans());
     private static XElement Render(VisualScene scene, VisualSvgOptions? options = null) =>
         XDocument.Parse(VisualSceneSvgRenderer.Render(scene, title: "Chart", options: options ?? new VisualSvgOptions().WithFluidWidth())).Root!;

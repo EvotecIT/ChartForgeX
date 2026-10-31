@@ -279,7 +279,8 @@ public sealed class EnhanceRuntimeBrowserTests {
             new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(keys: new[] {"__proto__", "constructor", "toString"},
                 fields: new Dictionary<string, object> { ["__proto__"] = "keep", ["constructor"] = "record" })),
             new ChartPoint(2, 4).WithMarkOptions(new ChartMarkOptions(keys: new[] {"other"},
-                fields: new Dictionary<string, object> { ["__proto__"] = "exclude", ["constructor"] = "record" }))
+                fields: new Dictionary<string, object> { ["__proto__"] = "exclude", ["constructor"] = "record" })),
+            new ChartPoint(3, 2)
         });
         var svg = chart.Prepare(Context()).ToSvg(new VisualSvgOptions("records").WithEnhanceHooks());
         await using var session = await OpenAsync(Page(svg));
@@ -294,15 +295,20 @@ public sealed class EnhanceRuntimeBrowserTests {
         Assert.Equal("__proto__", await page.EvaluateAsync<string>("() => document.querySelector('svg').cfx.getExternalFilters()[0].source"));
         await page.EvaluateAsync("async () => { await document.querySelector('svg').cfx.clearExternalFilters('__proto__'); }");
         Assert.Equal(0, await page.Locator(".cfx-e-filtered").CountAsync());
+        foreach (var field in new[] { "constructor", "toString", "__proto__" }) {
+            await page.EvaluateAsync("async field => { const c=document.querySelector('svg').cfx; await c.clearExternalFilters(); await c.setExternalFilter('records',{field,values:['unmatched']}); }", field);
+            Assert.False(await page.Locator("[data-cfx-mark]").Last.EvaluateAsync<bool>("el => el.classList.contains('cfx-e-filtered')"));
+        }
         AssertNoConsoleErrors(session);
     }
 
     [BrowserFact]
     public async Task DisconnectingLinkedViews_RestoresNativeMarkNavigation() {
         if (!Enabled) return;
-        var source = Chart.Create().WithLegend(false).AddBar("Source", new[] {
-            new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(href: "#record-detail", keys: new[] {"record"}))
-        }).Prepare(Context()).ToSvg(new VisualSvgOptions("source").WithEnhanceHooks());
+        var source = Chart.Create().WithLegend(false).AddLine("Source", new[] {
+            new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(href: "#record-detail", keys: new[] {"record"})), new ChartPoint(2, 4)
+        }).AddLine("Peer", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) })
+            .Prepare(Context()).ToSvg(new VisualSvgOptions("source").WithEnhanceHooks());
         var target = Activity().Prepare(Context()).ToSvg(new VisualSvgOptions("target").WithEnhanceHooks());
         await using var session = await OpenAsync(Page("<section id=\"source-host\">" + source + "</section><section id=\"target-host\">" + target + "</section><p id=\"record-detail\">Record detail</p>"), 900, 800);
         var page = session.Page;
@@ -310,11 +316,51 @@ public sealed class EnhanceRuntimeBrowserTests {
         var link = page.Locator("#source-host a[data-cfx-mark]");
         await link.ClickAsync();
         Assert.False(page.Url.EndsWith("#record-detail", StringComparison.Ordinal));
-        Assert.Equal(1, await page.Locator("#source-host .cfx-e-selected").CountAsync());
+        Assert.Equal(2, await page.Locator("#source-host .cfx-e-selected").CountAsync());
+        foreach (var modifier in new[] { "ctrlKey", "metaKey" })
+            Assert.True(await link.EvaluateAsync<bool>("(el, modifier) => { let allowed=false; el.addEventListener('click',e=>{allowed=!e.defaultPrevented; e.preventDefault();},{once:true}); el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1,[modifier]:true})); return allowed; }", modifier));
+        await link.FocusAsync();
+        await link.PressAsync("Enter");
+        Assert.EndsWith("#record-detail", page.Url, StringComparison.Ordinal);
+        await page.EvaluateAsync("() => history.replaceState(null,'','#reset')");
         await page.EvaluateAsync("() => disconnect()");
         await link.ClickAsync();
         Assert.EndsWith("#record-detail", page.Url, StringComparison.Ordinal);
         AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task HidingTheTabStop_KeepsOneVisibleMarkReachableAcrossLegendAndFilterChanges() {
+        if (!Enabled) return;
+        var svg = Activity().Prepare(Context()).ToSvg(new VisualSvgOptions("keyboard").WithEnhanceHooks());
+        await using var session = await OpenAsync(Page("<button id=\"before-chart\">Before chart</button>" + svg));
+        var page = session.Page;
+        var firstLegend = page.Locator("svg [role=button][aria-pressed]").First;
+        await firstLegend.FocusAsync();
+        await firstLegend.PressAsync("Enter");
+        await AssertTabStop("1");
+        await page.EvaluateAsync("async () => { const c=document.querySelector('svg').cfx; c.filterMode='hide'; await c.setExternalFilter('records',{field:'kind',values:['update']}); }");
+        Assert.Equal(0, await page.Locator("[data-cfx-mark][tabindex='0']").CountAsync());
+        await firstLegend.PressAsync("Enter");
+        await AssertTabStop("0");
+        await page.EvaluateAsync("async () => { await document.querySelector('svg').cfx.setExternalFilter('records',{field:'kind',values:['note']}); }");
+        await AssertTabStop("1");
+        await page.Locator("#before-chart").FocusAsync();
+        var tabCount = await page.Locator("svg [tabindex='0']").CountAsync() + 2;
+        for (var step = 0; step < tabCount; step++) {
+            await page.Keyboard.PressAsync("Tab");
+            if (await page.EvaluateAsync<bool>("() => document.activeElement.matches('[data-cfx-mark][tabindex=\"0\"]')")) break;
+        }
+        Assert.True(await page.EvaluateAsync<bool>("() => document.activeElement.matches('[data-cfx-mark][tabindex=\"0\"]')"),
+            await page.EvaluateAsync<string>("() => document.activeElement.outerHTML"));
+        AssertNoConsoleErrors(session);
+
+        async Task AssertTabStop(string series) {
+            var stop = page.Locator("[data-cfx-mark][tabindex='0']");
+            Assert.Equal(1, await stop.CountAsync());
+            Assert.Equal(series, await stop.GetAttributeAsync("data-cfx-series"));
+            Assert.True(await stop.IsVisibleAsync());
+        }
     }
 
     private sealed class EnhanceRow {

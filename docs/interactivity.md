@@ -284,17 +284,20 @@ Synchronized host highlights and restored selection use the source chart's actua
 
 For a report that needs a drawing without interactive controls, use
 `new HtmlResponsiveChartRenderer().RenderFragment(chart, minimumWidth: 240, maximumWidth: 1600)`.
-Native preparation emits one portable `chartforgex/layout-1` specification with
+Native preparation emits one portable `chartforgex/layout-2` specification with
 source series values, candidate axis captions, semantic paint, plot bounds and
 category-slot constraints. The browser measures captions in their actual token
 font, allocates bar slots and legend rows, and projects geometry into the panel's
 CSS-pixel plot bounds. A debounced ResizeObserver repeats that layout at arbitrary
 widths, including fractional widths. No C# callback or network request is needed.
-The payload contains no sampled width bands or coordinate derivatives.
+The payload contains no sampled width bands or coordinate derivatives. Layout 2 uses
+one inline SVG as both the static drawing and the browser's source paint; the JSON
+no longer contains an `svg` string. The native base uses the maximum width so it
+retains the source geometry needed at wider panel sizes. The runtime still accepts layout 1 fragments.
 
 Text and strokes keep their token sizes. Height stays at the configured chart
 height, or the optional `height` argument. Tick captions thin at a measured regular
-stride from the first caption with at least 1.5 em between neighbours; the last caption is kept only when it falls on that stride. Legends wrap before consuming plot space. An oversized caption truncates with its
+stride from the first caption with at least 1.5 em between neighbours; rectangular heatmaps also keep the last caption. Legends wrap before consuming plot space. An oversized caption truncates with its
 full name in an SVG tooltip; legend rows use at most 35% of the fixed height,
 with a named overflow summary when more entries remain. Regular
 bars use the native 68% category pitch and bounded group gaps, with the configured
@@ -305,6 +308,10 @@ serialization. Canonical bar slots and mapped source anchors are serialized, so
 sparse categories retain the same series slots. Every mounted fragment gets
 independent SVG definition IDs, even when two charts have identical content.
 
+Rectangular heatmaps use layout 3. At narrow widths the plot scrolls horizontally, keeping a minimum cell width and a sticky row-label gutter; the full row name remains in a tooltip. The first and last ordered column captions remain visible at the ends of the scroll range. Static fixed-width heatmaps use their configured column-window policy; the responsive host retains all columns.
+
+Responsive heatmaps initially show the latest columns. Set `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to open at the left edge instead. A reader at the newest edge stays there through resize; scrolling back into the history preserves the same first visible column when the card changes width. Print sizing preserves the screen position for the return to the page.
+
 The specification declares a plot band for Cartesian, matrix and state-timeline charts.
 Content before the band stays in place, the band stretches, and content after it
 (a lane summary column, for example) moves with the right edge. State timelines also
@@ -312,7 +319,9 @@ declare their lane-label gutter: below the drawing's natural width
 it narrows toward a minimum so the lanes keep about 60% of the remaining width, and
 lane labels, lane summaries, group headers and the chart heading truncate with an
 ellipsis and a full-text tooltip instead of shrinking. Heatmap colour legends and column
-captions move with the plot but keep their own width. Charts without a declared plot band, such
+captions move with the plot but keep their own width. Rotated matrix captions are
+measured in the current viewport and thin at a regular stride, including when
+columns are reversed. Charts without a declared plot band, such
 as radial charts and, for now, Gantt lanes and mixed schedules, stay centred at their native size; their heading keeps its left inset
 and truncates instead of being cropped.
 
@@ -321,10 +330,11 @@ keeps its static drawing and logs one console warning. A specification element a
 to the host later mounts the chart.
 
 Browser printing lays out at the actual print panel width, including below the
-screen scrolling minimum, and restores the screen minimum after printing. `printWidth` chooses
-the width of the script-free native fallback; a report host can supply its page's
-printable width. The fallback remains available without script. Static SVG and
-PNG rendering continue to use the native renderer.
+screen scrolling minimum, and restores the screen minimum after printing. `printWidth` chooses the maximum CSS width of the script-free fallback; a report
+host can supply its page's printable width. The fallback scales the maximum-width base drawing through its viewBox, so its text
+and strokes scale when the available print width is narrower than that base. It remains
+available without script. Static SVG and PNG rendering continue to use the native
+renderer and do not use this responsive layout contract.
 
 Responsive SVG uses native pattern tiles so hatched bars keep the same native brush
 without a different number of explicit hatch lines at every width. Static SVG and
