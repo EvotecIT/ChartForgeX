@@ -42,7 +42,14 @@ public sealed partial class HtmlInteractiveChartRenderer {
             var prefix = destination.Prefix + "-native-presentation-" + name + "-" + index.ToString(CultureInfo.InvariantCulture);
             var policy = new VisualSvgOptions(prefix, destination.Options.ColorVariables, destination.Options.LinkTarget, destination.Options.Responsive, destination.Options.EffectProfile, destination.Options.EffectRasterOptions)
                 .WithPatternTiles(destination.Options.PatternTiles).WithTextPresentation(destination.Options.TextPresentation).WithExplorableSemantics(destination.Options.Explorable);
-            json.Append("{\"prefix\":").Append(HtmlJsonString.Encode(prefix)).Append(",\"svg\":").Append(HtmlJsonString.Encode(Mode(frames[index]).ToSvg(policy)));
+            var presentation = frames[index];
+            if (presentation.Regions.Count == 0 && (reflow || initialFade)) {
+                // An invisible frame has no hit regions, but its serialized drawing retains the endpoint's names and roles.
+                var basis = reflow && reflowFrames![index].Source ? from : to;
+                var scene = presentation.Scene;
+                presentation = presentation.WithNativeFrame(new VisualScene(scene.Size, scene.Nodes, scene.Diagnostics, basis.Scene.Regions, scene.DataProjection));
+            }
+            json.Append("{\"prefix\":").Append(HtmlJsonString.Encode(prefix)).Append(",\"svg\":").Append(HtmlJsonString.Encode(Mode(presentation).ToSvg(policy)));
             if (reflow) {
                 var fact = reflowFrames![index];
                 json.Append(",\"basis\":").Append(HtmlJsonString.Encode(fact.Source ? "source" : "destination"))
