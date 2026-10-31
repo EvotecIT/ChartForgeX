@@ -42,10 +42,11 @@ public sealed class EnhanceRuntimeBrowserTests {
         async () => {
           const rows = [];
           for (const s of document.querySelectorAll('svg[data-cfx-enhance]')) {
-            const c = s.cfx, m = s.querySelector('[data-cfx-mark]'), name = s.id;
+            // Empty calendar days and other absent marks are not targets; probe the first mark that is drawn.
+            const c = s.cfx, m = s.querySelector('[data-cfx-mark]:not([data-cfx-empty="true"])'), name = s.id;
             if (!c || !m) { rows.push({ name, enhanced: !!c, marks: 0 }); continue; }
             s.scrollIntoView({ block: 'center' }); c.refresh();
-            const g = c.svg.querySelector('[data-cfx-mark]').getBoundingClientRect(), b = (m.getAttribute('data-cfx-bounds') || '').split(' ').map(Number);
+            const g = m.getBoundingClientRect(), b = (m.getAttribute('data-cfx-bounds') || '').split(' ').map(Number);
             let x = g.left + g.width / 2, y = g.top + g.height / 2;
             if (!g.width && b.length === 4) { const p = s.createSVGPoint(); p.x = b[0] + b[2] / 2; p.y = b[1] + b[3] / 2; const q = p.matrixTransform(s.getScreenCTM()); x = q.x; y = q.y; }
             const at = { bubbles: true, clientX: x, clientY: y, pointerType: 'mouse', button: 0 };
@@ -232,15 +233,15 @@ public sealed class EnhanceRuntimeBrowserTests {
                 match: kit => !!kit.roles['calendar-cell'],
                 attach: kit => ({ key(e, mark) {
                   if (e.key !== 'PageDown' && e.key !== 'PageUp') return;
-                  const cells = kit.bySeries[mark.s].filter(kit.visible), i = cells.indexOf(mark);
-                  return cells[Math.max(0, Math.min(cells.length - 1, i + (e.key === 'PageDown' ? 7 : -7)))];
+                  const day = Date.parse(mark.el.getAttribute('data-cfx-date')) + (e.key === 'PageDown' ? 7 : -7) * 864e5;
+                  return kit.bySeries[mark.s].filter(kit.visible).find(cell => Date.parse(cell.el.getAttribute('data-cfx-date')) === day) || mark;
                 } })
               });
               return CfxEnhance.get(document.getElementById('calendar-host')).behaviours.join('+');
             }
             """);
         Assert.Equal("grid+week-jump", attached);
-        await page.Locator("#calendar-host [data-cfx-mark]").First.FocusAsync();
+        await page.Locator("#calendar-host [data-cfx-mark]:not([data-cfx-empty='true'])").First.FocusAsync();
         var start = await page.EvaluateAsync<string>("() => document.activeElement.getAttribute('data-cfx-date')");
         await page.Keyboard.PressAsync("PageDown");
         var moved = await page.EvaluateAsync<string>("() => document.activeElement.getAttribute('data-cfx-date')");

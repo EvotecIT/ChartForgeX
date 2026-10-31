@@ -75,8 +75,9 @@ CfxEnhance.behaviour("week-jump", {
   attach: kit => ({
     key(e, mark) {
       if (e.key !== "PageDown" && e.key !== "PageUp") return;      // other keys keep their default
-      const cells = kit.bySeries[mark.s].filter(kit.visible), i = cells.indexOf(mark);
-      return cells[Math.max(0, Math.min(cells.length - 1, i + (e.key === "PageDown" ? 7 : -7)))];
+      // kit.visible skips empty days, so step by date rather than by position.
+      const day = Date.parse(mark.el.getAttribute("data-cfx-date")) + (e.key === "PageDown" ? 7 : -7) * 864e5;
+      return kit.bySeries[mark.s].filter(kit.visible).find(cell => Date.parse(cell.el.getAttribute("data-cfx-date")) === day) || mark;
     }
   })
 });

@@ -145,6 +145,18 @@ public sealed class EnhanceCanopyXBrowserTests {
         Assert.All(heat, cell => Assert.True(cell.Intersect(brushed).Any(), "A highlighted heatmap cell holds no brushed record."));
         Assert.True(state.GetProperty("trend").GetProperty("selected").GetInt32() > 0);
 
+        // Keyboard: Up moves to the next series in the same column, and no arrow ever lands on a zero-height segment.
+        await page.Locator(Grid + " .cx-link-chip").ClickAsync();
+        await WaitForChipAsync(page, false);
+        await page.Locator(Segment).First.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        Assert.Equal("1 5", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxSeries + ' ' + document.activeElement.dataset.cfxPoint"));
+        foreach (var key in new[] { "ArrowRight", "ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "ArrowUp", "End", "ArrowUp", "Home" }) {
+            await page.Keyboard.PressAsync(key);
+            Assert.True(await page.EvaluateAsync<bool>("() => { const r = document.activeElement.getBoundingClientRect(); return r.width > 0 && r.height > 0 && JSON.parse(document.activeElement.getAttribute('data-cfx-keys') || '[]').length > 0; }"),
+                key + " focused a mark that is not drawn: " + await page.EvaluateAsync<string>("() => JSON.stringify(document.activeElement.getBoundingClientRect()) + JSON.stringify(document.activeElement.querySelector('rect').getBoundingClientRect()) + document.activeElement.innerHTML.slice(0, 600)"));
+        }
+
         // No echo: filters and highlights applied to the grid never come back as its own link change.
         var echoes = await page.EvaluateAsync<int>("s => { let n = 0; const h = document.querySelector(s); h.addEventListener('canopyx:linkchange', () => n++); "
             + "return h.canopyx.setExternalFilter('trend', null).then(() => h.canopyx.setHighlight(['r001'])).then(() => n); }", Grid);
