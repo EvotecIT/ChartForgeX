@@ -1,3 +1,7 @@
+---
+description: "Shared page roles, categorical colours, readable axes, mark geometry and accessible interaction states across ChartForgeX chart families."
+---
+
 # ChartForgeX design language
 
 One look and one way of behaving for every chart we ship: server-rendered pages, HTML reports, linked grids, dashboards, documents and images. A reader who learns one ChartForgeX chart can read them all. This is the acceptance bar for chart work: a chart that breaks a rule here isn't done.
