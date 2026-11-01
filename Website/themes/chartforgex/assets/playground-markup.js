@@ -3,6 +3,7 @@
 
 const FENCE = /^\s*(`{3,}|~{3,})\s*chartforgex\s+(chart|timeline)\s+v1\b(.*)$/i;
 const SIZES = { compact: '640x400', wide: '1200x520' };
+const ATTRIBUTE = /(^|\s+)([\w-]+)\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s}]+)/g;
 
 // Chart types that read the same table (labels plus one or more series) and can replace each other.
 const SERIES_TYPES = [
@@ -41,7 +42,8 @@ export function readChartOptions(source) {
   const fence = findChartFence(source);
   if (!fence) return null;
   const info = fence.lines[fence.start];
-  const size = commandValue(fence, ['size']) ?? attribute(info, 'size');
+  const size = commandValue(fence, ['size']) ?? attribute(info, 'size')
+    ?? (attribute(info, 'width') || attribute(info, 'height') ? 'custom' : undefined);
   const sizeName = Object.keys(SIZES).find((name) => SIZES[name] === (size || '').toLowerCase().replace(/\s/g, '')) ?? (size ? 'custom' : '');
   if (fence.kind === 'timeline') return { kind: 'timeline', size: sizeName };
 
@@ -87,8 +89,7 @@ export function applyChartOption(source, option, value) {
       break;
     case 'labels': {
       const on = value === true || value === 'true';
-      const typeKey = key(commandValue(fence, ['type', 'kind']) ?? attribute(fence.lines[fence.start], 'type') ?? 'bar');
-      setCommand(fence, ['dataLabels', 'showDataLabels', 'labelsVisible'], on === LABELLED_BY_DEFAULT.has(typeKey) ? null : 'dataLabels ' + on);
+      setCommand(fence, ['dataLabels', 'showDataLabels', 'labelsVisible'], 'dataLabels ' + on);
       break;
     }
     default:
@@ -110,47 +111,70 @@ function normaliseLegend(value) {
   return position ?? value;
 }
 
-// Body lines are either "command value" or "option command value"; table rows and other commands are left alone.
+// Controls edit effective commands and rows in options sections; unrelated data stays intact.
 function commandPattern(names) {
   return new RegExp('^\\s*(?:option\\s+)?(?:' + names.join('|') + '):?(?:\\s+(.*?))?\\s*$', 'i');
 }
 
-function commandValue(fence, names) {
+function commandEntries(fence, names) {
   const pattern = commandPattern(names);
-  let value;
+  const entries = [];
+  let section = '', headers = null;
   for (let index = fence.start + 1; index < fence.end; index++) {
-    const match = pattern.exec(fence.lines[index]);
-    if (match) value = unquote(match[1] ?? '');
+    const line = stripComment(fence.lines[index]).trim();
+    const start = /^(options|data|nodes|flows):?$/i.exec(line);
+    if (start || /^end$/i.test(line)) {
+      section = start ? start[1].toLowerCase() : '';
+      headers = null;
+      continue;
+    }
+    if (section === 'nodes' || section === 'flows') continue;
+    if (section === 'options' && line.includes('|') && (line.startsWith('|') || headers)) {
+      const cells = line.replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map(cell => cell.trim());
+      if (cells.every(cell => /^:?-+:?$/.test(cell))) continue;
+      if (!headers) { headers = cells.map(key); continue; }
+      const name = cells[headers.findIndex(header => ['option', 'key', 'name'].includes(header))];
+      if (names.some(item => key(item) === key(name)))
+        entries.push({ index, value: unquote(cells[headers.indexOf('value')] ?? '') });
+      continue;
+    }
+    const match = pattern.exec(line);
+    if (match) entries.push({ index, value: unquote(match[1] ?? '') });
   }
-  return value;
+  return entries;
+}
+
+function commandValue(fence, names) {
+  return commandEntries(fence, names).at(-1)?.value;
+}
+
+function stripComment(line) {
+  let quoted = false;
+  for (let index = 0; index < line.length - 1; index++) {
+    if (line[index] === '"') quoted = !quoted;
+    if (!quoted && line[index] === '/' && line[index + 1] === '/' && (index === 0 || /\s/.test(line[index - 1])))
+      return line.slice(0, index);
+  }
+  return line;
 }
 
 function setCommand(fence, names, line) {
-  const pattern = commandPattern(names);
-  let at = -1;
-  for (let index = fence.end - 1; index > fence.start; index--) {
-    if (!pattern.test(fence.lines[index])) continue;
+  for (const { index } of commandEntries(fence, names).reverse()) {
     fence.lines.splice(index, 1);
     fence.end--;
-    at = index;
   }
   if (line == null) return;
-  const position = at > 0 ? at : fence.end;
-  fence.lines.splice(position, 0, fence.indent + line);
+  // Before the body is always outside an options/data section, including an unterminated final section.
+  fence.lines.splice(fence.start + 1, 0, fence.indent + line);
   fence.end++;
 }
 
 function setType(fence, type) {
-  const pattern = commandPattern(['type', 'kind']);
-  for (let index = fence.start + 1; index < fence.end; index++) {
-    if (pattern.test(fence.lines[index])) {
-      fence.lines[index] = fence.indent + 'type ' + type;
-      return;
-    }
-  }
+  setCommand(fence, ['type', 'kind'], null);
   const info = fence.lines[fence.start];
   if (attribute(info, 'type') !== undefined) {
-    fence.lines[fence.start] = info.replace(/(\{[^}]*?\btype\s*=\s*)("[^"]*"|'[^']*'|[^\s}]+)/i, '$1"' + type + '"');
+    fence.lines[fence.start] = info.replace(/\{([^}]*)\}\s*$/, (_, attributes) => '{' + attributes.replace(ATTRIBUTE,
+      (match, space, name) => key(name) === 'type' ? space + name + '="' + type + '"' : match) + '}');
   } else if (/\{[^}]*\}\s*$/.test(info)) {
     fence.lines[fence.start] = info.replace(/\s*\}\s*$/, ' type="' + type + '"}');
   } else {
@@ -161,16 +185,17 @@ function setType(fence, type) {
 function attribute(info, name) {
   const block = /\{([^}]*)\}\s*$/.exec(info);
   if (!block) return undefined;
-  const match = new RegExp('(?:^|\\s)' + name + '\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s}]+)', 'i').exec(block[1]);
-  return match ? unquote(match[1]) : undefined;
+  for (const match of block[1].matchAll(ATTRIBUTE))
+    if (key(match[2]) === key(name)) return unquote(match[3]);
+  return undefined;
 }
 
 function removeAttributes(info, names) {
-  let result = info;
-  for (const name of names) {
-    result = result.replace(new RegExp('\\s+' + name + '\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s}]+)', 'i'), '');
-  }
-  return result.replace(/\{\s+/, '{').replace(/\s*\{\s*\}\s*$/, '');
+  return info.replace(/\{([^}]*)\}\s*$/, (_, attributes) => {
+    attributes = attributes.replace(ATTRIBUTE,
+      (match, space, name) => names.some(item => key(item) === key(name)) ? space : match);
+    return attributes.trim() ? '{' + attributes.trim() + '}' : '';
+  }).trimEnd();
 }
 
 function unquote(value) {
