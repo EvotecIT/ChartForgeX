@@ -1,0 +1,41 @@
+{
+  "license": "SIL Open Font License 1.1",
+  "fonts": [
+    {
+      "family": "Archivo",
+      "repository": "https://github.com/google/fonts",
+      "revision": "95f4904fc8bcf26d3420fe315560c96417c6dec7",
+      "sourceSha256": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
+      "unicodeCharacters": 653,
+      "processing": "Archivo: pin wdth=100, move wght default to 400 with FontTools 4.66.1 varLib.instancer; preserve 100..900 weights and every cmap character. JetBrainsMono: original TTF and lossless WOFF2 compression. No Unicode subsetting. Preserve timestamps.",
+      "files": {
+        "Archivo.ttf": {
+          "bytes": 328816,
+          "sha256": "97f8755fbdae22e670a598451c9f54efc4230fec0182aa017fcfa3590ca894f5"
+        },
+        "Archivo.woff2": {
+          "bytes": 93140,
+          "sha256": "6a71ecc5aff4e2282d89d828ccd757ffa12f8534931f48b43200a3106fc58d21"
+        }
+      }
+    },
+    {
+      "family": "JetBrainsMono",
+      "repository": "https://github.com/google/fonts",
+      "revision": "6e4b84c976cadb3c49a40fd9a1c203e4f7fcf2da",
+      "sourceSha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda",
+      "unicodeCharacters": 976,
+      "processing": "Archivo: pin wdth=100, move wght default to 400 with FontTools 4.66.1 varLib.instancer; preserve 100..900 weights and every cmap character. JetBrainsMono: original TTF and lossless WOFF2 compression. No Unicode subsetting. Preserve timestamps.",
+      "files": {
+        "JetBrainsMono.ttf": {
+          "bytes": 187208,
+          "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda"
+        },
+        "JetBrainsMono.woff2": {
+          "bytes": 71736,
+          "sha256": "7b7f3419196f675a973d30cb70078749120caddea86c8547ebf54a8db2ca13af"
+        }
+      }
+    }
+  ]
+}

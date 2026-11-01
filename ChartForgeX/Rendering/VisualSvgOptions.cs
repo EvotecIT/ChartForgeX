@@ -10,6 +10,10 @@ namespace ChartForgeX.Rendering;
 public sealed partial class VisualSvgOptions {
     private SvgColorVariables? _colorVariables;
     private bool _patternTiles;
+    internal bool IncludeProductFonts { get; private set; } = true;
+    internal VisualSvgOptions WithoutProductFonts() {
+        var copy = Copy(); copy.IncludeProductFonts = false; return copy;
+    }
     /// <summary>Gets whether native hatch marks serialize as user-space SVG tiles instead of individual clipped lines.</summary>
     public bool PatternTiles => _patternTiles;
     /// <summary>Returns an export policy with native user-space pattern tiles, retaining the other host settings.</summary>

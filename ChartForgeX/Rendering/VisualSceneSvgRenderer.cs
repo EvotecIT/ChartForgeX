@@ -57,7 +57,7 @@ internal static partial class VisualSceneSvgRenderer {
         if (fluid != null) WriteFluidRootAttributes(writer, scene);
         else writer.Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
             .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height));
-        writer.Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round")
+        writer.Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").Attribute("font-variant-numeric", "tabular-nums")
             .Attribute("lang", language).Attribute("xml:lang", language);
         if (fluid == null && options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
         if (decorative) writer.Attribute("aria-hidden", true).Attribute("focusable", false);
@@ -68,6 +68,9 @@ internal static partial class VisualSceneSvgRenderer {
         }
         var enhancePlan = WriteEnhanceRootAttributes(writer, scene, options, prefix);
         writer.EndStartElement();
+        if (options?.IncludeProductFonts != false && options?.HasPageFonts != true
+            && options?.TextPresentation is not (VisualSvgTextPresentation.Automatic or VisualSvgTextPresentation.NativeContours))
+            WriteProductFonts(writer, scene);
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
         WriteEnhanceData(writer, scene, options);

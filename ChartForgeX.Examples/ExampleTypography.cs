@@ -1,24 +1,22 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using System.Xml.Linq;
 
 /// <summary>Shares the licensed gallery faces between native metrics and example HTML.</summary>
 internal static class ExampleTypography {
-    internal const string FontFamily = "CFX Proof Carlito";
-    private static readonly Lazy<string> FontCss = new(() => "/*"
-        + File.ReadAllText(Path.Combine(FontDirectory, "OFL.txt")) + "*/"
-        + Face("Regular", 400) + Face("Bold", 700));
+    internal const string FontFamily = ChartFontStacks.ProductSans;
 
-    internal static string EmbeddedStyle => "<style>" + FontCss.Value + "</style>";
+    internal static string EmbeddedStyle => "<style data-cfx-product-fonts=\"true\">" + ChartFontAssets.StyleSheet + "</style>";
 
-    internal static string EmbedInHtml(string html) => html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
+    internal static string EmbedInHtml(string html) => html.Contains(ChartFontAssets.StyleSheet, StringComparison.Ordinal)
+        ? html : html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
 
-    internal static string EmbedInSvg(string svg) => svg.Insert(svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal)) + 1,
-        new XElement("style", FontCss.Value).ToString(SaveOptions.DisableFormatting));
+    internal static string EmbedInSvg(string svg) => svg.Contains("font-family:'Archivo'", StringComparison.Ordinal)
+        ? svg : svg.Insert(svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal)) + 1,
+            new XElement("style", ChartFontAssets.StyleSheet).ToString(SaveOptions.DisableFormatting));
 
-    internal static void Register() {
-        FontRegistry.Register(FontFamily, FontPath("Regular"), 400);
-        FontRegistry.Register(FontFamily, FontPath("Bold"), 700);
-    }
+    // Existing gallery entry points initialize the embedded assets here; native faces resolve in core.
+    internal static void Register() => _ = ChartFontAssets.StyleSheet;
 
     internal static void WriteAssets(string output) {
         Register();
@@ -30,8 +28,4 @@ internal static class ExampleTypography {
     }
 
     private static string FontDirectory => Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
-    private static string FontPath(string weight) => Path.Combine(FontDirectory, "Carlito-" + weight + ".ttf");
-    private static string Face(string weight, int numeric) => "@font-face{font-family:'" + FontFamily
-        + "';font-weight:" + numeric + ";font-display:block;src:url(data:font/ttf;base64,"
-        + Convert.ToBase64String(File.ReadAllBytes(FontPath(weight))) + ") format('truetype')}";
 }

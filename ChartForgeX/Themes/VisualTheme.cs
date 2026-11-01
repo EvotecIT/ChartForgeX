@@ -105,15 +105,12 @@ public sealed partial class VisualTheme {
     public VisualTheme WithPalette(VisualThemeMode mode, params ChartColor[] colors) => Configure(builder => builder.Colors(mode).Palette = colors);
     /// <summary>Creates a theme with the supplied categorical palette in both modes.</summary>
     public VisualTheme WithPalette(params ChartColor[] colors) => Configure(builder => { builder.Light.Palette = colors; builder.Dark.Palette = colors; });
-    /// <summary>Creates a theme from generated HtmlForgeX color palettes without changing geometry.</summary>
-    public static VisualTheme FromPaletteJson(string json, VisualTypography? typography = null) => new(
-        VisualDesignTokens.FromJson(json, VisualThemeMode.Light), VisualDesignTokens.FromJson(json, VisualThemeMode.Dark), typography);
+    /// <summary>Creates a theme from generated HtmlForgeX palettes and optional shared visual primitives.</summary>
+    /// <remarks>Colour-only documents retain the ordinary geometry defaults. Explicit typography overrides the exported scale.</remarks>
+    public static VisualTheme FromPaletteJson(string json, VisualTypography? typography = null) => FromVisualContract(json, typography);
     internal ResolvedVisualTheme ResolvePresentation(VisualThemeMode mode) => new(this, mode);
     private static VisualTheme CreateGraphite() {
-        using var stream = typeof(VisualTheme).Assembly.GetManifestResourceStream("ChartForgeX.Themes.Tokens.evotec.chartforgex.tokens.json")
-            ?? throw new InvalidOperationException("The canonical theme resource is missing.");
-        using var reader = new StreamReader(stream);
-        return FromPaletteJson(reader.ReadToEnd());
+        return FromPaletteJson(VisualDesignTokens.CanonicalJson);
     }
     private static double NonNegative(double value, string name) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(name);
@@ -126,6 +123,9 @@ public sealed partial class VisualThemeColors {
     private readonly VisualDesignTokens _tokens;
     internal VisualThemeColors(VisualDesignTokens tokens) { _tokens = tokens.Clone(); Palette = Array.AsReadOnly(_tokens.Palette); }
     internal VisualDesignTokens ToTokens() => _tokens.Clone();
+    /// <summary>Gets explicit tooltip/focus roles, or roles derived from this theme's own palette.</summary>
+    public VisualChromeTokens Chrome => _tokens.Chrome ?? new VisualChromeTokens(ElevatedSurface, Foreground,
+        MutedForeground, Border, Accent, "none");
     /// <summary>Gets the canvas color.</summary>
     public ChartColor Background => _tokens.Background;
     /// <summary>Gets the plot surface color.</summary>
@@ -201,10 +201,10 @@ public sealed class VisualTypography {
             scalarValueSize, centerValueSize, axisTitleSize, monospaceFamily, 14, 22, 13) { }
 
     /// <summary>Creates a validated immutable font scale including VisualCanvas tile sizes.</summary>
-    public VisualTypography(string family = "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif",
+    public VisualTypography(string family = ChartFontStacks.ProductSans,
         double titleSize = 16, double subtitleSize = 13, double axisSize = 12, double legendSize = 12, double dataLabelSize = 12,
         double scalarValueSize = 34, double centerValueSize = 20, double? axisTitleSize = null,
-        string monospaceFamily = "Cascadia Mono, Consolas, monospace",
+        string monospaceFamily = ChartFontStacks.ProductMono,
         double tileLabelSize = 14, double tileValueSize = 22, double tileDetailSize = 13) {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("A font family is required.", nameof(family));
         if (string.IsNullOrWhiteSpace(monospaceFamily)) throw new ArgumentException("A monospace family is required.", nameof(monospaceFamily));

@@ -232,6 +232,12 @@ internal static partial class VisualColorScaleLegendScene {
                 builder.Rect(box, blend.Color, radius: 1, role: prefix + "-swatch", paint: VisualChartPaint.Fill(blend.Paint));
         }
         void Caption(string text, ChartRect box, string id, TextAlignment alignment) {
+            if (id == "low" || id == "high") {
+                // Endpoint ink can extend beyond its measured advance. Keep the key's
+                // existing half-gap inside each caption lane, as for its swatch captions.
+                var inset = Math.Min(gap / 2, box.Width / 2);
+                box = new ChartRect(box.Left + inset, box.Top, Math.Max(0, box.Width - inset * 2), box.Height);
+            }
             var captionStyle = captions != null || id == "midpoint" ? FitCaptionStyle(builder, text, style, box.Width) : style;
             VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
         }
@@ -302,8 +308,10 @@ internal static partial class VisualColorScaleLegendScene {
         string text, TextStyle style, ChartRect lane, double anchor, bool inwardEdges = true) {
         anchor = Math.Max(lane.Left, Math.Min(lane.Right, anchor));
         var symmetric = Math.Max(0, 2 * Math.Min(anchor - lane.Left, lane.Right - anchor));
-        if (!inwardEdges || symmetric > 0 && builder.MeasureText(text, FitCaptionStyle(builder, text, style, symmetric)).Width <= symmetric)
-            return (new ChartRect(anchor - symmetric / 2, lane.Top, symmetric, lane.Height), TextAlignment.Center);
+        if (!inwardEdges || symmetric > 0 && builder.MeasureText(text, FitCaptionStyle(builder, text, style, symmetric)).Width <= symmetric) {
+            var left = Math.Max(lane.Left, anchor - symmetric / 2);
+            return (new ChartRect(left, lane.Top, Math.Min(symmetric, Math.Max(0, lane.Right - left)), lane.Height), TextAlignment.Center);
+        }
         return anchor <= lane.Left + lane.Width / 2
             ? (new ChartRect(anchor, lane.Top, Math.Max(0, lane.Right - anchor), lane.Height), TextAlignment.Left)
             : (new ChartRect(lane.Left, lane.Top, Math.Max(0, anchor - lane.Left), lane.Height), TextAlignment.Right);

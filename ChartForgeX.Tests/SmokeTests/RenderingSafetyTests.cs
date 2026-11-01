@@ -83,14 +83,16 @@ internal static partial class SmokeTests {
                 new ChartPoint(3, double.MaxValue)
             })
             .ToSvg();
-        Assert(!extreme.Contains("NaN", StringComparison.Ordinal) && !extreme.Contains("Infinity", StringComparison.Ordinal), "Extreme finite bounds should not produce invalid SVG numeric values.");
+        var extremeMarkup = NumericMarkup(extreme);
+        Assert(!extremeMarkup.Contains("NaN", StringComparison.Ordinal) && !extremeMarkup.Contains("Infinity", StringComparison.Ordinal), "Extreme finite bounds should not produce invalid SVG numeric values.");
 
         var subnormal = Chart.Create()
             .WithSize(420, 260)
             .WithYAxisBounds(0, double.Epsilon)
             .AddLine("Values", new[] { new ChartPoint(1, 0), new ChartPoint(2, double.Epsilon) })
             .ToSvg();
-        Assert(!subnormal.Contains("NaN", StringComparison.Ordinal) && !subnormal.Contains("Infinity", StringComparison.Ordinal), "Subnormal finite bounds should fall back to stable endpoint ticks.");
+        var subnormalMarkup = NumericMarkup(subnormal);
+        Assert(!subnormalMarkup.Contains("NaN", StringComparison.Ordinal) && !subnormalMarkup.Contains("Infinity", StringComparison.Ordinal), "Subnormal finite bounds should fall back to stable endpoint ticks.");
     }
 
     private static void CappedTickGenerationPreservesTheRequestedRange() {

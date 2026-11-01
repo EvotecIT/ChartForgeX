@@ -14,6 +14,7 @@ public sealed partial class VisualDesignTokens {
         && Border.Equals(other.Border)
         && Accent.Equals(other.Accent)
         && SecondaryAccent.Equals(other.SecondaryAccent)
+        && Equals(Chrome, other.Chrome)
         && Positive.Equals(other.Positive)
         && Warning.Equals(other.Warning)
         && Negative.Equals(other.Negative)

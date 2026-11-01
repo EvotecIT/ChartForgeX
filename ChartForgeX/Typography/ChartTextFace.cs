@@ -9,7 +9,7 @@ internal static class ChartTextFace {
         var weight = style.ResolveFontWeight(fallbackWeight);
         var face = explicitFont == null
             ? TypographyFontResolver.ResolveFace(style.FontFamily ?? family, weight, style.Italic)
-            : new ResolvedTypeface(explicitFont, weight >= 600, style.Italic);
+            : new ResolvedTypeface(explicitFont.WithTabularNumerals(), weight >= 600, style.Italic);
         return TypographyFontResolver.WithColorPalette(TypographyFontResolver.WithVariations(
             TypographyFontResolver.WithLanguage(face, style.OpenTypeLanguageTag), style.Variations), style.ColorPaletteIndex);
     }

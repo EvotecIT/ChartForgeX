@@ -4,6 +4,11 @@ namespace ChartForgeX.Themes;
 /// Provides dependency-free CSS font-family stacks for SVG and HTML chart output.
 /// </summary>
 public static class ChartFontStacks {
+    /// <summary>The shared product stack. Archivo is bundled for native and browser rendering.</summary>
+    public const string ProductSans = "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif";
+
+    /// <summary>The bundled technical face, with platform fallbacks for unsupported characters.</summary>
+    public const string ProductMono = "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, monospace";
     /// <summary>
     /// Gets the default native sans-serif stack.
     /// </summary>

@@ -94,7 +94,8 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
 
-        Assert(!svg.Contains("NaN", StringComparison.Ordinal) && !svg.Contains("Infinity", StringComparison.Ordinal), "Rounded topology routes should tolerate duplicate consecutive waypoints.");
+        var numericMarkup = NumericMarkup(svg);
+        Assert(!numericMarkup.Contains("NaN", StringComparison.Ordinal) && !numericMarkup.Contains("Infinity", StringComparison.Ordinal), "Rounded topology routes should tolerate duplicate consecutive waypoints.");
     }
 
     private static void TopologyEdgeLabelsTolerateDuplicateEdgeIds() {

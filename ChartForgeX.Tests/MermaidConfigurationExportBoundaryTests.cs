@@ -36,7 +36,8 @@ public sealed class MermaidConfigurationExportBoundaryTests {
     [InlineData("\\r")]
     [InlineData("\\uD83D\\uDE00")]
     public void XmlCompatibleFontCharactersKeepEveryAdvertisedExport(string escape) {
-        foreach (var declaration in Declarations("fontFamily", "Arial" + escape + "serif, " + BrowserProofFonts.Family)) {
+        // Preserve the control escape while quoting the product stack inside the source JSON strings.
+        foreach (var declaration in Declarations("fontFamily", "Arial" + escape + "serif, " + BrowserProofFonts.Family.Replace("\"", "\\\""))) {
             foreach (var diagram in Diagrams()) {
                 var rendered = MermaidRenderer.Render(declaration + diagram);
                 Assert.False(rendered.HasErrors);

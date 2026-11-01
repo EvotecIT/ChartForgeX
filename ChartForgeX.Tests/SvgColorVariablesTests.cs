@@ -123,7 +123,7 @@ public sealed class SvgColorVariablesTests {
 
     [Fact]
     public void GridAndPreparedTopology_ApplyTheirVariables() {
-        var grid = new ChartGrid().Add(Lines().WithLuminousLineStyle()).Add(Lines().WithLuminousLineStyle()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
+        var grid = new ChartGrid().WithTheme(new VisualTheme(Graphite, Graphite)).Add(Lines().WithLuminousLineStyle()).Add(Lines().WithLuminousLineStyle()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
         var svg = grid.ToSvg();
         Assert.Contains("var(--cfx-series-1, #2A78D6)", svg, StringComparison.Ordinal);
         // Panels without variables of their own resolve their typed paints with the grid's: the white sheen stays literal.

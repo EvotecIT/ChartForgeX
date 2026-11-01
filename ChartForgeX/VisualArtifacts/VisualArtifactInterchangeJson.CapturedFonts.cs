@@ -21,6 +21,7 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.StartObject(); String(writer, "root", roots.Reference(font)); OptionalNumber(writer, "collection", font.CollectionIndex);
         OptionalString(writer, "faceName", font.DisplayName); OptionalString(writer, "selectedFamily", font.SelectedFamily);
         OptionalString(writer, "language", font.LanguageTag);
+        if (font.TabularNumerals) Boolean(writer, "tabularNumerals", true);
         FontValue(writer, new FontSpec { Family = font.SelectedFamily ?? "sans-serif", Weight = font.FallbackWeight,
             Italic = font.FallbackItalic, ColorPaletteIndex = font.ColorPaletteIndex, Variations = font.Variations }, "view", roots);
         writer.Property("fallbackFamilies"); writer.StartArray(); foreach (var family in font.FallbackFamilies) writer.String(family); writer.EndArray();
@@ -37,6 +38,7 @@ internal static partial class VisualArtifactInterchangeJson {
         font = font.WithFallbackFamilies(families, policy.Weight, policy.Italic).WithLanguage(language == "normal" ? null : language)
             .WithVariations(policy.Variations).WithColorPalette(policy.ColorPaletteIndex);
         if (OptionalString(item, "selectedFamily") is string family) font = font.WithSelectedFamily(family);
+        if (OptionalBool(item, "tabularNumerals") == true) font = font.WithTabularNumerals();
         return font;
     }
 

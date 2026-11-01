@@ -4,6 +4,16 @@ description: "Migrate ChartForgeX consumers to the current preparation, data-edi
 
 # ChartForgeX consumer migration
 
+## Product typography
+
+The shared product face is Archivo, replacing the Calibri/Carlito chart defaults and separate gallery proof alias. JetBrains Mono supplies technical text. Use `ChartFontStacks.ProductSans` and `ChartFontStacks.ProductMono` for the complete stacks. The core package bundles native TrueType and matching browser WOFF2 faces; consumers no longer need to register gallery Carlito files to reproduce the default typography. Custom font requests remain explicit.
+
+This is a visible change: glyph widths, line breaks, fitted label counts and content-sized diagram dimensions can differ. Inspect compact and wide output in both modes before accepting new visual baselines. Existing prepared artifacts retain their captured typography; prepare them again to adopt the new face. Numeric hosts should use `font-variant-numeric: tabular-nums`. See [product typography](typography.md) for font delivery, pinned OFL provenance, supported weights and fallback-script limitations.
+
+The shared ramp maps chart titles to the 16-pixel `subtitle` step and plot subtitles to 13-pixel `small`; axis ticks, legends and data labels use 12-pixel `caption`. Center values use 20-pixel `title`, tile labels 14-pixel `body` and tile details 13-pixel `small`. Scalar values remain 34 pixels and tile values 22 pixels because they are distinct numeric presentation roles. See the [role mapping](typography.md#chart-roles-in-the-shared-type-ramp) for the rationale and explicit-size precedence.
+
+## Layout and authoring changes
+
 Automatic Swimlane layouts now honor existing `TopologyGroup.LayoutDirection` when it differs from the inherited direction. Such diagrams use the existing recursive native group composer: the local region follows its authored direction and preserves membership/containment, while process ranks are no longer globally aligned across every responsibility. Leave the direction null, or equal to its inherited/global direction, to retain the incumbent shared-rank lane path. Source links from a member to outside the group retain the existing parent-direction inheritance; a shell-to-shell handoff does not erase a local direction.
 
 `TopologyRenderOptions.LayeredNodeSpacing` and `LayeredRankSpacing` now apply to automatic Swimlane layouts as well as Layered layouts; null retains the old Swimlane 24/96 spacing constants. The new nullable `SwimlaneIgnoreCrossLaneRankConstraints` changes ranking only when true, through the existing native rank owner, and preserves real edges/ports and authored rank minima. It is host render policy, not a new portable editable-layout protocol. Use the source-owned `swimlane-native-layout-depth.mmd` and complete downloadable program for a before/after consumer example.

@@ -146,7 +146,7 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
+    private static (double Width, double Offset, double CaptionWidth) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
         var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar && (!chart.Series[i].IsVisibilityPreparation || chart.Series[i].HasSourceData)
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
         var slot = stacks.Slot(barIndices, index);
@@ -156,7 +156,7 @@ internal static partial class VisualCartesianCompiler {
             maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, stacks.IsStacked(index)),
             minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
             sampleSlots: sampleSlots, maximumPitch: map.CalendarBandPitch(horizontal: false));
-        return (layout.Thickness, layout.Offset);
+        return (layout.Thickness, layout.Offset, slot.Count > 1 ? layout.Stride : layout.Pitch);
     }
 
     private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {

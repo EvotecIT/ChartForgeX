@@ -61,6 +61,7 @@ public sealed partial class VisualDesignTokens {
             Maintenance = Pair(state, "maintenance", name + ".state")
         };
         var tokens = new VisualDesignTokens {
+            Chrome = ReadChrome(root, chrome, name + ".chrome"),
             Background = Color(surface, "page", name + ".surface"),
             Surface = Color(surface, "cardAlt", name + ".surface"),
             ElevatedSurface = Color(surface, "card", name + ".surface"),

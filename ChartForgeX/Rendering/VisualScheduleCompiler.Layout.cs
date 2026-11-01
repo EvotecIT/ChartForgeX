@@ -86,7 +86,8 @@ internal static partial class VisualScheduleCompiler {
                 chart.Options.AxisTitleStyle.Resolve(style), "schedule-y-axis-title", "schedule-y-title");
         if (layout.HasSummary && !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader))
             VisualStateSceneTools.Text(builder, chart.Options.LaneSummaryHeader!, new ChartRect(layout.SummaryLeft, viewport.Top,
-                Math.Max(0, viewport.Right - layout.SummaryLeft), Math.Max(0, plot.Top - viewport.Top)), style, "lane-summary-header", "schedule-summary-header", TextAlignment.Right);
+                Math.Max(0, viewport.Right - layout.SummaryLeft), Math.Max(0, plot.Top - viewport.Top)), style, "lane-summary-header", "schedule-summary-header", TextAlignment.Right,
+                shrink: (chart.Options.TickLabelStyle.FontSize ?? context.Theme.Typography.AxisSize) > VisualTextFitting.MaximumOrdinaryFontSize);
     }
 
     private static void LaneText(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,

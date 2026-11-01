@@ -18,8 +18,8 @@ public sealed class SharedDesignRoleTests {
     private readonly ITestOutputHelper _output;
     public SharedDesignRoleTests(ITestOutputHelper output) => _output = output;
 
-    private static readonly string[] LightOrder = { "#2A78D6", "#0F9F8C", "#7B61E8", "#A0522D", "#C24FA8", "#5B7F00" };
-    private static readonly string[] DarkOrder = { "#3987E5", "#179C89", "#8A74EE", "#C06A42", "#C9579F", "#6F9120" };
+    private static readonly string[] LightOrder = { "#2171CE", "#19695D", "#7459E0", "#B7459E", "#5A7C0D", "#1D4F9E" };
+    private static readonly string[] DarkOrder = { "#509EFE", "#429484", "#9681FC", "#CE5CA4", "#6F9120", "#7B9BE8" };
 
     [Fact]
     public void DefaultCategoricalOrder_IsTheValidatedOrderInBothModes_AndHoldsNoStatusColour() {
@@ -39,7 +39,7 @@ public sealed class SharedDesignRoleTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light, "#ABAEB2")]
+    [InlineData(VisualThemeMode.Light, "#AAADB2")]
     [InlineData(VisualThemeMode.Dark, "#595B61")]
     public void OtherSlice_IsNeutralGrayAndLast_EvenWithSourceOrder(VisualThemeMode mode, string gray) {
         var colors = VisualTheme.Graphite().Resolve(mode);
@@ -90,8 +90,8 @@ public sealed class SharedDesignRoleTests {
     public void SharedRoles_WriteHfxPropertiesWithTheThemeAsFallback_AndFontsInheritThePage() {
         var chart = Chart.Create().AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2)).WithTitle("Roles");
         var svg = chart.Prepare(new VisualRenderContext()).ToSvg(new VisualSvgOptions("roles").WithSharedDesignRoles());
-        Assert.Contains("var(--hfx-color-series-1, #2A78D6)", svg, StringComparison.Ordinal);
-        Assert.Contains("var(--hfx-color-series-2, #0F9F8C)", svg, StringComparison.Ordinal);
+        Assert.Contains("var(--hfx-color-series-1, #2171CE)", svg, StringComparison.Ordinal);
+        Assert.Contains("var(--hfx-color-series-2, #19695D)", svg, StringComparison.Ordinal);
         Assert.Contains("var(--hfx-color-text-primary, ", svg, StringComparison.Ordinal);
         Assert.Contains("font-family=\"var(--hfx-font-sans, inherit)\"", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("font-size=\"inherit\"", svg, StringComparison.Ordinal);
@@ -115,9 +115,10 @@ public sealed class SharedDesignRoleTests {
         Assert.Contains("var(--hfx-color-series-2, #0F9F8C)", fills);
         Assert.Contains("var(--hfx-color-series-3, #336699)", fills);
         Assert.Equal(fills.Count(fill => fill.Contains("series-1,", StringComparison.Ordinal)), fills.Count(fill => fill.Contains("series-3,", StringComparison.Ordinal)));
-        // Graphite light series 1 equals sequential step 3: the bar still names the series role, the ramp keeps its own.
-        var graphite = Chart.Create().AddBar("A", Points(1, 2)).WithSvgColorVariables(SvgColorVariables.SharedRoles()).ToSvg();
-        Assert.Contains("var(--hfx-color-series-1, #2A78D6)", graphite, StringComparison.Ordinal);
+        // A caller can use a ramp step as a series colour without losing the series role.
+        var rampTheme = VisualTheme.Graphite().WithPalette(VisualTheme.Graphite().Resolve(VisualThemeMode.Light).SequentialRamp[2]);
+        var graphite = Chart.Create().WithTheme(rampTheme).AddBar("A", Points(1, 2)).WithSvgColorVariables(SvgColorVariables.SharedRoles(rampTheme)).ToSvg();
+        Assert.Contains("var(--hfx-color-series-1, " + rampTheme.Resolve(VisualThemeMode.Light).Palette[0].ToHex() + ")", graphite, StringComparison.Ordinal);
         Assert.DoesNotContain("--hfx-ramp-sequential-3", graphite, StringComparison.Ordinal);
     }
 

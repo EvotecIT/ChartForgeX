@@ -82,6 +82,27 @@ public sealed class TopologyPreparedClipAndUnitRegressionTests {
         var changed = restored.Prepare(); Capture("note-units-" + left + "-frame-edited", changed); Assert.Null(changed.ToInterchangeEnvelope().Annotations[0].TopologyDefaultUnits); Assert.Null(changed.ToInterchangeEnvelope().Annotations[0].TopologyRoutingViewport);
     }
 
+    [Fact]
+    public void PortableCaptionFittingRetainsExplicitFalseAndAcceptsOlderMissingPolicyWithoutRefittingGeometry() {
+        var before = Generic(TopologyNodeDisplayMode.Card, false).Prepare();
+        var raw = JsonNode.Parse(before.ToInterchangeEnvelope().ToJson())!;
+        var captions = Assert.IsType<JsonObject>(raw["presentation"]!["topologyCaptions"]);
+        Assert.True(captions["fitSingleLine"]!.GetValue<bool>());
+        captions["fitSingleLine"] = false;
+        var saved = VisualArtifactInterchangeEnvelope.FromJson(raw.ToJsonString());
+        Assert.False(JsonNode.Parse(saved.ToJson())!["presentation"]!["topologyCaptions"]!["fitSingleLine"]!.GetValue<bool>());
+        var restored = saved.ToTopologyChart();
+        Assert.False(restored.DefaultRenderOptions!.FitContentToViewport);
+        var after = restored.Prepare();
+        Assert.Equal(before.ToInterchangeEnvelope().Nodes[0].X, after.ToInterchangeEnvelope().Nodes[0].X);
+        Assert.Equal(before.ToInterchangeEnvelope().Nodes[0].Width, after.ToInterchangeEnvelope().Nodes[0].Width);
+        Assert.NotEqual(before.ToPng(), after.ToPng());
+        Assert.Equal(after.ToPng(), TopologyLayoutEngine.Clone(restored).Prepare().ToPng());
+        Assert.False(JsonNode.Parse(after.ToInterchangeEnvelope().ToJson())!["presentation"]!["topologyCaptions"]!["fitSingleLine"]!.GetValue<bool>());
+        raw["presentation"]!["topologyCaptions"]!.AsObject().Remove("fitSingleLine");
+        Assert.Equal(after.ToPng(), VisualArtifactInterchangeEnvelope.FromJson(raw.ToJsonString()).ToTopologyChart().Prepare().ToPng());
+    }
+
     [Theory] [InlineData(false)] [InlineData(true)]
     public void ExplicitContextThemeOrModeChangeClearsCapturedNoteUnitsEvenWhenTheChartAndFontStayTheSame(bool modeOnly) {
         var source = Generic(TopologyNodeDisplayMode.Card, false); source.Annotations.Add(new TopologyAnnotation("note", "Measured note", "node"));

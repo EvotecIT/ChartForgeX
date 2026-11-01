@@ -41,7 +41,7 @@ public sealed partial class VisualTheme {
                 Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography"),
                 OptionalNumber(typography, "scalarValueSize", "typography", 34), OptionalNumber(typography, "centerValueSize", "typography", 20),
                 OptionalNumber(typography, "axisTitleSize", "typography", Number(typography, "axisSize", "typography")),
-                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : "Cascadia Mono, Consolas, monospace",
+                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : ChartFontStacks.ProductMono,
                 OptionalNumber(typography, "tileLabelSize", "typography", 14),
                 OptionalNumber(typography, "tileValueSize", "typography", 22),
                 OptionalNumber(typography, "tileDetailSize", "typography", 13)),
@@ -118,7 +118,15 @@ public sealed partial class VisualTheme {
         WriteColor(writer, "cardAlt", tokens.Surface); WriteColor(writer, "line", tokens.Border); writer.EndObject();
         writer.Property("text"); writer.StartObject();
         WriteColor(writer, "primary", tokens.Foreground); WriteColor(writer, "secondary", tokens.MutedForeground); writer.EndObject();
-        writer.Property("chrome"); writer.StartObject(); WriteColor(writer, "accent", tokens.SecondaryAccent); writer.EndObject();
+        writer.Property("chrome"); writer.StartObject(); WriteColor(writer, "accent", tokens.SecondaryAccent);
+        if (tokens.Chrome is { } chrome) {
+            WriteColor(writer, "tooltipSurface", chrome.Surface); WriteColor(writer, "tooltipText", chrome.Text);
+            WriteColor(writer, "tooltipMuted", chrome.Muted); WriteColor(writer, "tooltipLine", chrome.Line);
+            WriteColor(writer, "focusRing", chrome.FocusRing);
+            writer.Property("tooltipShadow"); writer.String(chrome.Shadow);
+            WriteNumber(writer, "tooltipRadius", chrome.TooltipRadius); WriteNumber(writer, "controlRadius", chrome.ControlRadius);
+        }
+        writer.EndObject();
         writer.Property("accent"); writer.StartObject(); WriteColor(writer, "base", tokens.Accent); writer.EndObject();
         writer.Property("series"); WriteColors(writer, tokens.Palette);
         writer.Property("severity"); writer.StartObject();

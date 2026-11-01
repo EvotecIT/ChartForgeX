@@ -7,10 +7,11 @@ namespace ChartForgeX.Rendering;
 /// <summary>Divides mapped category pitch into stable series slots, including marks that extend beyond their body.</summary>
 internal readonly struct ChartCategorySlotLayout {
     private const double MaximumCrowdedBandFill = .68;
-    private ChartCategorySlotLayout(double thickness, double offset, double pitch) { Thickness = thickness; Offset = offset; Pitch = pitch; }
+    private ChartCategorySlotLayout(double thickness, double offset, double pitch, double stride) { Thickness = thickness; Offset = offset; Pitch = pitch; Stride = stride; }
     internal double Thickness { get; }
     internal double Offset { get; }
     internal double Pitch { get; }
+    internal double Stride { get; }
 
     /// <summary>The share of the category pitch bars occupy: the design band fill, or the dense legacy share for sparkline sample slots.</summary>
     internal static double BandShare(int sampleSlots) => sampleSlots > 0 ? MaximumCrowdedBandFill : ChartMarkSurface.BandFill;
@@ -54,6 +55,6 @@ internal readonly struct ChartCategorySlotLayout {
         }
         var footprint = measuredFootprint?.Invoke(thickness) ?? thickness * footprintRatio + footprintPadding;
         var offset = (position - (count - 1) / 2d) * (footprint + gap);
-        return new ChartCategorySlotLayout(thickness, offset, pitch);
+        return new ChartCategorySlotLayout(thickness, offset, pitch, footprint + gap);
     }
 }
