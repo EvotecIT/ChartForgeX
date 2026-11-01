@@ -26,6 +26,11 @@ public sealed class InteractiveTreemapBrowserTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap, variant, mode).WithSize(width, width < 500 ? 340 : 460)
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Allocated work by team")
             .WithSubtitle("Area: allocated work · Color: change (%)");
+        // Keep the zero-value interaction case explicit when showcase data changes.
+        chart.Series[0].ReplaceHierarchyItems(chart.Series[0].HierarchyItems.Concat(new[] {
+            new ChartHierarchyItem("reserve", "Reserve", parentId: "south-services", value: 0)
+        }));
+        if (variant == "options") chart.Series[0].WithNodeState("south-support", ChartSeriesState.Warning);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 490 : 610);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

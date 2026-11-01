@@ -124,7 +124,8 @@ public sealed class ServerRenderedPageBrowserTests {
             Assert.Null(await session.Page.Locator(".chartforgex-data-table-hidden").GetAttributeAsync("aria-hidden"));
         }
         await session.Page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Print });
-        Assert.True(await session.Page.Locator("table").IsVisibleAsync());
+        // Playwright's WebKit fallback treats every closed details as hidden, ignoring its print styles.
+        Assert.True(await session.Page.Locator("table").EvaluateAsync<bool>("table => table.checkVisibility()"));
         var printed = await session.Page.Locator("table").BoundingBoxAsync();
         Assert.True(printed!.Width > 100);
         Assert.True(printed.Height > 30);

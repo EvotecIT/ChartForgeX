@@ -28,7 +28,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
     public void PreparedMarksKeepStateAndAuthoredSeriesDistinctWithEqualRgb(ChartSeriesKind kind, string role, string attribute) {
         var chart = kind == ChartSeriesKind.Treemap ? Chart.Create().AddTreemap("Values", new[] {
             new ChartHierarchyItem("first", "First", value: 3), new ChartHierarchyItem("second", "Second", value: 2)
-        }) : V2GalleryModels.Create(kind);
+        }) : V2GalleryModels.Create(kind, kind == ChartSeriesKind.Sankey ? "sparse" : "wide");
         foreach (var series in chart.Series) series.StateRole = ChartSeriesState.Danger;
         var context = Context(); var variables = Variables();
         var prepared = chart.Prepare(context);
@@ -67,7 +67,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
 
     [Fact]
     public void SankeyNodeStateOverridesAndFunnelContrastInkUseTheirAuthoredRoles() {
-        var sankey = V2GalleryModels.Create(ChartSeriesKind.Sankey);
+        var sankey = V2GalleryModels.Create(ChartSeriesKind.Sankey, "sparse");
         sankey.Series[0].WithNodeState(sankey.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
         // Only the node with a declared state wears a status role; neutral nodes are secondary ink.
