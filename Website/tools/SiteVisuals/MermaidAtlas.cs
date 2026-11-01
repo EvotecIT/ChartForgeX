@@ -7,6 +7,7 @@
 using System.Text.Json;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Playground;
+using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
 namespace SiteVisuals;
@@ -22,7 +23,7 @@ internal static class MermaidAtlas {
                     family.TryGetProperty("title", out var title) ? title.GetString() : null) + "\n";
                 var warnings = new List<string>();
                 output.Text($"atlas/{id}.mmd", source);
-                // Atlas cards are 4:3; each render is cropped to what it draws and widened to that shape.
+                // Trim surplus surface padding; the preferred card aspect stays within the native canvas.
                 var familyTitle = family.TryGetProperty("title", out var named) ? named.GetString() : null;
                 var entry = output.Pair($"atlas/{id}", (_, dark) => VisualOutput.Fit(Render(id, source, dark, warnings, CardOptions(id, familyTitle, family.GetProperty("name").GetString()!)), 4d / 3));
                 entry["source"] = source.TrimEnd();
@@ -68,8 +69,8 @@ internal static class MermaidAtlas {
     }
 
     // The same path the playground engine takes: the page theme applies unless the source sets its own.
-    // Atlas renders lay out on a 4:3 canvas smaller than the 960 x 560 default, so the diagram fills its card and text
-    // stays readable at card size. Each family's options class takes the size and, for families that do not read
+    // Atlas renders request compact 4:3 layout constraints; native rendering fits the measured content.
+    // Each family's options class takes the size and, for families that do not read
     // front matter, the title.
     private static readonly Dictionary<string, string> OptionProperties = new(StringComparer.Ordinal) {
         ["flowchart"] = "Flowchart", ["sequence"] = "Sequence", ["class"] = "Class", ["state"] = "State",
@@ -109,8 +110,12 @@ internal static class MermaidAtlas {
         warnings.AddRange(parsed.Diagnostics.Select(d => $"{d.Severity} {d.Code}: {d.Message}"));
         if (parsed.HasErrors || parsed.Document == null) throw new InvalidOperationException($"Mermaid sample '{id}' failed to parse.");
         var document = parsed.Document;
-        if (document.Theme == null && dark) document.Theme = "dark";
-        var artifact = document.ToVisualArtifact(options ?? new MermaidRenderOptions());
+        options ??= new MermaidRenderOptions();
+        if (document.Theme == null) {
+            options.Presentation ??= new MermaidPresentationOptions();
+            options.Presentation.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        }
+        var artifact = document.ToVisualArtifact(options);
         return artifact.ToSvg(null, $"cfx-mm-{id}-{(dark ? "d" : "l")}");
     }
 }
