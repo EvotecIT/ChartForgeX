@@ -70,6 +70,12 @@ public sealed partial class MarkupChartParser {
                 continue;
             }
 
+            if (section is "candles" or "items") {
+                if (IsTableLine(line, headers)) headers = ParseTypedTableLine(result, state, section, headers, line, lineNumber);
+                else ParseTypedSectionCommand(result, state, section, line, lineNumber);
+                continue;
+            }
+
             if (section is "nodes" or "flows") {
                 if (IsTableLine(line, headers)) headers = ParseChordTableLine(result, state, section, headers, line, lineNumber);
                 else ParseChordSectionCommand(result, state, section, line, lineNumber);
@@ -91,7 +97,10 @@ public sealed partial class MarkupChartParser {
         }
 
         ValidateChordSource(result, state, block.FenceLine);
-        if (NormalizeKey(state.Type) != "chord" && state.Values.Count == 0 && state.Series.Count == 0)
+        ValidateTypedSource(result, state, block.FenceLine);
+        if (state.Values.Count > 0 && state.Series.Count > 0)
+            Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, "Chart markup cannot combine default numeric values with named numeric series.");
+        if (!UsesTypedData(state.Type) && state.Values.Count == 0 && state.Series.Count == 0)
             Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, "Chart markup must declare at least one numeric value or series.");
         if (!result.HasErrors) {
             try {
@@ -113,113 +122,14 @@ public sealed partial class MarkupChartParser {
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) state.Title = title;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) state.Subtitle = subtitle;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "type", out var type) && !string.IsNullOrWhiteSpace(type)) state.Type = ValidateChartType(type);
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "theme", out var theme)) ParseTheme(state, theme);
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "themeMode", out var themeMode)) state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<ChartForgeX.Themes.VisualThemeMode>(themeMode, "themeMode");
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "series", out var series) && !string.IsNullOrWhiteSpace(series)) state.SeriesName = series;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "size", out var size) && !string.IsNullOrWhiteSpace(size)) ParseSize(state, size);
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = ParsePositiveInt32(width, "width");
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "height", out var height) && !string.IsNullOrWhiteSpace(height)) state.Height = ParsePositiveInt32(height, "height");
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, ex.Message);
-        }
-    }
-
-    private static Chart BuildChart(ChartState state) {
-        var chart = Chart.Create()
-            .WithTitle(state.Title)
-            .WithSubtitle(state.Subtitle)
-            .WithSize(state.Width, state.Height);
-        if (state.Labels.Count > 0) chart.WithXLabels(state.Labels.ToArray());
-
-        if (NormalizeKey(state.Type) == "chord") BuildChord(chart, state);
-        else if (state.Series.Count == 0) {
-            var points = BuildSeriesPoints(state.Type, state.Values);
-            AddSeries(chart, state.SeriesName, state.Type, points, null);
-        } else {
-            foreach (var series in state.Series) {
-                var type = string.IsNullOrWhiteSpace(series.Type) ? state.Type : series.Type;
-                var points = BuildSeriesPoints(type, series.Values);
-                AddSeries(chart, series.Name, type, points, series.Color);
-            }
-        }
-
-        ApplyChartOptions(chart, state);
-        ApplyAnnotations(chart, state);
-        return chart;
-    }
-
-    private static void AddSeries(Chart chart, string name, string type, IEnumerable<ChartPoint> points, string? color) {
-        var before = chart.Series.Count;
-        switch (NormalizeKey(type)) {
-            case "line":
-                chart.AddLine(name, points, ParseColor(color));
-                break;
-            case "smoothline":
-                chart.AddSmoothLine(name, points, ParseColor(color));
-                break;
-            case "stepline":
-                chart.AddStepLine(name, points, ParseColor(color));
-                break;
-            case "area":
-                chart.AddArea(name, points, ParseColor(color));
-                break;
-            case "smootharea":
-                chart.AddSmoothArea(name, points, ParseColor(color));
-                break;
-            case "steparea":
-                chart.AddStepArea(name, points, ParseColor(color));
-                break;
-            case "stackedarea":
-                chart.AddStackedArea(name, points, ParseColor(color));
-                break;
-            case "smoothstackedarea":
-                chart.AddSmoothStackedArea(name, points, ParseColor(color));
-                break;
-            case "scatter":
-                chart.AddScatter(name, points, ParseColor(color));
-                break;
-            case "lollipop":
-                chart.AddLollipop(name, points, ParseColor(color));
-                break;
-            case "dumbbell":
-                AddDumbbellMarkupSeries(chart, name, points, color);
-                break;
-            case "radar":
-                chart.AddRadar(name, points, ParseColor(color));
-                break;
-            case "funnel":
-                chart.AddFunnel(name, points, ParseColor(color));
-                break;
-            case "pyramid":
-                chart.AddPyramid(name, points, ParseColor(color));
-                break;
-            case "polararea":
-                chart.AddPolarArea(name, points);
-                break;
-            case "polar":
-                chart.AddPolar(name, points, ParseColor(color));
-                break;
-            case "donut":
-                chart.WithPointLegend().WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).AddDonut(name, points);
-                break;
-            case "pie":
-                chart.WithPointLegend().WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).AddPie(name, points);
-                break;
-            case "horizontalbar":
-            case "hbar":
-                chart.AddHorizontalBar(name, points, ParseColor(color));
-                break;
-            case "waterfall":
-                chart.AddWaterfall(name, points, ParseColor(color));
-                break;
-            case "bar":
-            case "column":
-                chart.AddBar(name, points, ParseColor(color));
-                break;
-            default:
-                throw new ArgumentException("Unknown chart type '" + type + "'.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(color) && chart.Series.Count > before && chart.Series[chart.Series.Count - 1].Color == null) {
-            chart.Series[chart.Series.Count - 1].Color = ParseColor(color);
         }
     }
 
@@ -363,6 +273,7 @@ public sealed partial class MarkupChartParser {
                     ParseAnnotationCommand(state, tokens);
                     break;
                 default:
+                    if (TryParseFamilyCommand(state, tokens, lineNumber)) break;
                     Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown chart command '" + tokens[0] + "'.");
                     break;
             }
@@ -390,8 +301,10 @@ public sealed partial class MarkupChartParser {
                 if (labelIndex < 0) throw new ArgumentException("Multi-series chart tables require at least one non-numeric label column.");
                 var label = labelIndex < cells.Count ? cells[labelIndex] : string.Empty;
                 state.Labels.Add(label);
-                for (var i = 0; i < headers.Count && i < cells.Count; i++) {
-                    if (i == labelIndex || string.IsNullOrWhiteSpace(cells[i])) continue;
+                for (var i = 0; i < headers.Count; i++) {
+                    if (i == labelIndex) continue;
+                    if (i >= cells.Count || string.IsNullOrWhiteSpace(cells[i]))
+                        throw new ArgumentException("Chart table row requires a numeric value for series '" + headers[i] + "'.");
                     var series = GetOrAddSeries(state, headers[i]);
                     series.Values.Add(ParseDouble(cells[i]));
                 }
@@ -531,7 +444,7 @@ public sealed partial class MarkupChartParser {
                     state.OverlayShowHeader = VisualMarkupFenceOptions.ParseBoolean(value, key);
                     break;
                 default:
-                    if (!TryParseComparisonOption(state, key, value) && !TryParseChordOption(state, key, value, lineNumber))
+                    if (!TryParseFamilyOption(state, key, value, lineNumber) && !TryParseComparisonOption(state, key, value) && !TryParseChordOption(state, key, value, lineNumber))
                         Add(result, lineNumber, MarkupDiagnosticSeverity.Warning, "Unknown chart option '" + key + "'.");
                     break;
             }
@@ -582,6 +495,7 @@ public sealed partial class MarkupChartParser {
     private static double ParseDouble(string value) => double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
 
     private static void ApplyChartOptions(Chart chart, ChartState state) {
+        ApplyFamilyOptions(chart, state);
         ApplyComparisonOptions(chart, state);
         if (!string.IsNullOrWhiteSpace(state.XAxisTitle)) chart.WithXAxis(state.XAxisTitle!);
         if (!string.IsNullOrWhiteSpace(state.YAxisTitle)) chart.WithYAxis(state.YAxisTitle!);
@@ -700,7 +614,7 @@ public sealed partial class MarkupChartParser {
 
     private static bool IsSection(string line) {
         var normalized = NormalizeKey(line.TrimEnd(':'));
-        return normalized is "options" or "data" or "nodes" or "flows";
+        return normalized is "options" or "data" or "nodes" or "flows" or "candles" or "items";
     }
 
     private static bool IsSectionEnd(string line) => string.Equals(line, "end", StringComparison.OrdinalIgnoreCase);

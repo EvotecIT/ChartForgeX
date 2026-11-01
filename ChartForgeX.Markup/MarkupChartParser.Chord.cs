@@ -84,22 +84,27 @@ public sealed partial class MarkupChartParser {
 
     private static void ValidateChordSource(MarkupParseResult<MarkupChartDocument> result, ChartState state, int fenceLine) {
         var isChord = NormalizeKey(state.Type) == "chord";
+        var isSankey = NormalizeKey(state.Type) == "sankey";
+        if (!isChord && state.ChordOptionLines.Count > 0)
+            Add(result, state.ChordOptionLines.Values.First(), MarkupDiagnosticSeverity.Error, "Chord options require type chord.");
         if (state.Series.Any(series => NormalizeKey(series.Type) == "chord"))
             Add(result, fenceLine, MarkupDiagnosticSeverity.Error, "Numeric series cannot invent relationships; use type chord with typed node/flow declarations.");
-        if (!isChord) {
-            if (state.ChordNodes.Count + state.ChordFlows.Count + state.ChordOptionLines.Count > 0)
-                Add(result, state.ChordNodes.Count > 0 ? state.ChordNodes[0].Line : state.ChordFlows.Count > 0 ? state.ChordFlows[0].Line : state.ChordOptionLines.Values.First(),
-                    MarkupDiagnosticSeverity.Error, "Typed nodes, flows and Chord options require type chord.");
+        if (!isChord && !isSankey) {
+            if (state.ChordNodes.Count + state.ChordFlows.Count > 0)
+                Add(result, state.ChordNodes.Count > 0 ? state.ChordNodes[0].Line : state.ChordFlows[0].Line,
+                    MarkupDiagnosticSeverity.Error, "Typed nodes and flows require type chord or sankey.");
             return;
         }
         if (state.Values.Count > 0 || state.Series.Count > 0 || state.Labels.Count > 0)
-            Add(result, fenceLine, MarkupDiagnosticSeverity.Error, "Chord markup uses typed node/flow declarations; numeric values, categories and numeric series cannot invent relationships.");
+            Add(result, fenceLine, MarkupDiagnosticSeverity.Error, "Relationship markup uses typed node/flow declarations; numeric values, categories and numeric series cannot invent relationships.");
+        if (isSankey && (state.ChordNodes.Count == 0 || state.ChordFlows.Count == 0))
+            Add(result, fenceLine, MarkupDiagnosticSeverity.Error, "Sankey markup requires nodes and flows.");
         var nodes = new HashSet<string>(StringComparer.Ordinal); var flows = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var row in state.ChordNodes) if (!nodes.Add(row.Value.Id)) Add(result, row.Line, MarkupDiagnosticSeverity.Error, "Duplicate Chord node ID '" + row.Value.Id + "'.");
+        foreach (var row in state.ChordNodes) if (!nodes.Add(row.Value.Id)) Add(result, row.Line, MarkupDiagnosticSeverity.Error, "Duplicate relationship node ID '" + row.Value.Id + "'.");
         foreach (var row in state.ChordFlows) {
-            if (!flows.Add(row.Value.Id)) Add(result, row.Line, MarkupDiagnosticSeverity.Error, "Duplicate Chord flow ID '" + row.Value.Id + "'.");
+            if (!flows.Add(row.Value.Id)) Add(result, row.Line, MarkupDiagnosticSeverity.Error, "Duplicate relationship flow ID '" + row.Value.Id + "'.");
             if (!nodes.Contains(row.Value.SourceId) || !nodes.Contains(row.Value.TargetId))
-                Add(result, row.Line, MarkupDiagnosticSeverity.Error, "Chord flow '" + row.Value.Id + "' requires declared source and target node IDs.");
+                Add(result, row.Line, MarkupDiagnosticSeverity.Error, "Relationship flow '" + row.Value.Id + "' requires declared source and target node IDs.");
         }
         ValidateChordOrderSource(result, state.ChordNodeOrder, nodes, state, "chordnodeorder");
         ValidateChordOrderSource(result, state.ChordOutgoingOrder, flows, state, "chordoutgoingfloworder");

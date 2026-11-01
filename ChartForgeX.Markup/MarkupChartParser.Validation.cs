@@ -44,6 +44,19 @@ public sealed partial class MarkupChartParser {
 
     private static string ValidateChartType(string type) {
         switch (NormalizeKey(type)) {
+            case "stackedbar":
+            case "stackedhorizontalbar":
+            case "percentstackedbar":
+            case "percentstackedhorizontalbar":
+            case "percentstackedarea":
+            case "smoothpercentstackedarea":
+            case "heatmap":
+            case "gauge":
+            case "lineargauge":
+            case "candlestick":
+            case "ohlc":
+            case "treemap":
+            case "sankey":
             case "line":
             case "smoothline":
             case "stepline":
