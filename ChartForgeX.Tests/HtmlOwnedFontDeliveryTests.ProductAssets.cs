@@ -3,11 +3,45 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
+using System.Xml.Linq;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed partial class HtmlOwnedFontDeliveryTests {
+    [Fact]
+    public void ChartSvgHostFontPolicyOnlyRemovesFontsAndRetainsScopedExportOptions() {
+        var chart = Model("Archivo");
+        chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(chart.Options.Theme, chart.Options.ThemeMode));
+        const string scope = "report chart/1|light";
+        var defaults = new VisualSvgOptions(colorVariables: chart.Options.SvgColorVariables);
+        var options = new VisualSvgOptions("original-policy", chart.Options.SvgColorVariables, responsive: true)
+            .WithPatternTiles();
+        var hostedOptions = options.WithoutProductFonts();
+        Assert.NotSame(options, hostedOptions);
+        Assert.Equal("original-policy", hostedOptions.IdPrefix);
+        Assert.True(hostedOptions.Responsive);
+        Assert.True(hostedOptions.PatternTiles);
+
+        var standalone = XDocument.Parse(chart.ToSvg(options, scope));
+        var hostedSvg = chart.ToSvg(hostedOptions, scope);
+        var hosted = XDocument.Parse(hostedSvg);
+        var fonts = Assert.Single(standalone.Descendants(), node => node.Name.LocalName == "style" && node.Value.Contains("@font-face", StringComparison.Ordinal));
+        Assert.Contains("font-family:'Archivo'", fonts.Value, StringComparison.Ordinal);
+        fonts.Remove();
+        Assert.DoesNotContain("@font-face", hostedSvg, StringComparison.Ordinal);
+        Assert.True(XNode.DeepEquals(standalone, hosted), "Host font ownership must preserve every other SVG node and attribute.");
+        Assert.Contains("var(--hfx-", hostedSvg, StringComparison.Ordinal);
+        Assert.Equal("original-policy", options.IdPrefix);
+        Assert.Equal("original-policy", hostedOptions.IdPrefix);
+        Assert.Equal(chart.ToSvg(scope), chart.ToSvg(defaults, scope));
+        Assert.Equal(chart.ToSvg(), chart.ToSvg(defaults, null));
+        var policyIds = XDocument.Parse(chart.ToSvg(hostedOptions, null)).Descendants().Attributes("id").ToArray();
+        Assert.NotEmpty(policyIds);
+        Assert.All(policyIds, id => Assert.StartsWith("original-policy", id.Value, StringComparison.Ordinal));
+        Assert.Throws<ArgumentNullException>(() => chart.ToSvg(null!));
+    }
+
     [Fact]
     public void StandaloneSvgDeliversTheBundledFaceActuallyUsedByAFallbackGlyph() {
         FontRegistry.Register("HostMono", ProductFont("JetBrainsMono", "ttf"));
