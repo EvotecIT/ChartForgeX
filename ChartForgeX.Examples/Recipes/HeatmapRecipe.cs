@@ -9,7 +9,6 @@ public static class HeatmapRecipe {
             .AddHeatmapRow("Secondary", variant == "sparse" ? new double?[] { null, 84, null, null, 90, null } : new double?[] { 76, 84, 46, 70, 90, 62 },
                 id: new ChartSeriesId("secondary-measurements"))
             .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
     }
 }

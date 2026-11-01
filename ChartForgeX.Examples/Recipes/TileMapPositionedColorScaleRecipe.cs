@@ -15,7 +15,6 @@ public static class TileMapPositionedColorScaleRecipe {
         }).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border);
         return Chart.Create().AddTileMap("Temperature", ChartTileMapCatalog.Get("us-states"),
                 codes.Select((code, index) => new ChartRegionMapItem(code, values[index])), id: new ChartSeriesId("state-temperatures"))
-            .WithMapLabels().WithMapColorScale(scale)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .WithMapLabels().WithMapColorScale(scale);
     }
 }

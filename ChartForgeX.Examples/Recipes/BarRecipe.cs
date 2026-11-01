@@ -25,7 +25,7 @@ public static class BarRecipe {
             chart.WithXLabels("North", "South", "East", "West", "Central", "Online")
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", points));
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 
     private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";

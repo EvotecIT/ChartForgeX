@@ -39,7 +39,7 @@ public sealed class BarValueCaptionTests {
     public void Prepare_SeriesWithLargeValues_UsesOneCompactUnitForEveryCaption() {
         var captions = Captions(12480, 9800, 11990, 6400);
 
-        Assert.Equal(new[] { "12.5k", "9.8k", "12.0k", "6.4k" }, captions.Select(caption => caption.Label.Text.Lines.Single().Text).ToArray());
+        Assert.Equal(new[] { "12.5k", "9.8k", "12k", "6.4k" }, captions.Select(caption => caption.Label.Text.Lines.Single().Text).ToArray());
     }
 
     [Fact]

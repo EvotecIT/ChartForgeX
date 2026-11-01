@@ -11,7 +11,7 @@ public static class HeatmapHierarchicalAxesRecipe {
         var chart = Chart.Create().WithSize(compact ? 390 : 1000, 560).WithTheme(theme, mode)
             .WithTitle(states ? "Service states by region and work window" : "Service measurements by region and work window")
             .WithXAxis("Work window").WithYAxis("Source row slots").WithDataLabels(false)
-            .WithHeatmapCellGap(3).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithHeatmapCellGap(3);
         if (states) {
             chart.WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
                 new ChartStateCategory("review", "Review", colors.Status.Medium.Fill));

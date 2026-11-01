@@ -11,7 +11,6 @@ public static class TileMapRecipe {
                 new ChartRegionMapItem("WA", 74), new ChartRegionMapItem("IL", 58),
                 new ChartRegionMapItem("CO", 39), new ChartRegionMapItem("NC", 66)
             }, id: new ChartSeriesId("state-observations"))
-            .WithMapLabels()
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .WithMapLabels();
     }
 }

@@ -11,6 +11,6 @@ public static class GanttRecipe {
             .ConfigureXAxis(axis => {
                 axis.Scale = ChartScaleKind.Time;
                 axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
-            }).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            });
     }
 }

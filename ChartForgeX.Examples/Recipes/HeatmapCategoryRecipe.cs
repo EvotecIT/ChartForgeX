@@ -14,7 +14,6 @@ public static class HeatmapCategoryRecipe {
                 new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
             .WithXLabels("Identity", "Network", "Storage", "Backup")
-            .AddSeries(primary).AddSeries(secondary)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .AddSeries(primary).AddSeries(secondary);
     }
 }

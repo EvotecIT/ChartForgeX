@@ -70,7 +70,7 @@ public sealed class RoundedRadialSeriesTests {
         }
         Assert.Equal(8, scene.Regions.Count(region => region.Role == "point"));
         Assert.Equal(8, scene.Regions.Count(region => region.Role == "radial-data-label"));
-        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-0-label" && region.Label == "1200");
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-0-label" && region.Label == "1,200");
     }
 
     [Fact]

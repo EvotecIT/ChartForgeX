@@ -80,7 +80,7 @@ public sealed class CompoundReadoutFeedbackTests {
         foreach (var member in Members(family)) {
             var nativeMember = member.Name == (IsBoxPlot(family) ? "median" : "close");
             // Automatic readouts use axis precision; the underlying fact remains exact.
-            var automaticCaption = member.Value == 1.025 ? "1.03" : ExactCaption(member.Value);
+            var automaticCaption = ExactCaption(member.Value);
             var expected = !customLabel && nativeMember ? NativeCaption(member.Value) : automaticCaption;
             Assert.Equal(expected, Attribute(point, "formatted-" + member.Name));
             Assert.Equal(member.Value, double.Parse(Attribute(point, member.Name), CultureInfo.InvariantCulture));

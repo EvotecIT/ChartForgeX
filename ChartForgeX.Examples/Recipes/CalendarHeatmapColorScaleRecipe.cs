@@ -10,7 +10,6 @@ public static class CalendarHeatmapColorScaleRecipe {
                 .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)),
                 id: new ChartSeriesId("daily-observations"))
             .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
-                .WithLabels("Quiet", null, "Busy").WithNoDataColor(colors.Border))
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+                .WithLabels("Quiet", null, "Busy").WithNoDataColor(colors.Border));
     }
 }

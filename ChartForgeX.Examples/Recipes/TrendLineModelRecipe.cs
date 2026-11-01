@@ -29,6 +29,6 @@ public static class TrendLineModelRecipe {
             options.ConfidenceLevel = .95;
         });
         return Chart.Create().WithXAxis("Source X").WithYAxis("Observed response").WithLegend(true).WithDataLabels(false)
-            .AddSeries(observations).AddSeries(fit).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .AddSeries(observations).AddSeries(fit);
     }
 }

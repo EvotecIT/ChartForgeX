@@ -38,6 +38,6 @@ public static class WaterfallRecipe {
             });
             chart.WithXLabels("North", "South", "East", "West", "Central", "Total").AddSeries(changes);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

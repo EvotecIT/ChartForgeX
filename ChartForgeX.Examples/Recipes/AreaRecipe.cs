@@ -12,6 +12,6 @@ public static class AreaRecipe {
             capacity.WithFillPattern(ChartFillPattern.Crosshatch).WithState(ChartSeriesState.Warning);
             chart.WithDataLabels();
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

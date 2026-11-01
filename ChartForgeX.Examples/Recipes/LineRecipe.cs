@@ -25,6 +25,6 @@ public static class LineRecipe {
             chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
                 .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", points));
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

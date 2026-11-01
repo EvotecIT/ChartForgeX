@@ -15,6 +15,6 @@ public static class SankeyRecipe {
             new ChartFlowLink("received-completed", "received", "completed", 85),
             new ChartFlowLink("received-review", "received", "review", 15)
         });
-        return Chart.Create().AddSeries(requests).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().AddSeries(requests);
     }
 }

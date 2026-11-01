@@ -14,7 +14,6 @@ public static class TileMapOptionsRecipe {
             .WithMapLabels()
             .WithMapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
                 .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
     }
 }

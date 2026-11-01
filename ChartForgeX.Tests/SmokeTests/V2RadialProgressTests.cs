@@ -16,8 +16,8 @@ public sealed class V2RadialProgressTests {
         Assert.Equal(3, scene.Nodes.Count(node => node.Role == "progress-ring-track"));
         Assert.Equal(2, rings.Length); Assert.Equal(Math.PI * 2, rings[0].Sweep, 10); Assert.Equal(Math.PI, rings[1].Sweep, 10);
         Assert.Equal(paint, rings[0].Fill);
-        Assert.Contains(scene.Regions, region => region.Id == "series-0-center-value" && region.Label == "50");
-        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-0" && region.Label == "A: 0");
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-center-value" && region.Label == "50%");
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-0" && region.Label == "A: 0%");
         chart.Options.ShowProgressRingCenterLabel = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role is "progress-ring-value" or "progress-ring-title");
         Assert.NotEmpty(VisualSceneRasterRenderer.Render(scene).Pixels);
@@ -70,7 +70,7 @@ public sealed class V2RadialProgressTests {
         var role = layered ? "layered-radial" : "progress-ring";
         var value = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == role + "-value");
         var caption = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == role + "-title");
-        Assert.Equal(layered ? "42" : "60", Assert.Single(value.Text.Lines).Text);
+        Assert.Equal(layered ? "42" : "60%", Assert.Single(value.Text.Lines).Text);
         var captionRegion = Assert.Single(scene.Regions, region => region.Id == "series-0-center-caption");
         Assert.Equal("Completion", captionRegion.Label);
         var paintedCaption = Assert.Single(caption.Text.Lines).Text;
@@ -86,7 +86,7 @@ public sealed class V2RadialProgressTests {
                 Math.Abs(text.Baseline - text.Text.Ascent + text.Text.Metrics.Height - 160));
             Assert.True(Math.Sqrt(Math.Pow(text.Text.Metrics.Width / 2, 2) + vertical * vertical) <= radius + .001);
         }
-        Assert.Contains(scene.Regions, region => region.Id == "series-0-center-value" && region.Label == (layered ? "42" : "60"));
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-center-value" && region.Label == (layered ? "42" : "60%"));
         chart.Series[0].ShowDataLabels = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role == role + "-value" || node.Role == role + "-title");
     }

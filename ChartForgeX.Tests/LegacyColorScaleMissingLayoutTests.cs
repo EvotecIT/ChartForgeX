@@ -28,7 +28,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
             cells.Select(node => (string?)node.Attribute("data-cfx-value")));
         Assert.Equal(new[] { "0", "1", "2", "3", "4", "5", "0", "1", "2", "3" },
             cells.Select(node => (string?)node.Attribute("data-cfx-source-point")));
-        Assert.Equal("0,0 °C", (string?)cells[3].Attribute("data-cfx-formatted-value"));
+        Assert.Equal("0 °C", (string?)cells[3].Attribute("data-cfx-formatted-value"));
         ScatterBubbleColorRenderingTests.Capture(prepared, "legacy-key-" + variant + "-" + (dark ? "dark" : "light"));
     }
 
@@ -111,7 +111,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
         var text = prepared.Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role is "heatmap-scale-title" or "heatmap-scale-label").ToArray();
         var labels = text.Where(node => node.Role == "heatmap-scale-label").ToArray();
-        Assert.Equal(new[] { "Cold · -20,0 °C", "Freezing · 0,0 °C", "Warm · 40,0 °C", missing }.OrderBy(value => value),
+        Assert.Equal(new[] { "Cold · -20 °C", "Freezing · 0 °C", "Warm · 40 °C", missing }.OrderBy(value => value),
             labels.Where(node => !node.Id!.StartsWith("heatmap-scale-label-step-", StringComparison.Ordinal))
                 .Select(node => node.Text.Lines[0].Text).OrderBy(value => value));
         Assert.Equal(heading, prepared.Regions.Single(region => region.Role == "heatmap-scale-title").Label);

@@ -59,7 +59,7 @@ internal static partial class VisualGaugeCompiler {
             if (fullTurn && intervals / stride < 2) {
                 values = GeneratedScaleValues(data, maximum, fullTurn: true);
                 var missing = values.Where(value => !captured.ContainsKey(value)).ToArray();
-                var formatted = ChartNumericFormatter.FormatScaleValues(format, missing);
+                var formatted = ChartNumericFormatter.FormatScaleValues(format, missing, values);
                 for (var index = 0; index < missing.Length; index++) captured.Add(missing[index], formatted[index]);
             } else {
                 values = values.Where((_, index) => index % stride == 0).ToArray();

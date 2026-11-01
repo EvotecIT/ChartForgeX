@@ -3,7 +3,7 @@ public static class ScatterPartialColorRangeRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
     public static Chart Create(string variant = "partial-color-range", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("partial-color-range" or "compact-partial-color-range")) throw new ArgumentOutOfRangeException(nameof(variant));
-        return PartialColorRange(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return PartialColorRange(mode);
     }
 
     private static Chart PartialColorRange(VisualThemeMode mode) {

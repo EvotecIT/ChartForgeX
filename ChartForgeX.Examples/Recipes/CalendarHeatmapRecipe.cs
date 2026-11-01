@@ -7,7 +7,6 @@ public static class CalendarHeatmapRecipe {
             .AddCalendarHeatmap("Observations", Enumerable.Range(0, variant == "sparse" ? 35 : 120)
                 .Where(index => index % 7 != 0 && index % 9 != 0)
                 .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)),
-                id: new ChartSeriesId("daily-observations"))
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+                id: new ChartSeriesId("daily-observations"));
     }
 }

@@ -15,7 +15,6 @@ public static class RangeBandRecipe {
         var count = variant == "sparse" ? 2 : 5;
         var ranges = Enumerable.Range(1, count).Select(index => new ChartRangeBand(index, 20 + index * 2, 40 + index * 4));
         var expected = ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range", ranges);
-        return Chart.Create().WithXLabels("08:00", "10:00", "12:00", "14:00", "16:00").AddSeries(expected)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("08:00", "10:00", "12:00", "14:00", "16:00").AddSeries(expected);
     }
 }
