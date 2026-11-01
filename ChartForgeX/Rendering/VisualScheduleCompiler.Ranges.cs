@@ -152,25 +152,26 @@ internal static partial class VisualScheduleCompiler {
                         } else {
                             var radius = Math.Min(context.Theme.BarRadius, height / 2); shape = VisualStateSceneTools.RoundedRect(bounds, radius);
                             var style = chart.Options.ResolvePreparedBarVisualStyle();
-                            var bodyColor = item.Gantt ? ChartColorMath.Blend(colors.Surface, fill, .25) : fill;
-                            var bodyPaint = item.Gantt ? SvgPaint.Mix(bodyColor, colors.Surface, SvgColorRole.Surface, fill, fillRole, .25) : fillPaint;
                             if (openEnded && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade)
-                                OpenEndFade(chart, builder, bounds, bodyColor, bodyPaint, radius, "gantt-task-shape");
+                                OpenEndFade(chart, builder, bounds, fill, fillPaint, radius, "gantt-task-shape");
                             else if (style.Kind == ChartBarStyle.Solid)
                                 builder.RectGradient(bounds, new ChartPoint(bounds.Left, bounds.Top), new ChartPoint(bounds.Left, bounds.Bottom),
-                                    new[] { new VisualGradientStop(0, ChartMarkSurface.BarGradientTop(bodyColor),
-                                        item.Gantt ? SvgPaint.Literal(ChartMarkSurface.BarGradientTop(bodyColor)) : VisualChartPaint.BarGradient(fill, fillRole, true, 1)),
-                                        new VisualGradientStop(1, ChartMarkSurface.BarGradientBottom(bodyColor),
-                                        item.Gantt ? SvgPaint.Literal(ChartMarkSurface.BarGradientBottom(bodyColor)) : VisualChartPaint.BarGradient(fill, fillRole, false, 1)) },
+                                    new[] { new VisualGradientStop(0, ChartMarkSurface.BarGradientTop(fill),
+                                        VisualChartPaint.BarGradient(fill, fillRole, true, 1)),
+                                        new VisualGradientStop(1, ChartMarkSurface.BarGradientBottom(fill),
+                                        VisualChartPaint.BarGradient(fill, fillRole, false, 1)) },
                                     radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape");
-                            else builder.Rect(bounds, bodyColor, radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape", paint: VisualChartPaint.Fill(bodyPaint));
+                            else builder.Rect(bounds, fill, radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape", paint: VisualChartPaint.Fill(fillPaint));
                             if (openEnded && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Arrow)
-                                OpenEndArrow(chart, builder, bounds, ChartColorMath.AccessibleTextOnBackground(bodyColor));
+                                OpenEndArrow(chart, builder, bounds, ChartColorMath.AccessibleTextOnBackground(fill));
                             if (item.Gantt && item.Progress > 0) {
                                 var progressEnd = ChartHeatmapSurface.InterpolateObservedRange(item.Start, item.End, item.Progress);
                                 var progressLeft = axis.Reversed ? Project(progressEnd) : bounds.Left;
                                 var progressWidth = axis.Reversed ? Math.Max(0, Project(item.Start) - progressLeft) : Math.Max(0, Project(progressEnd) - bounds.Left);
-                                using (builder.PushClip(shape)) builder.Rect(new ChartRect(progressLeft, bounds.Top, progressWidth, bounds.Height), fill, role: "gantt-progress", paint: VisualChartPaint.Fill(fillPaint));
+                                var progressColor = DiagramTheme.GanttProgressFill(colors, fill);
+                                var progressPaint = SvgPaint.Mix(progressColor, fill, fillRole, colors.Foreground, SvgColorRole.Text, DiagramTheme.GanttProgressTint);
+                                using (builder.PushClip(shape)) builder.Rect(new ChartRect(progressLeft, bounds.Top, progressWidth, bounds.Height), progressColor,
+                                    role: "gantt-progress", paint: VisualChartPaint.Fill(progressPaint));
                             }
                         }
                         var pattern = series.PointFillPatterns.Count > 0 ? series.PointFillPatterns[0] ?? series.FillPattern : series.FillPattern;

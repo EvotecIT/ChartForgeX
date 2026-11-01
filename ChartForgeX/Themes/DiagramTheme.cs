@@ -7,6 +7,10 @@ namespace ChartForgeX.Themes;
 /// <summary>Owns diagram presentation defaults while retaining the active theme's font request and color tokens.</summary>
 internal static class DiagramTheme {
     internal const double CardCornerRadius = 6;
+    internal const double GanttProgressTint = .18;
+
+    internal static ChartColor GanttProgressFill(VisualThemeColors colors, ChartColor fill) =>
+        ChartColorMath.Blend(fill, colors.Foreground, GanttProgressTint);
 
     internal static ChartColor SectionBandFill(VisualThemeColors colors, int section) =>
         ChartColorMath.Blend(colors.Background, colors.Foreground, section % 2 == 0 ? .035 : .07);
