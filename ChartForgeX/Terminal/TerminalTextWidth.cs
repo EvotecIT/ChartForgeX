@@ -6,6 +6,10 @@ using System.Text;
 namespace ChartForgeX.Terminal;
 
 internal static class TerminalTextWidth {
+    /// <summary>Starts a preserved-scalar escape used by terminal PNG text.</summary>
+    internal const char PreservedEscapeStart = '\uFDD0';
+    /// <summary>Ends a preserved-scalar escape used by terminal PNG text.</summary>
+    internal const char PreservedEscapeEnd = '\uFDD1';
     private const int MaximumInitialFitCapacity = 256;
 
     public static int Measure(string value) {
@@ -356,7 +360,7 @@ internal static class TerminalTextWidth {
         length = 0;
         codePoint = 0;
         if (index + 10 > value.Length ||
-            value[index] != TerminalPngTextPreserver.EscapeStart ||
+            value[index] != PreservedEscapeStart ||
             value[index + 1] != '[' ||
             value[index + 2] != 'U' ||
             value[index + 3] != '+') {
@@ -368,7 +372,7 @@ internal static class TerminalTextWidth {
         for (var cursor = index + 4; cursor < value.Length; cursor++) {
             if (value[cursor] == ']') {
                 if (cursor + 1 >= value.Length ||
-                    value[cursor + 1] != TerminalPngTextPreserver.EscapeEnd ||
+                    value[cursor + 1] != PreservedEscapeEnd ||
                     digits < 4 ||
                     scalar > 0x10FFFF ||
                     scalar >= 0xD800 && scalar <= 0xDFFF) {

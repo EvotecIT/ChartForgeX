@@ -11,7 +11,7 @@ using ChartForgeX.VisualArtifacts;
 
 namespace ChartForgeX.Markup.Cli;
 
-internal static class Program {
+internal static partial class Program {
     private static int Main(string[] args) {
         if (args.Length == 0 || IsHelp(args[0])) {
             Help();
@@ -43,6 +43,8 @@ internal static class Program {
                     return Export(source, args.Skip(2).ToArray());
                 case "emit":
                     return Emit(source, args.Skip(2).ToArray());
+                case "render":
+                    return Render(source, input, args.Skip(2).ToArray());
                 default:
                     return 1;
             }
@@ -54,7 +56,7 @@ internal static class Program {
             foreach (var warning in ex.Result.Warnings) Console.Error.WriteLine("warning " + warning.Code + ": " + warning.Message);
             return 2;
         } catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException || ex is InvalidOperationException) {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine(ex is ArgumentException argument && argument.ParamName != null ? ex.Message.Replace(" (Parameter '" + argument.ParamName + "')", string.Empty) : ex.Message);
             return 1;
         }
     }
@@ -219,7 +221,7 @@ internal static class Program {
     }
 
     private static bool IsHelp(string value) => value == "-h" || value == "--help" || value == "help";
-    private static bool IsCommand(string value) => value == "validate" || value == "preview" || value == "export" || value == "emit";
+    private static bool IsCommand(string value) => value == "validate" || value == "preview" || value == "export" || value == "emit" || value == "render";
 
     private static void Help() {
         Console.WriteLine("ChartForgeX Markup CLI");
@@ -228,6 +230,10 @@ internal static class Program {
         Console.WriteLine("  chartforgex-markup preview <file> [--output <preview.html>] [--gantt-date-anchor YYYY-MM-DD]");
         Console.WriteLine("  chartforgex-markup export <file> --output <diagram.svg|diagram.html|diagram.png> [--gantt-date-anchor YYYY-MM-DD]");
         Console.WriteLine("  chartforgex-markup emit <topology-file> --target csharp [--output <file.cs>]");
+        Console.WriteLine("  chartforgex-markup render <file> [--format text|svg|png|html] [--output <path>] [--diagram <id>]");
+        Console.WriteLine("                     [--scenario <id>] [--step <n|all>] [--columns <n>] [--ascii]");
+        Console.WriteLine("    Renders one diagram. Text draws architecture and topology diagrams for terminals; --step highlights a use case step.");
+        Console.WriteLine("    A file without fences is read as one chartforgex architecture diagram.");
     }
 
     private sealed class MarkupCliErrorException : Exception {

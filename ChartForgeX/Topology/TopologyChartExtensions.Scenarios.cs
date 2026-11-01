@@ -121,6 +121,37 @@ public static partial class TopologyChartExtensions {
         return AddStep(scenario, TopologyScenarioStepKind.Edge, edgeId, label, description, configure);
     }
 
+    /// <summary>
+    /// Adds a request, message, response, or failure that travels over an existing topology edge.
+    /// </summary>
+    /// <param name="scenario">The topology scenario.</param>
+    /// <param name="edgeId">The edge the step travels over.</param>
+    /// <param name="interaction">What happens on the edge.</param>
+    /// <param name="label">The optional step label, such as <c>POST /notes</c> or <c>201 Created</c>.</param>
+    /// <param name="reverse">Whether the step travels from the edge target to the edge source.</param>
+    /// <param name="configure">Optional step configuration.</param>
+    /// <returns>The current scenario.</returns>
+    public static TopologyScenario AddMessageStep(this TopologyScenario scenario, string edgeId, TopologyScenarioInteraction interaction, string? label = null, bool reverse = false, Action<TopologyScenarioStep>? configure = null) {
+        ValidateEnum(typeof(TopologyScenarioInteraction), interaction, nameof(interaction), "Topology scenario interactions");
+        return AddStep(scenario, TopologyScenarioStepKind.Edge, edgeId, label, null, step => {
+            step.Interaction = interaction;
+            step.Reverse = reverse;
+            configure?.Invoke(step);
+        });
+    }
+
+    /// <summary>Attaches the request or response payload shown while the step is active.</summary>
+    /// <param name="step">The topology scenario step.</param>
+    /// <param name="payload">The payload text, or <see langword="null"/> to remove it.</param>
+    /// <param name="format">How the payload should be presented.</param>
+    /// <returns>The current scenario step.</returns>
+    public static TopologyScenarioStep WithPayload(this TopologyScenarioStep step, string? payload, TopologyScenarioPayloadFormat format = TopologyScenarioPayloadFormat.Text) {
+        if (step == null) throw new ArgumentNullException(nameof(step));
+        step.Payload = payload;
+        step.PayloadFormat = format;
+        return step;
+    }
+
     private static TopologyScenario AddStep(TopologyScenario scenario, TopologyScenarioStepKind kind, string id, string? label, string? description, Action<TopologyScenarioStep>? configure) {
         if (scenario == null) throw new ArgumentNullException(nameof(scenario));
         ValidateEnum(typeof(TopologyScenarioStepKind), kind, nameof(kind), "Topology scenario step kinds");

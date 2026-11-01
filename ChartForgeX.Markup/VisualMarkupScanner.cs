@@ -231,6 +231,9 @@ public static class VisualMarkupScanner {
             case "sequence":
                 kind = VisualMarkupKind.Sequence;
                 return true;
+            case "architecture":
+                kind = VisualMarkupKind.Architecture;
+                return true;
             default:
                 kind = default;
                 return false;

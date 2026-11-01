@@ -405,7 +405,7 @@ Inspect the generated gallery before intentionally changing visual baselines. [C
 - [chartforgex.com](https://chartforgex.com): [gallery](https://chartforgex.com/gallery/), [documentation](https://chartforgex.com/docs/), [playground](https://chartforgex.com/playground/) and [API reference](https://chartforgex.com/api/)
 - [API conventions and chart options](docs/v2/api-conventions.md)
 - [Chart combinations, orientation and axes](docs/v2/chart-combinations.md)
-- [Topology](docs/topology.md) and [icon packs](docs/topology-icon-packs.md)
+- [Topology](docs/topology.md), [icon packs](docs/topology-icon-packs.md), and [architecture diagrams with use case playback](docs/architecture-diagrams.md)
 - [Design language](docs/design-language.md): shared `--hfx-*` roles, the categorical order, states and output profiles
 - [Typography and measured label placement](docs/label-placement.md)
 - [Mermaid language support](docs/mermaid.md) and [support matrix](docs/mermaid-support-matrix.md)

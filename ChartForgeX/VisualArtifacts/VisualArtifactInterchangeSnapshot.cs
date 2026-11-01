@@ -194,6 +194,10 @@ internal static partial class VisualArtifactInterchangeSnapshot {
             Label = source.Label,
             Description = source.Description,
             DurationMilliseconds = source.DurationMilliseconds,
+            Interaction = source.Interaction,
+            Reverse = source.Reverse,
+            Payload = source.Payload,
+            PayloadFormat = source.PayloadFormat,
         };
         foreach (var item in source.Extensions) copy.Extensions.Add(item.Key, item.Value);
         return copy;
@@ -462,6 +466,7 @@ internal static partial class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeSequenceNode? Copy(VisualArtifactInterchangeSequenceNode? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeSequenceNode {
+            Card = source.Card?.Copy(),
             SurfaceShadow = source.SurfaceShadow,Stereotype=source.Stereotype,Symbol=source.Symbol,MinimumWidth=source.MinimumWidth,Fill=source.Fill,
             Border=source.Border,ActivationFill=source.ActivationFill,ActivationBorder=source.ActivationBorder,
             Kind = source.Kind,

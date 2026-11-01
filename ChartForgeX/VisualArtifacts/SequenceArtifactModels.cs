@@ -352,6 +352,9 @@ public sealed class SequenceArtifactMessage {
     /// <summary>Gets or sets whether the message deactivates a participant.</summary>
     public bool Deactivates { get; set; }
 
+    /// <summary>Gets or sets an optional line and arrow color for this message, such as a status color for a failed call; null uses the shared message paint.</summary>
+    public ChartColor? Color { get; set; }
+
     /// <summary>Gets message metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 }

@@ -38,7 +38,8 @@ internal static class TopologyMotionPlanner {
                     ? scenario.Steps[index - 1].Id : null;
                 var followingNode = index + 1 < scenario.Steps.Count && scenario.Steps[index + 1].Kind == TopologyScenarioStepKind.Node
                     ? scenario.Steps[index + 1].Id : null;
-                AddEdges(chart, nodes, entries, step.Id, resolvedRoutes, previousNode, followingNode);
+                AddEdges(chart, nodes, entries, step.Id, resolvedRoutes, previousNode, followingNode,
+                    step.Reverse || step.Interaction != TopologyScenarioInteraction.None ? step.Reverse : null);
             }
             else if (step.Kind == TopologyScenarioStepKind.Node) nodeIds.Add(step.Id);
         }
@@ -47,12 +48,12 @@ internal static class TopologyMotionPlanner {
     }
 
     private static void AddEdges(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, List<TopologyMotionEntry> entries, string edgeId,
-        IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes, string? previousNode = null, string? followingNode = null) {
+        IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes, string? previousNode = null, string? followingNode = null, bool? reverse = null) {
         foreach (var edge in chart.Edges.Where(candidate => string.Equals(candidate.Id, edgeId, StringComparison.Ordinal))) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var routePoints = resolvedRoutes != null && resolvedRoutes.TryGetValue(edge, out var resolved) ? resolved : RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes));
             if (routePoints.Count < 2) continue;
-            if (ReversesTraversal(edge, previousNode, followingNode)) {
+            if (reverse ?? TopologyScenarioTraversal.ByNeighbours(edge, previousNode, followingNode)) {
                 var reversed = routePoints.ToArray();
                 Array.Reverse(reversed);
                 routePoints = reversed;
@@ -60,13 +61,6 @@ internal static class TopologyMotionPlanner {
             entries.Add(new TopologyMotionEntry(edge, routePoints, PolylineLength(routePoints)));
         }
     }
-
-    /// <summary>Uses adjacent node steps only when all available hints agree on target-to-source traversal.</summary>
-    private static bool ReversesTraversal(TopologyEdge edge, string? previousNode, string? followingNode) =>
-        !string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)
-        && (previousNode != null || followingNode != null)
-        && (previousNode == null || string.Equals(previousNode, edge.TargetNodeId, StringComparison.Ordinal))
-        && (followingNode == null || string.Equals(followingNode, edge.SourceNodeId, StringComparison.Ordinal));
 
     private static void AddEndpointNodeIds(IEnumerable<TopologyMotionEntry> entries, HashSet<string> nodeIds) {
         foreach (var entry in entries) {

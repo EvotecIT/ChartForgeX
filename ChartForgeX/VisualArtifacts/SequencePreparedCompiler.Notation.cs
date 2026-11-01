@@ -14,6 +14,7 @@ internal static partial class SequencePreparedCompiler {
         var border = participant.Border ?? paint.ParticipantBorder ?? (kind == SequenceArtifactParticipantKind.Participant ? colors.Border : colors.Accent);
         var b = item.Bounds; double x = b.X + b.Width / 2, y = b.Y + 21, stroke = theme.AxisStrokeWidth;
         if(item.BandAllocation!=null){BandedParticipant(builder,participant,item,layout,colors,theme,paint);return;}
+        if (participant.Card != null && kind == SequenceArtifactParticipantKind.Participant) { CardParticipant(builder, participant, item, layout, colors, theme, fill, border); return; }
         using (ParticipantSurface(builder, participant, b, stroke)) {
             ParticipantShape(builder, kind, b, x, y, fill, border, stroke, theme);
         }

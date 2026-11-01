@@ -18,6 +18,7 @@ Mermaid fences intentionally keep Mermaid's own fence names and syntax. Use `Cha
 | `chartforgex flow v1` | `Flow` | `FlowArtifact` | Topology-projected SVG/HTML/PNG |
 | `chartforgex sequence v1` | `Sequence` | `SequenceArtifact` | Sequence SVG/HTML/PNG |
 | `chartforgex table v1` | `Table` | `TableArtifact` | Visual-block SVG/HTML/PNG |
+| `chartforgex architecture v1` | `Topology` | `TopologyChart` with scenarios | Topology SVG/HTML/PNG, interactive player, text ([reference](architecture-diagrams.md)) |
 
 Supported fences may use backticks or tildes. Native ChartForgeX fences may include optional Markdown-style metadata after the version token, for example `{#service-map title="Service Map" width=1280 height=760}`. Parser payload commands remain the source of truth when both payload and metadata specify the same visual option. Editor tooling can also read the machine-readable schema at `ChartForgeX.Markup/Schemas/chartforgex-markup-v1.schema.json`.
 
@@ -26,7 +27,7 @@ Unsupported `chartforgex` families, missing native schema versions, and unsuppor
 ## Shared Lexical Rules
 
 - Blank lines are ignored.
-- Lines starting with `#` are comments.
+- `//` starts a comment. Architecture markup also treats lines starting with `#` as comments.
 - Quoted values may contain spaces: `"Release gate"`.
 - Attribute tokens use `key:value` or `key=value`.
 - Pipe tables use a header row plus optional separator row.

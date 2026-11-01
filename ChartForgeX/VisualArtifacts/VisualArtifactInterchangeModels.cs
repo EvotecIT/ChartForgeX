@@ -393,6 +393,14 @@ public sealed class VisualArtifactInterchangeScenarioStep {
     public string? Description { get; set; }
     /// <summary>Gets or sets an optional duration override in milliseconds.</summary>
     public int? DurationMilliseconds { get; set; }
+    /// <summary>Gets or sets what happens when an edge step travels its edge.</summary>
+    public TopologyScenarioInteraction Interaction { get; set; }
+    /// <summary>Gets or sets whether an edge step travels from the edge target to the edge source.</summary>
+    public bool Reverse { get; set; }
+    /// <summary>Gets or sets the optional request or response payload.</summary>
+    public string? Payload { get; set; }
+    /// <summary>Gets or sets how the payload should be presented.</summary>
+    public TopologyScenarioPayloadFormat PayloadFormat { get; set; }
     /// <summary>Gets opaque caller-defined extension data.</summary>
     public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }

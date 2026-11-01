@@ -35,12 +35,16 @@
     "keywords": {
       "patterns": [
         {
-          "match": "\\b(id|title|subtitle|viewport|layout|groups?|nodes?|edges?|end)\\b",
+          "match": "\\b(id|title|subtitle|viewport|layout|direction|legend|groups?|boundary|nodes?|edges?|connect|usecase|story|visit|json|xml|text|end)\\b",
           "name": "keyword.control.chartforgex-markup"
         },
         {
           "match": "\\b(healthy|warning|critical|unknown|disabled|layered|densegrouped|geographic|forcedirected|lr|rl|tb|bt)\\b",
           "name": "constant.language.chartforgex-markup"
+        },
+        {
+          "match": "^\\s*(user|person|actor|team|client|app|application|service|api|function|server|host|vm|database|db|storage|share|bucket|queue|topic|bus|gateway|proxy|firewall|network|cloud|external|endpoint|device|workstation|process|job|worker|certificate|site|location|hub)\\b",
+          "name": "storage.type.chartforgex-markup"
         }
       ]
     },
@@ -51,7 +55,7 @@
           "name": "entity.other.attribute-name.chartforgex-markup"
         },
         {
-          "match": "->|--",
+          "match": "<->|->>|-->|->|<-|-x|--",
           "name": "keyword.operator.chartforgex-markup"
         }
       ]

@@ -27,6 +27,7 @@
         label: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-label') || scenarioButton.textContent.trim() : scenarioSummary.label || scenarioId,
         description: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-description') : scenarioSummary.description || '',
         color: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-color') : scenarioSummary.color || '',
+        colorInk: scenarioButton ? (scenarioButton.style.getPropertyValue('--cfx-topology-scenario-ink') || scenarioButton.parentElement.style.getPropertyValue('--cfx-topology-scenario-ink')) : scenarioSummary.colorInk || '',
         stepCount: scenarioButton ? Number(attr(scenarioButton, 'data-cfx-scenario-step-count') || '0') : Number(scenarioSummary.stepCount || steps.length || 0),
         playbackDelayMilliseconds: scenarioButton ? Number(attr(scenarioButton, 'data-cfx-scenario-playback-delay') || '900') : Number(scenarioSummary.playbackDelayMilliseconds || 900),
         loopPlayback: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-loop') === 'true' : scenarioSummary.loopPlayback === true,
@@ -48,6 +49,7 @@
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
+        scenarioPanel.style.removeProperty('--cfx-topology-scenario-ink');
         if (title) title.textContent = uiText('All', 'All');
         if (meta) meta.textContent = uiText('TopologyAllRoutesVisible', 'All topology routes visible');
         if (stepsList) stepsList.replaceChildren();
@@ -58,6 +60,8 @@
       scenarioPanel.setAttribute('data-cfx-panel-active-scenario', route.scenarioId);
       if (route.color) scenarioPanel.style.setProperty('--cfx-topology-scenario-color', route.color);
       else scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
+      if (route.colorInk) scenarioPanel.style.setProperty('--cfx-topology-scenario-ink', route.colorInk);
+      else scenarioPanel.style.removeProperty('--cfx-topology-scenario-ink');
       if (title) title.textContent = route.label || route.scenarioId;
       if (meta) {
         const metadata = Object.entries(route.metadata).slice(0, 2).map(([key, value]) => key + ': ' + value);
@@ -76,10 +80,47 @@
             item.setAttribute('tabindex', '0');
           }
           item.textContent = step.label || step.id || '';
+          if (step.source) item.title = stepSummary(step);
+          if (step.interaction) item.setAttribute('data-cfx-scenario-step-interaction', step.interaction);
           stepsList.appendChild(item);
         });
       }
       if (scrubber) { scrubber.disabled = !enableStepNavigation || !route.steps.length; scrubber.max = String(Math.max(1, route.steps.length)); scrubber.value = '1'; }
+    };
+    const scenarioPayload = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-payload]') : null;
+    const interactionText = value => ({ request: uiText('ScenarioRequest', 'request'), message: uiText('ScenarioMessage', 'message'), response: uiText('ScenarioResponse', 'response'), failure: uiText('ScenarioFailure', 'failed call') }[value] || '');
+    const stepSummary = step => [step.target ? (step.source || '') + ' \u2192 ' + step.target : step.source || '', interactionText(step.interaction), step.label || step.id || ''].filter(value => value).join(' \u00b7 ');
+    const renderScenarioPayload = step => {
+      if (!scenarioPayload) return;
+      const routeText = scenarioPayload.querySelector('[data-cfx-scenario-payload-route]');
+      const body = scenarioPayload.querySelector('[data-cfx-scenario-payload-body]');
+      if (!step || (!step.payload && !step.interaction)) {
+        scenarioPayload.hidden = true;
+        scenarioPayload.removeAttribute('data-cfx-scenario-interaction');
+        if (routeText) routeText.textContent = '';
+        if (body) body.textContent = '';
+        return;
+      }
+      scenarioPayload.hidden = false;
+      scenarioPayload.setAttribute('data-cfx-scenario-interaction', step.interaction || 'none');
+      if (routeText) routeText.textContent = stepSummary(step);
+      if (body) {
+        body.textContent = step.payload || '';
+        body.hidden = !step.payload;
+        body.setAttribute('data-cfx-payload-format', step.payloadFormat || 'text');
+      }
+    };
+    const syncScenarioSequence = (scenarioId, index) => {
+      wrapper.querySelectorAll('[data-cfx-scenario-sequence]').forEach(figure => {
+        const active = !!scenarioId && attr(figure, 'data-cfx-scenario-sequence') === scenarioId;
+        figure.hidden = !active;
+        figure.querySelectorAll('[data-cfx-scenario-step]').forEach(message => {
+          const stepping = active && index !== null && index !== undefined;
+          const current = stepping && attr(message, 'data-cfx-scenario-step') === String(index);
+          message.classList.toggle('cfx-topology-html-sequence-step-active', current);
+          message.classList.toggle('cfx-topology-html-sequence-step-muted', stepping && !current);
+        });
+      });
     };
     const clearScenarioPreview = () => {
       wrapper.style.removeProperty('--cfx-topology-preview-scenario-color');
@@ -133,6 +174,8 @@
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => item.removeAttribute('aria-current'));
       const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
       if (scrubber) scrubber.value = '1';
+      renderScenarioPayload(null);
+      syncScenarioSequence(attr(wrapper, 'data-cfx-active-scenario'), null);
       updateScenarioStepControls(false);
     };
     lifetime.own(() => {
@@ -167,6 +210,8 @@
       });
       const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
       if (scrubber) scrubber.value = String(index + 1);
+      renderScenarioPayload(route.steps[index]);
+      syncScenarioSequence(route.scenarioId, index);
       if (!keepPlaying) stopScenarioPlayback();
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-step', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId: route.scenarioId, index, step: route.steps[index] } }));
       syncScenarioUrl(route.scenarioId, index);

@@ -14,7 +14,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static bool HasSequenceCapturedPolicy(SequenceArtifact source) => SequencePresentationPolicy.IsCaptured(source);
     private static bool HasSequenceNativePresentation(SequenceArtifact source)=>
         HasSequenceCapturedPolicy(source)
-        ||source.Participants.Any(item=>item.Stereotype!=null||item.Symbol!=null||item.Fill.HasValue||item.MinimumWidth.HasValue)
+        ||source.Participants.Any(item=>item.Card!=null||item.Stereotype!=null||item.Symbol!=null||item.Fill.HasValue||item.MinimumWidth.HasValue)
         ||source.Blocks.Any(item=>SequencePreparedLayout.IsInstant(item.Kind));
     private static void MapSequenceNativePresentation(VisualArtifactInterchangeEnvelope target,SequenceArtifact source,VisualRenderContext? context=null) {
         if(!HasSequenceNativePresentation(source))return;

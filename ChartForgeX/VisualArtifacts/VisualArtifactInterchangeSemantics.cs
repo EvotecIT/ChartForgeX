@@ -438,6 +438,8 @@ public sealed class VisualArtifactInterchangeFlowEdge {
 
 /// <summary>Represents sequence-participant semantics.</summary>
 public sealed class VisualArtifactInterchangeSequenceNode {
+    /// <summary>Gets or sets the optional topology-style participant card, detached from its source sequence.</summary>
+    public SequenceParticipantCard? Card { get; set; }
     /// <summary>Gets or sets immutable native glyph/box surface-shadow facts, separate from captions and links.</summary>
     public ChartForgeX.Effects.VisualDropShadow? SurfaceShadow { get; set; }
     /// <summary>Gets or sets optional literal participant border ink.</summary>

@@ -23,7 +23,7 @@ values 12 18 16
 
 Run `ChartForgeX Markup: Open Preview` from the command palette.
 
-Native v1 snippets are available for topology, flow, sequence diagrams, table-backed topology, charts, multi-series charts, timelines, and Gantt plans. Mermaid fences are scanned by the language, while semantic Mermaid parsing is provided by the optional ChartForgeX Mermaid adapter used by the packaged CLI.
+Native v1 snippets are available for architecture diagrams with use cases, topology, flow, sequence diagrams, table-backed topology, charts, multi-series charts, timelines, and Gantt plans. Mermaid fences are scanned by the language, while semantic Mermaid parsing is provided by the optional ChartForgeX Mermaid adapter used by the packaged CLI.
 
 The extension package includes `schemas/chartforgex-markup-v1.schema.json`, the same machine-readable v1 grammar schema packed by `ChartForgeX.Markup`, so editor tooling can discover supported fence families and table sections without scraping docs.
 

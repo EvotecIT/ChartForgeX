@@ -185,7 +185,8 @@ public static partial class VisualArtifactInterchangeMapping {
         RestoreTopologyMetadata(source.Extensions, scenario.Metadata);
         foreach (var item in source.Steps) {
             var step = new TopologyScenarioStep { Id = item.TargetId, Kind = item.Kind, Label = item.Label,
-                Description = item.Description, DurationMilliseconds = item.DurationMilliseconds };
+                Description = item.Description, DurationMilliseconds = item.DurationMilliseconds,
+                Interaction = item.Interaction, Reverse = item.Reverse, Payload = item.Payload, PayloadFormat = item.PayloadFormat };
             if (step.Id != item.TargetId) throw new NotSupportedException("Native topology scenario target IDs cannot contain surrounding whitespace.");
             RestoreTopologyMetadata(item.Extensions, step.Metadata); scenario.Steps.Add(step);
         }

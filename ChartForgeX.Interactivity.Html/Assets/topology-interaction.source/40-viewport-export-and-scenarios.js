@@ -167,6 +167,7 @@
       wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]').forEach(input => input.checked = false);
       updateScenarioStepControls(false);
       renderScenarioPanel(null);
+      syncScenarioSequence(null, null);
       syncScenarioUrl('', '');
     };
     const setScenarioFilters = (scenarioIds, emit = true, sync = true) => {
@@ -232,6 +233,7 @@
       });
       renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} }, routes.length === 1);
       updateScenarioStepControls(false);
+      syncScenarioSequence(routes.length === 1 ? routes[0].scenarioId : null, null);
       syncScenarioUrl(routes.map(route => route.scenarioId).join(','), '');
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-filter', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioIds: routes.map(route => route.scenarioId), routes: routes.map(route => ({ scenarioId: route.scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount })), nodeIds: Array.from(nodeIds), edgeIds: Array.from(edgeIds), groupIds: Array.from(groupIds) } }));
       if (sync) emitSync('scenario-filters', { scenarioIds: routes.map(route => route.scenarioId) });
@@ -299,6 +301,20 @@
       if (!svg) return null;
       const clone = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
+      // Payloads belong to the live player, not to a downloaded static diagram.
+      [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
+        if (!node.hasAttribute('data-cfx-scenarios')) return;
+        try {
+          const scenarios = JSON.parse(node.getAttribute('data-cfx-scenarios'));
+          scenarios.forEach(scenario => (scenario.steps || []).forEach(step => {
+            delete step.payload;
+            delete step.payloadFormat;
+          }));
+          node.setAttribute('data-cfx-scenarios', JSON.stringify(scenarios));
+        } catch {
+          node.removeAttribute('data-cfx-scenarios');
+        }
+      });
       const defs = clone.querySelector('defs') || clone.insertBefore(document.createElementNS('http://www.w3.org/2000/svg', 'defs'), clone.firstChild);
       const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
       style.setAttribute('data-cfx-export-style', 'force-filters');

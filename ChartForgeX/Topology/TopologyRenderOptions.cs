@@ -168,6 +168,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether interactive HTML pages should render a compact scenario detail panel when scenarios are present.</summary>
     public bool EnableHtmlScenarioPanel { get; set; } = true;
 
+    /// <summary>Gets or sets whether interactive HTML pages show each scenario's matching sequence diagram and highlight the active step's message in it.</summary>
+    public bool EnableHtmlScenarioSequence { get; set; }
+
     /// <summary>Gets or sets whether interactive HTML pages should render a compact selected-record panel for clicked nodes, edges, and groups.</summary>
     public bool EnableHtmlSelectionPanel { get; set; }
 

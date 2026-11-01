@@ -100,8 +100,44 @@ public sealed class TopologyScenarioStep {
         }
     }
 
+    /// <summary>Gets or sets what happens when an edge step travels its edge. Node steps keep <see cref="TopologyScenarioInteraction.None"/>.</summary>
+    public TopologyScenarioInteraction Interaction {
+        get => _interaction;
+        set {
+            if (!Enum.IsDefined(typeof(TopologyScenarioInteraction), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Topology scenario step interaction must be defined.");
+            _interaction = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether an edge step travels from the edge target to the edge source, as a response usually does.</summary>
+    public bool Reverse { get; set; }
+
+    /// <summary>Gets or sets the optional request or response payload shown while the step is active.</summary>
+    public string? Payload {
+        get => _payload;
+        set {
+            if (value != null && value.Length > MaximumPayloadLength) throw new ArgumentOutOfRangeException(nameof(value), "Topology scenario step payloads support at most " + MaximumPayloadLength + " characters.");
+            _payload = value;
+        }
+    }
+
+    /// <summary>Gets or sets how the payload should be presented.</summary>
+    public TopologyScenarioPayloadFormat PayloadFormat {
+        get => _payloadFormat;
+        set {
+            if (!Enum.IsDefined(typeof(TopologyScenarioPayloadFormat), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Topology scenario payload format must be defined.");
+            _payloadFormat = value;
+        }
+    }
+
     /// <summary>Gets arbitrary step metadata for route inspectors and host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
+
+    /// <summary>The longest payload a step accepts, in UTF-16 characters.</summary>
+    public const int MaximumPayloadLength = 65_536;
+    private TopologyScenarioInteraction _interaction;
+    private string? _payload;
+    private TopologyScenarioPayloadFormat _payloadFormat;
 
     private static string RequiredText(string? value, string parameterName, string displayName) {
         if (value == null) throw new ArgumentNullException(parameterName);

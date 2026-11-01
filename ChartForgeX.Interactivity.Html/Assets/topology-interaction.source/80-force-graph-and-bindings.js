@@ -296,6 +296,20 @@
       });
       const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
       if (scrubber) listen(scrubber, 'input', () => { stopScenarioPlayback(); setScenarioStep(Number(scrubber.value) - 1, false); });
+      if (scenarioPanel) listen(scenarioPanel, 'keydown', event => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target instanceof Element && event.target.matches('input,textarea,select')) return;
+        const route = scenarioRoute(attr(wrapper, 'data-cfx-active-scenario'));
+        if (!route || !route.steps.length) return;
+        const key = String(event.key || '').toLowerCase();
+        if (key === 'n' || key === 'arrowright') stepScenario(1);
+        else if (key === 'b' || key === 'arrowleft') stepScenario(-1);
+        else if (key === 'p') playScenario();
+        else if (key === 'r' || key === 'home') { stopScenarioPlayback(); setScenarioStep(0, false); }
+        else if (key === 'e' || key === 'end') { stopScenarioPlayback(); setScenarioStep(route.steps.length - 1, false); }
+        else return;
+        event.preventDefault();
+      });
       const stepsList = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-panel-steps]') : null;
       if (stepsList) {
         const focusStep = target => { const item = target instanceof Element ? target.closest('[data-cfx-scenario-step-index]') : null; if (item && stepsList.contains(item)) setScenarioStep(Number(attr(item, 'data-cfx-scenario-step-index')) - 1, false); };

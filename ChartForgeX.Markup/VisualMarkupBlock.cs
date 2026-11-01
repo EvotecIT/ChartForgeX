@@ -20,7 +20,9 @@ public enum VisualMarkupKind {
     /// <summary>The fence declares a sequence artifact.</summary>
     Sequence,
     /// <summary>The fence declares a Mermaid diagram.</summary>
-    Mermaid
+    Mermaid,
+    /// <summary>The fence declares an architecture diagram with use cases.</summary>
+    Architecture
 }
 
 /// <summary>

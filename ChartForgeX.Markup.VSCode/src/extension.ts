@@ -290,8 +290,8 @@ function isChartForgeXMarkup(document: vscode.TextDocument): boolean {
     return true;
   }
 
-  return /```+\s*chartforgex\s+(topology|table|chart|flow|timeline|sequence)\s+v1\b/i.test(document.getText()) ||
-    /~~~+\s*chartforgex\s+(topology|table|chart|flow|timeline|sequence)\s+v1\b/i.test(document.getText()) ||
+  return /```+\s*chartforgex\s+(topology|table|chart|flow|timeline|sequence|architecture)\s+v1\b/i.test(document.getText()) ||
+    /~~~+\s*chartforgex\s+(topology|table|chart|flow|timeline|sequence|architecture)\s+v1\b/i.test(document.getText()) ||
     /```+\s*mermaid\b/i.test(document.getText()) ||
     /~~~+\s*mermaid\b/i.test(document.getText());
 }
@@ -433,13 +433,18 @@ function parseDiagnostics(document: vscode.TextDocument, result: CliResult): vsc
   const all = `${result.stderr}\n${result.stdout}`.split(/\r?\n/g);
   const items: vscode.Diagnostic[] = [];
   for (const line of all) {
-    const match = /^(error|warning)(?:\((\d+)\))?(?:\s+[\w.-]+)?:\s*(.+)$/i.exec(line.trim());
+    // The CLI writes "severity[ CODE][(line)]: message", for example "warning CFXA006(12): ...".
+    const match = /^(error|warning|information)(?:\s+([\w.-]+))?(?:\((\d+)\))?:\s*(.+)$/i.exec(line.trim());
     if (!match) continue;
-    const lineNumber = Math.max(0, Number.parseInt(match[2] ?? '1', 10) - 1);
+    const lineNumber = Math.max(0, Number.parseInt(match[3] ?? '1', 10) - 1);
     const safeLine = Math.min(lineNumber, Math.max(0, document.lineCount - 1));
     const range = document.lineAt(safeLine).range;
-    const severity = match[1].toLowerCase() === 'error' ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;
-    items.push(new vscode.Diagnostic(range, match[3], severity));
+    const kind = match[1].toLowerCase();
+    const severity = kind === 'error' ? vscode.DiagnosticSeverity.Error : kind === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Information;
+    const diagnostic = new vscode.Diagnostic(range, match[4], severity);
+    if (match[2]) diagnostic.code = match[2];
+    diagnostic.source = 'ChartForgeX';
+    items.push(diagnostic);
   }
 
   return items;
