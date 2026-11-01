@@ -1,6 +1,6 @@
 ---
 title: Chart grid examples in C#
-description: Chart grid examples rendered by ChartForgeX: a live chart, variants in light and dark themes, the C# source and the options to configure it.
+description: Chart grid examples rendered by ChartForgeX: static SVG images, variants in light and dark themes, the C# source and the options to configure it.
 layout: gallery-family
 ---
 

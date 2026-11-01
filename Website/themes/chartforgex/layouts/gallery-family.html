@@ -51,7 +51,7 @@
       <iframe class="cfx-showcase__iframe cfx-family__live" style="aspect-ratio: {{ f.width }} / {{ f.height + 48 }}" title="{{ item.title }}, interactive"
         data-cfx-live-frame data-light="{{ item.interactive }}" data-dark="{{ item.darkInteractive }}"></iframe>
       <noscript><div class="cfx-showcase__plate"><img src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" loading="lazy" decoding="async" alt="{{ item.title }}" /></div></noscript>
-      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, select legend entries to compare series{{ else }}diagram. Hover and select nodes for details{{ end }}, and use the toolbar to zoom or export.</figcaption>
+      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, click legend items to hide or show series, and use the keyboard to navigate{{ else }}diagram. Hover and select nodes for details{{ end }}.</figcaption>
       {{~ else ~}}
       <div class="cfx-showcase__plate">
         <img class="cfx-only-light" src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" fetchpriority="high" decoding="async" alt="{{ item.title }}, rendered by ChartForgeX." />
@@ -103,7 +103,7 @@
   {{~ if f.options.size > 0 ~}}
   <section class="cfx-wide cfx-family__options" aria-labelledby="cfx-family-options">
     <h2 id="cfx-family-options" class="cfx-family__heading">Options</h2>
-    <p>{{~ if f.configure ~}}Set these on <code>chart.{{ f.configure }}(options =&gt; …)</code>. The full list is on the <a href="{{ f.api }}">{{ f.optionsType }}</a> reference page.{{~ else ~}}Common <a href="{{ f.api }}">Chart</a> builder calls for this family. Every member is listed in the API reference.{{~ end ~}}</p>
+    <p>{{~ if f.configure ~}}Set these on <code>chart.{{ f.configure }}(options =&gt; …)</code>. The full list is on the <a href="{{ f.api }}">{{ f.optionsType }}</a> reference page.{{~ else ~}}Common <a href="{{ f.api }}">{{ f.optionsType }}</a> builder calls for this family. Every member is listed in the API reference.{{~ end ~}}</p>
     <div class="cfx-tablewrap">
       <table class="cfx-family__table">
         <thead><tr><th scope="col">{{ if f.configure }}Option{{ else }}Method{{ end }}</th><th scope="col">What it does</th></tr></thead>

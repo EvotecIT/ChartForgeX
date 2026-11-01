@@ -13671,41 +13671,33 @@
         "Bar",
         "Area"
       ],
-      "optionsType": "Chart",
+      "optionsType": "ChartGrid",
       "configure": null,
-      "api": "/api/chartforgex-core-chart/",
+      "api": "/api/chartforgex-core-chartgrid/",
       "options": [
         {
           "name": "WithTitle",
-          "summary": "Sets the chart title."
+          "summary": "Sets the report title."
         },
         {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
+          "name": "WithColumns",
+          "summary": "Sets the preferred number of columns on wide viewports."
         },
         {
-          "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "name": "WithGap",
+          "summary": "Sets the gap between charts in pixels."
         },
         {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
+          "name": "WithPanelSize",
+          "summary": "Sets a fixed panel size for composed SVG and PNG grid exports."
         },
         {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
+          "name": "WithTheme",
+          "summary": "Sets the theme used by the grid background and heading."
         },
         {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
+          "name": "Add",
+          "summary": "Adds a chart to the grid."
         }
       ],
       "variants": []
@@ -13718,41 +13710,29 @@
       "width": 960,
       "height": 600,
       "kinds": [],
-      "optionsType": "Chart",
+      "optionsType": "TopologyChart",
       "configure": null,
-      "api": "/api/chartforgex-core-chart/",
+      "api": "/api/chartforgex-topology-topologychart/",
       "options": [
         {
           "name": "WithTitle",
-          "summary": "Sets the chart title."
+          "summary": "Sets the topology chart title."
         },
         {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
+          "name": "WithTheme",
+          "summary": "Sets the topology theme."
         },
         {
-          "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "name": "WithLayout",
+          "summary": "Sets the topology chart layout mode."
         },
         {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
+          "name": "AddNode",
+          "summary": "Adds a node to the topology chart."
         },
         {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
+          "name": "AddEdge",
+          "summary": "Adds an edge to the topology chart."
         }
       ],
       "variants": [
@@ -13826,41 +13806,29 @@
       "width": 900,
       "height": 600,
       "kinds": [],
-      "optionsType": "Chart",
+      "optionsType": "FlowArtifact",
       "configure": null,
-      "api": "/api/chartforgex-core-chart/",
+      "api": "/api/chartforgex-visualartifacts-flowartifact/",
       "options": [
         {
           "name": "WithTitle",
-          "summary": "Sets the chart title."
+          "summary": "Sets the flow title."
         },
         {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
+          "name": "WithSize",
+          "summary": "Sets the static preview size."
         },
         {
-          "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "name": "AddLane",
+          "summary": "Adds a flow lane."
         },
         {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
+          "name": "AddStep",
+          "summary": "Adds a flow step."
         },
         {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
+          "name": "AddConnector",
+          "summary": "Adds a flow connector."
         }
       ],
       "variants": []
@@ -13873,41 +13841,29 @@
       "width": 960,
       "height": 760,
       "kinds": [],
-      "optionsType": "Chart",
+      "optionsType": "SequenceArtifact",
       "configure": null,
-      "api": "/api/chartforgex-core-chart/",
+      "api": "/api/chartforgex-visualartifacts-sequenceartifact/",
       "options": [
         {
           "name": "WithTitle",
-          "summary": "Sets the chart title."
+          "summary": "Sets the title."
         },
         {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
+          "name": "WithSize",
+          "summary": "Sets the natural preview size."
         },
         {
-          "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "name": "AddParticipant",
+          "summary": "Adds or updates a participant."
         },
         {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
+          "name": "AddMessage",
+          "summary": "Adds a message."
         },
         {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
+          "name": "AddBlock",
+          "summary": "Adds a block span."
         }
       ],
       "variants": [
@@ -14000,41 +13956,29 @@
       "width": 960,
       "height": 520,
       "kinds": [],
-      "optionsType": "Chart",
+      "optionsType": "TopologyChart",
       "configure": null,
-      "api": "/api/chartforgex-core-chart/",
+      "api": "/api/chartforgex-topology-topologychart/",
       "options": [
         {
           "name": "WithTitle",
-          "summary": "Sets the chart title."
+          "summary": "Sets the topology chart title."
         },
         {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
+          "name": "WithTheme",
+          "summary": "Sets the topology theme."
         },
         {
-          "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "name": "WithLayout",
+          "summary": "Sets the topology chart layout mode."
         },
         {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
+          "name": "AddNode",
+          "summary": "Adds a node to the topology chart."
         },
         {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
+          "name": "AddEdge",
+          "summary": "Adds an edge to the topology chart."
         }
       ],
       "variants": []
@@ -14102,41 +14046,33 @@
         "Heatmap",
         "Gauge"
       ],
-      "optionsType": "Chart",
+      "optionsType": "ChartGrid",
       "configure": null,
-      "api": "/api/chartforgex-core-chart/",
+      "api": "/api/chartforgex-core-chartgrid/",
       "options": [
         {
           "name": "WithTitle",
-          "summary": "Sets the chart title."
+          "summary": "Sets the report title."
         },
         {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
+          "name": "WithColumns",
+          "summary": "Sets the preferred number of columns on wide viewports."
         },
         {
-          "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "name": "WithGap",
+          "summary": "Sets the gap between charts in pixels."
         },
         {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
+          "name": "WithPanelSize",
+          "summary": "Sets a fixed panel size for composed SVG and PNG grid exports."
         },
         {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
+          "name": "WithTheme",
+          "summary": "Sets the theme used by the grid background and heading."
         },
         {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
+          "name": "Add",
+          "summary": "Adds a chart to the grid."
         }
       ],
       "variants": []

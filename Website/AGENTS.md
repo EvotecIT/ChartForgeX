@@ -13,6 +13,8 @@ pwsh Website/build.ps1 -CI               # CI-mode pipeline (engine lock, verify
 
 `build.ps1` locates PowerForge.Web.Cli from `-PowerForgeRoot`, `POWERFORGE_ROOT`, a sibling `PSPublishModule` checkout, or the global `powerforge-web` tool. Use `-SkipBuildTool` to reuse an existing engine build.
 
+For isolated gallery syncs, set `-DestinationRoot`, `-GalleryPath` and `-FamilyPagesPath` together; they are independent output locations.
+
 Enabled features: `docs`, `notFound`. Prism highlighting is self-hosted under `static/assets/prism` (MIT, see its `LICENSE.txt`); the site makes no third-party requests.
 
 ## Sources of truth

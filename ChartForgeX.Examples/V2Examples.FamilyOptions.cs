@@ -2,18 +2,27 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
 
 public static partial class V2Examples {
     private static readonly Lazy<IReadOnlyDictionary<string, string>> ApiSummaries = new(ReadApiSummaries);
     private static readonly string[] CommonChartMembers = { "WithTitle", "WithXLabels", "AddSeries", "WithLegend", "WithDataLabels", "WithValueFormat", "ConfigureXAxis", "ConfigureYAxis" };
 
-    /// <summary>Describes the options a family's page lists: its own options type when it has one, otherwise the common chart builder.</summary>
+    /// <summary>Describes a family's option type or the builder methods for its model.</summary>
     private static object FamilyReference(string family) {
         var type = FamilyOptionsType(family);
         if (type == null) {
+            var (model, members, names) = family switch {
+                "topology" or "org-chart" => (typeof(TopologyChart), typeof(TopologyChartExtensions), new[] { "WithTitle", "WithTheme", "WithLayout", "AddNode", "AddEdge" }),
+                "chart-grid" or "dashboard" => (typeof(ChartGrid), typeof(ChartGrid), new[] { "WithTitle", "WithColumns", "WithGap", "WithPanelSize", "WithTheme", "Add", "WithSharedAxes" }),
+                "flow" => (typeof(FlowArtifact), typeof(FlowArtifact), new[] { "WithTitle", "WithSize", "AddLane", "AddStep", "AddConnector" }),
+                "sequence" => (typeof(SequenceArtifact), typeof(SequenceArtifact), new[] { "WithTitle", "WithSize", "AddParticipant", "AddMessage", "AddBlock" }),
+                _ => (typeof(Chart), typeof(Chart), CommonChartMembers)
+            };
             return new {
-                type = nameof(Chart), configure = (string?)null, api = ApiUrl(typeof(Chart)),
-                options = CommonChartMembers.Select(name => new { name, summary = Summary("M:" + typeof(Chart).FullName + "." + name + "(") ?? string.Empty })
+                type = model.Name, configure = (string?)null, api = ApiUrl(model),
+                options = names.Select(name => new { name, summary = Summary("M:" + members.FullName + "." + name + "(") ?? string.Empty })
                     .Where(row => row.summary.Length > 0).ToArray()
             };
         }
