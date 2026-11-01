@@ -4,6 +4,7 @@
     const existing = root && chartLifetimes.get(root);
     if (existing && !root.isConnected) { existing.controller.dispose(); throw new TypeError('Mount: connected section required.'); }
     if (existing && !existing.disposed) return existing.controller;
+    root?.[Symbol.for('ChartForgeX.chartRuntime')]?.dispose();
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount: connected section required.');
     const lifetime = { cleanups: new Set(), disposed: false, controller: null, preparationConnections: {},

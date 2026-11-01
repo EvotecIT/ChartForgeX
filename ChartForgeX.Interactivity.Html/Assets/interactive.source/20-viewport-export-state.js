@@ -5,6 +5,10 @@
     panY: Number(root.dataset.cfxPanY || '0')
   });
   const applyViewport = (root, state) => {
+    if (standaloneViewport(root)) {
+      if (state.zoom === 1 && state.panX === 0 && state.panY === 0) resetStandaloneViewport(root);
+      return;
+    }
     state.zoom = clamp(state.zoom, 0.5, 6);
     state.panX = clamp(state.panX, -4000, 4000);
     state.panY = clamp(state.panY, -4000, 4000);
@@ -22,6 +26,7 @@
   };
 
   const viewChanged = (root) => {
+    if (root._cfxStandaloneViewport && Object.keys(root._cfxStandaloneViewport.windows).length) return true;
     if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (polarViewportConnected(root) && nativePolarViewportChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
@@ -124,7 +129,7 @@
       source: source || '',
       viewport: getState(root),
       ...(polarViewportConnected(root) ? { nativePolarViewport: nativePolarViewport(root) } : {}),
-      nativeViewport: polarViewportConnected(root) ? null : cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
+      nativeViewport: polarViewportConnected(root) ? null : cartesianViewportConnected(root) || standaloneViewport(root) ? nativeViewportWindows(root, true)
         : connectedXViewport(root) ? { x: nativeXWindow(root) } : null,
       nativeHierarchy: hierarchyConnected(root) ? hierarchySnapshot(root) : null,
       mode: root.dataset.cfxMode || '',
@@ -169,7 +174,7 @@
     if (!nativeAccepted && snapshot.nativeViewport) {
       const captured = copyHostValue(snapshot);
       const accepted = () => applyInteractionState(root, captured, emit, sync, true);
-      if (cartesianViewportConnected(root))
+      if (cartesianViewportConnected(root) || standaloneViewport(root))
         requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
       else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
         requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
@@ -206,6 +211,7 @@
   };
   const zoomBy = (root, factor, logicalX, logicalY) => {
     if (!hasFeature(root, 'Zoom')) return;
+    if (zoomStandaloneViewport(root, factor, logicalX, logicalY)) return;
     if (connectedXViewport(root)) {
       requestXViewportZoom(root, factor, logicalX, logicalY);
       return;

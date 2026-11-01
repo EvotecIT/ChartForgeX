@@ -307,11 +307,11 @@
         .map(name => [name, source[name]]));
       requestNativePolarWindow(root, viewport, false);
     }
-    else if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
+    else if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && (cartesianViewportConnected(root) || standaloneViewport(root))) {
 
       const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
       const binding = nativePreparationBinding(root, 'viewport');
-      const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
+      const viewport = Object.fromEntries((binding?.axes || cartesianAxisNames).filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
         .map(name => [name, source[name]]));
       if (source.valueDomain !== undefined) viewport.valueDomain = source.valueDomain;
       requestNativeCartesianWindow(root, viewport, false);

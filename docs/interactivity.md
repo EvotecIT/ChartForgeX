@@ -2,7 +2,7 @@
 
 ChartForgeX keeps static SVG, PNG, and HTML output deterministic by default. Browser behavior lives in `ChartForgeX.Interactivity.Html` and is opt-in through reusable feature flags on `ChartInteractionOptions`.
 
-For static SVG on ordinary pages and reports, the much smaller [enhance runtime](enhance.md) adds the shared states, tooltips, keyboard model, legend toggles and linked views to every chart family without re-rendering, and takes family behaviours through `CfxEnhance.behaviour`. This page describes the full runtime for dashboards.
+For static SVG on ordinary pages and reports, the smaller [enhance runtime](enhance.md) adds shared states, tooltips, keyboard navigation, legend toggles and linked views without re-rendering. This page describes the interactive HTML adapter for saved reports and dashboards.
 
 The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-cfx-series-key`, `data-cfx-point`, `data-cfx-label`, `data-cfx-id`, and `data-cfx-role`. Chart families can expose their own shapes and still reuse the same hover, selection, keyboard traversal, compare tray, crosshair, lasso, focus trail, reveal label, scenario, and playback contracts.
 
@@ -40,6 +40,100 @@ Point-legend muting and isolation use the same identity rules across charts. Zer
 Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contributor arrays. Their source data remains available through the series' immutable `TrendLineSourcePoints` and `BoxPlotSourceSamples` collections. Migration: derived target IDs now include their derivation kind; use event-provided IDs instead of constructing IDs from point ordinals.
 
 Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `ConfigureRadar`.
+
+## Selecting an offline runtime
+
+Pages and fragments can include a runtime selected from their declared features:
+
+```csharp
+chart.SaveInteractiveHtml("readings.html", options => {
+    options.Runtime = HtmlChartRuntime.Standalone;
+    options.Interaction.Features = ChartInteractionFeatures.Tooltips;
+});
+```
+
+Tooltips alone select the core bundle. Adding selection, legend toggles,
+navigation or other features selects the standalone reader. Both are embedded
+in the HTML and work with the network blocked; no module fetch is needed when
+opening a saved report. `HtmlChartRuntime.Full`, the default, includes
+`ChartForgeXCharts` for controller commands, updates and native connections.
+Adaptive drawings also retain the full runtime. Use `Full` for the JavaScript
+controller examples below.
+
+The enforced JavaScript budgets include the native-text helper whenever the
+bundle needs it. They exclude the drawing, font payloads and stylesheet:
+
+| Bundle | Raw budget | Gzip budget |
+| --- | ---: | ---: |
+| Core hover/tooltips | 80 KiB | 26 KiB |
+| Standalone reader | 240 KiB | 72 KiB |
+| Full controller/native host | 300 KiB | 90 KiB |
+
+For shared external assets, pass the same runtime and feature union to
+`HtmlInteractiveAssetFiles.Charts(runtime, features)` as to the page options.
+
+## Standalone report viewports
+
+A saved interactive HTML page can navigate numeric Cartesian Line, Bar, Area,
+Scatter and Candlestick charts without a server or a `connectNative` callback.
+The HTML adapter keeps the source coordinates and reprojects the captured data
+ink into the fixed plot rectangle. Window changes regenerate axis ticks and
+clip data at the plot boundary while keeping the chart frame, marker sizes,
+stroke widths and axis text at their drawing size.
+
+Enable the controls when generating the page:
+
+```csharp
+chart.SaveInteractiveHtml("measurements.html", options => {
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom
+        | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush);
+    options.XNavigation.Enabled = true;
+    options.IncludeContextMenu = true;
+});
+```
+
+The existing controller API also accepts source-coordinate windows directly:
+
+```javascript
+const controller = ChartForgeXCharts.mount(
+    document.querySelector('.cfx-interactive-chart'));
+controller.setXWindow(2, 10);
+controller.setYWindow(20, 80);
+controller.setViewport({
+    x: { minimum: 3, maximum: 9 },
+    y: { minimum: 25, maximum: 75 }
+});
+console.log(controller.getViewport());
+```
+
+Use windows within the captured full domain. Zoom buttons change the X window;
+the wheel zooms around the pointer, and Shift-wheel targets Y. A two-finger
+pinch zooms X and Y around the gesture center. Pan mode moves
+the window within the captured domain. With both Brush and Zoom enabled, a
+rectangular brush becomes an X/Y window. Reset restores the captured full
+domain. Legend toggles rescale the value axis to the remaining visible series;
+bar and area views retain zero in their value domain.
+
+Standalone projection reuses the saved drawing and its captured observations.
+It cannot fetch additional data or rerun native layout. The supported scope here
+is vertical Cartesian charts with numeric linear axes and the five families
+above. Other chart families, horizontal orientation, time-session formatting,
+logarithmic/secondary-axis parity and native annotation layout require their
+own validation or a connected native preparation path. Mixing an unsupported
+series family into a chart does not establish standalone viewport support.
+
+A native connection remains the path for regenerating a prepared scene in C#,
+including native tick formatting and layout policies. It takes precedence over
+standalone projection. Static SVG and PNG rendering keep their existing behavior.
+The two paths share controller commands, but a saved browser projection is not
+a native preparation result.
+
+`HtmlCrosshairExamples.CreatePage` generates gallery pages containing a navigator,
+the context menu and the annotation editor together. The navigator and context
+menu use their existing HTML options. `controller.editAnnotations()` opens the
+editor; committing annotation changes still requires a native annotation
+connection. The saved example leaves those editing actions unavailable and
+shows the connection requirement.
 
 ## HTML font delivery
 
@@ -785,7 +879,7 @@ These commands preserve the same host events, deep-link updates, synchronized ch
 
 ## Exporting interactive charts
 
-Enable `ChartInteractionFeatures.Export` to offer SVG and PNG downloads. Both export the committed native scene, including an accepted connected X window. Downloads retain selection, legend mute/isolation and resolved host colors. Hover emphasis, focus outlines and focus trails stay in the browser; standalone geometric zoom and pan do not change the exported native canvas.
+Enable `ChartInteractionFeatures.Export` to offer SVG and PNG downloads. Both export the current SVG drawing, including a supported standalone data window or an accepted native window. Downloads retain selection, legend mute/isolation and resolved host colors. Hover emphasis, focus outlines and focus trails stay in the browser. The legacy whole-SVG CSS transform used by other families is omitted from downloads.
 
 SVG downloads keep editable, searchable text and the resolved presentation needed to display the chart without the adapter stylesheet or runtime. A host still supplies the fonts used to display that text. PNG downloads build a separate detached SVG composition at the device pixel ratio. For captured monochrome outline faces, that composition uses the native preparation's shaped glyphs and face instances, including registered fallback and variation choices. It does not look up a font by family again or fetch a font file. Repeated glyph geometry at the same captured size and italic policy is shared within that composition; ordinary Core `ToSvg` and `ToPng` output is unchanged.
 
@@ -797,7 +891,7 @@ In `Browser` mode, colour glyphs, embedded bitmap strikes, built-in tiny fallbac
 
 ## State Bookmarks
 
-Standalone zoom and pan controls transform the complete rendered SVG, including its axes and labels. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+Supported standalone Cartesian charts capture source-coordinate windows in bookmarks and restore them through the same projection path as the navigation controls. Other families retain the legacy whole-SVG CSS zoom and pan. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
 
 ## Translated controls and text direction
 

@@ -24,6 +24,16 @@ public static class HtmlInteractiveAssetFiles {
     /// <summary>Gets the runtime used by interactive chart and dashboard pages.</summary>
     public static HtmlAssetFile ChartScript => ChartScriptFile.Value;
 
+    /// <summary>Gets the runtime matching an offline reader's declared features or the full host API contract.</summary>
+    /// <param name="runtime">The runtime contract required by the page.</param>
+    /// <param name="features">The union of interaction features declared by its charts.</param>
+    /// <param name="adaptive">Whether any chart uses separately prepared adaptive drawings.</param>
+    /// <returns>A content-addressed script file suitable for shared assets.</returns>
+    public static HtmlAssetFile ChartScriptFor(HtmlChartRuntime runtime,
+        ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive = false) =>
+        runtime == HtmlChartRuntime.Full ? ChartScript
+            : new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive));
+
     /// <summary>Gets the shared binary font registration and captured-text export adapter without loading a chart runtime.</summary>
     public static HtmlAssetFile NativeTextScript => NativeTextScriptFile.Value;
 
@@ -50,6 +60,15 @@ public static class HtmlInteractiveAssetFiles {
 
     /// <summary>Returns the files referenced by interactive chart and dashboard pages.</summary>
     public static IReadOnlyList<HtmlAssetFile> Charts() => new[] { ChartStyle, ChartScript };
+
+    /// <summary>Returns the shared files matching a page's declared runtime and chart features.</summary>
+    /// <param name="runtime">The same runtime contract used to render the page.</param>
+    /// <param name="features">The union of interaction features declared by its charts.</param>
+    /// <param name="adaptive">Whether any chart uses separately prepared adaptive drawings.</param>
+    /// <returns>The stylesheet and matching runtime to write to the shared asset directory.</returns>
+    public static IReadOnlyList<HtmlAssetFile> Charts(HtmlChartRuntime runtime,
+        ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive = false) =>
+        new[] { ChartStyle, ChartScriptFor(runtime, features, adaptive) };
 
     /// <summary>Returns the files referenced by graph explorer pages.</summary>
     public static IReadOnlyList<HtmlAssetFile> GraphExplorer() => new[] { GraphExplorerStyle, GraphExplorerScript };

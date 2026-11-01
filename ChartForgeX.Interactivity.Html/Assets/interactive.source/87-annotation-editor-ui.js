@@ -20,6 +20,7 @@
         || kind === 'undo' && (!!state.draft || state.undo.length === 0) || kind === 'redo' && (!!state.draft || state.redo.length === 0);
 
       view.buttons.cancel.disabled = admissionBusy || !state.draft && !state.pending;
+      view.buttons.close.disabled = admissionBusy;
       view.label.disabled = state.pending || admissionBusy || !state.draft?.drawing;
       view.label.value = state.draft?.drawing?.label ?? '';
       view.status.textContent = !connected ? uiText(root, 'AnnotationDisconnected', 'Connect native preparation to edit annotations.') : state.pending ? uiText(root, 'AnnotationUpdating', 'Updating annotation…') : state.error

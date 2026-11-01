@@ -63,10 +63,14 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>
     /// Gets or sets shared asset references. When set, <see cref="HtmlInteractiveChartRenderer.RenderPage(ChartForgeX.Core.Chart, System.Action{HtmlChartInteractionOptions})"/>
     /// links the runtime and stylesheet from <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them; write the
-    /// files once per bundle with <see cref="HtmlInteractiveAssetFiles.Charts"/>. Null (the default) keeps pages self-contained.
+    /// files once per bundle with <see cref="HtmlInteractiveAssetFiles.Charts()"/>, or its runtime/features overload
+    /// when using <see cref="HtmlChartRuntime.Standalone"/>. Null (the default) keeps pages self-contained.
     /// Fragments are unaffected.
     /// </summary>
     public HtmlAssetReferences? ExternalAssets { get; set; }
+
+    /// <summary>Gets or sets whether output includes native host APIs or a feature-selected offline reader runtime.</summary>
+    public HtmlChartRuntime Runtime { get; set; } = HtmlChartRuntime.Full;
 
     /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }

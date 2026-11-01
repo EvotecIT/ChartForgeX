@@ -8,6 +8,7 @@
       if (event.key === 'Escape') cancelNativePreparation(chartLifetimes.get(root));
     }, true);
     applyRenderedTargetContract(root);
+    bindStandaloneGestures(root);
     bindLegendOverflow(root);
     bindXNavigation(root);
     bindHierarchyNavigation(root);
@@ -242,11 +243,23 @@
       listenChart(root, stage, 'wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         const point = logicalChartPointer(root, event);
+        if (standaloneViewport(root)) {
+          const plot = root._cfxDataProjection.plotBounds;
+          if (!point || point.x < plot.x || point.x > plot.x + plot.width || point.y < plot.y || point.y > plot.y + plot.height || !event.deltaY) return;
+          event.preventDefault();
+          zoomStandaloneViewport(root, event.deltaY < 0 ? 1.08 : 1 / 1.08, point.x, point.y, event.shiftKey ? ['y'] : ['x']);
+          return;
+        }
         if (polarViewportConnected(root) ? !event.deltaY || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || !polarPointer(root, point) : connectedXViewport(root) && !chartXProjection(root)) return;
         event.preventDefault();
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92, point?.x, point?.y);
       }, { passive: false });
       let drag = null;
+      root._cfxCancelStandaloneDrag = () => {
+        cancelPointerMove();
+        if (drag && stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
+        drag = null;
+      };
       let pointerFrame = 0, pendingPointerMove = null;
       const cancelPointerMove = () => {
         if (pointerFrame) cancelAnimationFrame(pointerFrame);
@@ -291,6 +304,7 @@
         drag = null;
         delete root._cfxCancelBrushDrag;
         delete root._cfxCancelPointerHover;
+        delete root._cfxCancelStandaloneDrag;
       });
       listenChart(root, capturedPolarProjection(root) ? root.ownerDocument : root, 'keydown', event => {
         if (event.key !== 'Escape' || drag?.mode !== 'polar-pan') return;
@@ -360,6 +374,7 @@
         } else if (drag.mode === 'native-pan') {
           requestNativeViewportPan(root, drag.deltaX, drag.deltaY);
         } else if (drag.mode === 'brush' && brush) {
+          const zoomRange = standaloneViewport(root) && hasFeature(root, 'Zoom') ? standaloneBrushWindow(root, brush.getBoundingClientRect()) : null;
           const dataRange = finishBrushSelection(root, stage, brush);
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
@@ -373,6 +388,7 @@
           if (boxTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush,
             targets: selectedTargets(root), previousTargets, replace: replaceSelection });
           publishCompare(root, false);
+          if (zoomRange) { requestStandaloneWindow(root, zoomRange); brush.hidden = true; }
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });
@@ -411,7 +427,7 @@
         requestNativeHierarchy(root, null); return;
       }
       if ((polarViewportConnected(root) && (nativePolarViewportChanged(root) || nativeSeriesVisibilityChanged(root) || chartLifetimes.get(root)?.preparationPending || nativePreparationBackpressureBusy(root)))
-        || connectedXViewport(root) && chartXProjection(root) && (nativeViewportChanged(root) || nativeSeriesVisibilityChanged(root) || chartLifetimes.get(root)?.preparationPending || nativePreparationBackpressureBusy(root))) {
+        || nativePreparationBinding(root, 'viewport') && chartXProjection(root) && (nativeViewportChanged(root) || nativeSeriesVisibilityChanged(root) || chartLifetimes.get(root)?.preparationPending || nativePreparationBackpressureBusy(root))) {
         requestViewportReset(root);
         return;
       }
@@ -422,7 +438,7 @@
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });
-      emitSync(root, { action: 'viewport', state: getState(root) });
+      emitSync(root, { action: 'viewport', state: getState(root), ...(standaloneViewport(root) ? { viewport: nativeViewportWindows(root, true) } : {}) });
       const previousSelection = selectionSignature(root);
       clearSelections(root);
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));

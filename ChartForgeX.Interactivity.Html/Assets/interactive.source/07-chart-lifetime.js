@@ -61,6 +61,7 @@
     root.querySelectorAll('[data-cfx-label-for],[data-cfx-point]').forEach(node => {
       delete node._cfxLabelTarget; delete node._cfxPointLabels;
     });
+    releaseStandaloneViewport(root);
     for (const key of Object.keys(root)) if (key.startsWith('_cfx')) delete root[key];
     root.removeAttribute('data-cfx-runtime-bound');
   };

@@ -50,7 +50,8 @@ public sealed class HtmlInteractiveDashboardRenderer {
 
         writer.EndElement().Line()
             .EndElement().Line();
-        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
+        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
+            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive);
         return writer.Build();
     }
 

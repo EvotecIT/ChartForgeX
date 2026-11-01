@@ -67,6 +67,7 @@
   const nativeSourceWindow = window => Object.freeze({ minimum: window.minimum, maximum: window.maximum,
     ...(window.maximumInclusive === false ? { maximumInclusive: false } : {}) });
   const requestNativeCartesianWindow = (root, viewport, sync = true, accepted) => {
+    if (!nativePreparationBinding(root, 'viewport') && standaloneViewport(root)) return requestStandaloneWindow(root, viewport, sync, accepted);
     if (!cartesianViewportConnected(root) || !viewport || typeof viewport !== 'object'
       || Object.keys(viewport).some(name => name !== 'valueDomain' && !cartesianAxisNames.includes(name))) return false;
     const axes = cartesianAxisNames.filter(name => viewport[name]);
@@ -78,6 +79,7 @@
     return requestCartesianViewport(root, { kind: 'window', axes: Object.freeze(axes), sourceViewport, valueDomain }, sync, accepted);
   };
   const requestViewportReset = root => {
+    if (!nativePreparationBinding(root, 'viewport') && resetStandaloneViewport(root)) return true;
     if (nativePreparationBinding(root, 'viewport')?.coordinateSystem === 'polar') return requestPolarViewportReset(root);
     if (!cartesianViewportConnected(root)) return requestXViewport(root, 'reset');
     const axes = cartesianAxisNames.filter(name => chartAxisProjection(root, name));
@@ -95,6 +97,7 @@
     });
   };
   const requestNativeViewportPan = (root, deltaX, deltaY) => {
+    if (!nativePreparationBinding(root, 'viewport') && panStandaloneViewport(root, deltaX, deltaY)) return;
     const plot = chartXProjection(root)?.plotBounds, binding = nativePreparationBinding(root, 'viewport');
     if (!plot || !binding) return;
     if (binding.legacy) { if (Math.abs(deltaX) > .5) requestXViewport(root, 'pan', plot.x - deltaX, plot.x + plot.width - deltaX); return; }

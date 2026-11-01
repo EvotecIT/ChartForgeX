@@ -12,6 +12,9 @@ public sealed class HtmlInteractiveDashboardOptions {
     private string? _scriptNonce;
     private int _columns = 2;
 
+    /// <summary>Gets or sets whether the dashboard includes native host APIs or a feature-selected offline reader runtime.</summary>
+    public HtmlChartRuntime Runtime { get; set; } = HtmlChartRuntime.Full;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HtmlInteractiveDashboardOptions"/> class.
     /// </summary>
@@ -52,7 +55,8 @@ public sealed class HtmlInteractiveDashboardOptions {
 
     /// <summary>
     /// Gets or sets shared asset references. When set, the page links the chart runtime and stylesheet from
-    /// <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them (see <see cref="HtmlInteractiveAssetFiles.Charts"/>).
+    /// <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them (see <see cref="HtmlInteractiveAssetFiles.Charts()"/>
+    /// or its runtime/features overload for standalone dashboards).
     /// </summary>
     public HtmlAssetReferences? ExternalAssets { get; set; }
 

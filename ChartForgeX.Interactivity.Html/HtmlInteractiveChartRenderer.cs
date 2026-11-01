@@ -37,7 +37,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
-        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
+        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
+            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive);
         return writer.Build();
     }
 
@@ -69,7 +70,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Line()
             .StartElement("script")
             .Attribute("nonce", options.ScriptNonce)
-            .RawTrusted(HtmlInteractiveAssets.Script)
+            .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.Interaction.Features,
+                options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive))
             .EndElement();
         return writer.Build();
     }
