@@ -23,6 +23,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       build: ${{ steps.plan.outputs.build }}
+      standalone: ${{ steps.plan.outputs.standalone }}
     steps:
       - name: Checkout complete PR history
         uses: actions/checkout@v7
@@ -40,6 +41,7 @@ jobs:
           const {execFileSync} = require('node:child_process');
           const {appendFileSync} = require('node:fs');
           let build = true;
+          let standalone = true;
           if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
             const {BASE_SHA: base, HEAD_SHA: head} = process.env;
             if (![base, head].every(sha => /^[0-9a-f]{40}$/.test(sha || ''))) {
@@ -62,9 +64,11 @@ jobs:
               return /^[^/]+\.md$/i.test(path);
             };
             build = paths.length === 0 || !paths.every(documentation);
+            standalone = paths.some(path => /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/(StandaloneViewportBrowserTests[^/]*|InteractiveBundleTests\.cs)$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
             console.log(`Compared ${paths.length} PR paths; build/test required: ${build}`);
           }
           appendFileSync(process.env.GITHUB_OUTPUT, `build=${build}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `standalone=${standalone}\n`);
           NODE
 
   quality-gates:
@@ -91,6 +95,7 @@ jobs:
           BUILD_REQUIRED: ${{ needs.changes.outputs.build }}
           WORK_RESULT: ${{ needs[matrix.job].result }}
           COMPATIBILITY_RESULT: ${{ needs.browser-compatibility.result }}
+          STANDALONE_REQUIRED: ${{ needs.changes.outputs.standalone }}
         shell: bash
         run: |
           test "$CHANGES_RESULT" = success || { echo 'Coverage selection failed.'; exit 1; }
@@ -101,7 +106,7 @@ jobs:
             echo 'Coverage selection did not return a valid decision.'; exit 1
           else
             test "$WORK_RESULT" = success || { echo "Selected coverage failed: $WORK_RESULT"; exit 1; }
-            if [ "$GITHUB_EVENT_NAME" != pull_request ]; then
+            if [ "$GITHUB_EVENT_NAME" != pull_request ] || [ "$STANDALONE_REQUIRED" = true ]; then
               test "$COMPATIBILITY_RESULT" = success || { echo 'macOS browser coverage failed.'; exit 1; }
             fi
           fi
@@ -333,7 +338,7 @@ jobs:
   browser-compatibility:
     name: Browser compatibility (macOS ${{ matrix.name }})
     needs: changes
-    if: needs.changes.outputs.build == 'true' && github.event_name != 'pull_request'
+    if: needs.changes.outputs.build == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.standalone == 'true')
     runs-on: macos-latest
     # Includes setup, all 950 serial Compatibility rows and artifact retention.
     # Firefox was still producing captures when the previous 90-minute envelope expired.
@@ -361,7 +366,17 @@ jobs:
             8.0.x
       - name: Execute ${{ matrix.name }} contracts
         shell: pwsh
-        run: ./Build/Test-BrowserCompatibility.ps1 -Browser ${{ matrix.browser }} -OutputRoot (Join-Path $env:RUNNER_TEMP 'chartforgex-${{ matrix.browser }}')
+        env:
+          FOCUSED_STANDALONE: ${{ github.event_name == 'pull_request' }}
+        run: |
+          $options = @{
+              Browser = '${{ matrix.browser }}'
+              OutputRoot = Join-Path $env:RUNNER_TEMP 'chartforgex-${{ matrix.browser }}'
+          }
+          if ($env:FOCUSED_STANDALONE -eq 'true') {
+              $options.Filter = 'Category=Browser&(FullyQualifiedName~StandaloneViewportBrowserTests|FullyQualifiedName~InteractiveBundleTests)'
+          }
+          ./Build/Test-BrowserCompatibility.ps1 @options
       - name: Retain compatibility evidence
         if: always()
         uses: actions/upload-artifact@v7

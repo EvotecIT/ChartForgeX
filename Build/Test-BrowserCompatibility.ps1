@@ -7,6 +7,8 @@ The existing HtmlTinkerX engine to qualify. Chromium's complete interaction suit
 An absolute task-owned directory for results and rendered evidence.
 .PARAMETER SkipBuild
 Uses a previously built Release test assembly.
+.PARAMETER Filter
+Selects a focused set of browser contracts. The default runs the complete compatibility suite.
 #>
 [CmdletBinding()]
 param(
@@ -17,7 +19,10 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $OutputRoot,
 
-    [switch] $SkipBuild
+    [switch] $SkipBuild,
+
+    [ValidateNotNullOrEmpty()]
+    [string] $Filter = 'Category=Browser&BrowserSuite=Compatibility'
 )
 
 # Product-specific compatibility contracts; HtmlTinkerX owns browser installation and lifetime.
@@ -66,7 +71,7 @@ try {
     # Each contract owns a real browser. Keep macOS GPU sessions sequential;
     # concurrent WebKit workers can exhaust the hosted runner's WebGL resources.
     $runSettings = if ($IsMacOS) { 'browser-macos.runsettings' } else { 'browser.runsettings' }
-    dotnet test $project -c Release --no-build --no-restore --filter 'Category=Browser&BrowserSuite=Compatibility' `
+    dotnet test $project -c Release --no-build --no-restore --filter $Filter `
         --settings (Join-Path $PSScriptRoot $runSettings) --logger 'console;verbosity=normal' --logger 'trx;LogFileName=compatibility.trx' --results-directory $results
     if ($LASTEXITCODE) {
         throw "Required $Browser compatibility contracts failed. See $output."
