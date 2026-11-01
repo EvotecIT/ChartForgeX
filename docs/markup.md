@@ -229,7 +229,7 @@ series Incidents type bar color #EF4444 values 3 4 2
 ```
 ````
 
-Or with a review-friendly table. The first label/category column becomes the x-axis; each numeric column becomes a named series:
+Or with a review-friendly table. The first label/category column becomes the x-axis; each numeric column becomes a named series. A column named `value` selects the default single-value form and accepts only `label`, `category`, or `name` alongside it; additional columns are errors. For several series, use names such as `Actual` and `Budget`:
 
 ````markdown
 ```chartforgex chart v1 {#quarterly title="Quarterly Trend" type="line"}
@@ -271,7 +271,7 @@ Annotation commands also accept `id:<source-id>` or `id=<source-id>`. IDs use th
 
 The parser maps the fence to a `VisualArtifact` with `VisualArtifactKind.Chart` and a typed `Chart` model. Static SVG/PNG/HTML export remains deterministic and script-free.
 
-Numeric tables require a value in every series column for each category row. Blank or omitted cells produce a diagnostic instead of moving later values onto earlier categories. Use either default `values`/`value` data or named numeric series in one chart. Heatmap rows cannot be mixed with other kinds, and members of a stack must all use source units or all use percentage normalization.
+Tables reject duplicate fields, competing label/key columns and surplus row cells; typed and options tables also reject unknown headers. Numeric tables require a value in every series column for each category row. Blank or omitted cells produce a diagnostic instead of moving later values onto earlier categories. Use either default `values`/`value` data or named numeric series in one chart. Heatmap rows cannot be mixed with other kinds, and members of a stack must all use source units or all use percentage normalization.
 
 ### Stacks, Heatmaps And Gauges
 

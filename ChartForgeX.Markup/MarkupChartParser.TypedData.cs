@@ -80,7 +80,10 @@ public sealed partial class MarkupChartParser {
         string section, List<string>? headers, string line, int number) {
         var cells = SplitTableCells(line);
         if (cells.Count == 0 || IsTableSeparator(cells)) return headers;
-        if (headers == null) return cells;
+        if (headers == null) {
+            ValidateTableHeaders(result, section, cells, number);
+            return cells;
+        }
         try {
             var row = Row(headers, cells);
             if (section == "candles") {

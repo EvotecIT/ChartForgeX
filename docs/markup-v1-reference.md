@@ -128,6 +128,8 @@ The supported presets are `Graphite`, `Report`, `Executive`, `Product`, `Accessi
 
 The parser constructs native ChartForgeX series and typed records, preserving the native financial, hierarchy, relationship and gauge validation contracts. Invalid numeric values, unsupported types or themes, malformed commands, incompatible data declarations, duplicate IDs, unresolved references and invalid native models produce `MarkupDiagnostic` entries. Parsing errors identify their source command or table row; whole-chart validation can use the opening fence line. Hosts must inspect `HasErrors` and `Diagnostics` before exporting artifacts. The schema mirrors and TextMate grammar support authoring; they do not validate native data or replace runtime diagnostics.
 
+Numeric tables with a `value` column use the default single-value form. Only `label`, `category`, or `name` columns may accompany it; extra columns produce a located diagnostic. Use named columns such as `Actual` and `Budget`, without `value`, for multiple series. Typed and options tables reject unknown headers so misspelled fields cannot discard authored facts. Tables also reject duplicate fields, competing label/key columns and surplus row cells. Empty optional typed cells remain supported.
+
 ## Timeline
 
 `chartforgex timeline v1` produces a `Chart` wrapped as `VisualArtifactKind.Timeline`.

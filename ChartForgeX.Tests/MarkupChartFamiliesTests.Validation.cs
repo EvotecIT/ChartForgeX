@@ -7,6 +7,17 @@ namespace ChartForgeX.Tests;
 public sealed partial class MarkupChartFamiliesTests {
     private static readonly IReadOnlyDictionary<string, (string Source, int Line)> InvalidRows =
         new Dictionary<string, (string, int)> {
+            ["numeric-table-extra-cell"] = ("type gauge\n| label | value |\n| Reading | 10 | 20 |", 3),
+            ["series-table-extra-cell"] = ("type heatmap\n| label | Actual | Budget |\n| Reading | 10 | 20 | 30 |", 3),
+            ["typed-table-extra-cell"] = ("type treemap\nitems:\n| id | label | value |\n| a | Leaf | 2 | 3 |\nend", 4),
+            ["relationship-table-extra-cell"] = ("type sankey\nnode a A\nnode b B\nflows:\n| id | source | target | value |\n| ab | a | b | 1 | 2 |\nend", 6),
+            ["numeric-table-duplicate-header"] = ("type gauge\n| label | value | VALUE |\n| Reading | 10 | 20 |", 2),
+            ["typed-table-duplicate-header"] = ("type candlestick\ncandles:\n| x | open | high | low | close | CLOSE |\n| 1 | 10 | 15 | 8 | 12 | 13 |\nend", 3),
+            ["numeric-table-competing-labels"] = ("type line\n| label | category | value |\n| January | February | 10 |", 2),
+            ["options-table-duplicate-header"] = ("type gauge\nvalues 10\noptions:\n| option | value | VALUE |\n| gaugeMaximum | 20 | 30 |\nend", 4),
+            ["options-table-competing-keys"] = ("type gauge\nvalues 10\noptions:\n| option | key | value |\n| gaugeMinimum | gaugeMaximum | 0 |\nend", 4),
+            ["options-table-unknown-column"] = ("type gauge\nvalues 10\noptions:\n| option | value | gaugeMaximum |\n| gaugeMinimum | 0 | 200 |\nend", 4),
+            ["options-table-extra-cell"] = ("type gauge\nvalues 10\noptions:\n| option | value |\n| gaugeMaximum | 20 | 30 |\nend", 5),
             ["candle-impossible-date"] = ("type candlestick\ncandle 2026-02-30 10 15 8 12", 2),
             ["candle-mixed-coordinate-kinds"] = ("type candlestick\ncandle 2026-06-01 10 15 8 12\ncandle 2 12 16 9 14", 3),
             ["candle-table-mixed-coordinate-kinds"] = ("type ohlc\ncandles:\n| x | open | high | low | close |\n| 1 | 10 | 15 | 8 | 12 |\n| 2026-06-08 | 12 | 16 | 9 | 14 |\nend", 5),
@@ -23,6 +34,10 @@ public sealed partial class MarkupChartFamiliesTests {
             ["item-negative-size"] = ("type treemap\nitem a A value=-1", 2),
             ["item-nonfinite-color"] = ("type treemap\nitem a A value=2 colorValue=NaN", 2),
             ["item-unknown-attribute"] = ("type treemap\nitem a A value=2 ignored=3", 2),
+            ["item-table-unknown-parent-column"] = ("type treemap\nitems:\n| id | label | value | Parent ID |\n| a | Leaf | 2 | root |\nend", 3),
+            ["candle-table-unknown-column"] = ("type candlestick\ncandles:\n| x | open | high | low | close | volume |\n| 1 | 10 | 15 | 8 | 12 | 20 |\nend", 3),
+            ["node-table-unknown-column"] = ("type sankey\nnodes:\n| id | label | group |\n| a | A | Left |\n| b | B | Right |\nend\nflow ab a b 1", 3),
+            ["flow-table-unknown-color-column"] = ("type sankey\nnode a A\nnode b B\nflows:\n| id | source | target | value | color amount |\n| ab | a | b | 1 | 5 |\nend", 5),
             ["item-table-missing-id"] = ("type treemap\nitems:\n| id | label | value |\n| | Leaf | 2 |\nend", 4),
             ["item-table-missing-parent"] = ("type treemap\nitems:\n| id | label | parent | value |\n| a | Leaf | missing | 2 |\nend", 4),
             ["node-duplicate-id"] = ("type sankey\nnode a A\nnode a Again\nnode b B\nflow ab a b 1", 3),
@@ -174,6 +189,19 @@ public sealed partial class MarkupChartFamiliesTests {
             AssertLocatedError(source, 5);
             AssertLocatedError("Introduction\n\n" + Fence(source), 8);
         }
+    }
+
+    [Theory]
+    [InlineData("gauge")]
+    [InlineData("lineargauge")]
+    [InlineData("heatmap")]
+    [InlineData("percentstackedbar")]
+    [InlineData("line")]
+    public void ReservedValueTablesRejectAdditionalColumnsInsteadOfDiscardingObservations(string family) {
+        ParseChart("type " + family + "\n| label | value |\n| Reading | 10 |");
+        var source = "type " + family + "\n| label | value | Budget |\n| Reading | 10 | 20 |";
+        AssertLocatedError(source, 2);
+        AssertLocatedError("Introduction\n\n" + Fence(source), 5);
     }
 
     [Theory]

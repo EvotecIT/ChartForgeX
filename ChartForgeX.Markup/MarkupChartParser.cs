@@ -282,59 +282,6 @@ public sealed partial class MarkupChartParser {
         }
     }
 
-    private static List<string>? ParseTableLine(MarkupParseResult<MarkupChartDocument> result, ChartState state, List<string>? headers, string line, int lineNumber) {
-        var cells = SplitTableCells(line);
-        if (cells.Count == 0) return headers;
-        if (IsTableSeparator(cells)) return headers;
-        if (headers == null) return new List<string>(cells);
-
-        try {
-            var row = Row(headers, cells);
-            if (row.ContainsKey("value")) {
-                var label = Value(row, "label", Value(row, "category", Value(row, "name", string.Empty)));
-                var value = Required(row, "value");
-                state.Labels.Add(label);
-                state.Values.Add(ParseDouble(value));
-            } else {
-                var labelIndex = FindHeader(headers, "label", "category", "name");
-                if (labelIndex < 0) labelIndex = FindFirstNonNumericCell(cells);
-                if (labelIndex < 0) throw new ArgumentException("Multi-series chart tables require at least one non-numeric label column.");
-                var label = labelIndex < cells.Count ? cells[labelIndex] : string.Empty;
-                state.Labels.Add(label);
-                for (var i = 0; i < headers.Count; i++) {
-                    if (i == labelIndex) continue;
-                    if (i >= cells.Count || string.IsNullOrWhiteSpace(cells[i]))
-                        throw new ArgumentException("Chart table row requires a numeric value for series '" + headers[i] + "'.");
-                    var series = GetOrAddSeries(state, headers[i]);
-                    series.Values.Add(ParseDouble(cells[i]));
-                }
-            }
-        } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
-            Add(result, lineNumber, MarkupDiagnosticSeverity.Error, ex.Message);
-        }
-
-        return headers;
-    }
-
-    private static List<string>? ParseOptionTableLine(MarkupParseResult<MarkupChartDocument> result, ChartState state, List<string>? headers, string line, int lineNumber) {
-        var cells = SplitTableCells(line);
-        if (cells.Count == 0) return headers;
-        if (IsTableSeparator(cells)) return headers;
-        if (headers == null) return new List<string>(cells);
-
-        var row = Row(headers, cells);
-        try {
-            var key = Value(row, "option", Value(row, "key", Value(row, "name", string.Empty)));
-            var value = Value(row, "value", string.Empty);
-            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Chart options table requires an 'option' or 'key' column.");
-            ParseChartOption(result, state, key, value, lineNumber);
-        } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
-            Add(result, lineNumber, MarkupDiagnosticSeverity.Error, ex.Message);
-        }
-
-        return headers;
-    }
-
     private static void ParseChartOptionLine(MarkupParseResult<MarkupChartDocument> result, ChartState state, string line, int lineNumber) {
         var tokens = Tokenize(line);
         if (tokens.Count == 0) return;
@@ -451,30 +398,6 @@ public sealed partial class MarkupChartParser {
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
             Add(result, lineNumber, MarkupDiagnosticSeverity.Error, ex.Message);
         }
-    }
-
-    private static int FindHeader(List<string> headers, params string[] names) {
-        for (var index = 0; index < headers.Count; index++) {
-            for (var nameIndex = 0; nameIndex < names.Length; nameIndex++) {
-                if (NormalizeKey(headers[index]) == NormalizeKey(names[nameIndex])) return index;
-            }
-        }
-
-        return -1;
-    }
-
-    private static int FindFirstNonNumericCell(List<string> cells) {
-        for (var index = 0; index < cells.Count; index++) {
-            if (!double.TryParse(cells[index], NumberStyles.Float, CultureInfo.InvariantCulture, out _)) return index;
-        }
-
-        return -1;
-    }
-
-    private static Dictionary<string, string> Row(List<string> headers, List<string> cells) {
-        var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < headers.Count && i < cells.Count; i++) row[NormalizeKey(headers[i])] = cells[i];
-        return row;
     }
 
     private static string Required(Dictionary<string, string> values, string key) {
