@@ -199,7 +199,7 @@ public sealed class PyramidGeometryTests {
         Assert.Equal(chart.Series[0].PointColors[0], Marks(prepared.Scene)[0].Fill);
         Assert.Equal(ChartColor.FromHex("#B14091"), prepared.Scene.Nodes.OfType<VisualSceneText>().First(text => text.Role == "pyramid-label").Color);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "pyramid-label"), text => Assert.True(text.Text.Size >= 10));
-        Assert.Contains(prepared.Regions, region => region.Role == "pyramid-label" && region.Label == "Stage 0: Complete");
+        Assert.Contains(prepared.Regions, region => region.Role == "pyramid-label" && region.Label == "Complete");
         var artifact = prepared.ToArtifact("pyramid", VisualArtifactKind.Chart);
         Assert.Contains("data-cfx-value-encoding=\"area\"", artifact.ToSvg());
         Assert.Contains("data-cfx-value=\"50\"", artifact.ToHtmlPage());

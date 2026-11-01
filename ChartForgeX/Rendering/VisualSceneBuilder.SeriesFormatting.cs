@@ -30,7 +30,8 @@ internal sealed partial class VisualSceneBuilder {
                     && int.TryParse(point, NumberStyles.None, CultureInfo.InvariantCulture, out var displayed)) observation = displayed;
                 if (!authored) continue;
                 tooltip = series.PreparedTooltip(observation);
-                label = series.PreparedLabel(observation);
+                // Existing point-label semantics belong to the family and its native replay plan.
+                label = observation < series.CapturedLabels.Count ? series.CapturedLabels[observation] : null;
             }
             if (tooltip == null && label == null) continue;
             var metadata = new Dictionary<string, string>();
