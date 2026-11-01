@@ -33,24 +33,10 @@ internal static partial class VisualScheduleCompiler {
             var end = new ChartPoint(target.Left - terminal, target.Top + target.Height / 2);
             var commands = DependencyRoute(start, end, plot, slot, arrow, DependencyStubLength(context, arrow),
                 DependencyClearance(context), halfStroke, surfaces);
-            if (end.X > start.X && target.Top > source.Bottom) {
-                foreach (var fraction in new[] { .5, 0d, 1d }) {
-                    var x = start.X + (end.X - start.X) * fraction;
-                    var forward = new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(x, start.Y),
-                        ChartPathCommand.LineTo(x, end.Y), ChartPathCommand.LineTo(end.X, end.Y) };
-                    if (!DependencyPaintFits(forward, surfaces, plot, halfStroke)) continue;
-                    commands = forward; break;
-                }
-            }
             var topApproach = false;
-            if (target.Left <= source.Right + DependencyClearance(context) * 2 && target.Top > source.Bottom) {
-                var topInset = Math.Max(arrow, Math.Min(context.Theme.BarRadius, Math.Min(target.Width, target.Height) / 2));
-                var topEnd = new ChartPoint(item.Milestone ? target.X + target.Width / 2
-                    : Math.Min(target.Right - topInset, Math.Max(start.X + arrow, target.Left + topInset)), target.Top - terminal);
-                var forward = new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(topEnd.X, start.Y), ChartPathCommand.LineTo(topEnd.X, topEnd.Y) };
-                if (topEnd.X >= start.X && DependencyPaintFits(forward, surfaces, plot, halfStroke)) {
-                    commands = forward; end = topEnd; topApproach = true;
-                }
+            if (ForwardDependencyRoute(source, target, previous.Milestone, item.Milestone, plot, surfaces,
+                arrow, halfStroke, terminal, DependencyClearance(context), context.Theme.BarRadius) is { } forward) {
+                commands = forward.Route; start = forward.Start; end = forward.End; topApproach = true;
             }
             var arrowCommands = new[] { ChartPathCommand.MoveTo(end.X - arrow, end.Y - arrow), ChartPathCommand.LineTo(end.X, end.Y),
                 ChartPathCommand.LineTo(topApproach ? end.X + arrow : end.X - arrow, topApproach ? end.Y - arrow : end.Y + arrow) };
