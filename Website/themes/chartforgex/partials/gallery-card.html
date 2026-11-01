@@ -1,7 +1,8 @@
 {{~ ## One card that opens the viewer dialog (gallery-dialog.html): the gallery and the home preview. Set item (and optionally keys and hollow, by category) before including it. Optional item fields: id,
      note (a line under the title, also shown in the viewer), thumbWidth, thumbHeight and thumbSizes (default a
      400 x 280 thumbnail), full and darkFull (the full-size file the viewer links), alt (the viewer's alt text) and
-     tabs (JSON line ranges of the source, [{"label", "from", "to"}]). Without item.image the viewer shows the card's
+     tabs (JSON line ranges of the source, [{"label", "from", "to"}]), interactive and darkInteractive (a live HTML page
+     the viewer can switch to) and page (the family page the viewer links). Without item.image the viewer shows the card's
      own image for the theme. ## ~}}
 {{~ card_w = 400; card_h = 280; if item.thumbWidth; card_w = item.thumbWidth; card_h = item.thumbHeight; end ~}}
 <li class="cfx-card{{ if hollow && hollow[item.category] }} cfx-card--hollow{{ end }}" data-category="{{ item.category }}"{{ if item.id }} id="{{ item.id }}"{{ end }}{{ if keys && keys[item.category] }} style="{{ keys[item.category] }}"{{ end }}>
@@ -10,7 +11,9 @@
     data-image="{{ item.image }}" data-dark-image="{{ item.darkImage }}"
     data-full="{{ item.full }}" data-dark-full="{{ item.darkFull }}"
     data-source="{{ item.source }}" data-dark-source="{{ item.darkSource }}"
-    data-page="{{ item.html }}" data-dark-page="{{ item.darkHtml }}"{{ if item.tabs }}
+    data-page="{{ item.html }}" data-dark-page="{{ item.darkHtml }}"{{ if item.interactive }}
+    data-interactive="{{ item.interactive }}" data-dark-interactive="{{ item.darkInteractive }}"{{ end }}{{ if item.page }}
+    data-family-page="{{ item.page }}"{{ end }}{{ if item.tabs }}
     data-tabs="{{ item.tabs | html.escape }}"{{ end }}{{ if item.alt }}
     data-alt="{{ item.alt | html.escape }}"{{ end }}>
     <span class="cfx-card__media">

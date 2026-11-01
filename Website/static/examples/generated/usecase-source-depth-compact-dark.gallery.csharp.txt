@@ -1,3 +1,4 @@
+#region Setup
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,6 +26,7 @@ var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
 File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion
 
 /// <summary>Authors native actors, use cases, visible stereotypes, notes and independently styled associations.</summary>
 /// <remarks>The separately shared Mermaid fixture proves source parsing; this Core recipe uses only native public APIs.</remarks>

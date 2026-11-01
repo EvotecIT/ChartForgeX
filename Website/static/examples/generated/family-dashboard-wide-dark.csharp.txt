@@ -1,0 +1,56 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = OperationsDashboardRecipe.Create("wide", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(1040, 620)), theme, mode,
+    new VisualFrame("Service desk operations", "Four chart families in one ChartGrid", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+/// <summary>An operations dashboard: one ChartGrid of a trend, a share, a heatmap and a gauge.</summary>
+public static class OperationsDashboardRecipe {
+    public static ChartGrid Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var weeks = Enumerable.Range(1, 12).ToArray();
+        var trend = Chart.Create().WithTitle("Tickets per week").WithSubtitle("Opened against resolved")
+            .WithXLabels(weeks.Select(week => "W" + week).ToArray())
+            .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("opened"), "Opened",
+                weeks.Select(week => new ChartPoint(week, Math.Round(420 + Math.Sin(week * .8) * 60 + week * 6)))))
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("resolved"), "Resolved",
+                weeks.Select(week => new ChartPoint(week, Math.Round(400 + Math.Sin(week * .8 - .6) * 55 + week * 9)))));
+        var channels = Chart.Create().WithTitle("Tickets by channel").WithSubtitle("This quarter")
+            .WithXLabels("Portal", "Email", "Phone", "Chat")
+            .AddDonut("Tickets", new[] { new ChartPoint(1, 2430), new ChartPoint(2, 1320), new ChartPoint(3, 870), new ChartPoint(4, 640) });
+        var hours = new[] { "08", "10", "12", "14", "16", "18" };
+        var days = new[] { "Mon", "Tue", "Wed", "Thu", "Fri" };
+        var load = Chart.Create().WithTitle("Calls by hour").WithSubtitle("Average per weekday").WithXLabels(hours)
+            .AddHeatmapRows(days, days.Select((day, d) => hours.Select((hour, h) => Math.Round(42 + 24 * Math.Sin((h + 1) * .9) + (d == 0 ? 12 : 0) - d * 3))))
+            .ConfigureHeatmapColorDimension(dimension => dimension.ShowLegend = false);
+        var sla = Chart.Create().WithTitle("Resolved within SLA").WithSubtitle("Target 95%")
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("sla"), "Within SLA",
+                new ChartGaugeValue(92.4, targets: new[] { new ChartGaugeTarget(95) })));
+        var compact = variant == "compact";
+        var grid = ChartGrid.Create().WithThemeMode(mode).WithColumns(compact ? 1 : 3).WithGap(16)
+            .WithPanelSize(compact ? 360 : 320, 260).WithPanelFit(VisualPanelFit.Stretch);
+        return compact ? grid.Add(trend).Add(channels).Add(sla)
+            : grid.Add(trend, 2).Add(channels).Add(load, 2).Add(sla);
+    }
+}

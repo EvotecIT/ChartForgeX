@@ -36,7 +36,8 @@ public static partial class ExampleRecipeSource {
                     "    File.WriteAllText(\"visual.html\", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));\n" +
                     "    return;\n}\n" : ""
         };
-        return Package(recipe, "RecipeProgram", tokens);
+        // Imports a recipe adds are placed before the template; keep them inside the Setup region that viewers fold away.
+        return SetupFirst(Package(recipe, "RecipeProgram", tokens));
     }
 
     /// <summary>Creates a standalone chart program preserving the factory's own frame, theme, size and output names.</summary>
@@ -113,6 +114,8 @@ public static partial class ExampleRecipeSource {
             ["{{MODE}}"] = mode.ToString(), ["{{NAME}}"] = JsonSerializer.Serialize("xy-source-depth")
         });
     }
+
+    private static string SetupFirst(string program) => "#region Setup\n" + program.Replace("#region Setup\n", string.Empty);
 
     private static string Package(ExampleRecipe recipe, string template, Dictionary<string, string> tokens) => Package(recipe.Factory, template, tokens);
     private static string Package(string factory, string template, Dictionary<string, string> tokens, string? sourceResource = null) {
