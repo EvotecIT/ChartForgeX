@@ -8,8 +8,10 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class ChartItemStylingTests {
-    [Fact]
-    public void GeneralItemStrokeFitsAutomaticMarkerBoundsAndAppliesOpacityOnce() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GeneralItemStrokeFitsAutomaticMarkerBoundsAndAppliesOpacityOnce(bool labeledBand) {
         var ink = ChartColor.FromArgb(128, 220, 20, 80);
         var series = ChartSeries.CreateScatter(new ChartSeriesId("samples"), "Samples", new[] {
             new ChartPoint(1, 10), new ChartPoint(3, 30)
@@ -18,6 +20,7 @@ public sealed class ChartItemStylingTests {
         series.ConfigureMarkers(options => { options.Radius = 4; options.Stroke = ink; });
         var chart = Chart.Create().WithSize(440, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
             .WithAxes(false).WithGrid(false).AddSeries(series);
+        if (labeledBand) chart.AddHorizontalBand(19, 21, "Working range");
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true;
         var prepared = Prepare(chart);
         var mark = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "sample-glyph");
