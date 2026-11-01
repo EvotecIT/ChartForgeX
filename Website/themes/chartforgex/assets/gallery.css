@@ -101,6 +101,10 @@
   text-decoration: none;
 }
 .cfx-viewer__link:hover { border-color: var(--cfx-ink-3); }
+.cfx-viewer__link[hidden] { display: none; }
+/* Static or interactive output, for cards with a live page: the shared segmented control. */
+.cfx-viewer__mode { flex: none; }
+.cfx-viewer__mode[hidden] { display: none; }
 .cfx-viewer__close {
   display: grid;
   place-items: center;
@@ -130,6 +134,16 @@
     var(--cfx-page);
 }
 .cfx-viewer__image img { display: block; width: 100%; max-height: calc(100vh - 160px); object-fit: contain; }
+.cfx-viewer__image img[hidden] { display: none; }
+.cfx-viewer__live {
+  display: block;
+  width: 100%;
+  aspect-ratio: 800 / 560;
+  border: 1px solid var(--cfx-line);
+  border-radius: 4px;
+  background: var(--cfx-card);
+}
+.cfx-viewer__live[hidden] { display: none; }
 /* The source fills the dialog height under its head (dialog 100vh - 32px, head about 72px, margins 32px) and scrolls
    below its caption bar. */
 .cfx-viewer__source { min-height: 0; max-height: calc(100vh - 136px); margin: 16px; }
@@ -162,6 +176,54 @@
   .cfx-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 12px; }
   .cfx-viewer { width: calc(100vw - 16px); max-height: calc(100vh - 16px); }
   .cfx-viewer__source { margin: 10px; }
+}
+
+/* Family pages (layouts/gallery-family.html): the live example, its source, variants, options and related families. */
+.cfx-family__heading { margin-bottom: 14px; font-size: 1.25rem; font-weight: 740; font-stretch: 110%; letter-spacing: -.015em; }
+.cfx-family__live { height: auto; border-radius: 0 0 var(--cfx-r-lg) var(--cfx-r-lg); }
+.cfx-family__code,
+.cfx-family__variants,
+.cfx-family__options,
+.cfx-family__more { padding-top: clamp(40px, 5vw, 64px); }
+.cfx-family__code { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 20px clamp(24px, 3vw, 48px); align-items: start; }
+.cfx-family__code-text p { color: var(--cfx-ink-2); }
+.cfx-family__code .cfx-codeblock pre { max-height: 560px; }
+.cfx-family__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 24px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cfx-family__variant { margin: 0; }
+.cfx-family__plate {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 800 / 460;
+  min-height: 0;
+  padding: 10px;
+  overflow: hidden;
+  border: 1px solid var(--cfx-line);
+  border-radius: var(--cfx-r);
+  background: var(--cfx-card);
+}
+.cfx-family__plate img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.cfx-family__variant figcaption { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: .875rem; }
+.cfx-family__variant figcaption a { color: var(--cfx-accent); font-weight: 600; text-decoration: none; }
+.cfx-family__variant-label { display: inline-flex; flex: 1; align-items: center; gap: 7px; color: var(--cfx-ink); font-weight: 600; }
+.cfx-family__variant-label .cfx-key { width: 8px; height: 8px; }
+.cfx-family__options > p { max-width: 70ch; margin-bottom: 14px; color: var(--cfx-ink-2); }
+.cfx-family__table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.cfx-family__table th { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--cfx-ink-3); text-align: left; font-weight: 640; }
+.cfx-family__table td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--cfx-line); vertical-align: top; color: var(--cfx-ink-2); }
+.cfx-family__table td:first-child { white-space: nowrap; }
+.cfx-family__table td a { color: var(--cfx-accent); text-decoration: none; }
+.cfx-family__chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0 0 clamp(40px, 5vw, 64px); list-style: none; }
+
+@media (max-width: 900px) {
+  .cfx-family__code { grid-template-columns: minmax(0, 1fr); }
+  .cfx-family__table td:first-child { white-space: normal; }
 }
 
 /* Masthead chart: the category counts, rendered by ChartForgeX from data/gallery.json. */
