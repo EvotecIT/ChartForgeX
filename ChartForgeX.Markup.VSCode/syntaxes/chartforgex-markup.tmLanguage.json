@@ -35,7 +35,7 @@
     "keywords": {
       "patterns": [
         {
-          "match": "(?i)\\b(id|title|subtitle|type|kind|size|viewport|layout|direction|legend|labels|categories|values?|series|annotation|option|options|theme|theme[-_]?mode|gauge[-_]?minimum|gauge[-_]?maximum|candles?|items?|flows?|groups?|boundary|nodes?|edges?|connect|usecase|story|visit|json|xml|text|end)\\b",
+          "match": "(?i)\\b(id|title|subtitle|type|kind|size|viewport|layout|direction|legend|labels|categories|values?|series|annotation|option|options|theme|theme[-_]?mode|gauge[-_]?minimum|gauge[-_]?maximum|heatmap[-_]?value[-_]?name|candles?|items?|flows?|groups?|boundary|nodes?|edges?|connect|usecase|story|visit|json|xml|text|end)\\b",
           "name": "keyword.control.chartforgex-markup"
         },
         {

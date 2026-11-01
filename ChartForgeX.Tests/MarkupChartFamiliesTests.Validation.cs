@@ -7,6 +7,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class MarkupChartFamiliesTests {
     private static readonly IReadOnlyDictionary<string, (string Source, int Line)> InvalidRows =
         new Dictionary<string, (string, int)> {
+            ["candle-impossible-date"] = ("type candlestick\ncandle 2026-02-30 10 15 8 12", 2),
+            ["candle-mixed-coordinate-kinds"] = ("type candlestick\ncandle 2026-06-01 10 15 8 12\ncandle 2 12 16 9 14", 3),
+            ["candle-table-mixed-coordinate-kinds"] = ("type ohlc\ncandles:\n| x | open | high | low | close |\n| 1 | 10 | 15 | 8 | 12 |\n| 2026-06-08 | 12 | 16 | 9 | 14 |\nend", 5),
             ["candle-incomplete"] = ("type candlestick\ncandle 1 10 15 8", 2),
             ["candle-extra-field"] = ("type ohlc\ncandle 1 10 15 8 12 99", 2),
             ["candle-high-below-open"] = ("type candlestick\ncandle 1 10 9 8 9", 2),

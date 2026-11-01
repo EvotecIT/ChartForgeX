@@ -8,17 +8,19 @@ internal static partial class MarkupExamples {
             """
 ```chartforgex chart v1
 title Release Readiness by Quarter
-subtitle Stacked bars from a label and two numeric series columns
+subtitle Ready work grew every quarter
 type stackedbar
 size 920x520
 theme Graphite
 
 | Quarter | Ready | In review |
 | --- | --- | --- |
-| Q1 | 42 | 18 |
-| Q2 | 58 | 22 |
-| Q3 | 72 | 16 |
-| Q4 | 86 | 10 |
+| 2025 Q3 | 42 | 18 |
+| 2025 Q4 | 58 | 22 |
+| 2026 Q1 | 72 | 16 |
+| 2026 Q2 | 86 | 10 |
+| 2026 Q3 | 96 | 8 |
+| 2026 Q4 | 108 | 6 |
 ```
 """),
         new(
@@ -26,16 +28,18 @@ theme Graphite
             """
 ```chartforgex chart v1
 title Validation by Stage
-subtitle Horizontal stacks retain the same numeric table contract
+subtitle Build and test account for most validation work
 type stackedhorizontalbar
 size 920x520
 
 | Stage | Automated | Manual |
 | --- | --- | --- |
+| Plan | 18 | 6 |
 | Build | 62 | 8 |
 | Test | 48 | 16 |
 | Package | 36 | 12 |
-| Publish | 28 | 6 |
+| Deploy | 22 | 10 |
+| Observe | 18 | 6 |
 ```
 """),
         new(
@@ -43,16 +47,18 @@ size 920x520
             """
 ```chartforgex chart v1
 title Release Channel Mix
-subtitle Counts normalized to a 100 percent stack in each quarter
+subtitle Stable releases take a larger share each quarter
 type percentstackedbar
 size 920x520
 
 | Quarter | Stable | Preview |
 | --- | --- | --- |
-| Q1 | 42 | 18 |
-| Q2 | 58 | 22 |
-| Q3 | 72 | 16 |
-| Q4 | 86 | 10 |
+| 2025 Q3 | 42 | 18 |
+| 2025 Q4 | 58 | 22 |
+| 2026 Q1 | 72 | 16 |
+| 2026 Q2 | 86 | 10 |
+| 2026 Q3 | 96 | 8 |
+| 2026 Q4 | 108 | 6 |
 ```
 """),
         new(
@@ -60,7 +66,7 @@ size 920x520
             """
 ```chartforgex chart v1
 title Review Outcome Mix
-subtitle Normalized horizontal stacks compare teams with different totals
+subtitle Acceptance rates range from 70% to 80%
 type percentstackedhorizontalbar
 size 920x520
 
@@ -69,6 +75,9 @@ size 920x520
 | Platform | 72 | 18 |
 | Services | 48 | 12 |
 | Reports | 56 | 24 |
+| Apps | 64 | 16 |
+| Data | 46 | 14 |
+| Tools | 38 | 12 |
 ```
 """),
         new(
@@ -76,7 +85,7 @@ size 920x520
             """
 ```chartforgex chart v1
 title Validation Workload Mix
-subtitle Numeric counts become normalized stacked areas
+subtitle Automated checks take a larger share each month
 type percentstackedarea
 size 920x520
 labels Jan Feb Mar Apr May
@@ -89,7 +98,7 @@ series Manual values 26 24 22 18 12 color #14B8A6
             """
 ```chartforgex chart v1 {theme=Graphite themeMode=dark}
 title Support Channel Mix
-subtitle Smooth normalized areas from native numeric table data
+subtitle Documentation resolves a growing share of requests
 type smoothpercentstackedarea
 size 920x520
 
@@ -107,10 +116,10 @@ size 920x520
             """
 ```chartforgex chart v1
 title Validation Coverage
-subtitle Each numeric series column becomes a heatmap row
+subtitle Coverage is strongest at build and publish time
 type heatmap
 size 920x520
-theme Accessible
+option heatmapValueName "Coverage %"
 
 | Stage | Windows | Linux | macOS |
 | --- | --- | --- | --- |
@@ -125,7 +134,7 @@ theme Accessible
             """
 ```chartforgex chart v1
 title Release Readiness
-subtitle A gauge uses exactly one value per series on the default 0 to 100 range
+subtitle 78% of release checks are ready
 type gauge
 size 920x520
 series "Ready" values 78 color #2563EB
@@ -136,11 +145,9 @@ series "Ready" values 78 color #2563EB
             """
 ```chartforgex chart v1
 title Validation Throughput
-subtitle A linear gauge with an explicit native range
+subtitle 148 checks per minute against a target of 200
 type lineargauge
 size 920x520
-theme Report
-themeMode light
 option gaugeMinimum 0
 option gaugeMaximum 200
 series "Checks per minute" values 148 color #14B8A6
@@ -151,14 +158,30 @@ series "Checks per minute" values 148 color #14B8A6
             """
 ```chartforgex chart v1
 title Weekly Price Range
-subtitle Candles preserve x, open, high, low and close as typed facts
+subtitle Prices rose over twenty weeks, with a pullback in August
 type candlestick
 size 920x520
 series "Price"
-candle 1 102 110 98 108
-candle 2 108 114 104 106
-candle 3 106 116 102 112
-candle 4 112 120 108 118
+candle 2026-06-01 102 110 98 108
+candle 2026-06-08 108 114 104 106
+candle 2026-06-15 106 116 102 112
+candle 2026-06-22 112 120 108 118
+candle 2026-06-29 118 124 114 121
+candle 2026-07-06 121 126 116 119
+candle 2026-07-13 119 129 117 127
+candle 2026-07-20 127 134 123 131
+candle 2026-07-27 131 137 126 134
+candle 2026-08-03 134 139 125 128
+candle 2026-08-10 128 132 119 122
+candle 2026-08-17 122 128 116 125
+candle 2026-08-24 125 135 121 132
+candle 2026-08-31 132 140 129 138
+candle 2026-09-07 138 145 134 142
+candle 2026-09-14 142 147 136 139
+candle 2026-09-21 139 150 137 148
+candle 2026-09-28 148 155 143 152
+candle 2026-10-05 152 158 147 150
+candle 2026-10-12 150 162 148 160
 ```
 """),
         new(
@@ -166,7 +189,7 @@ candle 4 112 120 108 118
             """
 ```chartforgex chart v1
 title Weekly OHLC Range
-subtitle A candles table uses the same typed facts as candle commands
+subtitle The August pullback gave way to new weekly highs
 type ohlc
 size 920x520
 series "Price"
@@ -174,10 +197,26 @@ series "Price"
 candles:
 | x | open | high | low | close |
 | --- | --- | --- | --- | --- |
-| 1 | 102 | 110 | 98 | 108 |
-| 2 | 108 | 114 | 104 | 106 |
-| 3 | 106 | 116 | 102 | 112 |
-| 4 | 112 | 120 | 108 | 118 |
+| 2026-06-01 | 102 | 110 | 98 | 108 |
+| 2026-06-08 | 108 | 114 | 104 | 106 |
+| 2026-06-15 | 106 | 116 | 102 | 112 |
+| 2026-06-22 | 112 | 120 | 108 | 118 |
+| 2026-06-29 | 118 | 124 | 114 | 121 |
+| 2026-07-06 | 121 | 126 | 116 | 119 |
+| 2026-07-13 | 119 | 129 | 117 | 127 |
+| 2026-07-20 | 127 | 134 | 123 | 131 |
+| 2026-07-27 | 131 | 137 | 126 | 134 |
+| 2026-08-03 | 134 | 139 | 125 | 128 |
+| 2026-08-10 | 128 | 132 | 119 | 122 |
+| 2026-08-17 | 122 | 128 | 116 | 125 |
+| 2026-08-24 | 125 | 135 | 121 | 132 |
+| 2026-08-31 | 132 | 140 | 129 | 138 |
+| 2026-09-07 | 138 | 145 | 134 | 142 |
+| 2026-09-14 | 142 | 147 | 136 | 139 |
+| 2026-09-21 | 139 | 150 | 137 | 148 |
+| 2026-09-28 | 148 | 155 | 143 | 152 |
+| 2026-10-05 | 152 | 158 | 147 | 150 |
+| 2026-10-12 | 150 | 162 | 148 | 160 |
 end
 ```
 """),
@@ -186,7 +225,7 @@ end
             """
 ```chartforgex chart v1
 title Validation Portfolio
-subtitle Empty value cells define groups; leaf values determine area
+subtitle Runtime checks account for most of the validation portfolio
 type treemap
 size 920x520
 series "Checks"
@@ -208,7 +247,7 @@ end
             """
 ```chartforgex chart v1
 title Review Flow
-subtitle Native nodes and weighted flows preserve relationship identity
+subtitle Automated review handles 72% of incoming changes
 type sankey
 size 920x520
 series "Changes"

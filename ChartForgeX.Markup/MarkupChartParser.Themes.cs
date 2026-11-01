@@ -14,6 +14,9 @@ public sealed partial class MarkupChartParser {
         switch (NormalizeKey(key)) {
             case "theme": ParseTheme(state, value); return true;
             case "thememode": state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<VisualThemeMode>(value, key); return true;
+            case "heatmapvaluename":
+                state.HeatmapValueName = new ChartColorDimensionOptions { Name = value }.Name;
+                return true;
             case "gaugeminimum":
                 state.GaugeMinimum = VisualMarkupFenceOptions.ParseDouble(value, key);
                 state.GaugeOptionLine = lineNumber;
@@ -55,5 +58,6 @@ public sealed partial class MarkupChartParser {
     private static void ApplyFamilyOptions(Chart chart, ChartState state) {
         if (state.Theme != null) chart.WithTheme(state.Theme);
         if (state.ThemeMode.HasValue) chart.WithThemeMode(state.ThemeMode.Value);
+        if (state.HeatmapValueName != null) chart.Options.HeatmapColorDimension.Name = state.HeatmapValueName;
     }
 }

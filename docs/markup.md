@@ -289,6 +289,8 @@ Stacked and percent-stacked types keep the numeric table shape: one label column
 
 For `heatmap`, each numeric series column becomes a heatmap row and the label column supplies its category positions. Keep the same label-plus-series table; no cell-coordinate command is needed.
 
+For a heatmap, `option heatmapValueName "Coverage %"` names the numeric color key while retaining the default theme and color scale.
+
 Both `gauge` and `lineargauge` require exactly one series with one numeric value. Their range defaults to 0–100. Set `gaugeMinimum` and `gaugeMaximum` through commands, `option` lines, or an `options:` table when the measured quantity has another range:
 
 ````markdown
@@ -305,16 +307,16 @@ A gauge table follows the numeric table contract: one category row and one numer
 
 ### Financial Charts
 
-`candlestick` and `ohlc` use typed financial records rather than flattened numeric series. Declare one display name with `series "Price"`, then use `candle X OPEN HIGH LOW CLOSE` commands:
+`candlestick` and `ohlc` use typed financial records rather than flattened numeric series. X values can be numeric coordinates or ISO dates (`yyyy-MM-dd`); use one kind throughout the chart. Date records use the native UTC time axis automatically. Declare one display name with `series "Price"`, then use `candle X OPEN HIGH LOW CLOSE` commands:
 
 ````markdown
 ```chartforgex chart v1
 title "Weekly Price Range"
 type candlestick
 series "Price"
-candle 1 102 110 98 108
-candle 2 108 114 104 106
-candle 3 106 116 102 112
+candle 2026-06-01 102 110 98 108
+candle 2026-06-08 108 114 104 106
+candle 2026-06-15 106 116 102 112
 ```
 ````
 
@@ -328,8 +330,8 @@ series "Price"
 candles:
 | x | open | high | low | close |
 | --- | --- | --- | --- | --- |
-| 1 | 102 | 110 | 98 | 108 |
-| 2 | 108 | 114 | 104 | 106 |
+| 2026-06-01 | 102 | 110 | 98 | 108 |
+| 2026-06-08 | 108 | 114 | 104 | 106 |
 end
 ```
 ````
@@ -352,7 +354,7 @@ item packages "Packages" value=28 colorValue=88
 ```
 ````
 
-The table equivalent uses `items:` with columns `id`, `label`, `parent`, `value`, and `colorValue`. Empty parent and value cells are valid for roots and groups; do not replace a group's missing value with zero. See the [v1 reference](markup-v1-reference.md#typed-chart-data) for the table shape.
+The table equivalent uses `items:` with columns `id`, `label`, `parent`, `value`, and `colorValue`. Empty parent and value cells are valid for roots and groups; do not replace a group's missing value with zero. See the [v1 reference](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/markup-v1-reference.md#typed-chart-data) for the table shape.
 
 ### Sankey And Chord
 
@@ -373,7 +375,7 @@ flow intake-manual intake manual 28 colorValue=74
 
 Use separate `nodes:` and `flows:` tables for larger inputs. A new section starts its own table; `end` returns to ordinary chart commands. Native relationship validation checks IDs, declared endpoints and weights. Numeric `values` and series data cannot substitute for relationships.
 
-Chord retains its native parallel, reciprocal, self and zero-flow semantics and empty-chart no-data behavior. Optional complete `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` ID lists and finite `chordRibbonTension` map to the [native Chord options](chord.md#typed-chart-markup); these options are Chord-specific.
+Chord retains its native parallel, reciprocal, self and zero-flow semantics and empty-chart no-data behavior. Optional complete `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` ID lists and finite `chordRibbonTension` map to the [native Chord options](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chord.md#typed-chart-markup); these options are Chord-specific.
 
 All typed families use one named series, selected with `series "Name"`, rather than multiple numeric series. Financial records, hierarchy items, and relationship facts stay separate from numeric chart tables.
 

@@ -52,7 +52,7 @@ Core commands:
 | `value <label> <number>` | Adds one labeled value to the default series. |
 | `series <name> type <kind> values <number...> [color <hex>]` | Adds or extends a named series. |
 | `series "Name"` | Sets the single series name for default numeric data or typed chart data. |
-| `candle <x> <open> <high> <low> <close>` | Adds a typed financial record for `candlestick` or `ohlc`. |
+| `candle <x> <open> <high> <low> <close>` | Adds a typed financial record for `candlestick` or `ohlc`; x is numeric or an ISO date (`yyyy-MM-dd`). |
 | `item <id> "Label" [parent=<id>] [value=<number>] [colorValue=<number>]` | Adds a typed treemap hierarchy item. Omitted value remains null for a group. |
 | `node <id> "Label"` | Declares a node for `sankey` or `chord`. |
 | `flow <id> <source> <target> <value> [colorValue=<number>]` | Adds a directed relationship for `sankey` or `chord`. |
@@ -81,6 +81,8 @@ Numeric data tables retain their label-plus-series shape. If a table has a `valu
 
 ### Typed Chart Data
 
+`candlestick` and `ohlc` accept either numeric x coordinates or ISO dates (`yyyy-MM-dd`), consistently within a chart. Dates select the native UTC time axis. `option heatmapValueName "Coverage %"` sets the heatmap numeric key name without overriding its palette or typography.
+
 `candlestick`, `ohlc`, `treemap`, `sankey`, and `chord` use typed data. Set the chart type and optionally declare one name with `series "Name"`. Numeric `values` or multi-series numeric tables do not substitute for typed facts, and `series "Name" type treemap values ...` is invalid.
 
 | Type | Command data | Table section and columns |
@@ -107,7 +109,7 @@ end
 ```
 ````
 
-Sankey and Chord share native `ChartNode` and `ChartFlowLink` facts. Nodes and flows each need unique IDs; flow endpoints reference declared nodes. Values and optional color values undergo native validation. A flow's ID is separate from its source and target, preserving individual relationships. Chord supports parallel, reciprocal, self and zero flows and empty-chart no-data behavior. `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` and `chordRibbonTension` remain Chord-specific; see [typed Chord markup](chord.md#typed-chart-markup).
+Sankey and Chord share native `ChartNode` and `ChartFlowLink` facts. Nodes and flows each need unique IDs; flow endpoints reference declared nodes. Values and optional color values undergo native validation. A flow's ID is separate from its source and target, preserving individual relationships. Chord supports parallel, reciprocal, self and zero flows and empty-chart no-data behavior. `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` and `chordRibbonTension` remain Chord-specific; see [typed Chord markup](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chord.md#typed-chart-markup).
 
 ### Chart Themes
 

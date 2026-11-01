@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 
@@ -10,6 +11,8 @@ public sealed partial class MarkupChartParser {
         internal readonly List<ChartCandlestick> Candles = new();
         internal readonly List<(ChartHierarchyItem Value, int Line)> Items = new();
         internal int? CandleLine;
+        internal bool? CandleDates;
+        internal string? HeatmapValueName;
         internal int? GaugeOptionLine;
         internal double GaugeMinimum, GaugeMaximum = 100;
     }
@@ -21,7 +24,7 @@ public sealed partial class MarkupChartParser {
             case "candle":
                 RequireTokenCount(tokens, 6, "candle");
                 if (tokens.Count != 6) throw new ArgumentException("Candle commands require x, open, high, low and close values.");
-                state.Candles.Add(new ChartCandlestick(ParseDouble(tokens[1]), ParseDouble(tokens[2]), ParseDouble(tokens[3]), ParseDouble(tokens[4]), ParseDouble(tokens[5])));
+                state.Candles.Add(ParseCandle(state, tokens[1], tokens[2], tokens[3], tokens[4], tokens[5]));
                 state.CandleLine ??= lineNumber;
                 return true;
             case "item":
@@ -48,6 +51,17 @@ public sealed partial class MarkupChartParser {
     private static ChartHierarchyItem CreateHierarchyItem(string id, string label, Dictionary<string, string> attributes) =>
         new(id, label, OptionalText(attributes, "parent"), OptionalNumber(attributes, "value"), OptionalNumber(attributes, "colorvalue"));
 
+    private static ChartCandlestick ParseCandle(ChartState state, string x, string open, string high, string low, string close) {
+        var dated = DateTime.TryParseExact(x, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date);
+        var candle = dated
+            ? new ChartCandlestick(date, ParseDouble(open), ParseDouble(high), ParseDouble(low), ParseDouble(close))
+            : new ChartCandlestick(ParseDouble(x), ParseDouble(open), ParseDouble(high), ParseDouble(low), ParseDouble(close));
+        if (state.CandleDates.HasValue && state.CandleDates.Value != dated)
+            throw new ArgumentException("Candle x values must all be numeric coordinates or all ISO dates (yyyy-MM-dd).");
+        state.CandleDates = dated;
+        return candle;
+    }
+
     private static string? OptionalText(Dictionary<string, string> row, string key) =>
         row.TryGetValue(key, out var text) && !string.IsNullOrWhiteSpace(text) ? text : null;
 
@@ -70,8 +84,8 @@ public sealed partial class MarkupChartParser {
         try {
             var row = Row(headers, cells);
             if (section == "candles") {
-                state.Candles.Add(new ChartCandlestick(ParseDouble(Required(row, "x")), ParseDouble(Required(row, "open")),
-                    ParseDouble(Required(row, "high")), ParseDouble(Required(row, "low")), ParseDouble(Required(row, "close"))));
+                state.Candles.Add(ParseCandle(state, Required(row, "x"), Required(row, "open"),
+                    Required(row, "high"), Required(row, "low"), Required(row, "close")));
                 state.CandleLine ??= number;
             } else state.Items.Add((CreateHierarchyItem(Required(row, "id"), Required(row, "label"), row), number));
         } catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException) {
@@ -109,8 +123,14 @@ public sealed partial class MarkupChartParser {
     private static bool BuildTypedChart(Chart chart, ChartState state) {
         switch (NormalizeKey(state.Type)) {
             case "chord": BuildChord(chart, state); return true;
-            case "candlestick": chart.AddCandlestick(state.SeriesName, state.Candles); return true;
-            case "ohlc": chart.AddOhlc(state.SeriesName, state.Candles); return true;
+            case "candlestick":
+                chart.AddCandlestick(state.SeriesName, state.Candles);
+                if (state.CandleDates == true) chart.WithXAxisTimeScale();
+                return true;
+            case "ohlc":
+                chart.AddOhlc(state.SeriesName, state.Candles);
+                if (state.CandleDates == true) chart.WithXAxisTimeScale();
+                return true;
             case "treemap": chart.AddTreemap(state.SeriesName, state.Items.Select(item => item.Value)); return true;
             case "sankey": chart.AddSankey(state.SeriesName, state.ChordNodes.Select(row => row.Value), state.ChordFlows.Select(row => row.Value)); return true;
             default: return false;
