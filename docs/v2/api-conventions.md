@@ -32,6 +32,15 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 
 ## Shared requests and ownership
 
+Series paint and text callbacks follow the same preparation boundary. `WithFill`
+and `WithStrokeStyle` install immutable values; `WithItemStyler<TDatum>`,
+`WithDataLabelFormatter` and `WithTooltipFormatter` install value-producing
+callbacks. These are `With*` operations because they supply a formatter/styler;
+they do not mutate a configuration candidate. Preparation evaluates them against
+authored observations and detached series facts, then captures their results for
+both exporters. See [chart paint and formatters](../chart-styling.md) for types,
+static highlight state and precedence.
+
 | Contract | Ownership and behavior |
 | --- | --- |
 | `IVisualRenderable` | A core static compilation boundary returning `PreparedVisual`. Optional producers implement the same boundary without making core reference their concrete types. |

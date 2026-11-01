@@ -19128,6 +19128,102 @@
         "minDistinctColors": 1416,
         "maxEdgeInkPixels": 0
       }
+    },
+    {
+      "name": "configurable-sales-compact-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 560,
+      "height": 400,
+      "logicalWidth": 560.0,
+      "logicalHeight": 400.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 447988,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1799,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "configurable-sales-compact-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 560,
+      "height": 400,
+      "logicalWidth": 560.0,
+      "logicalHeight": 400.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 447988,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1831,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "configurable-sales-wide-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1040,
+      "height": 520,
+      "logicalWidth": 1040.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1081588,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1898,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "configurable-sales-wide-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1040,
+      "height": 520,
+      "logicalWidth": 1040.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1081588,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1923,
+        "maxEdgeInkPixels": 0
+      }
     }
   ]
 }

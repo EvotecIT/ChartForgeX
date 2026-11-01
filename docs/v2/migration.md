@@ -18,6 +18,36 @@ Treemaps display their group and leaf captions by default. An explicit `WithData
 
 ## Unified authoring contracts
 
+### Series paint and text callbacks
+
+`WithItemStyler<TDatum>`, `WithFill`, `WithStrokeStyle`,
+`WithDataLabelFormatter` and `WithTooltipFormatter` add general series authoring
+without replacing existing calls. `WithPointColor` and other ordinal overrides
+remain useful for fixed source positions. A non-null datum callback field takes
+precedence over them; null inherits their presentation. Use each family's typed
+authored observation rather than its internal numeric projection.
+
+For a dashed forecast, replace repeated segment workarounds with
+`series.WithStrokeStyle(new ChartStrokeStyle(dash: new[] { 7d, 4d }))`.
+Use the general label formatter for a primary observation caption and keep typed
+endpoint/statistic formatters when their additional measured fields are needed.
+No API removal is required for these capabilities. See
+[chart paint and formatters](../chart-styling.md) for the complete contracts.
+
+Primary caption precedence is consistent across families: a general formatter's
+non-null output, then an authored point label, then the family default. For
+Pie/Donut, an authored point label therefore takes precedence over the pie-specific
+label formatter. Funnel/Pyramid and Chord point labels replace the complete primary
+caption, and single-ring center captions honor the resolved observation label. A
+Chord caption such as `WithPointLabel(0, "North")` previously became `North 20`
+under `LabelAndValue`; it now stays `North`. Leave the point label unset to retain
+the family-composed name and totals, or return the complete caption from
+`WithDataLabelFormatter`. Empty captions also remove their label geometry and
+space reservation. Remove an
+authored point label when the specialized family formatter should supply it.
+Typed endpoint, statistic and secondary-caption formatters keep their separate
+measured-field contracts.
+
 Quadrant source endpoint names now populate separate `chart.Options.XAxis.Labels` and `YAxis.Labels`; they are no longer joined into `XAxisTitle` or `YAxisTitle`. Read the label at `.25`/`.75` for paired low/high names. Native chart callers can still author independent axis titles normally. Source `chartWidth`/`chartHeight` apply unless the corresponding host render option is explicitly assigned. Setting `Width = 960` intentionally overrides a different source width; leaving it unassigned retains source precedence. Existing render-option CLR property signatures are unchanged.
 
 Scatter observations can capture detached `ChartMarkerOptions` through `ConfigurePointMarkers`, inspect authored copies through `GetPointMarkers`, and clear a single override through `UseSeriesMarkers`. Rebuild and reprepare artifacts after source edits; a previously prepared scene remains detached. The API does not add per-point marker ownership to other families.
