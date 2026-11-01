@@ -55,7 +55,8 @@ internal static partial class VisualSceneSvgRenderer {
             if (options?.Responsive == true) writer.Write("responsive");
             if (options?.FluidWidth == true) writer.Write("fluid-width");
             if (options?.PatternTiles == true) writer.Write("pattern-tiles");
-            if (options?.Explorable == true || options?.EnhanceHooks == true) writer.Write("explorable");
+            if (options?.Explorable == true) writer.Write("explorable");
+            if (options?.EnhanceHooks == true) writer.Write("enhance-hooks");
             if (options?.HasPageFonts == true) {
                 writer.Write("page-fonts"); writer.Write(options.PageFontFamily!); writer.Write(options.PageFontSize ?? "prepared");
             }

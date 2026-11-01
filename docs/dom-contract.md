@@ -86,7 +86,7 @@ Families that render other target roles (for example `heatmap-cell`, `radial-poi
 
 ## Navigation, state and host styling
 
-Use `WithMarkOptions` on points, typed items or series, and `WithRowOptions` on a series for independent row metadata. A non-null item policy replaces the series default. `Tooltip` supplies a plain-text `<title>`; `AccessibleLabel` overrides the generated name. A chart containing links uses a root group role so its links remain available to assistive technology. Each linked mark has one focus target; the renderer does not nest links.
+Use `WithMarkOptions` on points, typed items or series, and `WithRowOptions` on a series for independent row metadata. A non-null item policy replaces the series default. `Tooltip` supplies a plain-text `<title>`; `AccessibleLabel` overrides the generated name. A chart containing links uses a `graphics-document` root role so its links remain available to assistive technology. Each linked mark has one focus target; the renderer does not nest links.
 
 Class tokens use ASCII CSS identifiers separated by single spaces. Complete host `data-*` names start with a lowercase letter after `data-` and then contain lowercase letters, digits, underscores or hyphens. Invalid names throw without sanitization. Attribute values remain text, including quotes and angle brackets.
 

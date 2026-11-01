@@ -47,6 +47,7 @@ public sealed class SvgAccessibilitySemanticsTests {
         var enhanced = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, "Sign-ins",
             options: options.WithExplorableSemantics(false).WithEnhanceHooks())).Root!;
         Assert.Equal("graphics-document", (string?)enhanced.Attribute("role"));
+        Assert.NotEqual((string?)explored.Attribute("aria-labelledby"), (string?)enhanced.Attribute("aria-labelledby"));
         Assert.Equal("Passkey: 800 sign-ins", enhanced.Descendants().Single(node => node.Attribute("data-cfx-point") != null).Attribute("aria-label")?.Value);
 
         foreach (var role in new[] { "group", "generic", "none", "presentation" }) {
