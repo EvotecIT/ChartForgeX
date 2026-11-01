@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 
@@ -51,7 +52,7 @@ public static partial class MermaidC4Rendering {
             node.MaximumLabelCharacters = node.Label.Length;
             node.Href = element.Link;
             node.Shape = MermaidC4Shapes.Resolve(element.Shape, element.Sprite, element.Tags);
-            if (node.Shape is null or TopologyNodeShape.Rectangle or TopologyNodeShape.Rounded) node.CornerRadius = 6;
+            if (node.Shape is null or TopologyNodeShape.Rectangle or TopologyNodeShape.Rounded) node.CornerRadius = DiagramTheme.CardCornerRadius;
             if (element.Shape != null) node.Metadata["mermaid.shape"] = element.Shape;
             if (element.LegendText != null) node.Metadata["mermaid.legendText"] = element.LegendText;
             if (element.LegendSprite != null) node.Metadata["mermaid.legendSprite"] = element.LegendSprite;
