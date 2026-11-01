@@ -176,16 +176,22 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(initial.GetProperty("stroke").GetDouble(), scene.GetProperty("stroke").GetDouble(), 5);
         var plot = scene.GetProperty("plot");
         var expectedX = plot.GetProperty("x").GetDouble() + (4 - xMin) / (xMax - xMin) * plot.GetProperty("width").GetDouble();
-        Assert.Equal(expectedX, scene.GetProperty("markX").GetDouble(), 2);
+        // DOM layout bounds are quantized in CSS pixels. Bound the error instead
+        // of comparing rounded buckets on opposite sides of a decimal boundary.
+        Assert.InRange(scene.GetProperty("markX").GetDouble(), expectedX - .02, expectedX + .02);
         if (kind is ChartSeriesKind.Line or ChartSeriesKind.Area or ChartSeriesKind.Scatter) {
             var expectedY = plot.GetProperty("y").GetDouble() + (1 - (34 - yMin) / (yMax - yMin)) * plot.GetProperty("height").GetDouble();
-            Assert.Equal(expectedY, scene.GetProperty("markY").GetDouble(), 2);
+            Assert.InRange(scene.GetProperty("markY").GetDouble(), expectedY - .02, expectedY + .02);
             Assert.Equal(initial.GetProperty("markerWidth").GetDouble(), scene.GetProperty("markerWidth").GetDouble(), 2);
             Assert.Equal(initial.GetProperty("markerHeight").GetDouble(), scene.GetProperty("markerHeight").GetDouble(), 2);
         }
         Assert.True(scene.GetProperty("clipMatchesPlot").GetBoolean(), "Data ink needs a fixed clip at the plot bounds.");
-        Assert.Equal(1, scene.GetProperty("matrixScaleX").GetDouble(), 6);
-        Assert.Equal(1, scene.GetProperty("matrixScaleY").GetDouble(), 6);
+        AssertViewportScale(initial, scene);
+    }
+
+    private static void AssertViewportScale(JsonElement initial, JsonElement scene) {
+        Assert.Equal(initial.GetProperty("viewportScaleX").GetDouble(), scene.GetProperty("viewportScaleX").GetDouble(), 6);
+        Assert.Equal(initial.GetProperty("viewportScaleY").GetDouble(), scene.GetProperty("viewportScaleY").GetDouble(), 6);
     }
 
     private static Task<JsonElement> SceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
@@ -194,16 +200,19 @@ public sealed partial class StandaloneViewportBrowserTests {
             const series=point.closest('[data-cfx-role=series]');
             const paint=point.querySelector('.cfx-prepared-point-marker')||point.querySelector('circle,ellipse,rect,path,line,polygon');
             if(!paint)throw Error('Fixture needs painted observation geometry');
-            const box=paint.getBBox(),matrix=svg.getCTM().inverse().multiply(paint.getCTM());
-            const center=new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(matrix);
+            // Measure painted browser pixels independently of engine-specific CTM
+            // treatment of the existing responsive-fit CSS zoom.
+            const box=paint.getBoundingClientRect(),canvas=svg.getBoundingClientRect(),view=svg.viewBox.baseVal;
+            const scaleX=canvas.width/view.width,scaleY=canvas.height/view.height;
+            const center={x:view.x+(box.x+box.width/2-canvas.x)/scaleX,y:view.y+(box.y+box.height/2-canvas.y)/scaleY};
             const plot=JSON.parse(root.dataset.cfxPreparedChart).dataProjection.plotBounds;
             const clipOwner=series.closest('[clip-path]'),clipRef=clipOwner?.getAttribute('clip-path'),id=clipRef?.match(/#([^)]*)/)?.[1];
             const clip=id&&svg.querySelector('[id="'+id+'"] rect');
             return {plot,geometry:[...series.querySelectorAll('path,line,rect,circle,ellipse,polygon')].map(node=>['d','x','y','cx','cy','x1','x2','y1','y2','width','height','points'].map(key=>node.getAttribute(key)).join(',')).join('|'),
                 frame:{viewBox:svg.getAttribute('viewBox'),title:svg.querySelector('[data-cfx-role=frame-heading]')?.getBoundingClientRect().toJSON()||null},
                 stroke:parseFloat(getComputedStyle(paint).strokeWidth),markX:center.x,markY:center.y,
-                markerWidth:box.width*Math.hypot(matrix.a,matrix.b),markerHeight:box.height*Math.hypot(matrix.c,matrix.d),
-                matrixScaleX:Math.hypot(matrix.a,matrix.b),matrixScaleY:Math.hypot(matrix.c,matrix.d),
+                markerWidth:box.width/scaleX,markerHeight:box.height/scaleY,
+                viewportScaleX:scaleX,viewportScaleY:scaleY,
                 clipMatchesPlot:!!clip&&['x','y','width','height'].every(key=>Math.abs(Number(clip.getAttribute(key))-plot[key])<.001)};
         }
         """, Sample);

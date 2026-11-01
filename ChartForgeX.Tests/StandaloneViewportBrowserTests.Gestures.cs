@@ -67,10 +67,11 @@ public sealed partial class StandaloneViewportBrowserTests {
         await using var session = await OpenAsync(Page(kind, dark: dark), width, 1000);
         var page = session.Page;
         await MountAsync(page);
+        var initial = await SceneAsync(page);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         AssertWindow((await ViewportAsync(page)).GetProperty("x"), 1.2, 10.8);
         await AssertTicksAsync(page, "x", 1.2, 10.8);
-        Assert.Equal(1, (await SceneAsync(page)).GetProperty("matrixScaleX").GetDouble(), 6);
+        AssertViewportScale(initial, await SceneAsync(page));
         await page.Locator("[data-cfx-zoom=out]").ClickAsync();
         AssertWindow((await ViewportAsync(page)).GetProperty("x"), 0, 12);
 
@@ -95,7 +96,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(8, maximum - minimum, 5);
         AssertWindow(panned.GetProperty("y"), 20, 80);
         await AssertTicksAsync(page, "x", minimum, maximum);
-        Assert.Equal(1, (await SceneAsync(page)).GetProperty("matrixScaleX").GetDouble(), 6);
+        AssertViewportScale(initial, await SceneAsync(page));
 
         await page.Locator("[data-cfx-reset]").ClickAsync();
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
@@ -119,8 +120,9 @@ public sealed partial class StandaloneViewportBrowserTests {
         var point = await page.EvaluateAsync<double[]>("""
             ({x,y})=>{
                 const svg=controller.root.querySelector('.cfx-stage svg'),plot=JSON.parse(controller.root.dataset.cfxPreparedChart).dataProjection.plotBounds;
-                const point=new DOMPoint(plot.x+plot.width*x,plot.y+plot.height*y).matrixTransform(svg.getScreenCTM());
-                return [point.x,point.y];
+                const canvas=svg.getBoundingClientRect(),view=svg.viewBox.baseVal;
+                return [canvas.x+(plot.x+plot.width*x-view.x)/view.width*canvas.width,
+                    canvas.y+(plot.y+plot.height*y-view.y)/view.height*canvas.height];
             }
             """, new { x, y });
         return ((float)point[0], (float)point[1]);
