@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.VisualBlocks;
 
@@ -25,12 +26,16 @@ internal sealed partial class NativeTablePaintPlan {
         var headerHeight = data.AbsoluteDataLabelSize is double absoluteHeader
             ? (data.Dense ? 26d : 32d) * Math.Max(s, absoluteHeader / 12)
             : (data.Dense ? 26d : 32d) * Math.Max(1, bodyScale) * s;
-        var rowHeight = data.AbsoluteDataLabelSize is double absoluteRows
+        var ordinaryRowHeight = data.AbsoluteDataLabelSize is double absoluteRows
             ? (data.Dense ? 24d : 31d) * (absoluteRows / 12)
             : (data.Dense ? 24d : 31d) * bodyScale * s;
+        var cellSize = data.AbsoluteDataLabelSize is double absoluteText ? (data.Dense ? 10.5 : 11.5) * (absoluteText / 12)
+            : (data.Dense ? 10.5 : 11.5) * bodyScale * s;
+        var rowHeights = data.Rows.Select(row => row.Cells.Select(cell => CellHeight(cell, cellSize, ordinaryRowHeight)).DefaultIfEmpty(ordinaryRowHeight).Max()).ToArray();
         var widths = ColumnWidths(data, content.Width);
+        var gridTop = y;
         foreach (var width in widths) RequiredWidth += width;
-        RequiredHeight = y - content.Y + (data.ShowHeader ? headerHeight + 4 * s : 0) + data.Rows.Count * rowHeight;
+        RequiredHeight = y - content.Y + (data.ShowHeader ? headerHeight + 4 * s : 0) + rowHeights.Sum();
         if (data.ShowHeader) {
             Rect("table-header", new ChartRect(content.X, y, content.Width, headerHeight), Math.Min(6, theme.PlotCornerRadius) * s,
                 theme.PlotBackground, theme.PlotBorder, ChartVisualPrimitives.SvgGuideStrokeClass);
@@ -43,12 +48,14 @@ internal sealed partial class NativeTablePaintPlan {
             }
             y += headerHeight + 4 * s;
         }
-        var maximum = Math.Max(0, (int)Math.Floor(((data.RowWindowBottom ?? content.Bottom) - y) / rowHeight));
+        var maximum = Math.Max(0, (int)Math.Floor(((data.RowWindowBottom ?? content.Bottom) - y) / ordinaryRowHeight));
         // Finite embedded content has already allocated every row. Reuse that measured total
         // instead of losing a row to cancellation in a scaled height / row-height quotient.
         // Optional ordinary tables retain their incumbent explicit row-window arithmetic.
         if (!data.RowWindowBottom.HasValue && RequiredHeight <= content.Height + 1e-8) maximum = data.Rows.Count;
         for (var rowIndex = 0; rowIndex < data.Rows.Count && rowIndex < maximum; rowIndex++) {
+            var rowHeight = rowHeights[rowIndex];
+            if (data.RowWindowBottom.HasValue && y + rowHeight > data.RowWindowBottom.Value) break;
             var row = data.Rows[rowIndex]; var x = content.X;
             var background = row.Background ?? (data.RowStriping && rowIndex % 2 == 1 ? theme.PlotBackground.WithAlpha(110) : ChartColor.Transparent);
             using (Identity(ChildId("row", row.Key), "table-row-content", new Dictionary<string, string> { ["data-row-key"] = row.Key })) {
@@ -64,13 +71,26 @@ internal sealed partial class NativeTablePaintPlan {
                         var cellWidth = widths[i] - (textX - x) - 7 * s;
                         if (cell.MicroVisual != NativeTableMicroVisual.None) MicroVisual(cell, textX, y + 4 * s, cellWidth, rowHeight - 8 * s, i);
                         else if (cell.BadgeText.Length > 0) Badge(cell, textX, y + 4 * s, cellWidth, rowHeight - 8 * s);
-                        else Text(cell.Text, textX, y + rowHeight * .66, cellWidth, cell.Alignment ?? column.Alignment, cell.Foreground ?? row.Foreground ?? data.Foreground ?? theme.Text, (data.AbsoluteDataLabelSize is double absoluteText ? (data.Dense ? 10.5 : 11.5) * (absoluteText / 12) : (data.Dense ? 10.5 : 11.5) * bodyScale * s), 400);
+                        else CellText(cell, new ChartRect(textX, y, cellWidth, rowHeight), cell.Alignment ?? column.Alignment, cell.Foreground ?? row.Foreground ?? data.Foreground ?? theme.Text, cellSize);
                         if (cellId != null) _builder.AddRegion(new VisualSemanticRegion(cellId, "table-cell", box, column.Label + ": " + cell.Text));
                     }
                     x += widths[i];
                 }
             }
             y += rowHeight; VisibleRows++;
+        }
+        if (data.Grid) {
+            var x = content.X;
+            foreach (var width in widths.Take(widths.Length - 1)) {
+                x += width;
+                Polyline(new[] { new ChartPoint(x, gridTop), new ChartPoint(x, y) }, theme.PlotBorder, s, "table-column-divider");
+            }
+            var firstRow = gridTop + (data.ShowHeader ? headerHeight + 4 * s : 0);
+            var lineY = firstRow;
+            for (var index = 0; index <= VisibleRows; index++) {
+                Polyline(new[] { new ChartPoint(content.X, lineY), new ChartPoint(content.Right, lineY) }, theme.PlotBorder, s, "table-row-divider");
+                if (index < VisibleRows) lineY += rowHeights[index];
+            }
         }
     }
     private static double[] ColumnWidths(NativeTableData data, double width) {
@@ -80,6 +100,13 @@ internal sealed partial class NativeTablePaintPlan {
             else flexible++;
         }
         var flexibleWidth = flexible == 0 ? 0 : Math.Max(24 * data.Scale, (width - fixedWidth) / flexible);
+        if (data.Grid) {
+            var required = 0d;
+            for (var i = 0; i < result.Length; i++) if (result[i] <= 0) { result[i] = ColumnMinimumWidth(data, i); required += result[i]; }
+            var extra = flexible == 0 ? 0 : Math.Max(0, width - fixedWidth - required) / flexible;
+            for (var i = 0; i < result.Length; i++) if (!data.Columns[i].Width.HasValue) result[i] += extra;
+            return result;
+        }
         for (var i = 0; i < result.Length; i++) if (result[i] <= 0) result[i] = flexibleWidth;
         return result;
     }

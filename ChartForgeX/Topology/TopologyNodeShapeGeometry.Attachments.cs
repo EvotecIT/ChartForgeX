@@ -64,10 +64,8 @@ internal static partial class TopologyNodeShapeGeometry {
         var intersections = new List<ChartPoint>();
         if (IsCatalogSurface(node)) {
             foreach (var part in CatalogParts(node)) if (part.Attachment) AddIntersections(part.Path.Flatten(1), part.Close);
-        } else if (node.CornerRadius.HasValue || TopologyPreparedNodeBasis.Resolve(node) != null || node.TableContent != null || TopologyNodeShapeGeometry.IsActor(node) || node.Shape is TopologyNodeShape.LinedDocument or TopologyNodeShape.Burst or TopologyNodeShape.HorizontalCylinder) {
-            foreach (var part in SceneParts(node)) AddIntersections(part.Path.Flatten(1), part.Close);
         } else {
-            foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) AddIntersections(path.Points, path.IsClosed);
+            foreach (var part in SceneParts(node)) AddIntersections(part.Path.Flatten(1), part.Close);
         }
         if (intersections.Count == 0)
             return BoundaryPoint(node, node.X + node.Width / 2, node.Y + node.Height / 2, port, gap);
@@ -129,9 +127,7 @@ internal static partial class TopologyNodeShapeGeometry {
         return SurfacePoint(origin, direction, gap * TopologyPreparedNodeBasis.Units(node), contour => {
             if (IsCatalogSurface(node)) {
                 foreach (var part in CatalogParts(node)) if (part.Attachment) contour(part.Path.Flatten(1), part.Close);
-            } else if (node.CornerRadius.HasValue || TopologyPreparedNodeBasis.Resolve(node) != null || node.TableContent != null || TopologyNodeShapeGeometry.IsActor(node) || node.Shape is TopologyNodeShape.LinedDocument or TopologyNodeShape.Burst or TopologyNodeShape.HorizontalCylinder) {
-                foreach (var part in SceneParts(node)) contour(part.Path.Flatten(1), part.Close);
-            } else foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) contour(path.Points, path.IsClosed);
+            } else foreach (var part in SceneParts(node)) contour(part.Path.Flatten(1), part.Close);
         });
     }
 

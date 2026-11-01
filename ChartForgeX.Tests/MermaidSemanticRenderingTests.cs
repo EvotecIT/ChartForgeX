@@ -70,8 +70,10 @@ public sealed class MermaidSemanticRenderingTests {
         var chart = document.ToTopologyChart();
         Assert.Equal(TopologyMarkerKind.ExactlyOne, chart.Edges[0].SourceMarker);
         Assert.Equal(TopologyMarkerKind.ZeroOrMany, chart.Edges[0].TargetMarker);
-        Assert.Contains("string SentinelKey  PK", document.ToSvg());
-        Assert.Contains("string SentinelEmail", document.ToSvg());
+        Assert.Equal(new[] { "string", "SentinelKey", "PK" }, chart.Nodes[0].TableContent!.Rows[0].Cells.Select(cell => cell.DisplayText));
+        var svg = XDocument.Parse(document.ToSvg());
+        foreach (var text in new[] { "string", "SentinelKey", "SentinelEmail", "PK" })
+            Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == text);
         Assert.NotEmpty(document.ToPng());
     }
 

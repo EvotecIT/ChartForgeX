@@ -96,7 +96,7 @@ public sealed class V2DiagramTests {
         foreach (var node in topology.Nodes) { node.X = 0; node.Y = 0; }
         var prepared = topology.Prepare(Context());
         var nodes = prepared.Regions.Where(region => region.Role == "topology-node").ToArray();
-        Assert.Equal(2, nodes.Length); Assert.NotEqual(nodes[0].Bounds.X, nodes[1].Bounds.X);
+        Assert.Equal(2, nodes.Length); Assert.True(nodes[0].Bounds.Bottom < nodes[1].Bounds.Top);
         Assert.All(topology.Nodes, node => { Assert.Equal(0, node.X); Assert.Equal(0, node.Y); });
         Assert.Equal(640, prepared.Size.Width); Assert.Equal(400, prepared.Size.Height);
     }

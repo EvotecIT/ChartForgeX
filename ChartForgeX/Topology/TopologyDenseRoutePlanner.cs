@@ -16,7 +16,7 @@ namespace ChartForgeX.Topology;
 /// the chart geometry because normalization can grow the viewport after an earlier routing pass.
 /// </remarks>
 internal static partial class TopologyDenseRoutePlanner {
-    /// <summary>Distance between a card border and the point where a route ends.</summary>
+    /// <summary>Search-terminal clearance; final paint extends the terminal leg onto the card border.</summary>
     internal const double EndpointGap = 7;
     /// <summary>Routes are searched this far from cards, captions, and group headers.</summary>
     private const double Clearance = 10;

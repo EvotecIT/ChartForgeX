@@ -104,6 +104,7 @@ internal static partial class VisualScheduleCompiler {
         if (frame == null) builder.DataProjection = ChartDataProjection.TryCreate(projection, min, max, axis);
         double Project(double value) => ScheduleX(axis, value, min, max, projection);
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
+            if (gantt) RangeSectionBands(chart, context, builder, viewport, plot, items, slot);
             if (frame == null) ScheduleBands(chart, context, builder, plot, Project);
             var obstacles = new List<LabelObstacle>();
             if (frame == null) Axis(chart, context, builder, viewport, layout, ticks, Project, Format,

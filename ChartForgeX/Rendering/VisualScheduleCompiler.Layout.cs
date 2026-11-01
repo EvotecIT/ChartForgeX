@@ -117,11 +117,19 @@ internal static partial class VisualScheduleCompiler {
             var inset = emphasized ? 6 : 0;
             var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap - inset);
             var labelStyle = ChartRowText.Style(builder, style, name, height, labelWidth);
-            var fittedName = ChartTextFitting.TrimEnd(name, labelStyle.EffectiveFontSize, labelWidth,
-                (text, _) => builder.MeasureText(text, labelStyle).Width);
-            if (fittedName.Length == 0) fittedName = name;
-            VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, labelStyle, fittedName, viewport.Left + inset, labelWidth, top, height, pitch), labelStyle,
-                ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
+            var wrapped = TextLayoutEngine.Layout(name, Math.Max(1, labelWidth), labelStyle);
+            var captionHeight = pitch > 0 ? Math.Max(height, pitch) : height;
+            if (wrapped.Lines.Count > 1 && wrapped.Metrics.Height <= captionHeight) {
+                var displayed = string.Join("\n", wrapped.Lines.Select(line => line.Text));
+                VisualStateSceneTools.Text(builder, name, new ChartRect(viewport.Left + inset, top + (height - captionHeight) / 2, labelWidth, captionHeight), labelStyle,
+                    ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: displayed);
+            } else {
+                var fittedName = ChartTextFitting.TrimEnd(name, labelStyle.EffectiveFontSize, labelWidth,
+                    (text, _) => builder.MeasureText(text, labelStyle).Width);
+                if (fittedName.Length == 0) fittedName = name;
+                VisualStateSceneTools.Text(builder, name, ChartRowText.Bounds(builder, labelStyle, fittedName, viewport.Left + inset, labelWidth, top, height, pitch), labelStyle,
+                    ChartDomRoles.ScheduleRowLabel, "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
+            }
         }
         if (showSummary) {
             var summaryStyle = ChartRowText.Style(builder, style, summaryText, height, Math.Max(0, viewport.Right - layout.SummaryLeft));

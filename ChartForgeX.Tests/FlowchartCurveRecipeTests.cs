@@ -26,8 +26,8 @@ public sealed class FlowchartCurveRecipeTests {
         var chart = Assert.IsType<TopologyChart>(artifact.Model);
         Assert.Equal(6, chart.Nodes.Count); Assert.Equal(2, chart.Groups.Count); Assert.Equal(6, chart.Edges.Count);
         Assert.Equal(TopologyEdgeInterpolation.BumpX, chart.Edges[0].Interpolation);
-        Assert.All(chart.Edges.Skip(1), edge => Assert.Equal(family == "swimlane" ? TopologyEdgeInterpolation.Rounded : TopologyEdgeInterpolation.Basis, edge.Interpolation));
-        Assert.Equal(16, chart.Theme.Typography.DataLabelSize); Assert.Equal(2, artifact.ToInterchangeEnvelope().Version);
+        Assert.All(chart.Edges.Skip(1), edge => Assert.Equal(TopologyEdgeInterpolation.Rounded, edge.Interpolation));
+        Assert.Equal(13, chart.Theme.Typography.DataLabelSize); Assert.Equal(2, artifact.ToInterchangeEnvelope().Version);
         Assert.Contains("var artifact=FlowchartCurveRecipe.Create", program, StringComparison.Ordinal);
         Assert.DoesNotContain("ChartForgeX.Examples", program, StringComparison.Ordinal); Assert.DoesNotContain("node_modules", program, StringComparison.Ordinal);
         Assert.Contains("ToInterchangeJson", program, StringComparison.Ordinal); Assert.NotEmpty(png);

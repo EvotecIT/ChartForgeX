@@ -24,15 +24,15 @@ public sealed class TopologyOrdinaryPortFanTests {
         for (var index = 0; index < routes.Length; index++) {
             var route = routes[index];
             var point = route[0];
-            Assert.Equal(horizontal ? source.X + (reversed ? -7 : source.Width + 7)
-                : source.Y + (reversed ? -7 : source.Height + 7), horizontal ? point.X : point.Y, 6);
+            Assert.Equal(horizontal ? source.X + (reversed ? 0 : source.Width)
+                : source.Y + (reversed ? 0 : source.Height), horizontal ? point.X : point.Y, 6);
             Assert.InRange(horizontal ? point.Y : point.X, horizontal ? source.Y : source.X,
                 horizontal ? source.Y + source.Height : source.X + source.Width);
             Assert.True((horizontal ? route[1].X - point.X : route[1].Y - point.Y) * (reversed ? -1 : 1) > 0);
             var target = nodes["target-" + index];
             var end = route[^1];
-            Assert.Equal(horizontal ? target.X + (reversed ? target.Width + 7 : -7)
-                : target.Y + (reversed ? target.Height + 7 : -7), horizontal ? end.X : end.Y, 6);
+            Assert.Equal(horizontal ? target.X + (reversed ? target.Width : 0)
+                : target.Y + (reversed ? target.Height : 0), horizontal ? end.X : end.Y, 6);
             Assert.InRange(horizontal ? end.Y : end.X, horizontal ? target.Y : target.X,
                 horizontal ? target.Y + target.Height : target.X + target.Width);
             Orthogonal(route);
@@ -72,8 +72,8 @@ public sealed class TopologyOrdinaryPortFanTests {
         var nodes = chart.Nodes.ToDictionary(node => node.Id);
         var route = TopologyRenderPrimitives.EdgePoints(chart, edge, nodes);
         if (attachment == "named") {
-            Assert.Equal(207, route[0].X, 6); Assert.Equal(15, route[0].Y, 6);
-        } else if (attachment == "explicit") Assert.Equal(57, route[0].Y, 6);
+            Assert.Equal(200, route[0].X, 6); Assert.Equal(15, route[0].Y, 6);
+        } else if (attachment == "explicit") Assert.Equal(50, route[0].Y, 6);
         else Assert.Equal(authoredWaypoints, route.Skip(1).Take(authoredWaypoints.Length));
         if (attachment != "waypoint") Orthogonal(route);
     }

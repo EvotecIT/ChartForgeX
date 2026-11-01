@@ -26,7 +26,7 @@ public sealed class MermaidEntityShellLifecycleTests {
         Assert.DoesNotContain(chart.Nodes, node => document.Groups.Any(group => group.Id == node.Id));
         Assert.Equal("Order group", chart.Nodes.Single(node => node.Id == "C").GroupId);
         Assert.Equal("Customer\naccount", chart.Nodes.Single(node => node.Id == "C").Label);
-        Assert.Equal("string id  PK  External key & value", chart.Nodes.Single(node => node.Id == "C").Details[0].Text);
+        Assert.Equal(new[] { "string", "id", "PK", "External key & value" }, chart.Nodes.Single(node => node.Id == "C").TableContent!.Rows[0].Cells.Select(cell => cell.DisplayText));
         var edges = chart.Edges;
         Assert.Equal(("Outside", "Domain: core", TopologyMarkerKind.ExactlyOne, TopologyMarkerKind.ZeroOrMany),
             (edges[0].SourceNodeId, edges[0].TargetNodeId, edges[0].SourceMarker, edges[0].TargetMarker));

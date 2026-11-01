@@ -80,7 +80,7 @@ public sealed class TopologyActorPreparedBasisTests {
         var numbers = System.Text.RegularExpressions.Regex.Matches(path.Attribute("d")!.Value, @"[-+]?(?:[0-9]*\.)?[0-9]+(?:[eE][-+]?[0-9]+)?")
             .Cast<System.Text.RegularExpressions.Match>().Select(match => double.Parse(match.Value, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
         var right = numbers.Where((_, index) => index % 2 == 0).Max();
-        Assert.InRange(Math.Abs(Assert.Single(envelope.Edges).ResolvedRoute[0].X - right - 7 * factor), 0, .0011);
+        Assert.InRange(Math.Abs(Assert.Single(envelope.Edges).ResolvedRoute[0].X - right), 0, .0011);
     }
 
     [Theory]

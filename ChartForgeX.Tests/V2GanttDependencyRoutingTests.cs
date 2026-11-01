@@ -33,11 +33,20 @@ public sealed class V2GanttDependencyRoutingTests {
             var arrow = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
             var first = route.Commands[0]; var last = route.Commands[route.Commands.Count - 1];
             Assert.True(first.X - route.StrokeWidth / 2 > sourceBounds.Right, "The painted connector must start beyond the source finish.");
-            Assert.True(last.X + arrow.StrokeWidth / 2 < targetBounds.Left, "The painted arrow must stop before the target start, including a diamond's left vertex.");
             Assert.Equal(sourceBounds.Top + sourceBounds.Height / 2, first.Y, 7);
-            Assert.Equal(targetBounds.Top + targetBounds.Height / 2, last.Y, 7);
-            Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
-            Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
+            if (last.Y < targetBounds.Top) {
+                Assert.True(last.Y + arrow.StrokeWidth / 2 < targetBounds.Top);
+                Assert.InRange(last.X, targetBounds.Left, targetBounds.Right);
+                Assert.True(route.Commands[^2].Y < last.Y);
+                Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.Y < last.Y));
+                Assert.All(route.Commands.Zip(route.Commands.Skip(1)), pair => Assert.True(pair.First.X <= pair.Second.X,
+                    "An adjacent finish-to-start route must not double back in time."));
+            } else {
+                Assert.True(last.X + arrow.StrokeWidth / 2 < targetBounds.Left, "The painted arrow must stop before the target start, including a diamond's left vertex.");
+                Assert.Equal(targetBounds.Top + targetBounds.Height / 2, last.Y, 7);
+                Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
+                Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
+            }
             foreach (var bounds in new[] { sourceBounds, targetBounds }) {
                 AssertClear(route, bounds); AssertClear(arrow, bounds);
             }

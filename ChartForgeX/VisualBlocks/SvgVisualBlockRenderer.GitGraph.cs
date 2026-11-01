@@ -18,14 +18,15 @@ public sealed partial class SvgVisualBlockRenderer {
             var branch = layout.Branches[index];
             var laneY = layout.LaneYs[branch.Name];
             var color = VisualBlockRendering.PaletteAt(theme, index);
+            var extent = VisualBlockRendering.GitBranchExtent(layout, branch.Name);
             if (graph.ShowBranchLabels) writer.StartElement("line")
                 .Attribute("data-cfx-role", "git-branch-line")
                 .Attribute("data-branch", branch.Name)
-                .Attribute("x1", F(layout.Vertical ? laneY : layout.PlotX))
-                .Attribute("y1", F(layout.Vertical ? layout.PlotX : laneY))
-                .Attribute("x2", F(layout.Vertical ? laneY : layout.PlotRight))
-                .Attribute("y2", F(layout.Vertical ? layout.PlotRight : laneY))
-                .Attribute("stroke", color.WithAlpha(115).ToCss())
+                .Attribute("x1", F(layout.Vertical ? laneY : extent.Start))
+                .Attribute("y1", F(layout.Vertical ? extent.Start : laneY))
+                .Attribute("x2", F(layout.Vertical ? laneY : extent.End))
+                .Attribute("y2", F(layout.Vertical ? extent.End : laneY))
+                .Attribute("stroke", color.ToCss())
                 .Attribute("stroke-width", 2)
                 .Attribute("stroke-linecap", "round")
                 .EndEmptyElement()
@@ -50,7 +51,8 @@ public sealed partial class SvgVisualBlockRenderer {
         var commit = placement.Commit;
         for (var index = 0; index < commit.ParentIds.Count; index++) {
             if (!layout.PlacementsById.TryGetValue(commit.ParentIds[index], out var parent)) continue;
-            var color = theme.Axis.WithAlpha(index == 0 ? (byte)160 : (byte)120);
+            var branch = commit.Type == GitGraphCommitType.Merge && index > 0 ? parent.Commit.BranchName : commit.BranchName;
+            var color = VisualBlockRendering.PaletteAt(theme, BranchIndex(layout, branch));
             writer.StartElement("line")
                 .Attribute("data-cfx-role", "git-commit-edge")
                 .Attribute("data-parent-id", parent.Commit.Id)

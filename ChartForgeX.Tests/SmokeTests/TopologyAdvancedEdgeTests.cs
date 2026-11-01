@@ -68,7 +68,7 @@ internal static partial class SmokeTests {
         };
         autoArtifact.ToSvg(focusedArtifactOptions);
         Assert(autoArtifact.Regions.Any(region => region.Id == "left") && !autoArtifact.Regions.Any(region => region.Id == "right" || region.Id == "left-right"), "Topology artifact regions should follow the effective focused view used by the latest render.");
-        var focusedBounds = TopologyLayoutDiagnostics.Analyze(autoChart, focusedArtifactOptions.Topology).Nodes.Single().Bounds;
+        var focusedBounds = autoChart.Prepare(focusedArtifactOptions.Topology).Analyze().Nodes.Single().Bounds;
         var focusedArtifactBounds = autoArtifact.Regions.Single(region => region.Id == "left").Bounds!.Value;
         Assert(Math.Abs(focusedArtifactBounds.Left - focusedBounds.Left) < 0.001 && Math.Abs(focusedArtifactBounds.Top - focusedBounds.Top) < 0.001 && Math.Abs(focusedArtifactBounds.Width - focusedBounds.Width) < 0.001 && Math.Abs(focusedArtifactBounds.Height - focusedBounds.Height) < 0.001, "Topology artifact regions should expose the same prepared geometry as the effective render options.");
 
@@ -106,7 +106,7 @@ internal static partial class SmokeTests {
         var highPlate = highLabel.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label-surface");
         Assert(highText.RenderedColor("fill").A == 64 && highPlate.RenderedColor("fill").A is > 0 and <= 64, "Native edge label ink and backplates should retain the explicit relationship opacity.");
         var highEndpoint = orderingDocument.Descendants().Single(element => element.Name.LocalName == "text" && element.Value == "high-source");
-        Assert(highEndpoint.RenderedColor("fill").A == 64 && highEndpoint.RenderedColor("stroke").A == 64, "Endpoint label ink and its readability outline should retain the explicit relationship opacity.");
+        Assert(highEndpoint.RenderedColor("fill").A == 64 && highEndpoint.Attribute("stroke") == null, "Endpoint label ink should retain relationship opacity without an extra halo over its backplate.");
         byte[] selectedLowOpacity = orderingChart.ToPng(orderingOptions);
         orderingChart.Edges.Single(edgeItem => edgeItem.Id == "high").Opacity = 1D;
         byte[] selectedFullOpacity = orderingChart.ToPng(orderingOptions);

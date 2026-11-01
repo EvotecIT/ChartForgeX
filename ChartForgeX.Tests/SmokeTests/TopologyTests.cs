@@ -539,7 +539,7 @@ internal static partial class SmokeTests {
         Assert(SvgHasAttributes(straightSvg, "data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"0\""), "Topology SVG should expose explicit edge ports and lanes for host adapters.");
         Assert(straightSvg.Contains("data-edge-line-style=\"Dashed\"", StringComparison.Ordinal), "Topology SVG should expose explicit edge line style metadata.");
         Assert(straightSvg.Contains("stroke-dasharray=\"8 5\"", StringComparison.Ordinal), "Explicit edge line style should override health-derived dash behavior.");
-        Assert(straightSvg.Contains("d=\"M 207 152 L 333 152\"", StringComparison.Ordinal), "Straight topology edges should attach to the requested source and target ports.");
+        Assert(straightSvg.Contains("d=\"M 200 152 L 340 152\"", StringComparison.Ordinal), "Straight topology edges should attach to the requested source and target ports.");
 
         var lane = TopologyChart.Create()
             .WithId("ported-lane")
@@ -552,7 +552,7 @@ internal static partial class SmokeTests {
             .WithEdgeRouteLane("source-target", 24);
         var laneSvg = lane.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(SvgHasAttributes(laneSvg, "data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"24\""), "Topology SVG should expose non-zero route lanes.");
-        Assert(laneSvg.Contains("d=\"M 140 151 L 140 216 L 380 216 L 380 233\"", StringComparison.Ordinal), "Orthogonal topology edges should use requested ports and deterministic route lanes.");
+        Assert(laneSvg.Contains("d=\"M 140 144 L 140 216 L 380 216 L 380 240\"", StringComparison.Ordinal), "Orthogonal topology edges should use requested ports and deterministic route lanes.");
         Assert(lane.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render ported orthogonal route lanes.");
         var obstacleAware = TopologyChart.Create()
             .WithId("ported-obstacle-aware")
@@ -593,7 +593,7 @@ internal static partial class SmokeTests {
         var path = ExtractEdgePathData(svg, "left-right");
         var points = ParseSvgPathPoints(path);
         Assert(points.Count >= 4, "Obstacle-aware topology routes should keep the route deterministic and orthogonal for a single blocker.");
-        Assert(path.StartsWith("M 147 150 ", StringComparison.Ordinal) && path.EndsWith(" L 353 150", StringComparison.Ordinal), "Obstacle-aware topology routes should attach to the requested source and target ports.");
+        Assert(path.StartsWith("M 140 150 ", StringComparison.Ordinal) && path.EndsWith(" L 360 150", StringComparison.Ordinal), "Obstacle-aware topology routes should attach to the requested source and target ports.");
         Assert(points.Any(point => point.Y < 110 || point.Y > 190), "Obstacle-aware topology routes should choose a lane outside the expanded blocking node bounds.");
         Assert(!PathIntersectsBox(points, left: 200, top: 110, right: 320, bottom: 190), "Obstacle-aware topology routes should avoid the expanded blocking node bounds.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render obstacle-aware route points.");

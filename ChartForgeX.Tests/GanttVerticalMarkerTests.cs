@@ -37,13 +37,11 @@ public sealed class GanttVerticalMarkerTests {
         Assert.True(marker.Bounds.Height > 0);
         Assert.Single(prepared.Regions, region => region.Role == "gantt-dependency");
         var tasks = prepared.Regions.Where(region => region.Role == "gantt-task").ToArray();
-        var control = Chart.Create().WithTitle("Mermaid Gantt").WithSize(960, 560).WithLegend(false)
-            .AddGanttTask("Work / Design", Start, Start.AddDays(3)).AddGanttTask("Work / Delivery", Start.AddDays(3), Start.AddDays(5));
-        control.AddGanttDependency(control.Series[0], control.Series[1]);
+        var control = new MermaidParser().ParseGantt(source.Replace("Deadline :vert,2026-01-02,4d", "", StringComparison.Ordinal)).Document!.ToChart().WithLegend(false);
         var controlTasks = control.Prepare(VisualExportRequest.ForChart(control).Context).Regions.Where(region => region.Role == "gantt-task").ToArray();
         Assert.Equal(controlTasks.Select(task => task.Bounds), tasks.Select(task => task.Bounds));
         var arrow = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
-        Assert.Equal(tasks[1].Bounds.Top + tasks[1].Bounds.Height / 2, arrow.Commands[1].Y, 6);
+        Assert.InRange(arrow.Commands[1].Y, tasks[1].Bounds.Top - 5, tasks[1].Bounds.Top);
         var json = document.ToVisualArtifact().ToInterchangeJson();
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(json);
         Assert.Equal("1", envelope.Extensions["mermaid.verticalMarkers"]);

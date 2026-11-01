@@ -9,7 +9,7 @@ namespace ChartForgeX.Mermaid;
 public static partial class MermaidTopologyRendering {
     /// <summary>Projects state hierarchy and concurrent regions through native group ownership.</summary>
     private static TopologyChart CreateStateTopology(MermaidStateDocument document, MermaidTopologyRenderOptions options) {
-        var direction = DiagramDirection(document.Direction, TopologyLayoutDirection.TopToBottom);
+        var direction = DiagramDirection(document.Direction, PreferredDirection(options));
         var chart = CreateTopology(options, "mermaid-state", ResolveTitle(document, options, "Mermaid state diagram"), TopologyLayoutMode.Layered, direction);
         var concurrent = document.Regions.GroupBy(region => region.CompositeStateId, StringComparer.Ordinal)
             .Where(group => group.Count() > 1).ToDictionary(group => group.Key, group => group.OrderBy(region => region.Index).ToArray(), StringComparer.Ordinal);

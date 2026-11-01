@@ -26,11 +26,13 @@ public sealed class MermaidClassNotationTextCompletenessTests {
         Assert.Equal(svg, fenced.ToSvg()); Assert.Equal(png, fenced.ToPng());
         var xml = XDocument.Parse(svg);
         foreach (var expected in ExpectedRows(family)) Assert.Contains(xml.Descendants(), element => element.Name.LocalName == "text" && element.Value == expected);
+        if (family == "er") Assert.Contains(xml.Descendants(), element => (string?)element.Attribute("data-cfx-caption") == "external\nkey" && element.Descendants().Any(child => child.Name.LocalName == "use"));
         var edge = Assert.Single(xml.Descendants(), element => Role(element) == "topology-edge-label");
         Assert.Equal("2", (string?)edge.Attribute("data-label-line-count"));
         Assert.Equal(family == "class" ? new[] { "owns", "many" } : new[] { "holds", "rows" }, Text(edge));
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
-        Assert.Contains(envelope.Nodes.SelectMany(node => node.Details), detail => detail.Text!.Contains('\n'));
+        if (family == "class") Assert.Contains(envelope.Nodes.SelectMany(node => node.Details), detail => detail.Text!.Contains('\n'));
+        else Assert.Contains(envelope.Nodes.Where(node => node.Topology?.TableContent != null).SelectMany(node => node.Topology!.TableContent!.Rows).SelectMany(row => row.Cells), cell => cell.DisplayText!.Contains('\n'));
         Assert.Equal(family == "class" ? "owns\nmany" : "holds\nrows", Assert.Single(envelope.Edges).Label);
         Assert.DoesNotContain(xml.Descendants(), element => element.Name.LocalName is "script" or "foreignObject" or "image");
     }
@@ -107,7 +109,7 @@ public sealed class MermaidClassNotationTextCompletenessTests {
         A ||--o{ B : holds<br>rows
         """;
     internal static string[] ExpectedRows(string family) => family == "class" ? new[] { "+run()", "ready", "+id", "value", "owns", "many" }
-        : new[] { "string id  PK  external", "key", "int id  PK  record", "holds", "rows" };
+        : new[] { "string", "id", "PK", "int", "record", "holds", "rows" };
     private static string? Role(XElement element) => (string?)element.Attribute("data-cfx-role");
     private static string[] Text(XElement element) => element.Descendants().Where(item => item.Name.LocalName == "text").Select(item => item.Value).ToArray();
     private static TopologyChart Chart() {

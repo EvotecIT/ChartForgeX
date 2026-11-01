@@ -39,7 +39,7 @@ internal sealed partial class VisualTopologyCompiler {
         ShapeContentLayout? best = null; var retained = -1;
         var maximumTitle = showText ? Math.Max(1, _options.MaxNodeLabelLines) : 1;
         var maximumSubtitle = subtitle && !chip ? Math.Max(1, _options.MaxNodeSubtitleLines) : 1;
-        var detailHeight = showText && node.Details.Count > 0 ? 6 + DetailRowsHeight(node, size * .8, detailLine) : 0;
+        var detailHeight = showText && node.Details.Count > 0 ? 8 + DetailRowsHeight(node, size * .8, detailLine) + node.Details.Count(detail => detail.StartsSection) * 8 * spacing : 0;
         var tableHeight = TableHeight(node, size);
         detailHeight += tableHeight;
         // Candidate row allocations repeatedly use the same measured width. Retain
@@ -136,6 +136,9 @@ internal sealed partial class VisualTopologyCompiler {
             return; // The existing overflow diagnostic still describes exhausted explicit row ceilings.
         }
         node.Width = Math.Max(node.Width, width + 20 * spacing + 2 * padding);
+        // Fit the measured vertical stack before expanding curved shapes. Growing both axes
+        // from a small minimum card otherwise multiplies its already sufficient text width.
+        node.Height = Math.Max(node.Height, ShapeContent(node, size).RequiredHeight + 20 * spacing + 2 * padding);
         for (var attempt = 0; attempt < 32; attempt++) {
             if (node.Shape is TopologyNodeShape.Circle or TopologyNodeShape.DoubleCircle)
                 node.Width = node.Height = Math.Max(node.Width, node.Height);
@@ -151,7 +154,7 @@ internal sealed partial class VisualTopologyCompiler {
                 + (_options.IncludeNodeLabels && !string.IsNullOrWhiteSpace(node.Subtitle)
                     ? subtitleRows * MeasureRoleText("Ag", RoleTextSize(size * .85, node.SubtitleTextStyle), _options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 700 : 400, node.SubtitleTextStyle).LineHeight
                         + (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip ? 4 * spacing : 0) : 0)
-                + (_options.IncludeNodeLabels && node.Details.Count > 0 ? 6 + DetailRowsHeight(node, size * .8, content.DetailHeight) : 0)
+                + (_options.IncludeNodeLabels && node.Details.Count > 0 ? 8 + DetailRowsHeight(node, size * .8, content.DetailHeight) + node.Details.Count(detail => detail.StartsSection) * 8 * spacing : 0)
                 + content.TableHeight;
             var footerHeight = (!string.IsNullOrWhiteSpace(node.Badge) ? 18 : _options.IncludeStatusBadges && node.ShowStatusBadge ? 6 : 0) * spacing;
             intendedHeight = Math.Max(intendedHeight, glyph > 0 ? 26 : 0) + footerHeight + (footerHeight > 0 ? 4 * spacing : 0);
@@ -199,8 +202,15 @@ internal sealed partial class VisualTopologyCompiler {
                     chip ? "topology-subtitle-chip-text" : "topology-node-subtitle", layout.SubtitleRows, centered: true,
                     paint: NodeSubtitlePaint(node, active), textStyle: node.SubtitleTextStyle);
             }
-            if (node.Details.Count > 0) y = Math.Min(text.Bottom, y + 6);
+            if (node.Details.Count > 0) {
+                Divider(y + 4 * spacing);
+                y = Math.Min(text.Bottom, y + 8 * spacing);
+            }
             foreach (var detail in node.Details) {
+                if (detail.StartsSection) {
+                    Divider(y + 4 * spacing);
+                    y = Math.Min(text.Bottom, y + 8 * spacing);
+                }
                 var row = Row(DetailRowHeight(detail, size * .8, layout.DetailHeight));
                 var reserve = !string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue ? Math.Min(14, row.Width) : 0;
                 var color = Highlight(Color(detail.Color, detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground), active);
@@ -253,5 +263,11 @@ internal sealed partial class VisualTopologyCompiler {
             y += result.Height; return result;
         }
         ChartRect Project(ChartRect bounds) => Bounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+        void Divider(double lineY) {
+            var bounds = Project(new ChartRect(node.X, lineY, node.Width, 0));
+            var ink = Highlight(_colors.Border, active);
+            _builder.Line(bounds.X, bounds.Y, bounds.Right, bounds.Y, ink, _context.Theme.AxisStrokeWidth * spacing * _scale,
+                "topology-node-detail-separator", paint: new VisualScenePaintBinding(stroke: BorderPaint(ink, HighlightFactor(active))));
+        }
     }
 }

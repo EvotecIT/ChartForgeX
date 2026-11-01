@@ -13,16 +13,41 @@ internal static partial class TopologyRenderPrimitives {
         if (edge.Routing != TopologyEdgeRouting.Curved || edge.Waypoints.Count != 0) return points.ToList();
         if (points.Count == 4 && !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) return CubicCurveSamplePoints(points[0], points[1], points[2], points[3], segments);
         if (points.Count != 2) return points.ToList();
-        StandardCurveControlPoints(points, out var firstControl, out var secondControl);
+        var start = points[0]; var end = points[1];
+        var horizontal = edge.SourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || edge.TargetPort is TopologyEdgePort.Left or TopologyEdgePort.Right
+            || edge.SourcePort == TopologyEdgePort.Auto && edge.TargetPort == TopologyEdgePort.Auto && Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y);
+        if (chart.LayoutMode != TopologyLayoutMode.MindMap && (horizontal ? Math.Abs(end.Y - start.Y) < .001 : Math.Abs(end.X - start.X) < .001)) {
+            // Two smooth halves preserve a real curve and facing endpoint normals on aligned nodes.
+            var span = horizontal ? end.X - start.X : end.Y - start.Y;
+            var bow = Math.Min(28, Math.Max(8, Math.Abs(span) * .12));
+            var middle = horizontal ? new ChartPoint((start.X + end.X) / 2, start.Y - bow)
+                : new ChartPoint(start.X - bow, (start.Y + end.Y) / 2);
+            var first = CubicCurveSamplePoints(start,
+                horizontal ? new ChartPoint(start.X + span * .25, start.Y) : new ChartPoint(start.X, start.Y + span * .25),
+                horizontal ? new ChartPoint(middle.X - span * .15, middle.Y) : new ChartPoint(middle.X, middle.Y - span * .15), middle, segments);
+            var last = CubicCurveSamplePoints(middle,
+                horizontal ? new ChartPoint(middle.X + span * .15, middle.Y) : new ChartPoint(middle.X, middle.Y + span * .15),
+                horizontal ? new ChartPoint(end.X - span * .25, end.Y) : new ChartPoint(end.X, end.Y - span * .25), end, segments);
+            first.AddRange(last.Skip(1)); return first;
+        }
+        StandardCurveControlPoints(points, out var firstControl, out var secondControl, edge.SourcePort, edge.TargetPort);
         return CubicCurveSamplePoints(points[0], firstControl, secondControl, points[1], segments);
     }
 
-    public static void StandardCurveControlPoints(IReadOnlyList<ChartPoint> points, out ChartPoint firstControl, out ChartPoint secondControl) {
+    public static void StandardCurveControlPoints(IReadOnlyList<ChartPoint> points, out ChartPoint firstControl, out ChartPoint secondControl,
+        TopologyEdgePort sourcePort = TopologyEdgePort.Auto, TopologyEdgePort targetPort = TopologyEdgePort.Auto) {
         var start = points[0];
         var end = points[points.Count - 1];
-        var lift = Math.Max(40, Math.Abs(end.X - start.X) * 0.12);
-        firstControl = new ChartPoint(start.X, start.Y - lift);
-        secondControl = new ChartPoint(end.X, end.Y - lift);
+        var horizontal = sourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || targetPort is TopologyEdgePort.Left or TopologyEdgePort.Right;
+        if (horizontal || sourcePort == TopologyEdgePort.Auto && targetPort == TopologyEdgePort.Auto && Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y)) {
+            var middle = (start.X + end.X) / 2;
+            firstControl = new ChartPoint(middle, start.Y);
+            secondControl = new ChartPoint(middle, end.Y);
+        } else {
+            var middle = (start.Y + end.Y) / 2;
+            firstControl = new ChartPoint(start.X, middle);
+            secondControl = new ChartPoint(end.X, middle);
+        }
     }
 
     private static List<ChartPoint> CubicCurveSamplePoints(ChartPoint start, ChartPoint firstControl, ChartPoint secondControl, ChartPoint end, int segments) {

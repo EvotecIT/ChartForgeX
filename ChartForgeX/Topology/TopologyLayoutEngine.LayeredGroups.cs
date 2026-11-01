@@ -7,6 +7,24 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
+    // Midpoint badges on a fan are half as far apart as their source/target rank cells.
+    private static double LayeredCaptionPitch(TopologyChart chart, TopologyRenderOptions? options, bool horizontal) {
+        if (options?.IncludeEdgeLabels == false || options?.ReadableDenseLayout == true) return 0;
+        var resolved = options ?? new TopologyRenderOptions();
+        var pitch = 0d;
+        foreach (var edge in chart.Edges) {
+            var primary = EdgeLabel(edge, resolved.EdgeLabelMetricKey, edge.Label);
+            var secondary = EdgeLabel(edge, resolved.EdgeSecondaryLabelMetricKey, edge.SecondaryLabel);
+            var tertiary = EdgeLabel(edge, resolved.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel);
+            var lines = EdgeLabelRows(primary, secondary, tertiary, resolved);
+            if (lines == 0) continue;
+            var width = EdgeLabelTextWidth(primary, secondary, tertiary, chart.TextMeasurement, resolved.ResolvedEdgeLabelScale, resolved.AllowMultilineNodeLabels);
+            var size = InlineEdgeLabelExtent(chart, edge, primary, secondary, tertiary, resolved, width, EdgeLabelHeight(lines, resolved));
+            pitch = Math.Max(pitch, (horizontal ? size.Height : size.Width) * 2 + 12);
+        }
+        return pitch;
+    }
+
     /// <summary>Reserves a complete automatic edge badge between ranks before label placement.</summary>
     private static double LayeredRankGap(TopologyChart chart, TopologyRenderOptions? options, bool horizontal) {
         if (options?.LayeredRankSpacing is { } authored) return authored;
@@ -25,7 +43,16 @@ internal static partial class TopologyLayoutEngine {
             var width = EdgeLabelTextWidth(primary, secondary, tertiary, chart.TextMeasurement, labelOptions.ResolvedEdgeLabelScale, labelOptions.AllowMultilineNodeLabels);
             var size = InlineEdgeLabelExtent(chart, edge, primary, secondary, tertiary, labelOptions, width, EdgeLabelHeight(lines, labelOptions));
             var extent = horizontal ? size.Width : size.Height;
-            gap = Math.Max(gap, extent + EdgeEndpointGap * 2 + 16);
+            var groupReserve = 0d;
+            if (options?.IncludeGroups != false && source.GroupId != target.GroupId) {
+                if (source.GroupId != null) groupReserve += horizontal ? Math.Max(24, TopologyLayoutNormalizer.MinimumAutoGroupWidth - source.Width - TopologyLayoutNormalizer.GroupPadding) : 24;
+                if (target.GroupId != null) groupReserve += 24;
+                if (!horizontal && target.GroupId != null) {
+                    var group = chart.Groups.FirstOrDefault(item => item.Id == target.GroupId);
+                    if (group != null) groupReserve += TopologyGroupHeader.ReservedBounds(chart, group, labelOptions).Height + 12;
+                }
+            }
+            gap = Math.Max(gap, extent + EdgeEndpointGap * 2 + 32 + groupReserve);
         }
         return gap;
     }
@@ -37,8 +64,7 @@ internal static partial class TopologyLayoutEngine {
         var automatic = new HashSet<string>(authored.Groups.Where(g => g.Width <= 0 && g.Height <= 0 && g.X == 0 && g.Y == 0).Select(g => g.Id), StringComparer.Ordinal);
         if (automatic.Count == 0) return;
         automatic.RemoveWhere(id => authored.Nodes.Any(n => n.GroupId == id && (!IsUnset(n.X) || !IsUnset(n.Y))));
-        if (automatic.Count == 0 || automatic.Count < 2 && authored.Groups.All(g => automatic.Contains(g.Id))
-            && authored.Nodes.All(node => node.GroupId != null)) return;
+        if (automatic.Count == 0) return;
         var authoredNodes = authored.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
         automatic.RemoveWhere(id => authored.Edges.Any(e => e.Waypoints.Count > 0 &&
             ((authoredNodes.TryGetValue(e.SourceNodeId, out var source) && source.GroupId == id)
@@ -73,11 +99,12 @@ internal static partial class TopologyLayoutEngine {
                 }
             }
             group.X = nodes.Min(n => n.X + (n.Width - LayeredNodeWidth(chart, n)) / 2) - 24;
-            group.Width = Math.Max(190, nodes.Max(n => n.X + (n.Width + LayeredNodeWidth(chart, n)) / 2) - group.X + 24);
+            group.Width = Math.Max(TopologyLayoutNormalizer.MinimumAutoGroupWidth, nodes.Max(n => n.X + (n.Width + LayeredNodeWidth(chart, n)) / 2) - group.X + 24);
             group.Y = nodes.Min(n => n.Y) - 24;
             group.Height = Math.Max(80, nodes.Max(n => n.Y + LayeredNodeHeight(chart, n)) - group.Y + 24);
             var header = options == null || TopologyGroupHeader.IsDrawn(options)
-                ? TopologyGroupHeader.ReservedBounds(chart, group, options ?? new TopologyRenderOptions()).Height + 12 : 0;
+                ? Math.Max(0, TopologyGroupHeader.ReservedBounds(chart, group, options ?? new TopologyRenderOptions()).Height
+                    + TopologyLayoutNormalizer.GroupHeaderBottomGap - TopologyLayoutNormalizer.GroupPadding) : 0;
             group.Y -= header; group.Height += header;
 
             double ReserveUngroupedRankPeers(int rankIndex, double preferred, double groupLength) {

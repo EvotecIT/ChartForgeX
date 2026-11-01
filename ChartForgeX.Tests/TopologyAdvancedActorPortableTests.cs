@@ -101,8 +101,8 @@ public sealed class TopologyAdvancedActorPortableTests {
         Capture(prepared.ToSvg(), prepared.ToPng(), envelope.ToJson(), "actor-ports-" + shape);
         if (shape == TopologyNodeShape.ActorIcon) {
             // This fixture has ActorScale=1: the native48-unit frame ends24 units right of its centre,
-            // then the established7-unit endpoint gap begins the route outside the real figure.
-            Assert.Equal(captured.X!.Value + captured.Width!.Value / 2 + 24 + 7, first.X, 9);
+            // the route begins on the real figure.
+            Assert.Equal(captured.X!.Value + captured.Width!.Value / 2 + 24, first.X, 9);
         } else Assert.InRange(first.X, captured.X!.Value + captured.Width!.Value / 2 + 10, captured.X.Value + captured.Width.Value / 2 + 30);
         Assert.True(first.X < captured.X.Value + captured.Width.Value);
         var xml = XDocument.Parse(prepared.ToSvg()); var group = MermaidUseCaseAdvancedActorTests.Node(xml, "actor");

@@ -30,8 +30,25 @@ internal static partial class VisualScheduleCompiler {
             var halfStroke = context.Theme.AxisStrokeWidth / 2;
             var commands = DependencyRoute(start, end, plot, slot, arrow, DependencyStubLength(context, arrow),
                 DependencyClearance(context), halfStroke, surfaces);
+            if (end.X > start.X && target.Top > source.Bottom) {
+                foreach (var fraction in new[] { .5, 0d, 1d }) {
+                    var x = start.X + (end.X - start.X) * fraction;
+                    var forward = new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(x, start.Y),
+                        ChartPathCommand.LineTo(x, end.Y), ChartPathCommand.LineTo(end.X, end.Y) };
+                    if (!DependencyPaintFits(forward, surfaces, plot, halfStroke)) continue;
+                    commands = forward; break;
+                }
+            }
+            var topApproach = false;
+            if (target.Left <= source.Right + DependencyClearance(context) * 2 && target.Top > source.Bottom) {
+                var topEnd = new ChartPoint(Math.Min(target.Right - arrow, Math.Max(start.X + arrow, target.Left + arrow)), target.Top - DependencyClearance(context));
+                var forward = new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(topEnd.X, start.Y), ChartPathCommand.LineTo(topEnd.X, topEnd.Y) };
+                if (topEnd.X >= start.X && DependencyPaintFits(forward, surfaces, plot, halfStroke)) {
+                    commands = forward; end = topEnd; topApproach = true;
+                }
+            }
             var arrowCommands = new[] { ChartPathCommand.MoveTo(end.X - arrow, end.Y - arrow), ChartPathCommand.LineTo(end.X, end.Y),
-                ChartPathCommand.LineTo(end.X - arrow, end.Y + arrow) };
+                ChartPathCommand.LineTo(topApproach ? end.X + arrow : end.X - arrow, topApproach ? end.Y - arrow : end.Y + arrow) };
             if (!DependencyPaintFits(arrowCommands, surfaces, plot, halfStroke)) commands = null;
             if (commands != null) commands = SchedulePhysicalPath(chart, plot, commands);
             arrowCommands = SchedulePhysicalPath(chart, plot, arrowCommands);

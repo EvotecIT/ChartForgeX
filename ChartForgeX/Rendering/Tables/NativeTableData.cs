@@ -15,7 +15,7 @@ internal sealed class NativeTableData {
     internal ResolvedVisualTheme Theme = null!;
     internal FontSpec Font = null!;
     internal ChartRect Bounds;
-    internal bool Dense, ShowHeader = true, RowStriping = true;
+    internal bool Dense, ShowHeader = true, RowStriping = true, Grid;
     internal int? StatusColumn, WeightOverride;
     internal double Scale = 1, Opacity = 1;
     internal ChartColor? Foreground;
@@ -26,7 +26,7 @@ internal sealed class NativeTableData {
     internal List<NativeTableRow> Rows { get; } = new();
     internal static NativeTableData Capture(TableArtifact table, ChartRect bounds, ResolvedVisualTheme theme, FontSpec font, string id, double scale = 1) {
         var data = new NativeTableData { Id = id, ContentId = table.Id, Title = table.Title, Subtitle = table.Subtitle,
-            Bounds = bounds, Theme = theme, Font = font.Clone(), Scale = scale * table.CapturedPresentationScale };
+            Bounds = bounds, Theme = theme, Font = font.Clone(), Scale = scale * table.CapturedPresentationScale, Grid = table.ShowGridLines };
         for (var column = 0; column < table.Columns.Count; column++) {
             var item = table.Columns[column]; data.Columns.Add(new NativeTableColumn(item.Id, item.Label, item.Alignment, item.Width));
             if (!data.StatusColumn.HasValue && item.Type == TableArtifactColumnType.Status) data.StatusColumn = column;
@@ -34,6 +34,7 @@ internal sealed class NativeTableData {
         foreach (var row in table.Rows) {
             var copy = new NativeTableRow { Key = row.Key };
             foreach (var cell in row.Cells) copy.Cells.Add(new NativeTableCell { Text = cell.DisplayText,
+                Content = cell.Content ?? (cell.DisplayText.IndexOf('\n') >= 0 ? TextContent.Plain(cell.DisplayText) : null),
                 Status = cell.Status == VisualStatus.None ? row.Status : cell.Status });
             data.Rows.Add(copy);
         }
@@ -55,6 +56,7 @@ internal sealed class NativeTableRow {
 internal enum NativeTableMicroVisual { None, MiniBars, Sparkline }
 internal enum NativeTableBadgeTreatment { Soft, Solid, Outline }
 internal sealed class NativeTableCell {
+    internal TextContent? Content;
     internal string Text = "", BadgeText = "";
     internal TextAlignment? Alignment;
     internal ChartColor? Foreground, Background, MicroColor, BadgeColor;

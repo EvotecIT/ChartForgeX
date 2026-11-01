@@ -23,7 +23,7 @@ public sealed class TopologyExternalCaptionPortOwnershipTests {
         var chart=Source(true,target,TopologyEdgePort.Right,true);var before=chart.Prepare();var saved=before.ToInterchangeEnvelope();Capture("named-side-"+target,before);
         var after=saved.ToTopologyChart().Prepare();Capture("named-side-restored-"+target,after);
         var node=saved.Nodes.Single(item=>item.Id=="captioned");var route=saved.Edges[0].ResolvedRoute;var end=target?route[route.Count-1]:route[0];
-        Assert.Equal(node.X!.Value+node.Width!.Value+7,end.X,6);Assert.Equal(node.Y!.Value+node.Height!.Value*.35,end.Y,6);
+        Assert.Equal(node.X!.Value+node.Width!.Value,end.X,6);Assert.Equal(node.Y!.Value+node.Height!.Value*.35,end.Y,6);
         Assert.Equal("owned",target?saved.Edges[0].TargetPortId:saved.Edges[0].SourcePortId);Assert.Equal(before.ToPng(),after.ToPng());
     }
 

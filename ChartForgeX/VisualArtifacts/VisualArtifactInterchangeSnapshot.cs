@@ -123,7 +123,7 @@ internal static partial class VisualArtifactInterchangeSnapshot {
             Value = source.Value,
             IconId = source.IconId,
             Status = source.Status,
-            Color = source.Color, TextStyle = source.TextStyle?.Clone(), BadgeStyle = source.BadgeStyle?.Clone(),
+            Color = source.Color, TextStyle = source.TextStyle?.Clone(), BadgeStyle = source.BadgeStyle?.Clone(), StartsSection = source.StartsSection,
         };
         foreach (var item in source.Extensions) copy.Extensions.Add(item.Key, item.Value);
         return copy;

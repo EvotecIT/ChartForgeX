@@ -29,7 +29,7 @@ public sealed class MermaidFlowchartCurveDepthTests {
         Assert.False(result.HasErrors); Assert.Empty(result.Diagnostics); Assert.False(fence.HasErrors); Assert.NotNull(fenced);
         var chart = Assert.IsType<TopologyChart>(artifact.Model);
         Assert.All(chart.Edges, edge => { Assert.Equal(expected, edge.Interpolation); Assert.Equal(expected == TopologyEdgeInterpolation.Rounded ? (double?)null : 5, edge.InterpolationCornerBlendLength); });
-        Assert.Equal(16, chart.Theme.Typography.DataLabelSize); Assert.Equal(2, envelope.Version);
+        Assert.Equal(13, chart.Theme.Typography.DataLabelSize); Assert.Equal(2, envelope.Version);
         Assert.Equal(artifact.ToSvg(), fenced!.ToSvg()); Assert.Equal(artifact.ToPng(), fenced.ToPng());
         Assert.Equal(EdgeInk(artifact.ToSvg()), EdgeInk(restored.ToSvg())); Assert.NotEmpty(restored.ToPng());
         Assert.DoesNotContain("<script", artifact.ToHtmlPage(), StringComparison.OrdinalIgnoreCase);
@@ -83,7 +83,7 @@ public sealed class MermaidFlowchartCurveDepthTests {
     [Theory] [InlineData(false)] [InlineData(true)]
     public void UnconfiguredFamilyDefaultsStaySeparateFromNativeAndHostTypographyDefaults(bool lane) {
         var result = Observe("implicit-" + lane, Body(lane)); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
-        Assert.Empty(result.Diagnostics); Assert.All(chart.Edges, edge => Assert.Equal(lane ? TopologyEdgeInterpolation.Rounded : TopologyEdgeInterpolation.Basis, edge.Interpolation));
+        Assert.Empty(result.Diagnostics); Assert.All(chart.Edges, edge => Assert.Equal(TopologyEdgeInterpolation.Rounded, edge.Interpolation));
         var host = Options(); var presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, FontSize = 14, TopologySizing = MermaidTopologySizing.Natural };
         if (lane) host.Swimlane!.Presentation = presentation; else host.Flowchart!.Presentation = presentation;
         var explicitResult = MermaidRenderer.Render(Body(lane), host); Capture("implicit-" + lane + "-host14", explicitResult.Artifact!);

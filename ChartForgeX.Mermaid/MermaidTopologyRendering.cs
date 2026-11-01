@@ -13,10 +13,10 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidClassDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-class", ResolveTitle(document, options, "Mermaid class diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
+        var chart = CreateTopology(options, "mermaid-class", ResolveTitle(document, options, "Mermaid class diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, PreferredDirection(options)));
         AddClassNamespaceGroups(chart, document);
         foreach (var item in document.Classes) {
-            chart.AddAutoNode(item.Id, MermaidLabelText.DisplayCaption(item.Label ?? item.Id), TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: item.Namespace, subtitle: item.Annotations.Count == 0 ? null : string.Join(", ", item.Annotations), width: MemberWidth(item), height: 82 + item.Members.Count * 18 + (item.Annotations.Count > 0 ? 20 : 0), cssClass: "cfx-mermaid-class");
+            chart.AddAutoNode(item.Id, MermaidLabelText.DisplayCaption(item.Label ?? item.Id), TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: item.Namespace, subtitle: item.Annotations.Count == 0 ? null : string.Join(", ", item.Annotations), width: 110, height: 36, cssClass: "cfx-mermaid-class");
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.LabelContent = MermaidInlineCaption.Content(item.Label ?? item.Id);
             node.Metadata["mermaid.id"] = item.Id;
@@ -35,11 +35,11 @@ public static partial class MermaidTopologyRendering {
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var item = document.Relationships[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, DisplayRelationshipCaption(item.Label), ToClassEdgeKind(item.Connector), TopologyHealthStatus.Unknown, ClassDirection(item.Connector), TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, DisplayRelationshipCaption(item.Label), ToClassEdgeKind(item.Connector), TopologyHealthStatus.Unknown, ClassDirection(item.Connector), TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.LabelContent = RelationshipContent(item.Label);
             edge.LineStyle = item.Connector.IndexOf(".", StringComparison.Ordinal) >= 0 ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid;
-            edge.MinimumRankSpan = 2;
+            edge.MinimumRankSpan = 1;
             edge.SourceLabel = item.SourceMultiplicity;
             edge.TargetLabel = item.TargetMultiplicity;
             edge.SourceMarker = ClassMarker(item.Connector, true);
@@ -65,9 +65,9 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidEntityRelationshipDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-er", ResolveTitle(document, options, "Mermaid ER diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
+        var chart = CreateTopology(options, "mermaid-er", ResolveTitle(document, options, "Mermaid ER diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, PreferredDirection(options)));
         foreach (var item in document.Entities) {
-            chart.AddAutoNode(item.Id, MermaidLabelText.EntityCaption(item.Label ?? item.Id), TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, width: EntityWidth(item), height: 82 + item.Attributes.Count * 18, cssClass: "cfx-mermaid-er-entity");
+            chart.AddAutoNode(item.Id, MermaidLabelText.EntityCaption(item.Label ?? item.Id), TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, width: 110, height: 36, cssClass: "cfx-mermaid-er-entity");
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.LabelContent = MermaidInlineCaption.Content(item.Label ?? item.Id, markdownByDefault: true);
             node.Metadata["mermaid.id"] = item.Id;
@@ -77,23 +77,16 @@ public static partial class MermaidTopologyRendering {
             node.FitLabelToContent = true;
             node.MaximumLabelCharacters = node.Label.Length;
             node.Metadata["mermaid.source.label"] = item.Label ?? item.Id;
-            foreach (var attribute in item.Attributes) {
-                var detail = new TopologyNodeDetail { Content = EntityAttributeContent(attribute) };
-                detail.Metadata["mermaid.attribute.type"] = attribute.Type;
-                detail.Metadata["mermaid.attribute.name"] = attribute.Name;
-                if (attribute.Key != null) detail.Metadata["mermaid.attribute.key"] = attribute.Key;
-                if (attribute.Comment != null) detail.Metadata["mermaid.attribute.comment"] = attribute.Comment;
-                node.Details.Add(detail);
-            }
+            if (item.Attributes.Count > 0) node.TableContent = EntityTable(item);
             node.Metadata["mermaid.attributes"] = item.Attributes.Count.ToString(CultureInfo.InvariantCulture);
         }
 
         for (var index = 0; index < document.Relationships.Count; index++) {
             var item = document.Relationships[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, DisplayRelationshipCaption(item.Label, entity: true), TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.Orthogonal);
+            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, DisplayRelationshipCaption(item.Label, entity: true), TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.LabelContent = RelationshipContent(item.Label, entity: true);
-            edge.MinimumRankSpan = 2;
+            edge.MinimumRankSpan = 1;
             edge.SourceMarker = CardinalityMarker(item.Connector, true);
             edge.TargetMarker = CardinalityMarker(item.Connector, false);
             edge.LineStyle = item.Connector.IndexOf("..", StringComparison.Ordinal) >= 0 ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid;
@@ -173,10 +166,13 @@ public static partial class MermaidTopologyRendering {
     /// <summary>Renders a Mermaid kanban board to PNG.</summary>
     public static byte[] ToPng(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
-    private static TopologyLayoutDirection DiagramDirection(string? direction, TopologyLayoutDirection fallback) => direction?.ToUpperInvariant() switch {
+    internal static TopologyLayoutDirection DiagramDirection(string? direction, TopologyLayoutDirection fallback) => direction?.ToUpperInvariant() switch {
         "LR" => TopologyLayoutDirection.LeftToRight, "RL" => TopologyLayoutDirection.RightToLeft,
         "TB" => TopologyLayoutDirection.TopToBottom, "BT" => TopologyLayoutDirection.BottomToTop, _ => fallback
     };
+
+    internal static TopologyLayoutDirection PreferredDirection(MermaidTopologyRenderOptions options) =>
+        options.Width >= options.Height * 1.35 ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom;
 
     private static TopologyChart CreateTopology(MermaidTopologyRenderOptions options, string defaultId, string title, TopologyLayoutMode layout, TopologyLayoutDirection direction) {
         var id = string.IsNullOrWhiteSpace(options.Id) ? defaultId : options.Id!.Trim();

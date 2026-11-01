@@ -200,7 +200,7 @@ internal sealed partial class VisualTopologyCompiler {
         var lines = layout.Lines;
         var textTop = layout.PositionedTop(bounds.Y, bounds.Height, verticallyCentered);
         var baseline = textTop + RoleTextAscent(size, weight, textStyle);
-        var halo = role == "topology-endpoint-label" || role == "topology-edge-label-text" && IsMonitoringDashboardStyle(_options) && !_options.IncludeEdgeLabelBackplates;
+        var halo = !_options.IncludeEdgeLabelBackplates && (role == "topology-endpoint-label" || role == "topology-edge-label-text" && IsMonitoringDashboardStyle(_options));
         var haloColor = ChartColorMath.WithOpacity(_colors.Background, opacity);
         foreach (var line in lines) {
             if (line.Length == 0) { baseline += lineHeight; continue; }

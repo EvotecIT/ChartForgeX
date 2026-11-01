@@ -24,7 +24,7 @@ internal static partial class TopologyRenderPrimitives {
 
     internal static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
         var namedPort = string.IsNullOrWhiteSpace(portId) ? null : node.Ports.Find(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
-        if (node.Shape.HasValue) {
+        if (node.Shape.HasValue || node.CornerRadius.HasValue) {
             TopologyNodeShapeGeometry.AttachRoute(node, points, endpointIndex, adjacentIndex, 0,
                 namedPort?.Side ?? port, namedPort?.Offset);
             return;
@@ -48,7 +48,7 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port, double gap) {
-        if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, gap);
+        if (node.Shape.HasValue || node.CornerRadius.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, gap);
         gap *= TopologyPreparedNodeBasis.Units(node);
         var centerX = CenterX(node);
         var centerY = CenterY(node);

@@ -262,7 +262,7 @@ internal static partial class SmokeTests {
         var curvePoints = ChartForgeX.Core.ChartMapPathParser.ParseSubpaths((string)curvedTour.Attribute("d")!, 1).Single().Points;
         var nativeCurve = curvedChart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).ToInterchangeEnvelope().Edges.Single().ResolvedRoute;
         Assert(curvePoints.Count > 2 && curvePoints.Any(point => Math.Abs(point.Y - curvePoints[0].Y) > 1), "SVG motion should follow the curved route rather than the straight endpoint chord.");
-        Assert(curvePoints.Select(point => (Math.Round(point.X, 3), Math.Round(point.Y, 3))).SequenceEqual(nativeCurve.Select(point => (Math.Round(point.X, 3), Math.Round(point.Y, 3)))), "SVG motion should follow the same resolved geometry as native SVG and PNG.");
+        Assert(curvePoints.Count == nativeCurve.Count && curvePoints.Zip(nativeCurve, (actual, expected) => Math.Abs(actual.X - expected.X) <= .00050001 && Math.Abs(actual.Y - expected.Y) <= .00050001).All(matches => matches), "SVG motion should follow the same resolved geometry as native SVG and PNG.");
 
         var orderedNodeChart = TopologyChart.Create()
             .WithId("motion-node-order")
