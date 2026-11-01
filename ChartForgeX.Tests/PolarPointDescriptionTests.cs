@@ -33,7 +33,7 @@ public sealed class PolarPointDescriptionTests {
         var formatted = new[] { "12,5 units", "0,0 units", "Authored caption" };
         for (var point = 0; point < points.Length; point++) {
             var node = document.Descendants().Single(node => (string?)node.Attribute("data-cfx-source-id") == $"series-{series}-point-{point}");
-            Assert.Equal(expected[point], (string?)node.Attribute("aria-label"));
+            Assert.Equal(expected[point], (string?)node.Attribute("data-cfx-description"));
             Assert.Equal(expected[point], (string?)node.Attribute("data-cfx-label"));
             Assert.Equal(formatted[point], (string?)node.Attribute("data-cfx-full-label"));
             Assert.Equal(points[point].Y.ToString("R", CultureInfo.InvariantCulture), (string?)node.Attribute("data-cfx-value"));

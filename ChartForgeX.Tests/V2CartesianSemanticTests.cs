@@ -36,7 +36,7 @@ public sealed class V2CartesianSemanticTests {
             Assert.Equal(annotation.Label, (string?)group.Attribute("data-cfx-label"));
             var region = Assert.Single(prepared.Regions, candidate => candidate.Id == "annotation-" + index);
             Assert.Equal("annotation", region.Role);
-            Assert.Equal((string?)group.Attribute("aria-label"), region.Label);
+            Assert.Equal((string?)group.Attribute("data-cfx-description"), region.Label);
             Assert.Contains(annotation.Kind.ToString(), region.Label!);
             Assert.Contains(Number(annotation.Value), region.Label!);
             if (annotation.EndValue.HasValue) Assert.Contains(Number(annotation.EndValue.Value), region.Label!);

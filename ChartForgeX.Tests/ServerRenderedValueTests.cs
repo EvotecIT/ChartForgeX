@@ -37,7 +37,7 @@ public sealed class ServerRenderedValueTests {
         Assert.Equal(expected.ToPng(), frames[1].ToPng());
         var mark = Assert.Single(XDocument.Parse(frames[1].ToSvg()).Descendants(), element => (string?)element.Attribute("class") == "host-mark");
         Assert.Equal("current", (string?)mark.Attribute("data-record"));
-        Assert.Equal("Open the current reading", (string?)mark.Attribute("aria-label"));
+        Assert.Equal("Open the current reading", (string?)mark.Attribute(linked ? "aria-label" : "data-cfx-description"));
         Assert.Equal(linked ? "/reading" : null, (string?)mark.Attribute("href"));
         Assert.Equal(linked ? "true" : null, (string?)mark.Attribute("aria-current"));
     }

@@ -63,7 +63,7 @@ public sealed class SameValueColorPresentationTests {
             var value = double.Parse((string)mark.Attribute("data-cfx-value")!, CultureInfo.InvariantCulture);
             Assert.Equal(options.ValueFormat.Format(value), (string?)mark.Attribute("data-cfx-formatted-value"));
             Assert.Equal(options.Name, (string?)mark.Attribute("data-cfx-label-value"));
-            Assert.Contains(options.ValueFormat.Format(value), (string?)mark.Attribute("aria-label"));
+            Assert.Contains(options.ValueFormat.Format(value), (string?)mark.Attribute("data-cfx-description"));
             Assert.Null(mark.Attribute("data-cfx-color-value"));
         });
         var prefix = Prefix(kind);
@@ -123,11 +123,11 @@ public sealed class SameValueColorPresentationTests {
         var marks = Marks(XDocument.Parse(svg), kind);
         var zero = marks.Single(mark => (string?)mark.Attribute("data-cfx-value") == "0" && (string?)mark.Attribute("data-cfx-empty") != "true");
         Assert.Equal("", (string?)zero.Attribute("data-cfx-formatted-value"));
-        Assert.DoesNotContain("t<0>", (string?)zero.Attribute("aria-label"));
+        Assert.DoesNotContain("t<0>", (string?)zero.Attribute("data-cfx-description"));
         foreach (var missing in marks.Where(mark => (string?)mark.Attribute("data-cfx-empty") == "true")) {
             Assert.Equal(kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap ? "Not sampled" : null,
                 (string?)missing.Attribute("data-cfx-formatted-value"));
-            Assert.Contains("Not sampled", (string?)missing.Attribute("aria-label"));
+            Assert.Contains("Not sampled", (string?)missing.Attribute("data-cfx-description"));
         }
         frozen = true;
         options.Name = "Changed"; options.ValueFormat = ChartValueFormat.Custom(_ => throw new InvalidOperationException());

@@ -102,7 +102,7 @@ public sealed class V2SvgEmbeddingTests {
         var root = XDocument.Parse(prepared.ToSvg()).Root!;
         Assert.Equal(alternative, (string?)root.Attribute("aria-label"));
         var series = root.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "series");
-        Assert.Equal(alternative, (string?)series.Attribute("aria-label"));
+        Assert.Equal(alternative, (string?)series.Attribute("data-cfx-description"));
         Assert.Equal(alternative, prepared.Accessibility.Name);
     }
 

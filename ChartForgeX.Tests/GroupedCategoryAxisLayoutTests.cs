@@ -60,8 +60,8 @@ public sealed class GroupedCategoryAxisLayoutTests {
         });
         var points = PointGroups(prepared);
         Assert.Equal(new[] { "1.5", "7.5", "11" }, points.Select(point => (string?)point.Attribute("data-cfx-x")));
-        Assert.Contains("2026 / Q1 / Jan", (string?)points[0].Attribute("aria-label"));
-        Assert.Contains("Observed", (string?)points[0].Attribute("aria-label"));
+        Assert.Contains("2026 / Q1 / Jan", (string?)points[0].Attribute("data-cfx-description"));
+        Assert.Contains("Observed", (string?)points[0].Attribute("data-cfx-description"));
         Assert.Contains(prepared.Regions, region => region.Role == "point" && region.Label!.Contains("2026 / Q1 / Jan", StringComparison.Ordinal));
     }
 

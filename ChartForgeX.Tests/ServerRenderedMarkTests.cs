@@ -128,7 +128,7 @@ public sealed class ServerRenderedMarkTests {
         Assert.Contains(link.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "mark-selected-outline");
         Assert.Contains(link.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "mark-current-outline");
         Assert.DoesNotContain(link.Descendants(), node => node.Name.LocalName == "a");
-        Assert.Equal("group", (string?)document.Root!.Attribute("role"));
+        Assert.Equal("graphics-document", (string?)document.Root!.Attribute("role"));
         Assert.Contains(prepared.Regions, region => region.Label == "Release 42, current support period");
     }
 

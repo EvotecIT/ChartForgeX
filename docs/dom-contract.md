@@ -73,7 +73,7 @@ These attributes identify data marks in every family and carry the display text 
 | `state-timeline-segment-shape` | Painted shape inside a segment | |
 | `gantt-lane-item` | `<g>` or linked `<a>` Gantt-lane item target | Carries the same identity attributes as a segment. |
 | `point` | Cartesian data point target | |
-| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier) and an `aria-label`. |
+| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier). Static entries carry `data-cfx-description`; labelled explorable entries carry `aria-label` instead. |
 | `axis-y-label` | Primary value-axis tick label | |
 | `topology-node` | Topology node | |
 | `topology-edge` | Topology edge | |
@@ -86,7 +86,7 @@ Families that render other target roles (for example `heatmap-cell`, `radial-poi
 
 ## Navigation, state and host styling
 
-Use `WithMarkOptions` on points, typed items or series, and `WithRowOptions` on a series for independent row metadata. A non-null item policy replaces the series default. `Tooltip` supplies a plain-text `<title>`; `AccessibleLabel` overrides the generated name. A chart containing links uses a root group role so its links remain available to assistive technology. Each linked mark has one focus target; the renderer does not nest links.
+Use `WithMarkOptions` on points, typed items or series, and `WithRowOptions` on a series for independent row metadata. A non-null item policy replaces the series default. `Tooltip` supplies a plain-text `<title>`; `AccessibleLabel` overrides the generated name. A chart containing links uses a `graphics-document` root role so its links remain available to assistive technology. Each linked mark has one focus target; the renderer does not nest links.
 
 Class tokens use ASCII CSS identifiers separated by single spaces. Complete host `data-*` names start with a lowercase letter after `data-` and then contain lowercase letters, digits, underscores or hyphens. Invalid names throw without sanitization. Attribute values remain text, including quotes and angle brackets.
 
@@ -95,6 +95,12 @@ Fluid-width output can place text and marker shapes inside nested SVG viewports.
 Current and selected schedule rows paint a band and left accent behind their label and track, with semibold row text. The band roles are `schedule-current-row-band` and `schedule-selected-row-band`; the accent roles use the corresponding `-accent` suffix instead of `-band`. The `schedule-row` group retains the row's hooks and navigation around its label and summary. Hosts style keyboard focus separately through `svg a:focus-visible`.
 
 See [embedding charts in server-rendered pages](https://chartforgex.com/docs/embedding/) for links, shared-scale strips, page fonts and colours, data tables, CSP and ID scopes.
+
+## Accessible SVG semantics
+
+Static charts use `role="img"` with their title and description references. Generic descendant groups carry their complete scene description in `data-cfx-description`, alongside the existing labels, coordinates and identity attributes; they do not carry `aria-label`. Hosts can read these facts for tooltips without treating every mark as an accessible control.
+
+Keyboard-enabled HTML charts, SVGs with enhance hooks, and SVG scenes containing focusable links use a `graphics-document` root. Labelled generic groups receive `role="group"` and retain their `aria-label`; links retain native link semantics. Explicit semantic roles remain intact, while `generic`, `none` and `presentation` groups are not named. Decorative SVGs remain hidden from assistive technology.
 
 ## Migration
 

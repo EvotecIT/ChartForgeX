@@ -45,7 +45,7 @@ public sealed class HierarchyCaptionPolicyBrowserTests {
                     const arc = owner.querySelector(':scope [data-cfx-caption-placement="arc"]');
                     if (arc) {
                         arcCount++;
-                        if (labels.map(text => text.textContent).join('') !== fact.label || arc.getAttribute('aria-label') !== fact.label)
+                        if (labels.map(text => text.textContent).join('') !== fact.label || arc.getAttribute('data-cfx-description') !== fact.label)
                             defects.push(fact.id + ': arc caption incomplete');
                     }
                     for (const text of labels) {

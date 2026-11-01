@@ -54,7 +54,7 @@
       const row = document.createElement('div');
       row.className = 'cfx-legend-overflow__entry';
       row.dataset.cfxLegendIndex = String(page.offset + index);
-      const label = source.getAttribute('aria-label') || source.dataset.cfxLabel || '';
+      const label = source.getAttribute('aria-label') || source.dataset.cfxDescription || source.dataset.cfxLabel || '';
       const actionable = hasFeature(root, 'LegendToggles') && source.dataset.cfxSeries !== undefined;
       if (!actionable) {
         row.textContent = label;

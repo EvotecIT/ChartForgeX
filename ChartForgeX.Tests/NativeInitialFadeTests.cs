@@ -31,6 +31,11 @@ public sealed class NativeInitialFadeTests {
         HtmlFontRootObservation.AssertDestination(final.Html, json.RootElement.GetProperty("destination").GetString()!);
         var native = json.RootElement.GetProperty("drawings").GetProperty("wide").GetProperty("frames");
         Assert.Equal(new[] { "0", "0.5", "1" }, native.EnumerateArray().Select(frame => frame.GetProperty("nativeOpacity").GetString()));
+        Assert.Equal(Names(native[2]), Names(native[0]));
+
+        static string[] Names(JsonElement frame) => System.Xml.Linq.XDocument.Parse(frame.GetProperty("svg").GetString()!).Descendants()
+            .Where(node => node.Name.LocalName == "g" && node.Attribute("aria-label") != null)
+            .Select(node => $"{node.Attribute("data-cfx-source-id")}|{node.Attribute("role")}|{node.Attribute("aria-label")}").ToArray();
     }
     [Fact]
     public void WholeVisualOverlapUsesOneNativeAlphaAndDoesNotReinvokeCustomFormattingOrFontResolution() {

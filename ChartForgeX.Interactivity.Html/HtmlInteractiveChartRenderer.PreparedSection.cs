@@ -27,7 +27,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     internal static HtmlChartSection BuildPreparedSceneSection(PreparedSceneSectionSource source, HtmlChartInteractionOptions options) {
         var prepared = source.Drawing;
-        var svgOptions = source.SvgOptions.WithTextPresentation(HtmlCapturedFontAssets.Resolve(options.TextPresentation));
+        var svgOptions = source.SvgOptions.WithTextPresentation(HtmlCapturedFontAssets.Resolve(options.TextPresentation))
+            .WithExplorableSemantics(options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.KeyboardNavigation));
         var emission = (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Export)
             ? prepared.ForInteractivePngExport() : prepared).ExportSvgEmission(svgOptions);
         var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
