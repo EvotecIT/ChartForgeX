@@ -64,6 +64,12 @@ public sealed class ChartSeriesFormattingTests {
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "title" && element.Value == "tip <&> 0");
         if (visibleLabel) Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value.Contains("label-", StringComparison.Ordinal));
         var calls = labels.Count;
+        var authored = Family(family).WithSize(1000, 700).WithLegend(false).WithDataLabels();
+        for (var index = 0; index < series.ObservationCount; index++) authored.Series[0].WithPointLabel(index, "label-" + index);
+        var explicitCaptions = authored.Prepare(VisualExportRequest.ForChart(authored).Context);
+        Assert.Equal(explicitCaptions.ToPng(), prepared.ToPng());
+        Assert.Equal(XDocument.Parse(explicitCaptions.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value),
+            svg.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value));
         _ = prepared.ToSvg();
         Assert.Equal(calls, labels.Count);
         Assert.Equal(calls, tips.Count);
