@@ -50,6 +50,7 @@ internal static partial class TopologyLayoutEngine {
             ? rankSpacing
             : Math.Max(rankSpacing, (availableH - totalHeight) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var automaticHierarchy = new HashSet<string>(chart.Nodes.Where(node => IsUnset(node.X) && IsUnset(node.Y)).Select(node => node.Id), StringComparer.Ordinal);
         var lanes = LongEdgeLanePlan.Create(chart, prepared, false, availableW, nodeSpacing + 18);
         var y = top;
 
@@ -87,6 +88,7 @@ internal static partial class TopologyLayoutEngine {
             y += layer.BlockSize + gapAfter;
         }
 
+        PlaceStandardHierarchyBranches(chart, automaticHierarchy, horizontal: false);
         if (inferRoutes) { lanes.ApplyRoutes(nodesById, false); ApplyHierarchyEdgeRoutesTopToBottom(chart); }
     }
 
@@ -109,6 +111,7 @@ internal static partial class TopologyLayoutEngine {
             ? minimumGap
             : Math.Max(minimumGap, (availableW - totalWidth) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var automaticHierarchy = new HashSet<string>(chart.Nodes.Where(node => IsUnset(node.X) && IsUnset(node.Y)).Select(node => node.Id), StringComparer.Ordinal);
         var lanes = LongEdgeLanePlan.Create(chart, prepared, true, availableH, nodeSpacing + 6);
         var x = pad;
 
@@ -146,6 +149,7 @@ internal static partial class TopologyLayoutEngine {
             x += layer.BlockSize + gapAfter;
         }
 
+        PlaceStandardHierarchyBranches(chart, automaticHierarchy, horizontal: true);
         if (inferRoutes) { lanes.ApplyRoutes(nodesById, true); ApplyHierarchyEdgeRoutesLeftToRight(chart); }
     }
 
