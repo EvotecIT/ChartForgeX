@@ -25,9 +25,12 @@ internal static partial class VisualScheduleCompiler {
             var source = ScheduleCanonicalX(chart, plot, RangeBounds(chart, previous, plot, project, slot, height));
             var target = ScheduleCanonicalX(chart, plot, RangeBounds(chart, item, plot, project, slot, height));
             var arrow = DependencyArrowExtent(height);
-            var start = new ChartPoint(source.Right + DependencyClearance(context), source.Top + source.Height / 2);
-            var end = new ChartPoint(target.Left - DependencyClearance(context), target.Top + target.Height / 2);
             var halfStroke = context.Theme.AxisStrokeWidth / 2;
+            // The painted stroke meets each surface. Search corridors retain their separate
+            // clearance; a rounding epsilon keeps floating-point contact outside the interior.
+            var terminal = halfStroke + .0001;
+            var start = new ChartPoint(source.Right + terminal, source.Top + source.Height / 2);
+            var end = new ChartPoint(target.Left - terminal, target.Top + target.Height / 2);
             var commands = DependencyRoute(start, end, plot, slot, arrow, DependencyStubLength(context, arrow),
                 DependencyClearance(context), halfStroke, surfaces);
             if (end.X > start.X && target.Top > source.Bottom) {
@@ -41,7 +44,9 @@ internal static partial class VisualScheduleCompiler {
             }
             var topApproach = false;
             if (target.Left <= source.Right + DependencyClearance(context) * 2 && target.Top > source.Bottom) {
-                var topEnd = new ChartPoint(Math.Min(target.Right - arrow, Math.Max(start.X + arrow, target.Left + arrow)), target.Top - DependencyClearance(context));
+                var topInset = Math.Max(arrow, Math.Min(context.Theme.BarRadius, Math.Min(target.Width, target.Height) / 2));
+                var topEnd = new ChartPoint(item.Milestone ? target.X + target.Width / 2
+                    : Math.Min(target.Right - topInset, Math.Max(start.X + arrow, target.Left + topInset)), target.Top - terminal);
                 var forward = new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(topEnd.X, start.Y), ChartPathCommand.LineTo(topEnd.X, topEnd.Y) };
                 if (topEnd.X >= start.X && DependencyPaintFits(forward, surfaces, plot, halfStroke)) {
                     commands = forward; end = topEnd; topApproach = true;

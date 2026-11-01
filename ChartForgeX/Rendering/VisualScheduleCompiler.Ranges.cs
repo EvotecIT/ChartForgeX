@@ -109,6 +109,8 @@ internal static partial class VisualScheduleCompiler {
             var obstacles = new List<LabelObstacle>();
             if (frame == null) Axis(chart, context, builder, viewport, layout, ticks, Project, Format,
                 minimum: gantt ? min : null, maximum: gantt ? max : null, calendarAnchor: gantt ? items.Min(item => item.Start) : null);
+            // Surface fills own the antialiased boundary where a connector touches its mark.
+            if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max, frame?.MarkSurfaces);
             foreach (var item in items) {
                 if (item.Marker || frame != null) continue;
                 var center = ScheduleRowCenter(chart, plot, (item.Row + .5) * slot);
@@ -181,8 +183,6 @@ internal static partial class VisualScheduleCompiler {
             }
             Markers(chart, context, builder, plot, items, Project, Format, min, max, colors, obstacles, predecessors);
             if (frame == null && gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
-            // Links are foreground annotations: successor fills must not cover their arrowheads.
-            if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max, frame?.MarkSurfaces);
         }
         builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
     }
