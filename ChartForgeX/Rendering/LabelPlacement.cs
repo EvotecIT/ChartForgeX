@@ -103,7 +103,7 @@ public readonly struct LabelObstacle {
 /// <summary>The deterministic placement result for one requested label.</summary>
 public sealed class PlacedLabel {
     internal PlacedLabel(LabelPlacementRequest request, string text, ChartRect bounds, bool dropped, int candidateIndex, bool ellipsized = false) {
-        Request = request; Text = text; Bounds = bounds; IsDropped = dropped; CandidateIndex = candidateIndex; IsEllipsized = ellipsized;
+        Request = request; Text = text; Bounds = bounds; IsDropped = dropped; CandidateIndex = candidateIndex; IsEllipsized = ellipsized; LeaderStart = request.Anchor;
     }
     /// <summary>Gets the original request.</summary>
     public LabelPlacementRequest Request { get; }
@@ -121,4 +121,6 @@ public sealed class PlacedLabel {
     public bool HasLeaderLine => !IsDropped && Request.HasLeaderLine && (CandidateIndex > 0 || Request.LeaderOnFirstCandidate);
     /// <summary>Gets the leader's endpoint on the label box.</summary>
     public ChartPoint LeaderEnd => new(Math.Max(Bounds.Left, Math.Min(Bounds.Right, Request.Anchor.X)), Math.Max(Bounds.Top, Math.Min(Bounds.Bottom, Request.Anchor.Y)));
+    /// <summary>Gets the leader start, clipped to the boundary when its anchor is inside the associated source mark.</summary>
+    public ChartPoint LeaderStart { get; internal set; }
 }

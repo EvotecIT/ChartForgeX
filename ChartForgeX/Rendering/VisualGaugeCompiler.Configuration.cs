@@ -186,9 +186,12 @@ internal static partial class VisualGaugeCompiler {
             var box = new ChartRect(cx + cos * (exterior + gap + labelHeight / 2) - width / 2,
                 cy + sin * (exterior + gap + labelHeight / 2) - labelHeight / 2, width, labelHeight);
             if (!FitsCaption(plot, box, occupied)) {
-                var farther = exterior + gap + labelHeight * 1.75;
-                var alternative = new ChartRect(cx + cos * farther - width / 2, cy + sin * farther - labelHeight / 2, width, labelHeight);
-                if (FitsCaption(plot, alternative, occupied)) box = alternative;
+                // Next candidates: farther out, then inside the arc; a caption is never left clipped at the plot edge.
+                ChartRect At(double distance) => new(cx + cos * distance - width / 2, cy + sin * distance - labelHeight / 2, width, labelHeight);
+                var inside = radius - stroke / 2 - bandWidth - gap - Math.Max(width, labelHeight) / 2;
+                var alternative = new[] { At(exterior + gap + labelHeight * 1.75), At(inside) }.Where(candidate => FitsCaption(plot, candidate, occupied)).ToArray();
+                box = alternative.Length > 0 ? alternative[0] : new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - width, box.Left)),
+                    Math.Max(plot.Top, Math.Min(plot.Bottom - labelHeight, box.Top)), width, labelHeight);
             }
             FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
         }

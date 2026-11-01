@@ -21,7 +21,36 @@ internal sealed class LabelMarkShape {
         Bounds = clip.HasValue ? Intersection(bounds, clip.Value) : bounds;
     }
     internal ChartRect Bounds { get; }
+    internal bool IsFilled => _filled;
     internal LabelMarkShape WithClip(ChartRect clip) => new(_contours, _filled, _stroke, clip);
+    internal ChartPoint LeaderExit(ChartPoint start, ChartPoint end) {
+        if (!_filled || !Inside(start)) return start;
+        foreach (var contour in _contours) for (var i = 0; i < contour.Count; i++)
+            if (LabelLeaderGeometry.Intersects(start, start, contour[i], contour[(i + 1) % contour.Count], .1)) return start;
+        var ratio = 1d;
+        foreach (var contour in _contours) {
+            for (var i = 0; i < contour.Count; i++) {
+                var next = (i + 1) % contour.Count;
+                var hit = LabelLeaderGeometry.IntersectionRatio(start, end, contour[i], contour[next]);
+                if (hit.HasValue) ratio = Math.Min(ratio, hit.Value);
+            }
+        }
+        return new ChartPoint(start.X + (end.X - start.X) * ratio, start.Y + (end.Y - start.Y) * ratio);
+    }
+    internal bool IntersectsLeader(ChartPoint start, ChartPoint end) {
+        if (_clip.HasValue) {
+            var x1 = start.X; var y1 = start.Y; var x2 = end.X; var y2 = end.Y; var clip = _clip.Value;
+            if (!ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, clip.Left, clip.Top, clip.Right, clip.Bottom)) return false;
+            start = new ChartPoint(x1, y1); end = new ChartPoint(x2, y2);
+        }
+        if (_filled && (Inside(start) || Inside(end))) return true;
+        foreach (var contour in _contours) {
+            for (var i = 1; i < contour.Count; i++)
+                if (LabelLeaderGeometry.Intersects(start, end, contour[i - 1], contour[i], .5 + _stroke / 2)) return true;
+            if (_filled && contour.Count > 2 && LabelLeaderGeometry.Intersects(start, end, contour[contour.Count - 1], contour[0], .5 + _stroke / 2)) return true;
+        }
+        return false;
+    }
     internal bool Contains(ChartRect box) {
         if (!_filled || !LabelPlacementService.Contains(Bounds, box) || !Inside(new ChartPoint(box.Left, box.Top)) || !Inside(new ChartPoint(box.Right, box.Top))
             || !Inside(new ChartPoint(box.Left, box.Bottom)) || !Inside(new ChartPoint(box.Right, box.Bottom))) return false;

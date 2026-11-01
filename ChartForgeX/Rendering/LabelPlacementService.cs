@@ -146,7 +146,7 @@ public sealed partial class LabelPlacementService {
             placed[index] = result;
             if (!result.IsDropped) {
                 occupied.Add(result.Bounds, null, labelGap: request.MinimumLabelGap);
-                if (avoidLeaderLabels && result.HasLeaderLine) occupied.AddLeader(request.Anchor, result.LeaderEnd);
+                if (avoidLeaderLabels && result.HasLeaderLine) occupied.AddLeader(result.LeaderStart, result.LeaderEnd, request.AssociatedMarkId);
             }
         }
         return Array.AsReadOnly(placed);
@@ -180,7 +180,8 @@ public sealed partial class LabelPlacementService {
             if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) return null;
             if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) return null;
             var result = new PlacedLabel(request, text, box, false, index, ellipsized);
-            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(request.Anchor, result.LeaderEnd, request.MinimumLabelGap)) return null;
+            if (result.HasLeaderLine) result.LeaderStart = occupied.LeaderStart(request.Anchor, result.LeaderEnd, request.AssociatedMarkId);
+            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(result.LeaderStart, result.LeaderEnd, request.MinimumLabelGap, request.AssociatedMarkId)) return null;
             return result;
         }
     }

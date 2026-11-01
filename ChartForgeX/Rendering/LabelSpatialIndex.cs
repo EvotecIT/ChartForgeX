@@ -11,11 +11,14 @@ internal sealed class LabelSpatialIndex {
     private double _maximumLabelGap;
     private readonly Dictionary<(int X, int Y), List<Entry>> _cells = new();
     private readonly List<Entry> _large = new();
+    private readonly List<(ChartPoint Start, ChartPoint End, string? Source)> _leaders = new();
+    private readonly List<Entry> _marks = new();
     public LabelSpatialIndex(double gap) { _gap = gap; }
     public void Add(ChartRect bounds, string? id, LabelMarkShape? shape = null, double? labelGap = null) {
         var gap = labelGap ?? _gap;
         if (id == null) _maximumLabelGap = Math.Max(_maximumLabelGap, gap);
         var entry = new Entry(bounds, id, shape, gap);
+        if (id != null) _marks.Add(entry);
         var cells = Cells(bounds);
         if (SpansManyCells(cells)) { _large.Add(entry); return; }
         for (var x = cells.Left; x <= cells.Right; x++) for (var y = cells.Top; y <= cells.Bottom; y++) {
@@ -24,14 +27,46 @@ internal sealed class LabelSpatialIndex {
         }
     }
     /// <summary>Reserves an accepted source-to-caption segment so later text cannot cover it.</summary>
-    internal void AddLeader(ChartPoint start, ChartPoint end) {
+    internal void AddLeader(ChartPoint start, ChartPoint end, string? source = null) {
+        _leaders.Add((start, end, source));
         var shape = new LabelMarkShape(new[] { new List<ChartPoint> { start, end } }, false, 1);
-        // A non-null identity keeps this geometry distinct from caption rectangles.
-        Add(shape.Bounds, string.Empty, shape);
+        // Later captions keep their caption gap from the segment; leader-to-leader checks use the list above.
+        Add(shape.Bounds, null, shape);
+    }
+
+    internal ChartPoint LeaderStart(ChartPoint start, ChartPoint end, string? associated) {
+        foreach (var mark in _marks) {
+            if (associated != null ? mark.Id != associated : !LabelPlacementService.Contains(mark.Bounds, new ChartRect(start.X, start.Y, 0, 0))) continue;
+            if (mark.Shape != null) return mark.Shape.LeaderExit(start, end);
+            var x1 = start.X; var y1 = start.Y; var x2 = end.X; var y2 = end.Y; var box = mark.Bounds;
+            if (LabelPlacementService.Contains(box, new ChartRect(start.X, start.Y, 0, 0))
+                && ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, box.Left, box.Top, box.Right, box.Bottom)) return new ChartPoint(x2, y2);
+        }
+        return start;
     }
 
     /// <summary>Checks a proposed leader against already placed caption boxes, including their required separation.</summary>
-    internal bool LeaderIntersectsLabel(ChartPoint start, ChartPoint end, double? labelGap = null) {
+    internal bool LeaderIntersectsLabel(ChartPoint start, ChartPoint end, double? labelGap = null, string? associated = null) {
+        // Leaders of one source mark fan out from it together; leaders of different sources must never touch.
+        foreach (var leader in _leaders)
+            if (!Same(start, leader.Start) && (associated == null || leader.Source != associated)
+                && LabelLeaderGeometry.Intersects(start, end, leader.Start, leader.End)) return true;
+        foreach (var mark in _marks) {
+            var source = associated != null ? mark.Id == associated : LabelPlacementService.Contains(mark.Bounds, new ChartRect(start.X, start.Y, 0, 0));
+            var from = start;
+            if (source) {
+                var dx = end.X - start.X; var dy = end.Y - start.Y; var length = Math.Sqrt(dx * dx + dy * dy);
+                if (length <= 1) continue;
+                from = new ChartPoint(start.X + dx / length, start.Y + dy / length);
+            }
+            // Leaders may cross thin rules and outlines; they must not pass over another filled mark.
+            if (mark.Shape != null) { if (mark.Shape.IsFilled && mark.Shape.IntersectsLeader(from, end)) return true; }
+            else if (source) {
+                // Rectangle obstacles are often bounding boxes of slanted or curved marks, so only the source box is exact enough to clip against.
+                var x1 = from.X; var y1 = from.Y; var x2 = end.X; var y2 = end.Y; var box = mark.Bounds;
+                if (ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, box.Left, box.Top, box.Right, box.Bottom)) return true;
+            }
+        }
         var gap = labelGap ?? _gap;
         var bounds = new ChartRect(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y), Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y));
         var expanded = Expand(bounds, Math.Max(_gap, Math.Max(gap, _maximumLabelGap)) + .5);
@@ -48,8 +83,11 @@ internal sealed class LabelSpatialIndex {
         return false;
     }
 
+    private static bool Same(ChartPoint a, ChartPoint b) => Math.Abs(a.X - b.X) < .5 && Math.Abs(a.Y - b.Y) < .5;
+
     private static bool BlocksLeader(Entry entry, ChartPoint start, ChartPoint end, double gap) {
         if (entry.Id != null) return false;
+        if (entry.Shape != null) return false; // Leader-to-leader checks use the actual segments above.
         var box = Expand(entry.Bounds, Math.Max(gap, entry.Gap) + .5);
         var x1 = start.X; var y1 = start.Y; var x2 = end.X; var y2 = end.Y;
         return ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, box.Left, box.Top, box.Right, box.Bottom);
