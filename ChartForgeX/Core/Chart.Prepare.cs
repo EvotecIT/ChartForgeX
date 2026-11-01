@@ -32,6 +32,11 @@ public sealed partial class Chart : IVisualRenderable {
         if (context == null) throw new ArgumentNullException(nameof(context));
         var view = (Chart)MemberwiseClone();
         view.Options = Options.PresentationView(context);
+        if (viewport == null && context.Layout.FitHeightToContent) {
+            // Row families trim unused height before any preparation captures the presentation options.
+            var fitted = ChartContentFit.Resolve(view, context);
+            if (!ReferenceEquals(fitted, context)) { context = fitted; view.Options = Options.PresentationView(context); }
+        }
         view.HierarchyPreparation = ChartHierarchyPreparation.Resolve(view, hierarchyView ?? view.NativeHierarchyVisibility?.HierarchyView, requireHierarchy, view.NativeHierarchyVisibility);
         ChartTimeSpacingPreparation.Capture(view);
         view.PolarPreparation = ChartPolarPreparation.Resolve(view, polarViewport, requirePolar);

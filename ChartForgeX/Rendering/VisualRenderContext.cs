@@ -28,14 +28,14 @@ public readonly struct VisualSize {
 
 /// <summary>The resolved viewport and outer padding used by every prepared visual.</summary>
 public sealed class VisualLayoutOptions {
-    /// <summary>Creates a fixed viewport. Hosts implement fit sizing by supplying their measured viewport.</summary>
-    public VisualLayoutOptions(VisualSize size, double padding = 24) : this(size, ChartPadding.All(padding)) { }
+    /// <summary>Creates a viewport. Hosts implement fit sizing by supplying their measured viewport, or let row charts trim unused height.</summary>
+    public VisualLayoutOptions(VisualSize size, double padding = 24, bool fitHeightToContent = false) : this(size, ChartPadding.All(padding), fitHeightToContent) { }
     /// <summary>Creates a fixed viewport with independently configured outer edge insets.</summary>
-    public VisualLayoutOptions(VisualSize size, ChartPadding padding) {
+    public VisualLayoutOptions(VisualSize size, ChartPadding padding, bool fitHeightToContent = false) {
         VisualSize.Positive(size.Width, nameof(size)); VisualSize.Positive(size.Height, nameof(size));
         if (padding.Left + padding.Right >= size.Width || padding.Top + padding.Bottom >= size.Height)
             throw new ArgumentOutOfRangeException(nameof(padding));
-        Size = size; PaddingEdges = padding;
+        Size = size; PaddingEdges = padding; FitHeightToContent = fitHeightToContent;
     }
     /// <summary>Gets the resolved logical size.</summary>
     public VisualSize Size { get; }
@@ -44,6 +44,9 @@ public sealed class VisualLayoutOptions {
     public double Padding => Math.Min(Math.Min(PaddingEdges.Left, PaddingEdges.Right), Math.Min(PaddingEdges.Top, PaddingEdges.Bottom));
     /// <summary>Gets the outer edge insets in logical units.</summary>
     public ChartPadding PaddingEdges { get; }
+    /// <summary>Gets whether row charts (schedules, progress bars, horizontal bullets, pictorial rows and horizontal linear gauges)
+    /// may trim unused height within <see cref="Size"/>. False keeps a fixed host viewport with top-aligned rows.</summary>
+    public bool FitHeightToContent { get; }
 }
 
 /// <summary>Common title, subtitle, legend and surface configuration.</summary>
