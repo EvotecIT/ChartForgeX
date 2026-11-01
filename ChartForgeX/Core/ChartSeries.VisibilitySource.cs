@@ -72,6 +72,8 @@ public sealed partial class ChartSeries {
         model.PointColors.AddRange(RemapObservationOverrides(source.PointColors, selected));
         model.PointFillPatterns.AddRange(RemapObservationOverrides(source.PointPatterns, selected));
         model.PointLabels.AddRange(RemapObservationOverrides(source.PointLabels, selected));
+        for (var index = 0; index < selected.Length; index++)
+            if (source.PointFills.TryGetValue(selected[index], out var fill)) model.PointFillOverrides.Add(index, fill);
         if (source.PreparedLabels.Count > 0)
             model._preparedLabels = Array.AsReadOnly(RemapObservationOverrides(source.PreparedLabels, selected));
         if (source.ItemStyles.Count > 0)

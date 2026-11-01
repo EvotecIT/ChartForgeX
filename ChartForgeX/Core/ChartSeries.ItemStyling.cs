@@ -31,6 +31,7 @@ public sealed partial class ChartSeries {
     internal ChartSeries PrepareItemStyles() {
         if (_itemStyler == null && _relationshipItemStyler == null && !HasFormatters) return this;
         var view = (ChartSeries)MemberwiseClone();
+        view.PointFillOverrides = new Dictionary<int, ChartFill>(PointFillOverrides);
         view._itemStyler = null;
         var info = new ChartSeriesInfo(this);
         view.ResolveRelationshipItemStyles(this, info);

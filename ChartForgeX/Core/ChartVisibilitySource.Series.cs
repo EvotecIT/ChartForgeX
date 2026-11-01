@@ -19,6 +19,7 @@ internal sealed partial class ChartVisibilitySource {
         internal Series(ChartSeries source) {
             ItemStyles = Array.AsReadOnly(source.CaptureItemStyles().ToArray());
             Fill = source.Fill;
+            PointFills = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ChartFill>(new Dictionary<int, ChartFill>(source.PointFillOverrides));
             Id = source.Id; Name = source.Name; MarkOptions = source.MarkOptions; RowOptions = source.RowOptions; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
             ValueAxis = source.ValueAxis; ShowInLegend = source.ShowInLegend; SemanticRole = source.SemanticRole; Labels = source.ShowDataLabels; Placement = source.DataLabelPlacement;
             StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; StrokeStyle = source.StrokeStyle;
@@ -55,6 +56,7 @@ internal sealed partial class ChartVisibilitySource {
         internal ChartSeriesKind Kind { get; }
         internal ChartColor? Color { get; }
         internal ChartFill? Fill { get; }
+        internal IReadOnlyDictionary<int, ChartFill> PointFills { get; }
         internal ChartSeriesState State { get; }
         internal ChartFillPattern Pattern { get; }
         internal ChartAxisSide ValueAxis { get; }

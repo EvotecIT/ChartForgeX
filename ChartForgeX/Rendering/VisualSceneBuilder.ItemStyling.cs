@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal sealed partial class VisualSceneBuilder {
     /// <summary>Applies captured datum paint through the same source scopes used by navigation and accessibility.</summary>
     private void CaptureItemStyles(Chart chart) {
-        if (!chart.Series.Any(series => series.HasItemStyler || series.Fill != null)) return;
+        if (!chart.Series.Any(series => series.HasItemStyler || series.Fill != null || series.PointFillOverrides.Count > 0)) return;
         var scopes = new Stack<(ChartSeries? Series, int Point, bool Relationship, bool Decoration)>();
         (ChartSeries? Series, int Point, bool Relationship, bool Decoration) scope = (null, -1, false, false);
         for (var index = 0; index < _nodes.Count; index++) {
@@ -38,7 +38,7 @@ internal sealed partial class VisualSceneBuilder {
             var mark = gradient?.Shape ?? node as VisualSceneMark;
             if (mark == null || KeepsSemanticPaint(mark)) continue;
             var style = scope.Relationship ? scope.Series.PreparedRelationshipStyle(scope.Point) : scope.Series.PreparedItemStyle(scope.Point);
-            var fill = style?.Fill ?? (style?.Color.HasValue == true ? null : scope.Series.Fill);
+            var fill = style?.Fill ?? (style?.Color.HasValue == true ? null : scope.Series.ResolveFill(scope.Point));
             if (style == null && fill == null) continue;
             // Existing family gradients retain a null solid fill; the wrapper itself supplies their interior.
             if (gradient != null && !mark.Fill.HasValue)

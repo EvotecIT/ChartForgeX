@@ -11,6 +11,14 @@ internal static partial class VisualArtifactInterchangeJson {
         if (source.Fill is { } fill) {
             writer.Property("fill"); VisibilitySourceFill(writer, fill);
         }
+        if (source.PointFills.Count > 0) {
+            writer.Property("pointFills"); writer.StartArray();
+            foreach (var pair in source.PointFills.OrderBy(pair => pair.Key)) {
+                writer.StartObject(); Number(writer, "index", pair.Key);
+                writer.Property("fill"); VisibilitySourceFill(writer, pair.Value); writer.EndObject();
+            }
+            writer.EndArray();
+        }
         if (!source.ItemStyles.Any(style => style?.Fill != null)) return;
         writer.Property("itemFills"); writer.StartArray();
         foreach (var style in source.ItemStyles) {

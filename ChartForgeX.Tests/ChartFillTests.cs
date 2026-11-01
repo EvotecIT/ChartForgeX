@@ -166,6 +166,7 @@ public sealed class ChartFillTests {
     [Fact]
     public void DatumFillOverridesSeriesFillAndNullCallbackResultsRetainTheSeriesPaint() {
         var chart = Family("bar"); var calls = 0;
+        chart.Series[0].PointFillOverrides[1] = Fill("image");
         chart.Series[0].WithFill(Fill("linear")).WithItemStyler<ChartPoint>(context => {
             calls++; return context.Index == 1 ? new ChartItemStyle(fill: Fill("radial")) : null;
         });
@@ -200,13 +201,21 @@ public sealed class ChartFillTests {
         Capture(prepared, "datum-solid-over-gradient");
     }
 
-    [Fact]
-    public void NativeVisibilityReflowRetainsCapturedSeriesAndDatumFillsWithoutCallingTheDelegate() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeVisibilityReflowRetainsCapturedSeriesAndDatumFillsWithoutCallingTheDelegate(bool pointOverride) {
         var calls = 0; var seriesId = new ChartSeriesId("fills");
         var series = new ChartSeries(seriesId, "Values", ChartSeriesKind.Bar,
             new[] { new ChartPoint(0, 4), new ChartPoint(1, 8), new ChartPoint(2, 6) });
         series.WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("hidden"), new ChartObservationId("last") });
-        series.WithFill(Fill("linear")).WithItemStyler<ChartPoint>(context => {
+        series.WithFill(Fill("linear"));
+        if (pointOverride) {
+            series.WithFill(null);
+            series.PointFillOverrides[0] = Fill("linear");
+            series.PointFillOverrides[2] = Fill("radial");
+        }
+        else series.WithItemStyler<ChartPoint>(context => {
             calls++; return context.Index == 2 ? new ChartItemStyle(fill: Fill("radial")) : null;
         });
         var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithDataLabels(false).AddSeries(series);
@@ -215,16 +224,31 @@ public sealed class ChartFillTests {
         var source = section.PreparedVisual.Scene.VisibilityCapture!.ReflowSource!;
         var before = calls;
         series.WithFill(null).WithItemStyler<ChartPoint>(null);
+        series.PointFillOverrides.Clear();
         var retained = source.CreateNativeView(new ChartVisibilityView(new[] {
             ChartVisibilityTarget.Observation(seriesId, new ChartObservationId("hidden")) }, ChartVisibilityLayout.Reflow));
         var prepared = Prepare(retained); var svg = XDocument.Parse(prepared.ToSvg());
-        Assert.Equal(before, calls); Assert.True(before > 0);
+        Assert.Equal(before, calls); Assert.Equal(!pointOverride, before > 0);
         Assert.Single(svg.Descendants(), element => element.Name.LocalName == "radialGradient");
         Assert.Single(svg.Descendants(), element => element.Name.LocalName == "linearGradient");
         var radial = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGradient>(), node => node.AuthoredFill?.Kind == ChartFillKind.RadialGradient);
         var bounds = radial.FillBounds; var image = PngReader.Decode(prepared.ToPng(NativeOptions()));
         Assert.InRange(Pixel(image, (int)(bounds.X + bounds.Width / 2), (int)(bounds.Y + bounds.Height / 2))[0], 220, 255);
         Capture(prepared, "visibility-retained-fills");
+    }
+
+    [Fact]
+    public void NativeSourceKeyIncludesHiddenPointFillOverrides() {
+        var renderer = new HtmlInteractiveChartRenderer();
+        var first = IdentityChart(Fill("linear"), false);
+        var second = IdentityChart(Fill("linear"), false);
+        first.Series[0].PointFillOverrides[1] = Fill("radial");
+        second.Series[0].PointFillOverrides[1] = Fill("image");
+        var before = renderer.PrepareVisibilitySection(first, HiddenFillView());
+        var after = renderer.PrepareVisibilitySection(second, HiddenFillView());
+        Assert.Equal(before.PreparedVisual.ToSvg("hidden-point-fill"), after.PreparedVisual.ToSvg("hidden-point-fill"));
+        Assert.Equal(before.PreparedVisual.ToPng(NativeOptions()), after.PreparedVisual.ToPng(NativeOptions()));
+        Assert.NotEqual(before.PreparedVisual.Scene.VisibilityCapture!.SourceKey, after.PreparedVisual.Scene.VisibilityCapture!.SourceKey);
     }
 
     [Fact]
