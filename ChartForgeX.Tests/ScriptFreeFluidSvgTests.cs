@@ -212,8 +212,12 @@ public sealed class ScriptFreeFluidSvgTests {
                     const bounds=role=>mark(role).getBoundingClientRect().toJSON();
                     const text=mark('caption').querySelector('text');
                     const w=root.getBoundingClientRect().width;
+                    // Firefox includes the non-scaling stroke in client bounds; measure the endpoint span in CSS pixels.
+                    const line=mark('line'), matrix=line.getScreenCTM();
+                    const start=line.getPointAtLength(0).matrixTransform(matrix);
+                    const end=line.getPointAtLength(line.getTotalLength()).matrixTransform(matrix);
                     return {root:root.getBoundingClientRect().toJSON(),circle:bounds('marker'),diamond:bounds('gantt-milestone-shape'),
-                        bar:bounds('bar'),line:bounds('line'),text:text.getBoundingClientRect().toJSON(),font:getComputedStyle(text).fontSize,
+                        bar:bounds('bar'),line:{width:Math.abs(end.x-start.x)},text:text.getBoundingClientRect().toJSON(),font:getComputedStyle(text).fontSize,
                         lineEffect:getComputedStyle(mark('line')).vectorEffect,
                         outside:document.elementFromPoint(w*.1,110)?.getAttribute('data-cfx-role')==='clipped-mark',
                         inside:document.elementFromPoint(w*.5,110)?.getAttribute('data-cfx-role')==='clipped-mark',
