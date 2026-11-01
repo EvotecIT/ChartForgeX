@@ -38,9 +38,11 @@ if (-not $SkipBuild) {
     }
 }
 
-# Only establishes a trustworthy origin; each fixture installs its own exact HTML.
+# Most fixtures install their own HTML; embedding contracts navigate the maintained example pages.
 $origin = Join-Path $output 'origin'
 New-Item -ItemType Directory -Path $origin -Force | Out-Null
+dotnet run --project (Join-Path $repository 'ChartForgeX.Examples/ChartForgeX.Examples.csproj') -c Release --no-build -- --embedding-only --output $origin
+if ($LASTEXITCODE) { throw 'Embedding compatibility fixture generation failed.' }
 [IO.File]::WriteAllText((Join-Path $origin 'catalog.html'), '<!doctype html><title>Browser test origin</title>')
 [IO.File]::WriteAllText((Join-Path $origin 'manifest.json'), '{}')
 . (Join-Path $PSScriptRoot 'Invoke-BrowserTestHost.ps1')
