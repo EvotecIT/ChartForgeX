@@ -234,13 +234,7 @@ internal static partial class TopologyRenderPrimitives {
         var targetCenterY = targetCenter.Y;
         if (routing != TopologyEdgeRouting.Orthogonal) {
             if (routing == TopologyEdgeRouting.Curved) {
-                var horizontalCurve = Math.Abs(targetCenterX - sourceCenterX) >= Math.Abs(targetCenterY - sourceCenterY);
-                if (sourcePort == TopologyEdgePort.Auto) sourcePort = horizontalCurve
-                    ? targetCenterX >= sourceCenterX ? TopologyEdgePort.Right : TopologyEdgePort.Left
-                    : targetCenterY >= sourceCenterY ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
-                if (targetPort == TopologyEdgePort.Auto) targetPort = horizontalCurve
-                    ? targetCenterX >= sourceCenterX ? TopologyEdgePort.Left : TopologyEdgePort.Right
-                    : targetCenterY >= sourceCenterY ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
+                ResolveCurvePorts(source, target, ref sourcePort, ref targetPort);
             }
             return new List<ChartPoint> {
                 BoundaryPoint(source, targetCenterX, targetCenterY, sourcePort),

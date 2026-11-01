@@ -14,8 +14,11 @@ internal static partial class TopologyRenderPrimitives {
         if (points.Count == 4 && !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) return CubicCurveSamplePoints(points[0], points[1], points[2], points[3], segments);
         if (points.Count != 2) return points.ToList();
         var start = points[0]; var end = points[1];
-        var horizontal = edge.SourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || edge.TargetPort is TopologyEdgePort.Left or TopologyEdgePort.Right
-            || edge.SourcePort == TopologyEdgePort.Auto && edge.TargetPort == TopologyEdgePort.Auto && Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y);
+        var source = nodes[edge.SourceNodeId]; var target = nodes[edge.TargetNodeId];
+        var sourcePort = source.Ports.Find(port => port.Id == edge.SourcePortId)?.Side ?? edge.SourcePort;
+        var targetPort = target.Ports.Find(port => port.Id == edge.TargetPortId)?.Side ?? edge.TargetPort;
+        ResolveCurvePorts(source, target, ref sourcePort, ref targetPort);
+        var horizontal = sourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right;
         if (chart.LayoutMode != TopologyLayoutMode.MindMap && edge.SourcePort == TopologyEdgePort.Auto && edge.TargetPort == TopologyEdgePort.Auto
             && (horizontal ? Math.Abs(end.Y - start.Y) < .001 : Math.Abs(end.X - start.X) < .001)) {
             // Two smooth halves preserve a real curve and facing endpoint normals on aligned nodes.
@@ -31,22 +34,28 @@ internal static partial class TopologyRenderPrimitives {
                 horizontal ? new ChartPoint(end.X - span * .25, end.Y) : new ChartPoint(end.X, end.Y - span * .25), end, segments);
             first.AddRange(last.Skip(1)); return first;
         }
-        StandardCurveControlPoints(points, out var firstControl, out var secondControl, edge.SourcePort, edge.TargetPort);
+        StandardCurveControlPoints(points, out var firstControl, out var secondControl, sourcePort, targetPort);
         return CubicCurveSamplePoints(points[0], firstControl, secondControl, points[1], segments);
     }
 
-    public static void StandardCurveControlPoints(IReadOnlyList<ChartPoint> points, out ChartPoint firstControl, out ChartPoint secondControl,
-        TopologyEdgePort sourcePort = TopologyEdgePort.Auto, TopologyEdgePort targetPort = TopologyEdgePort.Auto) {
+    // Attachment and controls must use the same node centers, rather than inferring a second side from clipped endpoints.
+    private static void ResolveCurvePorts(TopologyNode source, TopologyNode target, ref TopologyEdgePort sourcePort, ref TopologyEdgePort targetPort) {
+        var start = TopologyNodeShapeGeometry.RoutingCenter(source);
+        var end = TopologyNodeShapeGeometry.RoutingCenter(target);
+        var horizontal = Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y);
+        if (sourcePort == TopologyEdgePort.Auto) sourcePort = horizontal
+            ? end.X >= start.X ? TopologyEdgePort.Right : TopologyEdgePort.Left
+            : end.Y >= start.Y ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
+        if (targetPort == TopologyEdgePort.Auto) targetPort = horizontal
+            ? end.X >= start.X ? TopologyEdgePort.Left : TopologyEdgePort.Right
+            : end.Y >= start.Y ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
+    }
+
+    private static void StandardCurveControlPoints(IReadOnlyList<ChartPoint> points, out ChartPoint firstControl, out ChartPoint secondControl,
+        TopologyEdgePort sourcePort, TopologyEdgePort targetPort) {
         var start = points[0];
         var end = points[points.Count - 1];
         var dx = end.X - start.X; var dy = end.Y - start.Y;
-        var horizontal = Math.Abs(dx) >= Math.Abs(dy);
-        if (sourcePort == TopologyEdgePort.Auto) sourcePort = horizontal
-            ? dx >= 0 ? TopologyEdgePort.Right : TopologyEdgePort.Left
-            : dy >= 0 ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
-        if (targetPort == TopologyEdgePort.Auto) targetPort = horizontal
-            ? dx >= 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right
-            : dy >= 0 ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
         firstControl = Control(start, sourcePort);
         secondControl = Control(end, targetPort);
 

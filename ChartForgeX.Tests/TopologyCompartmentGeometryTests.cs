@@ -32,24 +32,26 @@ public sealed class TopologyCompartmentGeometryTests {
     }
 
     [Theory]
-    [InlineData(TopologyEdgePort.Top, TopologyEdgePort.Auto, 220)]
-    [InlineData(TopologyEdgePort.Top, TopologyEdgePort.Auto, 120)]
-    [InlineData(TopologyEdgePort.Bottom, TopologyEdgePort.Right, 220)]
-    [InlineData(TopologyEdgePort.Left, TopologyEdgePort.Top, 220)]
-    [InlineData(TopologyEdgePort.Right, TopologyEdgePort.Bottom, 220)]
-    public void CurvedRoutesLeaveAndApproachEachAuthoredSideAlongItsOwnOutwardNormal(TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double targetY) {
+    [InlineData(TopologyEdgePort.Top, TopologyEdgePort.Auto, 220, 50)]
+    [InlineData(TopologyEdgePort.Top, TopologyEdgePort.Auto, 120, 50)]
+    [InlineData(TopologyEdgePort.Bottom, TopologyEdgePort.Right, 220, 50)]
+    [InlineData(TopologyEdgePort.Left, TopologyEdgePort.Top, 220, 50)]
+    [InlineData(TopologyEdgePort.Right, TopologyEdgePort.Bottom, 220, 50)]
+    [InlineData(TopologyEdgePort.Top, TopologyEdgePort.Auto, 345, 300)]
+    public void CurvedRoutesLeaveAndApproachEachAuthoredSideAlongItsOwnOutwardNormal(TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double targetY, double sourceHeight) {
         var chart = TopologyChart.Create().WithViewport(700, 500, 20);
-        chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 100, Y = 120, Width = 100, Height = 50, Shape = TopologyNodeShape.Rectangle });
-        chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = 400, Y = targetY, Width = 100, Height = 50, Shape = TopologyNodeShape.Rectangle });
+        chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 100, Y = 120, Width = 100, Height = sourceHeight, Shape = TopologyNodeShape.Rectangle });
+        chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = 350, Y = targetY, Width = 100, Height = 50, Shape = TopologyNodeShape.Rectangle });
         chart.AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Curved);
         chart.Edges[0].SourcePort = sourcePort; chart.Edges[0].TargetPort = targetPort;
         var prepared = chart.Prepare(Context(700, 500), new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
-        ScatterBubbleColorRenderingTests.Capture(prepared, "curve-sides-" + sourcePort + "-" + targetPort + "-" + targetY);
+        ScatterBubbleColorRenderingTests.Capture(prepared, "curve-sides-" + sourcePort + "-" + targetPort + "-" + targetY + "-" + sourceHeight);
         var stroke = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), item => item.Role == "topology-edge-line");
         var points = Assert.Single(VisualSceneGeometry.Flatten(stroke, 32));
         Assert.True(points.Count > 2);
-        Assert.True(Outward(points[0], points[1], sourcePort) > 0);
-        Assert.True(Outward(points[^1], points[^2], targetPort == TopologyEdgePort.Auto ? TopologyEdgePort.Left : targetPort) > 0);
+        Assert.True(Outward(points[0], points[1], sourcePort) > Crosswise(points[0], points[1], sourcePort));
+        var arrival = targetPort == TopologyEdgePort.Auto ? TopologyEdgePort.Left : targetPort;
+        Assert.True(Outward(points[^1], points[^2], arrival) > Crosswise(points[^1], points[^2], arrival));
     }
 
     private static VisualRenderContext Context(double width, double height) => new(
@@ -62,4 +64,7 @@ public sealed class TopologyCompartmentGeometryTests {
         TopologyEdgePort.Top => endpoint.Y - adjacent.Y,
         _ => adjacent.Y - endpoint.Y
     };
+
+    private static double Crosswise(ChartPoint endpoint, ChartPoint adjacent, TopologyEdgePort side) =>
+        side is TopologyEdgePort.Left or TopologyEdgePort.Right ? Math.Abs(adjacent.Y - endpoint.Y) : Math.Abs(adjacent.X - endpoint.X);
 }
