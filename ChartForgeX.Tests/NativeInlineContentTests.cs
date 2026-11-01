@@ -141,12 +141,18 @@ public sealed class NativeInlineContentTests : IDisposable {
     [Theory]
     [InlineData("color-colr0.ttf")]
     [InlineData("color-colr1.ttf")]
-    public void UnsupportedStructuredColorGlyphSvgFailsExplicitlyWithoutChangingPlainFallback(string fixture) {
+    [InlineData("color-cbdt1.ttf")]
+    public void StructuredColorGlyphSvgUsesVisibleTextFallbackWithoutChangingNativePixels(string fixture) {
         using var stream = typeof(NativeInlineContentTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType." + fixture)
             ?? throw new InvalidOperationException("Missing existing color font fixture.");
         using var bytes = new MemoryStream(); stream.CopyTo(bytes); FontRegistry.Register(Family, bytes.ToArray());
         var rich = Prepare(TextContent.FromRuns(new[] { new TextContentRun("😀") }), Style());
-        Assert.Throws<NotSupportedException>(() => rich.ToSvg()); Assert.NotEmpty(rich.ToPng());
+        var png = rich.ToPng();
+        var text = Assert.Single(XDocument.Parse(rich.ToSvg()).Descendants(), node => node.Name.LocalName == "text");
+        Assert.Equal("😀", text.Value);
+        Assert.Equal("browser-text", (string?)text.Attribute("data-cfx-native-text-fallback"));
+        Assert.NotEqual("none", (string?)text.Attribute("display"));
+        Assert.NotEmpty(png); Assert.Equal(png, rich.ToPng());
         var plain = new VisualSceneBuilder(new VisualSize(240, 90), Style().Font); plain.Text("😀", 12, 48, Style());
         Assert.Contains("😀", new PreparedVisual(plain.Build()).ToSvg(), StringComparison.Ordinal);
     }
