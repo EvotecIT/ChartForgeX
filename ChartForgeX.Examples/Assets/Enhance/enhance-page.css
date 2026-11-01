@@ -1,0 +1,48 @@
+/* Colours come from the Graphite tokens as --hfx-* roles (the <style> block in the page). These are the roles the
+   chart states and CanopyX read under their own names, derived from the same tokens so chart and grid share one look. */
+:root {
+  --hfx-font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --hfx-color-surface: var(--hfx-color-surface-card);
+  --hfx-color-border: var(--hfx-color-surface-line);
+  --hfx-color-text-muted: var(--hfx-color-text-secondary);
+  --hfx-color-focus-ring: var(--hfx-color-accent);
+  --hfx-color-status-info-fg: #2b5fc0;
+  --hfx-card-padding-x: 16px;
+  --panel-gap: 16px;
+  --linked-wash: color-mix(in srgb, var(--hfx-color-status-info-fg) 14%, var(--hfx-color-surface-card));
+}
+:root[data-theme="dark"] { --hfx-color-status-info-fg: #74a2f7; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hfx-color-status-info-fg: #74a2f7; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--hfx-color-surface-page); color: var(--hfx-color-text); font: 15px/1.55 var(--hfx-font-sans); }
+a { color: var(--hfx-color-accent); }
+:focus-visible { outline: 2px solid var(--hfx-color-focus-ring); outline-offset: 2px; }
+.skip-link { position: absolute; left: 16px; top: -100px; padding: 8px 16px; background: var(--hfx-color-surface-card); z-index: 2; }
+.skip-link:focus { top: 12px; }
+.page-header, main, footer { width: min(100% - 32px, 1160px); margin-inline: auto; }
+.page-header { padding: 20px 0 20px; }
+nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+.brand { font-weight: 700; }
+.appearance { display: inline-flex; padding: 2px; border: 1px solid var(--hfx-color-surface-line); border-radius: 8px; background: var(--hfx-color-surface-card); }
+.appearance button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: none; color: var(--hfx-color-text-secondary); font: inherit; font-size: 13px; cursor: pointer; }
+.appearance button[aria-pressed="true"] { background: var(--hfx-color-surface-page); color: var(--hfx-color-text); font-weight: 600; }
+h1 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 34px); line-height: 1.15; text-wrap: balance; }
+.lead { margin: 0; max-width: 72ch; color: var(--hfx-color-text-secondary); }
+.sample-note { margin: 12px 0 0; color: var(--hfx-color-text-secondary); font-size: 13px; }
+main { display: grid; gap: var(--panel-gap); padding-bottom: 40px; }
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--panel-gap); }
+@media (max-width: 860px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+.panel { min-width: 0; padding: 16px; background: var(--hfx-color-surface-card); border: 1px solid var(--hfx-color-surface-line); border-radius: 12px; }
+.panel h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.panel > p { margin: 2px 0 10px; color: var(--hfx-color-text-secondary); font-size: 13px; }
+.chart { min-width: 0; }
+.chart svg { display: block; }
+/* The grid fills the card body edge to edge; its toolbar lines up with the card heading through --hfx-card-padding-x. */
+.records { padding: 16px 0 0; overflow: hidden; }
+.records > h2, .records > p { padding-inline: 16px; }
+.grid-slot { border-top: 1px solid var(--hfx-color-surface-line); }
+.source pre { margin: 8px 0 12px; padding: 12px; overflow: auto; background: var(--hfx-color-surface-page); border: 1px solid var(--hfx-color-surface-line); border-radius: 8px; font-size: 12.5px; line-height: 1.5; }
+.source pre:last-child { margin-bottom: 0; }
+.source p code { font-size: 13px; }
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 0 0 32px; color: var(--hfx-color-text-secondary); font-size: 13px; }
+@media (max-width: 480px) { .panel { padding: 12px; } .records { padding: 12px 0 0; } .records > h2, .records > p { padding-inline: 12px; } :root { --hfx-card-padding-x: 12px; --panel-gap: 12px; } }

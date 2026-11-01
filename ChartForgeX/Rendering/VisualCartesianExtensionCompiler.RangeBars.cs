@@ -71,9 +71,12 @@ internal static partial class VisualCartesianCompiler {
                         horizontal ? category : value, thickness, horizontal);
                     DrawSegmentedCap(builder, geometry, style, color, "range-bar", VisualChartPaint.Series(series, color, item));
                 } else {
+                    // Flush end caps mark each data end at the body's own width: an error-bar whisker wider than the body
+                    // would misread the interval as uncertainty (design rule 4, range bars).
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth;
-                    builder.Line(horizontal ? value : category - thickness * .75, horizontal ? category - thickness * .75 : value,
-                        horizontal ? value : category + thickness * .75, horizontal ? category + thickness * .75 : value,
+                    var half = Math.Max(0, thickness / 2 - stroke / 2);
+                    builder.Line(horizontal ? value : category - half, horizontal ? category - half : value,
+                        horizontal ? value : category + half, horizontal ? category + half : value,
                         color, stroke, role: "range-bar-cap", paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, item)));
                 }
             }

@@ -83,7 +83,8 @@ public sealed class GraphiteRenderingTests {
         var series = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "series").ToArray();
         Assert.Equal("1", series[0].Metadata["data-cfx-series"]);
         Assert.Equal(chart.Options.Theme.Resolve(chart.Options.ThemeMode).Positive, prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role == "line").Stroke!.Value);
-        Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "marker"));
+        // No lone last-point dots unless labelled (design rule 5).
+        Assert.Equal(0, prepared.Scene.Nodes.Count(node => node.Role == "marker"));
         chart.WithLineMarkers(ChartLineMarkerMode.All);
         Assert.Equal(6, Prepare(chart).Scene.Nodes.Count(node => node.Role == "marker"));
     }

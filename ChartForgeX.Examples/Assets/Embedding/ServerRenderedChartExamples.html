@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-theme="{{THEME}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="light dark">
+  <title>Charts that belong on the page · ChartForgeX</title>
+  <link rel="stylesheet" href="embedding.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to examples</a>
+  <header class="page-header">
+    <nav aria-label="Page appearance"><a class="brand" href="index.html">ChartForgeX</a><span class="appearance"><a href="index.html">System</a><a href="light.html">Light</a><a href="dark.html">Dark</a></span></nav>
+    <p class="eyebrow">Server-rendered HTML</p>
+    <h1>Charts that belong on the page.</h1>
+    <p class="lead">Follow a mark, scan a support window, or compare release tracks. The page owns its labels and theme; the charts keep their links and scale. No JavaScript is needed.</p>
+    <p class="sample-note">Illustrative data · Snapshot: 15 July 2026</p>
+  </header>
+  <main id="main">
+    <section aria-labelledby="activity-heading">
+      <div class="section-heading"><p class="eyebrow">01 / Linked marks</p><h2 id="activity-heading">A week of updates</h2><p>Blue segments open the daily summary below. Amber segments open publisher release notes in a new tab. Each mark has its own keyboard link and hover text.</p></div>
+      <figure class="chart-card"><ul class="legend" aria-label="Series"><li><span class="swatch updates"></span>Updates · daily summary</li><li><span class="swatch notes"></span>Publisher notes · new tab ↗</li></ul><div class="chart" aria-label="Linked updates by day">{{COLUMNS}}</div><figcaption>13–17 July 2026. Class names and day keys stay on the marks for host styling and page integrations.</figcaption></figure>
+      <details class="data-details" open><summary>Daily summaries and values</summary><table><caption>Illustrative activity by day</caption><thead><tr><th scope="col">Day</th><th scope="col">Updates</th><th scope="col">Publisher notes</th></tr></thead><tbody>{{DAILY_ROWS}}</tbody></table></details>
+    </section>
+    <section aria-labelledby="support-heading">
+      <div class="section-heading"><p class="eyebrow">02 / Schedule state</p><h2 id="support-heading">Support without an invented end date</h2><p>The 2026 row is current. Its support bar fades toward the edge because no end date has been set. The vertical reference line marks the snapshot date.</p></div>
+      <figure class="chart-card"><div class="chart support-chart">{{GANTT}}</div><figcaption>The tinted band and left accent identify the current row. Select a release name or bar to read its summary.</figcaption></figure>
+    </section>
+    <section aria-labelledby="strips-heading">
+      <div class="section-heading"><p class="eyebrow">03 / Shared-domain strips</p><h2 id="strips-heading">One scale. Labels that can breathe.</h2><p>Every track uses the same explicit January-to-January domain. The labels are ordinary HTML: alongside the tracks on a wide page, above them on a phone.</p></div>
+      <div class="strip-card">
+        <div class="strip-axis-row"><span class="axis-label">Support window</span><div class="track-axis">{{AXIS}}</div></div>
+        <div class="strip-row"><div class="row-label"><a href="#release-2025">2025 release</a><span>Support ends 31 May</span></div><div class="track">{{STRIP_0}}</div></div>
+        <div class="strip-row is-current"><div class="row-label"><a href="#release-2026" aria-current="true">2026 long-term release <span class="badge">Current</span></a><span>From March · no fixed end</span></div><div class="track">{{STRIP_1}}</div></div>
+        <div class="strip-row"><div class="row-label"><a href="#release-next">Next release candidate</a><span>September–December preview</span></div><div class="track">{{STRIP_2}}</div></div>
+      </div>
+      <p class="section-note">Text and markers keep their size while the track width follows its container.</p>
+      <div class="release-notes" aria-label="Release summaries">
+        <article id="release-2025"><h3>2025 release</h3><p>The previous release remains supported through 31 May 2026.</p></article>
+        <article id="release-2026"><h3>2026 long-term release</h3><p>The current release has support from 1 March 2026, with no fixed end date. The fade indicates continuation, rather than a scheduled cutoff.</p></article>
+        <article id="release-next"><h3>Next release candidate</h3><p>The planned preview window runs from 1 September to 31 December 2026.</p></article>
+      </div>
+    </section>
+    <section class="source-section" aria-labelledby="source-heading"><p class="eyebrow">Use it in your page</p><h2 id="source-heading">Keep the chart small. Let HTML do the layout.</h2><p>Prepare each row against one shared scale, then export with fluid width and page font properties. Keep the SVG inline so links and CSS variables reach the host page.</p><details><summary>Shared-domain strip source</summary><pre><code>{{STRIP_SOURCE}}</code></pre></details><p class="source-links"><a href="ServerRenderedRecipe.cs.txt" download>Download chart factories</a><a href="shared-strip.csharp.txt" download>Download complete strip program</a><a href="compact-shared-strip.csharp.txt" download>Download phone-sized strip program</a><a href="embedding-story.html">Open the source-and-output story</a></p></section>
+  </main>
+  <footer><span>ChartForgeX · SVG for server-rendered pages</span><a href="#main">Back to examples ↑</a></footer>
+</body>
+</html>

@@ -74,6 +74,7 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
         chart.Nodes[0].Label = "Administrative control plane";
         chart.Nodes[1].Label = "Primary directory service";
         chart.Nodes[2].Label = "Secondary directory service";
+        chart.Title = "   ";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(
             new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel().WithHtmlScenarioSequence()), 390, 1000);
         foreach (var selector in new[] { ".cfx-topology-viewport", "[data-cfx-scenario-sequence=replicate]" }) {

@@ -143,7 +143,7 @@
       "sarif": true,
       "baseline": "./.powerforge/audit-baseline.json",
       "failOnNewIssues": true,
-      "requiredRoutes": "/404.html,/,/docs/,/docs/install/,/docs/cli/,/docs/editor/,/docs/markup/,/docs/markup-v1-reference/,/docs/visual-artifacts/,/docs/mermaid-support-matrix/,/docs/visual-blocks/,/docs/visual-canvas/,/docs/raster-animation/,/docs/label-placement/,/docs/chord/,/docs/topology-icon-packs/,/docs/graph-explorer/,/docs/api-conventions/,/docs/chart-combinations/,/docs/migration/,/docs/visual-effects/",
+      "requiredRoutes": "/404.html,/,/docs/,/docs/install/,/docs/cli/,/docs/editor/,/docs/markup/,/docs/markup-v1-reference/,/docs/visual-artifacts/,/docs/mermaid-support-matrix/,/docs/visual-blocks/,/docs/visual-canvas/,/docs/raster-animation/,/docs/label-placement/,/docs/chord/,/docs/topology-icon-packs/,/docs/graph-explorer/,/docs/api-conventions/,/docs/chart-combinations/,/docs/migration/,/docs/visual-effects/,/docs/embedding/,/docs/dom-contract/",
       "requireExplicitChecks": true,
       "checkSeoMeta": false,
       "checkNetworkHints": true,

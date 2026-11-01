@@ -15,10 +15,14 @@ internal static partial class VisualCartesianCompiler {
         internal readonly Dictionary<LabelPlacementRequest, (ChartRect Bounds, TextStyle Style, SvgPaint? Paint)> ContainedInk = new();
         internal readonly HashSet<LabelPlacementRequest> Outlined = new();
 
+        private readonly Dictionary<ChartSeries, System.Func<double, string>?> _seriesFormats = new();
+
         internal ResolvedPointLabel PointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle style) {
             var key = (series, pointIndex);
             if (!_points.TryGetValue(key, out var label)) {
-                label = ResolvePointLabel(chart, series, pointIndex, style);
+                if (!_seriesFormats.TryGetValue(series, out var format))
+                    _seriesFormats.Add(series, format = SeriesCaptionFormat(chart, series));
+                label = ResolvePointLabel(chart, series, pointIndex, style, format);
                 _points.Add(key, label);
             }
             return label;

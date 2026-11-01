@@ -27,7 +27,7 @@ internal static partial class VisualCartesianCompiler {
             var highPath = ChartPairedBoundaryGeometry.BoundaryPath(series, segment, false);
             var lowPath = ChartPairedBoundaryGeometry.BoundaryPath(series, lowSegment, true);
             var highFlat = highPath.Flatten(12); var lowFlat = lowPath.Flatten(12);
-            var polygon = ChartPairedBoundaryGeometry.Envelope(highFlat, lowFlat); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
+            var polygon = ChartPairedBoundaryGeometry.Envelope(highFlat, lowFlat); var opacity = area ? context.Theme.AreaWash(context.ThemeMode) : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
             using (FillSegment(builder, offset, segment.Count)) {
                 builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true,

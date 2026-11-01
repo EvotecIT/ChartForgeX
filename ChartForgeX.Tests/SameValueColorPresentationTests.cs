@@ -92,7 +92,7 @@ public sealed class SameValueColorPresentationTests {
         } else if (scaleKind == "discrete") {
             var bands = Role(document, prefix == "map-scale" ? "map-scale-step-source" : prefix + "-step");
             Assert.Equal(new[] { "5", "" }, bands.Select(band => (string?)band.Attribute("data-cfx-upper-bound")));
-            Assert.Equal(new[] { "Cool · < 5,00 °C", "Warm · ≥ 5,00 °C" }, bands.Select(band => (string?)band.Attribute("data-cfx-label")));
+            Assert.Equal(new[] { "Cool < 5,00 °C", "Warm ≥ 5,00 °C" }, bands.Select(band => (string?)band.Attribute("data-cfx-label")));
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "calendar.scale-overflow");
     }
@@ -163,7 +163,8 @@ public sealed class SameValueColorPresentationTests {
         var reset = Prepare(chart);
         Assert.Equal(svg, reset.ToSvg()); Assert.Equal(png, reset.ToPng());
         var title = Role(XDocument.Parse(svg), Prefix(kind) + "-title");
-        if ((kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) && scaleKind == "discrete") Assert.Single(title);
+        // Design rule 9: a numeric heatmap key is always titled, by default with the localized value label.
+        if ((kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) && scaleKind == "discrete" || kind == ChartSeriesKind.Heatmap) Assert.Single(title);
         else Assert.Empty(title);
     }
 

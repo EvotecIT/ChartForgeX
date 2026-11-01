@@ -63,7 +63,7 @@ public sealed class Sparkline : IVisualRenderable {
         var points = Data.ToPoints();
         if (Style == SparklineStyle.Bars) {
             // Missing slots separate independent bars by position, rather than by line segment markers.
-            for (var index = 0; index < points.Length; index++) points[index] = new ChartPoint(points[index].X, points[index].Y);
+            for (var index = 0; index < points.Length; index++) points[index] = new ChartPoint(points[index].X, points[index].Y).WithMarkOptions(points[index].MarkOptions);
         }
         var series = new ChartSeries("Trend", kind, points) { Color = Color, Smooth = Smooth, ShowInLegend = false };
         chart.AddSeries(series);

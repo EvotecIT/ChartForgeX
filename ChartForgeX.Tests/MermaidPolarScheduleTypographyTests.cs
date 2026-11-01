@@ -23,7 +23,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
     public async Task MaximumSourceFontRetainsMeasuredAxesRowsAndMarkCaptions(string family, int width, bool dark, double angle) {
         var body = family == "radar" ? "radar-beta\naxis API,UI,Store\ncurve signal{17,31,73}\nmax 100\nticks 4"
             : "gantt\ndateFormat YYYY-MM-DD\naxisFormat %m-%d\nsection Delivery\nBuild :a,2026-03-02,3d\nReview :b,2026-03-05,3d";
-        var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
+        var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'" + BrowserProofFonts.Family + "','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
         chart.WithSize(width, 460).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
@@ -47,7 +47,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
         Assert.Equal(256, chart.Options.Theme.Typography.DataLabelSize);
         Assert.NotEmpty(prepared.ToPng());
         if (!InteractiveChartBrowser.Enabled) return;
-        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><body style='margin:0'>" + svg, width, 460);
+        await using var session = await BrowserProofFonts.OpenAsync(svg, width, 460);
         Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text')].every(t=>{const b=t.getBoundingClientRect();return b.width>0 && b.height>0 && b.left>=-.1 && b.right<=innerWidth+.1 && b.top>=-.1 && b.bottom<=innerHeight+.1;})"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

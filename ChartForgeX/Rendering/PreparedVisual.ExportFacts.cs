@@ -7,7 +7,7 @@ internal sealed class VisualSvgEmission {
     internal VisualSvgEmission(string svg, string prefix, bool capturePngText) : this(svg, prefix, capturePngText, new VisualSvgOptions(prefix)) { }
     internal VisualSvgEmission(string svg, string prefix, bool capturePngText, VisualSvgOptions options, VisualSvgFontResources? fonts = null) {
         Svg = svg; Fonts = fonts; Prefix = prefix; CapturePngText = capturePngText;
-        Options = new VisualSvgOptions(prefix, options.ColorVariables, options.LinkTarget, options.Responsive, options.EffectProfile, options.EffectRasterOptions).WithPatternTiles(options.PatternTiles).WithTextPresentation(options.TextPresentation);
+        Options = options.WithIdPrefix(prefix);
     }
     internal VisualSvgFontResources? Fonts { get; }
     internal VisualSvgOptions Options { get; }

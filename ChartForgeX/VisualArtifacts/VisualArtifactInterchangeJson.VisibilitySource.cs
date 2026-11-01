@@ -48,7 +48,7 @@ internal static partial class VisualArtifactInterchangeJson {
     }
 
     private static void VisibilitySourceSeries(VisualArtifactInterchangeJsonWriter writer, ChartVisibilitySource.Series source, bool includeValues) {
-        writer.StartObject(); String(writer, "id", source.Id.Value); String(writer, "name", source.Name); String(writer, "kind", source.Kind.ToString());
+        writer.StartObject(); VisibilitySourceMarkOptions(writer, source); String(writer, "id", source.Id.Value); String(writer, "name", source.Name); String(writer, "kind", source.Kind.ToString());
         OptionalString(writer, "color", WaterfallColor(source.Color)); String(writer, "state", source.State.ToString()); String(writer, "pattern", source.Pattern.ToString());
         String(writer, "valueAxis", source.ValueAxis.ToString()); Boolean(writer, "showInLegend", source.ShowInLegend); OptionalString(writer, "semanticRole", source.SemanticRole);
         if (source.Labels.HasValue) Boolean(writer, "labels", source.Labels.Value); OptionalString(writer, "placement", source.Placement?.ToString());

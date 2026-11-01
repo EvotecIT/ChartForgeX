@@ -136,7 +136,7 @@ public sealed partial class TopologyHtmlRenderer {
         writer.StartElement("div").Attribute("class", viewportClass)
             .Attribute("tabindex", keepTextSize ? "0" : null)
             .Attribute("role", keepTextSize ? "region" : null)
-            .Attribute("aria-label", keepTextSize ? chart.Title ?? messages["TopologyDiagram"] : null)
+            .Attribute("aria-label", keepTextSize ? (string.IsNullOrWhiteSpace(chart.Title) ? messages["TopologyDiagram"] : chart.Title) : null)
             .EndStartElement();
         if (enableViewportControls || enableExportControls || enableFullscreenControl) {
             writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", messages["TopologyControls"]).EndStartElement();

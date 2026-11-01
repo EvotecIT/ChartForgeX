@@ -27,7 +27,7 @@ internal readonly partial struct SvgPaint {
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>[PR])(?<body>[0-7][0-9A-F]{8})|(?<kind>T)(?<body>[0-9A-F]{8}[0-7][0-9A-F]{8})|(?<kind>S)(?<body>[0-9A-F]{16}[01])|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>[PR])(?<body>[0-7][0-9A-F]{8})|(?<kind>T)(?<body>[0-9A-F]{8}[0-7][0-9A-F]{8})|(?<kind>S)(?<body>[0-9A-F]{16}[012])|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -58,7 +58,8 @@ internal readonly partial struct SvgPaint {
     public static SvgPaint Literal(ChartColor color) => new(Start + "L" + Hex(color) + End, raw: true);
 
     /// <summary>A token colour written for <paramref name="role"/>.</summary>
-    public static SvgPaint Of(ChartColor color, SvgColorRole role) => new(Start + "P" + Digit(role) + Hex(color) + End, raw: true);
+    public static SvgPaint Of(ChartColor color, SvgColorRole role) => color.CssVariable == null
+        ? new(Start + "P" + Digit(role) + Hex(color) + End, raw: true) : DirectVariable(color);
 
     /// <summary>Retains canonical theme identity until scoped SVG export, with an ordinary role mapping as fallback.</summary>
     internal static SvgPaint ThemeToken(ChartColor color, VisualThemeColorToken token, SvgColorRole role) =>
@@ -74,8 +75,12 @@ internal readonly partial struct SvgPaint {
     /// variable applies, so the literal output equals the raster output exactly. A null role marks an operand the
     /// renderer derives (white, black) that is always written literally.
     /// </summary>
-    public static SvgPaint Mix(ChartColor result, ChartColor from, SvgColorRole? fromRole, ChartColor to, SvgColorRole? toRole, double amount) =>
-        new(Start + "M" + Hex(result) + Digit(fromRole) + Hex(from) + Digit(toRole) + Hex(to) + Clamp(amount).ToString("R", CultureInfo.InvariantCulture) + End, raw: true);
+    public static SvgPaint Mix(ChartColor result, ChartColor from, SvgColorRole? fromRole, ChartColor to, SvgColorRole? toRole, double amount) {
+        if (fromRole.HasValue && from.CssVariable != null || toRole.HasValue && to.CssVariable != null)
+            return Mix(result, fromRole.HasValue ? Of(from, fromRole.Value) : Literal(from),
+                toRole.HasValue ? Of(to, toRole.Value) : Literal(to), amount);
+        return new(Start + "M" + Hex(result) + Digit(fromRole) + Hex(from) + Digit(toRole) + Hex(to) + Clamp(amount).ToString("R", CultureInfo.InvariantCulture) + End, raw: true);
+    }
 
     /// <summary>Multiplies a source paint's opacity without losing its role or blend operands.</summary>
     /// <param name="result">The exact resolved raster colour, retained as the static fallback.</param>
@@ -141,7 +146,7 @@ internal readonly partial struct SvgPaint {
             case 'T':
                 return Hex(text, ref i, 8) && RoleDigit(text, ref i, false) && Hex(text, ref i, 8) && Close(text, i) ? i + 1 - index : 0;
             case 'S':
-                return Hex(text, ref i, 16) && i < text.Length && (text[i++] is '0' or '1') && Close(text, i) ? i + 1 - index : 0;
+                return Hex(text, ref i, 16) && i < text.Length && (text[i++] is '0' or '1' or '2') && Close(text, i) ? i + 1 - index : 0;
             case 'I':
                 return RoleDigit(text, ref i, false) && Hex(text, ref i, 16) && Close(text, i) ? i + 1 - index : 0;
             case 'V':

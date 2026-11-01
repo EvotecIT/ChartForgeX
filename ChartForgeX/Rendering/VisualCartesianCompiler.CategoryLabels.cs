@@ -10,8 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     /// <summary>Plans named X captions before the first gutter measurement and after each plot-width change.</summary>
-    /// <remarks>Full captions stay in the axis cache. Only ordinary multiword category displays may wrap or shorten;
-    /// numeric/calendar scales, single-token captions and explicit presentation retain their existing policy.</remarks>
+    /// <remarks>Full captions stay in the axis cache. Ordinary category displays may wrap or shorten;
+    /// numeric/calendar scales and explicit presentation retain their existing policy.</remarks>
     private static void RefreshCategoryDisplay(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect track, ChartRect frame, ChartRange range, VisualThemeColors colors, AxisLabelCache labels) {
         var axis = chart.Options.XAxis;
@@ -54,8 +54,18 @@ internal static partial class VisualCartesianCompiler {
             // Empty or ellipsis-only captions cannot identify a category. Keep their complete
             // source display so the existing regular-stride owner can select useful captions.
             if (display.Replace("…", string.Empty).Trim().Length == 0) continue;
+            // A shortened name must keep enough of itself to identify the category ("Una…", not "J…");
+            // short names such as months thin out at the regular stride instead.
+            if (shortened && display.Split('\n').Any(line => line.EndsWith("…", StringComparison.Ordinal) && line.TrimEnd('…').Trim().Length < MinimumShortenedCategoryCharacters)) continue;
             displays[ticks[index]] = (display, shortened);
         }
+        // One rhythm per axis (design rule 7): once any caption wraps, every two-word caption breaks the same way,
+        // so "Fri 30" never sits on one line beside "Thu"/"29".
+        if (displays.Values.Any(display => display.Text.IndexOf('\n') >= 0))
+            foreach (var key in displays.Keys.ToArray()) {
+                var text = displays[key].Text; var space = text.IndexOf(' ');
+                if (text.IndexOf('\n') < 0 && space > 0) displays[key] = (text.Substring(0, space) + "\n" + text.Substring(space + 1), displays[key].Shortened);
+            }
         // Do not turn different complete names into the same shortened prefix merely to
         // paint more captions. The existing stride remains the fallback for that group.
         var ambiguous = ticks.GroupBy(tick => displays.TryGetValue(tick, out var display) ? display.Text : sources[tick], StringComparer.Ordinal)
@@ -112,6 +122,10 @@ internal static partial class VisualCartesianCompiler {
         return (Math.Max(0, left), Math.Max(0, right));
     }
 
+    // Category names identify their bar, so a categorical axis shortens a name (single words too) rather than skipping it;
+    // the axis label keeps the full name as its tooltip. Authored line breaks keep their own layout.
+    private const int MinimumShortenedCategoryCharacters = 3;
+
     private static bool CanWrapCategory(string source) => source.IndexOf('\n') < 0 && source.IndexOf('\r') < 0
-        && source.Trim().IndexOf(' ') > 0;
+        && source.Trim().Length > 0;
 }

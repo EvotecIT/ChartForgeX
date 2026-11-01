@@ -62,6 +62,9 @@ internal static partial class VisualHierarchyCompiler {
                         role: children.Count > 0 ? "treemap-group-mark" : "treemap-tile-mark",
                         paint: new VisualScenePaintBinding(blend.Paint, outline.HasValue ? SvgPaint.Of(outline.Value, explicitStroke.HasValue ? SvgColorRole.Series : SvgColorRole.Status) : null));
                     Pattern(builder, Rectangle(bounds), series, itemIndex, blend.Color, "treemap-pattern");
+                    // A leaf without a colour value shows the shared missing-data hatch over its no-data fill (design rule 9).
+                    if (children.Count == 0 && surface.Scale != null && surface.Scale.NoDataColor == null && !item.ColorValue.HasValue)
+                        ChartMissingData.Hatch(builder, ChartPathBuilder.RoundedRectangle(bounds, Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * .1)), colors.MutedForeground, "treemap-missing");
                     if (showLabels) {
                         if (children.Count == 0) TreemapLabel(chart, context, builder, full, options.ShowValues ? formatted : null,
                             bounds, blend.Color, itemIndex, blend.Paint, captionSurface, header: false);

@@ -29,7 +29,9 @@ internal static partial class VisualCartesianCompiler {
             // A missing swatch can share its source heading when both complete captions fit at their measured sizes.
             var missingWidth = builder.MeasureText("Mg", keyStyle).Height + builder.MeasureText(surfaces[index]!.Presentation.NoData, keyStyle).Width + gap;
             var title = surfaces[index]!.SeriesName + " · " + surfaces[index]!.Presentation.Name;
-            missingWidths[index] = compact && surfaces[index]!.Missing && builder.MeasureText(title, style).Width + gap + missingWidth <= viewport.Width ? missingWidth : 0;
+            // A band key is a row of short swatch entries, so its no-data entry always prefers the heading line when it fits.
+            var bands = surfaces[index]!.Scale!.Mode == ChartColorScaleMode.Discrete;
+            missingWidths[index] = (compact || bands) && surfaces[index]!.Missing && builder.MeasureText(title, style).Width + gap + missingWidth <= viewport.Width ? missingWidth : 0;
             return row + VisualColorScaleLegendScene.Height(builder, surfaces[index]!.Scale!, surfaces[index]!.Presentation.Labels,
                 keyStyle, gap, viewport.Width, double.MaxValue, surfaces[index]!.Missing, surfaces[index]!.Presentation.ScaleValues,
                 surfaces[index]!.HasDomain, compact, surfaces[index]!.Minimum, surfaces[index]!.Maximum, missingWidths[index] > 0, legendStyle: surfaces[index]!.Presentation.LegendStyle);

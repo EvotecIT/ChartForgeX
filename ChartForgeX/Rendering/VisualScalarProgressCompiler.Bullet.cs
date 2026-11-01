@@ -35,8 +35,10 @@ internal static partial class VisualScalarProgressCompiler {
         }
         labelWidth = Math.Min(plot.Width * .3, labelWidth); valueWidth = Math.Min(plot.Width * .3, valueWidth);
         var axisHeight = chart.ShowAxes && chart.XAxis.Visible ? Math.Min(plot.Height * .25, context.Theme.Typography.AxisSize * 1.8 + gap / 2) : 0;
-        var rowHeight = Math.Max(0, (plot.Height - axisHeight) / entries.Length);
-        var barHeight = Math.Min(context.Theme.Typography.DataLabelSize * 1.8, rowHeight * .32);
+        // Design rule 10: rows take a fixed slot from the top; the scale sits directly under the last row.
+        var rowHeight = ChartRowDensity.Pitch(plot.Height - axisHeight, entries.Length);
+        var rowsBottom = plot.Top + rowHeight * entries.Length;
+        var barHeight = Math.Min(context.Theme.Typography.DataLabelSize * 1.8, rowHeight * .55);
         var halfStroke = Math.Max(context.Theme.SeriesStrokeWidth, context.Theme.AxisStrokeWidth) / 2;
         var left = plot.Left + labelWidth + halfStroke; var width = Math.Max(0, plot.Width - labelWidth - valueWidth - halfStroke * 2);
         if (width <= 0 || barHeight <= 0) { builder.AddDiagnostic(new VisualDiagnostic("bullet.insufficient-space", "No space remains for bullet rows.")); return; }
@@ -65,9 +67,8 @@ internal static partial class VisualScalarProgressCompiler {
                 ends.Add(max); var previous = min;
                 for (var range = 0; range < ends.Count; range++) {
                     var rangeBounds = new ChartRect(X(previous), y - barHeight / 2, Math.Max(0, X(ends[range]) - X(previous)), barHeight);
-                    var neutral = range == 0 ? colors.Neutral : range == 1 ? colors.Neutral2 : colors.Neutral3;
                     using (builder.PushGroup(null, "bullet-range-source", new Dictionary<string, string> { ["data-cfx-min"] = N(previous), ["data-cfx-max"] = N(ends[range]) }))
-                        builder.Rect(rangeBounds, neutral, role: "bullet-range", paint: VisualChartPaint.Fill(neutral, SvgColorRole.Surface));
+                        BulletBand(builder, rangeBounds, range, ends.Count, colors);
                     previous = ends[range];
                 }
                 builder.Rect(new ChartRect(left, y - barHeight / 6, X(value) - left, barHeight / 3), color, role: "bullet-value", paint: VisualChartPaint.Fill(measurePaint));
@@ -79,7 +80,8 @@ internal static partial class VisualScalarProgressCompiler {
                     var available = Math.Max(0, plot.Right - textLeft);
                     var valueStyle = Style(chart, context, series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 700);
                     var textWidth = Math.Min(chart.Measure(builder, labels[index], valueStyle).Width, available * .6);
-                    var valueColor = value < target ? colors.Status.Critical.Ink : colors.Foreground;
+                    // The value is a quantity, not a status: below-target stays in data-cfx-status, never in the ink.
+                    var valueColor = colors.Foreground;
                     BulletNumber(chart, context, builder, series, labels[index], new ChartRect(textLeft, bounds.Top, textWidth, rowHeight),
                         "bullet-value-label", Id(sourceIndex) + "-value", valueColor, context.Theme.Typography.DataLabelSize, 700, alignment: TextAlignment.Left);
                     var targetLeft = textLeft + textWidth + gap / 2;
@@ -89,7 +91,7 @@ internal static partial class VisualScalarProgressCompiler {
             }
         }
         if (axisHeight > 0) {
-            var y = plot.Bottom - axisHeight;
+            var y = rowsBottom;
             builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var ticks = new double[5];
             for (var index = 0; index < ticks.Length; index++) ticks[index] = min + (max - min) * index / 4;
@@ -121,6 +123,19 @@ internal static partial class VisualScalarProgressCompiler {
             }
         }
     }
+
+    /// <summary>
+    /// Qualitative bands run from darkest (poor, at the start of the scale) to lightest (good), so the target mark and
+    /// the measure always sit on a light enough band to read. Shades are secondary ink over the surface.
+    /// </summary>
+    private static void BulletBand(VisualSceneBuilder builder, ChartRect bounds, int band, int count, VisualThemeColors colors) {
+        var opacity = BulletBandOpacity(band, count);
+        var fill = ChartColorMath.WithOpacity(colors.MutedForeground, opacity);
+        builder.Rect(bounds, fill, role: "bullet-range", paint: VisualChartPaint.Fill(SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text).WithOpacity(fill, opacity)));
+    }
+
+    /// <summary>Band opacity, darkest first: 0.32 down to 0.10 across the bands.</summary>
+    internal static double BulletBandOpacity(int band, int count) => count <= 1 ? .14 : .32 - (.32 - .10) * band / (count - 1);
 
     /// <summary>Keeps scalar facts complete at their resolved size in ordinary and captured native drawings.</summary>
     private static void BulletNumber(BulletPaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, BulletRow series,

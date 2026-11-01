@@ -345,6 +345,8 @@ chart.SaveInteractiveHtml("explore.html", options => {
 
 The adapter also offers legend controls, crosshairs, brushing, synchronized charts, and zoom/pan. Connected applications can request native X and primary-Y/XY windows for supported numeric/time Cartesian and financial families: C# prepares fresh ticks and geometry, retains full-data domains, and returns the matching HTML section and detached scene. Optional overview/range controls and explicit included-time sessions use those native source domains. Source-coordinate notes, lines and channels render through the same native scene. Standalone zoom transforms the rendered SVG. See [interactivity](docs/interactivity.md#connected-native-x-windows) for the connected callback and feature policies, and [graph explorer](docs/graph-explorer.md) for large topology navigation.
 
+For static ASP.NET Core and Blazor SSR pages, use [linked marks, shared-scale strips and fluid-width SVG](docs/embedding.md). The page can supply colours and fonts, keep row labels in HTML, and include an accessible data table without script.
+
 For a page that refreshes data, prepare a new chart section in C# and pass it to the adapter's `ChartForgeXCharts` controller. Its `mount`, `update`, `resize` and `dispose` methods manage the browser view and its resources. Updates retain surviving explicit series and observation IDs; see the [chart lifecycle example](docs/interactivity.md#updating-embedded-charts).
 
 ## Choose the packages you need
@@ -404,6 +406,7 @@ Inspect the generated gallery before intentionally changing visual baselines. [C
 - [API conventions and chart options](docs/v2/api-conventions.md)
 - [Chart combinations, orientation and axes](docs/v2/chart-combinations.md)
 - [Topology](docs/topology.md), [icon packs](docs/topology-icon-packs.md), and [architecture diagrams with use case playback](docs/architecture-diagrams.md)
+- [Design language](docs/design-language.md): shared `--hfx-*` roles, the categorical order, states and output profiles
 - [Typography and measured label placement](docs/label-placement.md)
 - [Mermaid language support](docs/mermaid.md) and [support matrix](docs/mermaid-support-matrix.md)
 - [Visual artifacts](docs/visual-artifacts.md), [visual blocks](docs/visual-blocks.md), [canvases](docs/visual-canvas.md), and [stories](docs/stories.md)

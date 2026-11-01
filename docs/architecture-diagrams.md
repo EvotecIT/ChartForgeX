@@ -134,7 +134,7 @@ chartforgex-markup render ./orders.md --format html --output orders.html
 ```
 
 `--format` is `text`, `svg`, `png` or `html`, or comes from the `--output` extension. `--columns` sets the preferred text
-width (default 120), `--ascii` draws with plain ASCII, and `--diagram <id>` picks one diagram from a file with several.
+width (default 120), `--ascii` chooses ASCII borders, arrows and status markers, and `--diagram <id>` picks one diagram from a file with several. Authored labels and payloads are not transliterated.
 Text output covers architecture, topology and flow diagrams. HTML opens the interactive player; add
 `?scenario=<id>&scenarioStep=<n>` to the page URL to open a step (zero-based).
 

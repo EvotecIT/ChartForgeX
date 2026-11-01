@@ -20,6 +20,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
             padding = new ChartPadding(Math.Min(padding.Left, options.NarrowWidth / 4d), Math.Min(padding.Top, height / 4d),
                 Math.Min(padding.Right, options.NarrowWidth / 4d), Math.Min(padding.Bottom, height / 4d));
         return new VisualRenderContext(new VisualLayoutOptions(new VisualSize(options.NarrowWidth, height), padding),
-            context.Theme, context.ThemeMode, context.Frame, context.Font).WithNativeValueSource(context.CaptureNativeValueSource);
+            context.Theme, context.ThemeMode, context.Frame, context.Font).WithRequestsOf(context);
     }
 }

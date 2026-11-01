@@ -1,15 +1,19 @@
 using ChartForgeX.Typography;
+using System.Xml.Linq;
 
 /// <summary>Shares the licensed gallery faces between native metrics and example HTML.</summary>
 internal static class ExampleTypography {
     internal const string FontFamily = "CFX Proof Carlito";
-    private static readonly Lazy<string> Embedded = new(() => "<style>/*"
+    private static readonly Lazy<string> FontCss = new(() => "/*"
         + File.ReadAllText(Path.Combine(FontDirectory, "OFL.txt")) + "*/"
-        + Face("Regular", 400) + Face("Bold", 700) + "</style>");
+        + Face("Regular", 400) + Face("Bold", 700));
 
-    internal static string EmbeddedStyle => Embedded.Value;
+    internal static string EmbeddedStyle => "<style>" + FontCss.Value + "</style>";
 
     internal static string EmbedInHtml(string html) => html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
+
+    internal static string EmbedInSvg(string svg) => svg.Insert(svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal)) + 1,
+        new XElement("style", FontCss.Value).ToString(SaveOptions.DisableFormatting));
 
     internal static void Register() {
         FontRegistry.Register(FontFamily, FontPath("Regular"), 400);

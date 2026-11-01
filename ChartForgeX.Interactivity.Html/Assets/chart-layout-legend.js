@@ -11,7 +11,7 @@
     const top=entries.length?Math.min(...entries.map(e=>e.box.y)):0;
     const bottom=entries.length?Math.max(...entries.map(e=>e.box.y+e.box.height)):0;
     const summary=entries[0]?.label?.cloneNode(true);
-    if(summary){summary.textContent='';summary.setAttribute('data-cfx-role','legend-overflow');summary.removeAttribute('id');svg.appendChild(summary);}
+    if(summary){summary.textContent='';summary.setAttribute('data-cfx-role','legend-overflow');summary.removeAttribute('id');(svg.querySelector('[data-cfx-role=matrix-sticky-labels]')||svg).appendChild(summary);}
     return {entries,summary,top,bottom,above:bottom<=spec.plot[1]+1,below:top>=spec.plot[1]+spec.plot[3]-1};
   }
   function fit(entry,available){
@@ -31,7 +31,7 @@
     }
     return {...entry,size:Math.min(available,node.getBBox().width)};
   }
-  function layout(state,spec,width){
+  function layout(state,spec,width,verticalShift=0){
     if(!state.entries.length)return 0;
     const gap=spec.spacing,padding=Math.min(24,width/10),available=width-2*padding;
     const line=Math.max(...state.entries.map(e=>e.box.height))+8,maxRows=Math.max(1,Math.floor(spec.height*.35/line));
@@ -49,7 +49,7 @@
       state.summary.textContent=omitted?'+'+omitted+' more':'';state.summary.style.display=omitted?'':'none';
       if(omitted){let title=state.summary.querySelector('title');if(!title){title=document.createElementNS('http://www.w3.org/2000/svg','title');state.summary.appendChild(title);}title.textContent=state.entries.slice(kept).map(e=>e.full).join(', ');}
     }
-    const height=rows.length*line-8,delta=Math.max(0,height-(state.bottom-state.top));let y=state.below?state.top-delta:state.top;
+    const height=rows.length*line-8,delta=Math.max(0,height-(state.bottom-state.top));let y=state.below?state.top-delta+verticalShift:state.top;
     for(let i=0;i<rows.length;i++){
       const row=rows[i],summaryWidth=omitted && i===rows.length-1?state.summary.getComputedTextLength()+gap:0;
       const occupied=row.reduce((n,e)=>n+e.size,0)+gap*Math.max(0,row.length-1)+summaryWidth;

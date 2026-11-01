@@ -22,6 +22,20 @@ internal static class ChartSeriesColours {
     internal static ChartColor CategoryPoint(ChartSeries series, int point, VisualThemeColors colors) =>
         PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.Palette[CategorySourceOrdinal(series, point) % colors.Palette.Count]);
 
+    /// <summary>
+    /// The palette ordinal an automatic colour of this paint came from: the category ordinal for part-to-whole and
+    /// per-category radial kinds, otherwise the series position. Identity-hashed series return -1 (matched by colour).
+    /// The SVG writer takes it modulo the mapped palette and checks the colour, so a wrong guess only falls back.
+    /// </summary>
+    internal static int SlotOrdinal(ChartSeries series, int point) {
+        if (series.Kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea or ChartSeriesKind.ProgressRing or ChartSeriesKind.LayeredRadial)
+            return point >= 0 ? CategorySourceOrdinal(series, point) : -1;
+        var owner = series.Owner;
+        if (owner == null || owner.Options.SeriesColorAssignment == ChartSeriesColorAssignment.Identity && series.AutomaticIdentityOwner == null && series.HasIdentity) return -1;
+        for (var index = 0; index < owner.Series.Count; index++) if (ReferenceEquals(owner.Series[index], series)) return index;
+        return -1;
+    }
+
     // Filtered Pie/Donut models keep source category palette identity while sparse overrides follow the visible native ordinal.
     private static int CategorySourceOrdinal(ChartSeries series, int point) => series.IsVisibilityPreparation
         && ChartSeriesKindTraits.IsPieLikeKind(series.Kind) && point >= 0 && point < series.SourcePointIndices.Count ? series.SourcePointIndices[point] : point;

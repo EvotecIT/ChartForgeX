@@ -92,12 +92,13 @@ public sealed class ResponsiveChartGeometryTests {
         Assert.Equal(760,chart.Options.Size.Width);Assert.Same(axis,chart.Options.XAxis);
         var match=Regex.Match(fragment,"<script type=\"application/json\" data-cfx-spec>(.*?)</script>",RegexOptions.Singleline);
         using var spec=JsonDocument.Parse(match.Groups[1].Value);
-        Assert.Equal("chartforgex/layout-1",spec.RootElement.GetProperty("schema").GetString());
+        Assert.Equal("chartforgex/layout-2",spec.RootElement.GetProperty("schema").GetString());
         Assert.Equal(320,spec.RootElement.GetProperty("printWidth").GetInt32());
         var series=spec.RootElement.GetProperty("series");Assert.Equal(bars?2:1,series.GetArrayLength());
         Assert.Equal(new[]{1d,3d,2d},series[0].GetProperty("points").EnumerateArray().Select(p=>p.GetProperty("y").GetDouble()));
         var fallback=XElement.Parse(Regex.Match(fragment,"<svg.*?</svg>",RegexOptions.Singleline).Value);
-        Assert.Equal("320",(string?)fallback.Attribute("width"));Assert.Equal("280",(string?)fallback.Attribute("height"));
+        Assert.Equal("1600",(string?)fallback.Attribute("width"));Assert.Equal("280",(string?)fallback.Attribute("height"));
+        Assert.Contains("max-width:320px", (string?)fallback.Attribute("style"));
     }
 
     [BrowserFact]

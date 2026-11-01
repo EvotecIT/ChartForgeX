@@ -20,10 +20,13 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             options.Interaction.Enable(ChartInteractionFeatures.Brush | ChartInteractionFeatures.Zoom);
         }), width, 800);
         var page = session.Page;
+        await page.AddStyleTagAsync(new() { Content = ".cfx-stage svg { transition-duration: 1s !important; }" });
         Assert.Equal("readable", await page.Locator(Root).GetAttributeAsync("data-cfx-responsive-layout"));
         await AssertReadableToolbarEdgesAsync(page);
         await CaptureAsync(page, "readable-toolbar-card-" + dark + "-" + width);
         await page.Locator("[data-cfx-zoom='in']").ClickAsync();
+        // The final scroll extent is defined after the zoom transition completes.
+        await page.Locator(".cfx-stage svg").EvaluateAsync("async svg => { await Promise.all(svg.getAnimations().map(animation => animation.finished)); }");
         await AssertReadableToolbarEdgesAsync(page);
         await page.Locator(".cfx-stage").EvaluateAsync("stage=>stage.scrollLeft=stage.scrollWidth");
         await AssertReadableToolbarEdgesAsync(page);
@@ -108,7 +111,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 const stage=root.querySelector('.cfx-stage'),toolbar=root.querySelector('.cfx-toolbar'),
                   card=root.querySelector('.cfx-stage [data-cfx-role=frame-card]'),button=toolbar.querySelector('button:last-child'),
                   sr=stage.getBoundingClientRect(),cr=card.getBoundingClientRect(),tr=toolbar.getBoundingClientRect(),br=button.getBoundingClientRect(),
-                  left=Math.max(sr.left+stage.clientLeft,cr.left),right=Math.min(sr.left+stage.clientLeft+stage.clientWidth,cr.right);
+                  style=getComputedStyle(card),matrix=card.getScreenCTM(),
+                  stroke=style.stroke==='none'?0:(parseFloat(style.strokeWidth)||0)*Math.hypot(matrix.a,matrix.c)/2,
+                  left=Math.max(sr.left+stage.clientLeft,cr.left-stroke),right=Math.min(sr.left+stage.clientLeft+stage.clientWidth,cr.right+stroke);
                 return {left:Math.abs(tr.left-left),right:Math.abs(tr.right-right),buttonRight:Math.abs(br.right-tr.right),verticalScroll:stage.scrollHeight>stage.clientHeight};
             }
             """);

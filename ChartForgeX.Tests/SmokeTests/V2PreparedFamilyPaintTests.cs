@@ -57,8 +57,9 @@ public sealed partial class V2PreparedFamilyPaintTests {
         chart.Series[0].WithPointColor(0, Shared);
         var prepared = chart.Prepare(Context()); var variables = Variables();
         var points = Paints(prepared, variables, "dotted-map-point", "fill");
-        Assert.Contains("var(--series,", points[0]); Assert.Contains("var(--status,", points[1]);
-        Assert.All(Paints(prepared, variables, "dotted-map-connector", "stroke"), paint => Assert.Contains("var(--status,", paint));
+        // Unstated points and routes are data, not a status (design rule 10).
+        Assert.Contains("var(--series,", points[0]); Assert.DoesNotContain("var(--status,", points[1]);
+        Assert.All(Paints(prepared, variables, "dotted-map-connector", "stroke"), paint => Assert.DoesNotContain("var(--status,", paint));
         var rgba = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels;
         chart.Options.SvgColorVariables = variables;
         Assert.Equal(rgba, chart.Prepare(Context()).ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels);
@@ -69,7 +70,8 @@ public sealed partial class V2PreparedFamilyPaintTests {
         var sankey = V2GalleryModels.Create(ChartSeriesKind.Sankey);
         sankey.Series[0].WithNodeState(sankey.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
-        Assert.All(nodePaints, paint => Assert.Contains("var(--status,", paint));
+        // Only the node with a declared state wears a status role; neutral nodes are secondary ink.
+        Assert.Contains("var(--status,", nodePaints[0]); Assert.All(nodePaints.Skip(1), paint => Assert.DoesNotContain("var(--status,", paint));
         sankey.Series[0].WithPointColor(1, Shared);
         nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
         Assert.Contains("var(--status,", nodePaints[0]); Assert.Contains("var(--series,", nodePaints[1]);

@@ -35,7 +35,7 @@ internal static partial class VisualCartesianCompiler {
         var slot = stacks.Slot(bars, index);
         var layout = ChartCategorySlotLayout.Create(stacks.HorizontalCategories.Select(map.Y),
             plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
-            maximumThickness: chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth,
+            maximumThickness: chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, stacks.IsStacked(index)),
             minimumThickness: Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
             maximumPitch: map.CalendarBandPitch(horizontal: true));
         return (layout.Thickness, layout.Offset, layout.Pitch);
@@ -149,10 +149,13 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
-            if (grid.ShowVerticalLines) foreach (var tick in xTicks) builder.Line(map.X(tick), plot.Top, map.X(tick), plot.Bottom,
-                ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), width, role: "grid-x", dash: dash,
-                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), grid.VerticalOpacity)));
-            if (grid.ShowHorizontalLines) foreach (var category in categories) builder.Line(plot.Left, map.Y(category), plot.Right, map.Y(category),
+            // Value gridlines are vertical here; the default style carries its value-line opacity across.
+            var lines = ChartGridPolicy.Lines(grid, horizontalValues: true);
+            var valueOpacity = grid.ShowVerticalLines ? grid.VerticalOpacity : grid.HorizontalOpacity;
+            if (lines.Vertical) foreach (var tick in xTicks) builder.Line(map.X(tick), plot.Top, map.X(tick), plot.Bottom,
+                ChartColorMath.WithOpacity(colors.Grid, valueOpacity), width, role: "grid-x", dash: dash,
+                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, valueOpacity), valueOpacity)));
+            if (lines.Horizontal) foreach (var category in categories) builder.Line(plot.Left, map.Y(category), plot.Right, map.Y(category),
                 ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), width, role: "grid-y", dash: dash,
                 paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }

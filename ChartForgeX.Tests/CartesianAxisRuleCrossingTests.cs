@@ -15,7 +15,8 @@ public sealed class CartesianAxisRuleCrossingTests {
         chart.Options.XAxis.WithRuleCrossAt(4); chart.Options.YAxis.WithRuleCrossAt(3);
         var after = Prepare(chart); var x = Rule(after, "axis-x"); var y = Rule(after, "axis-y");
         Assert.Equal(plot.Left, x.Start.X); Assert.Equal(plot.Right, x.End.X);
-        Assert.Equal(plot.Bottom - plot.Height * (reversed ? .6 : .4), x.Start.Y, 7);
+        // A horizontal chart's named categories read top-down (design rule 2).
+        Assert.Equal(plot.Bottom - plot.Height * (reversed != horizontal ? .6 : .4), x.Start.Y, 7);
         Assert.Equal(plot.Left + plot.Width * (reversed ? .7 : .3), y.Start.X, 7);
         Assert.Equal(plot.Top, y.Start.Y); Assert.Equal(plot.Bottom, y.End.Y);
         Assert.NotEmpty(oldLabels); Assert.NotEmpty(oldPoints);
@@ -37,7 +38,7 @@ public sealed class CartesianAxisRuleCrossingTests {
         var before = Prepare(chart); var plot = Plot(before);
         if (horizontal) chart.Options.SecondaryXAxis.RuleCrossAt = 4; else chart.Options.SecondaryYAxis.RuleCrossAt = 3;
         var prepared = Prepare(chart); var rule = Rule(prepared, horizontal ? "axis-secondary-x" : "axis-secondary-y");
-        if (horizontal) Assert.Equal(plot.Bottom - plot.Height * (reversed ? .6 : .4), rule.Start.Y, 7);
+        if (horizontal) Assert.Equal(plot.Bottom - plot.Height * (reversed ? .4 : .6), rule.Start.Y, 7); // categories read top-down
         else Assert.Equal(plot.Left + plot.Width * (reversed ? .7 : .3), rule.Start.X, 7);
         Assert.Equal(AxisText(before), AxisText(prepared)); Assert.Equal(Marks(before), Marks(prepared));
     }

@@ -19,12 +19,14 @@ internal static partial class VisualMatrixCompiler {
         var widest = captions
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var lineHeight = builder.MeasureText("Mg", style).Height;
-        var left = y ? Math.Min(viewport.Width * .3, rows.Select((row, index) => builder.MeasureText(rowLabels == null ? row.Name : rowLabels[index], style).Width).DefaultIfEmpty(0).Max() + gap) : 0;
+        var left = y ? Math.Min(viewport.Width * .3, rows.Select((row, index) => builder.MeasureText(rowLabels == null ? row.Name : rowLabels[index], style).Width).DefaultIfEmpty(0).Max() + gap + 8) : 0;
         var hexagonal = rows[0].Kind == ChartSeriesKind.HexbinHeatmap;
         var pitch = Math.Max(0, viewport.Width - left) / (columns.Length + (hexagonal ? .5 : 0));
         var angle = ChartHeatmapColumnLabels.Angle(chart);
         var displayed = captions;
-        if (x && !chart.Options.XAxis.HasExplicitLabelAngle && Math.Abs(angle) < .001 && widest + LabelPlacementService.DefaultGap > pitch) {
+        // Dates and numbers are ordered, so they stay horizontal and thin out at a regular stride in MatrixAxes;
+        // named columns wrap or rotate, because skipping a name would hide that column.
+        if (x && !chart.Options.XAxis.HasExplicitLabelAngle && Math.Abs(angle) < .001 && widest + LabelPlacementService.DefaultGap > pitch && !OrderedColumnCaptions(captions)) {
             var wrapped = captions.Select(text => string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
                 Math.Max(0, pitch - LabelPlacementService.DefaultGap), (value, _) => builder.MeasureText(value, style).Width))).ToArray();
             // Wrap at word boundaries when every full caption fits; otherwise use the same measured rotated band
@@ -72,20 +74,23 @@ internal static partial class VisualMatrixCompiler {
         var scaleHeight = !categorical && ScaleVisible(context, presentation)
             ? chart.Options.HeatmapColorScale != null
                 ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35, presentation, missing: missing, hasDomain: hasDomain, min: min, max: max)
-                : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;
+                : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.Name)) : 0;
         var plot = new ChartRect(plotLeft, viewport.Top + top, Math.Max(0, viewport.Width - left - side), Math.Max(0, viewport.Height - top - labels - titleHeight - scaleHeight));
         return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle,
             angle, displayed);
     }
 
     private static void MatrixAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartRect plot,
-        double[] columns, double cellWidth, double gap, MatrixLayout layout, Func<double, string> formatColumn) {
+        double[] columns, double cellWidth, double gap, MatrixLayout layout, Func<double, string> formatColumn, int sourceOffset) {
         var style = VisualStateSceneTools.TickStyle(chart, context);
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels) {
             var angle = layout.LabelAngle;
             var width = columns.Select(value => builder.MeasureText(formatColumn(value), style).Width).DefaultIfEmpty(0).Max();
             var pitch = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Width / (columns.Length + .5) : cellWidth + gap;
-            var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, viewport, pitch, builder.MeasureText("Mg", style).Height, width, angle);
+            var shown = layout.ColumnLabels.Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
+            var step = Math.Abs(angle) >= .001 ? ChartHeatmapColumnLabels.Step(chart, viewport, pitch, builder.MeasureText("Mg", style).Height, width, angle)
+                : shown + LabelPlacementService.DefaultGap > pitch && pitch > 0 ? (int)Math.Ceiling((shown + LabelPlacementService.DefaultGap) / pitch) : 1;
+            var thinned = Math.Abs(angle) < .001 && step > 1; var last = columns.Length - 1;
             if (step > 1) builder.AddDiagnostic(new VisualDiagnostic("matrix.column-label-density",
                 "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."));
             for (var index = 0; index < columns.Length; index++) {
@@ -93,16 +98,32 @@ internal static partial class VisualMatrixCompiler {
                 var x = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (index + .5) * plot.Width / (columns.Length + .5)
                     : plot.Left + index * (cellWidth + gap) + cellWidth / 2;
                 if (ReverseColumns(chart)) x = plot.Left + plot.Right - x;
-                if (index % step != 0) {
+                // Thinned horizontal captions keep the first and the last column; a stride caption too close to the last gives way.
+                var hidden = thinned ? index != last && (index % step != 0 || index != 0 && last - index < step) : index % step != 0;
+                if (thinned && index != 0 && index != last && !hidden) {
+                    // Edge clamping moves the final caption inward. Compare its actual centered position,
+                    // not merely the source stride, before keeping the preceding caption.
+                    var span = Math.Min(pitch * step, viewport.Width);
+                    var lastX = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (last + .5) * plot.Width / (columns.Length + .5)
+                        : plot.Left + last * (cellWidth + gap) + cellWidth / 2;
+                    if (ReverseColumns(chart)) lastX = plot.Left + plot.Right - lastX;
+                    var center = Math.Max(viewport.Left + span / 2, Math.Min(viewport.Right - span / 2, x));
+                    var lastCenter = Math.Max(viewport.Left + span / 2, Math.Min(viewport.Right - span / 2, lastX));
+                    hidden = Math.Abs(center - lastCenter) < shown + LabelPlacementService.DefaultGap;
+                }
+                if (hidden) {
                     // Density limits only visible labels. Retain the omitted column's complete caption
                     // and descriptive slot just as fitted visible labels retain their full source text.
-                    builder.AddRegion(new VisualSemanticRegion("matrix-column-" + index, "heatmap-column-label",
+                    builder.AddRegion(new VisualSemanticRegion("matrix-column-" + (index + sourceOffset), "heatmap-column-label",
                         new ChartRect(x - cellWidth / 2, plot.Bottom, cellWidth, layout.LabelHeight), text));
                     continue;
                 }
                 if (Math.Abs(angle) < .001) {
-                    MatrixColumnText(builder, text, layout.ColumnLabels[index], new ChartRect(x - pitch / 2 + 1, plot.Bottom, Math.Max(0, pitch - 2), layout.LabelHeight),
-                        style, "matrix-column-" + index);
+                    // A thinned caption may use the columns it stands for, kept inside the chart.
+                    var span = thinned ? Math.Min(pitch * step, viewport.Width) : pitch;
+                    var spanLeft = thinned ? Math.Max(viewport.Left, Math.Min(viewport.Right - span, x - span / 2)) : x - pitch / 2;
+                    MatrixColumnText(builder, text, layout.ColumnLabels[index], new ChartRect(spanLeft + 1, plot.Bottom, Math.Max(0, span - 2), layout.LabelHeight),
+                        style, "matrix-column-" + (index + sourceOffset));
                 } else {
                     var radians = Math.Abs(angle) * Math.PI / 180;
                     var height = builder.MeasureText(text, style).Height;
@@ -117,7 +138,7 @@ internal static partial class VisualMatrixCompiler {
                     using (builder.PushClip(viewport))
                     using (builder.PushRotation(angle, x, plot.Bottom + 8))
                         VisualStateSceneTools.Text(builder, text, new ChartRect(left, plot.Bottom + 8, textWidth, height), style,
-                            "heatmap-column-label", "matrix-column-" + index, angle < 0 ? TextAlignment.Right : TextAlignment.Left);
+                            "heatmap-column-label", "matrix-column-" + (index + sourceOffset), angle < 0 ? TextAlignment.Right : TextAlignment.Left);
                 }
             }
             VisualStateSceneTools.Text(builder, layout.XTitle, new ChartRect(plot.Left, plot.Bottom + layout.LabelHeight + layout.ColumnGroupHeight, plot.Width, layout.TitleHeight),
@@ -166,7 +187,8 @@ internal static partial class VisualMatrixCompiler {
         if (chart.Options.HeatmapColorScale != null) { ColorScale(chart, context, builder, bounds, min, max, "heatmap-scale", presentation, missing: missing, hasDomain: hasDomain); return; }
         if (bounds.Height <= 0 || bounds.Width <= 0) return;
         var colors = context.Theme.Resolve(context.ThemeMode); var style = VisualStateSceneTools.TickStyle(chart, context);
-        if (presentation.HasName) {
+        // Design rule 9: the key always has a title, the authored value name or the localized value label.
+        {
             VisualColorScaleLegendScene.Heading(builder, bounds, style, "heatmap-scale", presentation.Name);
             var heading = Math.Min(bounds.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, context.Theme.Spacing / 2, presentation.Name));
             bounds = new ChartRect(bounds.Left, bounds.Top + heading, bounds.Width, Math.Max(0, bounds.Height - heading));
@@ -181,11 +203,23 @@ internal static partial class VisualMatrixCompiler {
         if (nonZero.Length == 0) zeroWidth = bounds.Width;
         // Keep the complete key together: captions belong to the swatches, rather
         // than the unrelated edges of a wide matrix plotting area.
-        var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth), 160) : 0;
-        var scaleLeft = bounds.Left + (bounds.Width - zeroWidth - rampWidth) / 2;
+        // Missing cells get their own hatched key (design rule 9), distinct from the zero swatch and the weakest step.
+        var noData = missing ? chart.Options.Labels.NoData : string.Empty;
+        var missingWidth = missing ? Math.Min(bounds.Width * .3, Math.Max(12, builder.MeasureText(noData, style).Width) + context.Theme.Spacing) : 0;
+        var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth - missingWidth), 160) : 0;
+        // The key starts at the plot's left edge, under the first column, like its title.
+        var scaleLeft = bounds.Left;
         using (builder.PushGroup("matrix-scale", "heatmap-scale", new Dictionary<string, string> {
             ["data-cfx-min-value"] = VisualStateSceneTools.Number(floor), ["data-cfx-max-value"] = VisualStateSceneTools.Number(max)
         })) {
+            if (missing && missingWidth > 0) {
+                var missingLeft = scaleLeft + zeroWidth + rampWidth + context.Theme.Spacing / 2;
+                var box = new ChartRect(missingLeft + (missingWidth - context.Theme.Spacing / 2 - Math.Min(12, missingWidth)) / 2, bounds.Top, Math.Min(12, missingWidth), swatch);
+                using (VisualStateSceneTools.Mark(builder, "matrix-scale-missing", "heatmap-scale-missing", box, noData, new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
+                    ChartMissingData.Paint(builder, box, 1, colors, "heatmap-scale-missing-swatch");
+                VisualStateSceneTools.Text(builder, noData, new ChartRect(missingLeft, bounds.Top + swatch, Math.Max(0, missingWidth - context.Theme.Spacing / 2), textHeight),
+                    style, "heatmap-scale-missing-label", "matrix-scale-missing-label", TextAlignment.Center);
+            }
             if (zero) {
                 var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, 0, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
                 var box = new ChartRect(scaleLeft + (zeroWidth - Math.Min(12, zeroWidth)) / 2, bounds.Top, Math.Min(12, zeroWidth), swatch);

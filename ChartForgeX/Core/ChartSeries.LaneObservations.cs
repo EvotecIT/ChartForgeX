@@ -26,7 +26,7 @@ public sealed partial class ChartSeries {
 
     private static ChartStateTimelineSegment ValidateStateTimelineSegment(ChartStateTimelineSegment value) {
         if (value.State == null) throw new ArgumentException("Segments must be created with a state.", nameof(value));
-        return new(value.Start, value.End, value.State, value.Detail);
+        return new ChartStateTimelineSegment(value.Start, value.End, value.State, value.Detail).WithMarkOptions(value.MarkOptions);
     }
 
     private IReadOnlyList<ChartGanttLaneItem> _ganttLaneItems = Array.Empty<ChartGanttLaneItem>();
@@ -49,5 +49,5 @@ public sealed partial class ChartSeries {
     }
 
     private static ChartGanttLaneItem ValidateGanttLaneItem(ChartGanttLaneItem value) =>
-        new(value.Start, value.End, value.Category, value.Label, value.Detail);
+        new ChartGanttLaneItem(value.Start, value.End, value.Category, value.Label, value.Detail).WithMarkOptions(value.MarkOptions);
 }

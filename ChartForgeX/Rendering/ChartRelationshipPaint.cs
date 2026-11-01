@@ -17,12 +17,14 @@ internal static partial class ChartRelationshipPaint {
         if (node >= 0 && node < series.PointColors.Count && series.PointColors[node].HasValue) return series.PointColors[node]!.Value;
         if (fillOverride.HasValue) return fillOverride.Value;
         if (series.Color.HasValue) return series.Color.Value;
-        var fallback = neutralDefault ? colors.Status.Neutral.Fill : colors.Palette[(paletteIndex ?? node) % colors.Palette.Count];
+        // A neutral node is secondary ink, not the status 'neutral' token: no status meaning without a status encoding.
+        var fallback = neutralDefault ? colors.MutedForeground : colors.Palette[(paletteIndex ?? node) % colors.Palette.Count];
         return ChartSeriesColours.State(State(series, node), colors, fallback);
     }
 
     internal static SvgColorRole Role(ChartSeries series, int node, bool neutralDefault = false, ChartColor? fillOverride = null) =>
-        HasExplicitColor(series, node, fillOverride) || State(series, node) == ChartSeriesState.None && !neutralDefault ? SvgColorRole.Series : SvgColorRole.Status;
+        HasExplicitColor(series, node, fillOverride) ? SvgColorRole.Series : State(series, node) != ChartSeriesState.None ? SvgColorRole.Status
+            : neutralDefault ? SvgColorRole.Text : SvgColorRole.Series;
 
     internal static SvgPaint Paint(ChartSeries series, ChartColor color, int node, bool neutralDefault = false, ChartColor? fillOverride = null) => SvgPaint.Of(color, Role(series, node, neutralDefault, fillOverride));
 

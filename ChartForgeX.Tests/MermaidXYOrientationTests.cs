@@ -58,7 +58,8 @@ public sealed class MermaidXYOrientationTests {
         var points = prepared.Regions.Where(region => region.Role == "point").Take(3).ToArray();
         Assert.Equal(3, points.Length);
         Assert.True(points[0].Bounds.Right < points[1].Bounds.Right && points[1].Bounds.Right < points[2].Bounds.Right);
-        Assert.True(points[0].Bounds.Top > points[1].Bounds.Top && points[1].Bounds.Top > points[2].Bounds.Top);
+        // Named horizontal categories read top-down (design rule 2).
+        Assert.True(points[0].Bounds.Top < points[1].Bounds.Top && points[1].Bounds.Top < points[2].Bounds.Top);
         var svg = prepared.ToSvg();
         foreach (var label in new[] { "Jan", "Feb", "Mar", "Month", "Count" }) Assert.Contains(">" + label + "<", svg);
         var raster = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));

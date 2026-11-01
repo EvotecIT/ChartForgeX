@@ -52,7 +52,7 @@ public enum TopologyCellEmphasis {
 public enum TopologyCellGlyphSet {
     /// <summary>Box-drawing characters and arrows.</summary>
     Unicode,
-    /// <summary>Plain ASCII for terminals and logs without Unicode.</summary>
+    /// <summary>ASCII borders, arrows and status markers. Authored text is not transliterated.</summary>
     Ascii
 }
 

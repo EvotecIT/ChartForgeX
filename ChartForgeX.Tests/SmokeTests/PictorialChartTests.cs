@@ -154,7 +154,7 @@ internal static partial class SmokeTests {
             .WithSize(560, 320)
             .WithTheme(VisualTheme.PeopleInfographic())
             .WithProgressBarThickness(0.34)
-            .WithProgressTrackOpacity(0.18)
+            .WithProgressTrackOpacity(0.18).WithProgressHandles()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddProgressBars("Preference", new[] {
                 new ChartProgressItem("Male", 40, ChartColor.FromRgb(6, 182, 212)),

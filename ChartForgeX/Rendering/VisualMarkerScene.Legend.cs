@@ -43,11 +43,11 @@ internal static partial class VisualMarkerScene {
                 or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
             var line = ChartSeriesKindTraits.IsLineLikeLegendKind(series.Kind);
             if (area) {
-                var opacity = radarArea ? series.Radar.FillOpacity ?? context.Theme.AreaOpacity
-                    : polarArea ? series.Polar.FillOpacity ?? context.Theme.AreaOpacity : context.Theme.AreaOpacity;
+                var opacity = radarArea ? series.Radar.FillOpacity ?? context.Theme.AreaWash(context.ThemeMode)
+                    : polarArea ? series.Polar.FillOpacity ?? context.Theme.AreaWash(context.ThemeMode) : context.Theme.AreaWash(context.ThemeMode);
                 var fill = ChartColorMath.WithOpacity(color, opacity);
                 builder.Rect(bounds, fill, role: "legend-area", paint: VisualChartPaint.Fill(paint.WithOpacity(fill, opacity)));
-                var hatchOpacity = radarArea || polarArea ? Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity)) : 1;
+                var hatchOpacity = radarArea || polarArea ? Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaWash(context.ThemeMode))) : 1;
                 VisualFrameLayout.DrawLegendPattern(builder, bounds, pattern, context, hatchOpacity, "legend-area-pattern");
             }
             if (line) {
@@ -107,4 +107,17 @@ internal static partial class VisualMarkerScene {
         };
     }
 
+    /// <summary>One end of a dumbbell as its own legend glyph, so the legend names Before and After (design rule 8).</summary>
+    internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DumbbellEndpointLegend(Chart chart, ChartSeries series,
+        ChartColor color, SvgPaint paint, bool start) {
+        var markers = series.ResolveDumbbellMarker(start);
+        return (builder, bounds, context) => {
+            var colors = context.Theme.Resolve(context.ThemeMode);
+            var radius = Radius(series, context, markers);
+            var scale = radius > 0 ? Math.Min(bounds.Width * .4, bounds.Height * .4) / radius : 0;
+            Draw(builder, series, -1, bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2, radius * scale, color, paint,
+                start ? "legend-dumbbell-start" : "legend-dumbbell-end", backdrop: start ? null : ChartStateMark.Backdrop(chart.Options, colors, context.Frame),
+                markerOptions: markers);
+        };
+    }
 }

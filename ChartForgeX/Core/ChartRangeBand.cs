@@ -52,4 +52,17 @@ public readonly struct ChartRangeBand {
     /// <param name="breakBefore">Whether both boundaries begin a disconnected segment.</param>
     public ChartRangeBand(DateTime x, double lower, double upper, bool breakBefore = false) : this(ChartDateTime.ToOADate(x), lower, upper, breakBefore) {
     }
+
+    /// <summary>Gets optional immutable navigation, accessibility and host metadata.</summary>
+    public ChartMarkOptions? MarkOptions { get; }
+
+    /// <summary>Returns a copy with replacement mark metadata, retaining all authored values.</summary>
+    /// <param name="options">Immutable metadata, or null to clear it.</param>
+    /// <returns>A new observation. The current observation is unchanged.</returns>
+    public ChartRangeBand WithMarkOptions(ChartMarkOptions? options) => new(this, options);
+
+    private ChartRangeBand(ChartRangeBand source, ChartMarkOptions? options) {
+        this = source;
+        MarkOptions = options;
+    }
 }

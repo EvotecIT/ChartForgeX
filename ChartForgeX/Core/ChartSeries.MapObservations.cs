@@ -78,7 +78,7 @@ public sealed partial class ChartSeries {
     private static ChartMapPoint ValidateMapPoint(ChartMapPoint value) => value.ValidatedCopy();
 
     private static ChartCalendarHeatmapItem ValidateCalendarItem(ChartCalendarHeatmapItem value) {
-        var item = new ChartCalendarHeatmapItem(value.Date, value.Value, value.Color);
+        var item = new ChartCalendarHeatmapItem(value.Date, value.Value, value.Color).WithMarkOptions(value.MarkOptions);
         // The numeric scene projection must represent the same date without a lossy special DateTime mapping.
         if (DateTime.FromOADate(item.Date.ToOADate()).Date != item.Date)
             throw new ArgumentOutOfRangeException(nameof(value), "Calendar dates must be representable as an OLE Automation date.");
@@ -93,7 +93,7 @@ public sealed partial class ChartSeries {
         foreach (var raw in values) {
             var item = ValidateCalendarItem(raw);
             if (dates.TryGetValue(item.Date, out var previous))
-                item = new ChartCalendarHeatmapItem(item.Date, previous.Value + item.Value, item.Color ?? previous.Color);
+                item = new ChartCalendarHeatmapItem(item.Date, previous.Value + item.Value, item.Color ?? previous.Color).WithMarkOptions(item.MarkOptions ?? previous.MarkOptions);
             dates[item.Date] = item;
         }
         return dates.Values.ToArray();

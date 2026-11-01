@@ -47,8 +47,11 @@ public sealed class ResponsiveHeatmapNarrowBrowserTests {
         Assert.Empty(result.Overlaps);
         Assert.Empty(result.Clipped);
         Assert.True(result.Columns.Length >= 3, "At least three column captions should remain.");
-        var strides = result.Columns.Zip(result.Columns.Skip(1), (left, right) => right - left).Distinct().ToArray();
-        Assert.Single(strides);
+        Assert.Equal(0, result.Columns[0]); Assert.Equal(29, result.Columns[^1]);
+        var strides = result.Columns.Zip(result.Columns.Skip(1), (left, right) => right - left).ToArray();
+        // The first and last dates stay visible; an interior stride next to the last may give way to avoid overlap.
+        Assert.All(strides.Take(strides.Length - 1), stride => Assert.Equal(strides[0], stride));
+        Assert.InRange(strides[^1], strides[0], 2 * strides[0]);
         Assert.True(result.SmallestStep >= 20, "Colour legend steps must keep their native width, not " + result.SmallestStep + " px.");
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }

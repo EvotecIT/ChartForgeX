@@ -44,7 +44,7 @@ env:
   DOTNET_VERSION: |
     8.0.x
     10.0.x
-  NODE_VERSION: 20.x
+  NODE_VERSION: 22.x
   NPM_AUDIT_LEVEL: moderate
 
 jobs:

@@ -53,6 +53,8 @@ PagedFacetExamples.Write(output, DemoPngOutputScale);
 AnimatedVisualStoryExamples.Write(output, DemoPngOutputScale);
 TerminalStoryExamples.Write(output, DemoPngOutputScale);
 VisualStoryExamples.Write(output);
+ServerRenderedChartExamples.Write(output);
+EnhanceExamples.Write(output);
 StoryPlaybackExamples.Write(output);
 StoryReplayExamples.Write(output);
 var bars = Chart.Create()

@@ -24,7 +24,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartGanttItem ValidateGanttItem(ChartGanttItem value) => new(value.Start, value.End, value.Progress, value.IsMilestone, value.IsVerticalMarker);
+    private static ChartGanttItem ValidateGanttItem(ChartGanttItem value) => new ChartGanttItem(value.Start, value.End, value.Progress, value.IsMilestone, value.IsVerticalMarker, value.IsOpenEnded).WithMarkOptions(value.MarkOptions);
 
     private IReadOnlyList<ChartGaugeValue> _gaugeValues = Array.Empty<ChartGaugeValue>();
     /// <summary>Gets the measured value, scale and gauge references authored for this gauge or circle series. Empty means no data.</summary>

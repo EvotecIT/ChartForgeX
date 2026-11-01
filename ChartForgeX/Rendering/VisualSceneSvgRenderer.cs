@@ -36,6 +36,7 @@ internal static partial class VisualSceneSvgRenderer {
         System.Threading.CancellationToken cancellation, out string resolvedPrefix, out VisualSvgFontResources? fonts, int? maximumCharacters = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         cancellation.ThrowIfCancellationRequested();
+        var fluid = PrepareFluidLayout(scene, options);
         var imageCharacters = maximumCharacters.HasValue ? AdmitSvgImageUris(scene, maximumCharacters.Value) : 0;
         var effects = EffectPlans(scene, options, cancellation);
         var textImages = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic
@@ -49,23 +50,27 @@ internal static partial class VisualSceneSvgRenderer {
         var writer = maximumCharacters.HasValue
             ? new SvgMarkupWriter(4096, maximumCharacters.Value, observed => new VisualResourceLimitException("MaximumOutputBytes", maximumCharacters.Value, observed, resourceOwner))
             : new SvgMarkupWriter(4096);
-        writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg")
-            .Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
-            .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height))
-            .Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round")
+        writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg");
+        if (fluid != null) WriteFluidRootAttributes(writer, scene);
+        else writer.Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
+            .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height));
+        writer.Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round")
             .Attribute("lang", language).Attribute("xml:lang", language);
-        if (options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
+        if (fluid == null && options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
         if (decorative) writer.Attribute("aria-hidden", true).Attribute("focusable", false);
         else {
-            writer.Attribute("role", "img").Attribute("aria-label", title);
+            writer.Attribute("role", HasNavigation(scene) ? "group" : "img").Attribute("aria-label", title);
             if (!string.IsNullOrEmpty(title)) writer.Attribute("aria-labelledby", prefix + "-title");
             if (!string.IsNullOrEmpty(description)) writer.Attribute("aria-describedby", prefix + "-description");
         }
+        var enhancePlan = WriteEnhanceRootAttributes(writer, scene, options, prefix);
         writer.EndStartElement();
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
+        WriteEnhanceData(writer, scene, options);
         var colorScopes = ColorScopeOptions(scene, options);
-        var clipAliases = WriteClips(writer, scene, prefix, options, colorScopes);
+        var clipAliases = fluid == null ? WriteClips(writer, scene, prefix, options, colorScopes)
+            : WriteFluidClips(writer, scene, prefix, options, colorScopes, fluid);
         WriteSurfaceFilters(writer, surfaces, prefix, options);
         WriteRetainedEffects(writer, effects, prefix, cancellation);
         WriteFontPalettes(writer, scene);
@@ -82,11 +87,9 @@ internal static partial class VisualSceneSvgRenderer {
                     if (group.Metadata.TryGetValue("data-node-id", out var nodeIdentity)) resourceOwner = nodeIdentity;
                 }
                 writer.StartElement(group.Href == null ? "g" : "a"); Semantics(writer, group, prefix, i);
-                if (group.Href != null) {
-                    writer.Attribute("href", group.Href).Attribute("tabindex", decorative ? -1 : 0);
-                    if (options?.LinkTarget == VisualSvgLinkTarget.NewContext) writer.Attribute("target", "_blank").Attribute("rel", "noopener noreferrer");
-                }
+                WriteGroupNavigation(writer, group, decorative, options);
                 foreach (var item in group.Metadata) writer.Attribute(item.Key, item.Value);
+                WriteEnhanceGroupHooks(writer, group, i, enhancePlan);
                 if (group.Opacity != 1) writer.Attribute("opacity", group.Opacity);
                 if (group.Metadata.TryGetValue("data-cfx-passive-overlay", out var passive) && passive == "true") writer.Attribute("pointer-events", "none");
                 if (group.Metadata.TryGetValue("data-cfx-pin-state-colors", out var pin) && pin == "true") writer.Attribute("style", "forced-color-adjust:none");
@@ -94,8 +97,11 @@ internal static partial class VisualSceneSvgRenderer {
                     var clipIndex = clipAliases.TryGetValue(i, out var canonicalIndex) ? canonicalIndex : i;
                     writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + clipIndex.ToString(CultureInfo.InvariantCulture) + ")");
                 }
-                if (group.PathClip != null) writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture) + ")");
-                if (group.Rotation.HasValue || group.Translation.HasValue) {
+                if (group.PathClip != null) {
+                    var clipIndex = fluid != null && clipAliases.TryGetValue(i, out var canonicalIndex) ? canonicalIndex : i;
+                    writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + clipIndex.ToString(CultureInfo.InvariantCulture) + ")");
+                }
+                if (fluid == null && (group.Rotation.HasValue || group.Translation.HasValue)) {
                     var transform = new StringBuilder();
                     if (group.Rotation.HasValue) {
                     var rotation = group.Rotation.Value;
@@ -135,8 +141,10 @@ internal static partial class VisualSceneSvgRenderer {
                 writer.EndElement();
                 if (resourceOwners != null) resourceOwner = resourceOwners.Pop();
             }
+            else if (fluid != null && WriteFluidNode(writer, scene, i, prefix, paintOptions, fluid, pngText, capturePngText, fonts, textImages)) { }
             else if (node is VisualSceneRectangle rect) {
-                writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
+                if (rect.HasPartialCorners) writer.StartElement("path").Attribute("d", RectanglePathData(rect));
+                else writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
                     .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
                 Paint(writer, rect, prefix, i, options: paintOptions); writer.EndEmptyElement();
             } else if (node is VisualSceneEllipse ellipse) {
@@ -244,6 +252,7 @@ internal static partial class VisualSceneSvgRenderer {
     private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options, PngTextResources? pngText, bool capturePngText, VisualSvgFontResources? fonts, NativeLineInkResources? textImages) {
         var prepared = node.Text; var style = prepared.Style;
         writer.StartElement("g"); Semantics(writer, node, prefix, index);
+        WritePageFontAttributes(writer, options);
         if (textImages?.ForNode(node) is {} capturedImage) {
             var caption = string.Join("\n", prepared.Lines.Select(line => line.Text));
             writer.Attribute("aria-label", caption).Attribute("data-cfx-caption", caption).EndStartElement();
@@ -276,8 +285,9 @@ internal static partial class VisualSceneSvgRenderer {
             } else if (nativeInk) throw new NotSupportedException(prepared.NativeGlyphInk
                 ? "Structured SVG caption ink requires native outline or built-in TinyFont geometry; color/bitmap-only glyph faces are unsupported."
                 : "Captured SVG text ink requires native outline or built-in TinyFont geometry; color/bitmap-only glyph faces are unsupported.");
-            writer.StartElement("text").Attribute("x", node.LineLeft(line)).Attribute("y", node.Baseline + i * prepared.Metrics.LineHeight)
-                .Attribute("font-family", delivered?.Alias ?? style.Font.Family).Attribute("font-size", prepared.Size).Attribute("font-weight", style.Font.Weight)
+            writer.StartElement("text").Attribute("x", node.LineLeft(line)).Attribute("y", node.Baseline + i * prepared.Metrics.LineHeight);
+            WriteTextFontAttributes(writer, delivered?.Alias ?? style.Font.Family, prepared.Size, options);
+            writer.Attribute("font-weight", style.Font.Weight)
                 .Attribute("font-style", style.Font.Italic ? "italic" : "normal").Attribute("fill", ResolvePaint(node.Color, node.Paint, options))
                 .Attribute("xml:space", "preserve");
             if (delivered != null) writer.Attribute("data-cfx-owned-font-text", delivered.Alias).Attribute("display", "none");
@@ -292,6 +302,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
             css += style.OpenTypeLanguageTag == null ? ";font-language-override:normal" : ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
             css += ";font-palette:" + (style.Font.ColorPaletteIndex == 0 ? "normal" : ChartForgeX.Typography.TypographyPaletteCss.Name(style.Font.ColorPaletteIndex));
+            if (ChartDomRoles.IsAxisTick(node.Role)) css += ";font-variant-numeric:tabular-nums"; // design rule 7: axis numbers align
             writer.Attribute("style", css).Text(line.Text).EndElement();
         }
         writer.EndElement();
@@ -310,6 +321,7 @@ internal static partial class VisualSceneSvgRenderer {
     }
 
     private static string PathData(VisualScenePath path) => new SvgPathDataBuilder().Append(path.Commands, path.Close).Build();
+    private static string RectanglePathData(VisualSceneRectangle rect) => new SvgPathDataBuilder().Append(rect.Outline().Commands, true).Build();
 
     private static string N(double value) => SvgMarkupWriter.FormatNumber(value);
 
@@ -366,7 +378,7 @@ internal static partial class VisualSceneSvgRenderer {
                     // The immutable scene sorts metadata with ordinal keys before export.
                     foreach (var item in group.Metadata) { writer.Write(item.Key); writer.Write(item.Value); }
                 } else if (node is VisualSceneEndGroup) { }
-                else if (node is VisualSceneRectangle rect) { Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); }
+                else if (node is VisualSceneRectangle rect) { Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); writer.Write((int)rect.Corners); }
                 else if (node is VisualSceneEllipse ellipse) {
                     writer.Write(ellipse.Cx); writer.Write(ellipse.Cy); writer.Write(ellipse.Rx); writer.Write(ellipse.Ry);
                 } else if (node is VisualSceneLine line) {
@@ -427,6 +439,9 @@ internal static partial class VisualSceneSvgRenderer {
     private static void Rectangle(BinaryWriter writer, ChartRect value) { writer.Write(value.X); writer.Write(value.Y); writer.Write(value.Width); writer.Write(value.Height); }
     private static void Color(BinaryWriter writer, ChartColor? value) {
         writer.Write(value.HasValue);
-        if (value.HasValue) { writer.Write(value.Value.R); writer.Write(value.Value.G); writer.Write(value.Value.B); writer.Write(value.Value.A); }
+        if (value.HasValue) {
+            writer.Write(value.Value.R); writer.Write(value.Value.G); writer.Write(value.Value.B); writer.Write(value.Value.A);
+            WriteColorVariableIdentity(writer, value.Value);
+        }
     }
 }

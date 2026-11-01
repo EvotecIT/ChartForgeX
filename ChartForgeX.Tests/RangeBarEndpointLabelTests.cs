@@ -139,8 +139,9 @@ public sealed class RangeBarEndpointLabelTests {
         var before = Labels(original); var after = Labels(reversed);
         double Category(VisualSceneText label) => horizontal ? Bounds(label).Top : Bounds(label).Left;
         double Value(VisualSceneText label) => horizontal ? label.X : label.Baseline;
-        Assert.Equal(!horizontal, Category(before[0]) < Category(before[2]));
-        Assert.Equal(horizontal, Category(after[0]) < Category(after[2]));
+        // Named categories read left-to-right and top-down (design rule 2); reversal flips both.
+        Assert.True(Category(before[0]) < Category(before[2]));
+        Assert.True(Category(after[0]) > Category(after[2]));
         for (var index = 0; index < before.Length; index++) {
             Assert.Equal(before[index].Id, after[index].Id);
             Assert.Equal(Value(before[index]), Value(after[index]), 8);

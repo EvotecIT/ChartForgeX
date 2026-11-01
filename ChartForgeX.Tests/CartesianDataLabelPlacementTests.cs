@@ -21,7 +21,7 @@ public sealed class CartesianDataLabelPlacementTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AutomaticContainedFallbackUsesContrastAndPreservesExplicitInk(bool explicitInk) {
+    public void AutomaticCaptionOnAFullHeightBar_StaysAboveLikeItsNeighboursAndKeepsExplicitInk(bool explicitInk) {
         var fill = ChartColor.FromHex("#172554");
         var chart = Chart.Create().WithSize(180, 180).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
             .WithYAxisBounds(0, 100).WithDataLabels().AddBar("Value", new[] { new ChartPoint(1, 100) }, fill);
@@ -30,9 +30,11 @@ public sealed class CartesianDataLabelPlacementTests {
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
         Assert.Equal("100", label.Text.Lines.Single().Text);
         var mark = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
+        // The value axis reserves a caption lane, so a bar at the maximum doesn't move its caption inside.
         Assert.InRange(label.X, mark.Left, mark.Right);
-        Assert.InRange(label.Baseline, mark.Top, mark.Bottom);
-        Assert.Equal(explicitInk ? ChartColor.FromHex("#FFFF00") : ChartColorMath.AccessibleTextOnBackground(fill), label.Color);
+        Assert.True(label.Baseline - label.Text.Ascent + label.Text.Metrics.Height <= mark.Top);
+        if (explicitInk) Assert.Equal(ChartColor.FromHex("#FFFF00"), label.Color);
+        else Assert.NotEqual(ChartColorMath.AccessibleTextOnBackground(fill), label.Color);
         Assert.True(prepared.ToPng().Length > 64);
     }
 }

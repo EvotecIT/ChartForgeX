@@ -1,0 +1,136 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Globalization;
+using ChartForgeX.Primitives;
+using ChartForgeX.Topology;
+using ChartForgeX.VisualBlocks;
+using System;
+using System.IO;
+using ChartForgeX.Core;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 14, legendSize: 14, dataLabelSize: 14));
+var font = FontSpec.FromFamily("system-ui, sans-serif");
+var frame = new VisualFrame("", "", showLegend: false, transparentBackground: true);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 96), 0), theme, mode, frame, font);
+var scale = ServerRenderedRecipe.SharedScale();
+var chart = ServerRenderedRecipe.Create("shared-strip", mode);
+var prepared = chart.PrepareStrip(context, scale);
+var axis = scale.PrepareAxis(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 32), 0), theme, mode, frame, font));
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("support-row", VisualArtifactKind.Chart).ToHtmlPage());
+File.WriteAllText("axis.svg", axis.ToSvg());
+
+// Insert these SVG strings inline in the same HTML row grid. The page supplies its own font properties.
+var pageFonts = new VisualSvgOptions("release-row").WithFluidWidth()
+    .WithFontVariables(familyVariable: "--page-font", sizeVariable: "--chart-font-size");
+File.WriteAllText("fluid-row.svg", prepared.ToSvg(pageFonts));
+File.WriteAllText("fluid-axis.svg", axis.ToSvg(new VisualSvgOptions("release-axis").WithFluidWidth()
+    .WithFontVariables(familyVariable: "--page-font", sizeVariable: "--chart-font-size")));
+
+
+/// <summary>Illustrative page charts with mark navigation, a current schedule row and a shared strip domain.</summary>
+public static class ServerRenderedRecipe {
+    /// <summary>Creates a catalog model; page hosts can prepare the shared-strip variant with <see cref="SharedScale"/>.</summary>
+    public static Chart Create(string variant = "linked-columns", VisualThemeMode mode = VisualThemeMode.Light) => variant switch {
+        "linked-columns" or "compact-linked-columns" => LinkedColumns(mode, GalleryPage(mode)),
+        "support-schedule" or "compact-support-schedule" => SupportSchedule(mode, GalleryPage(mode)),
+        "shared-strip" or "compact-shared-strip" => CreateStrip(1, mode, GalleryPage(mode)),
+        _ => throw new ArgumentException("Unknown embedding example.", nameof(variant))
+    };
+
+    /// <summary>Creates five linked stacked columns. Publisher notes open separately from the local daily summaries.</summary>
+    public static Chart LinkedColumns(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = "") {
+        var updates = new[] { 8d, 12, 7, 16, 10 };
+        var notes = new[] { 2d, 3, 2, 4, 1 };
+        ChartPoint Point(int index, double value, bool publisher) {
+            var day = new DateTime(2026, 7, 13).AddDays(index).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            return new ChartPoint(index + 1, value).WithMarkOptions(new ChartMarkOptions(
+                href: publisher ? "https://github.com/EvotecIT/ChartForgeX/releases" : summaryPage + "#day-" + day,
+                linkTarget: publisher ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext,
+                tooltip: publisher ? "Open publisher release notes in a new tab" : "Read this day's update summary",
+                accessibleLabel: day + ": " + value.ToString("0", CultureInfo.InvariantCulture)
+                    + (publisher ? " publisher notes; opens in a new tab" : " updates; read the daily summary"),
+                cssClass: publisher ? "publisher-mark" : "activity-mark",
+                dataAttributes: new Dictionary<string, string> { ["data-day"] = day, ["data-kind"] = publisher ? "publisher" : "update" }));
+        }
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithBarStyle(ChartBarStyle.Flat)
+            .WithLegend(false).WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+            .WithYAxisBounds(0, 24).ConfigureYAxis(axis => { axis.TickCount = 4; axis.IntegerTicks = true; })
+            .AddBar("Updates", updates.Select((value, index) => Point(index, value, false)), Color("--updates", mode))
+            .AddBar("Publisher notes", notes.Select((value, index) => Point(index, value, true)), Color("--publisher-notes", mode));
+        chart.Series[0].WithMarkOptions(new ChartMarkOptions(cssClass: "activity-series",
+            dataAttributes: new Dictionary<string, string> { ["data-feed"] = "daily-updates" }));
+        chart.Series[1].WithMarkOptions(new ChartMarkOptions(cssClass: "publisher-series",
+            dataAttributes: new Dictionary<string, string> { ["data-feed"] = "publisher-notes" }));
+        return chart;
+    }
+
+    /// <summary>Creates three support rows, including an open task and independently current row metadata.</summary>
+    public static Chart SupportSchedule(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = "") {
+        var chart = Schedule(mode);
+        for (var row = 0; row < 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
+        return chart.WithGanttToday(new DateTime(2026, 7, 15));
+    }
+
+    /// <summary>Creates one support row for plot-only preparation; HTML owns the row label.</summary>
+    public static Chart CreateStrip(int row, VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = "") =>
+        Schedule(mode).AddSeries(SupportRow(row, mode, summaryPage));
+
+    /// <summary>Creates an explicit 1 January 2026 to 1 January 2027 domain shared by every strip and the axis.</summary>
+    public static ChartStripScale SharedScale() {
+        var axis = new ChartAxis();
+        ConfigureTimeAxis(axis);
+        return new ChartStripScale(axis);
+    }
+
+    private static Chart Schedule(VisualThemeMode mode) => Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
+        .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
+        .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
+        .ConfigureXAxis(ConfigureTimeAxis);
+
+    private static void ConfigureTimeAxis(ChartAxis axis) {
+        axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2027, 1, 1).ToOADate();
+        axis.Scale = ChartScaleKind.Time; axis.TickCount = 3;
+        axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM yy", CultureInfo.InvariantCulture));
+        axis.Labels.Clear();
+        foreach (var date in new[] { new DateTime(2026, 1, 1), new DateTime(2026, 7, 1), new DateTime(2027, 1, 1) })
+            axis.Labels.Add(new ChartAxisLabel(date.ToOADate(), date.ToString("MMM yy", CultureInfo.InvariantCulture)));
+    }
+
+    private static string GalleryPage(VisualThemeMode mode) => "embedding/" + (mode == VisualThemeMode.Dark ? "dark" : "light") + ".html";
+
+    private static ChartSeries SupportRow(int row, VisualThemeMode mode, string summaryPage) {
+        var (name, key, start, end) = row switch {
+            0 => ("2025", "release-2025", new DateTime(2026, 1, 1), new DateTime(2026, 5, 31)),
+            1 => ("2026", "release-2026", new DateTime(2026, 3, 1), new DateTime(2027, 1, 1)),
+            2 => ("Next", "release-next", new DateTime(2026, 9, 1), new DateTime(2026, 12, 31)),
+            _ => throw new ArgumentOutOfRangeException(nameof(row))
+        };
+        var current = row == 1;
+        var item = current ? ChartGanttItem.OpenEnded(start) : new ChartGanttItem(start, end);
+        item = item.WithMarkOptions(new ChartMarkOptions(href: summaryPage + "#" + key,
+            tooltip: current ? "Current release; support has no fixed end date" : "Read this release's support summary",
+            accessibleLabel: name + (current ? ": support from March 2026, no fixed end date" : ": view support dates"),
+            cssClass: "support-mark", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }));
+        return ChartSeries.CreateGanttTask(new ChartSeriesId(key), name, start, end, color: Color(current ? "--updates" : "--support", mode))
+            .ReplaceGanttItems(new[] { item })
+            .WithMarkOptions(new ChartMarkOptions(cssClass: "support-series", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }))
+            .WithRowOptions(new ChartMarkOptions(href: summaryPage + "#" + key, accessibleLabel: name + (current ? ", current release" : ", support summary"),
+                cssClass: "support-row", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }, current: current));
+    }
+
+    private static ChartColor Color(string token, VisualThemeMode mode) {
+        var dark = mode == VisualThemeMode.Dark;
+        return ChartColor.FromHex(token switch {
+            "--updates" => dark ? "#6EAEFF" : "#2A78D6",
+            "--publisher-notes" => dark ? "#F3B36B" : "#A95712",
+            _ => dark ? "#9CA7B5" : "#697789"
+        }).WithCssVariable(token);
+    }
+}

@@ -27,10 +27,13 @@ internal static partial class VisualScalarProgressCompiler {
             .Select(row => chart.Measure(builder, row.ValueText + " / " + row.TargetText, Style(chart, context, row.Series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 700)).Width + gap).DefaultIfEmpty(0).Max());
         var sharedScaleWidth = rows[0].Axis.Visible && chart.ShowAxes
             ? rows[0].TickText.Select(text => chart.Measure(builder, text, axisStyle).Width + gap).DefaultIfEmpty(0).Max() : 0;
+        // Design rule 10: horizontal rows take a fixed slot (plus their own scale) from the top instead of spreading out.
+        var rowScale = chart.ShowAxes && rows.Any(row => row.Axis.Visible) ? scaleHeight : 0;
+        var pitch = Math.Min(plot.Height / rows.Length, ChartRowDensity.MaximumRow + rowScale + gap);
         for (var index = 0; index < rows.Length; index++) {
             var row = rows[index]; var series = row.Series; var show = series.ShowLabels;
             var bounds = vertical ? new ChartRect(plot.Left + plot.Width * index / rows.Length, plot.Top, plot.Width / rows.Length, plot.Height)
-                : new ChartRect(plot.Left, plot.Top + plot.Height * index / rows.Length, plot.Width, plot.Height / rows.Length);
+                : new ChartRect(plot.Left, plot.Top + pitch * index, plot.Width, pitch);
             var hasAxis = chart.ShowAxes && row.Axis.Visible;
             var rowScaleWidth = hasAxis ? row.TickText.Select(text => chart.Measure(builder, text, axisStyle).Width + gap).DefaultIfEmpty(0).Max() : 0;
             ChartRect track;
@@ -44,7 +47,7 @@ internal static partial class VisualScalarProgressCompiler {
                     width, Math.Max(0, bounds.Height - topReserve - bottomReserve));
             } else {
                 var availableHeight = Math.Max(0, bounds.Height - (hasAxis ? scaleHeight : 0) - gap);
-                var height = Math.Min(context.Theme.Typography.DataLabelSize * 1.8, availableHeight * .4);
+                var height = Math.Min(context.Theme.Typography.DataLabelSize * 1.8, availableHeight * .55);
                 track = new ChartRect(bounds.Left + labelWidth + gap, bounds.Top + availableHeight / 2 - height / 2,
                     Math.Max(0, bounds.Width - labelWidth - valueWidth - gap * 2), height);
             }
@@ -75,9 +78,8 @@ internal static partial class VisualScalarProgressCompiler {
                 if (ends.Count == 0) { ends.Add(row.Minimum + (row.Maximum - row.Minimum) * .6); ends.Add(row.Minimum + (row.Maximum - row.Minimum) * .8); }
                 ends.Add(row.Maximum); var previous = row.Minimum;
                 for (var band = 0; band < ends.Count; band++) {
-                    var neutral = band == 0 ? colors.Neutral : band == 1 ? colors.Neutral2 : colors.Neutral3;
                     using (builder.PushGroup(null, "bullet-range-source", new Dictionary<string, string> { ["data-cfx-min"] = N(previous), ["data-cfx-max"] = N(ends[band]) }))
-                        builder.Rect(BulletSpan(track, Position(previous), Position(ends[band]), vertical, 1), neutral, role: "bullet-range", paint: VisualChartPaint.Fill(neutral, SvgColorRole.Surface));
+                        BulletBand(builder, BulletSpan(track, Position(previous), Position(ends[band]), vertical, 1), band, ends.Count, colors);
                     previous = ends[band];
                 }
                 var color = series.Color;

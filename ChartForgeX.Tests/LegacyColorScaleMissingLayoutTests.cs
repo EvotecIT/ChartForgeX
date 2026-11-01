@@ -68,7 +68,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
             new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"), GalleryFont()));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
         var bands = labels.Where(node => node.Id!.StartsWith("heatmap-scale-label-band-", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(new[] { "Low · < 40", "Medium · 40 ≤ value < 80", "High · ≥ 80" }, bands.Select(node => node.Text.Lines[0].Text));
+        Assert.Equal(new[] { "Low < 40", "Medium 40–80", "High ≥ 80" }, bands.Select(node => node.Text.Lines[0].Text));
         var noData = Assert.Single(labels, node => node.Id == "heatmap-scale-label-missing");
         Assert.Equal(missing, noData.Text.Lines[0].Text);
         Assert.True(Ink(noData).Top > bands.Max(node => Ink(node).Bottom));

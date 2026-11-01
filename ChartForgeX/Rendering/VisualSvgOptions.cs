@@ -8,14 +8,28 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Controls safe SVG host integration and explicit captured-effect representation without repeating layout.</summary>
 public sealed partial class VisualSvgOptions {
-    private readonly SvgColorVariables? _colorVariables;
+    private SvgColorVariables? _colorVariables;
     private bool _patternTiles;
     /// <summary>Gets whether native hatch marks serialize as user-space SVG tiles instead of individual clipped lines.</summary>
     public bool PatternTiles => _patternTiles;
     /// <summary>Returns an export policy with native user-space pattern tiles, retaining the other host settings.</summary>
     /// <param name="enabled">Whether to use tiles. Static exports keep individual native lines by default.</param>
     /// <returns>An independent export policy.</returns>
-    public VisualSvgOptions WithPatternTiles(bool enabled = true) => new VisualSvgOptions(IdPrefix, _colorVariables, LinkTarget, Responsive, EffectProfile, EffectRasterOptions) { _patternTiles = enabled, _textPresentation = _textPresentation };
+    public VisualSvgOptions WithPatternTiles(bool enabled = true) {
+        var copy = Copy(); copy._patternTiles = enabled; return copy;
+    }
+
+    // Policies own detached maps and expose only clones; immutable values and partial policy fields can be shared safely.
+    private VisualSvgOptions Copy() => (VisualSvgOptions)MemberwiseClone();
+
+    /// <summary>Retains the complete export policy when an adapter scopes another emission.</summary>
+    internal VisualSvgOptions WithIdPrefix(string? idPrefix) {
+        var copy = Copy(); copy.IdPrefix = idPrefix == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idPrefix); return copy;
+    }
+
+    internal VisualSvgOptions WithColorScope(SvgColorVariables? variables) {
+        var copy = Copy(); copy._colorVariables = variables?.Clone(); return copy;
+    }
 
     /// <summary>Creates a detached SVG export policy.</summary>
     /// <param name="idPrefix">Unique host namespace; null uses a deterministic content namespace.</param>
@@ -41,7 +55,7 @@ public sealed partial class VisualSvgOptions {
     /// <summary>Gets immutable density/coverage/cap options for baked effects; null resolves native defaults only when needed.</summary>
     public VisualRenderOptions? EffectRasterOptions { get; }
     /// <summary>Gets the host ID namespace, or null for a deterministic content namespace.</summary>
-    public string? IdPrefix { get; }
+    public string? IdPrefix { get; private set; }
     /// <summary>Gets an independent copy of the host color mapping.</summary>
     public SvgColorVariables? ColorVariables => _colorVariables?.Clone();
     /// <summary>Gets the safe link target policy.</summary>

@@ -36,4 +36,17 @@ public readonly struct ChartCalendarHeatmapItem {
         Value = value;
         Color = color;
     }
+
+    /// <summary>Gets optional immutable navigation, accessibility and host metadata.</summary>
+    public ChartMarkOptions? MarkOptions { get; }
+
+    /// <summary>Returns a copy with replacement mark metadata, retaining all authored values.</summary>
+    /// <param name="options">Immutable metadata, or null to clear it.</param>
+    /// <returns>A new observation. The current observation is unchanged.</returns>
+    public ChartCalendarHeatmapItem WithMarkOptions(ChartMarkOptions? options) => new(this, options);
+
+    private ChartCalendarHeatmapItem(ChartCalendarHeatmapItem source, ChartMarkOptions? options) {
+        this = source;
+        MarkOptions = options;
+    }
 }

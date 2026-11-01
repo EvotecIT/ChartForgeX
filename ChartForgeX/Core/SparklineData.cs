@@ -14,9 +14,14 @@ public enum ChartMissingDataPolicy {
 
 /// <summary>A detached sequence of compact-chart sample slots, where null is missing and zero is a real observation.</summary>
 public sealed class SparklineData {
+    /// <summary>Copies sample slots with the established five-argument constructor contract.</summary>
+    public SparklineData(IEnumerable<double?> values, double? minimum, double? maximum,
+        ChartMissingDataPolicy missingDataPolicy, bool includeZero)
+        : this(values, minimum, maximum, missingDataPolicy, includeZero, null) { }
+
     /// <summary>Copies sample slots and resolves a shared numeric domain. All-missing data uses zero through one.</summary>
     public SparklineData(IEnumerable<double?> values, double? minimum = null, double? maximum = null,
-        ChartMissingDataPolicy missingDataPolicy = ChartMissingDataPolicy.Gap, bool includeZero = false) {
+        ChartMissingDataPolicy missingDataPolicy = ChartMissingDataPolicy.Gap, bool includeZero = false, IReadOnlyList<ChartMarkOptions?>? pointOptions = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         ChartSamplePoints.ValidatePolicy(missingDataPolicy);
         ValidateBound(minimum, nameof(minimum)); ValidateBound(maximum, nameof(maximum));
@@ -27,6 +32,11 @@ public sealed class SparklineData {
             ValidateBound(value, nameof(values)); slots.Add(value);
         }
         if (slots.Count == 0) throw new ArgumentException("At least one sample slot is required.", nameof(values));
+        if (pointOptions != null && pointOptions.Count != slots.Count)
+            throw new ArgumentException("Point metadata must have one entry per sample slot, including missing slots.", nameof(pointOptions));
+        var options = new ChartMarkOptions?[slots.Count];
+        if (pointOptions != null) for (var index = 0; index < options.Length; index++) options[index] = pointOptions[index];
+        PointOptions = Array.AsReadOnly(options);
         Values = slots.AsReadOnly(); MissingDataPolicy = missingDataPolicy;
         RequestedMinimum = minimum; RequestedMaximum = maximum; IncludeZero = includeZero;
         var domain = ResolveBounds(Values, minimum, maximum, includeZero);
@@ -55,7 +65,27 @@ public sealed class SparklineData {
     }
 
     /// <summary>Creates finite points with one-based sample positions and explicit segment breaks.</summary>
-    public ChartPoint[] ToPoints() => ChartSamplePoints.FromValues(Values, MissingDataPolicy);
+    public ChartPoint[] ToPoints() {
+        var points = ChartSamplePoints.FromValues(Values, MissingDataPolicy);
+        for (var index = 0; index < points.Length; index++)
+            points[index] = points[index].WithMarkOptions(PointOptions[(int)points[index].X - 1]);
+        return points;
+    }
+
+    /// <summary>Gets immutable metadata for each original sample slot, including missing slots.</summary>
+    public IReadOnlyList<ChartMarkOptions?> PointOptions { get; }
+
+    /// <summary>Returns independent data with replacement metadata on one zero-based sample slot.</summary>
+    /// <param name="sampleIndex">The original slot index, counting missing observations.</param>
+    /// <param name="options">Immutable metadata, or null to clear it.</param>
+    /// <returns>A detached sequence retaining its data, missing policy and requested bounds.</returns>
+    public SparklineData WithPointOptions(int sampleIndex, ChartMarkOptions? options) {
+        if (sampleIndex < 0 || sampleIndex >= Values.Count) throw new ArgumentOutOfRangeException(nameof(sampleIndex));
+        var copy = new ChartMarkOptions?[PointOptions.Count];
+        for (var index = 0; index < copy.Length; index++) copy[index] = PointOptions[index];
+        copy[sampleIndex] = options;
+        return new SparklineData(Values, RequestedMinimum, RequestedMaximum, MissingDataPolicy, IncludeZero, copy);
+    }
 
     internal double Ratio(double value) {
         var span = Maximum - Minimum;

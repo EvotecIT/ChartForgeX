@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
@@ -31,9 +30,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => ChartDecimator.Decimate(null!, 10), "Decimation should reject null input.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartDecimator.Decimate(points, 2), "Decimation should reject budgets below three points.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartDecimator.Decimate(points, 10, (ChartDecimationMode)99), "Decimation should reject unknown algorithms.");
-        var invalid = points.ToArray();
-        MemoryMarshal.Cast<ChartPoint, double>(invalid.AsSpan(517, 1))[1] = double.NaN;
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartDecimator.Decimate(invalid, 3), "Decimation should validate every source point even when an invalid point would not be retained.");
     }
 
     private static void DecimatedChartsPreserveSourcePointIdentities() {

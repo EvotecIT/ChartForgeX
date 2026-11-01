@@ -60,7 +60,7 @@ public sealed class ColorScaleLocalizationTests {
         var sourceRole = kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap or ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst
             ? prefix + "-step-source" : prefix + "-step";
         var bands = document.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == sourceRole).ToArray();
-        Assert.Equal(new[] { "Niski · < 10,5 °C", "Średni · 10,5 °C ≤ wartość < 20,5 °C", "Wysoki · ≥ 20,5 °C" },
+        Assert.Equal(new[] { "Niski < 10,5 °C", "Średni 10,5 °C–20,5 °C", "Wysoki ≥ 20,5 °C" },
             bands.Select(node => (string?)node.Attribute("data-cfx-label")));
         Assert.Equal(new[] { "", "10.5", "20.5" }, bands.Select(node => (string?)node.Attribute("data-cfx-lower-bound")));
         Assert.Equal(new[] { "10.5", "20.5", "" }, bands.Select(node => (string?)node.Attribute("data-cfx-upper-bound")));
@@ -76,7 +76,7 @@ public sealed class ColorScaleLocalizationTests {
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         var changed = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg();
-        Assert.Contains("10.5 ≤ pomiar &lt; 20.5", changed);
+        Assert.Contains("10.5–20.5", changed);
     }
 
     [Theory]
@@ -122,13 +122,14 @@ public sealed class ColorScaleLocalizationTests {
         var bands = document.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == sourceRole).ToArray();
         var captions = bands.Select(node => (string?)node.Attribute("data-cfx-label")).ToArray();
         Assert.Equal(oneBand ? new[] { "Zakres · Wszystkie wartości" }
-            : new[] { "Niski · < 10", "Średni · 10 ≤ wartość < 20", "Wysoki · ≥ 20" }, captions);
+            : new[] { "Niski < 10", "Średni 10–20", "Wysoki ≥ 20" }, captions);
         Assert.Equal(oneBand ? new[] { "" } : new[] { "", "10", "20" }, bands.Select(node => (string?)node.Attribute("data-cfx-lower-bound")));
         Assert.Equal(oneBand ? new[] { "" } : new[] { "10", "20", "" }, bands.Select(node => (string?)node.Attribute("data-cfx-upper-bound")));
         chart.ConfigureLabels(labels => { labels.AllValues = "Changed"; labels.Value = "changed"; });
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
-        Assert.NotEqual(svg, chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg());
+        // Only the single-band key uses a label word ("All values"); interval captions are numbers and symbols.
+        if (oneBand) Assert.NotEqual(svg, chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg());
     }
 
     [Fact]

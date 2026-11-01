@@ -71,7 +71,8 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         await engineering.FocusAsync(); await page.Keyboard.PressAsync("Enter");
         await page.EvaluateAsync("() => document.activeElement?.blur()"); await MoveAwayAsync(page);
         var secondaryCaption = page.Locator("[data-cfx-role=sunburst-secondary-label]").First;
-        await secondaryCaption.HoverAsync();
+        var captionHit = await SecondaryCaptionHit(secondaryCaption);
+        await page.Mouse.MoveAsync((float)captionHit[0], (float)captionHit[1], new MouseMoveOptions { Steps = 3 });
         await page.WaitForFunctionAsync("() => !!document.querySelector('.cfx-hovered[data-cfx-target-kind=node]')");
         Assert.False(string.IsNullOrEmpty(await TooltipTextAsync(page)));
         var zero = page.Locator("[data-cfx-node=reserve]");
@@ -147,6 +148,14 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
                 const px=box.left+box.width*x/30, py=box.top+box.height*y/30, hit=document.elementFromPoint(px,py);
                 if (hit && hit.closest('[data-cfx-target-kind=node]') === node && !hit.hasAttribute('data-cfx-browser-hit-area')) return [px,py];
             } throw new Error('No native Sunburst sector hit'); }
+        """);
+    // The centre of a rotated text group's bounding box may lie outside its painted glyphs.
+    private static Task<double[]> SecondaryCaptionHit(ILocator caption) => caption.EvaluateAsync<double[]>("""
+        node=>{const box=node.getBoundingClientRect();
+            for(let y=1;y<40;y++) for(let x=1;x<40;x++) {
+                const px=box.left+box.width*x/40,py=box.top+box.height*y/40,hit=document.elementFromPoint(px,py);
+                if(hit && hit.closest('[data-cfx-role=sunburst-secondary-label]')===node)return [px,py];
+            } throw new Error('No visible secondary caption hit'); }
         """);
     private static async Task Capture(IPage page, PreparedVisual prepared, string html, int width, bool dark, double radius,
         string state, List<string> errors, IEnumerable<string> console) {

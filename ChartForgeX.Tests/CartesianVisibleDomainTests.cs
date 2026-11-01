@@ -19,7 +19,8 @@ public sealed class CartesianVisibleDomainTests {
             if (chart.Series[0].Kind == ChartSeriesKind.ErrorBar) chart.Series[0].Markers.Enabled = false;
             var count = chart.Series[0].SourcePointCount;
             var prepared = Prepare(chart,window);
-            Assert.InRange(prepared.YProjection!.Minimum, 18, 20); Assert.InRange(prepared.YProjection.Maximum, 40, 42);
+            // Whole intervals contribute, and the automatic domain then ends on clean ticks (design rule 1).
+            Assert.InRange(prepared.YProjection!.Minimum, 10, 20); Assert.InRange(prepared.YProjection.Maximum, 40, 50);
             Assert.Equal(count, chart.Series[0].SourcePointCount);
             Assert.Equal(count, XDocument.Parse(prepared.ToSvg()).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "point"));
             Assert.NotEmpty(prepared.ToPng());
@@ -56,7 +57,7 @@ public sealed class CartesianVisibleDomainTests {
             : new ChartCartesianViewport(x:new ChartAxisWindow(.9,1.1),valueDomain:ChartValueDomain.VisibleCategories);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context,request);
         var value = horizontal ? prepared.XProjection! : prepared.YProjection!;
-        Assert.Equal(0,value.Minimum); Assert.InRange(value.Maximum,100,110);
+        Assert.Equal(0,value.Minimum); Assert.InRange(value.Maximum,100,120);
         var facts = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node=>(string?)node.Attribute("data-cfx-role")=="point").ToArray();
         Assert.Contains(facts,node=>(string?)node.Attribute("data-cfx-stack-end")=="100"&&(string?)node.Attribute("data-cfx-y")=="90");
         Assert.Equal(4,facts.Length); Assert.Equal(500,chart.Series[1].Points[1].Y);

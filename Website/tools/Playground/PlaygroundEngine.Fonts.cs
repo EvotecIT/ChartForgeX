@@ -31,6 +31,12 @@ public static partial class PlaygroundEngine {
                 break;
             case IVisualBlock block when artifact.RenderSource == null:
                 block.Options.Theme = block.Options.Theme.WithFontFamily(PreviewFontFamily);
+                if (block is RailroadDiagramBlock railroad) {
+                    // The producer measured before the host changed its font; retain that frame as a minimum.
+                    var minimum = railroad.Options.Size;
+                    railroad.WithNaturalSize(minimum.Width, minimum.Height);
+                    artifact.NaturalSize = new VisualArtifactSize(railroad.Options.Size.Width, railroad.Options.Size.Height);
+                }
                 break;
         }
     }

@@ -54,7 +54,8 @@ internal static partial class SmokeTests {
         var edgePrepared = PreparedFamily(edgeLabels);
         var plot = edgePrepared.Scene.Nodes.OfType<VisualSceneLine>().Single(line => line.Role == "axis-y");
         var labels = FamilyLabels(edgePrepared, "data-label");
-        Assert(labels.Length == 1 && labels.All(label => label.Baseline - label.Text.Ascent - plot.Start.Y >= 12
+        // The caption of a bar at the axis maximum sits in its reserved lane above the plot, clear of the guard line.
+        Assert(labels.Length == 1 && labels.All(label => label.Baseline - label.Text.Ascent + label.Text.Metrics.Height <= System.Math.Min(plot.Start.Y, plot.End.Y)) || labels.Length == 1 && labels.All(label => label.Baseline - label.Text.Ascent - plot.Start.Y >= 12
             && plot.End.Y - (label.Baseline - label.Text.Ascent + label.Text.Metrics.Height) >= 12),
             "Complete data-label extents should stay away from the actual plot guard lines.");
         Assert(edgePrepared.ToPng().Length > 64, "Data-label guard gaps should render PNG output.");

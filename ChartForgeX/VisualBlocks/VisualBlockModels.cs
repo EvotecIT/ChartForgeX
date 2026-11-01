@@ -78,6 +78,13 @@ public sealed class VisualBlockOptions {
     private VisualThemeMode _themeMode;
     internal ResolvedVisualTheme ResolvedTheme => Theme.ResolvePresentation(ThemeMode);
 
+    /// <summary>
+    /// Gets or sets the CSS custom properties SVG output writes for theme colours, matched by colour value (see
+    /// <see cref="SvgColorVariables.Apply"/>), for example <see cref="SvgColorVariables.SharedRoles"/> of this theme and
+    /// mode. Null (the default) writes literal colours; PNG output always does.
+    /// </summary>
+    public SvgColorVariables? SvgColorVariables { get; set; }
+
     /// <summary>Gets or sets whether the full background should stay transparent.</summary>
     public bool TransparentBackground { get; set; }
 
@@ -173,6 +180,11 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
 
     /// <summary>Sets the light or dark mode without changing the shared theme.</summary>
     public TSelf WithThemeMode(VisualThemeMode mode) { Options.ThemeMode = mode; return Self(); }
+
+    /// <summary>Writes theme colours in SVG output as CSS custom properties (see <see cref="VisualBlockOptions.SvgColorVariables"/>).</summary>
+    /// <param name="variables">The colour variables, or null to write literal colours.</param>
+    /// <returns>The current block.</returns>
+    public TSelf WithSvgColorVariables(SvgColorVariables? variables) { Options.SvgColorVariables = variables; return Self(); }
 
     /// <summary>Atomically replaces the shared theme using an isolated configuration builder.</summary>
     public TSelf ConfigureTheme(Action<VisualThemeBuilder> configure) { Options.Theme = Options.Theme.Configure(configure); return Self(); }

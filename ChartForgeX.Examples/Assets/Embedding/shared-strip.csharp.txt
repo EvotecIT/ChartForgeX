@@ -1,0 +1,13 @@
+var scale =
+    ServerRenderedRecipe.SharedScale();
+// Bounds: 1 Jan 2026 to 1 Jan 2027.
+var row =
+    ServerRenderedRecipe.CreateStrip(1);
+var track = row.PrepareStrip(context, scale);
+var axis = scale.PrepareAxis(axisContext);
+var policy = new VisualSvgOptions("release")
+    .WithFluidWidth()
+    .WithFontVariables(
+        "--page-font", "--chart-font-size");
+var svg = track.ToSvg(policy);
+// HTML owns the label. Reuse this scale.

@@ -116,11 +116,13 @@ public sealed class TopologyCellLayoutTests {
         Assert.True(layout.Nodes.All(item => item.Height >= 4));
     }
 
-    [Fact]
-    public void Paint_WideCharacters_KeepTheirTwoCells() {
+    [Theory]
+    [InlineData(TopologyCellGlyphSet.Unicode)]
+    [InlineData(TopologyCellGlyphSet.Ascii)]
+    public void Paint_WideCharacters_KeepTheirTwoCells(TopologyCellGlyphSet glyphs) {
         var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
             .AddAutoNode("a", "東京 DC").AddAutoNode("b", "Zürich").AddEdge("ab", "a", "b", "同期");
-        var canvas = TopologyCellLayout.Create(chart.Prepare()).Paint();
+        var canvas = TopologyCellLayout.Create(chart.Prepare()).Paint(new TopologyCellPaintOptions { Glyphs = glyphs });
 
         Assert.Contains("東京 DC", canvas.ToText(), StringComparison.Ordinal);
         Assert.Contains(Cells(canvas), cell => cell.Glyph == "東" && cell.Width == 2);

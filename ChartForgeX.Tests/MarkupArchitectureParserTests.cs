@@ -227,6 +227,29 @@ public sealed class MarkupArchitectureParserTests {
 
     private static string Fixture(string name) => Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Architecture", name + ".md");
 
+    [Fact]
+    public void GeneratedArchitectureSvgs_EmbedTheirMeasuredFontForStandaloneViewing() {
+        var output = ExampleTestOutput.CreateScratchPath("CFX-architecture-font-");
+        Directory.CreateDirectory(output);
+        try {
+            var examples = Assembly.Load("ChartForgeX.Examples").GetType("ArchitectureExamples", true)!;
+            examples.GetMethod("Write", BindingFlags.Public | BindingFlags.Static)!.Invoke(null, new object[] { output });
+            var paths = Directory.GetFiles(output, "*.svg");
+            Assert.Equal(6, paths.Length);
+            foreach (var path in paths) {
+                var svg = System.Xml.Linq.XDocument.Load(path);
+                var style = Assert.Single(svg.Root!.Elements(svg.Root.Name.Namespace + "style"));
+                Assert.Contains("font-family:'CFX Proof Carlito'", style.Value, StringComparison.Ordinal);
+                Assert.Contains("font-weight:400", style.Value, StringComparison.Ordinal);
+                Assert.Contains("font-weight:700", style.Value, StringComparison.Ordinal);
+                Assert.Equal(2, style.Value.Split("data:font/ttf;base64,", StringSplitOptions.None).Length - 1);
+                Assert.True(File.Exists(Path.ChangeExtension(path, ".png")));
+            }
+        } finally {
+            Directory.Delete(output, true);
+        }
+    }
+
     private static (int ExitCode, string StandardOutput, string StandardError) RunCli(params string[] arguments) {
         var startInfo = new ProcessStartInfo("dotnet") {
             RedirectStandardOutput = true,

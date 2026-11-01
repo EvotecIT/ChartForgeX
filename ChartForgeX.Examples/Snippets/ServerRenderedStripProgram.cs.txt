@@ -1,0 +1,30 @@
+using System;
+using System.IO;
+using ChartForgeX.Core;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 14, legendSize: 14, dataLabelSize: 14));
+var font = FontSpec.FromFamily("{{FONT}}");
+var frame = new VisualFrame("", "", showLegend: false, transparentBackground: true);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize({{WIDTH}}, {{HEIGHT}}), 0), theme, mode, frame, font);
+var scale = ServerRenderedRecipe.SharedScale();
+var chart = ServerRenderedRecipe.Create({{VARIANT}}, mode);
+var prepared = chart.PrepareStrip(context, scale);
+var axis = scale.PrepareAxis(new VisualRenderContext(new VisualLayoutOptions(new VisualSize({{WIDTH}}, 32), 0), theme, mode, frame, font));
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("support-row", VisualArtifactKind.Chart).ToHtmlPage());
+File.WriteAllText("axis.svg", axis.ToSvg());
+
+// Insert these SVG strings inline in the same HTML row grid. The page supplies its own font properties.
+var pageFonts = new VisualSvgOptions("release-row").WithFluidWidth()
+    .WithFontVariables(familyVariable: "--page-font", sizeVariable: "--chart-font-size");
+File.WriteAllText("fluid-row.svg", prepared.ToSvg(pageFonts));
+File.WriteAllText("fluid-axis.svg", axis.ToSvg(new VisualSvgOptions("release-axis").WithFluidWidth()
+    .WithFontVariables(familyVariable: "--page-font", sizeVariable: "--chart-font-size")));
+
+{{SOURCE}}

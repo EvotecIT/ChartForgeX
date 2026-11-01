@@ -24,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
         var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
         if (lower.Count > 0) {
             var polygon = ChartPairedBoundaryGeometry.Envelope(upper, lower);
-            var opacity = context.Theme.AreaOpacity; var fill = ChartColorMath.WithOpacity(color, opacity);
+            var opacity = context.Theme.AreaWash(context.ThemeMode); var fill = ChartColorMath.WithOpacity(color, opacity);
             builder.Path(polygon, fill, role: "trend-line-interval", close: true,
                 paint: VisualChartPaint.Fill(paint.WithOpacity(fill, opacity)));
             var outline = new List<ChartPoint>(upper);

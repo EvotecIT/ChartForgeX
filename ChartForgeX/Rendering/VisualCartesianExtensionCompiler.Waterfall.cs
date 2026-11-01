@@ -31,7 +31,7 @@ internal static partial class VisualCartesianCompiler {
             var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var direction = MappedBarDirection(axis, step.Value, start, end, horizontal);
             if (horizontal) bounds = VisibleSegmentBounds(chart, bounds, direction, horizontal: true);
-            var fillRole = SemanticMarkPaintRole(series, item);
+            var fillRole = WaterfallPaintRole(series, step, item);
             var description = series.Name + ": " + categories[step.X] + " " + label.DisplayedText + " start=" + Number(step.Start) + " end=" + Number(step.End)
                 + " " + WaterfallValueName(chart, step) + "=" + Number(step.Value);
             builder.AddRegion(new VisualSemanticRegion(id, WaterfallRole(step), bounds, description));

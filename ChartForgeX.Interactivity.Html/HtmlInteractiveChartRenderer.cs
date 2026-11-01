@@ -147,7 +147,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var chartId = options.Interaction.ChartId ?? identityScope;
         var request = VisualExportRequest.ForChart(chart);
         // The authored request remains the intrinsic host basis when a narrow drawing becomes active.
-        var context = (drawingContext ?? request.Context).WithNativeValueSource(options.CaptureNativeValueSource);
+        var context = (drawingContext ?? request.Context).WithNativeValueSource(options.CaptureNativeValueSource)
+            .WithEditableProgress(options.ProgressEditing.Enabled);
         var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
         if (adaptive) ValidateAdaptiveOptions(options.Adaptive);
         if (adaptive && !narrow && preparedDrawing == null) {

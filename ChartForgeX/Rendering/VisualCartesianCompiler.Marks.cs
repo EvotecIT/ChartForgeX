@@ -48,9 +48,9 @@ internal static partial class VisualCartesianCompiler {
                             for (var point = 1; point < upperPath.Count; point++) commands.Add(ChartPathCommand.LineTo(upperPath[point].X, upperPath[point].Y));
                             for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
                             var area = new ChartPath(commands);
-                            var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
+                            var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaWash(context.ThemeMode));
                             using (aligned == null ? FillSegment(builder, offset, segment.Count) : AlignedAreaSegment(builder, aligned, offset, segment.Count)) {
-                                builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
+                                builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaWash(context.ThemeMode))));
                                 DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
                             }
                         }
@@ -153,7 +153,7 @@ internal static partial class VisualCartesianCompiler {
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
         var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].RenderPoints.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
             plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
-            maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth,
+            maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, stacks.IsStacked(index)),
             minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
             sampleSlots: sampleSlots, maximumPitch: map.CalendarBandPitch(horizontal: false));
         return (layout.Thickness, layout.Offset);
@@ -164,7 +164,12 @@ internal static partial class VisualCartesianCompiler {
         if (markers.Enabled.HasValue) return markers.Enabled.Value;
         if (series.Kind == ChartSeriesKind.Scatter) return true;
         if (chart.Options.IsSparkline) return false;
-        var mode = chart.Options.LineMarkerMode ?? ChartLineMarkerMode.Last;
+        // Design rule 5: no lone dot on the last point unless that point carries a label. A point the author singled out
+        // (its own colour or label) is an emphasis and keeps its marker.
+        if (!chart.Options.LineMarkerMode.HasValue && (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
+            || pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)) return true;
+        var mode = chart.Options.LineMarkerMode ?? (series.ShowDataLabels ?? chart.Options.ShowDataLabels ?? false
+            ? ChartLineMarkerMode.Last : ChartLineMarkerMode.None);
         if (mode == ChartLineMarkerMode.None) return false;
         if (mode == ChartLineMarkerMode.All) return true;
         if (mode == ChartLineMarkerMode.Last) return pointIndex == series.RenderPoints.Count - 1;
@@ -176,14 +181,18 @@ internal static partial class VisualCartesianCompiler {
             Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
         }));
 
-    private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
+    // Only automatic captions of a series' own points share a unit; authored labels and histogram gaps keep their text.
+    private static Func<double, string>? SeriesCaptionFormat(Chart chart, ChartSeries series) =>
+        ChartNumericFormatter.SeriesCaptionFormat(chart.Options, series.RenderPoints.Select(point => point.Y));
+
+    private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle, Func<double, string>? seriesFormat) {
         var value = series.RenderPoints[pointIndex].Y;
         var authored = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null;
         var numeric = !authored
             && !(series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
-                ? chart.Options.Labels.NoData : ChartNumericFormatter.FormatValue(chart.Options, value);
+                ? chart.Options.Labels.NoData : seriesFormat?.Invoke(value) ?? ChartNumericFormatter.FormatValue(chart.Options, value);
         var style = seriesStyle;
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
@@ -223,6 +232,9 @@ internal static partial class VisualCartesianCompiler {
             if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(anchor.X, mark.Bottom);
         }
         var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar or ChartSeriesKind.Waterfall;
+        // A column's value caption belongs to its bar end; the theme's layout spacing would float it away.
+        // Horizontal bars keep the wider gap: their beside-captions must clear longer neighbouring rows.
+        var endGap = bar && !horizontal ? BarLabelGap(context) : spacing;
         if (placement == ChartDataLabelPlacement.Auto && bar && ChartStackLayout.Participates(chart, series))
             placement = ChartDataLabelPlacement.Inside;
         var candidates = new List<LabelCandidate>();
@@ -241,7 +253,7 @@ internal static partial class VisualCartesianCompiler {
         }
         else if (placement == ChartDataLabelPlacement.Below || placement == ChartDataLabelPlacement.Above) {
             var above = placement == ChartDataLabelPlacement.Above;
-            foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -spacing : spacing, alignment, above ? 1 : 0));
+            foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -endGap : endGap, alignment, above ? 1 : 0));
         }
         else if (horizontal) {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
@@ -257,13 +269,13 @@ internal static partial class VisualCartesianCompiler {
         }
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
-            candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, .5, positive ? 1 : 0));
+            candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, .5, positive ? 1 : 0));
             if (bar && placement == ChartDataLabelPlacement.Auto) {
                 // Keep a bar caption centered on its own mark before trying sideways fallbacks.
                 candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
             } else if (bar) {
-                candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 0, positive ? 1 : 0));
-                candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 1, positive ? 1 : 0));
+                candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, 0, positive ? 1 : 0));
+                candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, 1, positive ? 1 : 0));
             }
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));

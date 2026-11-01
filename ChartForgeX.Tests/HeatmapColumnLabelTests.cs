@@ -225,9 +225,9 @@ public sealed class HeatmapColumnLabelTests {
     }
 
     [Fact]
-    public void ToSvg_NarrowMatrixWithRotatedDates_KeepsEveryRowName() {
-        // Fourteen dated columns at phone width rotate their captions. The row gutter must stay wide enough to name
-        // each target; column captions thin out instead.
+    public void ToSvg_NarrowMatrixWithDates_KeepsEveryRowNameAndThinsDatesHorizontally() {
+        // Fourteen dated columns at phone width: every target keeps its name, and the dates stay horizontal at a regular
+        // stride with the first and last day, because thinning ordered captions hides no column.
         string[] targets = { "dc1", "dc2", "dc3", "dc4", "dc5", "adfs", "dns", "exchange", "1.1.1.1", "8.8.8.8" };
         var days = Enumerable.Range(0, 14).Select(day => new DateTime(2026, 10, 14).AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().WithSize(360, 480).WithTitle("Daily availability per target").WithXLabels(days);
@@ -237,8 +237,81 @@ public sealed class HeatmapColumnLabelTests {
         var svg = XDocument.Parse(chart.ToSvg());
 
         Assert.Equal(targets, ByRole(svg, "heatmap-row-label").Select(label => label.Value).ToArray());
-        Assert.NotEmpty(ByRole(svg, "heatmap-column-label"));
-        Assert.All(ByRole(svg, "heatmap-column-label"), label => Assert.StartsWith("rotate(", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal));
+        var dates = ByRole(svg, "heatmap-column-label");
+        Assert.InRange(dates.Length, 3, days.Length - 1);
+        Assert.Equal(days[0], dates[0].Value); Assert.Equal(days[^1], dates[^1].Value);
+        Assert.All(dates, label => Assert.Null((string?)label.RenderedAttribute("transform")));
+    }
+
+    [Fact]
+    public void NumericMissingPositionsHaveOutlinesAndOneNoDataKeyWithoutInventedValues() {
+        var chart = Chart.Create().WithSize(520, 380).WithXLabels("One", "Two")
+            .AddHeatmapRow("Complete", new[] { 1d, 2d })
+            .AddHeatmapRow("Partial", new[] { 3d })
+            .AddHeatmapRow("Empty", Array.Empty<double>());
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Equal(3, ByRole(svg, "heatmap-cell").Length);
+        Assert.Equal(3, ByRole(svg, "heatmap-missing-cell").Length);
+        Assert.Single(ByRole(svg, "legend-label"), label => label.Value == "No data");
+        Assert.Single(ByRole(svg, "heatmap-key-missing-swatch"));
+        Assert.NotEmpty(ByRole(svg, "heatmap-key-missing-hatch"));
+        Assert.NotEmpty(chart.ToPng());
+
+        var complete = Chart.Create().WithSize(520, 380).AddHeatmapRow("Complete", new[] { 1d, 2d });
+        Assert.Empty(ByRole(XDocument.Parse(complete.ToSvg()), "heatmap-key-missing-swatch"));
+    }
+
+    [Fact]
+    public void ShortFrameReportsRowDensityAndKeepsSomeNamesVisibleWithCompleteSemantics() {
+        var chart = Chart.Create().WithSize(360, 180).WithXLabels("One", "Two");
+        var names = Enumerable.Range(1, 20).Select(i => "Target " + i).ToArray();
+        foreach (var name in names) chart.AddHeatmapRow(name, new[] { 1d, 2d });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var visible = ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-row-label");
+        Assert.InRange(visible.Length, 1, names.Length - 1);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.row-label-density");
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.cell-density");
+        Assert.Equal(180, prepared.Size.Height);
+        Assert.Equal(40, ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-cell").Length);
+        Assert.Equal(names, prepared.Regions.Where(region => region.Role == "heatmap-row-label").Select(region => region.Label));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
+    public void NaturalHeightGrowsShortHeatmapToFitEveryRow() {
+        var chart = Chart.Create().WithSize(360, 180).WithHeatmapNaturalHeight().WithXLabels("One", "Two");
+        for (var row = 0; row < 20; row++) chart.AddHeatmapRow("Target " + row, new[] { 1d, 2d });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.True(prepared.Size.Height > 180);
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.row-label-density");
+        var document = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(20, ByRole(document, "heatmap-row-label").Length);
+        Assert.All(ByRole(document, "heatmap-cell"), cell => Assert.True(Number(cell, "height") >= 12 - .001));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData(360)]
+    [InlineData(390)]
+    public void NarrowStaticHeatmapKeepsLatestColumnsAtReadableWidth(int width) {
+        var days = Enumerable.Range(0, 30).Select(day => new DateTime(2026, 9, 29).AddDays(day).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ToArray();
+        var chart = Chart.Create().WithSize(width, 360).WithXLabels(days);
+        for (var row = 0; row < 12; row++) chart.AddHeatmapRow("dc" + row + ".ad.evotec.xyz · LDAP bind", Enumerable.Range(1, 30).Select(i => (double)i).ToArray());
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var cells = ByRole(svg, "heatmap-cell");
+        Assert.NotEmpty(cells);
+        Assert.True(cells.Length < 360);
+        Assert.All(cells, cell => Assert.True(Number(cell, "width") >= 14 - .001));
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.cell-density");
+        Assert.Contains(prepared.Regions, region => region.Role == "matrix-column-window" && region.Label!.Contains("earlier"));
+        var captions = ColumnGeometry(prepared).OrderBy(item => item.Corners.Min(point => point.X)).ToArray();
+        Assert.Equal(days[^1], Assert.Single(captions[^1].Text.Text.Lines).Text);
+        Assert.All(captions, label => Assert.All(label.Corners, corner => Assert.InRange(corner.X, -.001, width + .001)));
+        for (var index = 1; index < captions.Length; index++)
+            Assert.True(captions[index].Corners.Min(point => point.X) >= captions[index - 1].Corners.Max(point => point.X));
+        chart.WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze);
+        Assert.Equal(360, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Length);
     }
 
     private static Chart Matrix(string rowPrefix = "DC0") {

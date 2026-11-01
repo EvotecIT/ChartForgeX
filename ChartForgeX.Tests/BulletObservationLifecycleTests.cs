@@ -41,7 +41,8 @@ public sealed class BulletObservationLifecycleTests {
         }
         var rows = mixed.Regions.Where(region => region.Role == "bullet-row").ToArray();
         Assert.Equal(2, rows.Length);
-        Assert.All(rows, row => Assert.Equal(originalHeight * 1.5, row.Bounds.Height, 8));
+        // Rows grow into the freed space only up to the 40px row slot (design rule 10).
+        Assert.All(rows, row => Assert.Equal(Math.Min(originalHeight * 1.5, ChartRowDensity.MaximumRow), row.Bounds.Height, 8));
         Assert.Equal(rows[0].Bounds.Bottom, rows[1].Bounds.Top, 8);
         var bars = mixed.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bullet-value").ToArray();
         Assert.Equal(active.Select(index => (ChartColor?)colors[index]), bars.Select(bar => bar.Fill));

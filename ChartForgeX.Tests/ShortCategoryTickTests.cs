@@ -8,6 +8,29 @@ namespace ChartForgeX.Tests;
 
 public sealed class ShortCategoryTickTests {
     private static readonly string[] Months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    private static readonly string[] Steps = { "Purchased", "Unassigned", "Inactive", "Disabled", "Assigned", "Duplicates", "Effective" };
+
+    [Fact]
+    public void ToSvg_NarrowNamedCategories_ShortenEveryNameInsteadOfSkippingAndKeepTheFullNameAsTooltip() {
+        // The bundled Carlito face has Calibri's metrics, so the fit is the same on every platform.
+        var chart = Chart.Create().WithSize(360, 300).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXLabels(Steps)
+            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+            .AddBar("Licences", Steps.Select((_, index) => new ChartPoint(index + 1, 100 + index * 10)).ToArray());
+
+        var svg = XDocument.Parse(chart.ToSvg());
+        var captions = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").ToArray();
+
+        Assert.Equal(Steps.Length, captions.Length);
+        Assert.Contains(captions, caption => caption.Value.EndsWith("…", StringComparison.Ordinal));
+        for (var index = 0; index < Steps.Length; index++) {
+            var shown = captions[index].Value;
+            Assert.StartsWith(shown.TrimEnd('…'), Steps[index], StringComparison.Ordinal);
+            if (shown == Steps[index]) continue;
+            Assert.True(shown.TrimEnd('…').Length >= 3, "A shortened name keeps enough of itself to identify the category: " + shown);
+            var tooltip = captions[index].Ancestors().Select(group => group.Elements().FirstOrDefault(child => child.Name.LocalName == "title")).FirstOrDefault(title => title != null);
+            Assert.Equal(Steps[index], tooltip?.Value);
+        }
+    }
 
     [Theory]
     [InlineData(240, false)]

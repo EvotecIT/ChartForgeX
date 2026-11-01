@@ -41,8 +41,9 @@ public sealed class GraphiteThemeTests {
         Assert.Equal(tokens.Axis ?? tokens.Border, theme.Axis);
         Assert.Equal(canonical.Palette, theme.Palette);
         Assert.Equal(canonical.SequentialRamp, theme.SequentialRamp!);
-        Assert.Equal(17, VisualTheme.Graphite().Typography.TitleSize);
-        Assert.Equal(13.5, VisualTheme.Graphite().Typography.SubtitleSize);
+        // Design rule 7: title 16, subtitle 13.
+        Assert.Equal(16, VisualTheme.Graphite().Typography.TitleSize);
+        Assert.Equal(13, VisualTheme.Graphite().Typography.SubtitleSize);
         var copy = tokens.Clone();
         Assert.Equal(tokens.ToSvgColorVariables().Variables.Select(v => (v.Name, v.Role, v.Color)),
             copy.ToSvgColorVariables().Variables.Select(v => (v.Name, v.Role, v.Color)));

@@ -1,0 +1,10 @@
+// Every point owns its ChartMarkOptions.
+var chart =
+    ServerRenderedRecipe.LinkedColumns();
+var policy = new VisualSvgOptions("activity")
+    .WithFluidWidth()
+    .WithFontVariables(
+        "--page-font", "--chart-font-size");
+var svg = chart.Prepare(context).ToSvg(policy);
+// Day links stay on this page.
+// Publisher links use NewContext.

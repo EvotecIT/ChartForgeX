@@ -39,6 +39,7 @@ internal static partial class VisualScheduleCompiler {
         builder.DataProjection = ChartDataProjection.TryCreate(projection, model.Min, model.Max, chart.Options.XAxis, linearOnly: true);
         builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("schedule-composition", "schedule-composition", Window(model.Min, model.Max))) {
+            ScheduleBands(chart, context, builder, plot, value => model.X(value, projection));
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick,
                 minimum: model.Min, maximum: model.Max);
             var tops = model.RowTops(plot); string? currentGroup = null;

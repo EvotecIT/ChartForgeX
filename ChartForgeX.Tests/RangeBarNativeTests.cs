@@ -42,7 +42,8 @@ public sealed class RangeBarNativeTests {
             element => Assert.Contains("var(--observed,", element.Attribute("stroke")!.Value));
         var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         var samples = bodies.Take(3).Select(body => {
-            var x = (int)Math.Round(body.Bounds.Left + body.Bounds.Width / 2);
+            // Sample off the value gridlines that now run behind translucent horizontal bodies (design rule 2).
+            var x = (int)Math.Round(body.Bounds.Left + body.Bounds.Width * (horizontal ? .43 : .5));
             var y = (int)Math.Round(body.Bounds.Top + body.Bounds.Height / 2);
             return Convert.ToHexString(raster.Pixels.Skip((y * raster.Width + x) * 4).Take(4).ToArray());
         }).ToArray();

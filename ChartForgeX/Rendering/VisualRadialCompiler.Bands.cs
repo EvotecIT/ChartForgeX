@@ -36,10 +36,10 @@ internal static partial class VisualRadialCompiler {
                 extentRatio = Math.Max(extentRatio, radius * (1 + offset));
             }
         }
-        var available = Math.Min(side ? plot.Width * .57 : plot.Width, vertical ? plot.Height * .76 : plot.Height) / 2 - context.Theme.Spacing;
         // Nominal ratios remain relative to the same unshifted full frame, including when all outer slices shrink.
-        var radiusScale = Math.Max(0, available / Math.Max(1, extentRatio));
-        return new RadialBandFrame(radiusScale, radiusScale * extentRatio);
+        var sizing = new FrameSizing(side ? .57 : 1, vertical ? .76 : 1, Math.Max(1, extentRatio));
+        var radiusScale = sizing.Radius(plot, context.Theme.Spacing);
+        return new RadialBandFrame(radiusScale, radiusScale * extentRatio, sizing);
     }
 
     private static bool IsExternal(ChartDataLabelPlacement placement) => placement is ChartDataLabelPlacement.Outside
@@ -137,9 +137,10 @@ internal static partial class VisualRadialCompiler {
     private static string N(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 
     private sealed class RadialBandFrame {
-        internal RadialBandFrame(double radius, double extent) { Radius = radius; Extent = extent; }
+        internal RadialBandFrame(double radius, double extent, FrameSizing sizing) { Radius = radius; Extent = extent; Sizing = sizing; }
         internal double Radius { get; }
         internal double Extent { get; }
+        internal FrameSizing Sizing { get; }
         internal List<RadialLabel> Labels { get; } = new();
     }
 }

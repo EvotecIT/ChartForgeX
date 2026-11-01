@@ -8,7 +8,7 @@ namespace ChartForgeX.Themes;
 /// Builds product-neutral semantic color palettes. A VisualTheme snapshots these mutable values.
 /// </summary>
 public sealed partial class VisualDesignTokens {
-    private ChartColor[] _palette = ChartPalettes.Report;
+    private ChartColor[] _palette = ChartPalettes.Categorical;
     private VisualStatusTokens _status = new();
     private ChartColor[]? _sequentialRamp;
 
@@ -124,7 +124,7 @@ public sealed partial class VisualDesignTokens {
         Positive = ChartColor.FromHex("#34D399"),
         Warning = ChartColor.FromHex("#FBBF24"),
         Negative = ChartColor.FromHex("#F87171"),
-        Palette = ChartPalettes.Report,
+        Palette = ChartPalettes.CategoricalDark,
         // Status colours are the Graphite palette v1 dark set, validated together for colour-vision deficiency.
         Status = new VisualStatusTokens {
             Critical = VisualStatusTokens.Pair("#F47171", "#F47171"),

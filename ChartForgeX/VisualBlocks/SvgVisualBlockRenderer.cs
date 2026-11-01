@@ -31,6 +31,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var font = block.Options.Theme.Typography.ToFontSpec();
         using var measurement = ChartLabelScene.OpenFontScope(font);
         svg = ChartLabelScene.Create(svg, font, layoutLabels).ToSvg();
+        if (block.Options.SvgColorVariables != null) svg = block.Options.SvgColorVariables.Apply(svg);
         return BindVisualIdentity(svg, provisionalId, scope);
     }
 

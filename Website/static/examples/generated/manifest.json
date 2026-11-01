@@ -579,6 +579,123 @@
     "donut-wide-light.svg",
     "donut-wide-light.thumbnail.png",
     "donut-wide-light.thumbnail.svg",
+    "embedding-compact-linked-columns-dark.csharp.txt",
+    "embedding-compact-linked-columns-dark.gallery.csharp.txt",
+    "embedding-compact-linked-columns-dark.html",
+    "embedding-compact-linked-columns-dark.png",
+    "embedding-compact-linked-columns-dark.svg",
+    "embedding-compact-linked-columns-dark.thumbnail.png",
+    "embedding-compact-linked-columns-dark.thumbnail.svg",
+    "embedding-compact-linked-columns-light.csharp.txt",
+    "embedding-compact-linked-columns-light.gallery.csharp.txt",
+    "embedding-compact-linked-columns-light.html",
+    "embedding-compact-linked-columns-light.png",
+    "embedding-compact-linked-columns-light.svg",
+    "embedding-compact-linked-columns-light.thumbnail.png",
+    "embedding-compact-linked-columns-light.thumbnail.svg",
+    "embedding-compact-shared-strip-dark.csharp.txt",
+    "embedding-compact-shared-strip-dark.gallery.csharp.txt",
+    "embedding-compact-shared-strip-dark.html",
+    "embedding-compact-shared-strip-dark.png",
+    "embedding-compact-shared-strip-dark.svg",
+    "embedding-compact-shared-strip-dark.thumbnail.png",
+    "embedding-compact-shared-strip-dark.thumbnail.svg",
+    "embedding-compact-shared-strip-light.csharp.txt",
+    "embedding-compact-shared-strip-light.gallery.csharp.txt",
+    "embedding-compact-shared-strip-light.html",
+    "embedding-compact-shared-strip-light.png",
+    "embedding-compact-shared-strip-light.svg",
+    "embedding-compact-shared-strip-light.thumbnail.png",
+    "embedding-compact-shared-strip-light.thumbnail.svg",
+    "embedding-compact-support-schedule-dark.csharp.txt",
+    "embedding-compact-support-schedule-dark.gallery.csharp.txt",
+    "embedding-compact-support-schedule-dark.html",
+    "embedding-compact-support-schedule-dark.png",
+    "embedding-compact-support-schedule-dark.svg",
+    "embedding-compact-support-schedule-dark.thumbnail.png",
+    "embedding-compact-support-schedule-dark.thumbnail.svg",
+    "embedding-compact-support-schedule-light.csharp.txt",
+    "embedding-compact-support-schedule-light.gallery.csharp.txt",
+    "embedding-compact-support-schedule-light.html",
+    "embedding-compact-support-schedule-light.png",
+    "embedding-compact-support-schedule-light.svg",
+    "embedding-compact-support-schedule-light.thumbnail.png",
+    "embedding-compact-support-schedule-light.thumbnail.svg",
+    "embedding-linked-columns-dark.csharp.txt",
+    "embedding-linked-columns-dark.gallery.csharp.txt",
+    "embedding-linked-columns-dark.html",
+    "embedding-linked-columns-dark.png",
+    "embedding-linked-columns-dark.svg",
+    "embedding-linked-columns-dark.thumbnail.png",
+    "embedding-linked-columns-dark.thumbnail.svg",
+    "embedding-linked-columns-light.csharp.txt",
+    "embedding-linked-columns-light.gallery.csharp.txt",
+    "embedding-linked-columns-light.html",
+    "embedding-linked-columns-light.png",
+    "embedding-linked-columns-light.svg",
+    "embedding-linked-columns-light.thumbnail.png",
+    "embedding-linked-columns-light.thumbnail.svg",
+    "embedding-shared-strip-dark.csharp.txt",
+    "embedding-shared-strip-dark.gallery.csharp.txt",
+    "embedding-shared-strip-dark.html",
+    "embedding-shared-strip-dark.png",
+    "embedding-shared-strip-dark.svg",
+    "embedding-shared-strip-dark.thumbnail.png",
+    "embedding-shared-strip-dark.thumbnail.svg",
+    "embedding-shared-strip-light.csharp.txt",
+    "embedding-shared-strip-light.gallery.csharp.txt",
+    "embedding-shared-strip-light.html",
+    "embedding-shared-strip-light.png",
+    "embedding-shared-strip-light.svg",
+    "embedding-shared-strip-light.thumbnail.png",
+    "embedding-shared-strip-light.thumbnail.svg",
+    "embedding-support-schedule-dark.csharp.txt",
+    "embedding-support-schedule-dark.gallery.csharp.txt",
+    "embedding-support-schedule-dark.html",
+    "embedding-support-schedule-dark.png",
+    "embedding-support-schedule-dark.svg",
+    "embedding-support-schedule-dark.thumbnail.png",
+    "embedding-support-schedule-dark.thumbnail.svg",
+    "embedding-support-schedule-light.csharp.txt",
+    "embedding-support-schedule-light.gallery.csharp.txt",
+    "embedding-support-schedule-light.html",
+    "embedding-support-schedule-light.png",
+    "embedding-support-schedule-light.svg",
+    "embedding-support-schedule-light.thumbnail.png",
+    "embedding-support-schedule-light.thumbnail.svg",
+    "embedding/ServerRenderedRecipe.cs.txt",
+    "embedding/compact-shared-strip.csharp.txt",
+    "embedding/dark.html",
+    "embedding/embedding-story.html",
+    "embedding/embedding-story.png",
+    "embedding/embedding-story.svg",
+    "embedding/embedding-story.txt",
+    "embedding/embedding.css",
+    "embedding/index.html",
+    "embedding/light.html",
+    "embedding/shared-strip.csharp.txt",
+    "enhance/canopyx-export.f18d1ef109ccf0c6.js",
+    "enhance/canopyx-filter-editor.6faf0c36e139d75f.css",
+    "enhance/canopyx-filter-editor.a25a9997f0aef871.js",
+    "enhance/canopyx-link.5874879aadd6cefb.js",
+    "enhance/canopyx-link.b872151e9cbbd0ce.css",
+    "enhance/canopyx-presenters.d71f9e12d83969d9.js",
+    "enhance/canopyx-reporting.5ecb81c0cc558c75.css",
+    "enhance/canopyx-reporting.f459c38cd3e47eec.js",
+    "enhance/canopyx-ui-menu.1414af91bc295de8.js",
+    "enhance/canopyx-ui-menu.29b983c01571b5c3.css",
+    "enhance/canopyx-ui-overlays.83acc4346a232940.js",
+    "enhance/canopyx-ui-overlays.bc49b6f13527aecd.css",
+    "enhance/cfx-enhance.19ced771f953.js",
+    "enhance/cfx-enhance.d38eb6a099cb.css",
+    "enhance/enhance-page.css",
+    "enhance/enhance-page.js",
+    "enhance/enhance-story.html",
+    "enhance/enhance-story.png",
+    "enhance/enhance-story.svg",
+    "enhance/enhance-story.txt",
+    "enhance/index.html",
+    "enhance/linked-views.js",
     "family-area-compact-dark.csharp.txt",
     "family-area-compact-dark.gallery.csharp.txt",
     "family-area-compact-dark.html",
@@ -7305,7 +7422,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "cartesian-compact-light",
@@ -7341,7 +7458,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "cartesian-explicit-status-light",
@@ -7377,7 +7494,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "cartesian-wide-dark",
@@ -7413,7 +7530,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "cartesian-compact-dark",
@@ -7449,7 +7566,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "cartesian-explicit-status-dark",
@@ -7485,7 +7602,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "donut-wide-light",
@@ -7851,7 +7968,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-line-compact-light",
@@ -7885,7 +8002,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-line-latency-week-light",
@@ -7919,7 +8036,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 521
+      "semanticRegions": 522
     },
     {
       "id": "family-line-compact-latency-week-light",
@@ -7953,7 +8070,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 518
+      "semanticRegions": 519
     },
     {
       "id": "family-line-options-light",
@@ -7987,7 +8104,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-line-compact-options-light",
@@ -8021,7 +8138,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-line-wide-dark",
@@ -8055,7 +8172,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-line-compact-dark",
@@ -8089,7 +8206,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-line-latency-week-dark",
@@ -8123,7 +8240,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 521
+      "semanticRegions": 522
     },
     {
       "id": "family-line-compact-latency-week-dark",
@@ -8157,7 +8274,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 518
+      "semanticRegions": 519
     },
     {
       "id": "family-line-options-dark",
@@ -8191,7 +8308,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-line-compact-options-dark",
@@ -8225,7 +8342,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 31
     },
     {
       "id": "family-step-line-wide-light",
@@ -8259,7 +8376,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-line-compact-light",
@@ -8293,7 +8410,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-line-wide-dark",
@@ -8327,7 +8444,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-line-compact-dark",
@@ -8361,7 +8478,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-wide-light",
@@ -8429,7 +8546,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-area-wide-dark",
@@ -8497,7 +8614,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-wide-light",
@@ -8565,7 +8682,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-wide-dark",
@@ -8633,7 +8750,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-scatter-wide-light",
@@ -8667,7 +8784,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-scatter-compact-light",
@@ -8701,7 +8818,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-scatter-color-scale-light",
@@ -8771,7 +8888,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 34
     },
     {
       "id": "family-scatter-positioned-color-scale-light",
@@ -8907,7 +9024,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-gradient-color-legend-light",
@@ -8975,7 +9092,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 27
     },
     {
       "id": "family-scatter-swatch-color-legend-light",
@@ -9043,7 +9160,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-quadrants-light",
@@ -9319,7 +9436,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-options-light",
@@ -9351,8 +9468,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -9385,8 +9506,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -9421,7 +9546,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-scatter-compact-dark",
@@ -9455,7 +9580,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-scatter-color-scale-dark",
@@ -9525,7 +9650,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 34
     },
     {
       "id": "family-scatter-positioned-color-scale-dark",
@@ -9661,7 +9786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-gradient-color-legend-dark",
@@ -9729,7 +9854,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 27
     },
     {
       "id": "family-scatter-swatch-color-legend-dark",
@@ -9797,7 +9922,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-quadrants-dark",
@@ -10073,7 +10198,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-options-dark",
@@ -10105,8 +10230,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -10139,8 +10268,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -10175,7 +10308,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-compact-light",
@@ -10209,7 +10342,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-color-scale-light",
@@ -10347,7 +10480,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 29
     },
     {
       "id": "family-bubble-plot-regions-light",
@@ -10449,7 +10582,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-compact-custom-markers-light",
@@ -10483,7 +10616,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-options-light",
@@ -10517,7 +10650,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -10551,7 +10684,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-wide-dark",
@@ -10585,7 +10718,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-compact-dark",
@@ -10619,7 +10752,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-color-scale-dark",
@@ -10757,7 +10890,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 29
     },
     {
       "id": "family-bubble-plot-regions-dark",
@@ -10859,7 +10992,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-compact-custom-markers-dark",
@@ -10893,7 +11026,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-options-dark",
@@ -10927,7 +11060,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -10961,7 +11094,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 27
     },
     {
       "id": "family-error-bar-wide-light",
@@ -10995,7 +11128,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-error-bar-compact-light",
@@ -11029,7 +11162,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 15
     },
     {
       "id": "family-error-bar-wide-dark",
@@ -11063,7 +11196,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-error-bar-compact-dark",
@@ -11097,7 +11230,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 15
     },
     {
       "id": "family-candlestick-wide-light",
@@ -11131,7 +11264,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-compact-light",
@@ -11199,7 +11332,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-compact-options-light",
@@ -11233,7 +11366,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-dashed-light",
@@ -11267,7 +11400,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-compact-dashed-light",
@@ -11301,7 +11434,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-wide-dark",
@@ -11335,7 +11468,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-compact-dark",
@@ -11403,7 +11536,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-compact-options-dark",
@@ -11437,7 +11570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-dashed-dark",
@@ -11471,7 +11604,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-candlestick-compact-dashed-dark",
@@ -11505,7 +11638,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-band-wide-light",
@@ -11539,7 +11672,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-compact-light",
@@ -11607,7 +11740,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-band-compact-singleton-light",
@@ -11641,7 +11774,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-band-dense-light",
@@ -11675,7 +11808,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 46
+      "semanticRegions": 48
     },
     {
       "id": "family-range-band-compact-dense-light",
@@ -11709,7 +11842,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 43
     },
     {
       "id": "family-range-band-wide-dark",
@@ -11743,7 +11876,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-compact-dark",
@@ -11811,7 +11944,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-band-compact-singleton-dark",
@@ -11845,7 +11978,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-band-dense-dark",
@@ -11879,7 +12012,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 46
+      "semanticRegions": 48
     },
     {
       "id": "family-range-band-compact-dense-dark",
@@ -11913,7 +12046,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 43
     },
     {
       "id": "family-range-area-wide-light",
@@ -11947,7 +12080,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-compact-light",
@@ -12015,7 +12148,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-compact-independent-boundaries-light",
@@ -12049,7 +12182,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-singleton-light",
@@ -12083,7 +12216,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-area-compact-singleton-light",
@@ -12117,7 +12250,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-area-options-light",
@@ -12151,7 +12284,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-range-area-compact-options-light",
@@ -12185,7 +12318,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-range-area-wide-dark",
@@ -12219,7 +12352,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-compact-dark",
@@ -12287,7 +12420,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-compact-independent-boundaries-dark",
@@ -12321,7 +12454,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-singleton-dark",
@@ -12355,7 +12488,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-area-compact-singleton-dark",
@@ -12389,7 +12522,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-area-options-dark",
@@ -12423,7 +12556,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-range-area-compact-options-dark",
@@ -12457,7 +12590,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-bar-wide-light",
@@ -12525,7 +12658,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-issuers-light",
@@ -12559,7 +12692,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 69
+      "semanticRegions": 70
     },
     {
       "id": "family-bar-compact-issuers-light",
@@ -12593,7 +12726,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 69
+      "semanticRegions": 70
     },
     {
       "id": "family-bar-options-light",
@@ -12661,7 +12794,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 43
     },
     {
       "id": "family-bar-wide-dark",
@@ -12729,7 +12862,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-issuers-dark",
@@ -12763,7 +12896,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 69
+      "semanticRegions": 70
     },
     {
       "id": "family-bar-compact-issuers-dark",
@@ -12797,7 +12930,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 69
+      "semanticRegions": 70
     },
     {
       "id": "family-bar-options-dark",
@@ -12865,7 +12998,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 43
     },
     {
       "id": "family-lollipop-wide-light",
@@ -12933,7 +13066,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-horizontal-light",
@@ -12967,7 +13100,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-lollipop-compact-horizontal-light",
@@ -13001,7 +13134,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-lollipop-wide-dark",
@@ -13069,7 +13202,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-horizontal-dark",
@@ -13103,7 +13236,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-lollipop-compact-horizontal-dark",
@@ -13137,7 +13270,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-dumbbell-wide-light",
@@ -13171,7 +13304,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 20
     },
     {
       "id": "family-dumbbell-compact-light",
@@ -13205,7 +13338,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-horizontal-light",
@@ -13239,7 +13372,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-dumbbell-compact-horizontal-light",
@@ -13273,7 +13406,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 22
     },
     {
       "id": "family-dumbbell-endpoint-markers-light",
@@ -13307,7 +13440,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-dumbbell-compact-endpoint-markers-light",
@@ -13341,7 +13474,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-dumbbell-wide-dark",
@@ -13375,7 +13508,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 20
     },
     {
       "id": "family-dumbbell-compact-dark",
@@ -13409,7 +13542,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-horizontal-dark",
@@ -13443,7 +13576,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-dumbbell-compact-horizontal-dark",
@@ -13477,7 +13610,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 22
     },
     {
       "id": "family-dumbbell-endpoint-markers-dark",
@@ -13511,7 +13644,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-dumbbell-compact-endpoint-markers-dark",
@@ -13545,7 +13678,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-wide-light",
@@ -13579,7 +13712,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 19
     },
     {
       "id": "family-range-bar-compact-light",
@@ -13613,7 +13746,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-range-bar-dense-light",
@@ -13645,8 +13778,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 55
     },
     {
@@ -13685,7 +13822,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 52
+      "semanticRegions": 56
     },
     {
       "id": "family-range-bar-dense-horizontal-light",
@@ -13723,7 +13860,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 53
+      "semanticRegions": 55
     },
     {
       "id": "family-range-bar-compact-dense-horizontal-light",
@@ -13761,7 +13898,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 54
+      "semanticRegions": 56
     },
     {
       "id": "family-range-bar-sparse-catalog-light",
@@ -13795,7 +13932,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-sparse-catalog-light",
@@ -13829,7 +13966,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-bar-options-light",
@@ -13863,7 +14000,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-range-bar-compact-options-light",
@@ -13901,7 +14038,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-range-bar-horizontal-light",
@@ -13935,7 +14072,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-range-bar-compact-horizontal-light",
@@ -13973,7 +14110,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-range-bar-endpoint-labels-light",
@@ -14295,7 +14432,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 19
     },
     {
       "id": "family-range-bar-compact-dark",
@@ -14329,7 +14466,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-range-bar-dense-dark",
@@ -14361,8 +14498,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 55
     },
     {
@@ -14401,7 +14542,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 52
+      "semanticRegions": 56
     },
     {
       "id": "family-range-bar-dense-horizontal-dark",
@@ -14439,7 +14580,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 53
+      "semanticRegions": 55
     },
     {
       "id": "family-range-bar-compact-dense-horizontal-dark",
@@ -14477,7 +14618,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 54
+      "semanticRegions": 56
     },
     {
       "id": "family-range-bar-sparse-catalog-dark",
@@ -14511,7 +14652,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-sparse-catalog-dark",
@@ -14545,7 +14686,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-range-bar-options-dark",
@@ -14579,7 +14720,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-range-bar-compact-options-dark",
@@ -14617,7 +14758,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-range-bar-horizontal-dark",
@@ -14651,7 +14792,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-range-bar-compact-horizontal-dark",
@@ -14689,7 +14830,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-range-bar-endpoint-labels-dark",
@@ -15011,7 +15152,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-box-plot-compact-light",
@@ -15045,7 +15186,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 15
     },
     {
       "id": "family-box-plot-options-light",
@@ -15147,7 +15288,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-box-plot-compact-horizontal-light",
@@ -15185,7 +15326,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-box-plot-statistic-labels-light",
@@ -15359,7 +15500,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-box-plot-compact-dark",
@@ -15393,7 +15534,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 15
     },
     {
       "id": "family-box-plot-options-dark",
@@ -15495,7 +15636,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-box-plot-compact-horizontal-dark",
@@ -15533,7 +15674,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-box-plot-statistic-labels-dark",
@@ -15707,7 +15848,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-horizontal-bar-compact-light",
@@ -15741,7 +15882,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-horizontal-bar-options-light",
@@ -15847,7 +15988,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-horizontal-bar-compact-dark",
@@ -15881,7 +16022,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-horizontal-bar-options-dark",
@@ -15987,7 +16128,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-compact-light",
@@ -16021,7 +16162,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-color-scale-light",
@@ -16225,7 +16366,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-light",
@@ -16293,7 +16434,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-light",
@@ -16361,7 +16502,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-availability-light",
@@ -16467,7 +16608,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-compact-dark",
@@ -16501,7 +16642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 32
     },
     {
       "id": "family-heatmap-color-scale-dark",
@@ -16705,7 +16846,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-dark",
@@ -16773,7 +16914,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-dark",
@@ -16841,7 +16982,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-availability-dark",
@@ -16947,7 +17088,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-compact-light",
@@ -16981,7 +17122,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-color-scale-light",
@@ -17083,7 +17224,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-compact-dark",
@@ -17117,7 +17258,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 31
     },
     {
       "id": "family-hexbin-heatmap-color-scale-dark",
@@ -18043,11 +18184,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -18203,11 +18342,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -18363,11 +18500,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -18529,11 +18664,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -18695,11 +18828,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -18923,11 +19054,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -19083,11 +19212,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -19243,11 +19370,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -19409,11 +19534,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -19575,11 +19698,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21067,12 +21188,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 8
     },
     {
@@ -21139,12 +21256,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 8
     },
     {
@@ -21499,7 +21612,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-waterfall-compact-light",
@@ -21533,7 +21646,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-waterfall-portable-light",
@@ -21567,7 +21680,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-compact-portable-light",
@@ -21599,9 +21712,13 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 19
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-portable-horizontal-light",
@@ -21635,7 +21752,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-waterfall-compact-portable-horizontal-light",
@@ -21673,7 +21790,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-licence-waste-light",
@@ -21745,7 +21862,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-options-light",
@@ -21779,7 +21896,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-compact-options-light",
@@ -21811,9 +21928,13 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 19
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-horizontal-light",
@@ -21885,7 +22006,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-wide-dark",
@@ -21919,7 +22040,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-waterfall-compact-dark",
@@ -21953,7 +22074,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-waterfall-portable-dark",
@@ -21987,7 +22108,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-compact-portable-dark",
@@ -22019,9 +22140,13 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 19
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-portable-horizontal-dark",
@@ -22055,7 +22180,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-waterfall-compact-portable-horizontal-dark",
@@ -22093,7 +22218,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-licence-waste-dark",
@@ -22165,7 +22290,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-options-dark",
@@ -22199,7 +22324,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-compact-options-dark",
@@ -22231,9 +22356,13 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 19
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "An axis caption was shortened or could not fit at its tick inside the available frame."
+      ],
+      "semanticRegions": 21
     },
     {
       "id": "family-waterfall-horizontal-dark",
@@ -22305,7 +22434,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-wide-light",
@@ -23171,7 +23300,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 12
     },
     {
       "id": "family-timeline-compact-light",
@@ -23205,7 +23334,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 12
     },
     {
       "id": "family-timeline-wide-dark",
@@ -23239,7 +23368,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 12
     },
     {
       "id": "family-timeline-compact-dark",
@@ -23273,7 +23402,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 12
     },
     {
       "id": "family-gantt-wide-light",
@@ -23307,7 +23436,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-gantt-compact-light",
@@ -23341,7 +23470,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 16
     },
     {
       "id": "family-gantt-wide-dark",
@@ -23375,7 +23504,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-gantt-compact-dark",
@@ -23409,7 +23538,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 16
     },
     {
       "id": "family-sankey-wide-light",
@@ -23544,9 +23673,11 @@
         "html"
       ],
       "diagnostics": [
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -23616,9 +23747,11 @@
         "html"
       ],
       "diagnostics": [
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -23689,9 +23822,13 @@
       ],
       "diagnostics": [
         "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
@@ -23830,9 +23967,11 @@
         "html"
       ],
       "diagnostics": [
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -23970,9 +24109,11 @@
         "html"
       ],
       "diagnostics": [
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -24042,9 +24183,11 @@
         "html"
       ],
       "diagnostics": [
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -24115,9 +24258,13 @@
       ],
       "diagnostics": [
         "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
@@ -24256,9 +24403,11 @@
         "html"
       ],
       "diagnostics": [
+        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -26011,7 +26160,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-compact-light",
@@ -26045,7 +26194,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-missing-zero-light",
@@ -26079,7 +26228,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-compact-missing-zero-light",
@@ -26113,7 +26262,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-missing-gap-light",
@@ -26147,7 +26296,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-compact-missing-gap-light",
@@ -26181,7 +26330,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-options-light",
@@ -26283,7 +26432,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-compact-dark",
@@ -26317,7 +26466,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-missing-zero-dark",
@@ -26351,7 +26500,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-compact-missing-zero-dark",
@@ -26385,7 +26534,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-missing-gap-dark",
@@ -26419,7 +26568,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-compact-missing-gap-dark",
@@ -26453,7 +26602,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-stacked-area-options-dark",
@@ -26555,7 +26704,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 14
     },
     {
       "id": "family-slope-compact-light",
@@ -26589,7 +26738,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 14
     },
     {
       "id": "family-slope-stages-light",
@@ -26623,7 +26772,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-slope-compact-stages-light",
@@ -26657,7 +26806,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-slope-horizontal-stages-light",
@@ -26691,7 +26840,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-slope-compact-horizontal-stages-light",
@@ -26725,7 +26874,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-slope-wide-dark",
@@ -26759,7 +26908,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 14
     },
     {
       "id": "family-slope-compact-dark",
@@ -26793,7 +26942,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 14
     },
     {
       "id": "family-slope-stages-dark",
@@ -26827,7 +26976,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-slope-compact-stages-dark",
@@ -26861,7 +27010,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-slope-horizontal-stages-dark",
@@ -26895,7 +27044,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-slope-compact-horizontal-stages-dark",
@@ -26929,7 +27078,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-treemap-wide-light",
@@ -26998,9 +27147,11 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
@@ -27254,9 +27405,11 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
@@ -27883,7 +28036,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-compact-light",
@@ -27951,7 +28104,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-compact-options-light",
@@ -27985,7 +28138,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-dashed-light",
@@ -28019,7 +28172,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-compact-dashed-light",
@@ -28053,7 +28206,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-wide-dark",
@@ -28087,7 +28240,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-compact-dark",
@@ -28155,7 +28308,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-compact-options-dark",
@@ -28189,7 +28342,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-dashed-dark",
@@ -28223,7 +28376,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-ohlc-compact-dashed-dark",
@@ -28257,7 +28410,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-polar-area-wide-light",
@@ -28564,7 +28717,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-trend-line-compact-light",
@@ -28599,7 +28752,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-trend-line-precision-light",
@@ -28633,7 +28786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-trend-line-compact-precision-light",
@@ -28667,7 +28820,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-trend-line-polynomial-light",
@@ -28702,7 +28855,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-trend-line-compact-polynomial-light",
@@ -28737,7 +28890,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-trend-line-logarithmic-light",
@@ -28772,7 +28925,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-logarithmic-light",
@@ -28807,7 +28960,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-exponential-light",
@@ -28842,7 +28995,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 37
     },
     {
       "id": "family-trend-line-compact-exponential-light",
@@ -28877,7 +29030,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 37
     },
     {
       "id": "family-trend-line-power-light",
@@ -28912,7 +29065,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-power-light",
@@ -28947,7 +29100,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 37
     },
     {
       "id": "family-trend-line-confidence-light",
@@ -28982,7 +29135,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-confidence-light",
@@ -29017,7 +29170,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-prediction-light",
@@ -29052,7 +29205,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-prediction-light",
@@ -29087,7 +29240,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-wide-dark",
@@ -29122,7 +29275,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-trend-line-compact-dark",
@@ -29157,7 +29310,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-trend-line-precision-dark",
@@ -29191,7 +29344,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-trend-line-compact-precision-dark",
@@ -29225,7 +29378,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-trend-line-polynomial-dark",
@@ -29260,7 +29413,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-trend-line-compact-polynomial-dark",
@@ -29295,7 +29448,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-trend-line-logarithmic-dark",
@@ -29330,7 +29483,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-logarithmic-dark",
@@ -29365,7 +29518,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-exponential-dark",
@@ -29400,7 +29553,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 37
     },
     {
       "id": "family-trend-line-compact-exponential-dark",
@@ -29435,7 +29588,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 37
     },
     {
       "id": "family-trend-line-power-dark",
@@ -29470,7 +29623,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-power-dark",
@@ -29505,7 +29658,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 37
     },
     {
       "id": "family-trend-line-confidence-dark",
@@ -29540,7 +29693,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-confidence-dark",
@@ -29575,7 +29728,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-prediction-dark",
@@ -29610,7 +29763,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-trend-line-compact-prediction-dark",
@@ -29645,7 +29798,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 36
     },
     {
       "id": "family-polar-wide-light",
@@ -32955,7 +33108,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-compact-light",
@@ -32989,7 +33142,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-smooth-boundaries-light",
@@ -33023,7 +33176,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-difference-area-compact-smooth-boundaries-light",
@@ -33057,7 +33210,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-difference-area-dated-gaps-light",
@@ -33092,7 +33245,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -33127,7 +33280,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 28
     },
     {
       "id": "family-difference-area-step-start-light",
@@ -33263,7 +33416,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-difference-area-singleton-light",
@@ -33297,7 +33450,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-difference-area-compact-singleton-light",
@@ -33331,7 +33484,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-difference-area-dense-light",
@@ -33365,7 +33518,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 46
+      "semanticRegions": 47
     },
     {
       "id": "family-difference-area-compact-dense-light",
@@ -33399,7 +33552,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-difference-area-wide-dark",
@@ -33433,7 +33586,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-compact-dark",
@@ -33467,7 +33620,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-smooth-boundaries-dark",
@@ -33501,7 +33654,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-difference-area-compact-smooth-boundaries-dark",
@@ -33535,7 +33688,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-difference-area-dated-gaps-dark",
@@ -33570,7 +33723,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -33605,7 +33758,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 28
     },
     {
       "id": "family-difference-area-step-start-dark",
@@ -33741,7 +33894,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-difference-area-singleton-dark",
@@ -33775,7 +33928,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-difference-area-compact-singleton-dark",
@@ -33809,7 +33962,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "family-difference-area-dense-dark",
@@ -33843,7 +33996,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 46
+      "semanticRegions": 47
     },
     {
       "id": "family-difference-area-compact-dense-dark",
@@ -33877,7 +34030,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-radial-column-mixed-light",
@@ -35333,7 +35486,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 51
+      "semanticRegions": 57
     },
     {
       "id": "topology-expanded-light",
@@ -35479,7 +35632,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 51
+      "semanticRegions": 57
     },
     {
       "id": "topology-expanded-dark",
@@ -35759,7 +35912,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-compact-sum-light",
@@ -35793,7 +35946,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-mean-light",
@@ -35827,7 +35980,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-compact-mean-light",
@@ -35861,7 +36014,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-wide-dark",
@@ -36031,7 +36184,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-compact-sum-dark",
@@ -36065,7 +36218,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-mean-dark",
@@ -36099,7 +36252,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "histogram-compact-mean-dark",
@@ -36133,7 +36286,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-line-x-viewport-light",
@@ -36167,7 +36320,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 39
     },
     {
       "id": "family-line-compact-x-viewport-light",
@@ -36201,7 +36354,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-line-x-viewport-dark",
@@ -36235,7 +36388,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 39
     },
     {
       "id": "family-line-compact-x-viewport-dark",
@@ -36269,7 +36422,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-step-line-x-viewport-light",
@@ -36303,7 +36456,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 39
     },
     {
       "id": "family-step-line-compact-x-viewport-light",
@@ -36337,7 +36490,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-step-line-x-viewport-dark",
@@ -36371,7 +36524,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 39
     },
     {
       "id": "family-step-line-compact-x-viewport-dark",
@@ -36405,7 +36558,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "financial-layers-wide-light",
@@ -40243,7 +40396,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "heatmap-hierarchical-axes-states-compact-light",
@@ -40277,7 +40430,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "topology-path-decorations-wide-dark",
@@ -43555,7 +43708,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "heatmap-hierarchical-axes-states-compact-dark",
@@ -43589,7 +43742,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 34
     },
     {
       "id": "topology-table-content-wide-light",
@@ -44793,7 +44946,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 12
     },
     {
       "id": "owned-html-fonts-compact-light",
@@ -44829,7 +44982,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 12
     },
     {
       "id": "owned-html-fonts-wide-dark",
@@ -44865,7 +45018,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 12
     },
     {
       "id": "owned-html-fonts-compact-dark",
@@ -44901,7 +45054,415 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
+      "semanticRegions": 12
+    },
+    {
+      "id": "embedding-linked-columns-light",
+      "family": "bar",
+      "familyLabel": "Bar",
+      "group": "compare",
+      "title": "Linked update columns",
+      "variant": "linked-columns",
+      "primary": false,
+      "seriesKinds": [
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 360,
+      "naturalAspect": 2.2222222222222223,
+      "compact": false,
+      "source": "embedding-linked-columns-light.csharp.txt",
+      "gallerySource": "embedding-linked-columns-light.gallery.csharp.txt",
+      "svg": "embedding-linked-columns-light.svg",
+      "png": "embedding-linked-columns-light.png",
+      "html": "embedding-linked-columns-light.html",
+      "thumbnail": "embedding-linked-columns-light.thumbnail.svg",
+      "thumbnailPng": "embedding-linked-columns-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
+    },
+    {
+      "id": "embedding-support-schedule-light",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "Open-ended release support",
+      "variant": "support-schedule",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 360,
+      "naturalAspect": 2.2222222222222223,
+      "compact": false,
+      "source": "embedding-support-schedule-light.csharp.txt",
+      "gallerySource": "embedding-support-schedule-light.gallery.csharp.txt",
+      "svg": "embedding-support-schedule-light.svg",
+      "png": "embedding-support-schedule-light.png",
+      "html": "embedding-support-schedule-light.html",
+      "thumbnail": "embedding-support-schedule-light.thumbnail.svg",
+      "thumbnailPng": "embedding-support-schedule-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 11
+    },
+    {
+      "id": "embedding-shared-strip-light",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "A row against a shared domain",
+      "variant": "shared-strip",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 96,
+      "naturalAspect": 8.333333333333334,
+      "compact": false,
+      "source": "embedding-shared-strip-light.csharp.txt",
+      "gallerySource": "embedding-shared-strip-light.gallery.csharp.txt",
+      "svg": "embedding-shared-strip-light.svg",
+      "png": "embedding-shared-strip-light.png",
+      "html": "embedding-shared-strip-light.html",
+      "thumbnail": "embedding-shared-strip-light.thumbnail.svg",
+      "thumbnailPng": "embedding-shared-strip-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 1
+    },
+    {
+      "id": "embedding-compact-linked-columns-light",
+      "family": "bar",
+      "familyLabel": "Bar",
+      "group": "compare",
+      "title": "Linked update columns",
+      "variant": "compact-linked-columns",
+      "primary": false,
+      "seriesKinds": [
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "embedding-compact-linked-columns-light.csharp.txt",
+      "gallerySource": "embedding-compact-linked-columns-light.gallery.csharp.txt",
+      "svg": "embedding-compact-linked-columns-light.svg",
+      "png": "embedding-compact-linked-columns-light.png",
+      "html": "embedding-compact-linked-columns-light.html",
+      "thumbnail": "embedding-compact-linked-columns-light.thumbnail.svg",
+      "thumbnailPng": "embedding-compact-linked-columns-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
+    },
+    {
+      "id": "embedding-compact-support-schedule-light",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "Open-ended release support",
+      "variant": "compact-support-schedule",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "embedding-compact-support-schedule-light.csharp.txt",
+      "gallerySource": "embedding-compact-support-schedule-light.gallery.csharp.txt",
+      "svg": "embedding-compact-support-schedule-light.svg",
+      "png": "embedding-compact-support-schedule-light.png",
+      "html": "embedding-compact-support-schedule-light.html",
+      "thumbnail": "embedding-compact-support-schedule-light.thumbnail.svg",
+      "thumbnailPng": "embedding-compact-support-schedule-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "embedding-compact-shared-strip-light",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "A row against a shared domain",
+      "variant": "compact-shared-strip",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 96,
+      "naturalAspect": 4.0625,
+      "compact": true,
+      "source": "embedding-compact-shared-strip-light.csharp.txt",
+      "gallerySource": "embedding-compact-shared-strip-light.gallery.csharp.txt",
+      "svg": "embedding-compact-shared-strip-light.svg",
+      "png": "embedding-compact-shared-strip-light.png",
+      "html": "embedding-compact-shared-strip-light.html",
+      "thumbnail": "embedding-compact-shared-strip-light.thumbnail.svg",
+      "thumbnailPng": "embedding-compact-shared-strip-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 1
+    },
+    {
+      "id": "embedding-linked-columns-dark",
+      "family": "bar",
+      "familyLabel": "Bar",
+      "group": "compare",
+      "title": "Linked update columns",
+      "variant": "linked-columns",
+      "primary": false,
+      "seriesKinds": [
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 360,
+      "naturalAspect": 2.2222222222222223,
+      "compact": false,
+      "source": "embedding-linked-columns-dark.csharp.txt",
+      "gallerySource": "embedding-linked-columns-dark.gallery.csharp.txt",
+      "svg": "embedding-linked-columns-dark.svg",
+      "png": "embedding-linked-columns-dark.png",
+      "html": "embedding-linked-columns-dark.html",
+      "thumbnail": "embedding-linked-columns-dark.thumbnail.svg",
+      "thumbnailPng": "embedding-linked-columns-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
+    },
+    {
+      "id": "embedding-support-schedule-dark",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "Open-ended release support",
+      "variant": "support-schedule",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 360,
+      "naturalAspect": 2.2222222222222223,
+      "compact": false,
+      "source": "embedding-support-schedule-dark.csharp.txt",
+      "gallerySource": "embedding-support-schedule-dark.gallery.csharp.txt",
+      "svg": "embedding-support-schedule-dark.svg",
+      "png": "embedding-support-schedule-dark.png",
+      "html": "embedding-support-schedule-dark.html",
+      "thumbnail": "embedding-support-schedule-dark.thumbnail.svg",
+      "thumbnailPng": "embedding-support-schedule-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "embedding-shared-strip-dark",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "A row against a shared domain",
+      "variant": "shared-strip",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 96,
+      "naturalAspect": 8.333333333333334,
+      "compact": false,
+      "source": "embedding-shared-strip-dark.csharp.txt",
+      "gallerySource": "embedding-shared-strip-dark.gallery.csharp.txt",
+      "svg": "embedding-shared-strip-dark.svg",
+      "png": "embedding-shared-strip-dark.png",
+      "html": "embedding-shared-strip-dark.html",
+      "thumbnail": "embedding-shared-strip-dark.thumbnail.svg",
+      "thumbnailPng": "embedding-shared-strip-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 1
+    },
+    {
+      "id": "embedding-compact-linked-columns-dark",
+      "family": "bar",
+      "familyLabel": "Bar",
+      "group": "compare",
+      "title": "Linked update columns",
+      "variant": "compact-linked-columns",
+      "primary": false,
+      "seriesKinds": [
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "embedding-compact-linked-columns-dark.csharp.txt",
+      "gallerySource": "embedding-compact-linked-columns-dark.gallery.csharp.txt",
+      "svg": "embedding-compact-linked-columns-dark.svg",
+      "png": "embedding-compact-linked-columns-dark.png",
+      "html": "embedding-compact-linked-columns-dark.html",
+      "thumbnail": "embedding-compact-linked-columns-dark.thumbnail.svg",
+      "thumbnailPng": "embedding-compact-linked-columns-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
+    },
+    {
+      "id": "embedding-compact-support-schedule-dark",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "Open-ended release support",
+      "variant": "compact-support-schedule",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "embedding-compact-support-schedule-dark.csharp.txt",
+      "gallerySource": "embedding-compact-support-schedule-dark.gallery.csharp.txt",
+      "svg": "embedding-compact-support-schedule-dark.svg",
+      "png": "embedding-compact-support-schedule-dark.png",
+      "html": "embedding-compact-support-schedule-dark.html",
+      "thumbnail": "embedding-compact-support-schedule-dark.thumbnail.svg",
+      "thumbnailPng": "embedding-compact-support-schedule-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "embedding-compact-shared-strip-dark",
+      "family": "gantt",
+      "familyLabel": "Gantt",
+      "group": "schedule",
+      "title": "A row against a shared domain",
+      "variant": "compact-shared-strip",
+      "primary": false,
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 96,
+      "naturalAspect": 4.0625,
+      "compact": true,
+      "source": "embedding-compact-shared-strip-dark.csharp.txt",
+      "gallerySource": "embedding-compact-shared-strip-dark.gallery.csharp.txt",
+      "svg": "embedding-compact-shared-strip-dark.svg",
+      "png": "embedding-compact-shared-strip-dark.png",
+      "html": "embedding-compact-shared-strip-dark.html",
+      "thumbnail": "embedding-compact-shared-strip-dark.thumbnail.svg",
+      "thumbnailPng": "embedding-compact-shared-strip-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 1
     }
   ]
 }

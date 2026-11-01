@@ -32,7 +32,7 @@ public sealed class V2FramePolicyTests {
         Assert.Equal(TextPlacement(convenience), TextPlacement(prepared));
         var title = Assert.Single(prepared.Descendants(), element => element.Name.LocalName == "text" && element.Value == "Assessment results");
         Assert.Equal(24, (double)title.Attribute("x")!);
-        Assert.Equal(17, (double)title.Attribute("font-size")!);
+        Assert.Equal(16, (double)title.Attribute("font-size")!);
         Assert.Equal("700", (string?)title.Attribute("font-weight"));
     }
 
@@ -82,8 +82,10 @@ public sealed class V2FramePolicyTests {
     [MemberData(nameof(FamilyKeyCases))]
     public void OmittedFamilyFramePolicyKeepsAutomaticAndExplicitModelVisibility(string family) {
         var chart = KeyChart(family);
-        Assert.True(HasKey(XDocument.Parse(chart.ToSvg()), family));
-        Assert.True(HasKey(XDocument.Parse(chart.Prepare(Context()).ToSvg()), family));
+        // Timeline rows are named by their series: the automatic legend would repeat them (design rule 8).
+        var automatic = family != "schedule";
+        Assert.Equal(automatic, HasKey(XDocument.Parse(chart.ToSvg()), family));
+        Assert.Equal(automatic, HasKey(XDocument.Parse(chart.Prepare(Context()).ToSvg()), family));
         foreach (var visible in new[] { false, true }) {
             chart.WithLegend(visible);
             Assert.Equal(visible, HasKey(XDocument.Parse(chart.ToSvg()), family));

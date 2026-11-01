@@ -82,7 +82,8 @@ public sealed class ChartDomContractTests {
             .AddLine("Latency", new[] { new ChartPoint(1, 20), new ChartPoint(2, 35), new ChartPoint(3, 28) })
             .AddLine("Baseline", new[] { new ChartPoint(1, 18), new ChartPoint(2, 22), new ChartPoint(3, 24) });
         var topology = TopologyChart.Create().WithViewport(640, 360).AddAutoNode("A", "Receive").AddAutoNode("B", "Store").AddEdge("link", "A", "B");
-        var emitted = new[] { line.ToSvg(), StateTimeline().ToSvg(), GanttLanes().ToSvg(), MixedSchedule().ToSvg(), topology.ToSvg() }
+        var stripAxis = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 100 }).PrepareAxis(new VisualRenderContext()).ToSvg("strip-axis");
+        var emitted = new[] { line.ToSvg(), StateTimeline().ToSvg(), GanttLanes().ToSvg(), MixedSchedule().ToSvg(), topology.ToSvg(), stripAxis }
             .SelectMany(svg => XDocument.Parse(svg).Descendants())
             .Select(element => (string?)element.Attribute(ChartDomRoles.RoleAttribute))
             .Where(role => role != null).ToHashSet(StringComparer.Ordinal);

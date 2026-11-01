@@ -85,9 +85,10 @@ internal static class VisualFrameLayout {
             var font = context.Font; font.Weight = weight;
             return new TextStyle { Font = font, FontSize = size, Color = color, LineHeight = 1 };
         }
-        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 700, colors.Foreground);
+        // Design rule 7: title 16/600 primary; subtitle 13 secondary; legends 12 secondary like axis ticks.
+        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 600, colors.Foreground);
         var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
-        var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
+        var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.MutedForeground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(paints?.Background ?? SvgPaint.Of(colors.Background, SvgColorRole.Surface)));
         if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors, paints);
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;

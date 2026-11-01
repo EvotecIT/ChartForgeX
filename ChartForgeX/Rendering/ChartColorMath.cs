@@ -24,7 +24,7 @@ internal static partial class ChartColorMath {
 
     public static ChartColor WithOpacity(ChartColor color, double opacity) {
         var alpha = (byte)Math.Round(color.A * Clamp01(opacity));
-        return ChartColor.FromRgba(color.R, color.G, color.B, alpha);
+        return color.WithAlpha(alpha);
     }
 
     /// <summary>Composites an RGBA paint onto an already resolved opaque surface in sRGB.</summary>

@@ -17,7 +17,7 @@ internal sealed partial class ChartVisibilitySource {
         private readonly ChartFinancialOptions _financial;
         private readonly IReadOnlyList<ChartFinancialItemOptions?> _financialStyles;
         internal Series(ChartSeries source) {
-            Id = source.Id; Name = source.Name; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
+            Id = source.Id; Name = source.Name; MarkOptions = source.MarkOptions; RowOptions = source.RowOptions; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
             ValueAxis = source.ValueAxis; ShowInLegend = source.ShowInLegend; SemanticRole = source.SemanticRole; Labels = source.ShowDataLabels; Placement = source.DataLabelPlacement;
             StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; Interpolation = source.Interpolation; Step = source.StepPosition;
             StackGroup = source.StackGroup; NormalizedTo = source.NormalizedTo; StackedAreaMissingData = source.StackedAreaMissingData;
@@ -40,6 +40,8 @@ internal sealed partial class ChartVisibilitySource {
             PointColors = Array.AsReadOnly(source.PointColors.ToArray()); PointPatterns = Array.AsReadOnly(source.PointFillPatterns.ToArray()); PointLabels = Array.AsReadOnly(source.PointLabels.ToArray());
             _pointStyles = source.PointDataLabelStyles.Select(style => style?.Clone()).ToArray();
         }
+        internal ChartMarkOptions? MarkOptions { get; }
+        internal ChartMarkOptions? RowOptions { get; }
         internal ChartSeriesId Id { get; }
         internal string Name { get; }
         internal ChartSeriesKind Kind { get; }
