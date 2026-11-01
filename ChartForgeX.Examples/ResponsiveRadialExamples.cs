@@ -40,10 +40,10 @@ public static class ResponsiveRadialExamples {
         } finally { chart.WithSize(size.Width, size.Height); }
     }
 
-    private static string Document(string content, bool dark) => "<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Responsive pie and donut charts</title>"
-        + "<style>body{margin:0;background:" + (dark ? "#0c0d10" : "#f2f3f4") + ";font:14px system-ui;color:" + (dark ? "#f2f3f5" : "#16181c") + "}"
+    private static string Document(string content, bool dark) => ExampleTypography.EmbedInHost("<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Responsive pie and donut charts</title>"
+        + "<style>body{margin:0;background:" + (dark ? "#0c0d10" : "#f2f3f4") + ";font-size:14px;color:" + (dark ? "#f2f3f5" : "#16181c") + "}"
         + ".panel .cfx-interactive-chart{width:100%;margin:0;padding:0;border:0;box-shadow:none}.cfx-frame{margin:0;border:0;border-radius:0}.cfx-stage{min-width:0}"
-        + "header{padding:16px 24px}h1{font-size:20px;margin:0 0 8px}h2{font-size:15px;margin:16px 24px 8px}select{font:inherit;margin-left:8px}article{margin-bottom:24px}</style></head><body>" + content + "</body></html>";
+        + "header{padding:16px 24px}h1{font-size:20px;margin:0 0 8px}h2{font-size:15px;margin:16px 24px 8px}select{font:inherit;margin-left:8px}article{margin-bottom:24px}</style></head><body>" + content + "</body></html>");
 
     /// <summary>Writes self-contained live examples and matching static references.</summary>
     public static void Write(string output) {

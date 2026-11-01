@@ -29,7 +29,7 @@ internal static class ArchitectureExamples {
 
         var chart = result.Document.WithTheme(result.Document.Theme.WithFontFamily(ExampleTypography.FontFamily));
         var prepared = chart.Prepare();
-        File.WriteAllText(Path.Combine(output, name + ".svg"), ExampleTypography.EmbedInSvg(prepared.ToSvg()), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(output, name + ".svg"), prepared.ToSvg(), Encoding.UTF8);
         File.WriteAllBytes(Path.Combine(output, name + ".png"), prepared.ToPng());
         var options = new TopologyRenderOptions { EnableHtmlScenarioUrlState = true, ActiveScenarioId = chart.Scenarios.FirstOrDefault()?.Id }
             .WithHtmlScenarioPanel()
@@ -40,7 +40,7 @@ internal static class ArchitectureExamples {
         File.WriteAllText(Path.Combine(output, name + ".txt"), layout.Paint().ToText() + "\n", new UTF8Encoding(false));
         foreach (var scenario in chart.Scenarios) {
             var sequence = chart.ToSequenceArtifact(scenario.Id);
-            File.WriteAllText(Path.Combine(output, name + "-" + scenario.Id + "-sequence.svg"), ExampleTypography.EmbedInSvg(sequence.ToSvg()), Encoding.UTF8);
+            File.WriteAllText(Path.Combine(output, name + "-" + scenario.Id + "-sequence.svg"), sequence.ToSvg(), Encoding.UTF8);
             File.WriteAllBytes(Path.Combine(output, name + "-" + scenario.Id + "-sequence.png"), sequence.ToPng());
             var htmlPath = Path.Combine(output, name + "-" + scenario.Id + "-sequence.html");
             sequence.ToVisualArtifact().SaveHtml(htmlPath);

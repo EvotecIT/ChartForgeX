@@ -10,7 +10,7 @@ public static class ChartFontStacks {
     /// <summary>The bundled technical face, with platform fallbacks for unsupported characters.</summary>
     public const string ProductMono = "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, monospace";
     /// <summary>
-    /// Gets the default native sans-serif stack.
+    /// Gets an opt-in platform sans-serif stack. Built-in sans presets use <see cref="ProductSans"/>.
     /// </summary>
     public const string SystemSans = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 

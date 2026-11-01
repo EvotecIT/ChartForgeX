@@ -1,6 +1,5 @@
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
-using System.Xml.Linq;
 
 /// <summary>Shares the licensed gallery faces between native metrics and example HTML.</summary>
 internal static class ExampleTypography {
@@ -11,9 +10,13 @@ internal static class ExampleTypography {
     internal static string EmbedInHtml(string html) => html.Contains(ChartFontAssets.StyleSheet, StringComparison.Ordinal)
         ? html : html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
 
-    internal static string EmbedInSvg(string svg) => svg.Contains("font-family:'Archivo'", StringComparison.Ordinal)
-        ? svg : svg.Insert(svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal)) + 1,
-            new XElement("style", ChartFontAssets.StyleSheet).ToString(SaveOptions.DisableFormatting));
+    /// <summary>Applies shared typography to ordinary example hosts without changing authored font demonstrations.</summary>
+    internal static string EmbedInHost(string html) => html
+        .Replace(EmbeddedStyle, string.Empty, StringComparison.Ordinal)
+        .Replace(ChartFontAssets.StyleSheet, string.Empty, StringComparison.Ordinal)
+        .Replace("</head>", EmbeddedStyle + "<style>body{font-family:" + FontFamily
+            + ";font-variant-numeric:tabular-nums}code,pre,kbd,samp{font-family:"
+            + ChartFontStacks.ProductMono + "}</style></head>", StringComparison.Ordinal);
 
     // Existing gallery entry points initialize the embedded assets here; native faces resolve in core.
     internal static void Register() => _ = ChartFontAssets.StyleSheet;

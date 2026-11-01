@@ -328,7 +328,7 @@ public static partial class GalleryWriter {
         sb.AppendLine("<title>ChartForgeX Chart Catalog</title>");
         sb.AppendLine("<style>");
         sb.AppendLine(":root{color-scheme:dark;--bg:#151515;--panel:#202224;--panel2:#191a1c;--preview:#161718;--line:#34383c;--softline:#2b2f33;--text:#f4f0e8;--muted:#beb7a8;--accent:#2dd4bf;--gold:#f4b860}");
-        sb.AppendLine("*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased}");
+        sb.AppendLine("*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}");
         sb.AppendLine("header{padding:34px 42px 22px;border-bottom:1px solid var(--line);background:#1a1b1d}h1{margin:0 0 8px;font-size:29px;line-height:1.12}p{margin:0;color:var(--muted);font-size:14px;max-width:840px}.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.nav a,.links a{color:var(--accent);text-decoration:none;font-size:12px;font-weight:800;border:1px solid rgba(45,212,191,.34);border-radius:6px;padding:6px 8px}.nav a:hover,.links a:hover{background:rgba(45,212,191,.12)}");
         sb.AppendLine("main{padding:30px 42px 48px}.section{margin:0 0 38px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:0 0 16px;border-bottom:1px solid var(--line);padding-bottom:12px}h2{margin:0 0 6px;font-size:21px;line-height:1.15}.count{flex:0 0 auto;border:1px solid rgba(244,184,96,.44);border-radius:999px;color:var(--gold);font-size:12px;font-weight:850;padding:6px 10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,540px),1fr));gap:20px;align-items:start}");
         sb.AppendLine(".card{min-width:0;border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,var(--panel),var(--panel2));overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.16)}.preview{display:grid;place-items:center;aspect-ratio:var(--preview-aspect,16/10);background:var(--preview);border-bottom:1px solid var(--softline);padding:12px}.preview img{display:block;max-width:100%;max-height:100%;object-fit:contain}.preview iframe{display:block;width:100%;height:100%;border:0;background:var(--preview)}.body{padding:14px 15px 16px}.title{font-size:15px;font-weight:850;line-height:1.24;margin-bottom:11px}.links{display:flex;flex-wrap:wrap;gap:8px}");
@@ -362,7 +362,7 @@ public static partial class GalleryWriter {
         sb.AppendLine("</main>");
         sb.AppendLine("</body>");
         sb.AppendLine("</html>");
-        File.WriteAllText(Path.Combine(output, CatalogFileName), sb.ToString());
+        File.WriteAllText(Path.Combine(output, CatalogFileName), ExampleTypography.EmbedInHost(sb.ToString()));
     }
 
     private static void AppendCatalogSection(System.Text.StringBuilder sb, string title, string description, CatalogCard[] cards) {
