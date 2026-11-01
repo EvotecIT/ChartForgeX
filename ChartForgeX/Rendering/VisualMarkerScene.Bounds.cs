@@ -34,8 +34,8 @@ internal static partial class VisualMarkerScene {
     }
 
     /// <summary>Unites the endpoint footprints for a source interval without inventing a circular custom-marker radius.</summary>
-    internal static ChartRect PairBounds(ChartSeries series, ChartPoint first, ChartPoint second, double radius) =>
-        UnionBounds(Bounds(series, first.X, first.Y, radius), Bounds(series, second.X, second.Y, radius));
+    internal static ChartRect PairBounds(ChartSeries series, ChartPoint first, ChartPoint second, double radius, ChartMarkerOptions? markers = null) =>
+        UnionBounds(Bounds(series, first.X, first.Y, radius, markers), Bounds(series, second.X, second.Y, radius, markers));
 
     internal static ChartRect UnionBounds(ChartRect first, ChartRect second) => new(Math.Min(first.Left, second.Left), Math.Min(first.Top, second.Top),
         Math.Max(first.Right, second.Right) - Math.Min(first.Left, second.Left), Math.Max(first.Bottom, second.Bottom) - Math.Min(first.Top, second.Top));

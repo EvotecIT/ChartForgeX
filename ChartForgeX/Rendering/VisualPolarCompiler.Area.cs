@@ -26,7 +26,7 @@ internal static partial class VisualPolarCompiler {
                 var point = series.RenderPoints[index]; var color = ChartSeriesColours.CategoryPoint(series, index, colors);
                 var start = CategoryAngle(chart, index, series.RenderPoints.Count, sweep); var zero = point.Y == 0;
                 var r = zero ? radius : radius * Math.Sqrt(point.Y / max); var inner = zero ? radius * ChartVisualPrimitives.PolarAreaZeroSlotInnerRadiusFactor : 0;
-                var value = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
+                var value = index < series.PreparedLabels.Count && series.PreparedLabels[index] != null ? series.PreparedLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
                 var category = Category(chart, point.X); var role = zero ? "polar-area-zero-slot" : "polar-area-segment";
                 var bounds = new ChartRect(cx - r, cy - r, r * 2, r * 2);
                 builder.AddRegion(new VisualSemanticRegion(Id(0, index), role, bounds, category + ": " + value));

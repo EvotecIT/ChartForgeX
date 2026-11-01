@@ -56,9 +56,26 @@ internal static partial class VisualSceneRasterRenderer {
 
     private static void PaintGradient(RgbaCanvas canvas, VisualSceneGradient gradient, VisualSceneTransform transform) {
         var contours = transform.Apply(Contours(gradient.Shape, canvas.PixelsPerUnit));
+        if (gradient.AuthoredFill is { } fill && fill.ImageData is { } image) {
+            PaintFillImage(canvas, contours, gradient, transform, image.Image);
+            StrokeContours(canvas, contours, gradient.Shape);
+            return;
+        }
         var stops = new RasterGradientStop[gradient.Stops.Count];
         for (var i = 0; i < stops.Length; i++) stops[i] = new RasterGradientStop(gradient.Stops[i].Offset, gradient.Stops[i].Color);
-        canvas.FillContoursLinearGradient(contours, transform.Apply(gradient.Start), transform.Apply(gradient.End), stops, RasterGradientSpreadMethod.Pad);
+        if (gradient.AuthoredFill is { Kind: Core.ChartFillKind.RadialGradient } radial) {
+            var center = gradient.Start; var bounds = gradient.FillBounds;
+            canvas.FillContoursRadialGradient(contours, transform.Apply(center),
+                transform.Apply(new ChartPoint(center.X + bounds.Width * radial.Radius, center.Y)),
+                transform.Apply(new ChartPoint(center.X, center.Y + bounds.Height * radial.Radius)), stops, RasterGradientSpreadMethod.Pad);
+        } else if (gradient.AuthoredFill is { Kind: Core.ChartFillKind.LinearGradient } linear) {
+            var bounds = gradient.FillBounds;
+            ChartLinearGradientGeometry.Transform(linear.Start, linear.End,
+                transform.Apply(new ChartPoint(bounds.X, bounds.Y)),
+                transform.Apply(new ChartPoint(bounds.Right, bounds.Y)),
+                transform.Apply(new ChartPoint(bounds.X, bounds.Bottom)), out var start, out var end);
+            canvas.FillContoursLinearGradient(contours, start, end, stops, RasterGradientSpreadMethod.Pad);
+        } else canvas.FillContoursLinearGradient(contours, transform.Apply(gradient.Start), transform.Apply(gradient.End), stops, RasterGradientSpreadMethod.Pad);
         StrokeContours(canvas, contours, gradient.Shape);
     }
 

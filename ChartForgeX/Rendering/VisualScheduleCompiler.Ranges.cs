@@ -174,7 +174,7 @@ internal static partial class VisualScheduleCompiler {
                         builder.Pattern(shape, pattern, colors.Surface.WithOpacity(.45),
                             paint: SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(colors.Surface.WithOpacity(.45), .45));
                     }
-                    var label = series.PointLabels.Count > 0 && series.PointLabels[0] != null ? series.PointLabels[0]! : item.Gantt ? completion : duration;
+                    var label = series.PreparedLabels.Count > 0 && series.PreparedLabels[0] != null ? series.PreparedLabels[0]! : item.Gantt ? completion : duration;
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }

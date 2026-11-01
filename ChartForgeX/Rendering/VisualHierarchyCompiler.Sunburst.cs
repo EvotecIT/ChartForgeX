@@ -30,7 +30,7 @@ internal static partial class VisualHierarchyCompiler {
                 paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, ChartRelationshipPaint.Role(series, node.Index), .28);
             }
             var formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
-            var full = node.Index < series.PointLabels.Count && series.PointLabels[node.Index] != null ? series.PointLabels[node.Index]! : node.Label;
+            var full = node.Index < series.PreparedLabels.Count && series.PreparedLabels[node.Index] != null ? series.PreparedLabels[node.Index]! : node.Label;
             var secondary = chart.Options.Sunburst.SecondaryLabelFormatter?.Invoke(new ChartSunburstLabelContext(item, node.Value, formatted));
             if (string.IsNullOrWhiteSpace(secondary)) secondary = null;
             var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);

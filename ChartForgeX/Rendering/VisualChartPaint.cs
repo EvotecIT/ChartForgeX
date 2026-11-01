@@ -8,7 +8,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>Captures paint provenance at the same decision point that resolves chart colours.</summary>
 internal static class VisualChartPaint {
     internal static SvgColorRole SeriesRole(ChartSeries series, int point = -1, bool explicitOverride = false, SvgColorRole fallbackRole = SvgColorRole.Series) =>
-        explicitOverride || series.Color.HasValue || point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue
+        explicitOverride || series.Color.HasValue || series.PreparedItemStyle(point)?.Color != null || point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue
             ? SvgColorRole.Series : series.StateRole == ChartSeriesState.None ? fallbackRole : SvgColorRole.Status;
 
     /// <summary>Writes an automatic palette colour by its slot, so equal RGB values in two slots never share a property.</summary>

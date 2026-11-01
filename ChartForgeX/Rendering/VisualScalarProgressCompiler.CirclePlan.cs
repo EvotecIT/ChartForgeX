@@ -32,7 +32,7 @@ internal static partial class VisualScalarProgressCompiler {
             Range(series, out var min, out var max); _minimum = min; _maximum = max; _raw = series.RenderPoints[0].Y;
             _seriesKey = series.Id.Value; _local = series.Id.IsAutomatic; _caption = series.Name; _display = Value(chart, series, 0, _raw);
             _observationId = series.ObservationIds.TryGetValue(0, out var id) ? id.Value : null;
-            _authoredLabel = series.PointLabels.Count > 0 ? series.PointLabels[0] : null;
+            _authoredLabel = series.PreparedLabels.Count > 0 ? series.PreparedLabels[0] : null;
             _pointColor = series.PointColors.Count > 0 ? series.PointColors[0] : null; _seriesColor = series.Color; _stateRole = series.StateRole;
             _showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true); _showStatus = chart.Options.ShowCircleStatusLabel;
             _statusHeight = _showLabels && _showStatus ? Math.Min(plot.Height * .2, context.Theme.Typography.DataLabelSize * 1.5 + context.Theme.Spacing) : 0;

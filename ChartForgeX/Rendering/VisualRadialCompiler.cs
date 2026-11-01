@@ -268,6 +268,8 @@ internal static partial class VisualRadialCompiler {
     }
 
     private static string FormatLabel(Chart chart, RadialSlice slice, double percent, string value) {
+        var captured = chart.Series[slice.SeriesIndex].PreparedLabel(slice.PointIndex);
+        if (captured != null) return captured;
         var percentage = FormatPercentage(percent);
         if (chart.Options.PieSliceLabelFormatter != null && ChartMath.IsFinite(slice.Value))
             return chart.Options.PieSliceLabelFormatter(new ChartPieSliceLabelContext(chart.Series[slice.SeriesIndex].Name, slice.Label,

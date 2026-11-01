@@ -10,10 +10,11 @@ internal static partial class ChartRelationshipPaint {
     internal static ChartSeriesState State(ChartSeries series, int node) => node >= 0 && node < series.Nodes.Count
         && series.NodeStates.TryGetValue(series.Nodes[node].Id, out var state) ? state : series.StateRole;
 
-    internal static bool HasExplicitColor(ChartSeries series, int node, ChartColor? fillOverride = null) => fillOverride.HasValue || series.Color.HasValue
+    internal static bool HasExplicitColor(ChartSeries series, int node, ChartColor? fillOverride = null) => series.PreparedItemStyle(node)?.Color != null || fillOverride.HasValue || series.Color.HasValue
         || node >= 0 && node < series.PointColors.Count && series.PointColors[node].HasValue;
 
     internal static ChartColor Color(ChartSeries series, int node, VisualThemeColors colors, int? paletteIndex = null, bool neutralDefault = false, ChartColor? fillOverride = null) {
+        if (series.PreparedItemStyle(node)?.Color is { } itemColor) return itemColor;
         if (node >= 0 && node < series.PointColors.Count && series.PointColors[node].HasValue) return series.PointColors[node]!.Value;
         if (fillOverride.HasValue) return fillOverride.Value;
         if (series.Color.HasValue) return series.Color.Value;

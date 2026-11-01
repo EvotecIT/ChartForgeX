@@ -32,7 +32,7 @@ internal static partial class VisualCartesianCompiler {
             lower = aligned.Select(vertex => new ChartPoint(map.X(vertex.X), map.YOrBaseline(vertex.Base), vertex.BreakBefore)).ToList();
         }
         var color = Color(series, index, colors);
-        var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+        var stroke = VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth);
         if (series.Kind != ChartSeriesKind.Scatter && contour.Count > 0) {
             using (clipMarks ? builder.PushClip(plot) : null) {
                 if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
@@ -61,9 +61,7 @@ internal static partial class VisualCartesianCompiler {
                     ? ChartPathBuilder.FromPoints(points.Select(point => new ChartPoint(point.Y, point.X, point.BreakBefore)).ToArray(),
                         series.Interpolation, series.StepPosition).Transpose()
                     : ChartPathBuilder.FromPoints(contour, series.Interpolation, series.StepPosition);
-                foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
-                    if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
-                        paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
+                VisualSeriesStroke.DrawPath(chart, builder, series, linePath, color, VisualChartPaint.Series(series, color), stroke, "line");
                 if (chart.Series.Any(item => item.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                     || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
@@ -167,7 +165,7 @@ internal static partial class VisualCartesianCompiler {
         // Design rule 5: no lone dot on the last point unless that point carries a label. A point the author singled out
         // (its own colour or label) is an emphasis and keeps its marker.
         if (!chart.Options.LineMarkerMode.HasValue && (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
-            || pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)) return true;
+            || pointIndex < series.PreparedLabels.Count && series.PreparedLabels[pointIndex] != null)) return true;
         var mode = chart.Options.LineMarkerMode ?? (series.ShowDataLabels ?? chart.Options.ShowDataLabels ?? false
             ? ChartLineMarkerMode.Last : ChartLineMarkerMode.None);
         if (mode == ChartLineMarkerMode.None) return false;
@@ -187,11 +185,11 @@ internal static partial class VisualCartesianCompiler {
 
     private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle, Func<double, string>? seriesFormat) {
         var value = series.RenderPoints[pointIndex].Y;
-        var authored = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null;
+        var authored = pointIndex < series.PreparedLabels.Count && series.PreparedLabels[pointIndex] != null;
         var numeric = !authored
             && !(series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue);
-        var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
-            ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
+        var text = pointIndex < series.PreparedLabels.Count && series.PreparedLabels[pointIndex] != null
+            ? series.PreparedLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
                 ? chart.Options.Labels.NoData : seriesFormat?.Invoke(value) ?? ChartNumericFormatter.FormatValue(chart.Options, value);
         var style = seriesStyle;
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
@@ -223,7 +221,7 @@ internal static partial class VisualCartesianCompiler {
         if (valueLabel?.Visible == false) return;
         if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
-            (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
+            (pointIndex >= series.PreparedLabels.Count || series.PreparedLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.RenderPoints[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = valueLabel?.Placement ?? series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;

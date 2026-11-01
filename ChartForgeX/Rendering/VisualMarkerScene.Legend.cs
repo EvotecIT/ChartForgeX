@@ -21,7 +21,7 @@ internal static partial class VisualMarkerScene {
                 if (fill.A > 0) VisualFrameLayout.DrawLegendPattern(builder, half, pattern, context, role: "legend-area-pattern");
             }
             var y = bounds.Top + bounds.Height / 2;
-            builder.Line(bounds.Left, y, bounds.Right, y, color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
+            VisualSeriesStroke.DrawLine(builder, series, bounds.Left, y, bounds.Right, y, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth),
                 role: "legend-line", paint: VisualChartPaint.Stroke(paint));
             if (Enabled(series, series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
                 || series.PointFillPatterns.Any(value => value.HasValue)) && Radius(series, context) > 0)
@@ -35,7 +35,7 @@ internal static partial class VisualMarkerScene {
         var polarArea = series.Kind == ChartSeriesKind.Polar && series.Polar.Form == ChartLineAreaForm.Area
             && ChartPolarPathGeometry.HasClosedArea(series);
         // Retain ordinary area/line swatches until their marker or radar paint is explicitly configured.
-        if (!series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue && series.Radar.OutlineStroke == null)) return null;
+        if (series.StrokeStyle == null && !series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue && series.Radar.OutlineStroke == null)) return null;
         return (builder, bounds, context) => {
             var colors = context.Theme.Resolve(context.ThemeMode);
             var x = bounds.Left + bounds.Width / 2; var y = bounds.Top + bounds.Height / 2;
@@ -51,10 +51,8 @@ internal static partial class VisualMarkerScene {
                 VisualFrameLayout.DrawLegendPattern(builder, bounds, pattern, context, hatchOpacity, "legend-area-pattern");
             }
             if (line) {
-                var outline = series.Kind == ChartSeriesKind.Radar ? series.Radar.OutlineStroke
-                    : series.Kind == ChartSeriesKind.Polar ? series.Polar.OutlineStroke : null;
-                var width = VisualReferenceStroke.PaintedWidth(outline, color,
-                    series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth);
+                var outline = VisualSeriesStroke.Style(series);
+                var width = VisualReferenceStroke.PaintedWidth(outline, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth));
                 var source = outline?.Color ?? color;
                 var opacity = outline?.Opacity ?? 1;
                 var actual = ChartColorMath.WithOpacity(source, opacity);
@@ -88,7 +86,8 @@ internal static partial class VisualMarkerScene {
     /// <summary>Uses the same endpoint overrides as native comparisons while retaining the existing bounded legend swatch.</summary>
     private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DumbbellLegend(Chart chart, ChartSeries series,
         ChartColor color, SvgPaint paint, int point, ChartFillPattern pattern) {
-        var start = series.ResolveDumbbellMarker(start: true); var end = series.ResolveDumbbellMarker(start: false);
+        var start = series.ResolvePointMarkers(point, series.ResolveDumbbellMarker(start: true));
+        var end = series.ResolvePointMarkers(point, series.ResolveDumbbellMarker(start: false));
         return (builder, bounds, context) => {
             var colors = context.Theme.Resolve(context.ThemeMode);
             var firstRadius = Radius(series, context, start); var lastRadius = Radius(series, context, end);
@@ -97,9 +96,9 @@ internal static partial class VisualMarkerScene {
             var firstX = bounds.Left + bounds.Width * .2; var lastX = bounds.Right - bounds.Width * .2;
             var y = bounds.Top + bounds.Height / 2;
             var connector = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity);
-            var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth;
-            builder.Line(firstX, y, lastX, y, connector, Math.Min(width, bounds.Height / 3), role: "legend-dumbbell-connector",
-                paint: VisualChartPaint.Stroke(paint.WithOpacity(connector, ChartVisualPrimitives.DumbbellConnectorOpacity)));
+            var width = VisualSeriesStroke.Width(series, ChartVisualPrimitives.DumbbellConnectorStrokeWidth);
+            VisualSeriesStroke.DrawLine(builder, series, firstX, y, lastX, y, connector, width, role: "legend-dumbbell-connector",
+                paint: VisualChartPaint.Stroke(paint.WithOpacity(connector, ChartVisualPrimitives.DumbbellConnectorOpacity)), maximumWidth: bounds.Height / 3);
             Draw(builder, series, point, firstX, y, firstRadius * scale, colors.MutedForeground,
                 SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text), "legend-dumbbell-start", markerOptions: start);
             Draw(builder, series, point, lastX, y, lastRadius * scale, color, paint, "legend-dumbbell-end",

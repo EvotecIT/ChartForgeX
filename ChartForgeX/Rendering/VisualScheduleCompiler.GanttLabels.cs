@@ -21,9 +21,10 @@ internal static partial class VisualScheduleCompiler {
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside)) continue;
             foreach (var placed in row.Items) {
-                if (string.IsNullOrWhiteSpace(placed.Item.Label) || !model.TrySpan(placed, projection, out _, out _)) continue;
+                var text = series.PreparedLabel(placed.PointIndex) ?? placed.Item.Label;
+                if (string.IsNullOrWhiteSpace(text) || !model.TrySpan(placed, projection, out _, out _)) continue;
                 var style = VisualStateSceneTools.DataStyle(chart, context, series, placed.PointIndex, ChartColor.Black);
-                var height = builder.MeasureText(placed.Item.Label!, style).Height + PackedGanttCaptionPadding * 2;
+                var height = builder.MeasureText(text!, style).Height + PackedGanttCaptionPadding * 2;
                 if (height <= maximum) minimum = Math.Max(minimum, height);
             }
         }
@@ -57,14 +58,15 @@ internal static partial class VisualScheduleCompiler {
                 items.Add(id, item);
                 if (!visible || bounds.Width <= 0 || bounds.Height <= 0) continue;
                 obstacles.Add(new LabelObstacle(id, bounds));
-                if (!series.ResolveDataLabels(chart.Options, defaultVisible: true) || string.IsNullOrWhiteSpace(placed.Item.Label)) continue;
+                var text = series.PreparedLabel(placed.PointIndex) ?? placed.Item.Label;
+                if (!series.ResolveDataLabels(chart.Options, defaultVisible: true) || string.IsNullOrWhiteSpace(text)) continue;
                 var style = VisualStateSceneTools.DataStyle(chart, context, series, placed.PointIndex,
                     ChartColorMath.AccessibleTextOnBackground(colors.Surface));
                 item.Placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
                 // A thin task needs an outside lane. Give it first use before a caption
                 // that fits across its own bar takes the only clear neighboring space.
-                item.Priority = builder.MeasureText(placed.Item.Label!, style).Width + PackedGanttCaptionPadding * 2 > bounds.Width ? 1 : 0;
-                var request = GanttLaneLabelRequest(placed.Item.Label!, style, item, context.Theme.Spacing / 2, shorten: false);
+                item.Priority = builder.MeasureText(text!, style).Width + PackedGanttCaptionPadding * 2 > bounds.Width ? 1 : 0;
+                var request = GanttLaneLabelRequest(text!, style, item, context.Theme.Spacing / 2, shorten: false);
                 item.Request = request; requests.Add(request); requested.Add(item);
             }
         }

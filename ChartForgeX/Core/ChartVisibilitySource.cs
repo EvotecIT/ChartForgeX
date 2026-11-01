@@ -26,6 +26,7 @@ internal sealed partial class ChartVisibilitySource {
     internal static ChartVisibilitySource CaptureNativeBubbleValues(Chart chart, VisualRenderContext context) => CaptureNativeComponentValues(chart, context);
     internal static ChartVisibilitySource CaptureNativeComponentValues(Chart chart, VisualRenderContext context) => new(chart, context, false, true);
     private ChartVisibilitySource(Chart chart, VisualRenderContext context, bool completeCartesianValues, bool componentValues = false) {
+        chart = chart.CaptureCallbackPresentation(context);
         Validate(chart, completeCartesianValues, componentValues);
         _bubble = componentValues && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? chart.Options.Bubble.Clone() : null;
         Context = context.WithNativeTextCapture(null); Title = chart.Title; Subtitle = chart.Subtitle;
@@ -109,7 +110,7 @@ internal sealed partial class ChartVisibilitySource {
         var options = chart.Options;
         if (chart.Annotations.Count != 0 || chart.PlotRegions.Count != 0 || options.IsSparkline || options.IsPanel || options.XAxisLabelHighlights.Count != 0 || options.SvgColorVariables != null)
             throw new NotSupportedException("Native Reflow does not yet capture annotations, plot regions, compact-panel state, category highlights or chart SVG variable resolvers.");
-        if (chart.Series.Any(series => series.DecimationMode.HasValue || series.HistogramBinLayout != null || series.ColorScale != null || series.ColorDimension.HasOverrides || series.HasPointMarkers))
+        if (chart.Series.Any(series => series.DecimationMode.HasValue || series.HistogramBinLayout != null || series.ColorScale != null || series.ColorDimension.HasOverrides || series.HasOrdinalMarkerOverrides))
             throw new NotSupportedException("Native Reflow does not yet capture derived decimation/histograms, numeric color dimensions or per-point marker policies.");
         if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.PieSliceLabelFormatter != null)
             throw new NotSupportedException("Native Reflow requires static label words and captured built-in formats; custom callbacks remain available for ordinary rendering.");

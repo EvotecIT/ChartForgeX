@@ -27,7 +27,7 @@ internal sealed partial class VisualSceneBuilder {
                 && group.Metadata.TryGetValue("data-cfx-point", out var pointOrdinal)
                 && int.TryParse(pointOrdinal, NumberStyles.None, CultureInfo.InvariantCulture, out var displayed)) observation = displayed;
             var isRow = group.Role == ChartDomRoles.ScheduleRow || group.Role == "series" && series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap;
-            var options = isMark ? ObservationOptions(series, observation) ?? series.MarkOptions
+            var options = isMark ? series.ObservationMarkOptions(observation) ?? series.MarkOptions
                 : isRun ? series.MarkOptions
                 : group.Role == ChartDomRoles.ScheduleRow ? series.RowOptions
                 : isRow ? series.RowOptions ?? series.MarkOptions : group.Role == "series" ? series.MarkOptions : null;
@@ -72,21 +72,6 @@ internal sealed partial class VisualSceneBuilder {
         if (metadata.TryGetValue("data-cfx-label", out var label)) return label;
         if (metadata.TryGetValue("data-cfx-x", out var x) && metadata.TryGetValue("data-cfx-y", out var y)) return series.Name + ": " + x + ", " + y;
         return series.Name;
-    }
-
-    private static ChartMarkOptions? ObservationOptions(ChartSeries series, int index) {
-        if (index < 0 || index >= series.ObservationCount) return null;
-        if (series.IsCategoricalHeatmapRow) return series.HeatmapCells[index]?.MarkOptions;
-        return series.Kind switch {
-            ChartSeriesKind.Gantt => series.GanttItems[index].MarkOptions,
-            ChartSeriesKind.GanttLane => series.GanttLaneItems[index].MarkOptions,
-            ChartSeriesKind.StateTimeline => series.StateTimelineSegments[index].MarkOptions,
-            ChartSeriesKind.CalendarHeatmap => series.CalendarItems[index].MarkOptions,
-            ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea => series.Ranges[index].MarkOptions,
-            ChartSeriesKind.RangeBar => series.Intervals[index].MarkOptions,
-            ChartSeriesKind.Dumbbell => series.Dumbbells[index].MarkOptions,
-            _ => index < series.Points.Count ? series.Points[index].MarkOptions : null
-        };
     }
 
     // State/matrix producers retain an inner tooltip/link scope. Move navigation onto the semantic

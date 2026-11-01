@@ -64,7 +64,7 @@ public sealed partial class ChartSeries {
     /// Gets optional point-level colors. Null entries fall back to the series color or theme palette.
     /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
-    public List<ChartColor?> PointColors { get; } = new();
+    public List<ChartColor?> PointColors { get; private set; } = new();
 
     /// <summary>
     /// Gets or sets the texture overlay applied to filled marks in this series.

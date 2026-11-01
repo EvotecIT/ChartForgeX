@@ -32,7 +32,8 @@ internal static class ChartSeriesColours {
             return point >= 0 ? CategorySourceOrdinal(series, point) : -1;
         var owner = series.Owner;
         if (owner == null || owner.Options.SeriesColorAssignment == ChartSeriesColorAssignment.Identity && series.AutomaticIdentityOwner == null && series.HasIdentity) return -1;
-        for (var index = 0; index < owner.Series.Count; index++) if (ReferenceEquals(owner.Series[index], series)) return index;
+        // A presentation copy retains its authored owner and identity, while the owner keeps its original handles.
+        for (var index = 0; index < owner.Series.Count; index++) if (owner.Series[index].Id == series.Id) return index;
         return -1;
     }
 
@@ -60,7 +61,7 @@ internal static class ChartSeriesColours {
         PointOverride(series, pointIndex) ?? series.Color ?? State(series.StateRole, colors, fallback);
 
     private static ChartColor? PointOverride(ChartSeries series, int pointIndex) =>
-        pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null;
+        series.PreparedItemStyle(pointIndex)?.Color ?? (pointIndex >= 0 && pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null);
 
     internal static ChartColor Resolve(Chart chart, int index) {
         var series = chart.Series[index]; var t = chart.Options.ResolvedTheme;

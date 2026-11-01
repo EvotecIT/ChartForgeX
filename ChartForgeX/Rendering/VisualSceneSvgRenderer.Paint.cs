@@ -7,6 +7,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSceneSvgRenderer {
     private static void WriteGradientDefinition(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index, VisualSvgOptions? options) {
+        if (gradient.AuthoredFill != null) { WriteChartFillDefinition(writer, gradient, prefix, index, options); return; }
         writer.StartElement("linearGradient").Attribute("id", GradientId(prefix, index)).Attribute("gradientUnits", "userSpaceOnUse")
             .Attribute("x1", gradient.Start.X).Attribute("y1", gradient.Start.Y).Attribute("x2", gradient.End.X).Attribute("y2", gradient.End.Y).EndStartElement();
         WriteGradientStops(writer, gradient.Stops, options);
@@ -29,6 +30,7 @@ internal static partial class VisualSceneSvgRenderer {
         else if (shape is VisualSceneRectangle rect) writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
             .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
         else if (shape is VisualScenePath path) writer.StartElement("path").Attribute("d", PathData(path));
+        else if (shape is VisualSceneEllipse ellipse) writer.StartElement("ellipse").Attribute("cx", ellipse.Cx).Attribute("cy", ellipse.Cy).Attribute("rx", ellipse.Rx).Attribute("ry", ellipse.Ry);
         else if (shape is VisualSceneSlice slice) writer.StartElement("path").Attribute("d", ChartSlicePathGeometry.BuildPath(slice.Cx, slice.Cy, slice.Outer, slice.Inner, slice.Start, slice.Start + slice.Sweep));
         else throw new System.NotSupportedException("Unsupported gradient shape.");
         Paint(writer, shape, prefix, index, "url(#" + GradientId(prefix, index) + ")", options);
@@ -69,8 +71,11 @@ internal static partial class VisualSceneSvgRenderer {
         else if (shape is VisualSceneSlice slice) {
             writer.Write(3); writer.Write(slice.Cx); writer.Write(slice.Cy); writer.Write(slice.Outer);
             writer.Write(slice.Inner); writer.Write(slice.Start); writer.Write(slice.Sweep);
+        } else if (shape is VisualSceneEllipse ellipse) {
+            writer.Write(4); writer.Write(ellipse.Cx); writer.Write(ellipse.Cy); writer.Write(ellipse.Rx); writer.Write(ellipse.Ry);
         } else throw new System.NotSupportedException("Unsupported gradient shape.");
         Point(writer, gradient.Start); Point(writer, gradient.End); writer.Write(gradient.Stops.Count);
         foreach (var stop in gradient.Stops) { writer.Write(stop.Offset); Color(writer, stop.Color); Text(writer, stop.Paint?.Value); }
+        WriteChartFillIdentity(writer, gradient);
     }
 }

@@ -74,8 +74,8 @@ internal static partial class VisualCartesianCompiler {
                 (numericCaptions ??= new Dictionary<string, string>())[member] = caption;
             return caption;
         }
-        var authored = observation < series.PointLabels.Count && series.PointLabels[observation] != null;
-        var text = authored ? series.PointLabels[observation]! : fallback(Format);
+        var authored = observation < series.PreparedLabels.Count && series.PreparedLabels[observation] != null;
+        var text = authored ? series.PreparedLabels[observation]! : fallback(Format);
         return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture), style, numericCaptions, authored);
     }
 
@@ -152,13 +152,10 @@ internal static partial class VisualCartesianCompiler {
             ? series.PointFillPatterns[observation]!.Value : series.FillPattern;
 
     private static double SeriesStroke(ChartSeries series, VisualRenderContext context) =>
-        series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+        VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth);
 
-    private static void DrawLayeredPath(Chart chart, VisualSceneBuilder builder, ChartPath path, ChartColor color, SvgPaint sourcePaint, double width, string role, double[]? dash = null) {
-        foreach (var layer in ChartLineVisualLayers.Build(color, width, chart.Options.ResolvePreparedLineVisualStyle()))
-            if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: role + layer.RoleSuffix, dash: dash,
-                paint: VisualChartPaint.Stroke(layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity()) : sourcePaint.WithOpacity(layer.ColorWithOpacity(), layer.Opacity)));
-    }
+    private static void DrawLayeredPath(Chart chart, VisualSceneBuilder builder, ChartSeries series, ChartPath path, ChartColor color, SvgPaint sourcePaint, double width, string role, double[]? dash = null) =>
+        VisualSeriesStroke.DrawPath(chart, builder, series, path, color, sourcePaint, width, role, dash);
 
     private static void ObservationLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int observation,
         ChartPoint anchor, ChartRect bounds, double value, ResolvedPointLabel label, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,

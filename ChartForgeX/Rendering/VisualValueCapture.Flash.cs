@@ -52,7 +52,7 @@ internal sealed partial class VisualValueCapture {
                 || current.Node != null && changed.Nodes.Contains((current.Series, current.Node)) && HierarchyFlashRoles.Contains(node.Role)
                 || current.Other && changed.OtherSeries.Contains(current.Series) && RadialFlashRoles.Contains(node.Role))) {
                 nodes[index] = node is VisualSceneGradient gradient
-                    ? new VisualSceneGradient(Clone(gradient.Shape), gradient.Start, gradient.End, gradient.Stops.Select(stop => new VisualGradientStop(stop.Offset,
+                    ? gradient.WithPaint(Clone(gradient.Shape), gradient.Stops.Select(stop => new VisualGradientStop(stop.Offset,
                         Blend(stop.Color)!.Value, Binding(stop.Color, stop.Paint))).ToArray())
                     : node is VisualSceneMark mark ? Clone(mark) : throw new NotSupportedException("Native flash ink requires a supported completed native mark or gradient.");
             }

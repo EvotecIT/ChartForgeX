@@ -39,7 +39,7 @@ internal static partial class VisualRadialProgressCompiler {
             _paints = _values.Select((_, index) => VisualRadialPrimitives.Color(series, index, colors)).ToArray();
             _bindings = _paints.Select((color, index) => VisualChartPaint.Series(series, color, index)).ToArray();
             _ids = _values.Select((_, index) => series.ObservationIds.TryGetValue(index, out var id) ? id.Value : null).ToArray();
-            _authored = _values.Select((_, index) => index < series.PointLabels.Count ? series.PointLabels[index] : null).ToArray();
+            _authored = _values.Select((_, index) => index < series.PreparedLabels.Count ? series.PreparedLabels[index] : null).ToArray();
             _text = new VisualValueTextPolicy(chart, series, context); _format = chart.Options.ValueFormat.CapturedValuePolicy;
             if (_format != null) {
                 try { _formatKey = _format.PortablePolicy(); } catch (NotSupportedException) { } catch (ArgumentException) { }
@@ -62,6 +62,7 @@ internal static partial class VisualRadialProgressCompiler {
             && VisualValuePolicy.SameNativeTheme(_context, ring._context);
         void IVisualValuePlan.Paint(VisualSceneBuilder builder, double[]? readings, bool captured) {
             var values = readings ?? _values; var value = readings == null ? _ordinaryAverage : _format!.Format(values.Average());
+            if (_authored.Length == 1 && _authored[0] != null) value = _authored[0]!;
             var style = _text.Style(_colors.Foreground, _context.Theme.Typography.CenterValueSize, 700);
             var captionStyle = _text.Style(_colors.MutedForeground, _context.Theme.Typography.DataLabelSize);
             var requested = _showCenter ? RequestedCenterRadius(builder, _context, value, _caption, style, captionStyle,

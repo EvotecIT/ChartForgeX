@@ -17,9 +17,12 @@ internal sealed partial class ChartVisibilitySource {
         private readonly ChartFinancialOptions _financial;
         private readonly IReadOnlyList<ChartFinancialItemOptions?> _financialStyles;
         internal Series(ChartSeries source) {
+            ItemStyles = Array.AsReadOnly(source.CaptureItemStyles().ToArray());
+            Fill = source.Fill;
             Id = source.Id; Name = source.Name; MarkOptions = source.MarkOptions; RowOptions = source.RowOptions; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
             ValueAxis = source.ValueAxis; ShowInLegend = source.ShowInLegend; SemanticRole = source.SemanticRole; Labels = source.ShowDataLabels; Placement = source.DataLabelPlacement;
-            StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; Interpolation = source.Interpolation; Step = source.StepPosition;
+            StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; StrokeStyle = source.StrokeStyle;
+            Interpolation = source.Interpolation; Step = source.StepPosition;
             StackGroup = source.StackGroup; NormalizedTo = source.NormalizedTo; StackedAreaMissingData = source.StackedAreaMissingData;
             _labelStyle = source.DataLabelStyle.Clone(); _markers = source.Markers.Clone();
             CaptureHierarchy(source);
@@ -38,14 +41,20 @@ internal sealed partial class ChartVisibilitySource {
             _ids = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ChartObservationId>(source.ObservationIds.ToDictionary(pair => pair.Key, pair => pair.Value));
             _groups = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ChartObservationId>(source.BoxPlotGroupIds.ToDictionary(pair => pair.Key, pair => pair.Value));
             PointColors = Array.AsReadOnly(source.PointColors.ToArray()); PointPatterns = Array.AsReadOnly(source.PointFillPatterns.ToArray()); PointLabels = Array.AsReadOnly(source.PointLabels.ToArray());
+            PreparedLabels = Array.AsReadOnly(source.CapturedLabels.ToArray());
+            Tooltips = Array.AsReadOnly(source.PreparedTooltips.ToArray());
             _pointStyles = source.PointDataLabelStyles.Select(style => style?.Clone()).ToArray();
         }
         internal ChartMarkOptions? MarkOptions { get; }
+        internal IReadOnlyList<string?> Tooltips { get; }
+        internal IReadOnlyList<string?> PreparedLabels { get; }
         internal ChartMarkOptions? RowOptions { get; }
         internal ChartSeriesId Id { get; }
         internal string Name { get; }
+        internal IReadOnlyList<ChartItemStyle?> ItemStyles { get; }
         internal ChartSeriesKind Kind { get; }
         internal ChartColor? Color { get; }
+        internal ChartFill? Fill { get; }
         internal ChartSeriesState State { get; }
         internal ChartFillPattern Pattern { get; }
         internal ChartAxisSide ValueAxis { get; }
@@ -54,6 +63,7 @@ internal sealed partial class ChartVisibilitySource {
         internal bool? Labels { get; }
         internal ChartDataLabelPlacement? Placement { get; }
         internal double? StrokeWidth { get; }
+        internal ChartStrokeStyle? StrokeStyle { get; }
         internal ChartInterpolation Interpolation { get; }
         internal ChartStepPosition Step { get; }
         internal string? StackGroup { get; }

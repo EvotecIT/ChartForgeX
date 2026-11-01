@@ -15,7 +15,7 @@ internal static partial class VisualCartesianCompiler {
         var geometry = new ChartPairedBoundaryGeometry(series, map, axis.Reversed,
             axis.Scale is ChartScaleKind.Logarithmic or ChartScaleKind.SymmetricLogarithmic);
         var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
-        var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+        var stroke = VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth);
         foreach (var region in ChartDifferenceAreaGeometry.Regions(series, geometry)) {
             var role = region.Positive ? "difference-positive" : "difference-negative";
             var (fill, fillPaint) = DifferenceFill(series, index, region.Positive, colors, context);
@@ -27,15 +27,16 @@ internal static partial class VisualCartesianCompiler {
             obstacles.Add(new LabelObstacle(SeriesId(index) + "-" + role + "-" + Number(obstacles.Count),
                 new LabelMarkShape(new[] { region.Path.Flatten() }, true, stroke, plot)));
         }
-        DrawLayeredPath(chart, builder, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.First, true), color, paint, stroke, "difference-first");
-        DrawLayeredPath(chart, builder, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.Second, false), color, paint, stroke, "difference-second");
+        DrawLayeredPath(chart, builder, series, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.First, true), color, paint, stroke, "difference-first");
+        DrawLayeredPath(chart, builder, series, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.Second, false), color, paint, stroke, "difference-second");
         for (var item = 0; item < geometry.First.Count; item++) {
             var first = series.RenderPoints[item * 2]; var second = series.RenderPoints[item * 2 + 1];
             var showMarkers = PairedObservationMarkersEnabled(series, item);
-            var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
+            var markers = series.ResolvePointMarkers(item);
+            var radius = showMarkers ? markers.Radius ?? context.Theme.MarkerRadius : 0;
             var a = geometry.First[item]; var b = geometry.Second[item];
-            var bounds = series.Markers.CustomPath == null ? Extents(a.X, a.Y, b.X, b.Y, VisualMarkerScene.Extent(series, radius))
-                : VisualMarkerScene.PairBounds(series, a, b, radius);
+            var bounds = markers.CustomPath == null ? Extents(a.X, a.Y, b.X, b.Y, VisualMarkerScene.Extent(series, radius, markers))
+                : VisualMarkerScene.PairBounds(series, a, b, radius, markers);
             var firstText = Value(chart, first.Y); var secondText = Value(chart, second.Y);
             var options = series.DifferenceArea;
             var label = ResolveObservationLabel(chart, context, series, item, colors,

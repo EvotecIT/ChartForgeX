@@ -33,7 +33,7 @@ internal static partial class VisualCartesianCompiler {
         }
         var path = ChartPathBuilder.FromPoints(curve, ChartInterpolation.Linear);
         var stroke = Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context));
-        DrawLayeredPath(chart, builder, path, color, paint, stroke, "trend-line", new[] { 8d, 6d });
+        DrawLayeredPath(chart, builder, series, path, color, paint, stroke, "trend-line", new[] { 8d, 6d });
         obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(new[] { curve }, false, stroke, plot)));
         var metadata = new Dictionary<string, string> {
             ["data-cfx-source-count"] = Number(series.TrendLineSourcePoints.Count),

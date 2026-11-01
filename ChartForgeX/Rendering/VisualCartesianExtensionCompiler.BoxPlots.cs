@@ -12,11 +12,15 @@ internal static partial class VisualCartesianCompiler {
 
     /// <summary>Contains line strokes and the minimum-width quartile body extending beyond a collapsed value.</summary>
     private static double BoxPlotValuePaintRadius(ChartSeries series) {
-        var bodyStroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
-        var medianStroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth;
+        var bodyStroke = VisualSeriesStroke.Width(series, ChartVisualPrimitives.BoxPlotStrokeWidth);
+        var medianStroke = VisualSeriesStroke.Width(series, ChartVisualPrimitives.BoxPlotMedianStrokeWidth);
         var result = Math.Max(Math.Max(bodyStroke, medianStroke) / 2, BoxPlotMinimumLength + bodyStroke / 2);
-        return series.BoxPlotDistributions.Any(value => value.OutlierSourceIndices.Count > 0)
-            ? Math.Max(result, VisualMarkerScene.Extent(series, 4.5)) : result;
+        for (var item = 0; item < series.BoxPlotDistributions.Count; item++) {
+            if (series.BoxPlotDistributions[item].OutlierSourceIndices.Count == 0) continue;
+            var markers = series.ResolvePointMarkers(item);
+            result = Math.Max(result, VisualMarkerScene.Extent(series, markers.Radius ?? 4.5, markers));
+        }
+        return result;
     }
 
     private static void DrawBoxPlots(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
@@ -26,8 +30,8 @@ internal static partial class VisualCartesianCompiler {
         var labelOptions = chart.Options.BoxPlot.Clone();
         var statisticLabels = labelOptions.LabelContent == ChartBoxPlotLabelContent.Statistics;
         var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.BoxPlot && (!chart.Series[i].IsVisibilityPreparation || chart.Series[i].HasSourceData)).ToArray();
-        var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth
-            : Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth));
+        var padding = participants.Max(i => VisualSeriesStroke.Width(chart.Series[i],
+            Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth)));
         var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
             horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index), requireMinimumFootprint: true,
             maximumThickness: 46, footprintPadding: padding, maximumPitch: map.CalendarBandPitch(horizontal));
@@ -57,23 +61,23 @@ internal static partial class VisualCartesianCompiler {
             }
             using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, facts,
                 ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
-                var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
+                var stroke = VisualSeriesStroke.Width(series, ChartVisualPrimitives.BoxPlotStrokeWidth);
                 var whisker = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity);
-                builder.Line(min.X, min.Y, max.X, max.Y, whisker, stroke, role: "boxplot-whisker",
+                VisualSeriesStroke.DrawLine(builder, series, min.X, min.Y, max.X, max.Y, whisker, stroke, role: "boxplot-whisker",
                     paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(whisker, ChartVisualPrimitives.BoxPlotWhiskerOpacity)));
                 CrossLine(minimum, thickness * .74, stroke, "boxplot-cap");
                 CrossLine(maximum, thickness * .74, stroke, "boxplot-cap");
                 var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotBodyFillOpacity);
                 var radius = Math.Min(ChartVisualPrimitives.BoxPlotBodyRadius, Math.Min(box.Width, box.Height) / 2);
-                builder.Rect(box, fill, color, stroke, radius, role: "boxplot-body",
+                VisualSeriesStroke.DrawBox(builder, series, box, radius, fill, color, stroke, role: "boxplot-body",
                     paint: new VisualScenePaintBinding(fill: sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BoxPlotBodyFillOpacity), stroke: sourcePaint));
                 DrawPattern(builder, RoundedRectanglePath(box, radius), ObservationPattern(series, item), fill,
                     ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "boxplot-pattern");
-                CrossLine(median, thickness, series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth, "boxplot-median");
+                CrossLine(median, thickness, VisualSeriesStroke.Width(series, ChartVisualPrimitives.BoxPlotMedianStrokeWidth), "boxplot-median");
 
                 void CrossLine(double value, double span, double width, string role) {
                     var center = Project(value);
-                    builder.Line(horizontal ? center.X : center.X - span / 2, horizontal ? center.Y - span / 2 : center.Y,
+                    VisualSeriesStroke.DrawLine(builder, series, horizontal ? center.X : center.X - span / 2, horizontal ? center.Y - span / 2 : center.Y,
                         horizontal ? center.X : center.X + span / 2, horizontal ? center.Y + span / 2 : center.Y,
                         color, width, role: role, paint: VisualChartPaint.Stroke(sourcePaint));
                 }

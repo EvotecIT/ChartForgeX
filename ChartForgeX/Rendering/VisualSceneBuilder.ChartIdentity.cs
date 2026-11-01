@@ -27,8 +27,8 @@ internal sealed partial class VisualSceneBuilder {
             metadata["data-cfx-series-key"] = series.Id.Value;
             metadata["data-cfx-series-scope"] = series.Id.IsAutomatic ? "local" : "shared";
             if (metadata.TryGetValue("data-cfx-point", out var markIndex) && int.TryParse(markIndex, NumberStyles.None, CultureInfo.InvariantCulture, out var pointIndex)
-                && pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
-                metadata["data-cfx-authored-label"] = series.PointLabels[pointIndex]!;
+                && pointIndex >= 0 && pointIndex < series.PreparedLabels.Count && series.PreparedLabels[pointIndex] != null)
+                metadata["data-cfx-authored-label"] = series.PreparedLabels[pointIndex]!;
             CaptureChartInterval(chart, series, metadata, numericTimeDomain);
             if (preciseValueTimeDomain && metadata.ContainsKey("data-cfx-point") && !metadata.ContainsKey("data-cfx-start")
                 && !metadata.ContainsKey("data-cfx-median") && !metadata.ContainsKey("data-cfx-open"))
@@ -40,7 +40,9 @@ internal sealed partial class VisualSceneBuilder {
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata,
                 group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope, group.Opacity, group.SurfaceShadow, group.RetainedEffect);
         }
+        CaptureItemStyles(chart);
         CaptureMarkOptions(chart);
+        CaptureSeriesFormatting(chart);
         CompleteValueIdentity();
     }
 

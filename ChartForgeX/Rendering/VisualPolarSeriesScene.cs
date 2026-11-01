@@ -31,25 +31,14 @@ internal static class VisualPolarSeriesScene {
                 builder.Pattern(path, series.FillPattern, ChartColorMath.WithOpacity(ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), hatchOpacity), role: radar ? "radar-pattern" : "polar-pattern");
             }
         }
-        var stroke = radar ? series.Radar.OutlineStroke : series.Polar.OutlineStroke;
-        var source = stroke?.Color ?? color;
-        var outlineOpacity = stroke?.Opacity ?? 1;
-        var actual = ChartColorMath.WithOpacity(source, outlineOpacity);
-        var width = VisualReferenceStroke.PaintedWidth(stroke, color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth);
-        if (width <= 0) return;
-        foreach (var layer in ChartLineVisualLayers.Build(actual, width, chart.Options.LineVisualStyle))
-            if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth,
-                role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: closed,
-                dash: stroke?.ResolveDash(Array.Empty<double>()),
-                paint: VisualChartPaint.Stroke(layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
-                    : (stroke?.Color != null ? SvgPaint.Literal(source) : VisualChartPaint.Series(series, source))
-                        .WithOpacity(layer.ColorWithOpacity(), outlineOpacity * layer.Opacity)));
+        VisualSeriesStroke.DrawPath(chart, builder, series, path, color, VisualChartPaint.Series(series, color),
+            VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth), radar ? "radar-outline" : "polar-line", close: closed);
     }
 
     /// <summary>Measures only painted stroke layers so standalone and mixed radar fit the same outline overrides.</summary>
     internal static double StrokeExtent(Chart chart, VisualRenderContext context, ChartSeries series, ChartColor color) {
-        var stroke = series.Kind == ChartSeriesKind.Radar ? series.Radar.OutlineStroke : series.Polar.OutlineStroke;
-        var width = VisualReferenceStroke.PaintedWidth(stroke, color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth);
+        var stroke = VisualSeriesStroke.Style(series);
+        var width = VisualReferenceStroke.PaintedWidth(stroke, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth));
         if (width <= 0) return 0;
         var actual = ChartColorMath.WithOpacity(stroke?.Color ?? color, stroke?.Opacity ?? 1);
         return ChartLineVisualLayers.Build(actual, width, chart.Options.LineVisualStyle).Where(layer => layer.IsVisible)

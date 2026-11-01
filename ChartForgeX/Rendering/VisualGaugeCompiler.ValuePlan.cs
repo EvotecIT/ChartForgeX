@@ -29,7 +29,7 @@ internal static partial class VisualGaugeCompiler {
             var series = chart.Series[0]; Context = context; Plot = plot; Options = chart.Options.Gauge.Clone();
             SeriesKey = series.Id.Value; Local = series.Id.IsAutomatic; Name = series.Name; Caption = Options.Caption ?? Name;
             ObservationId = series.ObservationIds.TryGetValue(0, out var id) ? id.Value : null;
-            AuthoredValue = series.PointLabels.Count > 0 ? series.PointLabels[0] : null;
+            AuthoredValue = series.PreparedLabels.Count > 0 ? series.PreparedLabels[0] : null;
             LabelTarget = chart.Options.Labels.Target; PinStateColors = chart.Options.PinStateColorsInForcedColors;
             ShowValue = series.ResolveDataLabels(chart.Options, defaultVisible: true); ShowAxes = chart.Options.ShowAxes;
             _pointColor = series.PointColors.Count > 0 ? series.PointColors[0] : null; _seriesColor = series.Color; _state = series.StateRole;

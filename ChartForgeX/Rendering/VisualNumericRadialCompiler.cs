@@ -115,7 +115,7 @@ internal static partial class VisualNumericRadialCompiler {
         ChartSeries series, int seriesIndex, int pointIndex, string category, ChartStackPoint stack, RadialSeriesMark mark,
         VisualThemeColors colors, List<RadialSeriesLabel> labels, List<LabelObstacle>? obstacles) {
         var point = series.RenderPoints[pointIndex]; var id = PointId(seriesIndex, pointIndex);
-        var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null ? series.PointLabels[pointIndex]!
+        var text = pointIndex < series.PreparedLabels.Count && series.PreparedLabels[pointIndex] != null ? series.PreparedLabels[pointIndex]!
             : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
         var description = series.Name + ", " + category + ": " + text;
         var metadata = new Dictionary<string, string> {

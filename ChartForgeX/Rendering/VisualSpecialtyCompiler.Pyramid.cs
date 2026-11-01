@@ -84,8 +84,8 @@ internal static partial class VisualSpecialtyCompiler {
         }
     }
 
-    private static string PyramidLabel(Chart chart, int index) => Category(chart, index) + ": "
-        + VisualStateSceneTools.Value(chart, chart.Series[0], index, chart.Series[0].RenderPoints[index].Y);
+    private static string PyramidLabel(Chart chart, int index) => chart.Series[0].PreparedLabel(index) ?? (Category(chart, index) + ": "
+        + VisualStateSceneTools.Value(chart, chart.Series[0], index, chart.Series[0].RenderPoints[index].Y));
 
     private static void PyramidLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartPyramidStageLayout stage,
         ChartDataLabelPlacement side, ChartDataLabelPlacement placement, ChartColor color, VisualThemeColors colors,
