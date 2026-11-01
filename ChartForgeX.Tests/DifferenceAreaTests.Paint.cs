@@ -1,6 +1,7 @@
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -33,7 +34,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(2, halves.Length);
         Assert.Equal(64, halves.Single(node => node.Role == "legend-difference-positive").Fill!.Value.A);
         Assert.Equal(0, halves.Single(node => node.Role == "legend-difference-negative").Fill!.Value.A);
-        Assert.Single(patterned.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "legend-entry");
+        Assert.Equal(2, patterned.Scene.Nodes.OfType<VisualSceneGroup>().Count(node => node.Role == "legend-entry"));
         Assert.Contains(patterned.Scene.Nodes, node => node.Role == "legend-area-pattern");
         // Hatching must change actual native swatch pixels even though glyphs are disabled.
         var swatch = halves.Single(node => node.Role == "legend-difference-positive").Bounds;
@@ -41,5 +42,25 @@ public sealed partial class DifferenceAreaTests {
         Assert.Contains(Enumerable.Range((int)Math.Ceiling(swatch.Top), (int)swatch.Height), y =>
             Enumerable.Range((int)Math.Ceiling(swatch.Left), (int)swatch.Width).Any(x =>
                 !Pixel(image, x, y).Equals(Pixel(patternedImage, x, y))));
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void BoundariesKeepDistinctColoursAndTheLegendNamesBothObservations(VisualThemeMode mode) {
+        var chart = Chart.Create().WithSize(600, 360).WithHeader(false).WithTheme(VisualTheme.Graphite(), mode)
+            .AddDifferenceArea("Requests", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5), new ChartDifferencePoint(2, 6, 4) });
+        chart.Series[0].ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var first = Boundary(prepared, "difference-first").Stroke!.Value; var second = Boundary(prepared, "difference-second").Stroke!.Value;
+        Assert.NotEqual((first.R, first.G, first.B), (second.R, second.G, second.B));
+        // The shading where Second leads takes Second's colour, so the legend swatch, line and area agree.
+        var negative = prepared.Scene.Nodes.OfType<VisualScenePath>().First(node => node.Role == "difference-negative").Fill!.Value;
+        Assert.Equal((second.R, second.G, second.B), (negative.R, negative.G, negative.B));
+        var entries = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "legend-entry").ToArray();
+        Assert.Equal(2, entries.Length);
+        var svg = prepared.ToSvg();
+        Assert.Contains(">Actual<", svg); Assert.Contains(">Forecast<", svg);
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 }
