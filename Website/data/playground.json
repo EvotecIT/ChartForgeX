@@ -1,19 +1,20 @@
 {
   "languages": [
     {
-      "id": "mermaid",
-      "label": "Mermaid"
-    },
-    {
       "id": "chartforgex",
       "label": "ChartForgeX markup"
+    },
+    {
+      "id": "mermaid",
+      "label": "Mermaid"
     }
   ],
-  "initial": "flowchart LR\n  alert([Alert raised]) --> triage{Known issue?}\n  triage -->|yes| runbook[Run the runbook]\n  triage -->|no| owner[Page the service owner]\n  runbook --> verify[Verify recovery]\n  owner --> fix[Ship a fix]\n  fix --> verify\n  verify --> close((Close))",
+  "initial": "```chartforgex chart v1 {#latency title=\"API latency by region\" type=\"smoothLine\"}\nsubtitle \"p95 response time over the last 12 weeks\"\n| Week | Europe | Americas | Asia Pacific |\n| ---- | ------ | -------- | ------------ |\n| W1   | 182    | 214      | 236          |\n| W2   | 176    | 206      | 229          |\n| W3   | 190    | 199      | 241          |\n| W4   | 168    | 203      | 222          |\n| W5   | 157    | 192      | 210          |\n| W6   | 149    | 181      | 204          |\n| W7   | 143    | 175      | 193          |\n| W8   | 139    | 168      | 186          |\n| W9   | 134    | 162      | 171          |\n| W10  | 131    | 158      | 166          |\n| W11  | 127    | 151      | 158          |\n| W12  | 124    | 147      | 152          |\nannotation hLine 160 \"Target 160 ms\"\noption yAxisTitle \"Milliseconds\"\noption yAxisMinimum 100\noption yAxisMaximum 260\n```",
   "bootNote": "The browser downloads the engine on first use and caches it for later visits. Rendering happens in your browser; nothing you type is sent anywhere.",
   "notes": [
     "This page runs ChartForgeX compiled to WebAssembly. The SVG you see is the same output a .NET application gets from the snippet beside this note.",
     "ChartForgeX markup is Markdown with chartforgex fences. Mermaid fences inside a markup document render too, so one document can hold charts, tables, flows and diagrams.",
+    "The chart options above the preview edit the markup itself. The source stays the only truth, so a copied link or the .NET snippet reproduces exactly what you see.",
     "Supported ZenUML, Agentflow and Railroad source renders through native diagram owners. The Mermaid support matrix records grammar and layout limits; unsupported constructs retain located diagnostics."
   ]
 }

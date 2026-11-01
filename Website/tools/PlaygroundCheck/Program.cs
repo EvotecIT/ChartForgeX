@@ -24,6 +24,14 @@ static string Text(JsonElement element, string name) =>
 using (var samplesDocument = JsonDocument.Parse(PlaygroundEngine.SamplesJson())) {
     if (samplesDocument.RootElement.GetArrayLength() != PlaygroundSamples.All.Count) failures.Add("Samples() JSON count does not match the sample list.");
 }
+
+// The page ships its starter source before the engine loads; it must stay the first chart sample.
+var pageData = Path.Combine("data", "playground.json");
+if (File.Exists(pageData)) {
+    using var page = JsonDocument.Parse(File.ReadAllText(pageData));
+    if (Text(page.RootElement, "initial") != PlaygroundSamples.All.First(sample => sample.Id == "cfx-line").Source)
+        failures.Add("data/playground.json 'initial' does not match the cfx-line sample.");
+}
 using (var info = JsonDocument.Parse(PlaygroundEngine.InfoJson())) {
     Console.WriteLine("Engine info: " + info.RootElement.GetRawText());
 }
