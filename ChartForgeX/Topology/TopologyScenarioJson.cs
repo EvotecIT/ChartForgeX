@@ -30,6 +30,10 @@ internal static class TopologyScenarioJson {
             if (!string.IsNullOrWhiteSpace(scenario.Color)) {
                 builder.Append(",\"color\":");
                 AppendJsonString(builder, scenario.Color!.Trim());
+                if (includeFlow) {
+                    builder.Append(",\"colorInk\":");
+                    AppendJsonString(builder, TopologyScenarioControlPaint.Ink(scenario.Color));
+                }
             }
 
             builder.Append(",\"stepCount\":").Append(scenario.Steps.Count.ToString(CultureInfo.InvariantCulture));

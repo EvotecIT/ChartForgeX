@@ -27,6 +27,7 @@
         label: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-label') || scenarioButton.textContent.trim() : scenarioSummary.label || scenarioId,
         description: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-description') : scenarioSummary.description || '',
         color: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-color') : scenarioSummary.color || '',
+        colorInk: scenarioButton ? (scenarioButton.style.getPropertyValue('--cfx-topology-scenario-ink') || scenarioButton.parentElement.style.getPropertyValue('--cfx-topology-scenario-ink')) : scenarioSummary.colorInk || '',
         stepCount: scenarioButton ? Number(attr(scenarioButton, 'data-cfx-scenario-step-count') || '0') : Number(scenarioSummary.stepCount || steps.length || 0),
         playbackDelayMilliseconds: scenarioButton ? Number(attr(scenarioButton, 'data-cfx-scenario-playback-delay') || '900') : Number(scenarioSummary.playbackDelayMilliseconds || 900),
         loopPlayback: scenarioButton ? attr(scenarioButton, 'data-cfx-scenario-loop') === 'true' : scenarioSummary.loopPlayback === true,
@@ -48,6 +49,7 @@
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
+        scenarioPanel.style.removeProperty('--cfx-topology-scenario-ink');
         if (title) title.textContent = uiText('All', 'All');
         if (meta) meta.textContent = uiText('TopologyAllRoutesVisible', 'All topology routes visible');
         if (stepsList) stepsList.replaceChildren();
@@ -58,6 +60,8 @@
       scenarioPanel.setAttribute('data-cfx-panel-active-scenario', route.scenarioId);
       if (route.color) scenarioPanel.style.setProperty('--cfx-topology-scenario-color', route.color);
       else scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
+      if (route.colorInk) scenarioPanel.style.setProperty('--cfx-topology-scenario-ink', route.colorInk);
+      else scenarioPanel.style.removeProperty('--cfx-topology-scenario-ink');
       if (title) title.textContent = route.label || route.scenarioId;
       if (meta) {
         const metadata = Object.entries(route.metadata).slice(0, 2).map(([key, value]) => key + ': ' + value);

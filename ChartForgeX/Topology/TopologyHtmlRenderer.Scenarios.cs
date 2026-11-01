@@ -13,7 +13,7 @@ public sealed partial class TopologyHtmlRenderer {
                 var active = string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal);
                 writer.StartElement("label")
                     .Attribute("data-cfx-topology-scenario-label", scenario.Id)
-                    .Attribute("style", string.IsNullOrWhiteSpace(scenario.Color) ? null : "--cfx-topology-scenario-color:" + scenario.Color!.Trim())
+                    .Attribute("style", TopologyScenarioControlPaint.Style(scenario.Color))
                     .EndStartElement();
                 writer.StartElement("input")
                     .Attribute("type", "checkbox")
@@ -59,7 +59,7 @@ public sealed partial class TopologyHtmlRenderer {
                 .Attribute("title", string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description)
                 .Attribute("aria-label", scenario.Label)
                 .Attribute("aria-pressed", active)
-                .Attribute("style", string.IsNullOrWhiteSpace(scenario.Color) ? null : "--cfx-topology-scenario-color:" + scenario.Color!.Trim())
+                .Attribute("style", TopologyScenarioControlPaint.Style(scenario.Color))
                 .EndStartElement()
                 .Text(scenario.Label)
                 .EndElement();
@@ -85,7 +85,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-topology-scenario-panel", "true")
             .Attribute("data-cfx-panel-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("aria-live", "polite")
-            .Attribute("style", activeScenario == null || string.IsNullOrWhiteSpace(activeScenario.Color) ? null : "--cfx-topology-scenario-color:" + activeScenario.Color!.Trim())
+            .Attribute("style", TopologyScenarioControlPaint.Style(activeScenario?.Color))
             .EndStartElement();
         writer.StartElement("div").Attribute("class", panelClass + "__summary").EndStartElement();
         writer.StartElement("div").Attribute("class", panelClass + "__title").Attribute("data-cfx-scenario-panel-title", "true").EndStartElement().Text(title).EndElement();

@@ -35,7 +35,7 @@
 .cfx-topology-scenario-panel__controls button:hover,.cfx-topology-scenario-panel__controls button:focus-visible,.cfx-topology-scenario-panel__controls button[aria-pressed='true']{border-color:var(--cfx-topology-scenario-color,#2563eb);color:var(--cfx-topology-scenario-color,#2563eb);background:#eff6ff}
 .cfx-topology-scenario-panel__steps{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
 .cfx-topology-scenario-panel__steps li{display:flex;align-items:center;gap:6px;min-height:24px;padding:3px 8px;border:1px solid rgba(148,163,184,.34);border-radius:6px;background:rgba(248,250,252,.82);cursor:pointer;font:700 11px/1.2 Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif;color:#0f172a}
-.cfx-topology-scenario-panel__steps li:before{content:attr(data-cfx-scenario-step-index);display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--cfx-topology-scenario-color,#2563eb);color:#fff;font-size:10px}
+.cfx-topology-scenario-panel__steps li:before{content:attr(data-cfx-scenario-step-index);display:inline-grid;place-items:center;width:16px;height:16px;box-sizing:border-box;border:1px solid var(--cfx-topology-control-text,#0f172a);border-radius:50%;background:var(--cfx-topology-scenario-color,#2563eb);color:var(--cfx-topology-scenario-ink,#fff);font-size:10px}
 .cfx-topology-scenario-panel__steps li[aria-current='step']{border-color:var(--cfx-topology-scenario-color,#2563eb);background:#eff6ff;color:#0f172a}
 .cfx-topology-force-controls{display:grid;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(148,163,184,.42);border-radius:8px;background:rgba(255,255,255,.9);box-shadow:0 10px 24px rgba(15,23,42,.07);color:#0f172a}
 .cfx-topology-force-controls__row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(118px,.25fr) minmax(140px,.35fr);gap:8px}
@@ -135,7 +135,7 @@
 .cfx-topology-scenario-panel__payload[data-cfx-scenario-interaction='failure']{border-left-color:#dc2626}
 .cfx-topology-scenario-panel__payload-route{font:700 12px/1.35 Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif;color:var(--cfx-topology-control-text,#0f172a)}
 .cfx-topology-scenario-panel__payload-body{margin:0;max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:500 12px/1.45 ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',monospace;color:var(--cfx-topology-control-text,#0f172a)}
-.cfx-topology-scenario-panel__steps li[data-cfx-scenario-step-interaction='failure']:before{background:#dc2626}
+.cfx-topology-scenario-panel__steps li[data-cfx-scenario-step-interaction='failure']:before{background:#dc2626;color:#fff}
 .cfx-topology-scenario-sequences{margin:12px 0 0}
 .cfx-topology-scenario-sequences figure{margin:0;overflow:hidden;border:1px solid var(--cfx-topology-control-border,rgba(148,163,184,.42));border-radius:8px}
 .cfx-topology-scenario-sequences svg{display:block;max-width:100%;height:auto;margin:0 auto}
@@ -149,10 +149,12 @@
 .cfx-topology-wrapper .cfx-topology-scenarios button:hover,.cfx-topology-wrapper .cfx-topology-scenario-panel__controls button:hover,.cfx-topology-wrapper .cfx-topology-scenario-panel__steps li:hover,.cfx-topology-wrapper .cfx-topology-scenarios button:focus-visible,.cfx-topology-wrapper .cfx-topology-scenario-panel__controls button:focus-visible,.cfx-topology-wrapper .cfx-topology-scenario-panel__steps li:focus-visible{border-color:var(--cfx-topology-scenario-color,#2563eb);background:var(--cfx-topology-control-bg-hover);outline:none}
 .cfx-topology-wrapper .cfx-topology-scenarios button[aria-pressed='true'],.cfx-topology-wrapper .cfx-topology-scenario-panel__controls button[aria-pressed='true'],.cfx-topology-wrapper .cfx-topology-scenario-panel__steps li[aria-current='step']{border-color:var(--cfx-topology-scenario-color,#2563eb);background:var(--cfx-topology-control-bg-hover);color:var(--cfx-topology-control-text)}
 .cfx-topology-wrapper .cfx-topology-scenario-panel__steps li[aria-current='step']:before{background:var(--cfx-topology-control-text);color:var(--cfx-topology-control-bg)}
-.cfx-topology-wrapper .cfx-topology-scenarios button:before{background:var(--cfx-topology-scenario-color,var(--cfx-topology-control-muted))}
+.cfx-topology-wrapper .cfx-topology-scenarios button:before{background:var(--cfx-topology-scenario-color,var(--cfx-topology-control-muted));box-shadow:0 0 0 1px var(--cfx-topology-control-text)}
 .cfx-topology-wrapper .cfx-topology-scenario-panel__payload{background:var(--cfx-topology-elevated,var(--cfx-topology-control-bg));border-color:var(--cfx-topology-control-border);border-left-color:var(--cfx-topology-scenario-color,#2563eb)}
 .cfx-topology-wrapper .cfx-topology-scenario-panel__payload-route,.cfx-topology-wrapper .cfx-topology-scenario-panel__payload-body{color:var(--cfx-topology-control-text)}
 .cfx-topology-wrapper .cfx-topology-scenario-panel__scrubber{accent-color:var(--cfx-topology-scenario-color,#2563eb)}
+.cfx-topology-scenario-panel__scrubber::-webkit-slider-thumb{border-radius:50%;outline:1px solid var(--cfx-topology-control-text,#0f172a)}
+.cfx-topology-scenario-panel__scrubber::-moz-range-thumb{border-radius:50%;outline:1px solid var(--cfx-topology-control-text,#0f172a)}
 .cfx-topology-wrapper .cfx-topology-scenario-sequences figure{background:var(--cfx-topology-canvas,transparent);border-color:var(--cfx-topology-control-border)}
 /* Playback pages keep the topology's text at the sequence diagram's size: fit down to 87.5 %, then scroll inside the frame. */
 .cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-viewport{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;direction:ltr}
