@@ -60,19 +60,21 @@ internal static class ChartWordCloudLayout {
         // Greedy placement can let the first few words consume the canvas. Retry
         // the whole cloud at a smaller common scale, retaining the fullest layout.
         for (var pass = 0; pass <= 6; pass++) {
-            var candidate = Place(Math.Pow(.85, pass));
+            var candidate = Place(Math.Pow(.85, pass), out var allAtMinimum);
             if (candidate.Count > best.Count) best = candidate;
-            if (best.Count == values.Length) break;
+            if (best.Count == values.Length || allAtMinimum) break;
         }
         return best;
 
-        List<ChartWordCloudTerm> Place(double cloudScale) {
+        List<ChartWordCloudTerm> Place(double cloudScale, out bool allAtMinimum) {
+            allAtMinimum = true;
             var placed = new List<ChartWordCloudTerm>();
             var bounds = new List<ChartRect>();
             foreach (var item in values) {
                 var text = WordLabel(chart, item.Point.X, item.Index);
                 var ratio = max <= min ? 1 : (item.Point.Y - min) / (max - min);
                 var preferredFontSize = Math.Max(minFontSize, (minFontSize + Math.Sqrt(Math.Max(0, ratio)) * (maxFontSize - minFontSize)) * cloudScale);
+                allAtMinimum &= preferredFontSize <= minFontSize;
                 var angle = angles[item.Index % angles.Length];
                 for (var sizeAttempt = 0; sizeAttempt <= 8; sizeAttempt++) {
                     var fontSize = sizeAttempt == 8 ? minFontSize : Math.Max(minFontSize, preferredFontSize * (1 - sizeAttempt * .08));

@@ -32,7 +32,7 @@ internal static partial class TopologyLayoutEngine {
         }
         void Place(TopologyNode node, double left) {
             var center = left + Span(node) / 2;
-            if (horizontal) node.Y = center - node.Height / 2;
+            if (horizontal) node.Y = center - LayeredNodeHeight(chart, node) / 2 + TopologyNodeFootprint.TopInset(chart, node);
             else node.X = center - node.Width / 2;
             if (!children.TryGetValue(node.Id, out var reports)) return;
             var breadth = reports.Sum(Span) + (reports.Length - 1) * gap;

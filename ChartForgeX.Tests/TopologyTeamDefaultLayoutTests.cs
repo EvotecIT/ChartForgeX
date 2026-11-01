@@ -1,9 +1,35 @@
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class TopologyTeamDefaultLayoutTests {
+    [Theory]
+    [InlineData(TopologyCaptionPlacement.Top)]
+    [InlineData(TopologyCaptionPlacement.Bottom)]
+    public void HorizontalTeamReservesUnequalExternalCaptionFootprints(TopologyCaptionPlacement placement) {
+        var chart = TopologyChart.Create().WithViewport(960, 800).WithLegend(null).AddTeam("team", "Team", new[] {
+            new TopologyTeamMember("manager", "Manager"),
+            new TopologyTeamMember("first", placement == TopologyCaptionPlacement.Top ? "Local" : "Regional\nsupport\nreporting") { ParentId = "manager" },
+            new TopologyTeamMember("second", placement == TopologyCaptionPlacement.Top ? "Regional\nsupport\nreporting" : "Local") { ParentId = "manager" }
+        }, new TopologyTeamOptions { IncludeTeamNode = false, NodeDisplayMode = TopologyNodeDisplayMode.Icon, LayoutDirection = TopologyLayoutDirection.LeftToRight });
+        foreach (var node in chart.Nodes.Where(node => node.Id != "manager")) {
+            node.Width = 160; node.Height = 64; node.MaximumTextWidth = 200;
+            node.CaptionPlacement = placement; node.CaptionGap = 8; node.CaptionSurface = TopologyCaptionSurface.Plain;
+            node.CaptionTextStyle = new TextStyleOverride { FontSize = node.Label.Contains('\n') ? 24 : 14 };
+        }
+        var layout = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions {
+            IncludeLegend = false, FitContentToViewport = false, IncludeIconLabels = true, MaxNodeLabelLines = 3
+        });
+        var reports = layout.Nodes.Where(node => node.Id != "manager").OrderBy(node => node.Y).ToArray();
+        var footprints = reports.Select(node => TopologyNodeFootprint.RenderedBounds(node, layout.RenderOptions!)!.Value).ToArray();
+        Assert.True(footprints.Max(box => box.Bottom - box.Y) - footprints.Min(box => box.Bottom - box.Y) > 56);
+        Assert.True(footprints[0].Bottom <= footprints[1].Y, "Horizontal sibling captions must remain inside disjoint reserved footprints.");
+        var manager = layout.Nodes.Single(node => node.Id == "manager");
+        Assert.Equal((footprints[0].Y + footprints[1].Bottom) / 2, manager.Y + manager.Height / 2, 6);
+    }
+
     [Fact]
     public void DefaultOrganizationKeepsManagersInOneBandAndReportsUnderTheirManager() {
         var chart = TopologyChart.Create().WithViewport(960, 520).WithLegend(null).AddTeam("team", "Team", new[] {
