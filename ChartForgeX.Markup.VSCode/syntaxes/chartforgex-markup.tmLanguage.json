@@ -35,8 +35,16 @@
     "keywords": {
       "patterns": [
         {
-          "match": "\\b(id|title|subtitle|viewport|layout|direction|legend|groups?|boundary|nodes?|edges?|connect|usecase|story|visit|json|xml|text|end)\\b",
+          "match": "(?i)\\b(id|title|subtitle|type|kind|size|viewport|layout|direction|legend|labels|categories|values?|series|annotation|option|options|theme|theme[-_]?mode|gauge[-_]?minimum|gauge[-_]?maximum|candles?|items?|flows?|groups?|boundary|nodes?|edges?|connect|usecase|story|visit|json|xml|text|end)\\b",
           "name": "keyword.control.chartforgex-markup"
+        },
+        {
+          "match": "(?i)\\b(stacked[-_]?bar|stacked[-_]?horizontal[-_]?bar|percent[-_]?stacked[-_]?bar|percent[-_]?stacked[-_]?horizontal[-_]?bar|percent[-_]?stacked[-_]?area|smooth[-_]?percent[-_]?stacked[-_]?area|heatmap|gauge|linear[-_]?gauge|candlestick|ohlc|treemap|sankey|chord|smooth[-_]?stacked[-_]?area|stacked[-_]?area|smooth[-_]?line|step[-_]?line|smooth[-_]?area|step[-_]?area|horizontal[-_]?bar|bar|column|hbar|line|area|scatter|lollipop|dumbbell|waterfall|pie|donut|polar[-_]?area|polar|radar|funnel|pyramid)\\b",
+          "name": "storage.type.chartforgex-markup"
+        },
+        {
+          "match": "(?i)\\b(Graphite|Report|Executive|Product|Accessible|Colorblind|Aurora|Editorial|Candy|People[-_]?Infographic|Terminal|Transparent[-_]?Overlay|Minimal|Dashboard|Saas[-_]?Dashboard|Restaurant[-_]?Dashboard|light|dark)\\b",
+          "name": "constant.language.chartforgex-markup"
         },
         {
           "match": "\\b(healthy|warning|critical|unknown|disabled|layered|densegrouped|geographic|forcedirected|lr|rl|tb|bt)\\b",
@@ -51,7 +59,7 @@
     "attributes": {
       "patterns": [
         {
-          "match": "\\b[a-zA-Z][a-zA-Z0-9_-]*(?=:)",
+          "match": "\\b[a-zA-Z][a-zA-Z0-9_-]*(?=[:=])",
           "name": "entity.other.attribute-name.chartforgex-markup"
         },
         {

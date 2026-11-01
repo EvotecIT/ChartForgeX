@@ -51,10 +51,80 @@ Core commands:
 | `values <number...>` | Adds one unnamed/default series. |
 | `value <label> <number>` | Adds one labeled value to the default series. |
 | `series <name> type <kind> values <number...> [color <hex>]` | Adds or extends a named series. |
+| `series "Name"` | Sets the single series name for default numeric data or typed chart data. |
+| `candle <x> <open> <high> <low> <close>` | Adds a typed financial record for `candlestick` or `ohlc`. |
+| `item <id> "Label" [parent=<id>] [value=<number>] [colorValue=<number>]` | Adds a typed treemap hierarchy item. Omitted value remains null for a group. |
+| `node <id> "Label"` | Declares a node for `sankey` or `chord`. |
+| `flow <id> <source> <target> <value> [colorValue=<number>]` | Adds a directed relationship for `sankey` or `chord`. |
 | `annotation <kind> <start> [end] [label] [id=<source-id>] [color=<hex>] [opacity=<number>]` | Adds a line or band annotation. An optional ID uses the native trimmed, case-sensitive identity and must be unique within the chart. |
 | `option <name> <value>` | Applies a supported chart render option. |
+| `theme <preset-or-mode>` | Selects a preset, or changes only the mode with `light` or `dark`. |
+| `themeMode light\|dark` | Sets the mode independently of the preset. |
+| `gaugeMinimum <number>` / `gaugeMaximum <number>` | Sets the gauge range; defaults are 0 and 100. Also accepted as options. |
+| `end` | Leaves a chart table section and resumes ordinary commands. |
 
-Pipe-table data is supported. If a table has a `value` column, it becomes a single-series chart. Otherwise the first label/category/name column becomes the x-axis and numeric columns become named series.
+### Numeric Chart Types
+
+| Family | Types |
+| --- | --- |
+| Bars | `bar` (`column`), `horizontalbar` (`hbar`), `stackedbar`, `stackedhorizontalbar`, `percentstackedbar`, `percentstackedhorizontalbar` |
+| Lines and areas | `line`, `smoothline`, `stepline`, `area`, `smootharea`, `steparea`, `stackedarea`, `smoothstackedarea`, `percentstackedarea`, `smoothpercentstackedarea` |
+| Point and comparison | `scatter`, `lollipop`, `dumbbell`, `waterfall` |
+| Radial and parts | `pie`, `donut`, `polar`, `polararea`, `radar`, `funnel`, `pyramid` |
+| Matrix and indicators | `heatmap`, `gauge`, `lineargauge` |
+
+Type names normalize case, hyphens and underscores. For example, `stacked-horizontal-bar` selects `stackedhorizontalbar` and `smoothPercentStackedArea` selects `smoothpercentstackedarea`.
+
+Numeric data tables retain their label-plus-series shape. If a table has a `value` column, it becomes a single-series chart. Otherwise the first label/category/name column becomes the x-axis and each numeric column becomes a named series. Numeric table rows require a value in every series column; blank or omitted cells produce a located diagnostic instead of shifting later observations. Default `values`/`value` declarations cannot be combined with named numeric series. For heatmaps each series is a row; labels supply category positions. Percent-stacked types normalize numeric values within each stack; every member of a stack must use the same units. Heatmap series cannot be mixed with other chart kinds. Gauge types require exactly one series with one value, so a gauge table has one numeric series column and one data row.
+
+`gaugeMinimum` and `gaugeMaximum` default to 0 and 100. Both must be finite and the maximum must exceed the minimum. Use direct commands, `option gaugeMinimum 0` / `option gaugeMaximum 200`, or rows in an `options:` table. These options describe the native gauge range rather than Cartesian axis bounds.
+
+### Typed Chart Data
+
+`candlestick`, `ohlc`, `treemap`, `sankey`, and `chord` use typed data. Set the chart type and optionally declare one name with `series "Name"`. Numeric `values` or multi-series numeric tables do not substitute for typed facts, and `series "Name" type treemap values ...` is invalid.
+
+| Type | Command data | Table section and columns |
+| --- | --- | --- |
+| `candlestick`, `ohlc` | `candle X OPEN HIGH LOW CLOSE` | `candles:` — `x`, `open`, `high`, `low`, `close` |
+| `treemap` | `item ID "LABEL" [parent=ID] [value=NUMBER] [colorValue=NUMBER]` | `items:` — `id`, `label`, optional `parent`, `value`, `colorValue` |
+| `sankey`, `chord` | `node ID "LABEL"`; `flow ID SOURCE TARGET VALUE [colorValue=NUMBER]` | `nodes:` — `id`, `label`; `flows:` — `id`, `source`, `target`, `value`, optional `colorValue` |
+
+Typed tables use a header row and an optional Markdown separator row. A new section starts another table; use `end` before returning to unrelated chart commands. Financial x values and OHLC fields are numeric and map to native `ChartCandlestick` records, including their high/low and finite-number validation.
+
+Treemap items map to native `ChartHierarchyItem` records. An omitted or empty parent means a root. An omitted or empty value remains null for a group; leaf values supply area. Empty optional color values are allowed. IDs identify items, and a parent must reference a declared item. For example:
+
+````markdown
+```chartforgex chart v1
+type treemap
+series "Checks"
+items:
+| id | label | parent | value | colorValue |
+| --- | --- | --- | --- | --- |
+| runtime | Runtime | | | |
+| windows | Windows | runtime | 42 | 96 |
+| linux | Linux | runtime | 34 | 92 |
+end
+```
+````
+
+Sankey and Chord share native `ChartNode` and `ChartFlowLink` facts. Nodes and flows each need unique IDs; flow endpoints reference declared nodes. Values and optional color values undergo native validation. A flow's ID is separate from its source and target, preserving individual relationships. Chord supports parallel, reciprocal, self and zero flows and empty-chart no-data behavior. `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` and `chordRibbonTension` remain Chord-specific; see [typed Chord markup](chord.md#typed-chart-markup).
+
+### Chart Themes
+
+`theme` and `themeMode` are supported as direct commands, `option` lines, `options:` table rows, and opening-fence attributes. Payload commands take precedence over fence attributes. `theme PRESET` selects the preset; `theme light` or `theme dark` changes only the mode. `themeMode light|dark` selects the mode independently:
+
+````markdown
+```chartforgex chart v1 {theme=Report themeMode=dark}
+type gauge
+series "Ready" values 78
+```
+````
+
+The supported presets are `Graphite`, `Report`, `Executive`, `Product`, `Accessible`, `Colorblind`, `Aurora`, `Editorial`, `Candy`, `PeopleInfographic`, `Terminal`, `TransparentOverlay`, `Minimal`, `Dashboard`, `SaasDashboard`, and `RestaurantDashboard`. Names normalize case, hyphens and underscores; `saas-dashboard` selects `SaasDashboard`.
+
+### Chart Validation And Diagnostics
+
+The parser constructs native ChartForgeX series and typed records, preserving the native financial, hierarchy, relationship and gauge validation contracts. Invalid numeric values, unsupported types or themes, malformed commands, incompatible data declarations, duplicate IDs, unresolved references and invalid native models produce `MarkupDiagnostic` entries. Parsing errors identify their source command or table row; whole-chart validation can use the opening fence line. Hosts must inspect `HasErrors` and `Diagnostics` before exporting artifacts. The schema mirrors and TextMate grammar support authoring; they do not validate native data or replace runtime diagnostics.
 
 ## Timeline
 
