@@ -32,6 +32,6 @@ internal static partial class VisualMatrixCompiler {
         var scale = chart.Options.HeatmapColorScale!;
         VisualColorScaleLegendScene.Draw(builder, scale, presentation.Labels, ColorScaleStyle(chart, context), context.Theme.Spacing / 2,
             bounds, min, max, prefix, missing, missingBlend ?? ChartColorScaleSurface.NoData(scale, context.Theme.Resolve(context.ThemeMode)),
-            presentation.ScaleValues, hasDomain: hasDomain, heading: presentation.HasName ? presentation.Name : null, valueName: presentation.HasOverrides ? presentation.Name : null, legendStyle: presentation.LegendStyle, unit: KeyUnit(chart, presentation));
+            presentation.ScaleValues, hasDomain: hasDomain, heading: presentation.HasName ? presentation.Name : null, valueName: presentation.HasOverrides ? presentation.Name : null, legendStyle: presentation.LegendStyle, unit: KeyUnit(chart, presentation), showStepLabels: chart.Options.ShowHeatmapScaleStepLabels);
     }
 }

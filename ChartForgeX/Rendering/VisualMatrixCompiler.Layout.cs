@@ -231,16 +231,22 @@ internal static partial class VisualMatrixCompiler {
             if (nonZero.Length == 0) return;
             var area = new ChartRect(scaleLeft + zeroWidth, bounds.Top, rampWidth, bounds.Height);
             var width = area.Width / 5; var left = area.Left;
+            var steps = Enumerable.Range(0, 5).Select(index => ChartHeatmapSurface.InterpolateObservedRange(floor, max, index / 4d)).ToArray();
+            var captions = presentation.ScaleValues(steps);
             for (var index = 0; index < 5; index++) {
-                var value = ChartHeatmapSurface.InterpolateObservedRange(floor, max, index / 4d);
+                var value = steps[index];
                 var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
                 var box = new ChartRect(left + index * width, bounds.Top, Math.Max(0, width - 2), swatch);
-                var label = presentation.Value(value);
+                var label = captions[index];
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-" + index, "heatmap-scale-step", box, label,
                     ScaleMetadata(value, ChartHeatmapSurface.Ratio(chart, value, min, max)))) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
             }
-            VisualStateSceneTools.Text(builder, presentation.Value(floor), new ChartRect(area.Left, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
-            VisualStateSceneTools.Text(builder, presentation.Value(max), new ChartRect(area.Left + area.Width / 2, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
+            VisualStateSceneTools.Text(builder, captions[0], new ChartRect(area.Left, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
+            VisualStateSceneTools.Text(builder, captions[4], new ChartRect(area.Left + area.Width / 2, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
+            if (chart.Options.ShowHeatmapScaleStepLabels && floor != max)
+                VisualColorScaleLegendScene.StepLabels(builder, steps.Select((_, index) => left + (index + .5) * width).ToArray(), captions, style,
+                    new ChartRect(area.Left, bounds.Top + swatch, area.Width, textHeight), builder.MeasureText(captions[0], style).Width,
+                    builder.MeasureText(captions[4], style).Width, context.Theme.Spacing / 2, "heatmap-scale");
         }
         Dictionary<string, string> ScaleMetadata(double value, double ratio) {
             var metadata = new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value) };

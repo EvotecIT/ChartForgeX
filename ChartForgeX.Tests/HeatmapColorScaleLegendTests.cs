@@ -12,6 +12,39 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks measured keys, exact numeric intervals, native paint and calendar missing-day separation.</summary>
 public sealed class HeatmapColorScaleLegendTests {
+    [Theory]
+    [InlineData(true, "5", "10", "15")]
+    [InlineData(false, "12.5", "15", "17.5")]
+    public void IntermediateStepCaptionsFitWithoutOverlap(bool configured, string first, string middle, string last) {
+        var chart = ContinuousKey(configured);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
+        Assert.Contains(labels, node => node.Id == "heatmap-scale-label-step-1" && node.Text.Lines.Single().Text == first);
+        Assert.Contains(labels, node => node.Id == "heatmap-scale-label-step-2" && node.Text.Lines.Single().Text == middle);
+        Assert.Contains(labels, node => node.Id == "heatmap-scale-label-step-3" && node.Text.Lines.Single().Text == last);
+        // Endpoint regions reserve half the rail, so compare actual painted text footprints.
+        var ink = labels.Select(node => (Left: node.LineLeft(node.Text.Lines[0]), Right: node.LineLeft(node.Text.Lines[0]) + node.Text.Metrics.Width))
+            .OrderBy(box => box.Left).ToArray();
+        for (var index = 1; index < ink.Length; index++) Assert.True(ink[index - 1].Right <= ink[index].Left);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void StepCaptionOptOutKeepsEndpointCaptions(bool configured) {
+        var chart = ContinuousKey(configured).WithHeatmapScaleStepLabels(false);
+        var labels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>()
+            .Where(node => node.Role == "heatmap-scale-label").ToArray();
+        Assert.Equal(2, labels.Length);
+        Assert.DoesNotContain(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>(),
+            node => node.Id?.StartsWith("heatmap-scale-label-step-", StringComparison.Ordinal) == true);
+    }
+
+    private static Chart ContinuousKey(bool configured) {
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 10, 20).WithSize(800, 440);
+        return configured ? chart.WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")).WithValueRange(0, 20)) : chart;
+    }
     private static readonly ChartColor Low = ChartColor.FromHex("#DAE8F8"), Middle = ChartColor.FromHex("#6F9ECE"), High = ChartColor.FromHex("#1C5CAB");
 
     [Theory]

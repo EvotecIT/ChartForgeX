@@ -106,6 +106,9 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart WithHeatmapColorScale(ChartColorScale? scale) { Options.HeatmapColorScale = scale; return this; }
 
+    /// <summary>Shows automatic intermediate numeric heatmap key labels where they fit, or retains endpoint labels only.</summary>
+    public Chart WithHeatmapScaleStepLabels(bool visible = true) { Options.ShowHeatmapScaleStepLabels = visible; return this; }
+
     /// <summary>
     /// Sets whether heatmap column labels should be rendered.
     /// </summary>

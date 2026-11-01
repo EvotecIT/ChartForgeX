@@ -95,7 +95,7 @@ internal static partial class VisualColorScaleLegendScene {
         ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
         bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
-        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null) {
+        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null, bool showStepLabels = false) {
         if (scale.Captions.Count > 0) {
             DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingBlend, formatValues,
                 diagnosticCode, hasDomain, missingBounds, heading, valueName, legendStyle);
@@ -193,6 +193,20 @@ internal static partial class VisualColorScaleLegendScene {
                         new ChartRect(bounds.Left, y + swatchHeight + gap / 2, bounds.Width / 2, row), "low", TextAlignment.Left);
                     Caption((scale.HighLabel ?? labels.More) + " · " + endpoints[1],
                         new ChartRect(bounds.Left + bounds.Width / 2, y + swatchHeight + gap / 2, bounds.Width / 2, row), "high", TextAlignment.Right);
+                    if (showStepLabels && steps[0] != steps[steps.Length - 1]) {
+                        var positions = steps.Select((value, index) => legendStyle == ChartColorLegendStyle.Gradient
+                            ? bounds.Left + bounds.Width * ChartMath.Normalize(value, scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))
+                            : bounds.Left + (index + .5) * width).ToArray();
+                        ChartRect? midpoint = null;
+                        if (inlineMidpoint) {
+                            var size = builder.MeasureText(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0], style);
+                            midpoint = new ChartRect(midpointX - size.Width / 2, y + swatchHeight + gap / 2, size.Width, row);
+                        }
+                        StepLabels(builder, positions, formatValues(steps), style,
+                            new ChartRect(bounds.Left, y + swatchHeight + gap / 2, bounds.Width, row),
+                            builder.MeasureText((scale.LowLabel ?? labels.Less) + " · " + endpoints[0], style).Width,
+                            builder.MeasureText((scale.HighLabel ?? labels.More) + " · " + endpoints[1], style).Width, gap, prefix, midpoint);
+                    }
                     if (inlineMidpoint) Midpoint(y + swatchHeight + gap / 2);
                 }
                 y += rows * pitchY;

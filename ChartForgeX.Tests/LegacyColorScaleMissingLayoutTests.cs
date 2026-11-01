@@ -112,7 +112,8 @@ public sealed class LegacyColorScaleMissingLayoutTests {
             .Where(node => node.Role is "heatmap-scale-title" or "heatmap-scale-label").ToArray();
         var labels = text.Where(node => node.Role == "heatmap-scale-label").ToArray();
         Assert.Equal(new[] { "Cold · -20,0 °C", "Freezing · 0,0 °C", "Warm · 40,0 °C", missing }.OrderBy(value => value),
-            labels.Select(node => node.Text.Lines[0].Text).OrderBy(value => value));
+            labels.Where(node => !node.Id!.StartsWith("heatmap-scale-label-step-", StringComparison.Ordinal))
+                .Select(node => node.Text.Lines[0].Text).OrderBy(value => value));
         Assert.Equal(heading, prepared.Regions.Single(region => region.Role == "heatmap-scale-title").Label);
         var title = Assert.Single(text, node => node.Role == "heatmap-scale-title");
         var noData = Assert.Single(labels, node => node.Id == "heatmap-scale-label-missing");
