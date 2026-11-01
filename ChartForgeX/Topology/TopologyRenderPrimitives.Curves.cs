@@ -35,7 +35,12 @@ internal static partial class TopologyRenderPrimitives {
             first.AddRange(last.Skip(1)); return first;
         }
         StandardCurveControlPoints(points, out var firstControl, out var secondControl, sourcePort, targetPort);
-        return CubicCurveSamplePoints(points[0], firstControl, secondControl, points[1], segments);
+        var sampled = CubicCurveSamplePoints(points[0], firstControl, secondControl, points[1], segments);
+        if (TopologyNodeShapeGeometry.IsActor(source) || TopologyNodeShapeGeometry.IsActor(target)) return sampled;
+        var clear = TopologyEdgeRouter.RefineBodyClearance(chart, edge, source, target, sampled, EdgeRouteLane(chart, edge), avoidOwnerReentries: true);
+        if (ReferenceEquals(clear, sampled)) return sampled;
+        var options = chart.RenderOptions ?? chart.ResolveRenderOptions(null);
+        return RoundedOrthogonalRoutePoints(clear, options.EdgeCornerRadius * TopologyPreparedEdgePlan.Units(edge));
     }
 
     // Attachment and controls must use the same node centers, rather than inferring a second side from clipped endpoints.

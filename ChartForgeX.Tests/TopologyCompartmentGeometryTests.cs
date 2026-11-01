@@ -52,6 +52,10 @@ public sealed class TopologyCompartmentGeometryTests {
         Assert.True(Outward(points[0], points[1], sourcePort) > Crosswise(points[0], points[1], sourcePort));
         var arrival = targetPort == TopologyEdgePort.Auto ? TopologyEdgePort.Left : targetPort;
         Assert.True(Outward(points[^1], points[^2], arrival) > Crosswise(points[^1], points[^2], arrival));
+        foreach (var point in points.Skip(1).Take(points.Count - 2)) foreach (var node in chart.Nodes)
+            Assert.False(point.X > node.X + .01 && point.X < node.X + node.Width - .01
+                && point.Y > node.Y + .01 && point.Y < node.Y + node.Height - .01,
+                "A curved route must stay outside both endpoint node bodies.");
     }
 
     private static VisualRenderContext Context(double width, double height) => new(
