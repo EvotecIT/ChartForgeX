@@ -10,8 +10,18 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
+    private static ChartValueFormat FunnelPercentageFormat(Chart chart) {
+        var points = chart.Series[0].RenderPoints;
+        var ratios = new List<double>();
+        for (var index = 0; index < points.Count; index++) {
+            if (points[0].Y > 0) ratios.Add(points[index].Y / points[0].Y);
+            if (index > 0 && points[index - 1].Y > 0) ratios.Add((points[index - 1].Y - points[index].Y) / points[index - 1].Y);
+        }
+        return ChartValueFormat.Percentages(chart.Options.ValueFormat, ratios);
+    }
     private static void Funnel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
+        var percentages = FunnelPercentageFormat(chart);
         var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var form = chart.Options.Funnel.Form;
         var separate = show && chart.Options.Funnel.LabelContent == ChartStageLabelContent.Separate
@@ -52,8 +62,8 @@ internal static partial class VisualSpecialtyCompiler {
             if (retention.HasValue) metadata["data-cfx-retention"] = N(retention.Value);
             if (drop.HasValue) metadata["data-cfx-dropoff"] = N(drop.Value);
             var summary = Category(chart, index) + ": " + VisualStateSceneTools.Value(chart, series, index, raw);
-            if (retention.HasValue) summary += ", retained " + retention.Value.ToString("0.#%", CultureInfo.InvariantCulture);
-            if (drop.HasValue) summary += ", drop-off " + drop.Value.ToString("0.#%", CultureInfo.InvariantCulture);
+            if (retention.HasValue) summary += ", retained " + percentages.FormatFraction(retention.Value);
+            if (drop.HasValue) summary += ", drop-off " + percentages.FormatFraction(drop.Value);
             using (Point(chart, builder, index, "funnel-stage", stage.Bounds, summary, metadata)) {
                 if (form == ChartFunnelForm.Cone) {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
@@ -119,8 +129,9 @@ internal static partial class VisualSpecialtyCompiler {
         var bounds = stage.LabelBounds;
         var metricsBounds = stage.MetricsBounds;
         var metricsStyle = Style(chart, context, index, colors.MutedForeground);
-        var metrics = (retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
-            + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
+        var percentages = FunnelPercentageFormat(chart);
+        var metrics = (retention.HasValue ? percentages.FormatFraction(retention.Value) + " retained" : "No initial baseline")
+            + (index == 0 ? "" : "\n" + (drop.HasValue ? percentages.FormatFraction(drop.Value) + " drop-off" : "No previous baseline"));
         var displayed = text;
         var measured = builder.MeasureText(text, style);
         double Fit(ChartRect box) => Math.Min(box.Width / Math.Max(1, measured.Width), box.Height / Math.Max(1, measured.Height));
@@ -159,17 +170,25 @@ internal static partial class VisualSpecialtyCompiler {
             if (!inside) style = Style(chart, context, index, colors.Foreground);
         }
         var railCaption = false;
+        ChartRect? relocatedRatioBounds = null;
         if (form == ChartFunnelForm.Cone && chart.Options.Funnel.Orientation == ChartOrientation.Vertical && metricsBounds.Width > 0) {
             var readable = style.Clone(); readable.FontSize = Math.Min(10, style.EffectiveFontSize);
             var lineHeight = builder.MeasureText(text, readable).Height;
             // A dense stage gives a useful category and raw value first use of its rail.
             // Ratio descriptors remain available when that space cannot paint both.
-            if (lineHeight > bounds.Height && lineHeight <= metricsBounds.Height) {
+            if ((lineHeight > bounds.Height || builder.MeasureText(text, readable).Width > bounds.Width) && lineHeight <= metricsBounds.Height) {
                 var suffix = ": " + value;
                 var category = ChartTextFitting.FitEnd(Category(chart, index),
                     prefix => builder.MeasureText(prefix + suffix, readable).Width <= metricsBounds.Width, "…");
                 if (category.Length > 0 && category != "…") {
                     displayed = category + suffix; bounds = metricsBounds; style = readable; railCaption = true;
+                    var ratioSize = builder.MeasureText(metrics, metricsStyle);
+                    var separation = Math.Min(context.Theme.Spacing / 4, 3);
+                    if (index > 0 && lineHeight + separation + ratioSize.Height <= metricsBounds.Height) {
+                        bounds = new ChartRect(bounds.Left, bounds.Top, bounds.Width, lineHeight);
+                        relocatedRatioBounds = new ChartRect(metricsBounds.Left, bounds.Bottom + separation, metricsBounds.Width,
+                            metricsBounds.Bottom - bounds.Bottom - separation);
+                    }
                     if (bounds.Left > stage.LineEnd.X + context.Theme.Spacing)
                         VisualStateSceneTools.Connector(builder, chart.Options, stage.LineEnd,
                             new ChartPoint(bounds.Left - context.Theme.Spacing / 4, stage.LineEnd.Y), colors.MutedForeground);
@@ -182,9 +201,9 @@ internal static partial class VisualSpecialtyCompiler {
                 : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel",
             displayedText: railCaption ? displayed : null);
         if (index > 0 && metricsBounds.Width > 0 && metricsBounds.Height > 0) {
-            var ratioBounds = railCaption
+            var ratioBounds = relocatedRatioBounds ?? (railCaption
                 ? new ChartRect(metricsBounds.Left, metricsBounds.Top, metricsBounds.Width, 0)
-                : metricsBounds;
+                : metricsBounds);
             StageText(builder, metrics, ratioBounds, metricsStyle,
                 "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
                 VisualChartPaint.Text(metricsStyle), "funnel");

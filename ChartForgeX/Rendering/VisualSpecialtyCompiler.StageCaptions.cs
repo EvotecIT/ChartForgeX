@@ -29,6 +29,7 @@ internal static partial class VisualSpecialtyCompiler {
             Horizontal = (funnel ? chart.Options.Funnel.Orientation : chart.Options.Pyramid.Orientation) == ChartOrientation.Horizontal;
             Frame = plot;
             _gap = context.Theme.Spacing / 4;
+            var percentages = funnel ? FunnelPercentageFormat(chart) : null;
             for (var index = 0; index < series.RenderPoints.Count; index++) {
                 var raw = series.RenderPoints[index].Y;
                 Add(index, "category", Category(chart, index), funnel ? chart.Options.Funnel.CategoryLabel : chart.Options.Pyramid.CategoryLabel, false);
@@ -37,8 +38,8 @@ internal static partial class VisualSpecialtyCompiler {
                 var retention = series.RenderPoints[0].Y > 0 ? raw / series.RenderPoints[0].Y : (double?)null;
                 var previous = index > 0 ? series.RenderPoints[index - 1].Y : 0;
                 var drop = index > 0 && previous > 0 ? (previous - raw) / previous : (double?)null;
-                Add(index, "retention", retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline", chart.Options.Funnel.RetentionLabel, false);
-                Add(index, "dropoff", drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline", chart.Options.Funnel.DropOffLabel, false);
+                Add(index, "retention", retention.HasValue ? percentages!.FormatFraction(retention.Value) + " retained" : "No initial baseline", chart.Options.Funnel.RetentionLabel, false);
+                if (index > 0) Add(index, "dropoff", drop.HasValue ? percentages!.FormatFraction(drop.Value) + " drop-off" : "No previous baseline", chart.Options.Funnel.DropOffLabel, false);
             }
             var leading = 0d; var trailing = 0d;
             foreach (var item in Items) {
@@ -58,7 +59,7 @@ internal static partial class VisualSpecialtyCompiler {
                 if (!policy.Visible) return;
                 var inherited = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
                 var placement = policy.Placement ?? inherited;
-                if (placement == ChartDataLabelPlacement.Auto) placement = inside ? ChartDataLabelPlacement.Inside
+                if (placement == ChartDataLabelPlacement.Auto) placement = inside && !_cone ? ChartDataLabelPlacement.Inside
                     : Horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 if (placement == ChartDataLabelPlacement.Outside) placement = Horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 var contained = placement is ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center;
@@ -167,7 +168,8 @@ internal static partial class VisualSpecialtyCompiler {
             foreach (var item in captions) {
                 var placed = item.Placed!; var id = Id(index) + "-" + item.Component + "-label";
                 var bounds = placed.IsDropped ? new ChartRect(placed.Request.Anchor.X, placed.Request.Anchor.Y, 0, 0) : placed.Bounds;
-                if (placed.HasLeaderLine) VisualStateSceneTools.Connector(builder, chart.Options, placed.Request.Anchor, placed.LeaderEnd, colors.MutedForeground);
+                if (placed.HasLeaderLine) VisualStateSceneTools.Connector(builder, chart.Options, placed.Request.Anchor, placed.LeaderEnd, colors.MutedForeground,
+                    _cone ? ChartDataLabelConnectorStyle.Straight : null);
                 StageText(builder, item.Text, bounds, item.Style, family + "-" + item.Component + "-label", id,
                     TextAlignment.Left, item.Paint, family, halo: item.Halo, haloPaint: item.HaloPaint);
             }

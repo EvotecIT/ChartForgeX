@@ -54,7 +54,8 @@ public sealed class StageIndependentCaptionTests {
         });
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "funnel-retention-label" && region.Label == "No initial baseline"));
-        Assert.Equal(2, prepared.Regions.Count(region => region.Role == "funnel-dropoff-label" && region.Label == "No previous baseline"));
+        Assert.Single(prepared.Regions, region => region.Role == "funnel-dropoff-label" && region.Label == "No previous baseline");
+        Assert.DoesNotContain(prepared.Regions, region => region.Id == "series-0-point-0-dropoff-label");
         Assert.Contains(prepared.Regions, region => region.Role == "funnel-dropoff-label" && region.Label == "-100% drop-off");
         Assert.Contains("data-cfx-retention-defined=\"false\"", prepared.ToSvg());
         Assert.Contains("data-cfx-dropoff=\"-1\"", prepared.ToSvg());
