@@ -225,7 +225,8 @@ internal sealed partial class ChartRange {
         range.ApplyHorizontalBarPadding(horizontalBarYValues, horizontalScalarCategories);
         if (!hasHorizontalSeries) {
             if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.YAxis);
-            range.ApplyVerticalPadding(chart.Options.YAxis);
+            // Price charts read the movement between candles, so a financial-only value axis fits the observed prices instead of reaching zero.
+            range.ApplyVerticalPadding(chart.Options.YAxis, chart.Series.Count > 0 && chart.Series.All(series => series.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc));
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
 
@@ -398,7 +399,12 @@ internal sealed partial class ChartRange {
         || kind == ChartSeriesKind.Candlestick || kind == ChartSeriesKind.Ohlc || kind == ChartSeriesKind.Dumbbell
         || kind == ChartSeriesKind.RangeBar || kind == ChartSeriesKind.BoxPlot || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Slope;
 
-    private void ApplyVerticalPadding(ChartAxis axis) {
+    private void ApplyVerticalPadding(ChartAxis axis, bool fitData = false) {
+        if (fitData && axis.Scale == ChartScaleKind.Linear && ChartMath.IsFinite(MaxY - MinY) && MaxY > MinY) {
+            var padding = (MaxY - MinY) * .08;
+            MinY -= padding; if (!ChartValueAxisRange.Applies(axis)) MaxY += padding;
+            return;
+        }
         (MinY, MaxY) = PaddedValueBounds(MinY, MaxY, axis);
     }
 

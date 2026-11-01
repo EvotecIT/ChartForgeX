@@ -70,4 +70,24 @@ public sealed class ChartLookV2LayoutTests {
         Assert.InRange(Math.Abs(rows[1].Bounds.Top - rows[0].Bounds.Top), 24, 48);
         Assert.Equal(560, chart.Options.Size.Height);
     }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void FinancialValueAxesFitPricesWhileStackedColumnsKeepTheirBandWidth(VisualThemeMode mode) {
+        var candles = Chart.Create().WithSize(920, 520).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
+            .AddCandlestick("Price", new[] { new ChartCandlestick(1, 102, 110, 98, 108), new ChartCandlestick(2, 108, 114, 104, 106), new ChartCandlestick(3, 112, 120, 108, 118) });
+        var prices = candles.Prepare(VisualExportRequest.ForChart(candles).Context);
+        var ticks = prices.Regions.Where(region => region.Role == "axis-y-label").Select(region => double.Parse(region.Label!.Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+        Assert.NotEmpty(ticks);
+        Assert.InRange(ticks.Min(), 80, 98);
+
+        var stacked = Chart.Create().WithSize(920, 520).WithTheme(VisualTheme.Graphite(), mode).WithStackedBars()
+            .AddBar("Ready", new[] { new ChartPoint(1, 42), new ChartPoint(2, 58), new ChartPoint(3, 72), new ChartPoint(4, 86) })
+            .AddBar("In review", new[] { new ChartPoint(1, 18), new ChartPoint(2, 22), new ChartPoint(3, 16), new ChartPoint(4, 10) });
+        var columns = stacked.Prepare(VisualExportRequest.ForChart(stacked).Context);
+        var widths = columns.Regions.Where(region => region.Role == "point").Select(region => region.Bounds.Width).ToArray();
+        Assert.Equal(8, widths.Length);
+        Assert.All(widths, width => Assert.InRange(width, 40, VisualTheme.Graphite().MaximumBarWidth + .001));
+    }
 }
