@@ -34,7 +34,8 @@ public static partial class V2Examples {
             FontSpec.FromFamily(ProofFont)));
         var kind = family switch {
             "topology" => VisualArtifactKind.Topology, "flow" => VisualArtifactKind.Flow,
-            "sequence" => VisualArtifactKind.Sequence, "chart-grid" => VisualArtifactKind.ChartGrid, _ => VisualArtifactKind.Chart
+            "sequence" => VisualArtifactKind.Sequence, "chart-grid" => VisualArtifactKind.ChartGrid,
+            _ => previewModel is TopologyChart ? VisualArtifactKind.Topology : previewModel is ChartGrid ? VisualArtifactKind.ChartGrid : VisualArtifactKind.Chart
         };
         var artifact = prepared.ToArtifact(id + "-thumbnail", kind);
         artifact.Accessibility.Name = title;
