@@ -90,4 +90,30 @@ public sealed class ChartLookV2LayoutTests {
         Assert.Equal(8, widths.Length);
         Assert.All(widths, width => Assert.InRange(width, 40, VisualTheme.Graphite().MaximumBarWidth + .001));
     }
+
+    [Theory]
+    [InlineData(360, VisualThemeMode.Light)]
+    [InlineData(360, VisualThemeMode.Dark)]
+    [InlineData(800, VisualThemeMode.Light)]
+    public void GaugeTargetCaptionSitsOnItsRayClearOfTheTick(int width, VisualThemeMode mode) {
+        var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Available capacity",
+                new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(85) })));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var tick = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-target");
+        var caption = Assert.Single(NumericRadialAxisTextTests.Footprints(prepared.Scene), item => item.Text.Role == "gauge-target-label").Bounds;
+        Assert.Equal("85", Assert.Single(prepared.Regions, region => region.Role == "gauge-target-label").Label);
+        Assert.True(caption.Left >= 0 && caption.Right <= prepared.Size.Width, "The caption stays inside the canvas.");
+        // Every point of the tick keeps at least a small gap from the caption box.
+        for (var step = 0; step <= 20; step++) {
+            var x = tick.Start.X + (tick.End.X - tick.Start.X) * step / 20; var y = tick.Start.Y + (tick.End.Y - tick.Start.Y) * step / 20;
+            var dx = Math.Max(Math.Max(caption.Left - x, 0), x - caption.Right); var dy = Math.Max(Math.Max(caption.Top - y, 0), y - caption.Bottom);
+            Assert.True(Math.Sqrt(dx * dx + dy * dy) >= 2, "The target tick must not touch its caption.");
+        }
+        // The caption centre lies on the tick's ray, beyond its outer end.
+        var cx = caption.Left + caption.Width / 2; var cy = caption.Top + caption.Height / 2;
+        var rx = tick.End.X - tick.Start.X; var ry = tick.End.Y - tick.Start.Y; var length = Math.Sqrt(rx * rx + ry * ry);
+        Assert.InRange(Math.Abs((cx - tick.Start.X) * ry - (cy - tick.Start.Y) * rx) / length, 0, 2);
+        Assert.True((cx - tick.End.X) * rx + (cy - tick.End.Y) * ry > 0);
+    }
 }

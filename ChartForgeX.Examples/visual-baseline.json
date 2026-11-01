@@ -3309,7 +3309,7 @@
         "outputScale": 2,
         "minVisiblePixels": 232836,
         "minTransparentPixels": 12,
-        "minDistinctColors": 1057,
+        "minDistinctColors": 1032,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3549,7 +3549,7 @@
         "outputScale": 2,
         "minVisiblePixels": 232836,
         "minTransparentPixels": 12,
-        "minDistinctColors": 916,
+        "minDistinctColors": 889,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3957,7 +3957,7 @@
         "outputScale": 2,
         "minVisiblePixels": 232836,
         "minTransparentPixels": 12,
-        "minDistinctColors": 1178,
+        "minDistinctColors": 1162,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4197,7 +4197,7 @@
         "outputScale": 2,
         "minVisiblePixels": 232836,
         "minTransparentPixels": 12,
-        "minDistinctColors": 992,
+        "minDistinctColors": 974,
         "maxEdgeInkPixels": 0
       }
     },

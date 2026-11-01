@@ -183,17 +183,15 @@ internal static partial class VisualGaugeCompiler {
                 cx + cos * (radius + stroke / 2 + bandWidth), cy + sin * (radius + stroke / 2 + bandWidth),
                 colors.Foreground, context.Theme.SeriesStrokeWidth, "gauge-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Axis));
             var width = chart.Measure(builder, targetCaptions[index], labelStyle).Width;
-            var box = new ChartRect(cx + cos * (exterior + gap + labelHeight / 2) - width / 2,
-                cy + sin * (exterior + gap + labelHeight / 2) - labelHeight / 2, width, labelHeight);
-            if (!FitsCaption(plot, box, occupied)) {
-                // Next candidates: farther out, then inside the arc; a caption is never left clipped at the plot edge.
-                ChartRect At(double distance) => new(cx + cos * distance - width / 2, cy + sin * distance - labelHeight / 2, width, labelHeight);
-                var inside = radius - stroke / 2 - bandWidth - gap - Math.Max(width, labelHeight) / 2;
-                var alternative = new[] { At(exterior + gap + labelHeight * 1.75), At(inside) }.Where(candidate => FitsCaption(plot, candidate, occupied)).ToArray();
-                box = alternative.Length > 0 ? alternative[0] : new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - width, box.Left)),
-                    Math.Max(plot.Top, Math.Min(plot.Bottom - labelHeight, box.Top)), width, labelHeight);
-            }
-            FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
+            // The caption sits on the tick's ray beyond the outer status arc: its centre is pushed out by the box's half-extent
+            // along that ray, so the nearest edge keeps a gap from the arc and the tick whatever the angle.
+            var halfExtent = (Math.Abs(cos) * width + Math.Abs(sin) * labelHeight) / 2;
+            ChartRect At(double distance) => new(cx + cos * distance - width / 2, cy + sin * distance - labelHeight / 2, width, labelHeight);
+            var clear = exterior + gap / 2 + halfExtent;
+            var inside = radius - stroke / 2 - bandWidth - gap / 2 - halfExtent;
+            var candidates = new[] { At(clear), At(clear + labelHeight), At(inside) };
+            var box = candidates.FirstOrDefault(candidate => FitsCaption(plot, candidate, occupied));
+            if (box.Width <= 0) box = candidates[0];            FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
         }
     }
 
