@@ -25,7 +25,7 @@ public sealed class LegendNumericLayoutTests {
         var aggregate = document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "legend-entry"
             && (string?)element.Attribute("data-cfx-value-overflow") == "true");
         Assert.Equal("> 1.7976931348623157E+308", (string?)aggregate.Attribute("data-cfx-formatted-value"));
-        Assert.Contains("> 1.7976931348623157E+308", (string?)aggregate.Attribute("aria-label"));
+        Assert.Contains("> 1.7976931348623157E+308", (string?)aggregate.Attribute("data-cfx-description"));
         Assert.Equal("1,2", (string?)aggregate.Attribute("data-cfx-source-points"));
         Assert.Null(aggregate.Attribute("data-cfx-value"));
         Assert.NotEmpty(prepared.ToPng());
@@ -47,7 +47,7 @@ public sealed class LegendNumericLayoutTests {
         });
         Assert.All(prepared.Regions.Where(region => region.Role == "legend"), region => Assert.Contains(authored, region.Label));
         Assert.All(XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "legend-entry"),
-            element => Assert.Contains(authored, (string?)element.Attribute("aria-label")));
+            element => Assert.Contains(authored, (string?)element.Attribute("data-cfx-description")));
         Assert.Contains(prepared.Scene.Diagnostics, diagnostic => diagnostic.Code == "frame.text-truncated");
         Assert.NotEmpty(prepared.ToPng());
     }

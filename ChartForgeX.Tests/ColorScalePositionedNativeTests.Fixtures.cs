@@ -89,7 +89,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         Assert.Equal(scale.Mode == ChartColorScaleMode.Diverging ? new[] { scale.MidpointValue!.Value.ToString("R", CultureInfo.InvariantCulture) } : Array.Empty<string>(),
             pivots.Select(stop => (string)stop.Attribute("data-cfx-value")!));
         var full = prepared.Regions.Single(region => region.Role == prefix + "-stops").Label;
-        Assert.Equal(full, (string?)source.Attribute("aria-label"));
+        Assert.Equal(full, (string?)source.Attribute("data-cfx-description"));
         foreach (var stop in stops) Assert.Contains((string)stop.Attribute("data-cfx-label")!, full);
     }
 

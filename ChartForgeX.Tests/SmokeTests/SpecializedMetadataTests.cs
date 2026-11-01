@@ -14,7 +14,7 @@ internal static partial class SmokeTests {
             var group = Verify.Single(FamilyGroups(prepared, role), candidate => candidate.Id == id);
             var svgSource = Verify.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), element =>
                 (string?)element.Attribute("data-cfx-source-id") == id && (string?)element.Attribute("data-cfx-role") == role);
-            Verify.All(group.Metadata, pair => Verify.Equal(pair.Value, (string?)svgSource.Attribute(pair.Key)));
+            Verify.All(group.Metadata, pair => Verify.Equal(pair.Value, (string?)svgSource.Attribute(pair.Key == "aria-label" ? "data-cfx-description" : pair.Key)));
             Verify.Contains(prepared.Regions, region => region.Id == id);
             Verify.NotEmpty(prepared.ToPng());
             return group;

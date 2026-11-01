@@ -82,15 +82,15 @@ public sealed class HourWeekdayHeatmapTests {
         var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(900, 360).AddHourWeekdayHeatmap(values);
         var svg = XDocument.Parse(chart.ToSvg());
         var cells = ByRole(svg, "heatmap-cell");
-        var busiest = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
-        var quiet = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 11:", StringComparison.Ordinal));
+        var busiest = cells.Single(cell => ((string)cell.Attribute("data-cfx-description")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
+        var quiet = cells.Single(cell => ((string)cell.Attribute("data-cfx-description")!).StartsWith("Mon, 11:", StringComparison.Ordinal));
         Assert.Null(busiest.Attribute("data-cfx-status"));
         Assert.Equal("4", (string?)busiest.Attribute("data-cfx-level"));
         Assert.NotEqual((string)busiest.RenderedAttribute("fill")!, (string)quiet.RenderedAttribute("fill")!);
 
         var percent = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(900, 360).AddHourWeekdayHeatmap(values);
         percent.Options.HeatmapRelativeScale = false;
-        var percentBusiest = ByRole(XDocument.Parse(percent.ToSvg()), "heatmap-cell").Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
+        var percentBusiest = ByRole(XDocument.Parse(percent.ToSvg()), "heatmap-cell").Single(cell => ((string)cell.Attribute("data-cfx-description")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
         // A sequential heatmap spans its observed values (design rule 9): the busiest hour is the strongest step.
         Assert.Equal("4", (string?)percentBusiest.Attribute("data-cfx-level"));
 
@@ -140,8 +140,8 @@ public sealed class HourWeekdayHeatmapTests {
             var chart = Chart.Create().WithTheme(VisualTheme.Report()).AddHourWeekdayHeatmap(values, aggregation);
             var svg = XDocument.Parse(chart.ToSvg());
             var cells = ByRole(svg, "heatmap-cell");
-            var low = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 09:", StringComparison.Ordinal));
-            var high = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
+            var low = cells.Single(cell => ((string)cell.Attribute("data-cfx-description")!).StartsWith("Mon, 09:", StringComparison.Ordinal));
+            var high = cells.Single(cell => ((string)cell.Attribute("data-cfx-description")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
             Assert.Null(low.Attribute("data-cfx-status"));
             Assert.Null(high.Attribute("data-cfx-status"));
             Assert.Equal("0", (string)low.Attribute("data-cfx-level")!);

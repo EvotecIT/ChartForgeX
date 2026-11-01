@@ -15,7 +15,7 @@ public sealed class GraphiteOverrideTests {
         var chart=Chart.Create().WithDataLabels().AddBar("Count",new[]{new ChartPoint(1,value)});
         var point=Assert.Single(Roles(chart,"point"));
         Assert.Equal(value,double.Parse((string)point.Attribute("data-cfx-y")!,System.Globalization.CultureInfo.InvariantCulture));
-        Assert.Contains(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),(string)point.Attribute("aria-label")!);
+        Assert.Contains(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),(string)point.Attribute("data-cfx-description")!);
         Assert.DoesNotContain(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),Assert.Single(Roles(chart,"data-label")).Value);
     }
 

@@ -17,7 +17,7 @@
     if (tooltipTitle && ['rangebar', 'boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()))
       return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
     if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
-    const aria = node.getAttribute('aria-label');
+    const aria = node.getAttribute('aria-label') || data.cfxDescription;
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
     const parts = [];

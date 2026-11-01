@@ -42,7 +42,7 @@ public sealed class BoxPlotDistributionRenderingTests {
         } else Assert.Contains(" minimum=0", description);
         var svg = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(description, svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point"
-            && node.Attribute("data-cfx-derived") != null).Attribute("aria-label")!.Value);
+            && node.Attribute("data-cfx-derived") != null).Attribute("data-cfx-description")!.Value);
         Assert.NotEmpty(prepared.ToPng());
     }
 

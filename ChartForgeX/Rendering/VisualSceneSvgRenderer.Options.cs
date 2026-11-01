@@ -35,7 +35,7 @@ internal static partial class VisualSceneSvgRenderer {
         var textRasterOptions = options != null && options.TextPresentation == VisualSvgTextPresentation.Automatic && options.EffectRasterOptions != null;
         if (colorScopes == null && (options == null || options.Variables == null &&
             options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive && !options.FluidWidth &&
-            !options.PatternTiles && !effectOptions && !textRasterOptions && !options.HasPageFonts)) return identity;
+            !options.PatternTiles && !options.Explorable && !options.EnhanceHooks && !effectOptions && !textRasterOptions && !options.HasPageFonts)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
@@ -55,6 +55,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (options?.Responsive == true) writer.Write("responsive");
             if (options?.FluidWidth == true) writer.Write("fluid-width");
             if (options?.PatternTiles == true) writer.Write("pattern-tiles");
+            if (options?.Explorable == true || options?.EnhanceHooks == true) writer.Write("explorable");
             if (options?.HasPageFonts == true) {
                 writer.Write("page-fonts"); writer.Write(options.PageFontFamily!); writer.Write(options.PageFontSize ?? "prepared");
             }

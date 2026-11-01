@@ -184,7 +184,7 @@
       node.setAttribute('data-cfx-target-id', id);
       if (kind === 'point' && hasFeature(root, 'Selection')) {
         const focus = targetFocusNode(node);
-        if (!focus.hasAttribute('role') && !focus.matches('a[href],button,input,select,textarea')) focus.setAttribute('role', 'button');
+        if ((!focus.hasAttribute('role') || focus.getAttribute('role') === 'group') && !focus.matches('a[href],button,input,select,textarea')) focus.setAttribute('role', 'button');
       }
     });
   };

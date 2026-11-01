@@ -64,13 +64,13 @@ internal static partial class VisualSceneSvgRenderer {
     /// <summary>Writes leaves only; the primary serializer continues to own link, metadata, opacity and scope structure.</summary>
     private static bool WriteFluidNode(SvgMarkupWriter writer, VisualScene scene, int index, string prefix,
         VisualSvgOptions? options, FluidSvgLayout layout, PngTextResources? pngText, bool capturePngText,
-        VisualSvgFontResources? fonts, NativeLineInkResources? textImages) {
+        VisualSvgFontResources? fonts, NativeLineInkResources? textImages, bool explorable) {
         var node = scene.Nodes[index];
         if (node is VisualSceneGroup || node is VisualSceneEndGroup) return false;
         var transform = layout.Transforms[index];
         if (node is VisualSceneText text) {
             WriteFluidFixedViewport(writer, new ChartPoint(text.X, text.Baseline), transform, layout);
-            WriteText(writer, text, prefix, index, options, pngText, capturePngText, fonts, textImages);
+            WriteText(writer, text, prefix, index, options, pngText, capturePngText, fonts, textImages, explorable);
             writer.EndElement(); writer.EndElement(); return true;
         }
         var gradient = node as VisualSceneGradient;
