@@ -102,6 +102,29 @@ public sealed partial class ChartValueFormat {
 
     internal static ChartValueFormat ExistingValue { get; } = new(Notation.ExistingValue, "0.##", null);
     internal static ChartValueFormat InvariantCompact { get; } = Compact();
+    /// <summary>Uses one precision for a chart's ratios; an authored percentage policy remains authoritative.</summary>
+    internal static ChartValueFormat Percentages(ChartValueFormat authored, System.Collections.Generic.IEnumerable<double> fractions) {
+        // Raw-value policies (counts, currencies and callbacks) do not change the unit
+        // of derived ratios. An explicit percentage policy owns its precision/culture.
+        if (authored._formatter == null && authored._notation == Notation.Number && authored.UsesPercentageNotation()) return authored;
+        var decimals = fractions.Any(value => Math.Round(value * 100, 1) != Math.Round(value * 100));
+        return Number(decimals ? "0.0%" : "0%");
+    }
+    /// <summary>Preserves an overflowing derived ratio's description without admitting nonfinite source values.</summary>
+    internal string FormatFraction(double fraction) => double.IsInfinity(fraction) ? fraction.ToString(_format, Culture) : Format(fraction);
+    private bool UsesPercentageNotation() {
+        if (_format.Length > 0 && char.ToUpperInvariant(_format[0]) == 'P' && _format.Skip(1).All(char.IsDigit)) return true;
+        var quote = '\0';
+        for (var index = 0; index < _format.Length; index++) {
+            // Numeric custom formats may quote or escape a percent sign as a raw-value unit.
+            var token = _format[index];
+            if (token == '\\') { index++; continue; }
+            if (quote != '\0') { if (token == quote) quote = '\0'; continue; }
+            if (token is '\'' or '"') { quote = token; continue; }
+            if (token == '%') return true;
+        }
+        return false;
+    }
     // Automatic value and axis policies share this bounded fallback; authored formats remain exact policies.
     internal static string FormatSignificant(double value) => value.ToString("G6", CultureInfo.InvariantCulture);
     // Native transition plans retain built-in immutable policy, never a caller-owned mutable closure.

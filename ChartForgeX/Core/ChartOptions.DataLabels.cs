@@ -9,6 +9,7 @@ public sealed partial class ChartOptions {
     private double _dataLabelConnectorStrokeWidth = 1.2;
     private ChartColor? _dataLabelConnectorColor;
     private ChartDataLabelConnectorStyle _dataLabelConnectorStyle = ChartDataLabelConnectorStyle.Elbow;
+    internal bool HasDataLabelConnectorStyle { get; private set; }
     private ChartPieSliceLabelContent _pieSliceLabelContent = ChartPieSliceLabelContent.Percent;
     private double _pieOutsideLabelDistanceRatio = 1.14;
 
@@ -63,6 +64,7 @@ public sealed partial class ChartOptions {
         set {
             if (!Enum.IsDefined(typeof(ChartDataLabelConnectorStyle), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown data-label connector style.");
             _dataLabelConnectorStyle = value;
+            HasDataLabelConnectorStyle = true;
         }
     }
 
