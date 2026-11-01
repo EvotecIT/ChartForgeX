@@ -264,7 +264,10 @@ internal sealed partial class VisualTopologyCompiler {
         }
         ChartRect Project(ChartRect bounds) => Bounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
         void Divider(double lineY) {
-            var bounds = Project(new ChartRect(node.X, lineY, node.Width, 0));
+            var center = new ChartPoint(node.X + node.Width / 2, lineY);
+            var left = TopologyNodeShapeGeometry.FilledBoundaryPoint(node, center, new ChartPoint(node.X - 1, lineY));
+            var right = TopologyNodeShapeGeometry.FilledBoundaryPoint(node, center, new ChartPoint(node.X + node.Width + 1, lineY));
+            var bounds = Project(new ChartRect(left.X, lineY, Math.Max(0, right.X - left.X), 0));
             var ink = Highlight(_colors.Border, active);
             _builder.Line(bounds.X, bounds.Y, bounds.Right, bounds.Y, ink, _context.Theme.AxisStrokeWidth * spacing * _scale,
                 "topology-node-detail-separator", paint: new VisualScenePaintBinding(stroke: BorderPaint(ink, HighlightFactor(active))));

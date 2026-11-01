@@ -16,7 +16,8 @@ internal static partial class TopologyRenderPrimitives {
         var start = points[0]; var end = points[1];
         var horizontal = edge.SourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || edge.TargetPort is TopologyEdgePort.Left or TopologyEdgePort.Right
             || edge.SourcePort == TopologyEdgePort.Auto && edge.TargetPort == TopologyEdgePort.Auto && Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y);
-        if (chart.LayoutMode != TopologyLayoutMode.MindMap && (horizontal ? Math.Abs(end.Y - start.Y) < .001 : Math.Abs(end.X - start.X) < .001)) {
+        if (chart.LayoutMode != TopologyLayoutMode.MindMap && edge.SourcePort == TopologyEdgePort.Auto && edge.TargetPort == TopologyEdgePort.Auto
+            && (horizontal ? Math.Abs(end.Y - start.Y) < .001 : Math.Abs(end.X - start.X) < .001)) {
             // Two smooth halves preserve a real curve and facing endpoint normals on aligned nodes.
             var span = horizontal ? end.X - start.X : end.Y - start.Y;
             var bow = Math.Min(28, Math.Max(8, Math.Abs(span) * .12));
@@ -38,15 +39,26 @@ internal static partial class TopologyRenderPrimitives {
         TopologyEdgePort sourcePort = TopologyEdgePort.Auto, TopologyEdgePort targetPort = TopologyEdgePort.Auto) {
         var start = points[0];
         var end = points[points.Count - 1];
-        var horizontal = sourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || targetPort is TopologyEdgePort.Left or TopologyEdgePort.Right;
-        if (horizontal || sourcePort == TopologyEdgePort.Auto && targetPort == TopologyEdgePort.Auto && Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y)) {
-            var middle = (start.X + end.X) / 2;
-            firstControl = new ChartPoint(middle, start.Y);
-            secondControl = new ChartPoint(middle, end.Y);
-        } else {
-            var middle = (start.Y + end.Y) / 2;
-            firstControl = new ChartPoint(start.X, middle);
-            secondControl = new ChartPoint(end.X, middle);
+        var dx = end.X - start.X; var dy = end.Y - start.Y;
+        var horizontal = Math.Abs(dx) >= Math.Abs(dy);
+        if (sourcePort == TopologyEdgePort.Auto) sourcePort = horizontal
+            ? dx >= 0 ? TopologyEdgePort.Right : TopologyEdgePort.Left
+            : dy >= 0 ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
+        if (targetPort == TopologyEdgePort.Auto) targetPort = horizontal
+            ? dx >= 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right
+            : dy >= 0 ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
+        firstControl = Control(start, sourcePort);
+        secondControl = Control(end, targetPort);
+
+        ChartPoint Control(ChartPoint endpoint, TopologyEdgePort side) {
+            var span = side is TopologyEdgePort.Left or TopologyEdgePort.Right ? Math.Abs(dx) : Math.Abs(dy);
+            if (span < .001) span = Math.Max(Math.Abs(dx), Math.Abs(dy));
+            return side switch {
+                TopologyEdgePort.Left => new ChartPoint(endpoint.X - span / 2, endpoint.Y),
+                TopologyEdgePort.Right => new ChartPoint(endpoint.X + span / 2, endpoint.Y),
+                TopologyEdgePort.Top => new ChartPoint(endpoint.X, endpoint.Y - span / 2),
+                _ => new ChartPoint(endpoint.X, endpoint.Y + span / 2)
+            };
         }
     }
 
