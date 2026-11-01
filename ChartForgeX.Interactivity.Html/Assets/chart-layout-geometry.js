@@ -109,8 +109,8 @@
     const maximumBarWidth=spec.barWidthUnbounded ? Infinity : spec.maximumBarWidth;
     for(const recipe of state.recipes){
       const {node,attributes:a,bar}=recipe;
-      // Match the native category-slot contract: 68% occupied pitch, bounded gaps, independently capped bodies.
-      const occupied=state.pitch*nw/pw*.68, gap=bar && bar.count>1 ? Math.min(spec.spacing/2,occupied/(bar.count*4)):0;
+      // Match the native category-slot contract: the band fill of the pitch, bounded gaps, independently capped bodies.
+      const occupied=state.pitch*nw/pw*spec.barFill, gap=bar && bar.count>1 ? Math.min(spec.spacing/2,occupied/(bar.count*4)):0;
       const thickness=bar?Math.max(Math.min(.1,maximumBarWidth),Math.min(maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
       const center=bar?x(bar.categoryCenter)+(bar.position-(bar.count-1)/2)*(thickness+gap):0;
       // Drawings without a plot band stay centred, but their heading keeps its left inset and is fitted afterwards.

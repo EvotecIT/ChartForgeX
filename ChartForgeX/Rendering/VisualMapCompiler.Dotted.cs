@@ -70,8 +70,9 @@ internal static partial class VisualMapCompiler {
     private static (ChartColor Color, SvgPaint Paint) DottedPaint(ChartSeries series, int? index, VisualThemeColors colors) {
         var pointOverride = index.HasValue && index.Value < series.PointColors.Count ? series.PointColors[index.Value] : null;
         var itemColor = index.HasValue ? series.MapPoints[index.Value].Color : null;
-        var color = pointOverride ?? itemColor ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Pass.Fill);
-        var role = pointOverride.HasValue || itemColor.HasValue || series.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status;
+        // Unstated points take the first series slot, not 'pass': only a declared state is a status (design rule 10).
+        var color = pointOverride ?? itemColor ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Palette[0]);
+        var role = pointOverride.HasValue || itemColor.HasValue || series.Color.HasValue || series.StateRole == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status;
         return (color, SvgPaint.Of(color, role));
     }
 

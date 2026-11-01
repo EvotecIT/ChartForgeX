@@ -45,6 +45,12 @@
     <EmbeddedResource Include="Assets\chart-layout-radial.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-radial.js" />
     <EmbeddedResource Include="Assets\chart-layout-legend.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-legend.js" />
     <EmbeddedResource Include="Assets\chart-layout.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout.js" />
+    <EmbeddedResource Include="Assets\cfx-shared.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-shared.js" />
+    <EmbeddedResource Include="Assets\cfx-enhance.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-enhance.js" />
+    <EmbeddedResource Include="Assets\cfx-enhance.behaviours.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-enhance.behaviours.js" />
+    <EmbeddedResource Include="Assets\cfx-link.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-link.js" />
+    <EmbeddedResource Include="Assets\cfx-states.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-states.css" />
+    <EmbeddedResource Include="Assets\cfx-enhance.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-enhance.css" />
     <EmbeddedResource Include="Assets\responsive-chart.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.responsive-chart.js" />
   </ItemGroup>
 

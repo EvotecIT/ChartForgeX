@@ -291,6 +291,9 @@ public sealed class ChartAxis {
     // Every layout/paint/tick owner therefore resolves the same explicit source edge policy.
     internal ChartAxisWindow? PreparedViewportWindow { get; set; }
 
+    /// <summary>The clean tick step the full layout pass chose for a snapped value axis; a source viewport reuses it.</summary>
+    internal double? PreparedValueTickStep { get; set; }
+
     /// <summary>
     /// Gets or sets the time-zone designator shown when <see cref="ShowTimeZone"/> is enabled.
     /// Null uses <c>UTC</c> when <see cref="TimeZone"/> is null, otherwise the zone identifier. Zone identifiers differ

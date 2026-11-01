@@ -6,7 +6,7 @@
     "Severity has a fill (marks, bars, dots) and an ink (text on surfaces and tinted chips). Every ink is at least 4.5:1 on the card surface and on a 13% tint of its fill.",
     "Outcome 'fail' has no colour of its own: a failed result is coloured by its severity.",
     "Operational state maps onto the same hues: up=outcome.pass, degraded=severity.medium, down=severity.critical, recovering=severity.low, maintenance=state.maintenance, notObservable and unknown=outcome.neutral with hatching.",
-    "Series colours are used in this fixed order and never for status. Past six series, charts switch to small multiples. Validated against the Graphite card surfaces: worst adjacent CVD delta E 10.6 (light, surface #ffffff) and 12.6 (dark, surface #16181c); worst adjacent normal-vision delta E 15.9 (light) and 16.1 (dark); lightness band, chroma and 3:1 contrast pass in both modes.",
+    "Series colours are used in this fixed order and never for status. The design language (docs/design-language.md) replaced the second blue in slot 6 with clay in slot 4. Past six series, part-to-whole charts fold the rest into a neutral Other (text.secondary at 45% over the card surface, always last); other charts switch to small multiples. Validated against the Graphite card surfaces: worst adjacent CVD delta E 10.6 (light, surface #ffffff) and 12.6 (dark, surface #16181c); worst adjacent normal-vision delta E 15.9 (light) and 16.1 (dark); lightness band, chroma and 3:1 contrast pass in both modes.",
     "Ramps (optional in consumers): arrays run from weakest to strongest magnitude. 'sequential' is one hue (blue) for magnitude and counts, with no status meaning. 'diverging' has a negative arm (red), a neutral midpoint and a positive arm (blue), each arm weakest to strongest. Every ramp passed the ordinal checks (monotone lightness, adjacent delta L >= 0.06, weakest step >= 2:1 on the card surface, single hue) in its mode."
   ],
   "light": {
@@ -26,7 +26,7 @@
       "neutral": { "fill": "#7c818a", "ink": "#5b6069" }
     },
     "state": { "maintenance": { "fill": "#6b5bd2", "ink": "#5a4bc0" } },
-    "series": ["#2a78d6", "#0f9f8c", "#7b61e8", "#c24fa8", "#5b7f00", "#1d4f9e"],
+    "series": ["#2a78d6", "#0f9f8c", "#7b61e8", "#a0522d", "#c24fa8", "#5b7f00"],
     "ramps": {
       "sequential": ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"],
       "diverging": { "negative": ["#f0a39d", "#e0645b", "#b8292a"], "neutral": "#eceef0", "positive": ["#86b6ef", "#3f8be3", "#1c5cab"] }
@@ -49,7 +49,7 @@
       "neutral": { "fill": "#8a8f98", "ink": "#a0a5ae" }
     },
     "state": { "maintenance": { "fill": "#a497f2", "ink": "#a497f2" } },
-    "series": ["#3987e5", "#179c89", "#8a74ee", "#c9579f", "#6f9120", "#5a7fd8"],
+    "series": ["#3987e5", "#179c89", "#8a74ee", "#c06a42", "#c9579f", "#6f9120"],
     "ramps": {
       "sequential": ["#184f95", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
       "diverging": { "negative": ["#8f2f2c", "#d4504b", "#f7a09b"], "neutral": "#2b2e34", "positive": ["#1d4f8f", "#3f8be3", "#9ec5f4"] }

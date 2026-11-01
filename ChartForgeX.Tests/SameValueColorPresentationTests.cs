@@ -163,7 +163,8 @@ public sealed class SameValueColorPresentationTests {
         var reset = Prepare(chart);
         Assert.Equal(svg, reset.ToSvg()); Assert.Equal(png, reset.ToPng());
         var title = Role(XDocument.Parse(svg), Prefix(kind) + "-title");
-        if ((kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) && scaleKind == "discrete") Assert.Single(title);
+        // Design rule 9: a numeric heatmap key is always titled, by default with the localized value label.
+        if ((kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) && scaleKind == "discrete" || kind == ChartSeriesKind.Heatmap) Assert.Single(title);
         else Assert.Empty(title);
     }
 

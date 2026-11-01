@@ -12,6 +12,7 @@ internal static class ExampleProgramOptions {
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
         if (HasArg(args, "--embedding-only")) { ServerRenderedChartExamples.Write(output); return true; }
+        if (HasArg(args, "--enhance-only")) { EnhanceExamples.Write(output); return true; }
         if (HasArg(args, "--responsive-radial-only")) { ResponsiveRadialExamples.Write(output); return true; }
         if (HasArg(args, "--swimlane-layout-depth-only")) { SwimlaneLayoutDepthExamples.Write(output); return true; }
         if (HasArg(args, "--topology-crossings-only")) { TopologyCrossingPaintExamples.Write(output); return true; }

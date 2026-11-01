@@ -82,7 +82,9 @@ internal static partial class VisualGaugeCompiler {
         var bounded = VisualRadialPrimitives.Clamp(raw, min, max); var ratio = (bounded - min) / (max - min);
         var active = bands.FirstOrDefault(band => bounded >= band.Minimum && (bounded < band.Maximum || bounded == max && bounded == band.Maximum));
         var state = declaredState != ChartSeriesState.None ? declaredState : active?.State ?? ChartSeriesState.None;
-        var color = pointColor ?? seriesColor ?? (declaredState != ChartSeriesState.None || state is ChartSeriesState.Warning or ChartSeriesState.Danger
+        // The value arc is the measurement, not a status: the threshold bands already carry the status encoding,
+        // so a value inside an amber band stays in the series colour. A state declared on the series is a status.
+        var color = pointColor ?? seriesColor ?? (declaredState != ChartSeriesState.None
             ? VisualRadialPrimitives.StateColor(colors, state, colors.Palette[0]) : colors.Palette[0]);
         return new GaugeData(min, max, raw, ratio, state, color, bands, targets);
     }
@@ -369,7 +371,7 @@ internal static partial class VisualGaugeCompiler {
     private static SvgPaint GaugePaint(ChartSeries series, GaugeData data) => GaugePaint(
         series.Color.HasValue || series.PointColors.Count > 0 && series.PointColors[0].HasValue, series.StateRole, data);
     private static SvgPaint GaugePaint(bool authoredColor, ChartSeriesState declaredState, GaugeData data) => SvgPaint.Of(data.Color,
-        authoredColor ? SvgColorRole.Series : declaredState != ChartSeriesState.None || data.State is ChartSeriesState.Warning or ChartSeriesState.Danger ? SvgColorRole.Status : SvgColorRole.Series);
+        authoredColor ? SvgColorRole.Series : declaredState != ChartSeriesState.None ? SvgColorRole.Status : SvgColorRole.Series);
     private sealed class GaugeData {
         internal GaugeData(double min, double max, double raw, double ratio, ChartSeriesState state, ChartColor color, ChartGaugeBand[] bands, IReadOnlyList<ChartGaugeTarget> targets) {
             Min = min; Max = max; Raw = raw; Ratio = ratio; State = state; Color = color; Bands = bands; Targets = targets;

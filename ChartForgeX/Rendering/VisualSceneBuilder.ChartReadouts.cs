@@ -102,8 +102,11 @@ internal sealed partial class VisualSceneBuilder {
             || !double.TryParse(rawY, NumberStyles.Float, CultureInfo.InvariantCulture, out var y)) return null;
         var exact = ChartNumericFormatter.FormatCoordinate(y);
         var raw = " (" + ChartNumericFormatter.FormatCoordinate(x) + ", " + exact + ")";
-        if (!current.StartsWith(seriesName + ": ", StringComparison.Ordinal) || !current.EndsWith(raw, StringComparison.Ordinal)) return null;
-        var caption = current.Substring(seriesName.Length + 2, current.Length - seriesName.Length - 2 - raw.Length);
+        var at = current.IndexOf(raw, StringComparison.Ordinal);
+        if (!current.StartsWith(seriesName + ": ", StringComparison.Ordinal) || at < seriesName.Length + 2) return null;
+        var caption = current.Substring(seriesName.Length + 2, at - seriesName.Length - 2);
+        // Facts appended after the raw form (a colour measurement) stay in the name.
+        var facts = current.Substring(at + raw.Length);
         var formatted = metadata.TryGetValue("data-cfx-formatted-value", out var value) ? value : string.Empty;
         var exactWithUnit = ChartOptions.AppendUnit(exact, unit);
         var numeric = formatted.Length > 0 && (caption.Length == 0 || formatted == ChartOptions.AppendUnit(caption, unit));
@@ -111,10 +114,16 @@ internal sealed partial class VisualSceneBuilder {
         if (metadata.TryGetValue("data-cfx-formatted-instant", out var instant) && instant.Length > 0) {
             // Time-axis names have no raw coordinates left, so a rounded or compact readout keeps the exact value beside it.
             if (numeric && formatted != exactWithUnit) amount += " (" + exactWithUnit + ")";
-            return string.Join(", ", new[] { seriesName, instant, amount }.Where(part => part.Length > 0));
+            return string.Join(", ", new[] { seriesName, instant, amount }.Where(part => part.Length > 0)) + facts;
         }
-        if (unit == null) return null;
-        return seriesName + ": " + amount + raw;
+        // Readers hear the category the axis shows, never a raw coordinate tuple: "Sat 24, Updates: 2". A numeric axis
+        // names its exact coordinates instead: "Observed: x 3.125, y 5". A rounded or compact readout keeps the exact value.
+        if (numeric && formatted != exactWithUnit) amount += " (" + exactWithUnit + ")";
+        var head = metadata.TryGetValue("data-cfx-display-label", out var display) && display.Length > 0 ? display
+            : metadata.TryGetValue("data-cfx-formatted-x", out var formattedX) ? formattedX : ChartNumericFormatter.FormatCoordinate(x);
+        var categorical = !double.TryParse(head, NumberStyles.Float, CultureInfo.CurrentCulture, out _)
+            && !double.TryParse(head, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
+        return (categorical ? head + ", " + seriesName + ": " + amount : seriesName + ": x " + ChartNumericFormatter.FormatCoordinate(x) + ", y " + amount) + facts;
     }
     private static string RangeLabel(string start, string end) => start.Length == 0 && end.Length == 0 ? string.Empty : start + " – " + end;
 }

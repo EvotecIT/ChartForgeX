@@ -54,7 +54,7 @@ public sealed class ScalarBarCapacityTests {
             var first = Bounds(0, point); var second = Bounds(1, point);
             Assert.Equal(.1, horizontal ? first.Height : first.Width, 8);
             Assert.Equal(.1, horizontal ? second.Height : second.Width, 8);
-            var category = horizontal ? (2.5 - Categories[point]) * 100 : (Categories[point] + .5) * 160;
+            var category = horizontal ? (Categories[point] + .5) * 100 : (Categories[point] + .5) * 160;
             if (stacked) {
                 Assert.Equal(Center(first), Center(second), 8);
                 Assert.Equal(category, Center(first), 8);

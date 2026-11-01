@@ -16,12 +16,17 @@ public sealed class ChartMarkOptions {
     /// <param name="accessibleLabel">Explicit accessible name; otherwise a chart-generated name is used.</param>
     /// <param name="cssClass">Space-separated CSS identifier tokens, retained without rewriting.</param>
     /// <param name="dataAttributes">Complete lowercase data-* attribute names and plain text values.</param>
-    /// <param name="current">Whether this is the current item, shown with a dashed outline.</param>
+    /// <param name="current">Whether this is the current item, shown with its current-state treatment.</param>
     /// <param name="selected">Whether this is the page's selected item, shown with a solid outline and aria-current.
     /// This static state does not turn navigation links into selection widgets.</param>
+    /// <param name="keys">Record keys this mark represents, for linked views (for example grid row ids). Emitted as <c>data-cfx-keys</c>.</param>
+    /// <param name="fields">Field values that define this mark (for example <c>day</c> and <c>kind</c>), emitted as <c>data-cfx-fields</c>.
+    /// Values are strings, booleans, finite numbers, UTC or local <see cref="DateTime"/> values, or <see cref="DateTimeOffset"/> values;
+    /// dates become ISO 8601 instants. A series' fields are the base for its items' fields.</param>
     public ChartMarkOptions(string? href = null, VisualSvgLinkTarget linkTarget = VisualSvgLinkTarget.SameContext,
         string? tooltip = null, string? accessibleLabel = null, string? cssClass = null,
-        IReadOnlyDictionary<string, string>? dataAttributes = null, bool current = false, bool selected = false) {
+        IReadOnlyDictionary<string, string>? dataAttributes = null, bool current = false, bool selected = false,
+        IEnumerable<string>? keys = null, IReadOnlyDictionary<string, object>? fields = null) {
         if (href != null && ChartHyperlink.SafeHref(href) == null)
             throw new ArgumentException("Mark links must be relative, fragment, http, https, or mailto links.", nameof(href));
         if (!Enum.IsDefined(typeof(VisualSvgLinkTarget), linkTarget)) throw new ArgumentOutOfRangeException(nameof(linkTarget));
@@ -35,7 +40,14 @@ public sealed class ChartMarkOptions {
         }
         Href = href; LinkTarget = linkTarget; Tooltip = tooltip; AccessibleLabel = accessibleLabel; CssClass = cssClass;
         DataAttributes = new ReadOnlyDictionary<string, string>(attributes); Current = current; Selected = selected;
+        Keys = ChartLinkRecord.Keys(keys, nameof(keys));
+        Fields = ChartLinkRecord.Fields(fields, nameof(fields));
     }
+
+    /// <summary>Gets the detached record keys this mark represents, in authored order without duplicates.</summary>
+    public IReadOnlyList<string> Keys { get; }
+    /// <summary>Gets the detached, ordinally sorted field values; dates are normalized to ISO 8601 UTC strings.</summary>
+    public IReadOnlyDictionary<string, object> Fields { get; }
 
     /// <summary>Gets the optional navigation address.</summary>
     public string? Href { get; }

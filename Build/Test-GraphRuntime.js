@@ -4,6 +4,7 @@ const path = require('node:path');
 const tests = [
   'tests/adapter-localization/runtime.test.js',
   'tests/chart-interactivity/boxplot-distributions.test.js',
+  'tests/enhance-runtime/link.test.js',
   'tests/graph-explorer-bundles/runtime.test.js',
   'tests/graph-explorer-runtime/physics.test.js',
   'tests/graph-explorer-runtime/picking.test.js',

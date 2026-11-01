@@ -230,14 +230,14 @@ public sealed partial class VisualTheme {
     public static VisualTheme Dashboard() => DashboardPreset(colors => ConfigureDashboardPalette(colors,
         "#F2F5EC", "#FFFFFF", "#F6F8FB", ChartColor.FromHex("#DDE3D1"), ChartColor.FromHex("#DDE3D1"),
         ChartColor.FromHex("#DDE3D1"), "#BFC8B2", "#27C26A", "#F6C445", "#FF3B4F",
-        "#DDFB20", "#27C26A", "#356AF4", "#FF3B4F", "#667085"), 18, 14, 0.05);
+        "#DDFB20", "#27C26A", "#356AF4", "#FF3B4F", "#667085"), 14, 0.05);
 
     /// <summary>Creates a light dashboard palette for revenue trends, targets and driver cards.</summary>
     /// <remarks>The authored light palette is used in both modes.</remarks>
     public static VisualTheme SaasDashboard() => DashboardPreset(colors => ConfigureDashboardPalette(colors,
         "#F3F6FA", "#FCFDFE", "#F6F8FC", ChartColor.FromRgba(199, 210, 226, 46), ChartColor.FromRgba(210, 218, 232, 52),
         ChartColor.FromRgba(214, 222, 234, 142), "#A6B0C0", "#27C26A", "#F6C445", "#FF3B4F",
-        "#356AF4", "#667085", "#27C26A", "#FF3B4F"), 19, 12, 0.09, 4.2);
+        "#356AF4", "#667085", "#27C26A", "#FF3B4F"), 12, 0.09, 4.2);
 
     /// <summary>Creates a soft light dashboard palette for restaurant operations panels.</summary>
     /// <remarks>The authored light palette is used in both modes.</remarks>
@@ -247,7 +247,7 @@ public sealed partial class VisualTheme {
             "#D0A400", "#E66A1F", "#C46A23", "#EF7F22", "#FFB074", "#A38300", "#545454");
         colors.Foreground = ChartColor.FromHex("#161616");
         colors.MutedForeground = ChartColor.FromHex("#777776");
-    }, 20, 14, 0.05, 4);
+    }, 14, 0.05, 4);
 
     private static VisualTheme SinglePalettePreset(VisualThemeMode mode, Action<VisualDesignTokens> configure) {
         var colors = ClassicPresetColors(mode);
@@ -260,10 +260,11 @@ public sealed partial class VisualTheme {
         ClassicPresetTypography(), seriesStrokeWidth: 3, markerRadius: 3.25, barRadius: 8,
         cardRadius: 12, cardShadowOpacity: 0.10, cardShadowColor: ChartColor.FromRgb(15, 23, 42), plotRadius: 8);
 
-    private static VisualTheme DashboardPreset(Action<VisualDesignTokens> configure, double legendSize,
+    private static VisualTheme DashboardPreset(Action<VisualDesignTokens> configure,
         double plotRadius, double shadowOpacity, double markerRadius = 2.8) => SinglePalettePreset(VisualThemeMode.Light, configure)
         .Configure(builder => {
-            builder.Typography = ClassicPresetTypography(ChartFontStacks.Humanist, 26, 14, 12, 16, legendSize, 18);
+            // Design rule 7: ticks and legends share one secondary size, well below the titles.
+            builder.Typography = ClassicPresetTypography(ChartFontStacks.Humanist, 26, 14, 13, 14, 14, 16);
             builder.CardRadius = 24;
             builder.PlotRadius = builder.BarRadius = plotRadius;
             builder.CardShadowOpacity = shadowOpacity;

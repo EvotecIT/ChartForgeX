@@ -67,7 +67,8 @@ internal static partial class VisualScheduleCompiler {
         // A date caption identifies the day's calendar line, rather than a
         // task's arbitrary clock time. An automatic window includes that first
         // midnight; exact task instants and authored clipping bounds are retained.
-        if (frame == null && gantt && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && !axis.Minimum.HasValue
+        // Timelines share this: an axis whose first item starts mid-day still opens on that day's tick.
+        if (frame == null && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && !axis.Minimum.HasValue
             && max - min >= 1 && axis.LabelDensity != ChartLabelDensity.All
             && (fixedTicks == null || effectiveInterval >= ChartTimeTickUnit.Day)
             && ChartTimeScale.HasDayCaptionPrecision(axis, Format, min)
@@ -78,7 +79,7 @@ internal static partial class VisualScheduleCompiler {
             ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
         }
         var layout = frame?.Layout ?? LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,
-            now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null);
+            now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null, units: row);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
         var slot = frame?.Model.UnitHeight(plot) ?? plot.Height / Math.Max(1, row); var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
         // Linked rows need a gutter at least as wide as the connector's painted stroke. Keep the ordinary

@@ -60,6 +60,8 @@ internal static class VisualChartCompiler {
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
             ? builder.PushGroup(null, "coordinate-system", new Dictionary<string, string> { ["data-cfx-coordinate-system"] = "polar" }) : null;
+        if (family is VisualChartFamily.Cartesian or VisualChartFamily.NumericRadial or VisualChartFamily.Polar)
+            ReportPaletteReuse(chart, context.Theme.Resolve(context.ThemeMode).Palette.Count, builder);
         switch (family) {
             case VisualChartFamily.Cartesian: return VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, bubbleScale, axisLabels, colorScales, legendHeight, viewport, fullDomain);
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
@@ -78,6 +80,23 @@ internal static class VisualChartCompiler {
         }
         return null;
     }
+
+    /// <summary>
+    /// A seventh series is never a generated hue: when more series take automatic colours than the palette has slots,
+    /// slots repeat from the first, and the preparation says so instead of reusing them silently.
+    /// </summary>
+    internal static void ReportPaletteReuse(Chart chart, int slots, VisualSceneBuilder builder) {
+        if (slots <= 0 || chart.Options.SeriesColorAssignment == ChartSeriesColorAssignment.Identity) return;
+        var automatic = chart.Series.Count(series => !series.Color.HasValue && series.StateRole == ChartSeriesState.None
+            && series.Kind != ChartSeriesKind.PolarArea);
+        if (automatic <= slots) return;
+        builder.AddDiagnostic(PaletteReused(automatic, slots, "series"));
+    }
+
+    internal static VisualDiagnostic PaletteReused(int count, int slots, string items) => new("palette.reused",
+        count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + items + " use automatic colours but the palette has "
+        + slots.ToString(System.Globalization.CultureInfo.InvariantCulture) + " slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples.",
+        ChartForgeX.Diagnostics.VisualDiagnosticSeverity.Information);
 }
 
 internal enum VisualChartFamily { Cartesian, Radial, Gauge, RadialProgress, Polar, Scalar, Matrix, Schedule, Map, Hierarchy, Sankey, Chord, Specialty, NumericRadial }

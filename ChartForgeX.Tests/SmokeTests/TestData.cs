@@ -324,6 +324,9 @@ internal static partial class SmokeTests {
             element.Descendants().Any(child => child.Attribute(attribute) != null) ||
             element.Ancestors().Any(owner => owner.Attribute(attribute) != null)) ?? matches.FirstOrDefault();
         if (selected == null) throw new InvalidOperationException("Missing marker: " + marker);
+        // A bar rounded at its data end only is written as a path; read its box like a rect's.
+        if (selected.Name.LocalName == "path" && attribute is "x" or "y" or "width" or "height")
+            return SvgMarkGeometry.Attribute(selected, attribute).ToString("R", System.Globalization.CultureInfo.InvariantCulture);
         var result = selected.Attribute(attribute);
         if (attribute.StartsWith("data-", StringComparison.Ordinal))
             result ??= selected.Ancestors().Select(owner => owner.Attribute(attribute)).FirstOrDefault(value => value != null);

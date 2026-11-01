@@ -51,7 +51,7 @@ public sealed class RangeBarLayoutTests {
         var coordinates = new[] { 3d, 1, 2, 3, 1 };
         var starts = new[] { 8d, -12, -3, 4, 10 };
         var ends = new[] { -5d, 6, 9, 12, -8 };
-        double Category(double value) => horizontal ? (reverseCategory ? value : 4 - value) * 100 : (reverseCategory ? 4 - value : value) * 200;
+        double Category(double value) => horizontal ? (reverseCategory ? 4 - value : value) * 100 : (reverseCategory ? 4 - value : value) * 200;
         double Value(double value) => horizontal ? (reverseValue ? 20 - value : value + 20) * 20 : (reverseValue ? value + 20 : 20 - value) * 10;
         double Center(ChartRect bounds) => horizontal ? bounds.Top + bounds.Height / 2 : bounds.Left + bounds.Width / 2;
         for (var item = 0; item < marks.Length; item++) {

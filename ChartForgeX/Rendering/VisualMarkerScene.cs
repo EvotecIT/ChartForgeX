@@ -6,6 +6,9 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Resolves marker paint once and emits the shared native geometry consumed by both static exporters.</summary>
 internal static partial class VisualMarkerScene {
+    /// <summary>The role suffix of a marker's surface ring (design rule 5): backdrop, never the observation's ink.</summary>
+    internal const string RingSuffix = "-ring";
+
     internal static bool Enabled(ChartSeries series, bool familyDefault = true, ChartMarkerOptions? markerOptions = null) => (markerOptions ?? series.Markers).Enabled ?? familyDefault;
 
     internal static double Radius(ChartSeries series, VisualRenderContext context, ChartMarkerOptions? markerOptions = null) {
@@ -42,6 +45,10 @@ internal static partial class VisualMarkerScene {
         if (!familyOutline && !markers.Stroke.HasValue && !markers.StrokeWidth.HasValue && markers.OutlineStroke == null) return 0;
         return markers.OutlineStroke?.Width ?? markers.StrokeWidth ?? familyWidth;
     }
+
+    /// <summary>Design rule 5: a default marker sits on a 2px surface ring; an authored outline (even a zero width) or a bubble does not.</summary>
+    internal static bool HasSurfaceRing(ChartSeries series, ChartMarkerOptions markers, bool hasBackdrop, double width) =>
+        hasBackdrop && width <= 0 && !markers.StrokeWidth.HasValue && markers.OutlineStroke == null && series.Kind != ChartSeriesKind.Bubble;
 
     internal static double Extent(ChartSeries series, double radius, ChartMarkerOptions? markerOptions = null) {
         var markers = markerOptions ?? series.Markers;
@@ -98,6 +105,6 @@ internal static partial class VisualMarkerScene {
         if (width <= 0) { stroke = null; strokePaint = null; }
         var dash = outline?.ResolveDash(System.Array.Empty<double>());
         return new NativeMarkerPaint(markers, fill, stroke, width, new VisualScenePaintBinding(fillPaint, strokePaint),
-            dash, role, pattern, backdrop ?? ChartColor.White, patternRole ?? role + "-pattern");
+            dash, role, pattern, backdrop ?? ChartColor.White, patternRole ?? role + "-pattern", ring: HasSurfaceRing(series, markers, backdrop.HasValue, width));
     }
 }

@@ -56,7 +56,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (options?.FluidWidth == true) writer.Write("fluid-width");
             if (options?.PatternTiles == true) writer.Write("pattern-tiles");
             if (options?.HasPageFonts == true) {
-                writer.Write("page-fonts"); writer.Write(options.PageFontFamily!); writer.Write(options.PageFontSize!);
+                writer.Write("page-fonts"); writer.Write(options.PageFontFamily!); writer.Write(options.PageFontSize ?? "prepared");
             }
             for (var i = 0; i < scene.Nodes.Count; i++) {
                 var node = scene.Nodes[i];

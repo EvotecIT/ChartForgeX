@@ -38,6 +38,8 @@ internal static partial class VisualSceneRasterRenderer {
     private static List<List<ChartPoint>> Contours(VisualSceneMark shape, double density) {
         if (shape is VisualScenePath path) return VisualSceneGeometry.Flatten(path, density);
         if (shape is VisualSceneSlice slice) return VisualSceneGeometry.Flatten(slice, density);
+        if (shape is VisualSceneRectangle partial && partial.HasPartialCorners)
+            return VisualSceneGeometry.Flatten(new VisualScenePath(partial.Outline(), true, partial.Fill, partial.Stroke, partial.StrokeWidth, partial.Role, partial.Id), density);
         if (shape is VisualSceneRectangle rect) return new List<List<ChartPoint>> { RectanglePoints(rect.Bounds, rect.Radius, density) };
         if (shape is VisualSceneEllipse ellipse) {
             var points = ChartCurveFlattening.Arc(0, 0, 1, 0, Math.PI * 2, density * Math.Max(ellipse.Rx, ellipse.Ry));

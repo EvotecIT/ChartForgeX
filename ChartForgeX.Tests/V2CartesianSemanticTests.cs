@@ -61,8 +61,10 @@ public sealed class V2CartesianSemanticTests {
         chart.Series[2].WithSemanticRole(customRole);
         var prepared = chart.Prepare(Context());
         var svg = prepared.ToSvg();
-        var markers = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "ellipse").ToArray();
-        Assert.Equal(new[] { "marker", "point-callout", customRole }, markers.Select(element => (string?)element.Attribute("data-cfx-role")));
+        var markers = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "ellipse"
+            && ((string?)element.Attribute("data-cfx-role"))?.EndsWith("-ring", StringComparison.Ordinal) != true).ToArray();
+        Assert.Equal(new[] { "marker", "point-callout", customRole }, markers.Select(element => (string?)element.Attribute("data-cfx-role"))
+            .Where(role => role?.EndsWith("-ring", StringComparison.Ordinal) != true));
         for (var index = 0; index < markers.Length; index++) {
             var point = markers[index].Ancestors().Single(element => (string?)element.Attribute("data-cfx-role") == "point");
             Assert.Equal(index.ToString(CultureInfo.InvariantCulture), (string?)point.Attribute("data-cfx-series"));

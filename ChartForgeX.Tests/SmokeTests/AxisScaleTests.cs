@@ -93,8 +93,8 @@ internal static partial class SmokeTests {
         var png = chart.ToPng();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Logarithmic bars should not inject a zero baseline or non-positive x padding.");
         Assert(png.Length > 200 && png[0] == 137 && png[1] == 80, "Logarithmic bar bounds should remain valid in PNG rendering.");
-        var bar = SvgDocument.Parse(svg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "bar");
-        Assert(double.Parse(bar.GetAttribute("height")!, CultureInfo.InvariantCulture) > 1, "The smallest logarithmic bar should retain visible height above a positive baseline.");
+        var bar = System.Xml.Linq.XDocument.Parse(svg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "bar");
+        Assert(SvgMarkGeometry.Bounds(bar).Height > 1, "The smallest logarithmic bar should retain visible height above a positive baseline.");
 
         var horizontal = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
@@ -108,8 +108,8 @@ internal static partial class SmokeTests {
         var horizontalPng = horizontal.ToPng();
         Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar\"") == 2, "Horizontal logarithmic bars should use the positive plot edge instead of mapping a zero baseline.");
         Assert(horizontalPng.Length > 200 && horizontalPng[0] == 137 && horizontalPng[1] == 80, "Horizontal logarithmic bars should preserve SVG and PNG rendering parity.");
-        var horizontalBar = SvgDocument.Parse(horizontalSvg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "horizontal-bar");
-        Assert(double.Parse(horizontalBar.GetAttribute("width")!, CultureInfo.InvariantCulture) > 1, "The smallest horizontal logarithmic bar should retain visible width above a positive baseline.");
+        var horizontalBar = System.Xml.Linq.XDocument.Parse(horizontalSvg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "horizontal-bar");
+        Assert(SvgMarkGeometry.Bounds(horizontalBar).Width > 1, "The smallest horizontal logarithmic bar should retain visible width above a positive baseline.");
 
         var stackedBars = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
@@ -236,8 +236,8 @@ internal static partial class SmokeTests {
             .WithYAxisScale(ChartScaleKind.SymmetricLogarithmic)
             .AddWaterfall("Delta", new[] { new ChartPoint(0, 1), new ChartPoint(1, 999), new ChartPoint(2, -500) });
         var waterfallSvg = waterfall.ToSvg();
-        var firstWaterfallBar = SvgDocument.Parse(waterfallSvg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "waterfall-bar");
-        Assert(double.Parse(firstWaterfallBar.GetAttribute("height")!, CultureInfo.InvariantCulture) > 5, "Waterfall geometry should use the configured symmetric-logarithmic transform instead of linear normalization.");
+        var firstWaterfallBar = SvgDocument.Parse(waterfallSvg).Root.FindMarks().First(element => element.GetAttribute("data-cfx-role") == "waterfall-bar");
+        Assert(firstWaterfallBar.MarkNumber("height") > 5, "Waterfall geometry should use the configured symmetric-logarithmic transform instead of linear normalization.");
         Assert(waterfall.ToPng().Length > 200, "Waterfall axis scales should preserve SVG and PNG rendering parity.");
     }
 }

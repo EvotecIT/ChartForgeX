@@ -189,7 +189,10 @@ internal static class ChartHeatmapSurface {
     /// relative to the observed range (from zero for non-negative data) instead of treating 0–100 values as percentages.
     /// </summary>
     public static double Ratio(Chart chart, double value, double min, double max) {
-        if (!chart.Options.HeatmapRelativeScale) return Ratio(value, min, max);
+        // Status (semantic) heatmaps read a 0–100 domain as absolute percentages. Sequential heatmaps span the observed
+        // values (design rule 9), so the weakest step marks the smallest value and the legend's ends match the cells.
+        if (!chart.Options.HeatmapRelativeScale) return chart.Options.HeatmapScale == ChartHeatmapScale.Semantic || min < 0
+            ? Ratio(value, min, max) : ObservedRangeRatio(value, min, max);
         var floor = Math.Min(0, min);
         var span = max - floor;
         if (span <= 0) return max == 0 ? 0 : 1;

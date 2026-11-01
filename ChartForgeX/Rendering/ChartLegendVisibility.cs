@@ -38,7 +38,18 @@ internal static class ChartLegendVisibility {
     }
 
     public static bool ForEntries(Chart chart, int count) =>
-        chart.Options.ShowLegend && count > 0 && (count > 1 || chart.Options.HasExplicitLegend);
+        chart.Options.ShowLegend && count > 0 && (count > 1 || chart.Options.HasExplicitLegend) && !RepeatsRowLabels(chart) && !UsesDirectSeriesLabels(chart);
+
+    /// <summary>Design rule 8: direct labels before legends. Vertical slope charts name each line at its end instead.</summary>
+    internal static bool UsesDirectSeriesLabels(Chart chart) => !chart.Options.HasExplicitLegend && chart.Series.Count > 0
+        && chart.Series.All(series => series.Kind == ChartSeriesKind.Slope && chart.Options.SlopeOrientation != ChartOrientation.Horizontal);
+
+    /// <summary>
+    /// Design rule 8: a legend never repeats row labels. Gantt and timeline rows are named by their series, so an
+    /// automatic series legend would list the same words a second time. An explicitly requested legend is kept.
+    /// </summary>
+    internal static bool RepeatsRowLabels(Chart chart) => !chart.Options.HasExplicitLegend && chart.Series.Count > 0
+        && chart.Series.All(series => series.Kind is ChartSeriesKind.Gantt or ChartSeriesKind.Timeline && !VisualScheduleCompiler.IsMarker(series));
 
     public static bool ForSeries(Chart chart) {
         var count = 0;

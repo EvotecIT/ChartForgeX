@@ -2,6 +2,8 @@
 
 ChartForgeX keeps static SVG, PNG, and HTML output deterministic by default. Browser behavior lives in `ChartForgeX.Interactivity.Html` and is opt-in through reusable feature flags on `ChartInteractionOptions`.
 
+For static SVG on ordinary pages and reports, the much smaller [enhance runtime](enhance.md) adds the shared states, tooltips, keyboard model, legend toggles and linked views to every chart family without re-rendering, and takes family behaviours through `CfxEnhance.behaviour`. This page describes the full runtime for dashboards.
+
 The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-cfx-series-key`, `data-cfx-point`, `data-cfx-label`, `data-cfx-id`, and `data-cfx-role`. Chart families can expose their own shapes and still reuse the same hover, selection, keyboard traversal, compare tray, crosshair, lasso, focus trail, reveal label, scenario, and playback contracts.
 
 Selection and host highlights retain visible cues without changing native fill colors. Painted shapes use outlines, connected points retain their prepared markers, and text-only marks use a measured outline around their text. These cues follow the current drawing after resizing or replacement and disappear when their mark becomes hidden or their state clears. Interactive SVG and PNG downloads retain persistent selection and host-highlight cues; transient hover and keyboard-focus outlines are omitted.

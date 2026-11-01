@@ -11,6 +11,7 @@ public sealed class ChartAxisProjection {
     internal ChartAxisProjection(double fullMinimum, double fullMaximum, double minimum, double maximum,
         ChartRect plotBounds, ChartAxis axis, ChartAxisDimension dimension, ChartAxisSide side = ChartAxisSide.Primary) {
         PlotBounds = plotBounds; Dimension = dimension; Side = side;
+        PreparedValueTickStep = axis.PreparedValueTickStep;
         _axis = new ChartViewportAxisProjection(fullMinimum, fullMaximum, minimum, maximum,
             dimension == ChartAxisDimension.X ? plotBounds.Left : plotBounds.Top,
             dimension == ChartAxisDimension.X ? plotBounds.Right : plotBounds.Bottom, axis, dimension == ChartAxisDimension.Y);
@@ -44,6 +45,7 @@ public sealed class ChartAxisProjection {
     /// <summary>Gets captured ordinal or calendar-band time spacing, or null for elapsed time.</summary>
     public ChartTimeSpacing? TimeSpacing => _axis.TimeDomain?.Spacing;
     internal ChartTimeSpacingDomain? TimeDomain => _axis.TimeDomain;
+    internal double? PreparedValueTickStep { get; }
     internal double Threshold => _axis.Threshold;
     internal double TransformedMinimum => _axis.TransformedMinimum;
     internal double TransformedMaximum => _axis.TransformedMaximum;

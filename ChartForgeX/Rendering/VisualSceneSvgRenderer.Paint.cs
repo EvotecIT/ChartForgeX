@@ -25,7 +25,8 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static void WriteGradientShape(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index, VisualSvgOptions? options) {
         var shape = gradient.Shape;
-        if (shape is VisualSceneRectangle rect) writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
+        if (shape is VisualSceneRectangle partial && partial.HasPartialCorners) writer.StartElement("path").Attribute("d", RectanglePathData(partial));
+        else if (shape is VisualSceneRectangle rect) writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
             .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
         else if (shape is VisualScenePath path) writer.StartElement("path").Attribute("d", PathData(path));
         else if (shape is VisualSceneSlice slice) writer.StartElement("path").Attribute("d", ChartSlicePathGeometry.BuildPath(slice.Cx, slice.Cy, slice.Outer, slice.Inner, slice.Start, slice.Start + slice.Sweep));
@@ -63,7 +64,7 @@ internal static partial class VisualSceneSvgRenderer {
         var shape = gradient.Shape;
         Color(writer, shape.Fill); Color(writer, shape.Stroke); writer.Write(shape.StrokeWidth); PaintIdentity(writer, shape.Paint);
         WriteOpacityIdentity(writer, shape.Opacity);
-        if (shape is VisualSceneRectangle rect) { writer.Write(1); Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); }
+        if (shape is VisualSceneRectangle rect) { writer.Write(1); Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); writer.Write((int)rect.Corners); }
         else if (shape is VisualScenePath path) { writer.Write(2); WritePathIdentity(writer, path); }
         else if (shape is VisualSceneSlice slice) {
             writer.Write(3); writer.Write(slice.Cx); writer.Write(slice.Cy); writer.Write(slice.Outer);

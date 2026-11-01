@@ -62,6 +62,8 @@ internal static partial class VisualSankeyCompiler {
             if (options.LabelStyle == ChartSankeyLabelStyle.Backdrop)
                 builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop",
                     paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .92), .92)));
+            // Without a backdrop the pointer would fall between glyphs onto the flow behind: the whole caption box targets its node.
+            else builder.Rect(result.Bounds, ChartColor.Transparent, role: "sankey-label-hit-area");
             double x = side == ChartSankeyLabelPlacement.Left ? result.Bounds.Right - padding : side == ChartSankeyLabelPlacement.Center ? result.Bounds.X + result.Bounds.Width / 2 : result.Bounds.Left + padding;
             builder.Text(result.Text, x, result.Bounds.Y + padding + builder.TextAscent(style), style,
                 "sankey-node-label", id, paint: VisualChartPaint.Text(style),

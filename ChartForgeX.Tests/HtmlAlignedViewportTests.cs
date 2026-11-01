@@ -12,6 +12,43 @@ namespace ChartForgeX.Tests;
 
 public sealed class HtmlAlignedViewportTests {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AdaptiveYWindowKeepsTheDirectNativeTickScene(bool includeNavigator, bool secondary) {
+        var chart = Chart.Create().WithSize(800, 480).WithTitle("Native exploration")
+            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend(false)
+            .AddLine("Measurements", new[] { new ChartPoint(0, 10), new ChartPoint(5, 40), new ChartPoint(10, 90) });
+        if (secondary) {
+            chart.AddLine("Secondary", new[] { new ChartPoint(0, 100), new ChartPoint(5, 400), new ChartPoint(10, 900) });
+            chart.Series[1].UseSecondaryValueAxis();
+            chart.Options.SecondaryYAxis.Minimum = 0; chart.Options.SecondaryYAxis.Maximum = 1000;
+        }
+        var viewport = new ChartCartesianViewport(y: new ChartAxisWindow(20, 80));
+        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport, options => {
+            Configure(options); options.XNavigation.IncludeNavigator = includeNavigator;
+            options.Adaptive.NarrowWidth = 390;
+        });
+        foreach (var drawing in new[] { section.PreparedVisual, section.NarrowPreparedVisual! }) {
+            var context = new VisualRenderContext(new VisualLayoutOptions(drawing.Size, chart.Options.Padding),
+                chart.Options.Theme, chart.Options.ThemeMode,
+                new VisualFrame(chart.Title, chart.Subtitle, showLegend: false, legendPosition: chart.Options.LegendPosition,
+                    showSurface: chart.Options.ShowPlotBackground, transparentBackground: chart.Options.TransparentBackground,
+                    showCard: chart.Options.ShowCard));
+            Assert.Equal(chart.Prepare(context, viewport).ToSvg(), drawing.ToSvg());
+            Assert.Equal(20, drawing.YProjection!.Minimum); Assert.Equal(80, drawing.YProjection.Maximum);
+            Assert.Equal(0, drawing.YProjection.FullMinimum); Assert.Equal(100, drawing.YProjection.FullMaximum);
+            if (secondary) {
+                Assert.Equal(0, drawing.SecondaryYProjection!.Minimum); Assert.Equal(1000, drawing.SecondaryYProjection.Maximum);
+            }
+        }
+        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum);
+        Assert.Null(chart.Options.YAxis.PreparedValueTickStep);
+        Assert.Null(chart.Options.SecondaryYAxis.PreparedValueTickStep);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AdaptiveAutomaticMarkerDomainsStayAlignedAcrossWindowResetAndExports(bool reversed) {

@@ -16,7 +16,8 @@ internal static partial class VisualPolarCompiler {
             var series = chart.Series[0];
             return !series.ShowInLegend ? Array.Empty<VisualLegendEntry>() : series.RenderPoints.Select((point, index) =>
                 new VisualLegendEntry(Category(chart, point.X), ChartSeriesColours.CategoryPoint(series, index, colors), Id(0, index),
-                    series.Kind, Pattern(series, index), series.StateRole, series.InteractionIdentityKey)).ToArray();
+                    series.Kind, Pattern(series, index), series.StateRole, series.InteractionIdentityKey,
+                    paint: VisualChartPaint.Series(series, ChartSeriesColours.CategoryPoint(series, index, colors), index))).ToArray();
         }
         return chart.Series.Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend).Select(item => {
             var color = ChartSeriesColours.Resolve(item.series, item.index, colors); var paint = VisualChartPaint.Series(item.series, color);

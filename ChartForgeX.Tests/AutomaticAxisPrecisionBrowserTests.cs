@@ -1,3 +1,4 @@
+using System.Globalization;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
@@ -50,7 +51,18 @@ public sealed class AutomaticAxisPrecisionBrowserTests {
                 return labels.map(label => label.textContent);
             }
             """, new { id, theme, width, height });
-        Assert.Equal(new[] { "-0.0009", "-0.0008", "-0.0007", "-0.0006", "-0.0005" }, captions);
+        Assert.Equal(new[] { "-0.001", "-0.0009", "-0.0008", "-0.0007", "-0.0006", "-0.0005" }, captions);
+        var ticks = captions.Select(caption => decimal.Parse(caption, CultureInfo.InvariantCulture)).ToArray();
+        var values = await session.Page.EvaluateAsync<double[]>("""
+            () => [...document.querySelectorAll('[data-cfx-role="point"]')]
+                .map(point => Number(point.getAttribute('data-cfx-value')))
+            """);
+        Assert.True((double)ticks[0] <= values.Min(), "The first labelled tick must enclose the minimum point.");
+        Assert.True((double)ticks[^1] >= values.Max(), "The last labelled tick must enclose the maximum point.");
+        Assert.Equal(captions.Length, captions.Distinct(StringComparer.Ordinal).Count());
+        // The clean -0.001 endpoint drops a trailing zero; the remaining ticks need four decimal places.
+        Assert.All(captions.Skip(1), caption => Assert.Matches(@"^-0\.\d{4}$", caption));
+        for (var index = 1; index < ticks.Length; index++) Assert.Equal(.0001m, ticks[index] - ticks[index - 1]);
         AssertNoConsoleErrors(session);
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {

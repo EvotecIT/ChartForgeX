@@ -32,6 +32,13 @@ internal static partial class VisualArtifactInterchangeJson {
         OptionalString(writer, "class", options.CssClass); Boolean(writer, "current", options.Current); Boolean(writer, "selected", options.Selected);
         writer.Property("data"); writer.StartObject();
         foreach (var attribute in options.DataAttributes) String(writer, attribute.Key, attribute.Value);
-        writer.EndObject(); writer.EndObject();
+        writer.EndObject();
+        if (options.Keys.Count > 0) {
+            writer.Property("keys"); writer.StartArray();
+            foreach (var key in options.Keys) writer.String(key);
+            writer.EndArray();
+        }
+        if (options.Fields.Count > 0) String(writer, "fields", ChartLinkRecord.FieldsJson(options.Fields));
+        writer.EndObject();
     }
 }

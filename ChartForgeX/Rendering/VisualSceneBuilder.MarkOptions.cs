@@ -36,6 +36,10 @@ internal sealed partial class VisualSceneBuilder {
             foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
             if (options.CssClass != null) metadata["class"] = options.CssClass;
             foreach (var entry in options.DataAttributes) metadata[entry.Key] = entry.Value;
+            // Linked views read record keys and defining field values; an item's fields extend its series' fields.
+            if (options.Keys.Count > 0) metadata[ChartDomRoles.KeysAttribute] = ChartLinkRecord.KeysJson(options.Keys);
+            var fields = isMark || isRun ? ChartLinkRecord.Merge(series.MarkOptions?.Fields, options.Fields) : options.Fields;
+            if (fields.Count > 0) metadata[ChartDomRoles.FieldsAttribute] = ChartLinkRecord.FieldsJson(fields);
             if (options.Current || options.Selected) metadata["aria-current"] = "true";
             if (options.Current) metadata["data-cfx-current"] = "true";
             if (options.Selected) metadata["data-cfx-selected"] = "true";

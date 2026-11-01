@@ -40,7 +40,6 @@ internal static class HtmlChartLayoutSpecification {
             .Append(",\"cartesian\":").Append(region == null ? "false" : "true")
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
             .Append(matrixNode == null ? string.Empty : MatrixSettings(chart, matrixNode, prepared.Regions, plot, matrixWindow))
-            .Append(",\"maximumBarWidth\":").Append(N(chart.Options.MaximumBarWidth ?? chart.Options.Theme.MaximumBarWidth))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
         if (HtmlRadialLayoutSpecification.Supports(chart)) HtmlRadialLayoutSpecification.Append(output, chart, context, prepared, authoredHeight);

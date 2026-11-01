@@ -37,6 +37,10 @@ internal static partial class VisualCartesianCompiler {
         categoryLabels ??= new ChartAxisValueFormatter.Cache();
         var axisLabels = new AxisLabelCache(categoryLabels) { CategoryGroups = categoryGroups };
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
+        CollectCountAxes(chart, axisLabels, horizontal);
+        CollectSnapAxes(chart, axisLabels, horizontal);
+        // A source viewport keeps the full pass's clean domain: its ticks must still land on those ends.
+        axisLabels.FreezeDomains = !expandMarkers;
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
@@ -107,6 +111,8 @@ internal static partial class VisualCartesianCompiler {
             }
             RefreshCategoryDisplay(chart, context, builder, plot, viewport, range, colors, axisLabels);
             FitCartesianTicks(chart, context, builder, plot, range, secondaryRange, colors, axisLabels, horizontal);
+            // The full pass settles the clean value domain; a source viewport reuses it rather than re-snapping a window.
+            if (expandMarkers) SnapValueDomains(chart, range, secondaryRange, axisLabels, horizontal);
             if (!measureAxes || pass == maximumAxisPasses) break;
             var measured = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels)
                 : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);

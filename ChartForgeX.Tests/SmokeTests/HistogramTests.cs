@@ -32,11 +32,11 @@ internal static partial class SmokeTests {
         Assert(layout.Count == 4 && Math.Abs(layout.GetWidth(0) - 3) < 0.000001, "Histogram layouts should preserve the requested bin width.");
         Assert(chart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 2d, 2d, 1d, 2d }), "Histogram values should use the requested width when assigning bins.");
         Assert(chart.Series[0].HistogramBins.Select(bin => (bin.LowerBound, bin.UpperBound)).SequenceEqual(new[] { (0d, 3d), (3d, 6d), (6d, 9d), (9d, 10d) }), "Histogram aggregates should retain full-width bins and a final remainder bin.");
-        var bars = SvgDocument.Parse(chart.ToSvg()).Root.FindByTag("rect")
+        var bars = SvgDocument.Parse(chart.ToSvg()).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        var firstWidth = double.Parse(bars[0].GetAttribute("width")!, CultureInfo.InvariantCulture);
-        var finalWidth = double.Parse(bars[3].GetAttribute("width")!, CultureInfo.InvariantCulture);
+        var firstWidth = bars[0].MarkNumber("width");
+        var finalWidth = bars[3].MarkNumber("width");
         Assert(Math.Abs(finalWidth / firstWidth - 1.0 / 3.0) < 0.01, "Histogram geometry should render a shorter remainder bin in proportion to its numeric width.");
         var decimalLayout = ChartHistogramBinLayout.FromWidth(0, 0.07, 0.005);
         var remainderLayout = ChartHistogramBinLayout.FromWidth(0, 0.071, 0.005);
@@ -70,12 +70,12 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .AddHistogram("Observed", new[] { 0.25, 0.75, 1.25, 1.75 }, layout)
             .AddBar("Target", new[] { new ChartPoint(0.5, 3), new ChartPoint(1.5, 2) });
-        var bars = SvgDocument.Parse(grouped.ToSvg()).Root.FindByTag("rect")
+        var bars = SvgDocument.Parse(grouped.ToSvg()).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        var histogramLeft = double.Parse(bars[0].GetAttribute("x")!, CultureInfo.InvariantCulture);
-        var histogramWidth = double.Parse(bars[0].GetAttribute("width")!, CultureInfo.InvariantCulture);
-        var regularLeft = double.Parse(bars[2].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        var histogramLeft = bars[0].MarkNumber("x");
+        var histogramWidth = bars[0].MarkNumber("width");
+        var regularLeft = bars[2].MarkNumber("x");
         Assert(histogramLeft + histogramWidth <= regularLeft + 0.001, "Grouped histogram and regular bars at the same numeric coordinate should receive distinct slots.");
         Assert(grouped.ToPng().Length > 64, "Mixed histogram and regular bars should preserve PNG rendering parity.");
 
@@ -87,7 +87,7 @@ internal static partial class SmokeTests {
             .AddHistogram("Observed", new[] { 0.11, 0.12, 0.25 }, decimalLayout)
             .AddBar("Target", new[] { new ChartPoint(0.15, 3), new ChartPoint(0.25, 2) });
         var stackedSvg = stacked.ToSvg();
-        var stackedBars = SvgDocument.Parse(stackedSvg).Root.FindByTag("rect")
+        var stackedBars = SvgDocument.Parse(stackedSvg).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(((string?)CartesianPoint(stackedSvg, 1, 0).Attribute("data-cfx-base")) == "2", "Stacked regular bars should start at the matching histogram count.");
@@ -102,7 +102,7 @@ internal static partial class SmokeTests {
             .WithStackedBars()
             .AddHistogram("Narrow bins", new[] { 0.000000001, 0.000000002, 0.000000015 }, narrowLayout)
             .AddBar("Narrow target", new[] { new ChartPoint(0.000000015, 2) });
-        var narrowBars = SvgDocument.Parse(narrow.ToSvg()).Root.FindByTag("rect")
+        var narrowBars = SvgDocument.Parse(narrow.ToSvg()).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(((string?)CartesianPoint(narrow.ToSvg(), 1, 0).Attribute("data-cfx-base")) == "1", "Stacked bars should not match an earlier adjacent histogram bin merely because the bin width is below one millionth.");
@@ -135,7 +135,7 @@ internal static partial class SmokeTests {
             .AddHistogram("Count layout", new[] { 0.01 }, countLayout)
             .AddHistogram("Width layout", new[] { 0.01 }, widthLayout);
         var equivalentSvg = equivalentLayouts.ToSvg();
-        var equivalentBars = SvgDocument.Parse(equivalentSvg).Root.FindByTag("rect")
+        var equivalentBars = SvgDocument.Parse(equivalentSvg).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(((string?)CartesianPoint(equivalentSvg, 1, 0).Attribute("data-cfx-base")) == "1", "Equivalent independently-created histogram layouts should stack their matching bins.");
@@ -154,7 +154,7 @@ internal static partial class SmokeTests {
             .AddHistogram("Chain middle", new[] { chainMiddle }, ChartHistogramBinLayout.FromCount(0, chainMiddle * 2, 1, roundBounds: false))
             .AddHistogram("Chain end", new[] { chainEnd }, ChartHistogramBinLayout.FromCount(0, chainEnd * 2, 1, roundBounds: false));
         var chainedSvg = chainedLayouts.ToSvg();
-        var chainedBars = SvgDocument.Parse(chainedSvg).Root.FindByTag("rect")
+        var chainedBars = SvgDocument.Parse(chainedSvg).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(((string?)CartesianPoint(chainedSvg, 2, 0).Attribute("data-cfx-base")) == "2", "Transitive coordinate chains should share one stable stacked base.");
@@ -166,11 +166,11 @@ internal static partial class SmokeTests {
             .AddHistogram("Grouped chain start", new[] { chainCenter }, ChartHistogramBinLayout.FromCount(0, chainCenter * 2, 1, roundBounds: false))
             .AddHistogram("Grouped chain middle", new[] { chainMiddle }, ChartHistogramBinLayout.FromCount(0, chainMiddle * 2, 1, roundBounds: false))
             .AddHistogram("Grouped chain end", new[] { chainEnd }, ChartHistogramBinLayout.FromCount(0, chainEnd * 2, 1, roundBounds: false));
-        var groupedChainBars = SvgDocument.Parse(groupedChain.ToSvg()).Root.FindByTag("rect")
+        var groupedChainBars = SvgDocument.Parse(groupedChain.ToSvg()).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        var groupedChainLeft = groupedChainBars.Select(bar => double.Parse(bar.GetAttribute("x")!, CultureInfo.InvariantCulture)).ToArray();
-        var groupedChainWidth = groupedChainBars.Select(bar => double.Parse(bar.GetAttribute("width")!, CultureInfo.InvariantCulture)).ToArray();
+        var groupedChainLeft = groupedChainBars.Select(bar => bar.MarkNumber("x")).ToArray();
+        var groupedChainWidth = groupedChainBars.Select(bar => bar.MarkNumber("width")).ToArray();
         Assert(groupedChainWidth.Max() - groupedChainWidth.Min() < 0.001, "Transitive grouped layouts should use one shared bar width.");
         Assert(groupedChainLeft[0] + groupedChainWidth[0] <= groupedChainLeft[1] + 0.001 && groupedChainLeft[1] + groupedChainWidth[1] <= groupedChainLeft[2] + 0.001,
             "Transitive grouped layouts should use stable non-overlapping positions.");
@@ -185,7 +185,7 @@ internal static partial class SmokeTests {
             .AddHistogram("Adjacent first", new[] { adjacentMinimum, adjacentMaximum, adjacentMaximum }, adjacentLayout)
             .AddHistogram("Adjacent second", new[] { adjacentMinimum, adjacentMinimum, adjacentMinimum, adjacentMaximum, adjacentMaximum, adjacentMaximum, adjacentMaximum }, adjacentLayout);
         var adjacentSvg = adjacentBins.ToSvg();
-        var adjacentBars = SvgDocument.Parse(adjacentSvg).Root.FindByTag("rect")
+        var adjacentBars = SvgDocument.Parse(adjacentSvg).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(((string?)CartesianPoint(adjacentSvg, 1, 0).Attribute("data-cfx-base")) == "1", "The first ultra-narrow bin should stack only with its corresponding prior bin.");
@@ -200,7 +200,7 @@ internal static partial class SmokeTests {
             .WithStackedBars()
             .AddHistogram("Epsilon bins", new[] { 0d, double.Epsilon * 8, double.Epsilon * 8 }, epsilonLayout)
             .AddBar("Boundary target", new[] { new ChartPoint(epsilonBoundary, 3) });
-        var mixedBoundaryBars = SvgDocument.Parse(mixedBoundary.ToSvg()).Root.FindByTag("rect")
+        var mixedBoundaryBars = SvgDocument.Parse(mixedBoundary.ToSvg()).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
         Assert(((string?)CartesianPoint(mixedBoundary.ToSvg(), 1, 0).Attribute("data-cfx-base")) == "1", "An ambiguous regular coordinate should stack with the same ultra-narrow bin used for geometry.");
@@ -220,14 +220,14 @@ internal static partial class SmokeTests {
             .AddHistogram("First constant", new[] { 5d, 5d }, constantLayout)
             .AddHistogram("Second constant", new[] { 5d }, constantLayout)
             .AddBar("Constant target", new[] { new ChartPoint(5, 3) });
-        var constantBars = SvgDocument.Parse(constant.ToSvg()).Root.FindByTag("rect")
+        var constantBars = SvgDocument.Parse(constant.ToSvg()).Root.FindMarks()
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        var firstConstantLeft = double.Parse(constantBars[0].GetAttribute("x")!, CultureInfo.InvariantCulture);
-        var firstConstantWidth = double.Parse(constantBars[0].GetAttribute("width")!, CultureInfo.InvariantCulture);
-        var secondConstantLeft = double.Parse(constantBars[1].GetAttribute("x")!, CultureInfo.InvariantCulture);
-        var secondConstantWidth = double.Parse(constantBars[1].GetAttribute("width")!, CultureInfo.InvariantCulture);
-        var regularConstantLeft = double.Parse(constantBars[2].GetAttribute("x")!, CultureInfo.InvariantCulture);
+        var firstConstantLeft = constantBars[0].MarkNumber("x");
+        var firstConstantWidth = constantBars[0].MarkNumber("width");
+        var secondConstantLeft = constantBars[1].MarkNumber("x");
+        var secondConstantWidth = constantBars[1].MarkNumber("width");
+        var regularConstantLeft = constantBars[2].MarkNumber("x");
         Assert(firstConstantLeft + firstConstantWidth <= secondConstantLeft + 0.001 && secondConstantLeft + secondConstantWidth <= regularConstantLeft + 0.001,
             "Grouped constant-value histograms and regular bars should receive distinct slots.");
         Assert(constant.ToPng().Length > 64, "Grouped constant-value histogram slots should preserve PNG rendering parity.");

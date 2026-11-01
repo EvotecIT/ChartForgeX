@@ -32,8 +32,9 @@ internal static partial class VisualAnnotationCompiler {
             var bounds = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right, left)), Math.Max(plot.Top, Math.Min(plot.Bottom, top)),
                 Math.Max(0, right - left), Math.Max(0, bottom - top));
             var id = annotation.Id is ChartAnnotationId authoredId ? VisualAnnotationIdentity.SourceIdFor(authoredId) : "annotation-" + Number(index);
-            var description = annotation.Kind + ": (" + Number(source.X) + ", " + Number(source.Y) + ")"
-                + (annotation.SourceEnd.HasValue ? " to (" + Number(sourceEnd.X) + ", " + Number(sourceEnd.Y) + ")" : "")
+            // Named coordinates rather than a bare "(x, y)" tuple: "Note at x 3, y 40: Review".
+            var description = annotation.Kind + (annotation.SourceEnd.HasValue ? " from" : " at") + " x " + Number(source.X) + ", y " + Number(source.Y)
+                + (annotation.SourceEnd.HasValue ? " to x " + Number(sourceEnd.X) + ", y " + Number(sourceEnd.Y) : "")
                 + (annotation.Kind == ChartAnnotationKind.ParallelChannel ? ", Y offset " + Number(annotation.ChannelOffset) : "")
                 + (annotation.Label.Length > 0 ? ": " + annotation.Label : "");
             var metadata = new Dictionary<string, string> {

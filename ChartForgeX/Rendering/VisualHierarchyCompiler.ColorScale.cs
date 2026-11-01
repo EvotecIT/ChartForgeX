@@ -124,6 +124,7 @@ internal static partial class VisualHierarchyCompiler {
                 var blend = ChartColorScaleSurface.NoData(scale, colors);
                 builder.Rect(new ChartRect(area.X, missingY + height * .15, height * .7, height * .7), blend.Color,
                     role: surface.RolePrefix + "-color-scale-missing", paint: VisualChartPaint.Fill(blend.Paint));
+                if (scale?.NoDataColor == null) ChartMissingData.Hatch(builder, ChartPathBuilder.RoundedRectangle(new ChartRect(area.X, missingY + height * .15, height * .7, height * .7), 0), colors.MutedForeground, surface.RolePrefix + "-color-scale-missing");
                 ScaleCaption(surface.Presentation.NoData, area.X + height, missingY, Math.Max(0, area.Width - height), TextAlignment.Left, "missing");
             }
         }

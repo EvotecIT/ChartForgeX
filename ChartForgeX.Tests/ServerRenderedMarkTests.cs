@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
@@ -173,6 +174,21 @@ public sealed class ServerRenderedMarkTests {
         Assert.Null(link.Attribute("aria-selected"));
         Assert.Contains(link.Descendants(), node => (string?)node.Attribute("data-cfx-role") == outline);
         Assert.Equal(selected ? "true" : null, (string?)link.Attribute("data-cfx-selected"));
+    }
+
+    /// <summary>A selected line point is circled, not boxed: the ring clears the marker and its surface ring.</summary>
+    [Fact]
+    public void SelectedPointTakesARingAroundItsMarker() {
+        var points = new[] { new ChartPoint(1, 2), new ChartPoint(2, 4).WithMarkOptions(new ChartMarkOptions(href: "/day", selected: true)), new ChartPoint(3, 3) };
+        var document = XDocument.Parse(Chart.Create().WithLineMarkers(ChartLineMarkerMode.All).AddLine("Updates", points).ToSvg());
+        var link = Assert.Single(document.Descendants(), node => (string?)node.Attribute("href") == "/day");
+        var marker = link.Descendants().First(node => (string?)node.Attribute("data-cfx-role") == "marker");
+        var outline = Assert.Single(link.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "mark-selected-outline");
+        Assert.Equal("ellipse", outline.Name.LocalName);
+        Assert.Equal((string?)marker.Attribute("cx"), (string?)outline.Attribute("cx"));
+        Assert.Equal((string?)outline.Attribute("rx"), (string?)outline.Attribute("ry"));
+        Assert.True(double.Parse((string)outline.Attribute("rx")!, CultureInfo.InvariantCulture)
+            >= double.Parse((string)marker.Attribute("rx")!, CultureInfo.InvariantCulture) + ChartMarkSurface.MarkerRing + 2);
     }
 
     [Fact]

@@ -17,8 +17,12 @@ internal static partial class VisualSceneSvgRenderer {
         writer.Attribute("font-family", options.PageFontFamily).Attribute("font-size", options.PageFontSize);
     }
 
+    // A family-only page policy keeps each line's prepared size.
     private static void WriteTextFontAttributes(SvgMarkupWriter writer, string family, double size, VisualSvgOptions? options) {
-        if (options?.HasPageFonts == true) return;
+        if (options?.HasPageFonts == true) {
+            if (options.PageFontSize == null) writer.Attribute("font-size", size);
+            return;
+        }
         writer.Attribute("font-family", family).Attribute("font-size", size);
     }
 }

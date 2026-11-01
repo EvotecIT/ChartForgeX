@@ -36,7 +36,9 @@ public sealed class PreparedCartesianCalloutTests {
             Assert.Contains("Apr", Assert.Single(prepared.Regions, region => region.Role == "annotation").Label);
             Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
             var point = Assert.Single(prepared.Regions, region => region.Id == "series-2-point-0").Bounds;
-            Assert.True(label.X + label.Text.Metrics.Width < point.Left);
+            // Half-band padding leaves room beside the endpoint; the caption sits clear of the point on either side.
+            var top = label.Baseline - label.Text.Ascent;
+            Assert.True(label.X + label.Text.Metrics.Width <= point.Left || label.X >= point.Right || top + label.Text.Metrics.Height <= point.Top || top >= point.Bottom);
             Assert.True(label.Baseline - label.Text.Metrics.Height > point.Bottom);
             var svg = prepared.ToSvg(); var png = prepared.ToPng();
             var metadata = System.Xml.Linq.XDocument.Parse(svg).Descendants()

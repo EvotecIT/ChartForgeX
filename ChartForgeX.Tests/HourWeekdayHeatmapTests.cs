@@ -91,7 +91,8 @@ public sealed class HourWeekdayHeatmapTests {
         var percent = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(900, 360).AddHourWeekdayHeatmap(values);
         percent.Options.HeatmapRelativeScale = false;
         var percentBusiest = ByRole(XDocument.Parse(percent.ToSvg()), "heatmap-cell").Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
-        Assert.Equal("1", (string?)percentBusiest.Attribute("data-cfx-level"));
+        // A sequential heatmap spans its observed values (design rule 9): the busiest hour is the strongest step.
+        Assert.Equal("4", (string?)percentBusiest.Attribute("data-cfx-level"));
 
         Assert.Equal(chart.ToPng(), Chart.Create().WithTheme(VisualTheme.Report()).WithSize(900, 360).AddHourWeekdayHeatmap(values).ToPng());
         Assert.NotEqual(chart.ToPng(), percent.ToPng());

@@ -24,7 +24,7 @@ internal sealed class ChartStateTimelineModel {
     /// <summary>Distance from the top of the lanes up to the baseline of the summary header and the "Now" label.</summary>
     public const double SummaryHeaderOffset = 5;
     /// <summary>Height of a group header row, in lanes.</summary>
-    public const double GroupRowUnits = 0.9;
+    public const double GroupRowUnits = 0.8; // a group header sits close above its first row (design rule 10)
     /// <summary>Height of the gap that closes a group when ungrouped lanes follow, in lanes.</summary>
     public const double SeparatorRowUnits = 0.4;
 

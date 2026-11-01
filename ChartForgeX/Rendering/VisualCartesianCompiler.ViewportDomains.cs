@@ -40,8 +40,7 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static ChartAxis CategoryProjectionAxis(Chart chart) => chart.Options.YAxis.Scale == ChartScaleKind.Time
-        ? chart.Options.YAxis.Clone() : new ChartAxis { Reversed = chart.Options.YAxis.Reversed, PreparedViewportWindow = chart.Options.YAxis.PreparedViewportWindow };
+    private static ChartAxis CategoryProjectionAxis(Chart chart) => ChartCartesianOrientation.HorizontalCategoryProjection(chart) is var axis && axis.Scale == ChartScaleKind.Time ? axis.Clone() : axis;
 
     private static void ValidateWindow(ChartAxisWindow? window, double fullMinimum, double fullMaximum, ChartAxis axis, string name) {
         if (window == null) return;

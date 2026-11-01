@@ -18,9 +18,9 @@ internal sealed class ChartMapper {
         ValidateRange(range.MinY, range.MaxY, yAxis, "y");
     }
 
-    /// <summary>Creates a mapper whose horizontal-bar category coordinates remain linear.</summary>
-    public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis, ChartAxis categoryAxis) =>
-        new ChartMapper(plot, range, valueAxis, categoryAxis.Scale == ChartScaleKind.Time ? categoryAxis : new ChartAxis { Reversed = categoryAxis.Reversed, PreparedViewportWindow = categoryAxis.PreparedViewportWindow });
+    /// <summary>Creates a mapper whose horizontal-bar category coordinates remain linear and read in natural order.</summary>
+    public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis, Chart chart) =>
+        new ChartMapper(plot, range, valueAxis, ChartCartesianOrientation.HorizontalCategoryProjection(chart));
 
     /// <summary>Returns the actual calendar-band pitch without inventing missing source observations.</summary>
     internal double CalendarBandPitch(bool horizontal) {

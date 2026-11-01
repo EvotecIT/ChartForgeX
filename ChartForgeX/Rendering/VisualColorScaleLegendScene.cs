@@ -218,7 +218,7 @@ internal static partial class VisualColorScaleLegendScene {
             using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
                 new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
                 // A pale fill alone disappears on both themes, so the no-data key also gets an outline and a hatch.
-                VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix);
+                VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix, scale.NoDataColor == null);
             }
             Caption(labels.NoData, new ChartRect(lane.Left + row, top, Math.Max(0, lane.Width - row), row), "missing", TextAlignment.Left);
         }

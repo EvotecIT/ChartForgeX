@@ -54,6 +54,7 @@ public static partial class V2Examples {
         WriteOwnedHtmlFonts(output, artifacts);
         ServerRenderedChartExamples.Write(output);
         WriteEmbedding(output, artifacts);
+        EnhanceExamples.Write(output);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

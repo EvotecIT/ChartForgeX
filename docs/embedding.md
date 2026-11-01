@@ -45,7 +45,7 @@ Choose a focus colour that contrasts with both page themes, and check the links 
 
 State-timeline items with authored mark options retain their interval boundaries. Unadorned adjacent intervals may still merge into one run; a series default then applies to the run without assigning it one contributor's observation ID. Plot-only strips omit the SVG label/summary row, including its navigation.
 
-Class names are ASCII CSS identifiers separated by single spaces. Complete `data-*` names must use lowercase ASCII letters, digits, underscores and hyphens after `data-`, beginning with a letter. `data-cfx` and `data-cfx-*` are reserved. Invalid hooks throw rather than being rewritten. Values are escaped as text; valid class names, attribute names and values retain their spelling. `Current` and `Selected` identify the page's active item with `aria-current="true"` and the `data-cfx-current` or `data-cfx-selected` hook. Schedule rows use a subtle band across the label and track, a left accent and semibold row text. Individual marks use dashed current or solid selected outlines. These state treatments also appear in raster output. Links retain navigation semantics rather than becoming selection widgets.
+Class names are ASCII CSS identifiers separated by single spaces. Complete `data-*` names must use lowercase ASCII letters, digits, underscores and hyphens after `data-`, beginning with a letter. `data-cfx` and `data-cfx-*` are reserved. Invalid hooks throw rather than being rewritten. Values are escaped as text; valid class names, attribute names and values retain their spelling. `Current` and `Selected` identify the page's active item with `aria-current="true"` and the `data-cfx-current` or `data-cfx-selected` hook. Schedule rows use a subtle band across the label and track, a left accent and semibold row text. Individual marks use a surface halo with a solid secondary-ink current outline or primary-ink selected outline; points use rings. These state treatments also appear in raster output. Links retain navigation semantics rather than becoming selection widgets.
 
 ## Shared scales and HTML row labels
 
@@ -126,6 +126,31 @@ These colours keep separate variable names even when their fallbacks are identic
 
 `WithInheritedFonts()` inherits both family and size from the page. `WithFontVariables()` can name either property and inherits the omitted one. Layout still uses the font metrics supplied during preparation. Choose matching preparation and page fonts when exact text fitting matters; changing CSS fonts does not remeasure or reflow the prepared chart. Native glyph contours, captured text images and raster exports retain their prepared fonts.
 
+## Shared design roles
+
+CanopyX and HtmlForgeX pages define the shared `--hfx-*` design roles (surfaces, text, series, ramps, severity and outcome colours, `--hfx-font-sans`). `WithSharedDesignRoles()` writes the chart's colours as those properties, with the chart theme's values as fallbacks, and sets text to `var(--hfx-font-sans, inherit)` while keeping its prepared sizes. The [design language](design-language.md) lists the roles.
+
+```csharp
+var chart = Chart.Create().AddBar("Updates", updates).AddBar("Fixes", fixes);
+var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
+    new VisualSvgOptions("weekly-activity").WithSharedDesignRoles());
+// fill="var(--hfx-color-series-1, #2A78D6)", stroke="var(--hfx-color-surface-line, #E2E4E7)", ...
+```
+
+That is all the page needs. Inside a CanopyX or HtmlForgeX page, the chart follows the page's theme, including its dark mode, without further configuration. A page that defines none of the properties shows the default Graphite colours and its own font. For a chart prepared with another theme or mode, pass them: `WithSharedDesignRoles(theme, VisualThemeMode.Dark)`. `chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, mode))` applies the same colours to `chart.ToSvg()`, and visual blocks accept them through `WithSvgColorVariables(...)`. PNG, email and Office output use the resolved theme colours.
+
+Series keep their palette slot: series 3 writes `--hfx-color-series-3` even when its colour equals slot 1. Light and dark are separate token sets selected by `ThemeMode`; nothing is inverted automatically. A brand theme is token values only:
+
+```csharp
+var brand = VisualTheme.Graphite()
+    .WithPalette(VisualThemeMode.Light, ChartPalettes.FromHex("#0b5cad", "#00897b", "#6a4fd8", "#a0522d", "#b03a8c", "#4f7a00"))
+    .WithPalette(VisualThemeMode.Dark, ChartPalettes.FromHex("#4d8fe0", "#26a69a", "#8f7bf0", "#c06a42", "#cc5aa6", "#73a12a"));
+chart.WithTheme(brand);
+// Or load a complete light/dark token document: VisualTheme.FromPaletteJson(File.ReadAllText("brand.tokens.json"))
+```
+
+Validate a new categorical set in both modes before you ship it. The default order is the validated set from the design language. Status colours are kept out of the series cycle.
+
 ## Time overlays and open support windows
 
 Existing `WithGanttToday(...)` and `WithGanttLaneNow(...)` supply an explicit current instant. `AddVerticalBand(start, end, ...)` highlights a selected interval behind schedule marks as well as Cartesian marks. Supply dates using the chart family's documented time convention; classic Gantt uses wall-clock OLE dates, while Gantt lanes use UTC instants.
@@ -168,6 +193,10 @@ Pass a unique, stable `idPrefix` for every occurrence on a page, including repea
 Static SVG, native links, fluid tracks and data tables need no inline script. The static output includes SVG presentation/style attributes, and table fallbacks include scoped CSS. Account for those styles in the page's `style-src` policy; this API does not supply a CSP nonce. Interactive adapters have a separate script policy and are optional.
 
 Test links and hooks against the [DOM contract](https://chartforgex.com/docs/dom-contract/), not child order or generated definition IDs. Check each link's URL, target, accessible label and tab stop; check host attributes verbatim; resize the HTML track column and measure text and marker dimensions. Inspect desktop and phone output in both page themes, and test the actual rendered page's keyboard navigation and data disclosure. Try the [linked columns, support schedule and shared strips](https://chartforgex.com/examples/generated/embedding/light.html), or open their companion source-and-output story.
+
+## Optional enhancement
+
+The page stays complete without script. To add hover and focus states, tooltips, keyboard navigation, legend toggles and linked views (for example with a CanopyX grid), export with `WithEnhanceHooks()`, give marks record `keys` and `fields` in `ChartMarkOptions`, and include the [enhance runtime](enhance.md) once per page.
 
 ## Updating existing applications
 

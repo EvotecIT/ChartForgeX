@@ -35,7 +35,7 @@ internal static partial class VisualCartesianCompiler {
                 if (plot.Width <= 0 || plot.Height <= 0) continue;
                 var secondary = series.ValueAxis == ChartAxisSide.Secondary;
                 var valueAxis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
-                var map = horizontal ? ChartMapper.ForHorizontalBars(plot, secondary ? secondaryRange! : range, valueAxis, chart.Options.YAxis)
+                var map = horizontal ? ChartMapper.ForHorizontalBars(plot, secondary ? secondaryRange! : range, valueAxis, chart)
                     : new ChartMapper(plot, secondary ? secondaryRange! : range, chart.Options.XAxis, valueAxis);
                 var intervalRadius = series.Kind == ChartSeriesKind.BoxPlot ? BoxPlotValuePaintRadius(series)
                     : RangeBarValuePaintRadius(chart, context, plot, map, index);

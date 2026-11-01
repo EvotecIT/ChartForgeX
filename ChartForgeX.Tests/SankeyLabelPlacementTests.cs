@@ -18,7 +18,7 @@ public sealed class SankeyLabelPlacementTests {
         var captionColor = ChartColor.FromHex("#CC22AA");
         chart.Series[0].ConfigurePointDataLabelStyle(1, style => style.Color = captionColor);
         var original = Prepare(chart);
-        chart.ConfigureSankey(options => { options.LabelPlacement = placement; options.EdgeLabelPlacement = null; });
+        chart.ConfigureSankey(options => { options.LabelPlacement = placement; options.EdgeLabelPlacement = null; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
         var prepared = Prepare(chart);
         Assert.Equal(original.Regions.Select(region => (region.Id, region.Role, region.Bounds, region.Label)),
             prepared.Regions.Select(region => (region.Id, region.Role, region.Bounds, region.Label)));
@@ -43,7 +43,7 @@ public sealed class SankeyLabelPlacementTests {
     [InlineData(ChartSankeyEdgeLabelPlacement.Outside)]
     public void EdgeOverridesKeepTheMiddleCenteredAndKeepOpposingLabelSlotsSeparate(ChartSankeyEdgeLabelPlacement edge) {
         var chart = Chain();
-        chart.ConfigureSankey(options => { options.LabelPlacement = ChartSankeyLabelPlacement.Center; options.EdgeLabelPlacement = edge; });
+        chart.ConfigureSankey(options => { options.LabelPlacement = ChartSankeyLabelPlacement.Center; options.EdgeLabelPlacement = edge; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
         var prepared = Prepare(chart); var labels = Labels(prepared); Assert.Equal(3, labels.Length);
         AssertSide(labels.Single(label => label.Id!.EndsWith("-first", StringComparison.Ordinal)), Node(prepared, "first"),
             edge == ChartSankeyEdgeLabelPlacement.Inside ? ChartSankeyLabelPlacement.Right : ChartSankeyLabelPlacement.Left);
@@ -61,7 +61,7 @@ public sealed class SankeyLabelPlacementTests {
         var chart = Chart.Create().WithSize(360, 260).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithPngFont(Font()).AddSankey("Flow", new[] { new ChartNode("first", name), new ChartNode("last", name) },
                 new[] { new ChartFlowLink("flow", "first", "last", 100) })
-            .ConfigureSankey(options => options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Inside);
+            .ConfigureSankey(options => { options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Inside; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
         var color = ChartColor.FromHex("#7356BD");
         chart.Series[0].ConfigurePointDataLabelStyle(0, style => { style.Color = color; style.FontSize = 13; style.Underline = true; });
         var prepared = Prepare(chart);
@@ -76,7 +76,7 @@ public sealed class SankeyLabelPlacementTests {
     public void PreparedLabelsRemainDetachedAndInvalidEnumsDoNotMutateTheOptions() {
         var chart = Chain(); var prepared = Prepare(chart);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-        chart.ConfigureSankey(options => { options.LabelPlacement = ChartSankeyLabelPlacement.Center; options.EdgeLabelPlacement = null; });
+        chart.ConfigureSankey(options => { options.LabelPlacement = ChartSankeyLabelPlacement.Center; options.EdgeLabelPlacement = null; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Sankey.LabelPlacement = (ChartSankeyLabelPlacement)99);

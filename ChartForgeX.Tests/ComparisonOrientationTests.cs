@@ -34,7 +34,7 @@ public sealed class ComparisonOrientationTests {
         var limit = secondary ? 80d : 40;
         double Value(double value) => horizontal ? (reversed ? limit - value : value + limit) / (2 * limit) * 800
             : (reversed ? value + limit : limit - value) / (2 * limit) * 400;
-        double Category(double value) => horizontal ? (reversed ? 4 - value : value) * 100 : (reversed ? value : 4 - value) * 200;
+        double Category(double value) => horizontal ? (reversed ? value : 4 - value) * 100 : (reversed ? value : 4 - value) * 200;
         for (var index = 0; index < lines.Length; index++) {
             Assert.Equal(Value(starts[index]), horizontal ? lines[index].Start.X : lines[index].Start.Y, 8);
             Assert.Equal(Value(values[index]), horizontal ? lines[index].End.X : lines[index].End.Y, 8);
