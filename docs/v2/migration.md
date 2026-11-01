@@ -32,7 +32,7 @@ For a dashed forecast, replace repeated segment workarounds with
 Use the general label formatter for a primary observation caption and keep typed
 endpoint/statistic formatters when their additional measured fields are needed.
 No API removal is required for these capabilities. See
-[chart paint and formatters](../chart-styling.md) for the complete contracts.
+[chart paint and formatters](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chart-styling.md) for the complete contracts.
 
 Primary caption precedence is consistent across families: a general formatter's
 non-null output, then an authored point label, then the family default. For

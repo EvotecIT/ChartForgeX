@@ -38,7 +38,7 @@ and `WithStrokeStyle` install immutable values; `WithItemStyler<TDatum>`,
 callbacks. These are `With*` operations because they supply a formatter/styler;
 they do not mutate a configuration candidate. Preparation evaluates them against
 authored observations and detached series facts, then captures their results for
-both exporters. See [chart paint and formatters](../chart-styling.md) for types,
+both exporters. See [chart paint and formatters](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chart-styling.md) for types,
 static highlight state and precedence.
 
 | Contract | Ownership and behavior |
