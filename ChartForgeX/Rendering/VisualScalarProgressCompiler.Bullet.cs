@@ -79,7 +79,9 @@ internal static partial class VisualScalarProgressCompiler {
                     var textLeft = left + width + gap;
                     var available = Math.Max(0, plot.Right - textLeft);
                     var valueStyle = Style(chart, context, series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 700);
-                    var textWidth = Math.Min(chart.Measure(builder, labels[index], valueStyle).Width, available * .6);
+                    var targetStyle = Style(chart, context, series, 0, colors.MutedForeground, context.Theme.Typography.DataLabelSize, 400);
+                    var targetWidth = chart.Measure(builder, "/ " + targets[index], targetStyle).Width;
+                    var textWidth = Math.Min(chart.Measure(builder, labels[index], valueStyle).Width, Math.Max(0, available - targetWidth - gap / 2));
                     // The value is a quantity, not a status: below-target stays in data-cfx-status, never in the ink.
                     var valueColor = colors.Foreground;
                     BulletNumber(chart, context, builder, series, labels[index], new ChartRect(textLeft, bounds.Top, textWidth, rowHeight),

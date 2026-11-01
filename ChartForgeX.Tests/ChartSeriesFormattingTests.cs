@@ -38,9 +38,10 @@ public sealed class ChartSeriesFormattingTests {
     public void FamilyPreparationCapturesLabelsAndPlainTextTooltips(string family, bool visibleLabel) {
         var chart = Family(family).WithSize(1000, 700).WithLegend(false).WithDataLabels();
         var series = chart.Series[0];
+        var prefix = family == "bullet" ? "measured-label-" : "label-";
         var labels = new List<ChartValueContext>();
         var tips = new List<int>();
-        series.WithDataLabelFormatter(context => { labels.Add(context); return "label-" + context.Index; })
+        series.WithDataLabelFormatter(context => { labels.Add(context); return prefix + context.Index; })
             .WithTooltipFormatter(context => { tips.Add(context.Index); return "tip <&> " + context.Index; });
 
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -59,13 +60,17 @@ public sealed class ChartSeriesFormattingTests {
             Assert.All(labels.Skip(series.ObservationCount), context => Assert.IsType<ChartTreeLink>(context.Datum));
         if (series.Kind is ChartSeriesKind.Sankey or ChartSeriesKind.Chord)
             Assert.All(labels.Skip(series.ObservationCount), context => Assert.IsType<ChartFlowLink>(context.Datum));
-        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-full-label") == "label-0");
+        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-full-label") == prefix + "0");
         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-tooltip-text") == "tip <&> 0");
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "title" && element.Value == "tip <&> 0");
         if (visibleLabel) Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value.Contains("label-", StringComparison.Ordinal));
+        if (family == "bullet") {
+            Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "measured-label-0");
+            Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "/ 60");
+        }
         var calls = labels.Count;
         var authored = Family(family).WithSize(1000, 700).WithLegend(false).WithDataLabels();
-        for (var index = 0; index < series.ObservationCount; index++) authored.Series[0].WithPointLabel(index, "label-" + index);
+        for (var index = 0; index < series.ObservationCount; index++) authored.Series[0].WithPointLabel(index, prefix + index);
         var explicitCaptions = authored.Prepare(VisualExportRequest.ForChart(authored).Context);
         Assert.Equal(explicitCaptions.ToPng(), prepared.ToPng());
         Assert.Equal(XDocument.Parse(explicitCaptions.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value),
