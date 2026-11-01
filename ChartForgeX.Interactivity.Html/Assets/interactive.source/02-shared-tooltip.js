@@ -11,7 +11,7 @@
     const addObservation = (point) => {
       const candidate = point.dataset;
 
-      if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(sharedXValue(candidate))
+      if (candidate.cfxTooltipText === '' || !sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(sharedXValue(candidate))
         || Number(candidate.cfxX) !== x || points.has(candidate.cfxSeries) || !isInteractiveTarget(point)
         || point.closest('.cfx-series-muted,[data-cfx-role="legend-item"]')) return;
       const paint = pointerTargetPaint(point, styles);
@@ -35,15 +35,16 @@
       const name = document.createElement('dt'); const value = document.createElement('dd');
       name.dataset.cfxTooltipSeries = row.index; name.dataset.cfxTooltipSeriesKey = row.key;
       name.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint; name.dataset.cfxTooltipSourcePoint = row.source;
-      const difference = differenceTooltipRows(row.point);
+      const captured = row.point.dataset.cfxTooltipText;
+      const difference = captured === undefined ? differenceTooltipRows(row.point) : null;
       name.textContent = row.name + (difference ? ' · ' + difference[0].name : '');
-      value.textContent = difference ? difference[0].value : capturedText(row.point.dataset, 'cfxFormattedValue', numericDisplayText(row.rawValue));
+      value.textContent = captured !== undefined ? captured : difference ? difference[0].value : capturedText(row.point.dataset, 'cfxFormattedValue', numericDisplayText(row.rawValue));
       const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
       if (row.colour) swatch.style.backgroundColor = row.colour;
       swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
       if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
       list.append(name, value);
-      const dimensions = dimensionTooltipRows(row.point);
+      const dimensions = captured === undefined ? dimensionTooltipRows(row.point) : [];
       if (difference) dimensions.unshift({ ...difference[1], dimension: 'second' });
       dimensions.forEach((dimension) => {
         const term = document.createElement('dt'), measurement = document.createElement('dd');

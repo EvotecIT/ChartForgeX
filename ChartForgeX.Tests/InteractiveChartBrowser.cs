@@ -30,6 +30,7 @@ internal static partial class InteractiveChartBrowser {
         var origin = OriginPage();
         var session = await HtmlBrowser.OpenSessionForNavigationAsync(new HtmlBrowserLaunchOptions {
             Browser = Engine,
+            BrowserExecutablePath = Environment.GetEnvironmentVariable("CFX_TEST_BROWSER_EXECUTABLE"),
             Headless = true,
             Timeout = 15000,
             ViewportWidth = width,

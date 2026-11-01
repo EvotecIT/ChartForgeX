@@ -241,7 +241,9 @@
     if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
-    const label = text(node, true);
+    const captured = (node.dataset || {}).cfxTooltipText;
+    if (captured === '') { tip.replaceChildren(); tip.hidden = true; return false; }
+    const label = captured === undefined ? text(node, true) : captured;
 
     if (label === undefined || label === null) return false;
     tip.replaceChildren();
@@ -256,6 +258,7 @@
       title.classList.add('cfx-tooltip__title--series');
     }
     tip.appendChild(title);
+    if (captured !== undefined) return true;
     const secondary = (node.dataset || {}).cfxSecondaryLabel;
     if (secondary) {
       const caption = document.createElement('div');
