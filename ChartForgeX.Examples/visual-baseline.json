@@ -19128,6 +19128,318 @@
         "minDistinctColors": 1416,
         "maxEdgeInkPixels": 0
       }
+    },
+    {
+      "name": "markup-chart-stacked-bar",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 500,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-smooth-percent-stacked-area",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 732,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-sankey",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 10,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 747,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-percent-stacked-horizontal-bar",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 535,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-percent-stacked-bar",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 471,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-candlestick",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 501,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-ohlc",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 453,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-linear-gauge",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 227516,
+        "minTransparentPixels": 11684,
+        "minDistinctColors": 459,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-heatmap",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239180,
+        "minTransparentPixels": 20,
+        "minDistinctColors": 535,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-gauge",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 783,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-stacked-horizontal-bar",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 508,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-percent-stacked-area",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 775,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-chart-treemap",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 920,
+      "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 22,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 965,
+        "maxEdgeInkPixels": 0
+      }
     }
   ]
 }
