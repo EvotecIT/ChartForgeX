@@ -94,7 +94,9 @@ public static class ChartFontAssets {
     }
 
     private static string Face(string family, string file, int maximumWeight) =>
-        "/* " + System.Text.Encoding.UTF8.GetString(Read("OFL-" + file + ".txt")) + " */"
+        // The licence keeps LF line ends however the checkout stores it, so the payload stays one immutable identity
+        // after an SVG or HTML parser normalizes its text.
+        "/* " + System.Text.Encoding.UTF8.GetString(Read("OFL-" + file + ".txt")).Replace("\r\n", "\n").Replace('\r', '\n') + " */"
         + "@font-face{font-family:'" + family + "';font-style:normal;font-weight:100 " + maximumWeight
         + ";font-display:swap;src:url(data:font/woff2;base64," + Convert.ToBase64String(Read(file + ".woff2")) + ") format('woff2')}";
 }
