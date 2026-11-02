@@ -59,6 +59,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         Assert.Equal(annotationBasis, await RequestFieldAsync(page, 3, "basis"));
         await ResolveAsync(page, 3); await ChangesAsync(page, 3);
         AssertWindow(await page.EvaluateAsync<JsonElement>("() => managed.getXWindow()"), 3, 7);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The committed native scene did not export.");
         var exported = XDocument.Load(path);
@@ -125,13 +126,16 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         await page.EvaluateAsync("() => {window.advanced=[];managed.connectAnnotations((request,signal)=>new Promise(resolve=>advanced.push({request,signal,resolve})));}");
         Assert.True(await page.EvaluateAsync<bool>("() => pending[5].signal.aborted"));
         await page.EvaluateAsync("() => pending[5].resolve(replies[5])"); await DrainAsync(page);
-        await page.EvaluateAsync("() => managed.setViewport({x:{minimum:4,maximum:8}})");
-        AssertWindow(await page.EvaluateAsync<JsonElement>("() => managed.getXWindow()"), 4, 8);
+        var advancedScene = await SceneAsync(page);
+        Assert.Equal("TypeError", await page.EvaluateAsync<string>("() => {try{managed.setViewport({x:{minimum:4,maximum:8}});return 'accepted';}catch(error){return error.name;}}"));
+        AssertWindow(await page.EvaluateAsync<JsonElement>("() => managed.getXWindow()"), 3, 9);
+        Assert.Equal(advancedScene.GetRawText(), (await SceneAsync(page)).GetRawText());
         Assert.Equal(0, await page.EvaluateAsync<int>("() => advanced.length"));
         await page.EvaluateAsync("() => managed.applyAnnotationChange({operation:'replace',id:'note',drawing:{kind:'Note',start:{x:6,y:45},label:'Advanced'}})");
         await page.WaitForFunctionAsync("() => advanced.length===1");
         Assert.Equal("TypeError", await page.EvaluateAsync<string>("() => {try{managed.setViewport({x:{minimum:4.5,maximum:7.5}});return 'accepted';}catch(error){return error.name;}}"));
-        AssertWindow(await page.EvaluateAsync<JsonElement>("() => managed.getXWindow()"), 4, 8);
+        Assert.Equal(advancedScene.GetRawText(), (await SceneAsync(page)).GetRawText());
+        Assert.True(await page.EvaluateAsync<bool>("() => advanced.length===1&&!advanced[0].signal.aborted"));
         Assert.True(await page.EvaluateAsync<bool>("() => !Object.hasOwn(advanced[0].request,'basis')&&!Object.hasOwn(advanced[0].request,'channel')"));
 
         await ReconnectAsync(page);
@@ -142,6 +146,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         await page.EvaluateAsync("() => managed.connectNative(null)");
         Assert.True(await page.EvaluateAsync<bool>("() => pending[6].signal.aborted"));
         await page.EvaluateAsync("() => pending[6].resolve(replies[6])"); await DrainAsync(page);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         AssertWindow(await page.EvaluateAsync<JsonElement>("() => managed.getXWindow()"), 3.6, 8.4);
         Assert.Equal(7, await page.EvaluateAsync<int>("() => pending.length"));

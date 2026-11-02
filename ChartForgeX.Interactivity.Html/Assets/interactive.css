@@ -96,12 +96,17 @@ body {
 }
 
 .cfx-toolbar {
-  position: absolute;
-  inset: 8px 8px auto auto;
-  z-index: 15;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-interactive-chart .cfx-toolbar {
+  position: absolute;
+  inset: 8px 8px auto auto;
+  z-index: 15;
   gap: 2px;
   max-width: calc(100% - 16px);
   margin: 0;

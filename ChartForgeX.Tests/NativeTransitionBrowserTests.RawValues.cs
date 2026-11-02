@@ -24,7 +24,7 @@ public sealed partial class NativeTransitionBrowserTests {
         if(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is {Length:>0} output)await page.ScreenshotAsync(new PageScreenshotOptions{Path=Path.Combine(output,name+".browser.png"),FullPage=true});
         Assert.Equal(initial?0:1,observed.GetProperty("events").GetArrayLength());Assert.Equal(initial,observed.GetProperty("revision").GetString()==observed.GetProperty("before").GetString());Assert.Equal(last,observed.GetProperty("metadata").GetProperty("nativeValueSource").GetProperty("readings")[0].GetProperty("value").GetDouble());
         await NativeValueFrameBrowserProof.AssertAsync(page,"[data-cfx-role=radial-point][data-cfx-observation-id=primary] [data-cfx-role="+(donut?"donut-slice":"pie-slice")+"]",name+"-ink");
-        var download=await page.RunAndWaitForDownloadAsync(()=>page.Locator("[data-cfx-export=svg]").ClickAsync());var file=await download.PathAsync()??throw new InvalidOperationException("Raw accepted SVG download missing.");var export=await File.ReadAllTextAsync(file);NativeRadialMotionBeforeControls.Save(name+".exported.svg",export);
+        var download=await DownloadSvgAsync(page);var file=await download.PathAsync()??throw new InvalidOperationException("Raw accepted SVG download missing.");var export=await File.ReadAllTextAsync(file);NativeRadialMotionBeforeControls.Save(name+".exported.svg",export);
         var endpoint=observed.GetProperty("drawing").GetString()=="narrow"?to.NarrowPreparedVisual!:to.PreparedVisual;
         var emission=observed.GetProperty("drawing").GetString()=="narrow"?to.NarrowEmission!:to.WideEmission!;
         var actual=System.Xml.Linq.XDocument.Parse(export);var expected=System.Xml.Linq.XDocument.Parse(emission.Svg);

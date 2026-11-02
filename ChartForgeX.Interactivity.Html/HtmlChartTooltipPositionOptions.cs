@@ -29,9 +29,10 @@ public sealed class HtmlChartTooltipPositionOptions {
 
     /// <summary>
     /// Gets or sets a copied, read-only sequence of directions, tried in order against the browser viewport
-    /// with an 8 CSS pixel inset. If none fits, the first direction is clamped to that viewport.
+    /// with an 8 CSS pixel inset. An assigned sequence clamps its first direction if none fits.
     /// Until assigned, the browser chooses family defaults: above-right for bars and right for lines,
-    /// with opposite-side fallbacks. The initial sequence describes the general above-right fallback.
+    /// with opposite-side fallbacks. If none fits, automatic placement tries a clamped position that keeps the gap from the anchor.
+    /// The initial sequence describes the general above-right fallback.
     /// Assigning a sequence makes that exact order authoritative, even if it equals the initial sequence.
     /// </summary>
     /// <exception cref="ArgumentNullException">The sequence is null.</exception>

@@ -66,7 +66,7 @@
   const tooltipDomainRows = (node, rows) => {
     const data = node.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
     const heading = tooltipHeading(node), category = categoryReadoutText(node, targetCategory(node));
-    const hierarchy = tooltipHierarchy(node), result = [];
+    const hierarchy = tooltipHierarchy(node), result = [], missingValue = capturedText(data, 'cfxFormattedValue', rowName(node, 'no-data', 'No data'));
     if (kind === 'heatmap' && seriesLabel(node)) result.push({ name: tooltipAxis(node).label || rowName(node, 'row', 'Row'), value: seriesLabel(node) });
     if (data.cfxDuration !== undefined && data.cfxStart !== undefined) {
       return [{ name: rowName(node, 'start', 'Start'), value: data.cfxFormattedStart ?? data.cfxXLabel ?? data.cfxStart },
@@ -87,12 +87,12 @@
       if (row.name === 'Y' || row.name === rowName(node, 'value', 'Value') && ['scatter', 'bubble'].includes(kind))
         row = { ...row, name: tooltipAxis(node).label || rowName(node, 'value', 'Value'), value: tooltipValueText(node) };
       if (row.name === rowName(node, 'value', 'Value') && (data.cfxValue !== undefined || data.cfxY !== undefined))
-        row = { ...row, value: data.cfxEmpty === 'true' || data.cfxStatus === 'empty' ? rowName(node, 'no-data', 'No data') : tooltipValueText(node) };
+        row = { ...row, value: data.cfxEmpty === 'true' || data.cfxStatus === 'empty' ? missingValue : tooltipValueText(node) };
       if (row.value === undefined || row.value === null) return;
       result.push(row);
     });
-    if ((data.cfxStatus === 'empty' || data.cfxEmpty === 'true') && !result.some(row => row.value === rowName(node, 'no-data', 'No data')))
-      result.push({ name: rowName(node, 'value', 'Value'), value: rowName(node, 'no-data', 'No data') });
+    if ((data.cfxStatus === 'empty' || data.cfxEmpty === 'true') && !result.some(row => row.value === missingValue))
+      result.push({ name: rowName(node, 'value', 'Value'), value: missingValue });
     if (hierarchy) result.push(...hierarchy.rows);
     const flow = tooltipFlowFacts(node);
     if (data.cfxNode && flow) {

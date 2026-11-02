@@ -40,6 +40,7 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
         var original = await ReadStateAsync(page);
         var originalX = original.GetProperty("viewport").GetProperty("x");
         var originalSpan = originalX.GetProperty("maximum").GetDouble() - originalX.GetProperty("minimum").GetDouble();
+        await page.Locator(".cfx-interactive-chart").HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("span => {const r=document.querySelector('.cfx-interactive-chart'),x=window.ChartForgeXCharts.get(r).getViewport().x;return x.maximum-x.minimum<span;}", originalSpan);
         // Keep the focused observation inside the zoomed plot; edge observations may be clipped.

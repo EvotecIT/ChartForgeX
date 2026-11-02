@@ -80,6 +80,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 if (transformed) (clipAbove ? inner : outer).style.transform = 'scale(.8,.9)';
                 holder.before(outer); outer.append(holder); root.before(inner); inner.append(root);
                 root.style.width = '650px'; root.style.maxWidth = 'none';
+                // Keep actual marker ink inside the resized host, rather than only its backdrop ring.
+                if (!escape) root.style.marginTop = '-4px';
             }
             """, new { shadow, clipAbove, escape, transformed });
         await SettleObservedPositionAsync(page);

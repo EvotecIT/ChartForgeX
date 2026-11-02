@@ -80,6 +80,7 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         await page.EvaluateAsync("fragment=>cueController.update(fragment)", line.ToInteractiveHtmlFragmentWithoutAssets(options => Options(options, false, true)));
         // 'b' carries an authored point colour, so it draws its own marker (design rule 5); 'a' and 'c' are bare connected points.
         await page.EvaluateAsync("()=>{cueController.clearSelection();cueController.select({observationIds:['a']});cueController.highlight({observationIds:['c']},{dim:false});}");
+        await SettlePresentationAsync(page);
         Assert.Equal(0, await page.Locator("[data-cfx-state-outline]").CountAsync());
         var prepared = await page.Locator(".cfx-selected > .cfx-prepared-point-marker,.cfx-highlighted > .cfx-prepared-point-marker")
             .EvaluateAllAsync<bool>("nodes=>nodes.length===2&&nodes.every(n=>getComputedStyle(n).opacity==='1'&&parseFloat(getComputedStyle(n).r)>0)");

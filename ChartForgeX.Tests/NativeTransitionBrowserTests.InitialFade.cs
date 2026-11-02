@@ -60,7 +60,7 @@ public sealed partial class NativeTransitionBrowserTests {
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         await page.EvaluateAsync("payload=>nativeChart.presentInitial(payload,{sceneRevision:nativeChart.sceneRevision,motion:{duration:1000}})", payload);
         await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("The accepted final native SVG was not exported.");
+        var download = await DownloadSvgAsync(page); var file = await download.PathAsync() ?? throw new InvalidOperationException("The accepted final native SVG was not exported.");
         Assert.DoesNotContain("native-transition-opacity", await File.ReadAllTextAsync(file)); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         var stale = await page.EvaluateAsync<string>("payload=>{try{nativeChart.presentInitial(payload,{sceneRevision:'stale'});return 'accepted'}catch(error){return error.message}}", payload); Assert.Contains("sceneRevision", stale);
         await page.EvaluateAsync("()=>nativeChart.dispose()"); await page.Clock.RunForAsync(2000); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame,[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);

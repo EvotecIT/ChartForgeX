@@ -32,6 +32,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             }
             """);
         Assert.False(positions.GetProperty("hasY").GetBoolean());
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions.GetProperty("from").GetProperty("x").GetDouble(), (float)positions.GetProperty("from").GetProperty("y").GetDouble());
         await page.Mouse.DownAsync();

@@ -219,7 +219,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         // Let layout dispatch its real pointer exit while keyboard focus stays on the legend.
         await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
-        Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
+        Assert.Equal(string.Empty, await TooltipTextAsync(page));
         Assert.Equal("0", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-delay"));
         Assert.Equal(await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-target-id"),
             await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
@@ -228,6 +228,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await page.Keyboard.PressAsync("Space");
         await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
         Assert.Equal("false", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
+        Assert.Equal(string.Empty, await TooltipTextAsync(page));
+        await page.Locator(Legend(0)).BlurAsync(); await page.Locator(Legend(0)).FocusAsync();
         Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
         AssertNoConsoleErrors(session);
     }

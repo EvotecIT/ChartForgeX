@@ -59,6 +59,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         await using var session = await OpenAsync(Host(graphite, layout, width, scale, pageScroll, ChartInteractionFeatures.Brush | ChartInteractionFeatures.Selection), 950, 760);
         var page = session.Page;
         await PrepareHostAsync(page, layout, width, pageScroll);
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await RecordEventsAsync(page);
         var extent = await ScrollExtentAsync(page);
@@ -133,6 +134,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         var page = session.Page;
         await PrepareHostAsync(page, layout, width, pageScroll);
         await page.Locator(Root).EvaluateAsync("r => window.ChartForgeXCharts.get(r).setViewport({x:{minimum:2,maximum:8},y:{minimum:2,maximum:8}})");
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         await RecordEventsAsync(page);
         var frame = await BoxAsync(page, ".cfx-stage svg");

@@ -126,6 +126,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
     private static async Task<JsonElement> BrushTimeAsync(IPage page) {
         var root = page.Locator(Root(1));
         await root.ScrollIntoViewIfNeededAsync();
+        await root.HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         await root.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var points = await root.EvaluateAsync<JsonElement>("""
             root => {

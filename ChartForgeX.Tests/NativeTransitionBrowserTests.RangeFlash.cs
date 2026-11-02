@@ -57,7 +57,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal(change is "tuples" or "series" ? 4 : 2, changedMarkers); Assert.True(unchangedMarkers >= 4); Assert.True(sharedChanged >= 6);
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=series][data-cfx-series-key=delivery] [data-cfx-role=fill-segment][data-cfx-fill-point-start='0'] [data-cfx-role=" + (area ? "range-area" : "range-band") + "]", name + "-envelope");
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=point][data-cfx-series-key=delivery][data-cfx-observation-id=current]>[data-cfx-role=range-marker]:first-child", name + "-marker");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var download = await DownloadSvgAsync(page);
         var path = await download.PathAsync() ?? throw new InvalidOperationException("Accepted interval flash export missing."); var exported = await File.ReadAllTextAsync(path);
         NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exported); Assert.DoesNotContain("native-motion-frame", exported, StringComparison.Ordinal);
         static IEnumerable<string> NativeMarks(string svg) => XDocument.Parse(svg).Descendants()

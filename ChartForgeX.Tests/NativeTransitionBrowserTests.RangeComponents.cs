@@ -33,7 +33,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal("15", observed.GetProperty("transient").GetProperty("lower").GetString()); Assert.Equal("47.5", observed.GetProperty("transient").GetProperty("upper").GetString());
         Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength()); Assert.Equal(initial, observed.GetProperty("before").GetString() == observed.GetProperty("revision").GetString());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=series][data-cfx-series-key=delivery] [data-cfx-role=fill-segment][data-cfx-fill-point-start='0'] [data-cfx-role=" + (area ? "range-area" : "range-band") + "]", name + "-ink");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var download = await DownloadSvgAsync(page);
         var file = await download.PathAsync() ?? throw new InvalidOperationException("Range accepted export missing."); var exported = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exported);
         var point = System.Xml.Linq.XDocument.Parse(exported).Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "point" && (string?)row.Attribute("data-cfx-series-key") == "delivery" && (string?)row.Attribute("data-cfx-observation-id") == "current");
         Assert.Equal("20", point.Attribute("data-cfx-lower")!.Value); Assert.Equal("60", point.Attribute("data-cfx-upper")!.Value);

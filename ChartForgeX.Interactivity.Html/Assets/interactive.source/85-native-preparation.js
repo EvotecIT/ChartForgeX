@@ -48,13 +48,13 @@
     if (connection !== null && typeof connection !== 'function') throw new TypeError('Native callback: function|null required.');
     cancelNativePreparation(lifetime); releaseProgressCadence(lifetime);
     resetAnnotationEditor(root);
-    if (connection) releaseStandaloneViewport(root);
     if (lifetime.preparationSession && lifetime.preparationSession !== settings.session) {
       for (const key of Object.keys(lifetime.preparationConnections))
         if (lifetime.preparationConnections[key]?.session === lifetime.preparationSession) delete lifetime.preparationConnections[key];
       lifetime.preparationSession = null;
       syncXViewportControls(root);
     }
+    if (connection) releaseStandaloneViewport(root);
     lifetime.preparationConnections[channel] = connection ? Object.freeze({ ...settings, callback: connection }) : null;
     syncHierarchyNavigation(root); syncNativePreparationAdmission(root);
   };

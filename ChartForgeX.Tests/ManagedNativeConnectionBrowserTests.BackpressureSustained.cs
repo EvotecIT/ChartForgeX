@@ -33,6 +33,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
                 AssertWindow(await page.EvaluateAsync<System.Text.Json.JsonElement>("() => managed.getXWindow()"), 2.099, 7.901);
             }
             await CaptureAdmissionAsync(page, host, basis, "sustained-" + typed + "-" + cycle, errors, session.ConsoleLog);
+            await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
             var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
             var downloadedPath = await download.PathAsync() ?? throw new InvalidOperationException("The final sustained native scene did not export.");
             var exported = XDocument.Load(downloadedPath);

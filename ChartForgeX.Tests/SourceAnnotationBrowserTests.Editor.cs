@@ -31,6 +31,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         Assert.True(draft.GetProperty("start").GetProperty("x").GetDouble() > 3);
         Assert.Equal("3", await page.Locator("[data-cfx-annotation-id=note]").GetAttributeAsync("data-cfx-source-x"));
         Assert.False(await page.EvaluateAsync<bool>("() => editor.getState().canUndo"));
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The committed native SVG did not export.");
         var exported = XDocument.Load(path);

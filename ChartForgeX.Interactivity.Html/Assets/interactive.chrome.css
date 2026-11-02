@@ -204,10 +204,10 @@
 .cfx-interactive-chart [data-cfx-highlight-unavailable] [data-cfx-highlight-outline] { display: none; }
 
 /* Host highlights and selection dim data marks once, without changing authored ink or nested series opacity. */
-.cfx-interactive-chart .cfx-linked-dim:not(:where([data-cfx-highlight-managed])),
-.cfx-interactive-chart .cfx-selection-dim:not(:where([data-cfx-highlight-managed])),
-.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-linked-dim[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
-.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selection-dim[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+.cfx-interactive-chart .cfx-linked-dim:not(:where([data-cfx-highlight-managed],.cfx-series-isolated-in)),
+.cfx-interactive-chart .cfx-selection-dim:not(:where([data-cfx-highlight-managed],.cfx-series-isolated-in)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-linked-dim:not(.cfx-series-isolated-in)[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selection-dim:not(.cfx-series-isolated-in)[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .3 !important;
 }
 .cfx-interactive-chart .cfx-highlighted:not(:where([data-cfx-highlight-managed])),
@@ -325,10 +325,10 @@
 /* Opacity belongs to the series or paint owner once; hover never restores a muted mark. */
 .cfx-interactive-chart[data-cfx-export-probe] svg,
 .cfx-interactive-chart[data-cfx-export-probe] svg * { transition: none !important; }
-.cfx-interactive-chart [data-cfx-series]:not([data-cfx-highlight-managed]),
-.cfx-interactive-chart [data-cfx-point]:not([data-cfx-highlight-managed]) { transition: opacity 250ms ease-out; }
-.cfx-interactive-chart[data-cfx-hovering="true"] :is([data-cfx-series], [data-cfx-point]):not([data-cfx-highlight-managed]) { transition-duration: 150ms; }
-.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
+.cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out; }
+.cfx-interactive-chart[data-cfx-hovering="true"] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 150ms; }
+.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
+.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"][data-cfx-hover-unit="point"] [data-cfx-point]:not(.cfx-hover-series):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
 .cfx-interactive-chart [data-cfx-role="legend-item"] { border-radius: var(--cfx-control-radius); }
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover { transition-duration: 100ms; }
 .cfx-interactive-chart :is(button, summary, [role="button"]):focus-visible,
@@ -400,7 +400,7 @@
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
   fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius);
 }
-.cfx-interactive-chart:has([data-cfx-role="legend-item"]:hover) :is([data-cfx-series], [data-cfx-point]):not([data-cfx-highlight-managed]) { transition-duration: 100ms; }
+.cfx-interactive-chart:has([data-cfx-role="legend-item"]:hover) :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
 
 .cfx-responsive-heading { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 
@@ -429,7 +429,7 @@
 }
 .cfx-interactive-chart .cfx-tool[aria-pressed="true"]:not(.cfx-responsive-legend__item) {
   background: color-mix(in srgb, var(--cfx-host-accent, var(--cfx-default-host-accent)) 12%, var(--cfx-tooltip-surface));
-  color: var(--cfx-host-accent, var(--cfx-default-host-accent));
+  color: var(--cfx-tooltip-text);
 }
 .cfx-tooltip__close {
   position: absolute; inset: 4px 4px auto auto; display: grid; place-items: center;
@@ -476,6 +476,6 @@
 svg[data-cfx-standalone-hierarchy] { display: block; max-width: 100%; }
 @media (pointer: coarse) { .cfx-hierarchy-breadcrumb .cfx-tool { min-height: 44px; } }
 @media (prefers-reduced-motion: no-preference) {
-  .cfx-interactive-chart[data-cfx-runtime-bound="true"] .cfx-stage :is([data-cfx-role="series"], [data-cfx-role="hierarchy-series"], [data-cfx-role="sankey-series"], [data-cfx-role="map-series"]) { animation: cfx-series-enter 220ms ease-out; }
+  .cfx-interactive-chart[data-cfx-runtime-bound="true"] .cfx-stage { animation: cfx-series-enter 220ms ease-out; }
 }
 @keyframes cfx-series-enter { from { opacity: .35; } }

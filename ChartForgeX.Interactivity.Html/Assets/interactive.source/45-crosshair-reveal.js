@@ -168,7 +168,7 @@
       if (hit.dataset.cfxRole === 'legend-entry-omitted') { hit = null; break; }
       hit = hit.parentElement && hit.parentElement.closest(targetSelector);
     }
-    let native = null;
+    let native = null, enlarged = false;
     const svg = stage.querySelector('svg');
     const plotSurface = nativeTarget === stage || nativeTarget === svg || nativeTarget instanceof SVGElement
       && svg?.contains(nativeTarget) && !nativeTarget.closest('foreignObject')
@@ -195,23 +195,26 @@
       const summary = renderedTargetKind(hit) === 'series' && !hit.hasAttribute('data-cfx-point') && !hit.hasAttribute('data-cfx-value');
       native = { node: hit, x: usesPolarCoordinates(hit) || summary ? event.clientX : box.left + box.width / 2,
         y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
-      const enlarged = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-browser-hit-area]') && hit.hasAttribute('data-cfx-point');
+      enlarged = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-browser-hit-area]') && hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit);
       if (!summary && !enlarged) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
 
 
-    if (!searchNearest || !native && !plotSurface) return { native, observation: null };
+    if (!searchNearest && !enlarged || !native && !plotSurface) return { native, observation: null };
     const candidates = [];
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
       if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node)
         || withinSeries && !matchesLocalSeriesTarget(node, withinSeries)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
+      const area = enlarged && node.querySelector('[data-cfx-browser-hit-area]')?.getBoundingClientRect();
+      const exact = area && event.clientX >= area.left && event.clientX <= area.right && event.clientY >= area.top && event.clientY <= area.bottom;
+      if (enlarged && !exact) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
       const distance = Math.hypot(x - event.clientX, y - event.clientY);
-      const category = root.dataset.cfxTooltipRange === 'auto' && categoricalPointerKind(node);
+      const category = !enlarged && root.dataset.cfxTooltipRange === 'auto' && categoricalPointerKind(node);
       const rank = withinSeries || category ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
-      candidates.push({ node, x, y, distance, rank, category, order: candidates.length, exact: false });
+      candidates.push({ node, x, y, distance, rank, category, order: candidates.length, exact: !!exact });
     });
 
     candidates.sort((first, second) => first.rank - second.rank || first.distance - second.distance || first.order - second.order);

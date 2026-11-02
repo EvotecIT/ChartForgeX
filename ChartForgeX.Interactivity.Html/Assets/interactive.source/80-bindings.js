@@ -72,7 +72,8 @@
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
         listenChart(root, surface, 'pointerenter', (event) => {
-          if (pointerReadoutSuspended(root) || keyboardReadoutOwnsPointer(root) || !pointerTargetPaint(node)) return;
+          if (pointerReadoutSuspended(root) || keyboardReadoutOwnsPointer(root)) return;
+          if (!pointerTargetPaint(node)) { clearUnavailableHover(root, node); return; }
           if (renderedTargetKind(node) === 'legend' && !legendEntryShown(root, node)) {
             clearLegendReadout(root); showTip(root, tip, node, event); return;
           }
@@ -530,6 +531,7 @@
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       syncLegendButtons(root);
+      syncLegendOverflow(root);
       rescaleStandaloneSeries(root);
       refreshKeyboardNavigation(root);
       clearFocusTrail(root);

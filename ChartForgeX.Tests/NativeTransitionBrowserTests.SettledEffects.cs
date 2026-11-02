@@ -16,7 +16,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var payload = new HtmlInteractiveChartRenderer().PrepareNativeTransitionJson(final, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 3));
         await using var session = await BrowserProofFonts.OpenAsync(Page(final), width + 24, 680); var page = session.Page;
         await page.WaitForFunctionAsync("()=>window.ChartForgeXCharts?.get(document.querySelector('.cfx-interactive-chart'))");
-        var baselineDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var baselineDownload = await DownloadSvgAsync(page);
         var baselinePath = await baselineDownload.PathAsync() ?? throw new InvalidOperationException("The accepted effect control did not export.");
         var acceptedExport = await File.ReadAllTextAsync(baselinePath);
         await ReadyAndPauseAsync(page); await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
@@ -35,7 +35,7 @@ public sealed partial class NativeTransitionBrowserTests {
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=point][data-cfx-point='0'] [data-cfx-role=bar]", "settled-effects-ink-" + width + "-" + dark);
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         await page.Clock.ResumeAsync();
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var path = await download.PathAsync() ?? throw new InvalidOperationException("The accepted effect endpoint was not exported.");
+        var download = await DownloadSvgAsync(page); var path = await download.PathAsync() ?? throw new InvalidOperationException("The accepted effect endpoint was not exported.");
         var exported = await File.ReadAllTextAsync(path);
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } exportOutput)
             File.WriteAllText(Path.Combine(exportOutput, "settled-native-effects-browser-" + width + "-" + dark + ".exported.svg"), exported);

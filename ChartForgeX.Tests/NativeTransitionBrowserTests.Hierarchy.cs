@@ -42,7 +42,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal("40", observed.GetProperty("accepted").GetString()); Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength());
         Assert.Equal(initial, observed.GetProperty("before").GetString() == observed.GetProperty("revision").GetString());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-node=leaf-a] [data-cfx-role=" + (sunburst ? "sunburst-segment-mark" : "treemap-tile-mark") + "]", name + "-ink");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted hierarchy export missing.");
+        var download = await DownloadSvgAsync(page); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted hierarchy export missing.");
         var exportedText = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exportedText); var exported = System.Xml.Linq.XDocument.Parse(exportedText);
         Assert.Equal("40", exported.Descendants().Single(row => (string?)row.Attribute("data-cfx-node") == "leaf-a").Attribute("data-cfx-authored-value")!.Value);
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());

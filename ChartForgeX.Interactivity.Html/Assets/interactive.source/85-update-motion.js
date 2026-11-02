@@ -6,16 +6,22 @@
     return Object.freeze({ duration: value.duration });
   };
   const settleChartUpdateMotion = root => chartLifetimes.get(root)?.updateMotionRelease?.();
+  const settleChartLoadMotion = root => {
+    for (const animation of root.querySelector('.cfx-stage')?.getAnimations?.() || [])
+      if (animation.animationName === 'cfx-series-enter' && typeof animation.finish === 'function') animation.finish();
+  };
   const beginChartUpdateMotion = (root, motion, captured = null) => {
     settleChartUpdateMotion(root);
+    settleChartLoadMotion(root);
     if (!motion?.duration || document.hidden) return;
     const lifetime = chartLifetimes.get(root);
     if (!lifetime || lifetime.disposed || !root.isConnected) return;
     const svg = root.querySelector('.cfx-stage svg'), media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     if (!svg || media?.matches) return;
     if (captured) { beginCapturedValueMotion(root, motion, captured, svg, media); return; }
-    if (typeof svg.animate !== 'function') return;
-    const animation = svg.animate([{ opacity: .35 }, { opacity: 1 }], { duration: motion.duration, easing: 'ease-out' });
+    const stage = root.querySelector('.cfx-stage');
+    if (typeof stage?.animate !== 'function') return;
+    const animation = stage.animate([{ opacity: .35 }, { opacity: 1 }], { duration: motion.duration, easing: 'ease-out' });
     svg.dataset.cfxUpdateMotion = 'true';
     const reduced = event => { if (event.matches) release(); };
     const hidden = () => { if (document.hidden) release(); };

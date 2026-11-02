@@ -126,7 +126,7 @@
       const nativeSwatch = source.querySelector('[data-cfx-role="legend-swatch"],[data-cfx-role="legend-symbol"],[data-cfx-role="legend-marker"]');
       const painted = nativeSwatch?.matches('[fill],[stroke]') ? nativeSwatch : nativeSwatch?.querySelector('[fill],[stroke]');
       const fill = painted?.getAttribute('fill');
-      mark.setAttribute('fill', fill && fill !== 'none' ? fill : painted?.getAttribute('stroke') || paintColour(source) || 'currentColor');
+      mark.setAttribute('fill', paintColour(source) || (fill && fill !== 'none' ? fill : painted?.getAttribute('stroke') || 'currentColor'));
       swatch.appendChild(mark);
       const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
       label.dataset.cfxRole = 'legend-label';

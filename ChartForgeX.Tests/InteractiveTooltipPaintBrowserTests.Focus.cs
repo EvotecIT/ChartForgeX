@@ -14,7 +14,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ExactFeatures(options);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
-        }), 300, 720);
+        }), 240, 720);
         var page = session.Page;
         var targets = page.Locator("[data-cfx-keyboard-component=data]");
         Assert.Equal(2, await targets.CountAsync());

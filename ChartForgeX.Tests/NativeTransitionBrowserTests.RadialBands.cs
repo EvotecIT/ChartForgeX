@@ -43,7 +43,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength()); Assert.Equal(initial, observed.GetProperty("before").GetString() == observed.GetProperty("revision").GetString());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=radial-point][data-cfx-series-key=outer][data-cfx-observation-id=primary] [data-cfx-role=donut-slice]", name + "-ink");
         await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted native bands export missing.");
+        var download = await DownloadSvgAsync(page); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted native bands export missing.");
         var exported = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exported);
         var native = System.Xml.Linq.XDocument.Parse(exported); var outerExport = native.Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "radial-point" && (string?)row.Attribute("data-cfx-series-key") == "outer" && (string?)row.Attribute("data-cfx-observation-id") == "primary"); Assert.Equal("55", (string?)outerExport.Attribute("data-cfx-value"));
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());

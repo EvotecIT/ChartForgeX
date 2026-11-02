@@ -57,6 +57,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
             Assert.InRange(Math.Abs(Math.Abs(centers[1]-centers[0])-Math.Abs(centers[2]-centers[1])), 0, .01);
             Assert.InRange(Math.Abs(Math.Abs(centers[2]-centers[1])-Math.Abs(centers[3]-centers[2])), 0, .01);
         }
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var pointer = await page.EvaluateAsync<double[]>("""
             unit=>{
@@ -80,6 +81,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
             : new[] { TimeSpacingHost.January.AddDays(1), TimeSpacingHost.January.AddDays(11) }, range);
         Assert.Equal(host.RawInstants, (await TimeSpacingScene(page)).GetProperty("rawInstants").EnumerateArray().Select(value => value.GetDouble()));
         await CaptureTimeSpacing(page, host, "inverse");
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
 
         await page.EvaluateAsync("bounds=>timeController.setViewport({x:bounds})", new { minimum = host.WindowMinimum, maximum = host.WindowMaximum });
@@ -103,11 +105,13 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         Assert.Equal(initial.GetProperty("yLabels").GetRawText(), moved.GetProperty("yLabels").GetRawText());
         Assert.Equal(initial.GetProperty("secondaryYLabels").GetRawText(), moved.GetProperty("secondaryYLabels").GetRawText());
 
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svg = XDocument.Load(await svgDownload.PathAsync() ?? throw new InvalidOperationException("No discrete-time SVG download."));
         Assert.Equal(moved.GetProperty("xLabels").EnumerateArray().Select(value => value.GetString()), await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label"));
         Assert.Equal(host.RawInstants, svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point"
             && (string?)node.Attribute("data-cfx-series-key") == "dated").Select(node => double.Parse(node.Attribute("data-cfx-x")!.Value, CultureInfo.InvariantCulture)));
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var pngDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());
         var png = await File.ReadAllBytesAsync(await pngDownload.PathAsync() ?? throw new InvalidOperationException("No discrete-time PNG download."));
         var scale = await page.EvaluateAsync<int>("()=>Math.max(1,Math.ceil(devicePixelRatio||1))");

@@ -61,7 +61,7 @@ public sealed class DottedMapPointLegendBrowserTests {
         Assert.Equal("North", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(new[] { "Value", Number(northFacts.Weight!.Value) }, await TooltipRowsAsync(page));
         Assert.Equal(1d, await PaintOpacityAsync(page, "north"));
-        Assert.InRange(await PaintOpacityAsync(page, "south"), 0, .99);
+        Assert.Equal(1d, await PaintOpacityAsync(page, "south"));
         await CaptureAsync(page, dark, width, "key-readout");
         await MoveToAsync(page, Key("offscreen"));
         Assert.Equal("Offscreen", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
@@ -228,14 +228,16 @@ public sealed class DottedMapPointLegendBrowserTests {
     }
 
     // Ancestor opacity also contributes to the visible mark; its own computed opacity alone can conceal a broken isolation container.
-    private static Task<double> PaintOpacityAsync(IPage page, string id) => page.Locator(Mark(id) + " [data-cfx-role='dotted-map-point']")
-        .EvaluateAsync<double>("""
+    private static async Task<double> PaintOpacityAsync(IPage page, string id) {
+        await SettlePresentationAsync(page);
+        return await page.Locator(Mark(id) + " [data-cfx-role='dotted-map-point']").EvaluateAsync<double>("""
             node=>{
                 let opacity=1;
                 for(let current=node;current;current=current.parentElement) opacity*=Number(getComputedStyle(current).opacity);
                 return opacity;
             }
             """);
+    }
 
     private static Task ReplaceAsync(IPage page, Chart chart) => page.EvaluateAsync("""
         html=>{

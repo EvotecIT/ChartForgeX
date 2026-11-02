@@ -117,16 +117,19 @@ public sealed class InteractiveBrowserCompatibilityTests {
                 compatibilityController.connectXViewport(request=>prepareCompatibilityWindow(request));
             }
             """);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("()=>compatibilityChanges.length===1");
         var projection = await page.Locator(Root).EvaluateAsync<JsonElement>("root=>JSON.parse(root.dataset.cfxPreparedChart).xProjection");
         Assert.True(projection.GetProperty("minimum").GetDouble() > projection.GetProperty("fullMinimum").GetDouble());
         Assert.True(projection.GetProperty("maximum").GetDouble() < projection.GetProperty("fullMaximum").GetDouble());
         var labels = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role=axis-x-label]"));
+        await page.Locator(Root).HoverAsync();
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svgPath = await svgDownload.PathAsync() ?? throw new InvalidOperationException("The committed window produced no SVG download.");
         var svg = XDocument.Load(svgPath);
         Assert.Equal(labels, await BrowserProofCaptions.ExportedAsync(page, svg, "axis-x-label"));
+        await page.Locator(Root).HoverAsync();
         var pngDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());
         var pngPath = await pngDownload.PathAsync() ?? throw new InvalidOperationException("The committed window produced no PNG download.");
         var png = await File.ReadAllBytesAsync(pngPath);

@@ -46,6 +46,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
                 Assert.Equal("note", await page.EvaluateAsync<string>("() => managed.getSelection()[0].annotationId"));
                 Assert.True(await page.Locator("[data-cfx-annotation-id=note]").EvaluateAsync<bool>("node => node===document.activeElement"));
             }
+            await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
             var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
             var path = await download.PathAsync() ?? throw new InvalidOperationException("The final accepted native scene did not export.");
             var exported = XDocument.Load(path);

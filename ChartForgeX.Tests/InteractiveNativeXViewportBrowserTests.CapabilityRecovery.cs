@@ -36,6 +36,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         if (differentYScale) AssertWindow(peerY, 1, 1000);
         else AssertWindow(peerY, 0, 100);
         var peerRoot = page.Locator(".cfx-interactive-chart[data-cfx-chart-id='" + peer.Id + "']");
+        await peerRoot.HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => peerRoot.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The compatible peer did not export.");
         var exported = XDocument.Load(path);
@@ -105,6 +106,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>capabilitySelectionEvents"));
         Assert.True(await page.Locator("[data-cfx-reset]").IsHiddenAsync());
         Assert.True(await page.Locator("[data-cfx-zoom=in]").IsDisabledAsync());
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The accepted full native view did not export.");
         var svg = XDocument.Load(path);

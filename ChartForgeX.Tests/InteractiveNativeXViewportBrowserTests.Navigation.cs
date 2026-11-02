@@ -58,6 +58,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.Locator("[data-cfx-x-range=position]").FocusAsync(); await page.Keyboard.PressAsync("Home"); await WaitForChangesAsync(page, 4);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), host.Origin, host.Origin + span);
 
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No committed export was downloaded.");
         var exported = XDocument.Load(path);

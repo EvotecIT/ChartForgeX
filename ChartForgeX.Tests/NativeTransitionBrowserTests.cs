@@ -51,7 +51,7 @@ public sealed partial class NativeTransitionBrowserTests {
         }
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         if (initial) await page.EvaluateAsync("payload=>nativeChart.presentInitial(payload,{sceneRevision:nativeChart.sceneRevision,motion:{duration:1000}})", payload);
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var download = await DownloadSvgAsync(page);
         var exported = await download.PathAsync() ?? throw new InvalidOperationException("Native accepted endpoint did not export.");
         Assert.Contains(kind == "progress" ? "data-cfx-value=\"0.8\"" : "data-cfx-value=\"80\"", await File.ReadAllTextAsync(exported), StringComparison.Ordinal);
         Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
@@ -127,6 +127,11 @@ public sealed partial class NativeTransitionBrowserTests {
         options.ProgressEditing.Enabled = progress;
     }
     private static string Page(HtmlChartSection section) => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + section.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+    private static async Task<IDownload> DownloadSvgAsync(IPage page) {
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
+        return await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+    }
+
     private static async Task ReadyAndPauseAsync(IPage page) {
         await page.WaitForFunctionAsync("()=>{const root=document.querySelector('.cfx-interactive-chart');return !!ChartForgeXCharts.get(root)&&(root.dataset.cfxResponsiveLayout!=='adaptive'||root.dataset.cfxAdaptiveDrawing===(root.getBoundingClientRect().width<Number(root.dataset.cfxAdaptiveBreakpoint)?'narrow':'wide'))}");
         var start = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc); await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = start }); await page.Clock.PauseAtAsync(start.AddHours(1));

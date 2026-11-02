@@ -45,7 +45,7 @@ public sealed partial class NativeTransitionBrowserTests {
         await NativeValueFrameBrowserProof.AssertAsync(page, identity + " [data-cfx-role=" + (kind == "line" ? "marker" : kind == "bar" ? "bar" : "boxplot-body") + "]", name + "-ink");
         await page.Clock.RunForAsync(500);
         Assert.Equal(2, await page.Locator(".cfx-native-motion-frame [data-cfx-role=point]").CountAsync());
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted native Reflow export missing.");
+        var download = await DownloadSvgAsync(page); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted native Reflow export missing.");
         var exported = System.Xml.Linq.XDocument.Parse(await File.ReadAllTextAsync(file));
         Assert.Equal(2, exported.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "point"));
         Assert.DoesNotContain(exported.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "native-transition-opacity");

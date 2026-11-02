@@ -60,6 +60,12 @@
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
 
+  const clearUnavailableHover = (root, node) => {
+    if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(node))) return;
+    clearHover(root, true, true);
+    const crosshair = root.querySelector('.cfx-crosshair');
+    if (crosshair) crosshair.hidden = true;
+  };
   const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
   const legendItemUnit = (root, target) => {

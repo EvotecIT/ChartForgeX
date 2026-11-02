@@ -31,8 +31,7 @@
     settleChartUpdateMotion(root);
     const svg = root._cfxStandaloneHierarchy?.overlay || root.querySelector('.cfx-stage svg');
     if (!svg) return null;
-    for (const animation of svg.getAnimations?.({ subtree: true }) || [])
-      if (animation.animationName === 'cfx-series-enter' && typeof animation.finish === 'function') animation.finish();
+    settleChartLoadMotion(root);
     return withPersistentExportPaint(root, svg, () => {
       const copy = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, copy, png);

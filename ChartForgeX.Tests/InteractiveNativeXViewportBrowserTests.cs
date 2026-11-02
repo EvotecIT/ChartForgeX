@@ -30,6 +30,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.Locator(Middle).FocusAsync(); await page.Keyboard.PressAsync("Space");
         await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=reference]").ClickAsync();
         await CaptureAsync(page, "before-" + width, initial);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await WaitForChangesAsync(page, 1);
         var zoomed = await SceneAsync(page);
@@ -49,6 +50,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal("6", await page.Locator(Middle).GetAttributeAsync("data-cfx-x"));
         Assert.Equal(13, await page.Locator("g[data-cfx-role=point][data-cfx-series-key=samples]").CountAsync());
         await CaptureAsync(page, "zoomed-" + width, zoomed);
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No committed export was downloaded.");
         var svg = XDocument.Load(path);
@@ -56,6 +58,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal(zoomed.GetProperty("xLabels").EnumerateArray().Select(item => item.GetString()), exportedX);
         Assert.Equal("false", (string?)Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-observation-id") == "sample-0").Attribute("data-cfx-visible"));
         await SaveDownloadAsync(download, "committed-" + width + ".svg");
+        await page.Locator(Root).HoverAsync();
         var pngDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());
         var pngPath = await pngDownload.PathAsync() ?? throw new InvalidOperationException("No committed PNG export was downloaded.");
         var png = await File.ReadAllBytesAsync(pngPath);
@@ -87,7 +90,9 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var host = new NativeHost(reversed: reversed);
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ConnectAsync(page, host);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await WaitForChangesAsync(page, 1);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         var bounds = await BoxAsync(page, ".cfx-stage svg");
         var x = (float)(bounds.X + bounds.Width * .45);
@@ -99,6 +104,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var projection = (await SceneAsync(page)).GetProperty("projection");
         Assert.Equal(reversed ? 2.4 : 0, projection.GetProperty("minimum").GetDouble(), 8);
         Assert.Equal(reversed ? 12 : 9.6, projection.GetProperty("maximum").GetDouble(), 8);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         await page.EvaluateAsync("""
             () => {
@@ -134,6 +140,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
         await using var session = await OpenAsync(html, width, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await page.EvaluateAsync("html=>controlled[0].resolve(html)", window.Html); await WaitForChangesAsync(page, 1);
         Assert.Equal(2, await page.Locator("g[data-cfx-role=point][data-cfx-visible=false]").CountAsync());

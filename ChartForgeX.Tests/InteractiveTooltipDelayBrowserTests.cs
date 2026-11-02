@@ -62,7 +62,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var rows = await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key]").AllTextContentsAsync();
         Assert.Equal(new[] { "Reading", "Companion" }, rows);
         await SettlePresentationAsync(page);
-        Assert.True(await page.EvaluateAsync<bool>("() => { const tip=document.querySelector('.cfx-tooltip'), p=window.delayTrace.pointer; return Math.abs(parseFloat(tip.style.left)-Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,p[0]+14)))<.01 && document.documentElement.scrollWidth<=innerWidth; }"));
+        Assert.True(await page.EvaluateAsync<bool>("() => { const tip=document.querySelector('.cfx-tooltip'), p=window.delayTrace.pointer, width=tip.getBoundingClientRect().width; return Math.abs(parseFloat(tip.style.left)-Math.max(8,Math.min(innerWidth-width-8,p[0]+14)))<.01 && document.documentElement.scrollWidth<=innerWidth; }"));
         await CaptureDelayAsync(page, "delay-stable-" + layout + "-" + width + "-" + (dark ? "dark" : "light"), trace);
         AssertNoConsoleErrors(session);
     }

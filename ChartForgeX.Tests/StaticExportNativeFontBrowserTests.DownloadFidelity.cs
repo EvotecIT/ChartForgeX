@@ -54,7 +54,9 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             """, corruptOutput);
         string svg; byte[] png; JsonElement capture;
         try {
-            await page.Locator(".cfx-interactive-chart").First.HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
+            var chartRoot = page.Locator(".cfx-interactive-chart").Filter(new() { Has = page.Locator(svgButton) }).First;
+            if (await chartRoot.CountAsync() != 0)
+                await chartRoot.HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
             var vector = await page.RunAndWaitForDownloadAsync(() => page.Locator(svgButton).ClickAsync());
             svg = await File.ReadAllTextAsync(await vector.PathAsync() ?? throw new InvalidOperationException("Missing SVG download."));
             await vector.SaveAsAsync(stem + ".svg");

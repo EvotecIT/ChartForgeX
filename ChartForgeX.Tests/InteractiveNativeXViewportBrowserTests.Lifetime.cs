@@ -15,6 +15,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         var middle = host.Window(2, 8); var stale = host.Window(3, 9); var narrow = host.Window(4, 6);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("()=>controlled.length===2");
@@ -47,6 +48,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         var window = host.Window(2, 8);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await page.EvaluateAsync("""
             ({action,initial})=>{
@@ -84,6 +86,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         var before = await SceneAsync(page);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await page.EvaluateAsync("""
             ({failure,html})=>{
@@ -105,6 +108,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
         await page.Locator(Middle).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Middle).GetAttributeAsync("aria-selected"));
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The retained scene cannot export.");
         Assert.Contains("sample-0", await File.ReadAllTextAsync(path));
@@ -132,6 +136,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal("1.000", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
         await page.EvaluateAsync("html=>chartController.update(html)", host.Initial);
         Assert.False(await page.Locator("[data-cfx-zoom=in]").IsDisabledAsync());
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await CaptureAsync(page, "capability-" + empty);
         AssertNoConsoleErrors(session);
@@ -146,6 +151,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.EvaluateAsync("()=>window.chartController=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart'))");
         var initial = await SceneAsync(page);
         var initialGeometry = await StandaloneGeometryAsync(page);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 1.2, 10.8);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()"), 0, 100);

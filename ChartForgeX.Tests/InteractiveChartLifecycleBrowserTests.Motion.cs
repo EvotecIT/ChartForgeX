@@ -27,7 +27,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             html => {
                 chartController.update(html,{motion:{duration:1000}});
                 window.updateSvg=chartController.root.querySelector('.cfx-stage svg');
-                window.updateAnimation=updateSvg.getAnimations()[0]; updateAnimation.pause();
+                window.updateAnimation=chartController.root.querySelector('.cfx-stage').getAnimations()[0]; updateAnimation.pause();
                 return {active:updateSvg.dataset.cfxUpdateMotion,value:updateSvg.querySelector('[data-cfx-observation-id=north]').dataset.cfxY};
             }
             """, next);
@@ -44,10 +44,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal("17", Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-observation-id") == "north" && (string?)element.Attribute("data-cfx-role") == "point").Attribute("data-cfx-y")?.Value);
         Assert.Equal("idle", await page.EvaluateAsync<string>("() => updateAnimation.playState"));
         await CaptureAsync(page, "motion-export-final-" + width + "-" + dark);
-        await page.EvaluateAsync("html => {chartController.update(html,{motion:{duration:1000}}); window.oldMotion=chartController.root.querySelector('.cfx-stage svg').getAnimations()[0]; oldMotion.pause(); chartController.update(html); window.replacementMotion=chartController.root.querySelector('.cfx-stage svg').getAnimations()[0]; replacementMotion.pause();}", next);
+        await page.EvaluateAsync("html => {chartController.update(html,{motion:{duration:1000}}); window.oldMotion=chartController.root.querySelector('.cfx-stage').getAnimations()[0]; oldMotion.pause(); chartController.update(html); window.replacementMotion=chartController.root.querySelector('.cfx-stage').getAnimations()[0]; replacementMotion.pause();}", next);
         Assert.Equal("idle", await page.EvaluateAsync<string>("() => oldMotion.playState"));
         Assert.Equal(200, await page.EvaluateAsync<double>("() => replacementMotion.effect.getTiming().duration"));
-        await page.EvaluateAsync("html => {chartController.update(html,{motion:{duration:1000}});window.disposedMotion=chartController.root.querySelector('.cfx-stage svg').getAnimations()[0]; disposedMotion.pause();chartController.dispose();}", next);
+        await page.EvaluateAsync("html => {chartController.update(html,{motion:{duration:1000}});window.disposedMotion=chartController.root.querySelector('.cfx-stage').getAnimations()[0]; disposedMotion.pause();chartController.dispose();}", next);
         Assert.Equal("idle", await page.EvaluateAsync<string>("() => replacementMotion.playState"));
         Assert.Equal("idle", await page.EvaluateAsync<string>("() => disposedMotion.playState"));
         Assert.Equal(0, await page.Locator("[data-cfx-update-motion]").CountAsync()); AssertNoConsoleErrors(session);
@@ -64,7 +64,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("""
             html => {
                 chartController.update(html,{motion:{duration:1000}});
-                return !chartController.root.querySelector('[data-cfx-update-motion]') && chartController.root.querySelector('.cfx-stage svg').getAnimations().length===0;
+                return !chartController.root.querySelector('[data-cfx-update-motion]') && chartController.root.querySelector('.cfx-stage').getAnimations().length===0;
             }
             """, next));
         var rejected = await page.EvaluateAsync<JsonElement>("""

@@ -97,6 +97,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal("annotation", annotation.GetProperty("targetKind").GetString());
         Assert.Equal("6", annotation.GetProperty("value").GetString());
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>kindEvents.length"));
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var stage = await BoxAsync(page, "[data-cfx-role=plot-region-fill]");
         await page.Mouse.MoveAsync((float)(stage.X + 3), (float)(stage.Y + 3));

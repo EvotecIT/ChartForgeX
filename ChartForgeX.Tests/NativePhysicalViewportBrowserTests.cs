@@ -47,6 +47,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         var window = await page.EvaluateAsync<JsonElement>("()=>physical.getViewport()");
         Window(window.GetProperty(secondary), 300, 700);
         Window(window.GetProperty(horizontal ? "x" : "y"), 0, 100);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 3);
         Assert.Equal(new[] { horizontal ? "y" : "x", secondary }, (await page.EvaluateAsync<JsonElement>("()=>pendingPhysical[2].request.axes"))
             .EnumerateArray().Select(axis => axis.GetString()));
@@ -68,6 +69,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         await page.EvaluateAsync("()=>physical.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:physicalBookmark,sync:false}}))");
         await Pending(page, 6); await Resolve(page, 5); await Changes(page, 4);
         Window((await page.EvaluateAsync<JsonElement>("()=>physical.getViewport()")).GetProperty(secondary), 400, 600);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No physical viewport SVG download.");
         var svg = XDocument.Load(path);

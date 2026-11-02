@@ -20,12 +20,43 @@ public sealed partial class StandaloneViewportBrowserTests {
             }));
         var page = session.Page;
         await MountAsync(page);
-        Assert.Equal(reduced ? "none" : "cfx-series-enter", await page.Locator("[data-cfx-role=series]").First
+        Assert.Equal(reduced ? "none" : "cfx-series-enter", await page.Locator(".cfx-stage")
             .EvaluateAsync<string>("node=>getComputedStyle(node).animationName"));
         var moving = await page.EvaluateAsync<bool>("html=>{controller.update(html);return !!document.querySelector('[data-cfx-update-motion]');}",
             chart.ToInteractiveHtmlFragmentWithoutAssets());
         Assert.Equal(!reduced, moving);
         await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-update-motion]')");
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task DefaultMotionKeepsAuthoredNativeOpacityHiddenDuringLoadAndUpdate() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(640, 360).AddLine("Hidden observations", ChartPoints.FromValues(2, 7, 4));
+        var html = chart.ToInteractiveHtmlPage()
+            .Replace("</head>", "<style>.cfx-stage [data-cfx-role=series]{opacity:0}</style></head>")
+            .Replace("</body>", "<script>window.loadNativeOpacity=getComputedStyle(document.querySelector('.cfx-stage [data-cfx-role=series]')).opacity;</script></body>");
+        await using var session = await OpenAsync(html, 980, 800,
+            configurePageAsync: page => page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.NoPreference }));
+        var page = session.Page;
+        Assert.Equal("0", await page.EvaluateAsync<string>("()=>window.loadNativeOpacity"));
+        await MountAsync(page);
+        var updateOpacity = await page.EvaluateAsync<string>("""
+            html => {
+                controller.update(html, {motion:{duration:1000}});
+                const svg=controller.root.querySelector('.cfx-stage svg');
+                svg.style.opacity='0';
+                const animation=controller.root.querySelector('.cfx-stage').getAnimations()[0];
+                animation.pause(); animation.currentTime=500;
+                return getComputedStyle(svg).opacity;
+            }
+            """, chart.ToInteractiveHtmlFragmentWithoutAssets());
+        Assert.Equal("0", updateOpacity);
+        await MoveToAsync(page, Point(0, 1));
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-hover-key"));
+        await page.EvaluateAsync("()=>controller.dispose()");
+        Assert.Equal(0, await page.Locator(".cfx-stage").EvaluateAsync<int>("node=>node.getAnimations().length"));
         AssertNoConsoleErrors(session);
     }
 

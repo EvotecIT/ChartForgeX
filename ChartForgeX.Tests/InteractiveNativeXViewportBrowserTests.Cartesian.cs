@@ -48,6 +48,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var bookmarkX = await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()");
         await page.EvaluateAsync("()=>{const root=chartController.root;root.dispatchEvent(new CustomEvent('cfx-capture-state',{detail:{sync:false}}));window.xyBookmark=JSON.parse(root.dataset.cfxInteractionSnapshot);}");
         await CaptureAsync(page, "cartesian-window-" + axes + "-" + width, await page.EvaluateAsync<JsonElement>("()=>({viewport:chartController.getViewport(),snapshot:xyBookmark})"));
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         var bounds = await BoxAsync(page, ".cfx-stage svg");
         var x = (float)(bounds.X + bounds.Width * .5); var y = (float)(bounds.Y + bounds.Height * .5);
@@ -59,6 +60,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.EvaluateAsync("()=>chartController.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:xyBookmark,sync:false}}))"); await WaitForChangesAsync(page, 5);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()"), bookmarkY.GetProperty("minimum").GetDouble(), bookmarkY.GetProperty("maximum").GetDouble());
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), bookmarkX.GetProperty("minimum").GetDouble(), bookmarkX.GetProperty("maximum").GetDouble());
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No Y/XY export.");
         var svg = XDocument.Load(path);
@@ -106,6 +108,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.SetViewportSizeAsync(1000, 1900);
         await page.WaitForFunctionAsync("()=>chartControllers.every(controller=>controller.root.dataset.cfxAdaptiveDrawing==='wide')");
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), minimum, end);
+        await page.Locator(Root).First.HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").First.ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No aligned wide export.");
         var svg = XDocument.Load(path);
