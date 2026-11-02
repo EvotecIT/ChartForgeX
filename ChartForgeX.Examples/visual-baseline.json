@@ -7,7 +7,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nSegoe UI,Arial,sans-serif|700|normal|40.8|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "84FFCDC78C33EB5C523FF6F8DE4F04C042FBCA1D03DDF96BC0A75DF6AF00B0E5"
       },
       "width": 530,
       "height": 550,
@@ -107,7 +107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "AF0FEFA80CE55B9384AB55C62414EE88C1184646B08391A8B6B8603743BECBB6"
       },
       "width": 1970,
       "height": 253,
@@ -182,7 +182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "AF0FEFA80CE55B9384AB55C62414EE88C1184646B08391A8B6B8603743BECBB6"
       },
       "width": 1716,
       "height": 398,
@@ -282,7 +282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|14|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "488F2266150A8E0270D3554670CEF4C57AC7B3ED1A166A1E1120D9515DD98156"
       },
       "width": 800,
       "height": 440,
@@ -307,7 +307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|14|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "488F2266150A8E0270D3554670CEF4C57AC7B3ED1A166A1E1120D9515DD98156"
       },
       "width": 800,
       "height": 440,
@@ -457,7 +457,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 912,
       "height": 653,
@@ -482,7 +482,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 1108,
       "height": 459,
@@ -732,7 +732,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 944,
       "height": 981,
@@ -1057,7 +1057,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 1904,
       "height": 1235,
@@ -2032,7 +2032,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 668,
       "height": 765,
@@ -2082,7 +2082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "BEA73FFCCB93F25A0365FDB3F646EDFCFA95045B10AA81A3D72AE59F5CC6F89B"
       },
       "width": 1200,
       "height": 620,
@@ -2807,7 +2807,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "69560ABB2747F6B354C37B80B544F0F221775058FA7713EB1FFA78610B21F1E9"
       },
       "width": 1344,
       "height": 480,
@@ -2832,7 +2832,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "69560ABB2747F6B354C37B80B544F0F221775058FA7713EB1FFA78610B21F1E9"
       },
       "width": 1344,
       "height": 480,
@@ -3032,7 +3032,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 924,
       "height": 419,
@@ -3082,7 +3082,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 1160,
       "height": 389,
@@ -3107,7 +3107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8.727|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "C0F8B9EBEB04D6EF3E80F5E089502AD5507C780B3E875ECF09F3E950946D6C2D"
       },
       "width": 1200,
       "height": 680,
@@ -4957,7 +4957,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.116|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.74|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "6516E6CE703051F3101668C056F9227E7DF187F217134134EC7D4B7DDD5FCEED"
       },
       "width": 1600,
       "height": 823,
@@ -5307,7 +5307,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "69560ABB2747F6B354C37B80B544F0F221775058FA7713EB1FFA78610B21F1E9"
       },
       "width": 1584,
       "height": 1016,
@@ -5332,7 +5332,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "69560ABB2747F6B354C37B80B544F0F221775058FA7713EB1FFA78610B21F1E9"
       },
       "width": 1584,
       "height": 1016,
@@ -5357,7 +5357,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 1000,
       "height": 500,
@@ -5382,7 +5382,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 1000,
       "height": 500,
@@ -5632,7 +5632,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 1118,
       "height": 1535,
@@ -6132,7 +6132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "BA9343FE2C2512F586538B85696B401B00DF16BA309376E38427B4F8A206FD4A"
       },
       "width": 1120,
       "height": 620,
@@ -6157,7 +6157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F3874071711E6C7421CCAE932F47CA63C867530C1AE932CB2B804157D14C9952"
       },
       "width": 385,
       "height": 166,
@@ -6182,7 +6182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 717,
       "height": 339,
@@ -6207,7 +6207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 717,
       "height": 339,
@@ -6232,7 +6232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 483,
       "height": 240,
@@ -6257,7 +6257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 483,
       "height": 240,
@@ -6282,7 +6282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 483,
       "height": 240,
@@ -6307,7 +6307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 483,
       "height": 240,
@@ -6332,7 +6332,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 611,
       "height": 270,
@@ -6357,7 +6357,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 611,
       "height": 270,
@@ -6382,7 +6382,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 611,
       "height": 270,
@@ -6407,7 +6407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 611,
       "height": 270,
@@ -6432,7 +6432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1091,
       "height": 653,
@@ -6457,7 +6457,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1091,
       "height": 653,
@@ -6482,7 +6482,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1091,
       "height": 652,
@@ -6507,7 +6507,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1091,
       "height": 652,
@@ -6532,7 +6532,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1131,
       "height": 432,
@@ -6557,7 +6557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1131,
       "height": 432,
@@ -6582,7 +6582,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1131,
       "height": 432,
@@ -6607,7 +6607,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1131,
       "height": 432,
@@ -6632,7 +6632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 969,
       "height": 410,
@@ -6657,7 +6657,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 969,
       "height": 410,
@@ -6682,7 +6682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 969,
       "height": 410,
@@ -6707,7 +6707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 969,
       "height": 410,
@@ -6732,7 +6732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 863,
       "height": 497,
@@ -6757,7 +6757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 863,
       "height": 497,
@@ -6782,7 +6782,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 863,
       "height": 497,
@@ -6807,7 +6807,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 863,
       "height": 497,
@@ -6957,7 +6957,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.75|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|18|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|16|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|18|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5237E93C8B99BC9A552539C38B83B1D1B9277BE52EAEF26881ACF750DB8B6C23"
       },
       "width": 658,
       "height": 803,
@@ -6982,7 +6982,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.75|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|18|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|16|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|18|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5237E93C8B99BC9A552539C38B83B1D1B9277BE52EAEF26881ACF750DB8B6C23"
       },
       "width": 658,
       "height": 803,
@@ -7007,7 +7007,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.75|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|18|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|16|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|18|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5237E93C8B99BC9A552539C38B83B1D1B9277BE52EAEF26881ACF750DB8B6C23"
       },
       "width": 1100,
       "height": 800,
@@ -7032,7 +7032,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.75|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|15|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|15.3|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|500|normal|18|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|16|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|18|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5237E93C8B99BC9A552539C38B83B1D1B9277BE52EAEF26881ACF750DB8B6C23"
       },
       "width": 1100,
       "height": 800,
@@ -7057,7 +7057,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 536,
       "height": 815,
@@ -7082,7 +7082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 536,
       "height": 815,
@@ -7107,7 +7107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 1100,
       "height": 815,
@@ -7132,7 +7132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 1100,
       "height": 815,
@@ -7157,7 +7157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.35|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "83CF83E2C38962236BA14508AE29650AD90629E30D67E5E62D71DBDBE4701328"
       },
       "width": 348,
       "height": 701,
@@ -7182,7 +7182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.35|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "83CF83E2C38962236BA14508AE29650AD90629E30D67E5E62D71DBDBE4701328"
       },
       "width": 348,
       "height": 701,
@@ -7207,7 +7207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E2ABE6C62FB27D05514E213082F94184BE11A4296C2607E2345AC55AAB6A6006"
       },
       "width": 1174,
       "height": 315,
@@ -7232,7 +7232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E2ABE6C62FB27D05514E213082F94184BE11A4296C2607E2345AC55AAB6A6006"
       },
       "width": 1174,
       "height": 315,
@@ -7257,7 +7257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|italic|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|8.8|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11.662|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "3FA5D2ACCAF65D09E851A231AF90741BD00E052CE4C59D970B6B584E5253BDFE"
       },
       "width": 582,
       "height": 255,
@@ -7282,7 +7282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|italic|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|8.8|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11.662|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "3FA5D2ACCAF65D09E851A231AF90741BD00E052CE4C59D970B6B584E5253BDFE"
       },
       "width": 582,
       "height": 255,
@@ -7307,7 +7307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|italic|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9DCFCAC41913DD76E9D2653BFC4BA51EFCC993C375CC41D8B0B579C6826E5D4F"
       },
       "width": 589,
       "height": 260,
@@ -7332,7 +7332,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|italic|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9DCFCAC41913DD76E9D2653BFC4BA51EFCC993C375CC41D8B0B579C6826E5D4F"
       },
       "width": 589,
       "height": 260,
@@ -7357,7 +7357,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "6CAB4016163D1AE6AA6FB8EFE4CBA6B49B363AD2E8C5AC46C4330F731581C1B6"
       },
       "width": 585,
       "height": 145,
@@ -7382,7 +7382,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "6CAB4016163D1AE6AA6FB8EFE4CBA6B49B363AD2E8C5AC46C4330F731581C1B6"
       },
       "width": 601,
       "height": 170,
@@ -7407,7 +7407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "6CAB4016163D1AE6AA6FB8EFE4CBA6B49B363AD2E8C5AC46C4330F731581C1B6"
       },
       "width": 601,
       "height": 170,
@@ -7432,7 +7432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|8.8|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.35|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A781BE968AA6632DDA0FD76D68D5BBA156FF06EF34FAAEC57BCD2ED3708BFF64"
       },
       "width": 474,
       "height": 321,
@@ -7457,7 +7457,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1045,
       "height": 577,
@@ -7482,7 +7482,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1045,
       "height": 577,
@@ -7507,7 +7507,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1045,
       "height": 577,
@@ -7532,7 +7532,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1045,
       "height": 577,
@@ -7557,7 +7557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1261,
       "height": 441,
@@ -7582,7 +7582,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1261,
       "height": 441,
@@ -7607,7 +7607,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1261,
       "height": 441,
@@ -7632,7 +7632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 1261,
       "height": 441,
@@ -7657,7 +7657,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "914A33C011A7BFF1D2B0793F02ADE6B77B0DC36BD059221E4872A216C74C7E3F"
       },
       "width": 960,
       "height": 621,
@@ -7682,7 +7682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.563|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.615|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11.076|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.563|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "778BF3882C770B5891CF96635D24C00EC1803F7AE3FEE052A41812C53A4B48C1"
       },
       "width": 631,
       "height": 581,
@@ -7707,7 +7707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.563|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.615|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11.076|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.563|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "778BF3882C770B5891CF96635D24C00EC1803F7AE3FEE052A41812C53A4B48C1"
       },
       "width": 631,
       "height": 581,
@@ -7732,7 +7732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.5|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "82981B62F8DEE3270642B61BC7B8631D1A09E7C99AFAE0C5425B1898031495EB"
       },
       "width": 653,
       "height": 598,
@@ -7757,7 +7757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.5|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "82981B62F8DEE3270642B61BC7B8631D1A09E7C99AFAE0C5425B1898031495EB"
       },
       "width": 653,
       "height": 598,
@@ -7782,7 +7782,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "766AA972350D502F0944A8CF71171C1727FA477E25E860506F7B80FE803B7877"
       },
       "width": 219,
       "height": 310,
@@ -7807,7 +7807,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.5|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "82981B62F8DEE3270642B61BC7B8631D1A09E7C99AFAE0C5425B1898031495EB"
       },
       "width": 596,
       "height": 221,
@@ -7832,7 +7832,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.5|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "82981B62F8DEE3270642B61BC7B8631D1A09E7C99AFAE0C5425B1898031495EB"
       },
       "width": 619,
       "height": 221,
@@ -7857,7 +7857,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.5|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "82981B62F8DEE3270642B61BC7B8631D1A09E7C99AFAE0C5425B1898031495EB"
       },
       "width": 619,
       "height": 221,
@@ -7882,7 +7882,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|8.8|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.35|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "02F9C78FAE530AA97D572FAF92572A6353F5670B7215CD2976775AE812DD6797"
       },
       "width": 2292,
       "height": 1250,
@@ -7907,7 +7907,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|8.8|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.35|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "02F9C78FAE530AA97D572FAF92572A6353F5670B7215CD2976775AE812DD6797"
       },
       "width": 2292,
       "height": 1250,
@@ -7932,7 +7932,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "AAF8B68B44C81BDF4FE18CBF9E7EC55920EE3A0072B389E77B81E096275BDF1D"
       },
       "width": 2305,
       "height": 1271,
@@ -7957,7 +7957,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "AAF8B68B44C81BDF4FE18CBF9E7EC55920EE3A0072B389E77B81E096275BDF1D"
       },
       "width": 2305,
       "height": 1271,
@@ -7982,7 +7982,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 573,
       "height": 264,
@@ -8007,7 +8007,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1543,
       "height": 166,
@@ -8032,7 +8032,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 710,
       "height": 420,
@@ -8057,7 +8057,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 792,
       "height": 460,
@@ -8082,7 +8082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1044,
       "height": 166,
@@ -8107,7 +8107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 573,
       "height": 264,
@@ -8132,7 +8132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F3874071711E6C7421CCAE932F47CA63C867530C1AE932CB2B804157D14C9952"
       },
       "width": 446,
       "height": 264,
@@ -8157,7 +8157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 435,
       "height": 252,
@@ -8182,7 +8182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 435,
       "height": 252,
@@ -8207,7 +8207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 435,
       "height": 252,
@@ -8232,7 +8232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 435,
       "height": 252,
@@ -8257,7 +8257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 864,
       "height": 738,
@@ -8282,7 +8282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 864,
       "height": 738,
@@ -8307,7 +8307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F3874071711E6C7421CCAE932F47CA63C867530C1AE932CB2B804157D14C9952"
       },
       "width": 403,
       "height": 558,
@@ -8332,7 +8332,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 573,
       "height": 304,
@@ -8357,7 +8357,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 555,
       "height": 274,
@@ -8382,7 +8382,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 555,
       "height": 274,
@@ -8407,7 +8407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 555,
       "height": 274,
@@ -8432,7 +8432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 555,
       "height": 274,
@@ -9157,7 +9157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 1163,
       "height": 703,
@@ -9182,7 +9182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 1163,
       "height": 703,
@@ -9207,7 +9207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 1350,
       "height": 700,
@@ -9232,7 +9232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 1350,
       "height": 700,
@@ -9257,7 +9257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 840,
       "height": 1315,
@@ -9282,7 +9282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 840,
       "height": 1315,
@@ -9307,7 +9307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 1200,
       "height": 1368,
@@ -9332,7 +9332,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8D8D0DD39FB17DA0F6BE2DFF99755D1E6C1B0B3EA5D4778C9B9CD5FC2AC70061"
       },
       "width": 1200,
       "height": 1368,
@@ -9357,7 +9357,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1108,
       "height": 567,
@@ -9382,7 +9382,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1108,
       "height": 567,
@@ -9407,7 +9407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1108,
       "height": 566,
@@ -9432,7 +9432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1108,
       "height": 566,
@@ -9457,7 +9457,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 845,
       "height": 688,
@@ -9482,7 +9482,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 845,
       "height": 688,
@@ -9507,7 +9507,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 845,
       "height": 688,
@@ -9532,7 +9532,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 845,
       "height": 688,
@@ -9557,7 +9557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1367,
       "height": 240,
@@ -9582,7 +9582,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1367,
       "height": 240,
@@ -9607,7 +9607,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1367,
       "height": 240,
@@ -9632,7 +9632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1367,
       "height": 240,
@@ -9657,7 +9657,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "92EDD715730E67A2F900787E6BCAB021852044E138A85B08FA634D92D69ADF0F"
       },
       "width": 845,
       "height": 317,
@@ -9682,7 +9682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "92EDD715730E67A2F900787E6BCAB021852044E138A85B08FA634D92D69ADF0F"
       },
       "width": 845,
       "height": 317,
@@ -9707,7 +9707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 845,
       "height": 323,
@@ -9732,7 +9732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 845,
       "height": 323,
@@ -9757,7 +9757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 923,
       "height": 346,
@@ -9782,7 +9782,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E43DC03D4129730B323BB875637717899B480B7FDB2C08AFA2F1EC87ABB4FD49"
       },
       "width": 923,
       "height": 346,
@@ -9857,7 +9857,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F3874071711E6C7421CCAE932F47CA63C867530C1AE932CB2B804157D14C9952"
       },
       "width": 390,
       "height": 362,
@@ -9882,7 +9882,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F3874071711E6C7421CCAE932F47CA63C867530C1AE932CB2B804157D14C9952"
       },
       "width": 390,
       "height": 362,
@@ -9907,7 +9907,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1100,
       "height": 362,
@@ -9932,7 +9932,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1100,
       "height": 362,
@@ -9957,7 +9957,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 235,
       "height": 1643,
@@ -9982,7 +9982,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 235,
       "height": 1643,
@@ -10007,7 +10007,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 235,
       "height": 1643,
@@ -10032,7 +10032,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 235,
       "height": 1643,
@@ -10057,7 +10057,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2056,
       "height": 189,
@@ -10082,7 +10082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2056,
       "height": 189,
@@ -10107,7 +10107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2056,
       "height": 189,
@@ -10132,7 +10132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2056,
       "height": 189,
@@ -10157,7 +10157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2316,
       "height": 180,
@@ -10182,7 +10182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2316,
       "height": 180,
@@ -10207,7 +10207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2316,
       "height": 180,
@@ -10232,7 +10232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 2316,
       "height": 180,
@@ -10257,7 +10257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 261,
       "height": 1422,
@@ -10282,7 +10282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 261,
       "height": 1422,
@@ -10307,7 +10307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 261,
       "height": 1422,
@@ -10332,7 +10332,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 261,
       "height": 1422,
@@ -10557,7 +10557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 839,
       "height": 238,
@@ -10582,7 +10582,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 839,
       "height": 238,
@@ -10607,7 +10607,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 839,
       "height": 238,
@@ -10632,7 +10632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 839,
       "height": 238,
@@ -10657,7 +10657,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 783,
       "height": 250,
@@ -10682,7 +10682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 783,
       "height": 250,
@@ -10707,7 +10707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 783,
       "height": 250,
@@ -10732,7 +10732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 783,
       "height": 250,
@@ -10757,7 +10757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 805,
       "height": 369,
@@ -10782,7 +10782,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 805,
       "height": 369,
@@ -10807,7 +10807,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 805,
       "height": 369,
@@ -10832,7 +10832,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "CD0DBDAB111EC58AA83F2663F8A2F491596DB9A1C52DCA2CE1B973BF55CC5D05"
       },
       "width": 805,
       "height": 369,
@@ -13682,7 +13682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "766AA972350D502F0944A8CF71171C1727FA477E25E860506F7B80FE803B7877"
       },
       "width": 407,
       "height": 488,
@@ -13707,7 +13707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1369,
       "height": 498,
@@ -13732,7 +13732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1369,
       "height": 498,
@@ -13757,7 +13757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1383,
       "height": 498,
@@ -13782,7 +13782,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1383,
       "height": 498,
@@ -13807,7 +13807,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1204,
       "height": 1168,
@@ -13832,7 +13832,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1204,
       "height": 1168,
@@ -13857,7 +13857,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1343,
       "height": 408,
@@ -13882,7 +13882,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1343,
       "height": 408,
@@ -13907,7 +13907,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1739,
       "height": 239,
@@ -13932,7 +13932,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 1739,
       "height": 239,
@@ -13957,7 +13957,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1941,
       "height": 346,
@@ -13982,7 +13982,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1941,
       "height": 346,
@@ -14007,7 +14007,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1941,
       "height": 346,
@@ -14032,7 +14032,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1941,
       "height": 346,
@@ -14057,7 +14057,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2213,
       "height": 936,
@@ -14082,7 +14082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2213,
       "height": 936,
@@ -14107,7 +14107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2213,
       "height": 936,
@@ -14132,7 +14132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2213,
       "height": 936,
@@ -14157,7 +14157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 1033,
       "height": 438,
@@ -14182,7 +14182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2129,
       "height": 1040,
@@ -14207,7 +14207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2129,
       "height": 1040,
@@ -14232,7 +14232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2129,
       "height": 1040,
@@ -14257,7 +14257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "9BA0043BA607B621EEE738A2CE5AE7F65009D36FE576D9BEF067465E6664F32D"
       },
       "width": 2129,
       "height": 1040,
@@ -14582,7 +14582,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 685,
       "height": 899,
@@ -14607,7 +14607,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 685,
       "height": 899,
@@ -14632,7 +14632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 1303,
       "height": 331,
@@ -14657,7 +14657,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 1303,
       "height": 331,
@@ -14682,7 +14682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "FB564CD721C9E84D5EE09E11E81BA3574464F32CF73649A4301FA0C2AAF6BFAA"
       },
       "width": 985,
       "height": 408,
@@ -14707,7 +14707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.458|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.867|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12.458|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A46F2867DC99E3C932CD6DFFCA360DE309119CF8FC4E7DB3CF655F9EEE7A6B5E"
       },
       "width": 510,
       "height": 723,
@@ -14732,7 +14732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.458|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.867|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12.458|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A46F2867DC99E3C932CD6DFFCA360DE309119CF8FC4E7DB3CF655F9EEE7A6B5E"
       },
       "width": 510,
       "height": 723,
@@ -14807,7 +14807,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 768,
       "height": 877,
@@ -14832,7 +14832,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 768,
       "height": 877,
@@ -14857,7 +14857,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 1332,
       "height": 403,
@@ -14882,7 +14882,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "90DECB79AA54CF7EDD3D1BD1CD0D9F19758B190E79C4769B37C3F975E6710E35"
       },
       "width": 1332,
       "height": 403,
@@ -14907,7 +14907,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F3874071711E6C7421CCAE932F47CA63C867530C1AE932CB2B804157D14C9952"
       },
       "width": 225,
       "height": 318,
@@ -15382,7 +15382,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 439,
       "height": 169,
@@ -15407,7 +15407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 439,
       "height": 169,
@@ -15432,7 +15432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 439,
       "height": 169,
@@ -15457,7 +15457,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 439,
       "height": 169,
@@ -15482,7 +15482,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 475,
       "height": 177,
@@ -15507,7 +15507,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 475,
       "height": 177,
@@ -15532,7 +15532,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 475,
       "height": 177,
@@ -15557,7 +15557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 475,
       "height": 177,
@@ -15682,7 +15682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E6AA902F2ED768C8F1AB86671B8506A238DE57125FA25722D7D2AE45330A368C"
       },
       "width": 332,
       "height": 265,
@@ -15707,7 +15707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E6AA902F2ED768C8F1AB86671B8506A238DE57125FA25722D7D2AE45330A368C"
       },
       "width": 332,
       "height": 265,
@@ -15732,7 +15732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E6AA902F2ED768C8F1AB86671B8506A238DE57125FA25722D7D2AE45330A368C"
       },
       "width": 332,
       "height": 265,
@@ -15757,7 +15757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E6AA902F2ED768C8F1AB86671B8506A238DE57125FA25722D7D2AE45330A368C"
       },
       "width": 332,
       "height": 265,
@@ -16532,7 +16532,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 944,
       "height": 971,
@@ -16557,7 +16557,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 944,
       "height": 971,
@@ -16582,7 +16582,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 944,
       "height": 379,
@@ -16607,7 +16607,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 912,
       "height": 929,
@@ -16632,7 +16632,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|900|normal|24|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "25AF33FEF9ADACC5B2AB66C57E38EFCD1802D1CAEF6E9A721D63FC3255243548"
       },
       "width": 1352,
       "height": 1449,
@@ -16707,7 +16707,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 932,
       "height": 989,
@@ -16932,7 +16932,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "7B2606F1393CC6098422BBB9E92A88DAD67037902B5442EBD8B837A01808082B"
       },
       "width": 1200,
       "height": 800,
@@ -16957,7 +16957,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 269,
       "height": 325,
@@ -16982,7 +16982,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 269,
       "height": 325,
@@ -17007,7 +17007,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 269,
       "height": 325,
@@ -17032,7 +17032,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 269,
       "height": 325,
@@ -17057,7 +17057,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.458|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12.458|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "3D0A171F69F4B773B22738916306AF69675711E926E894D31C04AF61F8AA659A"
       },
       "width": 373,
       "height": 375,
@@ -17082,7 +17082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.458|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12.458|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "3D0A171F69F4B773B22738916306AF69675711E926E894D31C04AF61F8AA659A"
       },
       "width": 373,
       "height": 375,
@@ -17107,7 +17107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.458|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12.458|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "3D0A171F69F4B773B22738916306AF69675711E926E894D31C04AF61F8AA659A"
       },
       "width": 373,
       "height": 375,
@@ -17132,7 +17132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.458|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12.458|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "3D0A171F69F4B773B22738916306AF69675711E926E894D31C04AF61F8AA659A"
       },
       "width": 373,
       "height": 375,
@@ -17157,7 +17157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 279,
       "height": 376,
@@ -17182,7 +17182,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 279,
       "height": 376,
@@ -17207,7 +17207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 279,
       "height": 376,
@@ -17232,7 +17232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "8E9FB6A1D5E3E8333D4AA26C6A7AC8B4C38A619C47BF8589DCC718826A7804D4"
       },
       "width": 279,
       "height": 376,
@@ -17257,7 +17257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "805D10BAD1C2DC3093F2AF0DD4E6B9B0920DE0DE6DEE345FBECA7640484F2DC3"
       },
       "width": 332,
       "height": 369,
@@ -17282,7 +17282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "805D10BAD1C2DC3093F2AF0DD4E6B9B0920DE0DE6DEE345FBECA7640484F2DC3"
       },
       "width": 332,
       "height": 369,
@@ -17307,7 +17307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "805D10BAD1C2DC3093F2AF0DD4E6B9B0920DE0DE6DEE345FBECA7640484F2DC3"
       },
       "width": 332,
       "height": 369,
@@ -17332,7 +17332,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "805D10BAD1C2DC3093F2AF0DD4E6B9B0920DE0DE6DEE345FBECA7640484F2DC3"
       },
       "width": 332,
       "height": 369,
@@ -17407,7 +17407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5A919E96E0E7EBF6719B3AA1EC5820C2A5E12F21FE83FC9A043AA5674D39794A"
       },
       "width": 1200,
       "height": 680,
@@ -17432,7 +17432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5A919E96E0E7EBF6719B3AA1EC5820C2A5E12F21FE83FC9A043AA5674D39794A"
       },
       "width": 1200,
       "height": 680,
@@ -17457,7 +17457,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "4E9656019B5D68A2971DC4BCB5F44969AF361893A229C5A46EF240D55765E369"
       },
       "width": 1200,
       "height": 680,
@@ -17482,7 +17482,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5A919E96E0E7EBF6719B3AA1EC5820C2A5E12F21FE83FC9A043AA5674D39794A"
       },
       "width": 1200,
       "height": 680,
@@ -17857,7 +17857,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A941F2F5AC7707784777CD82D0FDC4812A9084B34DF2DB33719957BFE9C9F121"
       },
       "width": 332,
       "height": 387,
@@ -17882,7 +17882,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A941F2F5AC7707784777CD82D0FDC4812A9084B34DF2DB33719957BFE9C9F121"
       },
       "width": 332,
       "height": 387,
@@ -17907,7 +17907,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A941F2F5AC7707784777CD82D0FDC4812A9084B34DF2DB33719957BFE9C9F121"
       },
       "width": 332,
       "height": 387,
@@ -17932,7 +17932,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.4|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|11.05|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|20|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A941F2F5AC7707784777CD82D0FDC4812A9084B34DF2DB33719957BFE9C9F121"
       },
       "width": 332,
       "height": 387,
@@ -18232,7 +18232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|4.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "632B147CC4428D955C62A846433ECE3459A02DA2BE403C196ABB0E625AE6F5DB"
       },
       "width": 1200,
       "height": 714,
@@ -18257,7 +18257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|4.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "632B147CC4428D955C62A846433ECE3459A02DA2BE403C196ABB0E625AE6F5DB"
       },
       "width": 1200,
       "height": 714,
@@ -18282,7 +18282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|4.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "632B147CC4428D955C62A846433ECE3459A02DA2BE403C196ABB0E625AE6F5DB"
       },
       "width": 1200,
       "height": 702,
@@ -18307,7 +18307,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|4.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "632B147CC4428D955C62A846433ECE3459A02DA2BE403C196ABB0E625AE6F5DB"
       },
       "width": 1200,
       "height": 640,
@@ -18432,7 +18432,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|25|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "F6C7DF4CD88A4744FFB0631CC2151886DDA69259EAD6D103171B51C3EE75878E"
       },
       "width": 1080,
       "height": 425,
@@ -18532,7 +18532,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "BEA73FFCCB93F25A0365FDB3F646EDFCFA95045B10AA81A3D72AE59F5CC6F89B"
       },
       "width": 1200,
       "height": 703,
@@ -18557,7 +18557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "D4A3FA2448E38FEEF0727971984AD05C7D28B0A0314A9A65295B27D52AA5C279"
       },
       "width": 1200,
       "height": 680,
@@ -18632,7 +18632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "BEA73FFCCB93F25A0365FDB3F646EDFCFA95045B10AA81A3D72AE59F5CC6F89B"
       },
       "width": 1200,
       "height": 713,
@@ -18732,7 +18732,7 @@
         "heightMode": "natural",
         "widthMode": "fixed",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5BEB4A656D093E29BED9214B291857E3D20B9DD5473893CF75959DF311B1D033"
       },
       "width": 912,
       "height": 643,
@@ -18882,7 +18882,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.014|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.364|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.498|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.596|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.956|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|9.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|9.738|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "678475771BF028B85CBE8A6376C22488153631433D21598B7DED2C95CB2D4D07"
       },
       "width": 1180,
       "height": 560,
@@ -19007,7 +19007,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "BEA73FFCCB93F25A0365FDB3F646EDFCFA95045B10AA81A3D72AE59F5CC6F89B"
       },
       "width": 1180,
       "height": 560,
@@ -19032,7 +19032,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "D4A3FA2448E38FEEF0727971984AD05C7D28B0A0314A9A65295B27D52AA5C279"
       },
       "width": 1080,
       "height": 567,
@@ -19057,7 +19057,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|15|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|9.5|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "A92699276B2DB32F265DA4633039FAAC1477E4F9D62F590827CF37F55DF20052"
       },
       "width": 416,
       "height": 560,
@@ -19082,7 +19082,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|4.615|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "10663577FF6648BE65B8EA0EDDFA5DEA10A301D32C551DA708BE07D5644C7EBE"
       },
       "width": 1180,
       "height": 718,
@@ -19107,7 +19107,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "D4A3FA2448E38FEEF0727971984AD05C7D28B0A0314A9A65295B27D52AA5C279"
       },
       "width": 980,
       "height": 585,
@@ -19132,7 +19132,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8.727|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "280DFE6DB492067D1437755E37A4A0D5F085BC90094490C337A7532E51EAD25D"
       },
       "width": 1800,
       "height": 1180,
@@ -19157,7 +19157,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8.727|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "280DFE6DB492067D1437755E37A4A0D5F085BC90094490C337A7532E51EAD25D"
       },
       "width": 1280,
       "height": 777,
@@ -19207,7 +19207,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|9.6|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|9|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8.727|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "5CAC0E39B8B73662A23C1CBEB61C26CC245C6AA0002282D1624B5CB4D0C22D04"
       },
       "width": 1280,
       "height": 720,
@@ -19232,7 +19232,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "7B2606F1393CC6098422BBB9E92A88DAD67037902B5442EBD8B837A01808082B"
       },
       "width": 1649,
       "height": 668,
@@ -19257,7 +19257,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "D4A3FA2448E38FEEF0727971984AD05C7D28B0A0314A9A65295B27D52AA5C279"
       },
       "width": 1120,
       "height": 715,
@@ -19282,7 +19282,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "23AE07F2F091B4560C261978FE00D22438B991AAAB3E2F840EDCBFB064B05E9A"
       },
       "width": 920,
       "height": 436,
@@ -19407,7 +19407,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "D4A3FA2448E38FEEF0727971984AD05C7D28B0A0314A9A65295B27D52AA5C279"
       },
       "width": 1120,
       "height": 677,
@@ -19432,7 +19432,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "6BAF60564BB63246FADA039100B7834FE9073BCB7F4AB6E06DCFEEE165EE507F"
       },
       "width": 1400,
       "height": 967,
@@ -19457,7 +19457,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8.727|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "280DFE6DB492067D1437755E37A4A0D5F085BC90094490C337A7532E51EAD25D"
       },
       "width": 1680,
       "height": 1113,
@@ -19482,7 +19482,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8.727|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "B9570997FDD79575A9CCC6AC5D4F6445D4874545A270F15680D239B2197CAC78"
       },
       "width": 1320,
       "height": 843,
@@ -19507,7 +19507,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|8|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "1A7A3E9DF5D506062764D50F9C4A7B2EE3039A0FDABDFF5571FEA4BD85FEF650"
       },
       "width": 1240,
       "height": 740,
@@ -19532,7 +19532,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.455|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "0E72B6D0C88CA559ED74353FF3B594A7C3F14E32822F44EF6720F12F4557259B"
       },
       "width": 1280,
       "height": 721,
@@ -19557,7 +19557,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.455|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "0E72B6D0C88CA559ED74353FF3B594A7C3F14E32822F44EF6720F12F4557259B"
       },
       "width": 1280,
       "height": 721,
@@ -19582,7 +19582,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.364|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "E0D4C6C7B7AF434E511462DC493E919B5C1F1F53C9CF0A768ED3A508C1B05C4E"
       },
       "width": 1280,
       "height": 620,
@@ -19607,7 +19607,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "4700737F915C9AA6F9E109758E084AEDE8FB5152E48F7C688CE799F04F6C8662"
       },
       "width": 1280,
       "height": 658,
@@ -19632,7 +19632,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "30407C0F1848426C8100349434EBAFB2EFB973714967B7608AA523F20080FA7A"
       },
       "width": 1180,
       "height": 600,
@@ -19682,7 +19682,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.364|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "679852EB8308C3DBF113308037A733C226E6782BB62A7D709A5EFD98C0E94CCA"
       },
       "width": 1280,
       "height": 793,
@@ -19707,7 +19707,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "D4A3FA2448E38FEEF0727971984AD05C7D28B0A0314A9A65295B27D52AA5C279"
       },
       "width": 883,
       "height": 818,
@@ -19732,7 +19732,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|10.2|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12.5|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.068|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|10.364|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11.193|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "6471997DDCAC616DE25E1B154883730ADEBF10DC2CC881969D44965C76075095"
       },
       "width": 1280,
       "height": 765,
@@ -19757,7 +19757,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|11|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|700|normal|12|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "03945E744BEADE78177DA1D671521FC2D94968948BBED6DA3CFB6A7108F089F9"
       },
       "width": 600,
       "height": 440,
@@ -19782,7 +19782,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "0E01CE90BD0C07303E2117F9C06AD8F4256863E097AB92E27F2F9F36AD2B5312"
       },
       "width": 1000,
       "height": 535,
@@ -19807,7 +19807,7 @@
         "heightMode": "natural",
         "widthMode": "natural",
         "frameFontRequest": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|400|normal|13|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|12|\nArchivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif|600|normal|17|",
-        "frameFontFingerprint": ""
+        "frameFontFingerprint": "0E01CE90BD0C07303E2117F9C06AD8F4256863E097AB92E27F2F9F36AD2B5312"
       },
       "width": 1000,
       "height": 500,
