@@ -22,7 +22,7 @@
     const toolbar = root.querySelector(':scope > .cfx-frame > .cfx-toolbar');
     const toolbarHeight = root.style.getPropertyValue('--cfx-toolbar-height');
     const card = svg.querySelector('[data-cfx-role="frame-card"]');
-    const cardTokens = ['fill', 'stroke', 'stroke-width', 'radius', 'inset', 'width'].map(name => '--cfx-card-' + name);
+    const cardTokens = ['fill', 'stroke', 'stroke-width', 'radius', 'inset', 'width', 'pad-x', 'pad-top'].map(name => '--cfx-card-' + name);
     // A narrow reader replaces the native heading band with wrapping HTML text inside the
     // same card, followed by the flowing legend. The native heading and legend bands are
     // clipped away so no empty strip remains above the plot.
@@ -58,7 +58,10 @@
       if (box.width > frameBox.width + 1) return;
       frameNode.dataset.cfxCardHead = 'true';
       [paint.fill, paint.stroke === 'none' ? 'transparent' : paint.stroke, stroke + 'px', (Number(card.getAttribute('rx')) || 0) * scale + 'px',
-        box.left - frameBox.left - stroke / 2 + 'px', box.width + stroke + 'px'].forEach((value, index) => frameNode.style.setProperty(cardTokens[index], value));
+        box.left - frameBox.left - stroke / 2 + 'px', box.width + stroke + 'px',
+        // The HTML text keeps the drawing's own insets, so the heading, legend and plot read as one card.
+        Math.max(8, (headings[0].getBBox().x - (Number(card.getAttribute('x')) || 0)) * scale - stroke) + 'px',
+        Math.max(8, (headings[0].getBBox().y - (Number(card.getAttribute('y')) || 0)) * scale - stroke) + 'px'].forEach((value, index) => frameNode.style.setProperty(cardTokens[index], value));
     };
     let frame = 0;
     const refresh = () => {

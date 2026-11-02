@@ -120,6 +120,38 @@ public sealed class StandaloneInteractionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NarrowHeadingLegendAndPlotReadAsOneCardWithCrispLegendText(bool dark) {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(HtmlInteractionShowcaseExamples.CreatePage(ChartSeriesKind.Line, dark), 375, 812, touch: true);
+        var page = session.Page;
+        await SettleAsync(page);
+        await page.Locator(".cfx-responsive-legend__item").First.ClickAsync();
+        await SettleAsync(page);
+        var card = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const frame=document.querySelector('.cfx-frame'),parts=[...frame.querySelectorAll(':scope > .cfx-responsive-heading, :scope > .cfx-responsive-legend, :scope > .cfx-stage')];
+              const box=node=>node.getBoundingClientRect(),style=node=>getComputedStyle(node),stage=frame.querySelector(':scope > .cfx-stage');
+              const items=[...frame.querySelectorAll('.cfx-responsive-legend__item')];
+              return {gaps:parts.slice(1).map((node,index)=>box(node).top-box(parts[index]).bottom),
+                backgrounds:parts.slice(0,2).map(node=>style(node).backgroundColor),cardFill:style(frame).getPropertyValue('--cfx-card-fill').trim(),
+                stageTopRadius:style(stage).borderTopLeftRadius,
+                itemBorders:[...new Set(items.map(item=>style(item).borderTopColor))].length,
+                rasterLabels:frame.querySelectorAll('.cfx-responsive-legend__label svg').length,
+                hiddenSwatch:style(items[0].querySelector('[data-cfx-role=legend-swatch]')).fillOpacity,
+                shownSwatch:style(items[1].querySelector('[data-cfx-role=legend-swatch]')).fillOpacity};}
+            """);
+        Assert.All(card.GetProperty("gaps").EnumerateArray(), gap => Assert.InRange(gap.GetDouble(), -1.01, 0.01));
+        Assert.All(card.GetProperty("backgrounds").EnumerateArray(), background => Assert.False(string.IsNullOrEmpty(background.GetString())));
+        Assert.Equal("0px", card.GetProperty("stageTopRadius").GetString());
+        Assert.Equal(1, card.GetProperty("itemBorders").GetInt32());
+        Assert.Equal(0, card.GetProperty("rasterLabels").GetInt32());
+        Assert.Equal("0", card.GetProperty("hiddenSwatch").GetString());
+        Assert.Equal("1", card.GetProperty("shownSwatch").GetString());
+        AssertNoConsoleErrors(session);
+    }
+
     // Waits for entry animations and any eased window transition to finish.
     private static Task SettleAsync(IPage page) => page.EvaluateAsync("""
         async()=>{

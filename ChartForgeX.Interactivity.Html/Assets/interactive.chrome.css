@@ -405,9 +405,12 @@
 .cfx-responsive-legend { margin-block: 4px 8px; font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); }
 .cfx-responsive-legend__item { border-color: transparent; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
 .cfx-responsive-legend__item > span { min-width: 0; overflow-wrap: anywhere; }
-.cfx-responsive-legend__item[data-cfx-muted="true"] > span { opacity: .45; }
 .cfx-responsive-legend__value { margin-inline-start: auto; color: var(--cfx-tooltip-muted); font-variant-numeric: tabular-nums; }
-.cfx-interactive-chart .cfx-responsive-legend__item[aria-pressed="true"] { border-color: transparent; background: transparent; }
+/* Every entry shares one unboxed style; a hidden series dims its label and hollows its marker. */
+.cfx-interactive-chart .cfx-responsive-legend__item:is([aria-pressed], :not([aria-pressed])) { border-color: transparent; background: transparent; color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart .cfx-responsive-legend__item:is(.cfx-series-muted, .cfx-series-isolated-out) { opacity: 1; }
+.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) > span { opacity: .45; }
+.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) [data-cfx-role="legend-swatch"] { fill-opacity: 0; }
 .cfx-interactive-chart .cfx-responsive-legend__item:hover { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); }
 
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
@@ -433,8 +436,15 @@
 .cfx-frame[data-cfx-card-head] > .cfx-responsive-heading {
   border-block-start-width: var(--cfx-card-stroke-width);
   border-start-start-radius: var(--cfx-card-radius); border-start-end-radius: var(--cfx-card-radius);
+  padding: var(--cfx-card-pad-top) var(--cfx-card-pad-x) 6px;
 }
-.cfx-frame[data-cfx-card-head] > .cfx-responsive-legend { margin-block: 0; padding: 0 6px 4px; }
+.cfx-frame[data-cfx-card-head] > .cfx-responsive-legend {
+  margin-block: 0; padding: 0 calc(var(--cfx-card-pad-x) - 6px) 4px; box-shadow: none;
+}
+/* The stage continues the same card: no top corners of its own, the card's radius below. */
+.cfx-frame[data-cfx-card-head] > .cfx-stage {
+  border-radius: 0 0 var(--cfx-card-radius) var(--cfx-card-radius); box-shadow: none;
+}
 .cfx-frame[data-cfx-card-head] > .cfx-responsive-heading:not(:has(+ .cfx-responsive-legend[style*="display: flex"])),
 .cfx-frame[data-cfx-card-head] > .cfx-responsive-legend[style*="display: flex"] { margin-block-end: -1px; }
 .cfx-responsive-heading__subtitle { display: block; margin-block-start: 2px; color: var(--cfx-tooltip-muted); font: 400 12px/18px var(--cfx-tooltip-font); }

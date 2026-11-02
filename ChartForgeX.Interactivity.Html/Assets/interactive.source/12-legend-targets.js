@@ -129,19 +129,13 @@
       const fill = painted?.style.fill || painted?.getAttribute('fill'), stroke = painted?.style.stroke || painted?.getAttribute('stroke');
       mark.setAttribute('fill', fill && fill !== 'none' && solidPaintColour(style.fill, style.fillOpacity) ? fill
         : stroke && stroke !== 'none' && solidPaintColour(style.stroke, style.strokeOpacity) ? stroke : paintColour(source) || 'currentColor');
+      // The outline keeps a hidden series' marker visible once the stylesheet hollows it.
+      mark.setAttribute('stroke', mark.getAttribute('fill')); mark.setAttribute('stroke-width', '1.5');
       swatch.appendChild(mark);
       const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
       label.dataset.cfxRole = 'legend-label';
+      // Flowing rows use real HTML text so labels stay crisp at any device scale.
       label.textContent = source.dataset.cfxLabel || seriesLabel(source);
-      const caption = source.querySelector('[data-cfx-role="legend-label"]');
-      if (caption?.querySelector('[data-cfx-native-raster-text-ink]')) {
-        const box = caption.getBBox(), ink = document.createElementNS(ns, 'svg'), copy = caption.cloneNode(true);
-        copy.removeAttribute('transform'); copy.removeAttribute('id');
-        [copy, ...copy.querySelectorAll('*')].forEach(node => node.style.pointerEvents = '');
-        ink.setAttribute('viewBox', [box.x, box.y, box.width, box.height].join(' '));
-        ink.setAttribute('width', box.width); ink.setAttribute('height', box.height);
-        ink.appendChild(copy); label.replaceChildren(ink);
-      }
       label.style.overflowWrap = 'anywhere'; button.append(swatch, label);
       for (const role of ['legend-value', 'legend-percentage']) {
         const detail = source.querySelector('[data-cfx-role="' + role + '"]');
