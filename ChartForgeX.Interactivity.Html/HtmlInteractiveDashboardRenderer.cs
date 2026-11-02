@@ -52,7 +52,9 @@ public sealed class HtmlInteractiveDashboardRenderer {
         writer.EndElement().Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
-            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive);
+            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+            HtmlInteractiveAssets.FeatureBundlesFor(options.Runtime, options.Interaction.Features,
+                options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive, options.Motion.EffectiveDuration > 0, false, chartArray.Any(HtmlInteractiveAssets.HasHierarchy)));
         return writer.Build();
     }
 
@@ -69,6 +71,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
         childOptions.Adaptive.Breakpoint = options.Adaptive.Breakpoint;
         HtmlChartTooltipOptionsCopy.Copy(options.Tooltip, childOptions.Tooltip);
         options.Highlight.CopyTo(childOptions.Highlight);
+        options.Motion.CopyTo(childOptions.Motion);
         options.Localization.CopyTo(childOptions.Localization);
         options.Crosshair.CopyTo(childOptions.Crosshair);
         childOptions.Interaction.ChartId = chartId;

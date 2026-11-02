@@ -48,9 +48,9 @@ function fixture() {
     .map(source).join('\n');
   new Function('window', 'document', 'chartLifetimes', 'mountedCharts', 'readChartSection', 'readAdaptiveLayout',
     'nextChartSceneRevision', 'prepareAdaptiveRoot', 'bindChart', 'bindAdaptiveLayout', 'watchChartLifetimes',
-    'releaseChartLifetime', 'emitHostEvent', 'emitSync', 'rememberNativeDrawingSnapshot', runtime)(window, document, lifetimes, mounted,
+    'releaseChartLifetime', 'emitHostEvent', 'emitSync', 'rememberNativeDrawingSnapshot', 'enterChart', 'prefetchChartFeatures', runtime)(window, document, lifetimes, mounted,
       () => {}, () => null, () => 'scene-1', () => {}, () => {}, () => {}, () => {}, release,
-      () => writes.push('event'), () => writes.push('sync'), () => {}); // Native presentation capture is outside this target-resolution unit's synthetic DOM boundary.
+      () => writes.push('event'), () => writes.push('sync'), () => {}, () => {}, () => {}); // Native presentation capture is outside this target-resolution unit's synthetic DOM boundary.
   return { controller: window.ChartForgeXCharts.mount(root), root, aggregate, other, writes, unchanged };
 }
 

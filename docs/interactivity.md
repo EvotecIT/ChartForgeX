@@ -69,8 +69,33 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Standalone reader | 280 KiB | 82 KiB |
 | Full controller/native host | 336 KiB | 100 KiB |
 
+Optional behaviour ships in separate feature bundles, so the runtimes above do
+not grow with it. A page carries only the bundles its options need, and the core
+tooltip reader never carries any:
+
+| Feature bundle | Included when | Raw budget | Gzip budget |
+| --- | --- | ---: | ---: |
+| `motion` | `Motion.Enabled` (the default) | 4 KiB | 2 KiB |
+| `data` | `IncludeContextMenu`, `ContextMenuItems` or `Export` | 8 KiB | 4 KiB |
+| `isolate` | `LegendToggles` | 2 KiB | 1 KiB |
+| `hierarchy` | A Treemap or Sunburst series | 8 KiB | 3 KiB |
+
+Self-contained pages embed the declared bundles before the runtime. Pages with
+shared assets name each bundle's file on the runtime's script tag instead; the
+runtime fetches it while the browser is idle after the first paint, or when a
+reader first opens the menu, double-clicks or drills. A bundle that arrives
+after the first paint skips the entry animation rather than replaying it.
+
 For shared external assets, pass the same runtime and feature union to
-`HtmlInteractiveAssetFiles.Charts(runtime, features)` as to the page options.
+`HtmlInteractiveAssetFiles.Charts(runtime, features)` as to the page options;
+the list includes the feature bundles. Hosts that register
+`BuildInteractionScript()` themselves add `BuildFeatureScript()` (or the
+`HtmlInteractiveAssetFiles.ChartFeatureScripts` files) beside it.
+
+Migration: the context menu, data export, saved-page hierarchy drill and plot
+isolation moved out of the runtimes. A host page that registers only
+`BuildInteractionScript()` keeps hover, selection, zoom and legends, and adds
+`BuildFeatureScript()` to keep those four.
 
 ## Standalone report viewports
 
@@ -114,6 +139,24 @@ rectangular brush becomes an X/Y window. Reset restores the captured full
 domain. Legend toggles rescale the value axis to the remaining visible series;
 bar and area views retain zero in their value domain.
 
+New windows tick with the static renderer's step policy (1, 2, 2.5 and 5 × 10ⁿ
+inside the window). The drawing's own label count sets the density, each label
+keeps its measured width plus 16 CSS pixels, and an axis keeps at least three
+ticks wherever three fit.
+
+Toolbar zoom, brush zoom, both resets and legend rescaling ease from the
+displayed window to the new one (see [Motion](#motion)). Wheel, pinch, pan and
+controller windows repaint at once. During a transition `getViewport()` and the
+`cfxviewport` event already report the new window.
+
+Below 560 CSS pixels the chart's title and subtitle move into HTML inside the
+same card, so they wrap beside the toolbar, or start below it when fewer than
+140 pixels would remain. A legend that moves into flowing HTML rows follows the
+heading inside the card, and the drawing's own heading and legend bands are
+clipped away so no empty strip remains above the plot. At phone widths a page
+with a context menu keeps only the navigation icons in the toolbar; SVG and PNG
+downloads stay in the menu.
+
 Saved windows retain their captured value-domain policy, including in peer sync
 and bookmarks. Changing that policy requires native preparation.
 
@@ -151,10 +194,18 @@ spoke across its visible series. Crosshair values sit at the axis edges and use
 the same formatted values as the tooltip.
 
 Legends use buttons with `aria-pressed`. Their hit areas follow visible label
-ink, including native raster labels. Crowded legends move into flowing HTML
-rows; compact and touch layouts use 44-pixel targets. Space toggles visibility,
+ink, including native raster labels. Crowded or clipped legend labels move into
+flowing HTML rows; a hit area that only overflows a tight legend band does not.
+Compact and touch layouts use 44-pixel legend targets. Space toggles visibility,
 and double-click, double-tap or Alt-click isolates a series. Repeating isolation
-restores the previous visibility choices. Keyboard navigation visits the
+restores the previous visibility choices.
+
+Double-clicking or double-tapping a mark in the plot isolates its series too,
+with the same identity, events and rescaling as the legend. Repeating the
+gesture, or using it on empty plot space, restores every series. The gesture
+needs `LegendToggles` and ships in the `isolate` bundle. On touch devices
+line, area, scatter, bar and candlestick marks get 36 CSS pixel hit targets;
+narrow fine-pointer layouts keep 24 pixels. Keyboard navigation visits the
 legend, plot and toolbar in that order; Page Up and Page Down move ten items.
 
 Saved Treemap and Sunburst pages can drill into a branch using retained hierarchy
@@ -165,9 +216,29 @@ The browser drill view uses its own tile or ring layout; use native preparation
 when a host needs the native renderer's complete layout policies or multiple
 hierarchy series in one drawing.
 
-Interactive load and update motion respects `prefers-reduced-motion`. An update
-uses a 200 ms fade by default; pass `motion: { duration: 0 }` to disable it.
-Script-free static output keeps its original rendering.
+### Motion
+
+With the `motion` bundle, a chart animates once when it loads: lines and areas
+draw from the left, bars grow from their baseline and point marks open as the
+reveal passes them. Marks stay readable for tooltips throughout. Window changes then ease as described above. Both use a
+300 ms ease-out curve with no overshoot, run as browser animation effects and
+never change the drawing's attributes. Readers who ask for reduced motion, and
+hidden tabs, see every change at once.
+
+```csharp
+chart.SaveInteractiveHtml("readings.html", options => {
+    options.Motion.DurationMilliseconds = 240; // 0 to 1000
+    // options.Motion.Enabled = false;         // no bundle, no motion
+});
+```
+
+`HtmlInteractiveDashboardOptions.Motion` applies to every child chart. Pages
+without the bundle, including the core tooltip reader, keep a plain 300 ms
+fade. A controller `update()` keeps its 200 ms fade; pass
+`motion: { duration: 0 }` to disable it. Script-free SVG and PNG output is
+unchanged.
+
+### Tooltip content
 
 Customize tooltip text in C# without embedding executable markup:
 
@@ -178,8 +249,10 @@ chart.SaveInteractiveHtml("readings.html", options => {
 ```
 
 A JavaScript callback assigned to the generated section's `cfxTooltipRenderer`
-property takes precedence. It receives the title, series, category, formatted
-value, target identity and rows. Return plain text or a DOM node:
+property takes precedence, in every runtime including the core reader. It
+receives the title, series, category, formatted value, target identity and
+rows. Return plain text or a DOM node; `controller.setTooltipRenderer()` sets
+the same hook:
 
 ```javascript
 const root = document.querySelector('.cfx-interactive-chart');
@@ -193,7 +266,8 @@ root.cfxTooltipRenderer = context => {
 ## Data downloads and context actions
 
 Enable `ChartInteractionFeatures.Export` and `IncludeContextMenu` to download
-CSV or JSON or copy either format from the chart context menu. The exported rows
+CSV or JSON or copy either format from the chart context menu. Long-press opens
+the same menu on touch devices. The exported rows
 contain retained observation identities, raw numeric values, category labels and
 available financial or size/color dimensions, including observations outside the
 current zoom window. Browser clipboard restrictions are
@@ -203,22 +277,55 @@ numeric measurements and JSON retain their original values. Rows include stable
 series and target IDs, observation/contributor IDs and available hierarchy or
 link identities so hosts can join them to the current selection.
 
-With the full controller runtime, a host can call these actions directly and
-append its own context-menu items:
+Hosts add their own items after the built-in actions. In C#, an item needs a
+unique id and a label; choosing it dispatches `cfxcontextaction` from the chart
+section with the item's `id`, the `chartId`, the current `selection` and the
+exported `data` rows. Any item enables the menu. The generated page runs no host
+code:
+
+```csharp
+chart.SaveInteractiveHtml("readings.html", options => {
+    options.ContextMenuItems.Add(new HtmlChartContextMenuItem("flag", "Flag selection for review"));
+});
+```
 
 ```javascript
-controller.exportData('csv');
-const copied = await controller.exportData('json', { copy: true });
-controller.setContextMenuItems([{
+const root = document.querySelector('.cfx-interactive-chart');
+root.addEventListener('cfxcontextaction', event => {
+    if (event.detail.id === 'flag') flagForReview(event.detail.selection);
+});
+```
+
+A saved page can also register callbacks on the section, and the full
+controller can set its own list:
+
+```javascript
+root.cfxContextMenuItems = [{
     id: 'inspect',
     label: 'Inspect selected data',
     action: context => showDetails(context.selection, context.data)
-}]);
+}];
+
+const controller = ChartForgeXCharts.mount(root);
+await controller.exportData('csv');
+const copied = await controller.exportData('json', { copy: true });
+controller.setContextMenuItems([{ id: 'open', label: 'Open in workbook', action: openWorkbook }]);
 ```
 
-Custom items require a unique `id`, a readable `label` and an `action` callback;
-`disabled: true` leaves an unavailable action visible. The host owns the callback
-and its effects. Keep `IncludeContextMenu` enabled when generating that page.
+Items require a unique `id`, a readable `label` and an `action` callback;
+`disabled: true` leaves an unavailable action visible. C# items come first, then
+controller items, then page items; a repeated id keeps its first entry. The host
+owns each callback and its effects.
+
+Migration: `controller.exportData()` now returns a promise for both download and
+copy, resolving to `true` when the action ran. Await it where code previously
+relied on the download starting synchronously.
+
+`HtmlInteractionShowcaseExamples.CreatePage` generates a saved reader for Line,
+Bar, Area, Scatter and Candlestick charts with every behaviour on this page:
+entry motion, eased zoom and legend rescaling, crosshair axis values, a page
+tooltip renderer (Bar uses the C# template), data export, a host menu item and
+series isolation.
 
 ## HTML font delivery
 

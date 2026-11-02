@@ -27,7 +27,9 @@
     try {
       bindChart(root);
       window[Symbol.for('ChartForgeX.nativeTextExport')].mount(root, release => ownChartWork(root, release));
+      enterChart(root);
       watchChartLifetimes();
     } catch (error) { releaseChartLifetime(root); throw error; }
   };
   document.querySelectorAll('.cfx-interactive-chart').forEach(mountStandaloneChart);
+  prefetchChartFeatures();

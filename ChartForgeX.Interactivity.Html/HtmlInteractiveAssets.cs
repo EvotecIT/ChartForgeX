@@ -35,6 +35,33 @@ internal static class HtmlInteractiveAssets {
             ? CoreScriptResource.Value : StandaloneScriptResource.Value;
     }
 
+    internal static readonly (HtmlChartFeatureBundles Bundle, string Name)[] FeatureBundles = {
+        (HtmlChartFeatureBundles.Motion, "motion"), (HtmlChartFeatureBundles.Data, "data"), (HtmlChartFeatureBundles.Isolate, "isolate"),
+        (HtmlChartFeatureBundles.Hierarchy, "hierarchy")
+    };
+
+    internal static string FeatureScript(string name) => ReadResource("ChartForgeX.Interactivity.Html.Assets.interactive.feature." + name + ".js");
+
+    /// <summary>Selects the feature bundles a page needs. The core tooltip reader has no feature hooks.</summary>
+    internal static HtmlChartFeatureBundles FeatureBundlesFor(HtmlChartRuntime runtime, ChartForgeX.Interactivity.ChartInteractionFeatures features,
+        bool adaptive, bool motion, bool contextMenu, bool hierarchy = true) {
+        if (runtime == HtmlChartRuntime.Standalone && !adaptive && (features & ~ChartForgeX.Interactivity.ChartInteractionFeatures.Tooltips) == 0)
+            return HtmlChartFeatureBundles.None;
+        var bundles = HtmlChartFeatureBundles.None;
+        if (motion) bundles |= HtmlChartFeatureBundles.Motion;
+        if (contextMenu || (features & ChartForgeX.Interactivity.ChartInteractionFeatures.Export) != 0) bundles |= HtmlChartFeatureBundles.Data;
+        if ((features & ChartForgeX.Interactivity.ChartInteractionFeatures.LegendToggles) != 0) bundles |= HtmlChartFeatureBundles.Isolate;
+        if (hierarchy) bundles |= HtmlChartFeatureBundles.Hierarchy;
+        return bundles;
+    }
+
+    internal static HtmlChartFeatureBundles FeatureBundlesFor(HtmlChartInteractionOptions options, ChartForgeX.Core.Chart chart) =>
+        FeatureBundlesFor(options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+            options.Motion.EffectiveDuration > 0, options.HasContextMenu, HasHierarchy(chart));
+
+    internal static bool HasHierarchy(ChartForgeX.Core.Chart chart) => System.Linq.Enumerable.Any(chart.Series,
+        series => series.Kind == ChartForgeX.Core.ChartSeriesKind.Treemap || series.Kind == ChartForgeX.Core.ChartSeriesKind.Sunburst);
+
     private static string ReadResource(string resourceName) {
         var assembly = typeof(HtmlInteractiveAssets).Assembly;
         using var stream = assembly.GetManifestResourceStream(resourceName);

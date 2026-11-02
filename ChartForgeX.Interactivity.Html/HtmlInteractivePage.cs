@@ -32,19 +32,29 @@ internal static class HtmlInteractivePage {
     internal static void EndDocument(HtmlMarkupWriter writer, string? scriptNonce, HtmlAssetReferences? assets = null,
         HtmlChartRuntime runtime = HtmlChartRuntime.Full,
         ChartForgeX.Interactivity.ChartInteractionFeatures features = ChartForgeX.Interactivity.ChartInteractionFeatures.ReportReview,
-        bool adaptive = false) {
+        bool adaptive = false, HtmlChartFeatureBundles bundles = HtmlChartFeatureBundles.None) {
         if (assets == null) {
+            WriteInlineFeatures(writer, scriptNonce, bundles);
             writer.StartElement("script")
                 .Attribute("nonce", scriptNonce)
                 .EndStartElement()
                 .RawTrusted(HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive))
                 .EndElement();
         } else {
-            HtmlInteractiveAssetFiles.WriteScript(writer, assets, HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features, adaptive), scriptNonce);
+            HtmlInteractiveAssetFiles.WriteScript(writer, assets, HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features, adaptive), scriptNonce, bundles);
         }
 
         writer.Line()
             .EndElement().Line()
             .EndElement();
+    }
+
+    /// <summary>Embeds declared feature bundles ahead of the runtime so they are registered before charts mount.</summary>
+    internal static void WriteInlineFeatures(HtmlMarkupWriter writer, string? scriptNonce, HtmlChartFeatureBundles bundles) {
+        foreach (var bundle in HtmlInteractiveAssets.FeatureBundles) {
+            if ((bundles & bundle.Bundle) == 0) continue;
+            writer.StartElement("script").Attribute("nonce", scriptNonce).Attribute("data-cfx-feature", bundle.Name).EndStartElement()
+                .RawTrusted(HtmlInteractiveAssets.FeatureScript(bundle.Name)).EndElement().Line();
+        }
     }
 }

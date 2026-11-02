@@ -37,6 +37,50 @@ public sealed class InteractiveBundleTests {
         }
     }
 
+    // Optional behaviour ships beside the runtimes; each bundle has its own budget so the runtimes do not absorb it.
+    [Theory]
+    [InlineData("motion", 4 * 1024, 2 * 1024)]
+    [InlineData("data", 8 * 1024, 4 * 1024)]
+    [InlineData("isolate", 2 * 1024, 1024)]
+    [InlineData("hierarchy", 8 * 1024, 3 * 1024)]
+    public void FeatureBundlesFitTheirOwnBudgetsAndShipOnlyWhenDeclared(string name, int rawBudget, int gzipBudget) {
+        var asset = HtmlInteractiveAssetFiles.ChartFeatureScripts.Single(file => file.FileName.StartsWith("cfx-feature-" + name + ".", StringComparison.Ordinal));
+        var bytes = Encoding.UTF8.GetBytes(asset.Content);
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);
+        Assert.True(bytes.Length <= rawBudget, $"{name}: {bytes.Length} raw bytes exceeds {rawBudget}.");
+        Assert.True(output.Length <= gzipBudget, $"{name}: {output.Length} gzip bytes exceeds {gzipBudget}.");
+        Assert.DoesNotContain(asset.Content, HtmlInteractiveAssetFiles.ChartScript.Content);
+
+        var line = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4));
+        var core = line.ToInteractiveHtmlPage(options => {
+            options.Runtime = HtmlChartRuntime.Standalone;
+            options.Interaction.Features = ChartInteractionFeatures.Tooltips;
+        });
+        Assert.DoesNotContain("data-cfx-feature=", core);
+        var declared = (name == "hierarchy" ? Chart.Create().AddTreemap("Spend", new[] { new ChartHierarchyItem("ops", "Ops", value: 3), new ChartHierarchyItem("dev", "Dev", value: 5) }) : line)
+            .ToInteractiveHtmlPage(options => {
+                options.Interaction.Enable(ChartInteractionFeatures.Export);
+                options.IncludeContextMenu = name == "data";
+                options.Motion.Enabled = name == "motion";
+            });
+        Assert.Contains("data-cfx-feature=\"" + name + "\"", declared);
+        Assert.Contains(asset.Content, declared);
+    }
+
+    [Fact]
+    public void ExternalPagesNameFeatureBundlesForLazyLoadingInsteadOfEmbeddingThem() {
+        var page = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage(options => {
+            options.IncludeContextMenu = true;
+            options.ExternalAssets = new HtmlAssetReferences("assets");
+        });
+        var data = HtmlInteractiveAssetFiles.ChartFeatureScripts.Single(file => file.FileName.StartsWith("cfx-feature-data.", StringComparison.Ordinal));
+        Assert.DoesNotContain(data.Content, page);
+        Assert.Contains("assets/" + data.FileName, page);
+        Assert.Contains(data, HtmlInteractiveAssetFiles.Charts());
+        Assert.DoesNotContain(data, HtmlInteractiveAssetFiles.Charts(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips));
+    }
+
     [Fact]
     public void ExternalReferencesAndFragmentsUseTheSameDeclaredRuntime() {
         var chart = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4));

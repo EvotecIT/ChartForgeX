@@ -4,9 +4,10 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private const string InteractiveAssetFolder = "interactive";
-    private static readonly HtmlAssetFile[] InteractiveAssets = {
+    // Pages fetch the feature bundles they declare from the same folder.
+    private static readonly HtmlAssetFile[] InteractiveAssets = new[] {
         HtmlInteractiveAssetFiles.ChartStyle, HtmlInteractiveAssetFiles.ChartScript, HtmlInteractiveAssetFiles.NativeTextScript
-    };
+    }.Concat(HtmlInteractiveAssetFiles.ChartFeatureScripts).ToArray();
 
     private static bool IsScenarioVariant(string variant) => variant is "latency-week" or "issuers" or "licence-waste" or "availability";
 

@@ -34,8 +34,10 @@ public sealed class ExternalAssetTests {
             Assert.DoesNotContain("integrity=", html, StringComparison.Ordinal);
         }
 
-        Assert.Contains("<script src=\"assets/" + script.FileName + "\" nonce=\"n0nce\"></script>", page, StringComparison.Ordinal);
-        Assert.Contains("<script src=\"assets/" + script.FileName + "\" nonce=\"d4sh\"></script>", dashboard, StringComparison.Ordinal);
+        // The runtime names its declared feature bundles for lazy loading from the same folder.
+        Assert.Contains("<script src=\"assets/" + script.FileName + "\" nonce=\"n0nce\" data-cfx-features=", page, StringComparison.Ordinal);
+        Assert.Contains("<script src=\"assets/" + script.FileName + "\" nonce=\"d4sh\" data-cfx-features=", dashboard, StringComparison.Ordinal);
+        Assert.Contains("assets/" + HtmlInteractiveAssetFiles.ChartFeatureScripts[0].FileName, page, StringComparison.Ordinal);
         Assert.Equal(HtmlInteractiveChartRenderer.BuildInteractionScript(), script.Content);
         Assert.True(page.Length < CreateChart().ToInteractiveHtmlPage().Length - script.Content.Length / 2);
     }
@@ -93,7 +95,7 @@ public sealed class ExternalAssetTests {
         var directory = Path.Combine(Path.GetTempPath(), "cfx-assets-" + Guid.NewGuid().ToString("N"));
         try {
             var paths = HtmlInteractiveAssetFiles.WriteTo(directory, HtmlInteractiveAssetFiles.Charts().Concat(HtmlInteractiveAssetFiles.GraphExplorer()));
-            Assert.Equal(4, paths.Count);
+            Assert.Equal(HtmlInteractiveAssetFiles.Charts().Count + 2, paths.Count);
             Assert.All(paths, path => Assert.True(File.Exists(path)));
             var bytes = File.ReadAllBytes(paths[1]);
             Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF, "Asset files are written without a byte order mark.");

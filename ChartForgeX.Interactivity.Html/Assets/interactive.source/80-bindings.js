@@ -15,6 +15,7 @@
     bindHierarchyNavigation(root);
     bindProgressEditing(root);
     bindChartContextMenu(root);
+    bindChartFeatures(root);
     bindHostCommands(root);
     bindAnnotationEditor(root);
     prepareRootBranchHighlights(root);
@@ -181,7 +182,7 @@
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
-      listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
+      listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8, undefined, undefined, true));
     });
     const zoomReset = root.querySelector('[data-cfx-zoom-reset]');
     if (zoomReset) listenChart(root, zoomReset, 'click', () => resetZoom(root));
@@ -475,7 +476,7 @@
           if (boxTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush,
             targets: selectedTargets(root), previousTargets, replace: replaceSelection });
           publishCompare(root, false);
-          if (zoomRange) { requestStandaloneWindow(root, zoomRange); brush.hidden = true; }
+          if (zoomRange) { requestStandaloneWindow(root, zoomRange, true, undefined, true, true); brush.hidden = true; }
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });

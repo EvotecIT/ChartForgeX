@@ -172,7 +172,10 @@
         const clips = nativePaintClips(entry.source);
         const projection = svgScreenProjection(svg);
         if (projection && clips) clips.forEach(clip => clip.matrix = projection.multiply(clip.matrix));
-        const clipped = !clips || corners && clips.some(clip => corners.some(point => {
+        // Only clipped label ink forces the flowing legend; the enlarged hit box may exceed a tight legend band.
+        const ink = matrix && [[entry.bounds.x, entry.bounds.y], [entry.bounds.x + entry.bounds.width, entry.bounds.y + entry.bounds.height]]
+          .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+        const clipped = !clips || ink && clips.some(clip => ink.some(point => {
           const local = point.matrixTransform(clip.matrix.inverse()), r = clip.rect;
           return local.x < r.x || local.x > r.x + r.width || local.y < r.y || local.y > r.y + r.height;
         }));

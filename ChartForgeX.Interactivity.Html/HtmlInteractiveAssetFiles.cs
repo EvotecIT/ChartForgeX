@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ChartForgeX.Html;
 using ChartForgeX.Topology;
 
@@ -13,6 +14,8 @@ namespace ChartForgeX.Interactivity.Html;
 public static class HtmlInteractiveAssetFiles {
     private static readonly Lazy<HtmlAssetFile> ChartStyleFile = new(() => new HtmlAssetFile("cfx-interactive", "css", HtmlInteractiveAssets.Style));
     private static readonly Lazy<HtmlAssetFile> ChartScriptFile = new(() => new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.Script));
+    private static readonly Lazy<IReadOnlyList<HtmlAssetFile>> FeatureScriptFiles = new(() => Array.ConvertAll(HtmlInteractiveAssets.FeatureBundles,
+        bundle => new HtmlAssetFile("cfx-feature-" + bundle.Name, "js", HtmlInteractiveAssets.FeatureScript(bundle.Name))));
     private static readonly Lazy<HtmlAssetFile> NativeTextScriptFile = new(() => new HtmlAssetFile("cfx-native-text", "js", HtmlInteractiveAssets.NativeTextScript));
     private static readonly Lazy<HtmlAssetFile> GraphStyleFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "css", HtmlGraphExplorerAssets.Style));
     private static readonly Lazy<HtmlAssetFile> DefaultTopologyScriptFile = new(() => CreateTopologyScript(null));
@@ -33,6 +36,10 @@ public static class HtmlInteractiveAssetFiles {
         ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive = false) =>
         runtime == HtmlChartRuntime.Full ? ChartScript
             : new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive));
+
+    /// <summary>Gets the optional motion, data and isolation feature bundles. Pages fetch the bundles they declare
+    /// on first use or while the browser is idle; hosts that register <see cref="ChartScript"/> themselves can add these files beside it.</summary>
+    public static IReadOnlyList<HtmlAssetFile> ChartFeatureScripts => FeatureScriptFiles.Value;
 
     /// <summary>Gets the shared binary font registration and captured-text export adapter without loading a chart runtime.</summary>
     public static HtmlAssetFile NativeTextScript => NativeTextScriptFile.Value;
@@ -59,16 +66,17 @@ public static class HtmlInteractiveAssetFiles {
     }
 
     /// <summary>Returns the files referenced by interactive chart and dashboard pages.</summary>
-    public static IReadOnlyList<HtmlAssetFile> Charts() => new[] { ChartStyle, ChartScript };
+    public static IReadOnlyList<HtmlAssetFile> Charts() => new[] { ChartStyle, ChartScript }.Concat(ChartFeatureScripts).ToArray();
 
     /// <summary>Returns the shared files matching a page's declared runtime and chart features.</summary>
     /// <param name="runtime">The same runtime contract used to render the page.</param>
     /// <param name="features">The union of interaction features declared by its charts.</param>
     /// <param name="adaptive">Whether any chart uses separately prepared adaptive drawings.</param>
-    /// <returns>The stylesheet and matching runtime to write to the shared asset directory.</returns>
+    /// <returns>The stylesheet, matching runtime and any feature bundles to write to the shared asset directory.</returns>
     public static IReadOnlyList<HtmlAssetFile> Charts(HtmlChartRuntime runtime,
         ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive = false) =>
-        new[] { ChartStyle, ChartScriptFor(runtime, features, adaptive) };
+        new[] { ChartStyle, ChartScriptFor(runtime, features, adaptive) }.Concat(HtmlInteractiveAssets.FeatureBundlesFor(runtime, features, adaptive, true, true) == HtmlChartFeatureBundles.None
+            ? Array.Empty<HtmlAssetFile>() : ChartFeatureScripts).ToArray();
 
     /// <summary>Returns the files referenced by graph explorer pages.</summary>
     public static IReadOnlyList<HtmlAssetFile> GraphExplorer() => new[] { GraphExplorerStyle, GraphExplorerScript };
@@ -106,10 +114,28 @@ public static class HtmlInteractiveAssetFiles {
         writer.EndVoidElement().Line();
     }
 
-    internal static void WriteScript(HtmlMarkupWriter writer, HtmlAssetReferences assets, HtmlAssetFile file, string? nonce) {
+    internal static void WriteScript(HtmlMarkupWriter writer, HtmlAssetReferences assets, HtmlAssetFile file, string? nonce,
+        HtmlChartFeatureBundles features = HtmlChartFeatureBundles.None) {
         writer.StartElement("script").Attribute("src", assets.Href(file)).Attribute("nonce", nonce);
         WriteIntegrity(writer, assets, file);
+        writer.Attribute("data-cfx-features", FeatureSourcesJson(assets, features));
         writer.EndStartElement().EndElement();
+    }
+
+    // The runtime fetches a named bundle lazily; integrity follows the page's asset policy.
+    private static string? FeatureSourcesJson(HtmlAssetReferences assets, HtmlChartFeatureBundles features) {
+        if (features == HtmlChartFeatureBundles.None) return null;
+        var json = new System.Text.StringBuilder("{");
+        for (var index = 0; index < HtmlInteractiveAssets.FeatureBundles.Length; index++) {
+            var bundle = HtmlInteractiveAssets.FeatureBundles[index];
+            if ((features & bundle.Bundle) == 0) continue;
+            var file = ChartFeatureScripts[index];
+            if (json.Length > 1) json.Append(',');
+            json.Append(HtmlJsonString.Encode(bundle.Name)).Append(":{\"src\":").Append(HtmlJsonString.Encode(assets.Href(file)));
+            if (assets.IncludeIntegrity) json.Append(",\"integrity\":").Append(HtmlJsonString.Encode(file.Integrity));
+            json.Append('}');
+        }
+        return json.Append('}').ToString();
     }
 
     private static void WriteIntegrity(HtmlMarkupWriter writer, HtmlAssetReferences assets, HtmlAssetFile file) {

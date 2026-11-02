@@ -65,7 +65,8 @@
     root.dataset.cfxStandaloneProjection = 'true';
     return view;
   };
-  const standaloneAxis = (root, name) => {
+  // Logical reads report a running transition's target; painting uses the displayed window.
+  const standaloneAxis = (root, name, logical = false) => {
     const view = standaloneViewport(root);
     if (!view) return null;
     const captured = view.source[name + 'Projection'] || view.source.dataProjection[name];
@@ -74,7 +75,7 @@
       fullMinimum: scene.minimum, fullMaximum: scene.maximum,
       transformedFullMinimum: scene.transformedMinimum, transformedFullMaximum: scene.transformedMaximum };
     if (!source) return null;
-    const window = view.windows[name];
+    const window = logical && view.motionTarget ? view.motionTarget[name] : view.windows[name];
     return window ? { ...source, ...window, transformedMinimum: transformedAxisBound(source, window.minimum, false),
       transformedMaximum: transformedAxisBound(source, window.maximum, true, window.maximumInclusive !== false) } : source;
   };
@@ -123,24 +124,57 @@
     for (const name of ['y', 'y1', 'y2', 'cy']) if (attrs[name] !== undefined) set(name, y.at(Number(attrs[name])));
     for (const [name, map] of [['width', x], ['height', y]]) if (attrs[name] !== undefined) set(name, Number(attrs[name]) * Math.abs(map.scale));
   };
-  const standaloneTicks = (axis, count, categories) => {
+  // Mirrors ChartNiceNumbers.Step and ChartTicks.GenerateInside for a linear window.
+  const standaloneNiceStep = value => {
+    const power = Math.pow(10, Math.floor(Math.log10(value))), fraction = value / power, tolerance = fraction * 8 * 2.220446049250313e-16;
+    return (fraction <= 1 + tolerance ? 1 : fraction <= 2 + tolerance ? 2 : fraction <= 2.5 + tolerance ? 2.5 : fraction <= 5 + tolerance ? 5 : 10) * power;
+  };
+  const standaloneInsideTicks = (minimum, maximum, count) => {
+    const step = standaloneNiceStep((maximum - minimum) / (count - 1)), start = Math.ceil(minimum / step) * step, values = [];
+    for (let index = 0; index < count && Number.isFinite(step) && step > 0; index++) {
+      let value = start + step * index;
+      if (value > maximum) {
+        if (value - maximum > Math.max(Math.abs(value), Math.abs(maximum)) * 8 * 2.220446049250313e-16) break;
+        value = maximum;
+      }
+      values.push(Math.abs(value) < step / 1e6 ? 0 : value);
+    }
+    return { values: values.length >= 2 ? values : [minimum, maximum], step };
+  };
+  // Picks the static tick policy's densest layout whose labels keep their own room,
+  // preferring at least three ticks wherever three fit along the axis.
+  const standaloneTicks = (axis, length, room, desired, categories) => {
+    const position = value => (value - axis.minimum) / (axis.maximum - axis.minimum) * length;
+    const fits = ticks => ticks.every((tick, index) => !index
+      || Math.abs(position(tick.value) - position(ticks[index - 1].value)) >= (room(tick.text) + room(ticks[index - 1].text)) / 2);
     if (categories) {
       const values = categories.filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
-      const stride = Math.max(1, Math.ceil(values.length / count));
-      return values.filter((_, index) => index % stride === 0);
+      for (let stride = 1; stride < values.length; stride++) {
+        const ticks = values.filter((_, index) => index % stride === 0);
+        if (fits(ticks)) return ticks;
+      }
+      return values.slice(0, 1);
     }
-    const span = axis.transformedMaximum - axis.transformedMinimum, rough = span / Math.max(2, count);
-    const magnitude = Math.pow(10, Math.floor(Math.log10(rough))), normal = rough / magnitude;
-    const step = (normal <= 1 ? 1 : normal <= 2 ? 2 : normal <= 5 ? 5 : 10) * magnitude;
-    const values = [];
-    for (let index = Math.ceil(axis.transformedMinimum / step); index * step <= axis.transformedMaximum + step * 1e-8 && values.length < 40; index++) {
-      const value = projectedAxisValue({ ...axis, reversed: false }, (index * step - axis.transformedMinimum) / span);
-      const captured = [...(axis.displayTicks || []), ...(axis.displayBounds || [])].find(tick => Math.abs(tick.value - value) < Math.abs(value) * 1e-12);
-      const text = captured?.text ?? (axis.scale === 'time' ? String(dataValue(value, value >= 0))
+    const captured = [...(axis.displayTicks || []), ...(axis.displayBounds || [])];
+    const format = (value, step) => captured.find(tick => Math.abs(tick.value - value) <= Math.abs(value) * 1e-12)?.text
+      ?? (axis.scale === 'time' ? String(dataValue(value, value >= 0))
         : new Intl.NumberFormat(undefined, { maximumSignificantDigits: 7 }).format(Math.abs(value) < step * 1e-10 ? 0 : value));
-      values.push({ value, text });
+    const target = Math.max(3, desired), candidates = [];
+    for (let count = 2; count <= Math.max(target * 2, 6) && count <= 40; count++) {
+      const generated = standaloneInsideTicks(axis.minimum, axis.maximum, count);
+      const ticks = generated.values.map(value => ({ value, text: format(value, generated.step) }));
+      if (fits(ticks) && !candidates.some(item => item.length === ticks.length)) candidates.push(ticks);
     }
-    return values;
+    candidates.sort((first, second) => first.length - second.length);
+    const readable = candidates.filter(ticks => ticks.length >= 3);
+    return readable.filter(ticks => ticks.length <= target).pop() || readable[0] || candidates.pop()
+      || standaloneInsideTicks(axis.minimum, axis.maximum, 2).values.map(value => ({ value, text: format(value, axis.maximum - axis.minimum) }));
+  };
+  let standaloneMeasure = null;
+  const standaloneTextWidth = (font, text) => {
+    standaloneMeasure ||= document.createElement('canvas').getContext('2d');
+    if (!standaloneMeasure) return String(text).length * parseFloat(font) * .6;
+    standaloneMeasure.font = font; return standaloneMeasure.measureText(String(text)).width;
   };
   const paintStandaloneAxes = (root, view) => {
     if (view.printing) return;
@@ -167,14 +201,19 @@
       const template = axis.nodes.find(node => node.querySelector('text'))?.querySelector('text');
       const box = template?.getBBox(), style = template && getComputedStyle(template);
       const size = Math.max(Number(template?.getAttribute('font-size')) || 12, compact ? 12 / scale : 0);
-      const ticks = standaloneTicks(projection, Math.max(2, Math.floor((vertical ? plot.height : plot.width) / (vertical ? size * 3 : compact ? 80 / scale : 90))),
+      const family = getComputedStyle(root).getPropertyValue('--cfx-tooltip-font') || style?.fontFamily || 'sans-serif';
+      // Room is in drawing units: a label's own width plus a 12 CSS pixel gap, or about two lines vertically.
+      const room = vertical ? () => size * 2 : label => standaloneTextWidth(size + 'px ' + family, label) + 16 / scale;
+      // The drawing's own label count is the static density target for this size.
+      const ticks = standaloneTicks(projection, vertical ? plot.height : plot.width, room,
+        axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
         !vertical && view.source.categoryLabels?.length ? view.source.categoryLabels : null);
       for (const tick of ticks) {
         const position = standaloneCoordinate(projection, tick.value, plot, vertical);
         const text = template ? template.cloneNode(false) : document.createElementNS(ns, 'text');
         text.removeAttribute('display'); text.removeAttribute('transform'); text.removeAttribute('data-cfx-owned-font-text'); text.removeAttribute('data-cfx-png-glyphs');
         text.setAttribute('font-size', size); text.setAttribute('fill', style?.fill || 'currentColor');
-        text.setAttribute('font-family', getComputedStyle(root).getPropertyValue('--cfx-tooltip-font') || style?.fontFamily || 'inherit');
+        text.setAttribute('font-family', family || 'inherit');
         text.setAttribute('x', vertical ? secondary ? plot.x + plot.width + 8 : plot.x - 8 : position);
         text.setAttribute('y', vertical ? position : plot.y + plot.height + 8 + (box?.height || size));
         text.setAttribute('text-anchor', vertical ? secondary ? 'start' : 'end' : 'middle');
@@ -237,7 +276,37 @@
     hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
     return true;
   };
-  const requestStandaloneWindow = (root, windows, sync = true, accepted, emit = true) => {
+  // Discrete changes (toolbar zoom, brush zoom, reset and legend rescaling) ease from the
+  // displayed windows to the new ones when the motion bundle is present. Gestures and API
+  // windows repaint at once; the requested windows and events are final immediately.
+  const standaloneFullWindows = (view, windows) => Object.fromEntries(['x', 'y', 'secondaryY']
+    .map(name => [name, view.source[name + 'Projection'] || view.source.dataProjection[name]]).filter(([, axis]) => axis)
+    .map(([name, axis]) => [name, { minimum: windows[name]?.minimum ?? axis.minimum, maximum: windows[name]?.maximum ?? axis.maximum }]));
+  // Stops a running transition and returns the displayed windows; view.windows becomes its logical target again.
+  const beginStandaloneChange = view => {
+    const displayed = { ...view.windows };
+    view.cancelMotion?.(); view.cancelMotion = null;
+    if (view.motionTarget) view.windows = { ...view.motionTarget };
+    view.motionTarget = null;
+    return displayed;
+  };
+  const presentStandaloneViewport = (root, view, previous, animate) => {
+    const motion = animate && chartFeature('motion'), target = view.windows;
+    if (!motion || !motionDuration(root)) { paintStandaloneViewport(root); return; }
+    const from = standaloneFullWindows(view, previous), to = standaloneFullWindows(view, target);
+    if (Object.keys(to).every(name => from[name] && from[name].minimum === to[name].minimum && from[name].maximum === to[name].maximum)) {
+      paintStandaloneViewport(root); return;
+    }
+    // Controls follow the logical window at once; only the drawing eases.
+    view.motionTarget = target; syncXNavigation(root); syncResetControl(root);
+    view.cancelMotion = motion.tween(root, chartFeatureKernel, progress => {
+      view.windows = Object.fromEntries(Object.keys(to).map(name => [name, {
+        minimum: from[name].minimum + (to[name].minimum - from[name].minimum) * progress,
+        maximum: from[name].maximum + (to[name].maximum - from[name].maximum) * progress }]));
+      paintStandaloneViewport(root);
+    }, () => { view.cancelMotion = null; view.motionTarget = null; view.windows = target; paintStandaloneViewport(root); });
+  };
+  const requestStandaloneWindow = (root, windows, sync = true, accepted, emit = true, animate = false) => {
     if (chartLifetimes.get(root)?.preparationPending) return false;
     const view = standaloneViewport(root); if (!view || !windows || typeof windows !== 'object') return false;
     if (windows.valueDomain !== undefined && windows.valueDomain !== (view.source.valueDomain || 'fullData')) return false;
@@ -249,18 +318,19 @@
       const minimum = Math.max(fullMin, requested.minimum), maximum = Math.min(fullMax, requested.maximum);
       if (!(minimum < maximum)) return false;
     }
+    const previous = beginStandaloneChange(view);
     for (const name of names) {
       const axis = standaloneAxis(root, name), requested = windows[name];
       view.windows[name] = { minimum: Math.max(axis.fullMinimum ?? axis.minimum, requested.minimum), maximum: Math.min(axis.fullMaximum ?? axis.maximum, requested.maximum) };
       const source = view.source[name + 'Projection'] || view.source.dataProjection[name];
       if (view.windows[name].minimum === source.minimum && view.windows[name].maximum === source.maximum) delete view.windows[name];
     }
-    paintStandaloneViewport(root); accepted?.();
+    presentStandaloneViewport(root, view, previous, animate); accepted?.();
     if (emit) emitHostEvent(root, 'cfxviewport', { viewport: nativeViewportWindows(root), standalone: true });
     if (sync) emitSync(root, { action: 'viewport', state: getState(root), viewport: nativeViewportWindows(root, true), xWindow: nativeXWindow(root), yWindow: nativeYWindow(root) });
     return true;
   };
-  const zoomStandaloneViewport = (root, factor, logicalX, logicalY, axes = ['x']) => {
+  const zoomStandaloneViewport = (root, factor, logicalX, logicalY, axes = ['x'], animate = false) => {
     const view = standaloneViewport(root); if (!view || !Number.isFinite(factor) || factor <= 0) return false;
     const plot = view.source.dataProjection.plotBounds, windows = {};
     for (const name of axes) {
@@ -272,7 +342,7 @@
       const b = standaloneAxisValue(axis, vertical ? 1 - ratio + ratio / factor : ratio + (1 - ratio) / factor, true);
       windows[name] = { minimum: Math.min(a, b), maximum: Math.max(a, b) };
     }
-    return requestStandaloneWindow(root, windows);
+    return requestStandaloneWindow(root, windows, true, undefined, true, animate);
   };
   const panStandaloneViewport = (root, deltaX, deltaY) => {
     const view = standaloneViewport(root); if (!view) return false;
@@ -290,7 +360,8 @@
   const resetStandaloneViewport = root => {
     if (nativePreparationBinding(root, 'viewport')) return false;
     const view = root._cfxStandaloneViewport; if (!view) return false;
-    view.windows = {}; paintStandaloneViewport(root); return true;
+    const previous = beginStandaloneChange(view);
+    view.windows = {}; presentStandaloneViewport(root, view, previous, true); return true;
   };
   const restoreStandaloneGeometry = view => {
     for (const entry of view.geometry) {
@@ -330,7 +401,9 @@
   };
   const rescaleStandaloneSeries = root => {
     const view = standaloneViewport(root); if (!view || nativeLegendConnected(root)) return;
-    const hidden = !!root.querySelector('.cfx-series-muted,.cfx-series-isolated-out');
+    // Only hidden data counts; legend paint can keep a stale isolation class until its own sync.
+    const hidden = view.points.some(point => point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'));
+    const previous = beginStandaloneChange(view);
     for (const name of ['y', 'secondaryY']) {
       const axis = view.source[name + 'Projection'] || view.source.dataProjection[name]; if (!axis) continue;
       if (!hidden) { delete view.windows[name]; continue; }
@@ -347,7 +420,7 @@
     }
     view.points.forEach(point => { point.node.style.visibility = point.node.closest('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : ''; });
     view.geometry.forEach(({ node }) => { node.style.visibility = node.closest('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : ''; });
-    paintStandaloneViewport(root);
+    presentStandaloneViewport(root, view, previous, true);
   };
   const standaloneBrushWindow = (root, rect) => {
     const view = standaloneViewport(root), matrix = svgScreenMatrix(view?.svg);

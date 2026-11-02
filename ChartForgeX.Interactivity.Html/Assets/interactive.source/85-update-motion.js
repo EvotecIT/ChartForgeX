@@ -7,8 +7,8 @@
   };
   const settleChartUpdateMotion = root => chartLifetimes.get(root)?.updateMotionRelease?.();
   const settleChartLoadMotion = root => {
-    for (const animation of root.querySelector('.cfx-stage')?.getAnimations?.() || [])
-      if (animation.animationName === 'cfx-series-enter' && typeof animation.finish === 'function') animation.finish();
+    for (const animation of root.querySelector('.cfx-stage')?.getAnimations?.({ subtree: true }) || [])
+      if ((animation.animationName === 'cfx-series-enter' || animation.id === 'cfx-enter') && typeof animation.finish === 'function') animation.finish();
   };
   const beginChartUpdateMotion = (root, motion, captured = null) => {
     settleChartUpdateMotion(root);

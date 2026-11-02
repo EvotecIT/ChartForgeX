@@ -257,6 +257,7 @@ public sealed class InteractiveHierarchyViewBrowserTests {
             return new { html = Last.Html, basis };
         }
         internal string Page() => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body style='margin:12px'>" + Last.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + "</style></head><body style='margin:12px'>" + Last.Html + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>"
+            + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
     }
 }

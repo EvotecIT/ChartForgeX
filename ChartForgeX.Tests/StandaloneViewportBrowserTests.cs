@@ -173,7 +173,11 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(maximum, window.GetProperty("maximum").GetDouble(), 7);
     }
 
+    // Toolbar, brush, reset and legend changes ease the painted window; the document animations carry that transition.
+    private static Task SettleMotionAsync(IPage page) => page.EvaluateAsync("async()=>{await Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{})));}");
+
     private static async Task AssertTicksAsync(IPage page, string axis, double minimum, double maximum) {
+        await SettleMotionAsync(page);
         var values = await page.Locator("[data-cfx-browser-axis=" + axis + "] text[data-cfx-axis-value]").EvaluateAllAsync<JsonElement>(
             "nodes=>nodes.map(node=>({value:Number(node.dataset.cfxAxisValue),text:node.textContent,width:node.getBoundingClientRect().width}))");
         var ticks = values.EnumerateArray().ToArray();
@@ -216,7 +220,12 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(initial.GetProperty("viewportScaleY").GetDouble(), scene.GetProperty("viewportScaleY").GetDouble(), 6);
     }
 
-    private static Task<JsonElement> SceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> SceneAsync(IPage page) {
+        await SettleMotionAsync(page);
+        return await ReadSceneAsync(page);
+    }
+
+    private static Task<JsonElement> ReadSceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
         selector=>{
             const root=controller.root,svg=root.querySelector('.cfx-stage svg'), point=root.querySelector(selector);
             const series=point.closest('[data-cfx-role=series]');

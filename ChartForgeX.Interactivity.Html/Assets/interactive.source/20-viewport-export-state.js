@@ -26,7 +26,8 @@
   };
 
   const viewportZoomed = root => {
-    if (root._cfxStandaloneViewport && Object.keys(root._cfxStandaloneViewport.windows).length) return true;
+    const view = root._cfxStandaloneViewport;
+    if (view && Object.keys(view.motionTarget || view.windows).length) return true;
     if (polarViewportConnected(root) && nativePolarViewportChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
@@ -228,9 +229,9 @@
     }
     if (sync !== false) emitSync(root, { action: 'state', state: { ...snapshot, selectedTargets: selectedTargets(root) } });
   };
-  const zoomBy = (root, factor, logicalX, logicalY) => {
+  const zoomBy = (root, factor, logicalX, logicalY, animate = false) => {
     if (!hasFeature(root, 'Zoom')) return;
-    if (zoomStandaloneViewport(root, factor, logicalX, logicalY)) return;
+    if (zoomStandaloneViewport(root, factor, logicalX, logicalY, ['x'], animate)) return;
     if (connectedXViewport(root)) {
       requestXViewportZoom(root, factor, logicalX, logicalY);
       return;

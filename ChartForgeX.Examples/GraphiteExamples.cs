@@ -31,6 +31,11 @@ internal static class GraphiteExamples {
                 File.WriteAllText(Path.Combine(output, name + ".html"), HtmlCrosshairExamples.CreatePage(lineStyle, dark));
                 gallery.Append("<p><a href='").Append(name).Append(".html'>").Append(lineStyle).Append(" crosshair lines</a></p>");
             }
+            foreach (var kind in HtmlInteractionShowcaseExamples.Kinds) {
+                var name = "graphite-" + suffix + "-reader-" + kind.ToString().ToLowerInvariant();
+                File.WriteAllText(Path.Combine(output, name + ".html"), HtmlInteractionShowcaseExamples.CreatePage(kind, dark));
+                gallery.Append("<p><a href='").Append(name).Append(".html'>").Append(kind).Append(" saved reader: motion, export, menu items and isolation</a></p>");
+            }
             foreach (var item in Create(dark)) {
                 var name = "graphite-" + suffix + "-" + item.Key;
                 item.Value.WithPngOutputScale(scale);

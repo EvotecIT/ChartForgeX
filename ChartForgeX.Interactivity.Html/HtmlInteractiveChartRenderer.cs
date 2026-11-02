@@ -39,7 +39,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
-            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive);
+            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+            HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
         return writer.Build();
     }
 
@@ -69,8 +70,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement()
             .Line()
             .RawTrusted(BuildChartSection(chart, options, title, "inline"))
-            .Line()
-            .StartElement("script")
+            .Line();
+        HtmlInteractivePage.WriteInlineFeatures(writer, options.ScriptNonce, HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
+        writer.StartElement("script")
             .Attribute("nonce", options.ScriptNonce)
             .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.Interaction.Features,
                 options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive))
@@ -137,6 +139,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// </summary>
     /// <returns>JavaScript ready to register once in a host document.</returns>
     public static string BuildInteractionScript() => InteractiveScript;
+
+    /// <summary>
+    /// Builds the optional feature bundles (motion, data export and context menu, series isolation and hierarchy drill)
+    /// for hosts that register <see cref="BuildInteractionScript"/> themselves.
+    /// </summary>
+    /// <returns>JavaScript to register once, before or after the runtime.</returns>
+    public static string BuildFeatureScript() => string.Join(";\n", Array.ConvertAll(HtmlInteractiveAssets.FeatureBundles, bundle => HtmlInteractiveAssets.FeatureScript(bundle.Name)));
 
     internal static string InteractiveStyle => HtmlInteractiveAssets.Style;
 
