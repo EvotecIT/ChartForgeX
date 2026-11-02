@@ -36,7 +36,7 @@ public sealed class GaugeHorizontalGeneratedScaleTests {
         foreach (var label in labels) {
             var value = double.Parse(Caption(label), CultureInfo.InvariantCulture);
             Assert.Equal(value.ToString("0.000", CultureInfo.InvariantCulture), Caption(label));
-            Assert.True(label.Text.Size >= 12);
+            Assert.Equal(width < 480 ? 11 : 12, label.Text.Size);
         }
         for (var index = 1; index < labels.Length; index++)
             Assert.True(labels[index - 1].X + labels[index - 1].Text.Metrics.Width / 2 <= labels[index].X - labels[index].Text.Metrics.Width / 2);
