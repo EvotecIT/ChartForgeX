@@ -6,8 +6,7 @@ namespace ChartForgeX.VisualArtifacts;
 public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTheme MapTopologyTheme(TopologyChart source) {
         var captured = MapTheme(source.ResolvedTheme, source.Theme.Typography.TitleSize);
-        if (!source.Theme.HasTopologyDefaultExtras())
-            captured.Definition = source.Theme.WithTypography(source.Theme.Typography.CaptureResolvedScale());
+        if (!source.Theme.HasTopologyDefaultExtras()) captured.Definition = source.Theme;
         if (source.ThemeMode != VisualThemeMode.Light) captured.Mode = source.ThemeMode;
         return captured;
     }

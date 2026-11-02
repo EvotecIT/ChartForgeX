@@ -16,7 +16,7 @@ This is a visible change: glyph widths, line breaks, fitted label counts and con
 
 Graphite uses the shared chart type scale: titles are 17 pixels wide and 15 compact; subtitles 13/12; ticks and data labels 12/11; legends 12.5/12. Compact means narrower than 480 logical pixels. Panel titles use 15/14 pixels, and centre values follow the radius-based 20–40 pixel clamp. Chart text below 10 logical pixels is hidden rather than painted as tiny text. See the [role mapping](typography.md#chart-roles-in-the-shared-type-ramp) for weights, the remaining roles and explicit-size precedence.
 
-A prepared topology retains its measured type scale when restored or placed in a new viewport, including the proportions of embedded table headings and cells. Compact captures carry that complete scale in a version 2 theme definition. Newly authored charts and source diagrams still resolve their shared theme for the requested width. Reset to `VisualTheme.Graphite()` to restore the complete canonical scale; `new VisualTypography(...)` supplies an explicit custom scale.
+A prepared topology table retains its measured type scale when restored or placed in a new viewport, including the proportions of headings and cells. Compact captures carry the complete theme in a version 2 definition. Charts and source diagrams resolve their shared theme for the requested width. Reset to `VisualTheme.Graphite()` to restore the complete canonical scale; `new VisualTypography(...)` supplies an explicit custom scale.
 
 ### Categorical palette v2
 
