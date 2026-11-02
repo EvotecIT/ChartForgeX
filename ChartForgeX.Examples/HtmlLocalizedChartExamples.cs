@@ -22,11 +22,10 @@ public static class HtmlLocalizedChartExamples {
             options.Localization[HtmlChartText.ChartControls] = "Narzędzia wykresu";
             options.Localization[HtmlChartText.ZoomIn] = "Powiększ";
             options.Localization[HtmlChartText.ZoomOut] = "Pomniejsz";
-            options.Localization[HtmlChartText.ZoomInButton] = "Powiększ +";
-            options.Localization[HtmlChartText.ZoomOutButton] = "Pomniejsz −";
             options.Localization[HtmlChartText.DownloadSvg] = "Pobierz SVG";
             options.Localization[HtmlChartText.DownloadPng] = "Pobierz PNG";
             options.Localization[HtmlChartText.ResetView] = "Przywróć widok";
+            options.Localization[HtmlChartText.ResetZoom] = "Przywróć skalę";
             options.Localization[HtmlChartText.Compare] = "Porównaj {count}";
             options.Localization[HtmlChartText.Clear] = "Wyczyść";
             options.Localization[HtmlChartText.Pinned] = "Przypięte";

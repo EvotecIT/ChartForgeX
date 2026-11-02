@@ -183,6 +183,8 @@
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
       listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
     });
+    const zoomReset = root.querySelector('[data-cfx-zoom-reset]');
+    if (zoomReset) listenChart(root, zoomReset, 'click', () => resetZoom(root));
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
       listenChart(root, button, 'click', () => setMode(root, button.dataset.cfxModeButton || ''));
     });
@@ -523,8 +525,7 @@
       settleChartUpdateMotion(root); cancelNativePreparation(chartLifetimes.get(root));
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
-      emitHostEvent(root, 'cfxviewport', { state: getState(root) });
-      emitSync(root, { action: 'viewport', state: getState(root), ...(standaloneViewport(root) ? { viewport: nativeViewportWindows(root, true) } : {}) });
+      emitViewportReset(root);
       const previousSelection = selectionSignature(root);
       clearSelections(root);
       setSeriesIsolation(root, null, false);

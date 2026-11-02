@@ -127,7 +127,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var bounds = await page.Locator(Root).EvaluateAsync<JsonElement>("""
             root=>{
                 const stage=root.querySelector('.cfx-stage'),toolbar=root.querySelector('.cfx-toolbar'),
-                  card=root.querySelector('.cfx-stage [data-cfx-role=frame-card]'),button=toolbar.querySelector('button:last-child'),
+                  card=root.querySelector('.cfx-stage [data-cfx-role=frame-card]'),button=[...toolbar.querySelectorAll('button:not([hidden])')].at(-1),
                   sr=stage.getBoundingClientRect(),cr=card.getBoundingClientRect(),tr=toolbar.getBoundingClientRect(),br=button.getBoundingClientRect(),
                   style=getComputedStyle(card),matrix=card.getScreenCTM(),
                   stroke=style.stroke==='none'?0:(parseFloat(style.strokeWidth)||0)*Math.hypot(matrix.a,matrix.c)/2,

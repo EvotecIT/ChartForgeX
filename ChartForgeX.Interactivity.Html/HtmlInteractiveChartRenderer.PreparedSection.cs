@@ -82,13 +82,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 + "px" + source.ThemeTokens + CrosshairInteractionTokens(options.Crosshair));
         WriteHighlightOptions(writer, options.Highlight);
         writer.EndStartElement().Line();
-        var toolbar = BuildToolbar(options);
-        if (toolbar.Length > 0) {
-            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", options.Localization[HtmlChartText.ChartControls]).EndStartElement()
-                .RawTrusted(toolbar)
-                .EndElement().Line();
-        }
-
         if (scenarioControls) {
             writer.RawTrusted(BuildScenarioControls(options));
             writer.RawTrusted(BuildScenarioPanel(options));
@@ -105,8 +98,17 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
             .EndElement().Line()
-            .RawTrusted(BuildResetControl(options))
-            .RawTrusted(source.NativeNavigation)
+            .RawTrusted(BuildResetControl(options));
+        // The toolbar follows the plot in focus order and floats over the frame's top-right corner.
+        var toolbar = BuildToolbar(options);
+        if (toolbar.Length > 0) {
+            writer.StartElement("div").Attribute("class", "cfx-toolbar")
+                .Attribute("aria-label", options.Localization[HtmlChartText.ChartControls]).EndStartElement()
+                .RawTrusted(toolbar)
+                .EndElement().Line();
+        }
+
+        writer.RawTrusted(source.NativeNavigation)
             .RawTrusted(source.HierarchyNavigation)
             .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()

@@ -33,6 +33,16 @@ body {
 }
 
 .cfx-interactive-chart {
+  /* Chrome roles: remap control geometry onto host tokens here, in one place. */
+  --cfx-tooltip-radius: 8px;
+  --cfx-control-radius: 6px;
+  --cfx-chip-radius: 999px;
+  --cfx-swatch-radius: 2px;
+  --cfx-axis-label-radius: 4px;
+  --cfx-toolbar-control-size: 28px;
+  --cfx-toolbar-control-size-coarse: 36px;
+  --cfx-toolbar-icon-size: 16px;
+  --cfx-toolbar-inset: 8px;
   --cfx-focus-ring: var(--cfx-host-accent, var(--hfx-color-focus-ring, var(--cfx-default-host-accent)));
   container: cfx-chart / inline-size;
   contain-intrinsic-inline-size: var(--cfx-intrinsic-width, 640px);
@@ -105,7 +115,8 @@ body {
 
 .cfx-interactive-chart .cfx-toolbar {
   position: absolute;
-  inset: 8px 8px auto auto;
+  inset: var(--cfx-toolbar-inset) auto auto;
+  inset-inline-end: var(--cfx-toolbar-inset);
   z-index: 15;
   gap: 2px;
   max-width: calc(100% - 16px);
@@ -122,9 +133,6 @@ body {
 
 .cfx-interactive-chart[data-cfx-toolbar="compact"]:not([data-cfx-responsive-layout="fit"]):not([data-cfx-responsive-layout="adaptive"]) {
   width: min(100%, var(--cfx-native-width, var(--cfx-intrinsic-width)));
-}
-.cfx-interactive-chart[data-cfx-toolbar="compact"][data-cfx-responsive-layout="adaptive"] .cfx-toolbar {
-  right: max(8px, calc((100% - var(--cfx-native-width)) / 2 + 8px));
 }
 
 .cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar {

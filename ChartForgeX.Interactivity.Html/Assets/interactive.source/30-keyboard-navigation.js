@@ -96,8 +96,6 @@
     });
     const firstData = Array.from(svg.children).find(branch => data.some(mark => branch.contains(mark)));
     if (firstData) branches.forEach(branch => svg.insertBefore(branch, firstData));
-    const stage = root.querySelector('.cfx-stage'), toolbar = root.querySelector('.cfx-toolbar');
-    if (stage && toolbar) (stage.closest('.cfx-frame') || stage).after(toolbar);
   };
   const refreshKeyboardNavigation = (root, focused, passive = false) => {
     refreshRootBranchHighlightAvailability(root);

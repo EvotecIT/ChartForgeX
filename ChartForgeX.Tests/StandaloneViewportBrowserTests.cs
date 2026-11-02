@@ -49,7 +49,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(false, 390)]
     [InlineData(true, 980)]
     [InlineData(true, 390)]
-    public async Task GeneratedExampleCombinesStandaloneNavigatorContextMenuAndNativeOnlyAnnotationEditor(bool dark, int width) {
+    public async Task GeneratedExampleCombinesIconToolbarNavigatorContextMenuAndHostOnlyAnnotationEditor(bool dark, int width) {
         if (!Enabled) return;
         var errors = new List<string>();
         var html = HtmlCrosshairExamples.CreatePage(HtmlChartCrosshairLineStyle.Solid, dark);
@@ -65,15 +65,36 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Empty(errors);
         Assert.True(await page.Locator("[data-cfx-x-navigation]").IsVisibleAsync());
         await CaptureAsync(page, "example-" + width + "-" + (dark ? "dark" : "light"));
-        Assert.True(await page.Locator(".cfx-annotation-editor").IsVisibleAsync());
-        Assert.Contains("Connect native preparation", await page.Locator(".cfx-annotation-editor").InnerTextAsync());
-        Assert.True(await page.Locator("[data-cfx-annotation-control=commit]").IsDisabledAsync());
+        // A saved page has no host to re-prepare drawings, so it renders no editor controls.
+        Assert.False(await page.Locator(".cfx-annotation-editor").IsVisibleAsync());
+        // The icon toolbar floats inside the chart frame's top-right corner; Reset appears only while zoomed.
+        var toolbar = await page.Locator(".cfx-frame > .cfx-toolbar").EvaluateAsync<double[]>("""
+            toolbar=>{const frame=toolbar.parentElement.getBoundingClientRect(),box=toolbar.getBoundingClientRect(),button=toolbar.querySelector('[data-cfx-zoom=in]').getBoundingClientRect();
+                return [box.top-frame.top,frame.right-box.right,button.width,button.height,toolbar.querySelectorAll('.cfx-tool--icon svg').length];}
+            """);
+        Assert.Equal(8, toolbar[0], 1);
+        Assert.Equal(8, toolbar[1], 1);
+        Assert.Equal(28, toolbar[2], 1);
+        Assert.Equal(toolbar[2], toolbar[3], 1);
+        Assert.Equal(5, toolbar[4]);
+        var zoomReset = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset zoom", Exact = true });
+        Assert.False(await zoomReset.IsVisibleAsync());
+        await page.Locator(".cfx-stage").HoverAsync();
+        await page.Locator("[data-cfx-zoom=in]").ClickAsync();
+        Assert.True(await zoomReset.IsVisibleAsync());
+        Assert.Equal("1", await page.Locator("[data-cfx-x-value=start]").InnerTextAsync());
+        await zoomReset.ClickAsync();
+        Assert.False(await zoomReset.IsVisibleAsync());
+        AssertWindow((await ViewportAsync(page)).GetProperty("x"), 0, 10);
         await page.EvaluateAsync("()=>controller.setViewport({x:{minimum:2,maximum:8},y:{minimum:2,maximum:8}})");
         await AssertTicksAsync(page, "x", 2, 8);
         await AssertTicksAsync(page, "y", 2, 8);
         await CaptureAsync(page, "example-" + width + "-" + (dark ? "dark" : "light"));
         await page.Locator(".cfx-stage").ClickAsync(new LocatorClickOptions { Button = MouseButton.Right });
         Assert.True(await page.Locator(".cfx-chart-context-menu").IsVisibleAsync());
+        var annotations = page.Locator("[data-cfx-context-action=annotations]");
+        Assert.Equal("Annotations need a connected host", await annotations.InnerTextAsync());
+        Assert.True(await annotations.IsDisabledAsync());
         await CaptureAsync(page, "example-menu-" + width + "-" + (dark ? "dark" : "light"));
         await page.Locator("[data-cfx-context-action=reset]").ClickAsync();
         AssertWindow((await ViewportAsync(page)).GetProperty("x"), 0, 10);

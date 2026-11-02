@@ -25,18 +25,26 @@
     refreshTooltipPosition(root);
   };
 
-  const viewChanged = (root) => {
-      if (root._cfxStandaloneHierarchy?.rootId != null) return true;
+  const viewportZoomed = root => {
     if (root._cfxStandaloneViewport && Object.keys(root._cfxStandaloneViewport.windows).length) return true;
-    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (polarViewportConnected(root) && nativePolarViewportChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
-    if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
+    return Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05;
+  };
+  const viewChanged = (root) => {
+    if (root._cfxStandaloneHierarchy?.rootId != null || viewportZoomed(root)) return true;
+    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
     return root.querySelector('.cfx-selected,.cfx-series-muted,[data-cfx-muted="true"]') !== null;
   };
   const syncResetControl = (root) => {
+    const zoomReset = root.querySelector('[data-cfx-zoom-reset]');
+    if (zoomReset) {
+      const zoomed = viewportZoomed(root);
+      if (!zoomed && root.getRootNode().activeElement === zoomReset) zoomReset.previousElementSibling?.focus();
+      zoomReset.hidden = !zoomed;
+    }
     const reset = root.querySelector('[data-cfx-reset]');
     if (!reset) return;
     const changed = viewChanged(root) || nativeSeriesVisibilityChanged(root) || nativePreparationBackpressureBusy(root);
@@ -116,6 +124,15 @@
     clearBrush(root);
     applyMode(root, '');
     syncResetControl(root);
+  };
+  // Toolbar reset restores only the data window; selection, legend and brush state stay with Reset view.
+  const emitViewportReset = root => {
+    emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+    emitSync(root, { action: 'viewport', state: getState(root), ...(standaloneViewport(root) ? { viewport: nativeViewportWindows(root, true) } : {}) });
+  };
+  const resetZoom = root => {
+    if (nativePreparationBinding(root, 'viewport')) { requestViewportReset(root); return; }
+    applyViewport(root, { zoom: 1, panX: 0, panY: 0 }); emitViewportReset(root);
   };
   const storeInteractionState = (root, snapshot) => {
     try {

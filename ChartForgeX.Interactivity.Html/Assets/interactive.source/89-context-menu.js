@@ -16,7 +16,9 @@
       const extras = [...(hasFeature(root, 'Export') ? ['csv', 'json'].flatMap(format => [
         { id: format, label: 'Download ' + format.toUpperCase(), action: () => exportChartData(root, format) },
         { id: 'copy-' + format, label: 'Copy ' + format.toUpperCase(), action: () => copyChartData(root, format) }
-      ]) : []), ...(chartLifetimes.get(root)?.contextMenuItems || [])];
+      ]) : []), ...(chartLifetimes.get(root)?.contextMenuItems || []),
+      ...(annotationEditorState(root)?.enabled && !nativePreparationBinding(root, 'annotation')
+        ? [{ id: 'annotations', label: uiText(root, 'AnnotationDisconnected', 'Annotations need a connected host'), disabled: true }] : [])];
       if (!actions.some(action => !action.disabled && !action.hidden) && !extras.some(item => !item.disabled)) return false;
       close();
       const tree = root.getRootNode(), style = view.getComputedStyle(root);

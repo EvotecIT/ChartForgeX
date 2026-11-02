@@ -138,9 +138,9 @@ a native preparation result.
 `HtmlCrosshairExamples.CreatePage` generates gallery pages containing a navigator,
 the context menu and the annotation editor together. The navigator and context
 menu use their existing HTML options. `controller.editAnnotations()` opens the
-editor; committing annotation changes still requires a native annotation
-connection. The saved example leaves those editing actions unavailable and
-shows the connection requirement.
+editor once a native annotation connection exists, because committing a change
+re-prepares the scene in C#. A saved page renders no editor controls; its context
+menu lists one disabled "Annotations need a connected host" item instead.
 
 ## Saved-page readouts and controls
 
@@ -260,7 +260,7 @@ When a native legend exceeds its `WithLegendBudget`, open **More legend entries*
 
 With `ChartInteractionFeatures.LegendToggles` enabled, each actionable entry offers mute and isolate buttons with pressed states. These use the same series, observation, distribution or named-node identity as the native legend; linked charts and later native preparations retain the existing identity rules. State-category keys and entries shown with legend actions disabled remain descriptive. A grouped pie **Other** entry remains one native aggregate with its contributors. Opening or paging the disclosure retains the chart's selection and plotting area. Native SVG/PNG downloads and print keep the bounded native legend; the disclosure stays in the browser.
 
-Zoom, pan, brush and export controls appear in a compact toolbar at the chart's top-right edge. Pointer hover or keyboard focus reveals it; coarse-pointer layouts keep it visible. The optional band layout stays in normal page flow. `IncludeResetButton` (on by default) adds a "Reset view" ghost button below the chart, keeping titles and marks clear. Its row is reserved so selecting a mark does not move the report content below it. The button appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. The optional compare tray also reserves one row; its chips scroll horizontally, including when reached by keyboard. Hosts that supply their own controls can disable `IncludeResetButton` and `CompareMarkers`. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
+Zoom, pan, brush and export controls appear as a compact icon toolbar inside the chart frame's top-right corner. Pointer hover or keyboard focus reveals it; it stays visible while a pan or brush mode is active or the data window is zoomed, and coarse-pointer layouts keep it visible. The active mode button is pressed and tinted with the accent colour. A **Reset zoom** button joins the group only while the data window differs from its initial range and restores just that window. The optional band layout stays in normal page flow. `IncludeResetButton` (on by default) adds a "Reset view" ghost button below the chart, keeping titles and marks clear. Its row is reserved so selecting a mark does not move the report content below it. The button appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. The optional compare tray also reserves one row; its chips scroll horizontally, including when reached by keyboard. Hosts that supply their own controls can disable `IncludeResetButton` and `CompareMarkers`. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Control geometry comes from chrome roles declared once on `.cfx-interactive-chart`: `--cfx-control-radius` (6 px), `--cfx-tooltip-radius` (8 px), `--cfx-chip-radius`, `--cfx-axis-label-radius`, `--cfx-toolbar-control-size` (28 px, 36 px for coarse pointers) and `--cfx-toolbar-icon-size` (16 px). Override them on the chart container to match a host design system. Static exports retain the same flat marks and colour roles without browser behavior.
 
 A cancelled brush gesture restores the previous brush presentation without committing new bounds or changing the existing selection.
 
@@ -790,8 +790,8 @@ chart.ToInteractiveHtmlPage(options => {
 ```
 
 `Readable` remains the default contained viewport, and `Fit` scales one drawing.
-`Toolbar = Compact` is the default: controls float 8 px from the chart's top-right
-edge and appear on hover or keyboard focus. Touch devices keep them visible, with
+`Toolbar = Compact` is the default: icon controls float 8 px inside the chart
+frame's top-right corner and appear on hover or keyboard focus. Touch devices keep them visible, with
 36 px targets instead of the desktop 28 px targets. `Toolbar = Band` places a
 full-width row below the chart. Both respond to their containing chart's width. `PinOnSelect` defaults
 to `true`; disabling it keeps click selection without pinning a readout.

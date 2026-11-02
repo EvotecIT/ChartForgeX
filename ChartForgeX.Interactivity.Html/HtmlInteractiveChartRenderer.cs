@@ -397,27 +397,55 @@ public sealed partial class HtmlInteractiveChartRenderer {
         return builder.ToString();
     }
 
+    // 16 px stroke icons; the button carries the localized name, so the glyphs stay decorative.
+    private const string ZoomInIcon = "<circle cx=\"7\" cy=\"7\" r=\"4.75\"/><path d=\"M10.5 10.5 14 14M4.75 7h4.5M7 4.75v4.5\"/>";
+    private const string ZoomOutIcon = "<circle cx=\"7\" cy=\"7\" r=\"4.75\"/><path d=\"M10.5 10.5 14 14M4.75 7h4.5\"/>";
+    private const string PanIcon = "<path d=\"M8 1.75v12.5M1.75 8h12.5M6.25 3.5 8 1.75 9.75 3.5M6.25 12.5 8 14.25l1.75-1.75M3.5 6.25 1.75 8l1.75 1.75M12.5 6.25 14.25 8l-1.75 1.75\"/>";
+    private const string BrushIcon = "<rect x=\"2.25\" y=\"3.25\" width=\"11.5\" height=\"9.5\" rx=\"1\" stroke-dasharray=\"2.5 2\"/>";
+    private const string ResetZoomIcon = "<path d=\"M3.1 6.1A5.25 5.25 0 1 1 2.75 8\"/><path d=\"M2.75 3v3.25H6\"/>";
+
     private static string BuildToolbar(HtmlChartInteractionOptions options) {
         var writer = new HtmlMarkupWriter();
+        var text = options.Localization;
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
-            AppendToolbarButton(writer, options.Localization[HtmlChartText.ZoomInButton], ("data-cfx-zoom", "in"), ("title", options.Localization[HtmlChartText.ZoomIn]));
-            AppendToolbarButton(writer, options.Localization[HtmlChartText.ZoomOutButton], ("data-cfx-zoom", "out"), ("title", options.Localization[HtmlChartText.ZoomOut]));
+            AppendToolbarIcon(writer, text[HtmlChartText.ZoomIn], ZoomInIcon, ("data-cfx-zoom", "in"));
+            AppendToolbarIcon(writer, text[HtmlChartText.ZoomOut], ZoomOutIcon, ("data-cfx-zoom", "out"));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Pan)) {
-            AppendToolbarButton(writer, options.Localization[HtmlChartText.Pan], ("data-cfx-mode-button", "pan"), ("aria-pressed", "false"), ("title", options.Localization[HtmlChartText.PanChart]));
+            AppendToolbarIcon(writer, text[HtmlChartText.PanChart], PanIcon, ("data-cfx-mode-button", "pan"), ("aria-pressed", "false"));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Brush)) {
-            AppendToolbarButton(writer, options.Localization[HtmlChartText.Brush], ("data-cfx-mode-button", "brush"), ("aria-pressed", "false"), ("title", options.Localization[HtmlChartText.BrushRegion]));
+            AppendToolbarIcon(writer, text[HtmlChartText.BrushRegion], BrushIcon, ("data-cfx-mode-button", "brush"), ("aria-pressed", "false"));
+        }
+
+        if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
+            // The runtime reveals this only while the data viewport differs from its initial window.
+            AppendToolbarIcon(writer, text[HtmlChartText.ResetZoom], ResetZoomIcon, ("data-cfx-zoom-reset", "true"), ("hidden", "hidden"));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Export)) {
-            AppendToolbarButton(writer, "SVG", ("data-cfx-export", "svg"), ("title", options.Localization[HtmlChartText.DownloadSvg]));
-            AppendToolbarButton(writer, "PNG", ("data-cfx-export", "png"), ("title", options.Localization[HtmlChartText.DownloadPng]));
+            AppendToolbarButton(writer, "SVG", ("data-cfx-export", "svg"), ("title", text[HtmlChartText.DownloadSvg]));
+            AppendToolbarButton(writer, "PNG", ("data-cfx-export", "png"), ("title", text[HtmlChartText.DownloadPng]));
         }
 
         return writer.Build();
+    }
+
+    private static void AppendToolbarIcon(HtmlMarkupWriter writer, string label, string icon, params (string Name, string Value)[] attributes) {
+        writer.StartElement("button")
+            .Attribute("class", "cfx-tool cfx-tool--icon")
+            .Attribute("type", "button")
+            .Attribute("aria-label", label)
+            .Attribute("title", label);
+        for (var i = 0; i < attributes.Length; i++) {
+            writer.Attribute(attributes[i].Name, attributes[i].Value);
+        }
+
+        writer.EndStartElement()
+            .RawTrusted("<svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\">" + icon + "</svg>")
+            .EndElement();
     }
 
     /// <summary>

@@ -109,9 +109,11 @@ public sealed class InteractiveResetControlBrowserTests {
         Assert.InRange(zoomedPoint.Width, initialPoint.Width - .03, initialPoint.Width + .03);
         await ResetAsync(page);
         Assert.Equal(initialViewport.GetRawText(), (await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getViewport()")).GetRawText());
+        // Clicking the reset row can scroll this short viewport, so compare positions within the drawing.
         var restoredPoint = await BoxAsync(page, Point(1, 2) + " .cfx-prepared-point-marker");
-        Assert.InRange(restoredPoint.X, initialPoint.X - .03, initialPoint.X + .03);
-        Assert.InRange(restoredPoint.Y, initialPoint.Y - .03, initialPoint.Y + .03);
+        var restoredFrame = await BoxAsync(page, ".cfx-stage > svg");
+        Assert.InRange(restoredPoint.X - restoredFrame.X, initialPoint.X - initialFrame.X - .03, initialPoint.X - initialFrame.X + .03);
+        Assert.InRange(restoredPoint.Y - restoredFrame.Y, initialPoint.Y - initialFrame.Y - .03, initialPoint.Y - initialFrame.Y + .03);
 
         // A data viewport can pan only after zoom creates room inside its full source domain.
         await page.Locator("[data-cfx-zoom=\"in\"]").ClickAsync();

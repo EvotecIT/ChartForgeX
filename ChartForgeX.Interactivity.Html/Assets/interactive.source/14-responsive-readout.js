@@ -9,7 +9,7 @@
     heading.style.cssText = 'display:none;font:600 14px/20px var(--cfx-tooltip-font);color:var(--cfx-tooltip-text);padding:0 4px 8px';
     stage.before(heading);
     const printMedia = window.matchMedia?.('print');
-    const toolbar = root.querySelector(':scope > .cfx-toolbar');
+    const toolbar = root.querySelector(':scope > .cfx-frame > .cfx-toolbar');
     const toolbarHeight = root.style.getPropertyValue('--cfx-toolbar-height');
     let frame = 0;
     const refresh = () => {
