@@ -19194,7 +19194,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 51
+      "semanticRegions": 50
     },
     {
       "id": "family-heatmap-color-scale-light",
@@ -19230,7 +19230,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 45
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-compact-color-scale-light",
@@ -19266,7 +19266,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-positioned-color-scale-light",
@@ -19702,7 +19702,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 51
+      "semanticRegions": 50
     },
     {
       "id": "family-heatmap-color-scale-dark",
@@ -19738,7 +19738,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 45
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-compact-color-scale-dark",
@@ -19774,7 +19774,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-positioned-color-scale-dark",
@@ -20210,7 +20210,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 37
     },
     {
       "id": "family-hexbin-heatmap-color-scale-light",
@@ -20354,7 +20354,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 37
     },
     {
       "id": "family-hexbin-heatmap-color-scale-dark",
@@ -20534,7 +20534,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 153
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-scale-light",
@@ -20570,7 +20570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-color-dimension-light",
@@ -20606,7 +20606,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 153
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-dimension-light",
@@ -20642,7 +20642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-wide-dark",
@@ -20750,7 +20750,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 153
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-scale-dark",
@@ -20786,7 +20786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-color-dimension-dark",
@@ -20822,7 +20822,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 153
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-dimension-dark",
@@ -20858,7 +20858,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 148
     },
     {
       "id": "family-dotted-map-wide-light",
