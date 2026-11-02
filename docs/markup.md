@@ -229,7 +229,7 @@ series Incidents type bar color #EF4444 values 3 4 2
 ```
 ````
 
-Or with a review-friendly table. The first label/category column becomes the x-axis; each numeric column becomes a named series:
+Or with a review-friendly table. The first label/category column becomes the x-axis; each numeric column becomes a named series. A column named `value` selects the default single-value form and accepts only `label`, `category`, or `name` alongside it; additional columns are errors. For several series, use names such as `Actual` and `Budget`:
 
 ````markdown
 ```chartforgex chart v1 {#quarterly title="Quarterly Trend" type="line"}
@@ -263,13 +263,139 @@ options:
 ```
 ````
 
-Supported compact chart types include `bar`, `line`, `smoothLine`, `stepLine`, `area`, `smoothArea`, `stepArea`, `stackedArea`, `smoothStackedArea`, `scatter`, `lollipop`, `horizontalBar`, `waterfall`, `pie`, `donut`, `polar`, `polarArea`, `radar`, `funnel`, and `pyramid`. Pyramid markup uses height-proportional triangular partitions in source order. Series commands can choose their own `type`, `kind`, `color`, and `values`. For `polar`, values alternate angle in radians and radius, for example `values 0 12 1.57 18 3.14 9`; `polarArea` retains equal-angle radial segments. Annotation commands support horizontal and vertical lines or bands through `annotation hLine`, `annotation vLine`, `annotation hBand`, and `annotation vBand`, with optional label, color, and opacity values. Supported options include legend, point legend, data labels, header/card/plot background, transparent background, axes, axis lines, grid, legend position, tick count, axis titles, axis bounds, padding, sparkline, and overlay mode. Invalid option values produce line-aware diagnostics.
+Numeric chart types include `bar`, `horizontalbar`, `stackedbar`, `stackedhorizontalbar`, `percentstackedbar`, `percentstackedhorizontalbar`, `line`, `smoothline`, `stepline`, `area`, `smootharea`, `steparea`, `stackedarea`, `smoothstackedarea`, `percentstackedarea`, `smoothpercentstackedarea`, `scatter`, `lollipop`, `dumbbell`, `waterfall`, `pie`, `donut`, `polar`, `polararea`, `radar`, `funnel`, `pyramid`, `heatmap`, `gauge`, and `lineargauge`. Names are case-insensitive; hyphens and underscores are normalized, so `percent-stacked-bar` and `percentStackedBar` select `percentstackedbar`.
+
+Pyramid markup uses height-proportional triangular partitions in source order. Numeric series commands can choose their own `type`, `kind`, `color`, and `values`. For `polar`, values alternate angle in radians and radius, for example `values 0 12 1.57 18 3.14 9`; `polararea` retains equal-angle radial segments. Annotation commands support horizontal and vertical lines or bands through `annotation hLine`, `annotation vLine`, `annotation hBand`, and `annotation vBand`, with optional label, color, and opacity values. Supported options include legend, point legend, data labels, header/card/plot background, transparent background, axes, axis lines, grid, legend position, tick count, axis titles, axis bounds, padding, sparkline, and overlay mode. Invalid option values produce line-aware diagnostics.
 
 Annotation commands also accept `id:<source-id>` or `id=<source-id>`. IDs use the native `ChartAnnotationId` policy: trimmed, case-sensitive and unique within the chart across all annotation kinds. Captions and coordinates do not define identity. Omitting `id` retains anonymous annotation behavior.
 
 The parser maps the fence to a `VisualArtifact` with `VisualArtifactKind.Chart` and a typed `Chart` model. Static SVG/PNG/HTML export remains deterministic and script-free.
 
-Typed `type chord` uses `node <id> "Label"` and `flow <id> <sourceId> <targetId> <weight> [colorValue=<number>]`. It creates the existing immutable directed relationship facts, including parallel, reciprocal, self and zero flows. Numeric `values` and series data cannot substitute for relationships. Optional complete `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` ID lists and finite `chordRibbonTension` map to the [native Chord options](../chord/#typed-chart-markup). Node/flow tables use separate `nodes:` and `flows:` sections ending with `end`; unknown endpoints and malformed values retain source-line errors. Empty `type chord` keeps native no-data semantics.
+Tables reject duplicate fields, competing label/key columns and surplus row cells; typed and options tables also reject unknown headers. Numeric tables require a value in every series column for each category row. Blank or omitted cells produce a diagnostic instead of moving later values onto earlier categories. Use either default `values`/`value` data or named numeric series in one chart. Heatmap rows cannot be mixed with other kinds, and members of a stack must all use source units or all use percentage normalization.
+
+### Stacks, Heatmaps And Gauges
+
+Stacked and percent-stacked types keep the numeric table shape: one label column followed by named numeric series columns. Percent-stacked types normalize the values within each stack; supply counts rather than precomputed percentages. Changing the type to `stackedbar`, `stackedhorizontalbar`, `percentstackedhorizontalbar`, `percentstackedarea`, or `smoothpercentstackedarea` uses the same data:
+
+````markdown
+```chartforgex chart v1 {title="Release Channel Mix" type="percentstackedbar"}
+| Quarter | Stable | Preview |
+| --- | --- | --- |
+| Q1 | 42 | 18 |
+| Q2 | 58 | 22 |
+| Q3 | 72 | 16 |
+```
+````
+
+For `heatmap`, each numeric series column becomes a heatmap row and the label column supplies its category positions. Keep the same label-plus-series table; no cell-coordinate command is needed.
+
+For a heatmap, `option heatmapValueName "Coverage %"` names the numeric color key while retaining the default theme and color scale.
+
+Both `gauge` and `lineargauge` require exactly one series with one numeric value. Their range defaults to 0–100. Set `gaugeMinimum` and `gaugeMaximum` through commands, `option` lines, or an `options:` table when the measured quantity has another range:
+
+````markdown
+```chartforgex chart v1
+title "Validation Throughput"
+type lineargauge
+option gaugeMinimum 0
+option gaugeMaximum 200
+series "Checks per minute" values 148
+```
+````
+
+A gauge table follows the numeric table contract: one category row and one numeric series column. Additional category rows or series produce an error.
+
+### Financial Charts
+
+`candlestick` and `ohlc` use typed financial records rather than flattened numeric series. X values can be numeric coordinates or ISO dates (`yyyy-MM-dd`); use one kind throughout the chart. Date records use the native UTC time axis automatically. Declare one display name with `series "Price"`, then use `candle X OPEN HIGH LOW CLOSE` commands:
+
+````markdown
+```chartforgex chart v1
+title "Weekly Price Range"
+type candlestick
+series "Price"
+candle 2026-06-01 102 110 98 108
+candle 2026-06-08 108 114 104 106
+candle 2026-06-15 106 116 102 112
+```
+````
+
+The same records can be written in a `candles:` table. Switch the type to `ohlc` for open-high-low-close marks:
+
+````markdown
+```chartforgex chart v1
+title "Weekly OHLC Range"
+type ohlc
+series "Price"
+candles:
+| x | open | high | low | close |
+| --- | --- | --- | --- | --- |
+| 2026-06-01 | 102 | 110 | 98 | 108 |
+| 2026-06-08 | 108 | 114 | 104 | 106 |
+end
+```
+````
+
+The parser creates native `ChartCandlestick` records and applies their financial validation, including finite numbers and consistent high/low bounds. Numeric `values` cannot stand in for OHLC records.
+
+### Treemaps
+
+Use `item ID "LABEL" [parent=ID] [value=NUMBER] [colorValue=NUMBER]` for hierarchy facts. Omit `parent` for a root and omit `value` for a group; its native value remains null. Leaves carry the values used for area. `colorValue` is optional and independent of area:
+
+````markdown
+```chartforgex chart v1
+title "Validation Portfolio"
+type treemap
+series "Checks"
+item runtime "Runtime"
+item windows "Windows" parent=runtime value=42 colorValue=96
+item linux "Linux" parent=runtime value=34 colorValue=92
+item packages "Packages" value=28 colorValue=88
+```
+````
+
+The table equivalent uses `items:` with columns `id`, `label`, `parent`, `value`, and `colorValue`. Empty parent and value cells are valid for roots and groups; do not replace a group's missing value with zero. See the [v1 reference](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/markup-v1-reference.md#typed-chart-data) for the table shape.
+
+### Sankey And Chord
+
+`sankey` and `chord` share typed `node ID "LABEL"` and `flow ID SOURCE TARGET VALUE [colorValue=NUMBER]` commands. The flow ID identifies the relationship separately from its endpoints:
+
+````markdown
+```chartforgex chart v1
+title "Review Flow"
+type sankey
+series "Changes"
+node intake "Intake"
+node automated "Automated review"
+node manual "Manual review"
+flow intake-auto intake automated 72 colorValue=92
+flow intake-manual intake manual 28 colorValue=74
+```
+````
+
+Use separate `nodes:` and `flows:` tables for larger inputs. A new section starts its own table; `end` returns to ordinary chart commands. Native relationship validation checks IDs, declared endpoints and weights. Numeric `values` and series data cannot substitute for relationships.
+
+Chord retains its native parallel, reciprocal, self and zero-flow semantics and empty-chart no-data behavior. Optional complete `chordNodeOrder`, `chordOutgoingFlowOrder`, `chordIncomingFlowOrder` ID lists and finite `chordRibbonTension` map to the [native Chord options](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chord.md#typed-chart-markup); these options are Chord-specific.
+
+All typed families use one named series, selected with `series "Name"`, rather than multiple numeric series. Financial records, hierarchy items, and relationship facts stay separate from numeric chart tables.
+
+### Themes And Validation
+
+Set `theme PRESET` to choose a native preset and `themeMode light|dark` to choose its mode independently. `theme light` and `theme dark` are mode shorthands that keep the current preset. Both settings work as commands, `option` lines, `options:` table rows, or fence attributes:
+
+````markdown
+```chartforgex chart v1 {theme=Graphite themeMode=dark}
+title "Release Readiness"
+type gauge
+series "Ready" values 78
+```
+````
+
+Presets are `Graphite`, `Report`, `Executive`, `Product`, `Accessible`, `Colorblind`, `Aurora`, `Editorial`, `Candy`, `PeopleInfographic`, `Terminal`, `TransparentOverlay`, `Minimal`, `Dashboard`, `SaasDashboard`, and `RestaurantDashboard`. Preset names normalize case, hyphens and underscores. Payload commands override fence attributes.
+
+The native parser validates the authored data and constructs the same typed models used by C# callers. Unknown types, themes and options, invalid numbers, incompatible numeric and typed data, invalid gauge ranges, duplicate IDs, missing references and invalid native model data produce diagnostics. Command and table parsing retain source locations; diagnostics for whole-chart validation may point to the fence. Check `HasErrors` and inspect `Diagnostics` before exporting. Syntax coloring and the mirrored editor schema describe the grammar; the CLI and parser perform runtime validation.
+
+The generated gallery's **Native Markup** group includes examples for all stacked-bar and percent-stacked variants, heatmaps, both gauge types, candlestick, OHLC, treemap and Sankey. Each source fence passes through `VisualMarkupParser` and the existing example generator to write SVG, PNG and HTML alongside its `.cfx.md` and C# source.
 
 
 ## Timeline And Gantt
