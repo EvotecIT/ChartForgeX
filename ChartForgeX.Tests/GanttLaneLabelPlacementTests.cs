@@ -17,10 +17,10 @@ public sealed class GanttLaneLabelPlacementTests {
     [InlineData(390, 12, VisualThemeMode.Dark)]
     [InlineData(760, 12, VisualThemeMode.Light)]
     [InlineData(760, 12, VisualThemeMode.Dark)]
-    [InlineData(390, 8, VisualThemeMode.Light)]
-    [InlineData(390, 8, VisualThemeMode.Dark)]
-    [InlineData(760, 8, VisualThemeMode.Light)]
-    [InlineData(760, 8, VisualThemeMode.Dark)]
+    [InlineData(390, 10, VisualThemeMode.Light)]
+    [InlineData(390, 10, VisualThemeMode.Dark)]
+    [InlineData(760, 10, VisualThemeMode.Light)]
+    [InlineData(760, 10, VisualThemeMode.Dark)]
     public void PackedCaptionsClearOtherItemsCaptionsAndGroupBandsWithoutLosingSourceFacts(int width, double fontSize, VisualThemeMode mode) {
         var chart = DenseChart(width, fontSize, mode);
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
@@ -68,7 +68,7 @@ public sealed class GanttLaneLabelPlacementTests {
         }
         var image = PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(width, image.Width); Assert.Equal(width == 390 ? 360 : 440, image.Height);
-        if (mode == VisualThemeMode.Light && (width == 390 && fontSize == 8 || width == 760 && fontSize == 8)) {
+        if (mode == VisualThemeMode.Light && (width == 390 && fontSize == 10 || width == 760 && fontSize == 10)) {
             var caption = captions[0];
             Assert.True(HasNativeInk(prepared, image, caption.Bounds, caption.Text), "A retained packed caption must paint native raster ink.");
         }
@@ -107,7 +107,7 @@ public sealed class GanttLaneLabelPlacementTests {
     [InlineData(true, false, null, 8)]
     public void PackedCaptionVisibilityHonorsChartDefaultsAndSeriesOverridesWithoutHiddenBandGrowth(
         bool? chartVisible, bool? firstSeriesVisible, bool? secondSeriesVisible, int expectedCaptions) {
-        var chart = DenseChart(390, 8, VisualThemeMode.Light);
+        var chart = DenseChart(390, 10, VisualThemeMode.Light);
         chart.Options.ShowDataLabels = chartVisible;
         chart.Series[0].ShowDataLabels = firstSeriesVisible; chart.Series[1].ShowDataLabels = secondSeriesVisible;
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
@@ -130,7 +130,7 @@ public sealed class GanttLaneLabelPlacementTests {
         Assert.Equal(16, prepared.Regions.Count(region => region.Role == "gantt-lane-item"));
         if (expectedCaptions == 0) {
             Assert.DoesNotContain(prepared.Regions, region => region.Role == "data-label");
-            var unlabelled = DenseChart(390, 8, VisualThemeMode.Light);
+            var unlabelled = DenseChart(390, 10, VisualThemeMode.Light);
             foreach (var series in unlabelled.Series) for (var point = 0; point < series.GanttLaneItems.Count; point++) {
                 var item = series.GanttLaneItems[point];
                 series.UpdateGanttLaneItem(point, new ChartGanttLaneItem(item.Start, item.End, item.Category, detail: item.Detail));
@@ -152,13 +152,13 @@ public sealed class GanttLaneLabelPlacementTests {
                 new ChartGanttLaneItem(Start.AddHours(1), Start.AddHours(3), "up", "Batch 01", "Complete original detail")
             });
         chart.Options.XAxis.WithBounds(Start.AddHours(-1).ToOADate(), Start.AddHours(10).ToOADate());
-        chart.Series[0].WithDataLabelPlacement(placement).ConfigurePointDataLabelStyle(0, style => style.WithFontSize(8).WithColor("#6a1b9a"));
+        chart.Series[0].WithDataLabelPlacement(placement).ConfigurePointDataLabelStyle(0, style => style.WithFontSize(10).WithColor("#6a1b9a"));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = Prepare(chart);
         var caption = Assert.Single(NumericRadialAxisTextTests.Footprints(prepared.Scene), item => item.Text.Role == "data-label");
         var mark = Assert.Single(prepared.Regions, region => region.Role == "gantt-lane-item").Bounds;
         Assert.Equal("Batch 01", string.Join("\n", caption.Text.Text.Lines.Select(line => line.Text)));
-        Assert.Equal(8, caption.Text.Text.Style.FontSize); Assert.Equal(ChartColor.FromHex("#6a1b9a"), caption.Text.Text.Style.Color);
+        Assert.Equal(10, caption.Text.Text.Style.FontSize); Assert.Equal(ChartColor.FromHex("#6a1b9a"), caption.Text.Text.Style.Color);
         if (placement == ChartDataLabelPlacement.Right) Assert.True(caption.Bounds.Left > mark.Right);
         else if (placement == ChartDataLabelPlacement.Above) Assert.True(caption.Bounds.Bottom < mark.Top);
         else Assert.True(LabelPlacementService.Contains(mark, caption.Bounds));
