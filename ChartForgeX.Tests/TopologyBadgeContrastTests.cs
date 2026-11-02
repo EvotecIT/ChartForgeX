@@ -27,7 +27,7 @@ public sealed class TopologyBadgeContrastTests {
         var badge = Assert.Single(literal.Scene.Nodes.OfType<VisualSceneRectangle>(), mark => mark.Role == "topology-node-badge-surface");
         var text = Assert.Single(literal.Scene.Nodes.OfType<VisualSceneText>(), mark => mark.Role == "topology-node-badge");
         Assert.Equal("?", Assert.Single(text.Text.Lines).Text);
-        Assert.Equal(9, text.Text.Size);
+        Assert.Equal(8.25, text.Text.Size);
         Assert.True(ChartColorMath.ContrastRatio(text.Color, badge.Fill!.Value) >= 4.5,
             "Small default badge text must retain readable contrast against its actual native fill.");
         var svg = XDocument.Parse(literal.ToSvg());
