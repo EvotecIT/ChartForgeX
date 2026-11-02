@@ -33,15 +33,23 @@ internal static partial class VisualCartesianCompiler {
         }
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+        // Steps close their outer tread within the plot; a point already on the plot edge has none to draw.
+        (double, double)? treads = (plot.Left, plot.Right);
         if (series.Kind != ChartSeriesKind.Scatter && contour.Count > 0) {
             using (clipMarks ? builder.PushClip(plot) : null) {
                 if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
                     // Each disconnected segment closes independently; smoothing uses the existing path algorithm.
-                    var offset = 0;
+                    var offset = 0; var segmentIndex = 0;
+                    var segmentCount = ChartPointSegments.Split(contour).Count();
                     foreach (var segment in ChartPointSegments.Split(contour)) {
                         var baseline = lower.GetRange(offset, segment.Count);
-                        var upperPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition).Flatten(12);
-                        var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Interpolation, series.StepPosition).Flatten(12);
+                        // Only the series' outer ends close a tread; a segment edge at a gap stays open.
+                        var outer = series.StepPosition == ChartStepPosition.Start ? segmentIndex == 0
+                            : series.StepPosition == ChartStepPosition.End && segmentIndex == segmentCount - 1;
+                        segmentIndex++;
+                        var segmentTreads = outer ? treads : null;
+                        var upperPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition, false, segmentTreads).Flatten(12);
+                        var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Interpolation, series.StepPosition, false, segmentTreads).Flatten(12);
                         var commands = new List<ChartPathCommand>();
                         if (upperPath.Count > 0) {
                             commands.Add(ChartPathCommand.MoveTo(upperPath[0].X, upperPath[0].Y));
@@ -59,8 +67,8 @@ internal static partial class VisualCartesianCompiler {
                 }
                 var linePath = horizontal && series.Interpolation == ChartInterpolation.Step
                     ? ChartPathBuilder.FromPoints(points.Select(point => new ChartPoint(point.Y, point.X, point.BreakBefore)).ToArray(),
-                        series.Interpolation, series.StepPosition).Transpose()
-                    : ChartPathBuilder.FromPoints(contour, series.Interpolation, series.StepPosition);
+                        series.Interpolation, series.StepPosition, false, (plot.Top, plot.Bottom)).Transpose()
+                    : ChartPathBuilder.FromPoints(contour, series.Interpolation, series.StepPosition, false, treads);
                 foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
                     if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));

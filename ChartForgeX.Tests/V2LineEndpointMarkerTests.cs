@@ -28,8 +28,12 @@ public sealed class V2LineEndpointMarkerTests {
         var marker = Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "marker");
         var line = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
         var terminal = line.Commands[line.Commands.Count - 1];
+        // An End step closes its final tread toward the plot edge; the marker stays on the observation where that tread starts.
+        if (kind is ChartSeriesKind.StepLine or ChartSeriesKind.StepArea && position == ChartStepPosition.End) {
+            Assert.Equal(terminal.Y, marker.Cy, 7); Assert.True(terminal.X > marker.Cx);
+            terminal = line.Commands[line.Commands.Count - 2];
+        } else Assert.Equal(line.Commands.Max(command => command.X), marker.Cx, 7);
         Assert.Equal(terminal.X, marker.Cx, 7); Assert.Equal(terminal.Y, marker.Cy, 7);
-        Assert.Equal(line.Commands.Max(command => command.X), marker.Cx, 7);
         var observation = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Id == "series-0-point-2");
         Assert.Equal("3", observation.Metadata["data-cfx-x"]); Assert.Equal("5", observation.Metadata["data-cfx-y"]);
         Assert.Contains(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label" && text.Text.Lines.Any(line => line.Text == "Final observation"));
