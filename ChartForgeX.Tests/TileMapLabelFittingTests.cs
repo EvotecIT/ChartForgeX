@@ -98,7 +98,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
             var labels = svg.Descendants().Where(node => (node.Name.LocalName == "text" || (string?)node.Attribute("data-cfx-native-text-ink") == "true")
                 && (string?)node.Attribute("display") != "none"
                 && !string.IsNullOrWhiteSpace(node.Name.LocalName == "text" ? node.Value
-                    : node.AncestorsAndSelf().Select(owner => (string?)owner.Attribute("data-cfx-caption")).FirstOrDefault(caption => caption != null))
+                    : (string?)node.Attribute("data-cfx-ink-line") ?? node.Ancestors().Select(owner => (string?)owner.Attribute("data-cfx-caption")).FirstOrDefault(caption => caption != null))
                 && node.Ancestors().Any(owner =>
                 ((string?)owner.Attribute("data-cfx-role")) is "axis-y-label" or "radar-ring-label" or "polar-radius-label")).ToArray();
             Assert.True(labels.Length >= 2, "The overview must retain useful value-axis captions.");
