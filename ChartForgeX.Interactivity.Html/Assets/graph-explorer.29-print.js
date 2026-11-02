@@ -68,14 +68,51 @@
     if (!lifetime || !view) return;
     const media = view.matchMedia('print');
     let surface = null;
-    const clear = () => {
+    const clear = (immediate = false) => {
+      // Release the snapshot after the screen transition reaches its frame.
+      // Rapid print/screen/print changes otherwise coalesce before screen paint.
+      if (immediate !== true && lifetime.active && !media.matches && surface) {
+        const previous = surface;
+        lifetime.frame(() => { if (!media.matches && surface === previous) clear(true); });
+        return;
+      }
       surface?.remove(); surface = null;
       root.removeAttribute('data-cfx-graph-print-ready');
+      const pendingFonts = root.__cfxGraphPrintFonts;
+      if (!lifetime.active || !root.isConnected) { delete root.__cfxGraphPrintFonts; return; }
       paintPendingGraphScreen(root);
+      if (!pendingFonts || media.matches) return;
+      // Removing the print SVG can load the live face again. Retain ownership
+      // until that font work settles, without fitting its temporary dimensions.
+      const fonts = root.ownerDocument.fonts;
+      const resume = () => {
+        if (root.__cfxGraphPrintFonts !== pendingFonts) { pendingFonts.reveal?.(); return; }
+        if (media.matches) return;
+        if (!graphStageHasLayout(root)) {
+          if (!pendingFonts.reveal) {
+            const observer = new view.ResizeObserver(() => {
+              if (root.__cfxGraphPrintFonts !== pendingFonts || graphStageHasLayout(root)) {
+                pendingFonts.reveal(); pendingFonts.resume();
+              }
+            });
+            pendingFonts.reveal = lifetime.own(() => observer.disconnect());
+            observer.observe(root.querySelector('.cfx-graph-stage'));
+          }
+          return;
+        }
+        pendingFonts.reveal?.();
+        if (fonts?.status === 'loading') { fonts.ready.then(() => lifetime.frame(resume)); return; }
+        if (pendingFonts.dirty && graphStageHasLayout(root)) applyLayout(root, root.__cfxGraphState || graphState(root));
+        delete root.__cfxGraphPrintFonts;
+        paintPendingGraphScreen(root);
+      };
+      pendingFonts.resume = () => Promise.resolve(fonts?.ready).then(() => lifetime.frame(resume));
+      pendingFonts.resume();
     };
     const prepare = () => {
-      clear();
+      clear(true);
       if (!lifetime.active || !root.isConnected || root.hidden || root.closest('[hidden]') || !root.getClientRects().length || view.getComputedStyle(root).visibility === 'hidden') return;
+      root.__cfxGraphPrintFonts = { dirty: root.__cfxGraphPrintFonts?.dirty || false };
       const content = exportSvgContent(root);
       if (!content) return;
       const parsed = new DOMParser().parseFromString(content, 'image/svg+xml').documentElement;
