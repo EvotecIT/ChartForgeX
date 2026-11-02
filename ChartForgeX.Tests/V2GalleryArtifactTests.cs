@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity;
 using ChartForgeX.Themes;
 using Xunit;
 
@@ -69,6 +70,19 @@ public sealed class V2GalleryArtifactTests {
         var artifacts = document.RootElement.GetProperty("artifacts").EnumerateArray().ToArray();
         var primary = artifacts.Where(artifact => artifact.GetProperty("primary").GetBoolean() && artifact.GetProperty("theme").GetString() == "light").ToArray();
         Assert.Equal(primary.Length, primary.Select(artifact => artifact.GetProperty("family").GetString()).Distinct().Count());
+        foreach (var theme in new[] { "light", "dark" }) {
+            var line = Assert.Single(artifacts, artifact => artifact.GetProperty("primary").GetBoolean()
+                && artifact.GetProperty("family").GetString() == "line" && artifact.GetProperty("theme").GetString() == theme);
+            Assert.Equal("family-line-wide-" + theme, line.GetProperty("id").GetString());
+            var html = File.ReadAllText(Path.Combine(output, line.GetProperty("interactive").GetString()!));
+            var declared = Assert.Single(Regex.Matches(html, "data-cfx-interaction-features=\"([^\"]*)\""));
+            Assert.Equal(ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush,
+                Enum.Parse<ChartInteractionFeatures>(WebUtility.HtmlDecode(declared.Groups[1].Value)));
+            var projection = Assert.Single(Regex.Matches(html, "data-cfx-prepared-chart=\"([^\"]*)\""));
+            using var metadata = JsonDocument.Parse(WebUtility.HtmlDecode(projection.Groups[1].Value));
+            foreach (var axis in new[] { "x", "y" })
+                Assert.Equal("linear", metadata.RootElement.GetProperty("dataProjection").GetProperty(axis).GetProperty("scale").GetString());
+        }
         var represented = primary.SelectMany(artifact => artifact.GetProperty("seriesKinds").EnumerateArray().Select(kind => kind.GetString())).ToHashSet(StringComparer.Ordinal);
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) Assert.Contains(kind.ToString(), represented);
 
