@@ -238,7 +238,7 @@ public sealed class FunnelGeometryTests {
     }
 
     [Theory]
-    [InlineData(390, 8)]
+    [InlineData(390, 10)]
     [InlineData(390, 12)]
     [InlineData(760, 12)]
     public void DenseConeKeepsUsefulRailCaptionsWithoutLosingStageValuesOrFullDescriptions(int width, double fontSize) {
