@@ -111,6 +111,8 @@
   font: 600 11px/16px var(--cfx-tooltip-font); font-variant-numeric: tabular-nums;
   text-overflow: ellipsis; white-space: nowrap;
 }
+/* Browser ticks replace raster native labels without a text template; keep the axis label colour role. */
+.cfx-interactive-chart [data-cfx-browser-axis] text[fill="currentColor"] { fill: var(--cfx-tooltip-muted); }
 .cfx-crosshair__axis-value[hidden],
 .cfx-interactive-chart[data-cfx-crosshair-label="false"] :is(.cfx-crosshair__label, .cfx-crosshair__axis-value) { display: none; }
 .cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }
