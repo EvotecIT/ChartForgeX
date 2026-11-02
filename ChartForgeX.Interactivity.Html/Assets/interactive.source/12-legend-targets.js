@@ -125,8 +125,10 @@
       mark.setAttribute('width', '10'); mark.setAttribute('height', '10'); mark.setAttribute('data-cfx-role', 'legend-swatch');
       const nativeSwatch = source.querySelector('[data-cfx-role="legend-swatch"],[data-cfx-role="legend-symbol"],[data-cfx-role="legend-marker"]');
       const painted = nativeSwatch?.matches('[fill],[stroke]') ? nativeSwatch : nativeSwatch?.querySelector('[fill],[stroke]');
-      const fill = painted?.getAttribute('fill');
-      mark.setAttribute('fill', paintColour(source) || (fill && fill !== 'none' ? fill : painted?.getAttribute('stroke') || 'currentColor'));
+      const style = painted && getComputedStyle(painted);
+      const fill = painted?.style.fill || painted?.getAttribute('fill'), stroke = painted?.style.stroke || painted?.getAttribute('stroke');
+      mark.setAttribute('fill', fill && fill !== 'none' && solidPaintColour(style.fill, style.fillOpacity) ? fill
+        : stroke && stroke !== 'none' && solidPaintColour(style.stroke, style.strokeOpacity) ? stroke : paintColour(source) || 'currentColor');
       swatch.appendChild(mark);
       const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
       label.dataset.cfxRole = 'legend-label';
