@@ -37,6 +37,27 @@ public sealed class TopologyQuietEdgeLabelTests {
 
     [Theory]
     [InlineData(false)] [InlineData(true)]
+    public void CaptionAndTechnologyLineShareOnePillWithTheSecondaryLineMuted(bool dark) {
+        var chart = Source(dark); chart.Edges[0].SecondaryLabel = "HTTPS over the private link";
+        var prepared = chart.Prepare(); var svg = XDocument.Parse(prepared.ToSvg());
+        var colors = chart.Theme.Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var surface = Role(svg, "topology-edge-label-surface").Single();
+        var top = Number(surface, "y"); var bottom = top + Number(surface, "height");
+        var texts = Role(svg, "topology-edge-label-text").SelectMany(item => item.DescendantsAndSelf().Where(node => node.Name.LocalName == "text")).ToArray();
+        Assert.Equal(2, texts.Length);
+        // Both baselines sit inside the single pill; the technology line uses the secondary text colour.
+        Assert.All(texts, text => Assert.InRange(Number(text, "y"), top, bottom));
+        Assert.True(ChartColor.TryParse((string?)texts[1].Attribute("fill"), out var secondary)); Assert.Equal(colors.MutedForeground, secondary);
+        // The wider second line sets the pill width, so the pill is wider than a single-line caption pill.
+        var single = Source(dark).Prepare().ToSvg();
+        Assert.True(Number(surface, "width") > Number(Role(XDocument.Parse(single), "topology-edge-label-surface").Single(), "width") + 20);
+        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var tone = ChartColorMath.Blend(colors.Background, colors.Foreground, TopologyRenderPrimitives.EdgeLabelQuietTint);
+        AssertPixel(image, Number(surface, "x") + Number(surface, "height") / 2 + 1, (top + bottom) / 2, tone);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
     public void EndpointMultiplicitiesOnlyMaskTheirLineWithTheCanvasTone(bool dark) {
         var chart = Source(dark); var svg = XDocument.Parse(chart.Prepare().ToSvg());
         var background = chart.Theme.Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).Background;

@@ -190,8 +190,9 @@ internal sealed partial class VisualTopologyCompiler {
                 _builder.Line(from.X, from.Y, to.X, to.Y, color, _context.Theme.AxisStrokeWidth * units * _scale, "topology-edge-label-leader", paint: new VisualScenePaintBinding(stroke: BorderPaint(color, EdgeLabelOpacity(edge))));
             }
             var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
+            ChartRect[]? chipRows = null;
             if (_options.IncludeEdgeLabelBackplates && UsesQuietEdgeLabelSurface(_options)) {
-                var surface = QuietEdgeLabelSurface(edge, bounds, labels, units);
+                var (surface, cells) = QuietEdgeLabelSurface(edge, bounds, labels, units); chipRows = cells;
                 var authored = !string.IsNullOrWhiteSpace(edge.LabelBackgroundColor);
                 // The chip is a step off the surface it sits on: the canvas, or the group around the label.
                 var underlay = LabelUnderlay(layout);
@@ -227,7 +228,10 @@ internal sealed partial class VisualTopologyCompiler {
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var rows = EdgeLabelRows(labels[i], _options);
-                var textBounds = Text(i == 0 ? EdgeCaptionContent(edge, labels[i]) : ChartForgeX.Typography.TextContent.Plain(labels[i]), new ChartRect(bounds.X + 4 * units * _scale, bounds.Y + rowOffset * height, Math.Max(0, bounds.Width - 8 * units * _scale), rows * height),
+                var textBounds = Text(i == 0 ? EdgeCaptionContent(edge, labels[i]) : ChartForgeX.Typography.TextContent.Plain(labels[i]), chipRows != null
+                    // Quiet chips stack the caption and its secondary lines inside the one painted pill.
+                    ? new ChartRect(bounds.X + 4 * units * _scale, chipRows[i].Y - .01, Math.Max(0, bounds.Width - 8 * units * _scale), chipRows[i].Height + .02)
+                    : new ChartRect(bounds.X + 4 * units * _scale, bounds.Y + rowOffset * height, Math.Max(0, bounds.Width - 8 * units * _scale), rows * height),
                     TextPolicySize(_context.Theme.Typography.DataLabelSize) * (edge.TextStyle?.FontSize.HasValue == true ? 1 : units) * (i == 0 ? 1 : .85), LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i == 0 ? EdgeLabelPrimaryWeight(_options) : 400, "topology-edge-label-text", rows, centered: true, verticallyCentered: true,
                     paint: EdgeTextPaint(edge, LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i > 0), opacity: EdgeLabelOpacity(edge), defaultUnits: units);
                 rowOffset += rows;
