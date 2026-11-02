@@ -34,8 +34,7 @@
       {"slug": "design-language", "source": "design-language.md", "title": "Chart design language", "summary": "Shared page roles, categorical colours, readable axes and consistent mark states."},
       {"slug": "api-conventions", "source": "v2/api-conventions.md", "title": "Public API conventions", "summary": "Preparation, transactions, identity, ordinal/calendar-unit spacing and explicit concentric bands."},
       {"slug": "chart-combinations", "source": "v2/chart-combinations.md", "title": "Chart combinations and axes", "summary": "Vertical and horizontal mixtures, independent physical value axes and native limits."},
-      {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."},
-      {"slug": "typography", "source": "v2/typography.md", "title": "Product typography", "summary": "Bundled Archivo and JetBrains Mono with matching browser and native metrics, licensed sources and script fallbacks."}
+      {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."}
     ] },
     { "title": "Design notes", "summary": "Proposals are kept separate from the implemented API guides.", "guides": [
       {"slug": "visual-effects", "title": "Visual effects design", "summary": "A proposed shared effects system. It is not an implemented capability.", "source": "visual-effects.md"}
