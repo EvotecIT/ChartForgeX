@@ -10,6 +10,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var host = new NativeHost(configureChart: chart => { chart.Options.XAxis.CrossAt = 50; chart.Options.YAxis.CrossAt = 6; });
         await using var session = await OpenAsync(host.Page(), 980, 700);
         var page = session.Page; await ControlledConnectionAsync(page);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("()=>controlled.length===2");
         Assert.True(await page.EvaluateAsync<bool>("()=>controlled[0].signal.aborted&&!controlled[1].signal.aborted"));

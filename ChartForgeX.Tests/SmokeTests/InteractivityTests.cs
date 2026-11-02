@@ -160,8 +160,8 @@ internal static partial class SmokeTests {
         Assert(linkedCell.Attribute("tabindex") == null && (string?)linkedCell.Attribute("data-cfx-point") == "0",
             "Linked cells should retain source identity without creating a second authored focus target.");
         Assert(html.Contains("data-cfx-tooltip-anchor=\"pointer\"", StringComparison.Ordinal)
-            && html.Contains("data-cfx-tooltip-placements=\"bottom-right\"", StringComparison.Ordinal)
-            && html.Contains("data-cfx-tooltip-gap=\"14\"", StringComparison.Ordinal), "Interactive HTML should retain the default pointer placement policy in its public adapter metadata.");
+            && html.Contains("data-cfx-tooltip-placements=\"auto\"", StringComparison.Ordinal)
+            && html.Contains("data-cfx-tooltip-gap=\"12\"", StringComparison.Ordinal), "Interactive HTML should retain the default pointer placement policy in its public adapter metadata.");
         Assert(html.Contains("min-width: 0;", StringComparison.Ordinal) && html.Contains("flex-wrap: wrap;", StringComparison.Ordinal), "Interactive chrome should stay within narrow viewports instead of forcing horizontal overflow.");
         var scrubber = System.Text.RegularExpressions.Regex.Match(html, "<input\\b[^>]*data-cfx-scenario-scrubber=\"true\"[^>]*>");
         Assert(scrubber.Success && scrubber.Value.Contains("type=\"range\"", StringComparison.Ordinal)
@@ -265,7 +265,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-interaction-group=\"group&lt;one&gt;&amp;&quot;two&quot;\"", StringComparison.Ordinal), "Interactive HTML should escape synchronized group names.");
         Assert(!html.Contains("data-bad=\"1\"", StringComparison.Ordinal), "Escaped nonces should not become additional HTML attributes.");
         Assert(!html.Contains("onmouseover=\"bad\"", StringComparison.Ordinal), "Escaped chart IDs should not become event handler attributes.");
-        Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-zoom=\"in\" title=\"Zoom in\">Zoom +</button>", StringComparison.Ordinal), "Typed toolbar rendering should preserve zoom button markup.");
+        Assert(html.Contains("<button class=\"cfx-tool cfx-tool--icon\" type=\"button\" aria-label=\"Zoom in\" title=\"Zoom in\" data-cfx-zoom=\"in\"><svg ", StringComparison.Ordinal), "Typed toolbar rendering should preserve zoom button markup.");
         Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"png\" title=\"Download PNG\">PNG</button>", StringComparison.Ordinal), "Typed toolbar rendering should preserve PNG export button markup.");
     }
 

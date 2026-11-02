@@ -18,6 +18,8 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     private static void ConfigureDelay(HtmlChartInteractionOptions options, string range) {
         options.Tooltip.DelayMilliseconds = Delay;
         options.Tooltip.Range = range == "exact" ? HtmlChartTooltipRange.Exact : range == "nearest" ? HtmlChartTooltipRange.Nearest : HtmlChartTooltipRange.WithinDistance(60);
+        options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
+        options.Tooltip.Position.Gap = 14;
     }
 
     private static Task<bool> TipHiddenAsync(IPage page) => page.Locator(".cfx-tooltip").First.EvaluateAsync<bool>("tip => tip.hidden");

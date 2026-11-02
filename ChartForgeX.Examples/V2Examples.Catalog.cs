@@ -66,6 +66,7 @@ public static partial class V2Examples {
 
     // Product scenarios with real-looking data represent their family better than the generic fixture.
     private static bool IsScenarioPrimary(ProofArtifact artifact) => IsScenarioVariant(artifact.Variant)
+        && artifact.Family != "line"
         && (artifact.Variant != "availability" || artifact.Family == "state-timeline");
 
     private static string ExampleKey(ProofArtifact artifact) => artifact.Id.Substring(0, artifact.Id.Length - artifact.Theme.Length - 1);

@@ -19,10 +19,10 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         await page.EvaluateAsync("() => document.body.addEventListener('cfxhover', event => window.hoverEmphasisTarget = event.detail.target)");
 
         await MoveToAsync(page, Point(1, 3));
-        Assert.Equal(new[] { "0.3", "1", "0.3" }, await OpacitiesAsync(page, Lines));
-        Assert.Equal(new[] { "0.3", "1", "0.3" }, await OpacitiesAsync(page, Legends));
+        Assert.Equal(new[] { "0.4", "1", "0.4" }, await OpacitiesAsync(page, Lines));
+        Assert.Equal(new[] { "0.4", "1", "0.4" }, await OpacitiesAsync(page, Legends));
         var marker = await page.Locator(Point(1, 3) + " > .cfx-prepared-point-marker").EvaluateAsync<string[]>("node => { const s = getComputedStyle(node); return [s.opacity, s.r, s.strokeWidth]; }");
-        Assert.Equal(new[] { "1", "4px", "2px" }, marker);
+        Assert.Equal(new[] { "1", "4.5px", "2px" }, marker);
         Assert.StartsWith("Thu", await TooltipTextAsync(page), StringComparison.Ordinal);
 
         // Between the Passed and Warnings lines at Thursday: the shared readout keeps every series at full strength.

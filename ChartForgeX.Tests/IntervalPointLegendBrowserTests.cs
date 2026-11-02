@@ -41,24 +41,27 @@ public sealed class IntervalPointLegendBrowserTests {
             ? new[] { "Kategoria", "Express", "Minimum", "0", "Dolny kwartyl", "10", "Mediana", "15", "Górny kwartyl", "25", "Maksimum", "35" }
             : new[] { "Kategoria", "Express", "Początek", "30", "Koniec", "0" };
         var legend = "[data-cfx-role='legend-item'][data-cfx-point='0']";
+        var heading = seriesName + ": Express";
         await MoveToAsync(page, legend);
-        Assert.Equal("Express", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(expected, await RowsAsync(page));
         await CaptureAsync("legend");
         await FocusWithKeyboardAsync(page, page.Locator(legend));
+        Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(expected, await RowsAsync(page));
 
         await MoveToAsync(page, Point(0, 0) + (boxPlot ? " [data-cfx-role='boxplot-body']" : " [data-cfx-role='range-bar']"));
-        var heading = seriesName + ": Express";
         Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(new[] { "Series", seriesName }.Concat(expected), await RowsAsync(page));
+        Assert.Equal(expected, await RowsAsync(page));
         await CaptureAsync("mark");
         await FocusWithKeyboardAsync(page, page.Locator(Point(0, 0)));
         Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(new[] { "Series", seriesName }.Concat(expected), await RowsAsync(page));
+        Assert.Equal(expected, await RowsAsync(page));
         await FocusWithKeyboardAsync(page, page.Locator(Point(0, 1)));
         Assert.Equal(seriesName + ": Promised observation", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(seriesName, (await RowsAsync(page))[1]);
+        Assert.Equal(boxPlot
+            ? new[] { "Kategoria", "Standard", "Minimum", "2", "Dolny kwartyl", "6", "Mediana", "9", "Górny kwartyl", "11", "Maksimum", "15" }
+            : new[] { "Kategoria", "Standard", "Początek", "10", "Koniec", "35" }, await RowsAsync(page));
         await CaptureAsync("keyboard-custom");
         Assert.Empty(pageErrors); AssertNoConsoleErrors(session);
 
@@ -120,8 +123,11 @@ public sealed class IntervalPointLegendBrowserTests {
         Assert.Equal(10.02, double.Parse((await point.GetAttributeAsync("data-cfx-y-lower"))!, System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal(20.04, double.Parse((await point.GetAttributeAsync("data-cfx-y-upper"))!, System.Globalization.CultureInfo.InvariantCulture));
         await page.Locator(legend ? "[data-cfx-role='legend-item'][data-cfx-point='0']" : Point(0, 0)).FocusAsync();
+        Assert.Equal("Express", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.True(await page.Locator(".cfx-tooltip__secondary").IsVisibleAsync());
+        Assert.Equal("Uncertainty", await page.Locator(".cfx-tooltip__secondary").InnerTextAsync());
         Assert.Equal(legend ? new[] { "Category", "Express", "Value", "Observed 15", "Y lower", "", "Y upper", "" }
-            : new[] { "Series", "Uncertainty", "X", "Express", "Value", "Observed 15", "Y range", "" }, await RowsAsync(page));
+            : new[] { "Value", "Observed 15", "Y range", "" }, await RowsAsync(page));
         AssertNoConsoleErrors(session);
     }
 

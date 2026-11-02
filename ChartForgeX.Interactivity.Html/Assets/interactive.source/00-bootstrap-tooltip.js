@@ -75,7 +75,7 @@
     .join(' ');
   const metadataRows = (node) => Array.from(node.attributes || [])
     .filter((attribute) => attribute.name.toLowerCase().indexOf('data-cfx-meta-') === 0 && attribute.value !== '')
-    .map((attribute) => ({ name: metaLabel(attribute.name), value: attribute.value }));
+    .map((attribute) => ({ name: metaLabel(attribute.name), value: attribute.value, authored: true, secondary: true }));
   const rowName = (node, key, fallback) => {
     const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
     return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
@@ -99,10 +99,17 @@
   const financialTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!['candlestick', 'ohlc'].includes((data.cfxKind || '').toLowerCase())) return null;
-    return ['Open', 'High', 'Low', 'Close'].filter((part) => {
+    const rows = ['Open', 'High', 'Low', 'Close'].filter((part) => {
       const value = data['cfx' + part];
       return value !== undefined && value !== null && value !== '';
-    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: numericFactText(data, part) }));
+    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: tooltipValueText(node, part) }));
+    if (tooltipNumber(data.cfxOpen) && tooltipNumber(data.cfxClose)) {
+      const change = Number(data.cfxClose) - Number(data.cfxOpen), direction = change < 0 ? 'negative' : change > 0 ? 'positive' : 'neutral';
+      if (Number.isFinite(change)) rows.push({ name: rowName(node, 'change', 'Change'), value: (change > 0 ? '+' : '') + tooltipNumberText(node, change), direction });
+      const ratio = Number(data.cfxOpen) === 0 ? NaN : change / Math.abs(Number(data.cfxOpen));
+      if (Number.isFinite(ratio)) rows.push({ name: rowName(node, 'change-percent', 'Change (%)'), value: (ratio > 0 ? '+' : '') + percentText(ratio), direction });
+    }
+    return rows;
   };
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
@@ -202,7 +209,7 @@
     if (differenceRows) {
       pushX();
       rows.push(...differenceRows);
-      metadataRows(node).forEach((row) => push(row.name, row.value));
+      rows.push(...metadataRows(node));
       return rows;
     }
     if (data.cfxWaterfallKind) push('Category', categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX));
@@ -234,50 +241,20 @@
       rows.push({ name: 'Range', value: lower === '' && upper === '' ? '' : lower + ' - ' + upper });
     }
     rows.push(...errorBarTooltipRows(node));
-    metadataRows(node).forEach((row) => push(row.name, row.value));
+    rows.push(...metadataRows(node));
     return rows;
   };
   const renderTip = (tip, node) => {
-    if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
+    if ((node.dataset || {}).cfxRole === 'legend-item')
+      return renderTooltipContent(tip, text(node, true), legendSummaryRows(node), node);
     const root = node.closest && node.closest('.cfx-interactive-chart');
-    if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
-    const label = text(node, true);
+    const shared = root && (root.dataset.cfxTooltipMode === 'shared-x'
+      || root.dataset.cfxTooltipMode === 'auto' && automaticSharedKinds.has((node.dataset.cfxKind || '').toLowerCase()));
+    if (shared && renderSharedXTip(tip, node, root)) return true;
+    const label = tooltipHeading(node);
 
     if (label === undefined || label === null) return false;
-    tip.replaceChildren();
-    const title = document.createElement('div');
-    title.className = 'cfx-tooltip__title';
-    title.textContent = label;
-    const colour = paintColour(node);
-    if (colour) {
-      const swatch = document.createElement('span');
-      swatch.className = 'cfx-tooltip__swatch'; swatch.style.backgroundColor = colour;
-      swatch.setAttribute('aria-hidden', 'true'); title.prepend(swatch);
-      title.classList.add('cfx-tooltip__title--series');
-    }
-    tip.appendChild(title);
-    const secondary = (node.dataset || {}).cfxSecondaryLabel;
-    if (secondary) {
-      const caption = document.createElement('div');
-      caption.className = 'cfx-tooltip__secondary';
-      caption.textContent = secondary;
-      tip.appendChild(caption);
-    }
-    const rows = tooltipRows(node);
-    if (rows.length) {
-      const list = document.createElement('dl');
-      list.className = 'cfx-tooltip__meta';
-      rows.forEach((row) => {
-        const term = document.createElement('dt');
-        term.textContent = row.name;
-        const value = document.createElement('dd');
-        value.textContent = row.value;
-        list.appendChild(term);
-        list.appendChild(value);
-      });
-      tip.appendChild(list);
-    }
-    return true;
+    return renderTooltipContent(tip, label, tooltipDomainRows(node, tooltipRows(node)), node);
   };
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips') || root.dataset.cfxTooltipPinned === 'true') { cancelTooltipRequest(root); return; }
@@ -298,26 +275,31 @@
   };
   const targetKey = (target) => target?.annotationId !== undefined ? JSON.stringify(['annotation', target.annotationId])
     : target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
-  const compareItems = (root) => {
-    const items = [];
+  const selectedTargetEntries = (root) => {
     const seen = new Set();
-    dataTargets(root).filter(node => node.classList.contains('cfx-selected')).forEach((node) => {
+    return dataTargets(root).filter(node => node.classList.contains('cfx-selected')).flatMap(node => {
       const target = targetIdentity(node);
       const key = targetKey(target);
-      if (!key || seen.has(key)) return;
+      if (!key || seen.has(key)) return [];
       seen.add(key);
+      return [{ node, target }];
+    });
+  };
+  const compareItems = root => selectedTargetEntries(root).map(({ node, target }) => {
       const data = node.dataset || {};
       let label = target.targetKind === 'annotation'
         ? target.label || target.role || target.id || 'Target'
         : data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
-          ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+          ?? data.cfxFormattedX ?? data.cfxDisplayLabel ?? tooltipValueText(node, 'X') ?? seriesLabel(node);
       const series = seriesLabel(node);
-      if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
-      items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
-    });
-    return items;
-  };
-  const selectedTargets = (root) => compareItems(root).map((item) => item.target);
+      const path = tooltipHierarchy(node)?.path;
+      if (path) label = path;
+      const value = tooltipValueText(node);
+      if (target.targetKind !== 'annotation' && data.cfxAuthoredLabel !== '') label = [series, label !== series ? label : undefined, value]
+        .filter(part => part !== undefined && part !== null && part !== '').join(' · ');
+      return { label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target };
+  });
+  const selectedTargets = root => selectedTargetEntries(root).map(item => item.target);
   const publishCompare = (root, sync) => {
     const items = renderCompare(root);
     if (!hasFeature(root, 'CompareMarkers')) return items;
@@ -335,6 +317,10 @@
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
     const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
     if (restoreKeyboardReadout && focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
+      if (renderedTargetKind(focused) === 'legend' && (focused.dataset.cfxMuted === 'true'
+        || root.dataset.cfxIsolatedSeries && focused.dataset.cfxIsolated !== 'true')) {
+        clearHover(root, true, true); showTip(root, tip, focused); return;
+      }
       if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
       showTip(root, tip, focused);
       return;
@@ -342,6 +328,7 @@
     forgetTooltipPosition(tip);
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
+    tip.removeAttribute('aria-description');
     root.removeAttribute('data-cfx-tooltip-pinned');
     root.removeAttribute('data-cfx-pinned-target');
   };
@@ -359,6 +346,19 @@
     }
     tip.hidden = false;
     tip.classList.add('cfx-tooltip--pinned');
+    tip.setAttribute('aria-description', uiText(root, 'Pinned', 'Pinned'));
+    const close = document.createElement('button');
+    close.type = 'button'; close.className = 'cfx-tooltip__close';
+    close.setAttribute('aria-label', uiText(root, 'Close', 'Close tooltip')); close.textContent = '×';
+    close.addEventListener('pointerdown', event => event.stopPropagation());
+    close.addEventListener('click', event => {
+      event.stopPropagation();
+      const recovering = root._cfxRecoveringFocus === true;
+      root._cfxRecoveringFocus = true;
+      try { targetFocusNode(node)?.focus?.({ preventScroll: true }); } finally { if (!recovering) delete root._cfxRecoveringFocus; }
+      unpinTooltip(root);
+    });
+    tip.appendChild(close);
     root.dataset.cfxTooltipPinned = 'true';
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);

@@ -21,6 +21,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.DelayMilliseconds = 180;
             options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }), 950, 760);
         var page = session.Page;
         // Stay in plot background so acquisition switches without a native mark's pointerleave hide path.
@@ -154,8 +155,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.SetViewportSizeAsync(520, 650);
         await Task.Delay(100);
         var resized = await AssertPositionAsync(page, anchor, placements);
-        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root=>root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:{viewport:{zoom:1.25,panX:10,panY:-8}}}}))");
-        await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-interactive-chart').dataset.cfxZoom==='1.250'");
+        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root=>ChartForgeXCharts.get(root).setViewport({x:{minimum:2,maximum:8},y:{minimum:2,maximum:8}})");
+        await page.WaitForFunctionAsync("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getXWindow().minimum===2");
         await Task.Delay(220);
         var zoomed = await AssertPositionAsync(page, anchor, placements);
         Assert.True(zoomed.GetProperty("pinned").GetBoolean());
@@ -216,6 +217,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Range = HtmlChartTooltipRange.Exact;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }), 950, 760);
         var page = session.Page;
         const string series = "[data-cfx-role=series][data-cfx-series=\"0\"]";
@@ -234,7 +236,10 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddScatter("Median processing duration for exported jobs", new[] { new ChartPoint(3, 5), new ChartPoint(9.5, 5) });
-        var fragment = chart.ToInteractiveHtmlFragment(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
+        var fragment = chart.ToInteractiveHtmlFragment(options => {
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
+        });
         await using var session = await OpenAsync("<html><body style='margin:0'><div style='width:650px;transform:translate(80px,70px) scale(.8);transform-origin:0 0'>" + fragment + "</div></body></html>", 950, 760);
         var page = session.Page;
         await PointerAsync(page);
@@ -256,11 +261,13 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await using var session = await OpenAsync("<html><body></body></html>", 950, 980);
         var page = session.Page;
         await InstallListenerProbeAsync(page);
+        var unmounted = await ListenerStateAsync(page);
         await page.SetContentAsync(new[] { Observations(false), Observations(true) }.ToInteractiveHtmlDashboardPage(options => {
             options.IncludeResetButton = false;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
         }));
+        var mounted = await ListenerStateAsync(page);
         await page.EvaluateAsync("""
             () => document.querySelectorAll('.cfx-interactive-chart').forEach(root=>{
                 const node=root.querySelector('[data-cfx-role=point][data-cfx-point="0"]'), b=node.getBoundingClientRect();
@@ -269,19 +276,25 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             """);
         await page.WaitForFunctionAsync("()=>Array.from(document.querySelectorAll('.cfx-tooltip')).every(tip=>!tip.hidden)");
         var both = await ListenerStateAsync(page);
-        Assert.Equal(1, both.GetProperty("resize").GetInt32());
-        Assert.Equal(1, both.GetProperty("scroll").GetInt32());
-        Assert.Equal(2, both.GetProperty("observed").GetInt32());
+        foreach (var name in new[] { "resize", "scroll", "transitionend", "observed" })
+            Assert.Equal(mounted.GetProperty(name).GetInt32() + (name == "observed" ? 2 : 1), both.GetProperty(name).GetInt32());
+        // Identical chart options give each chart half of the mounted layout resources.
+        var remainingExpected = JsonSerializer.SerializeToElement(new[] { "resize", "scroll", "transitionend", "observed" }.ToDictionary(name => name, name => {
+            var beforeMount = unmounted.GetProperty(name).GetInt32();
+            var chartResources = mounted.GetProperty(name).GetInt32() - beforeMount;
+            Assert.Equal(0, chartResources % 2);
+            return beforeMount + chartResources / 2 + 1;
+        }));
         await page.Locator(".cfx-interactive-chart").First.EvaluateAsync("root=>root.remove()");
-        await page.WaitForFunctionAsync("()=>Array.from(window.positionObserved.values()).reduce((n,s)=>n+s.size,0)===1");
+        await WaitForListenerStateAsync(page, remainingExpected);
         var one = await ListenerStateAsync(page);
-        Assert.Equal(1, one.GetProperty("resize").GetInt32());
+        AssertPositionWatchersReleased(remainingExpected, one);
         Assert.False(await TipHiddenAsync(page));
         await page.Locator(".cfx-interactive-chart").EvaluateAsync("root=>root.remove()");
-        await page.WaitForFunctionAsync("()=>window.positionListeners.resize.size===0");
+        await WaitForListenerStateAsync(page, unmounted);
         var closed = await ListenerStateAsync(page);
-        Assert.Equal(0, closed.GetProperty("observed").GetInt32());
-        await CaptureAsync(page, "position-dashboard-lifetime", new { both, one, closed });
+        AssertPositionWatchersReleased(unmounted, closed);
+        await CaptureAsync(page, "position-dashboard-lifetime", new { unmounted, mounted, both, one, closed });
         AssertNoConsoleErrors(session);
     }
 
@@ -305,16 +318,18 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await using var session = await OpenAsync("<html><body></body></html>", 950, 760);
         var page = session.Page;
         await InstallListenerProbeAsync(page);
+        var unmounted = await ListenerStateAsync(page);
         await page.SetContentAsync(Observations(false).ToInteractiveHtmlPage(options => {
             options.IncludeResetButton = false;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
         }));
+        var mounted = await ListenerStateAsync(page);
         await PointerAsync(page);
-        await page.WaitForFunctionAsync("()=>window.positionListeners.resize.size===1");
+        await page.WaitForFunctionAsync("expected=>window.positionListeners.resize.size===expected", mounted.GetProperty("resize").GetInt32() + 1);
         var active = await ListenerStateAsync(page);
-        Assert.Equal(1, active.GetProperty("scroll").GetInt32());
-        Assert.Equal(1, active.GetProperty("transitionend").GetInt32());
+        foreach (var name in new[] { "resize", "scroll", "transitionend", "observed" })
+            Assert.Equal(mounted.GetProperty(name).GetInt32() + 1, active.GetProperty(name).GetInt32());
         if (change == "leave") await MoveAwayAsync(page);
         else await page.EvaluateAsync("""
             change => {
@@ -324,10 +339,11 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 else if(change==='root-hidden') root.hidden=true; else root.querySelector('.cfx-tooltip').hidden=true;
             }
             """, change);
-        await page.WaitForFunctionAsync("()=>window.positionListeners.resize.size===0&&window.positionListeners.scroll.size===0&&window.positionListeners.transitionend.size===0");
+        var expected = change == "root-removed" ? unmounted : mounted;
+        await WaitForListenerStateAsync(page, expected);
         var released = await ListenerStateAsync(page);
-        Assert.Equal(0, released.GetProperty("observed").GetInt32());
-        await CaptureAsync(page, "position-lifetime-" + change, new { active, released });
+        AssertPositionWatchersReleased(expected, released);
+        await CaptureAsync(page, "position-lifetime-" + change, new { unmounted, mounted, active, released });
         AssertNoConsoleErrors(session);
     }
 
@@ -348,6 +364,13 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             };
         }
         """);
+
+    private static Task WaitForListenerStateAsync(IPage page, JsonElement expected) => page.WaitForFunctionAsync("""
+        expected => window.positionListeners.resize.size===expected.resize
+            && window.positionListeners.scroll.size===expected.scroll
+            && window.positionListeners.transitionend.size===expected.transitionend
+            && Array.from(window.positionObserved.values()).reduce((sum,targets)=>sum+targets.size,0)===expected.observed
+        """, new[] { "resize", "scroll", "transitionend", "observed" }.ToDictionary(name => name, name => expected.GetProperty(name).GetInt32()));
 
     private static Task<JsonElement> ListenerStateAsync(IPage page) => page.EvaluateAsync<JsonElement>("() => ({resize:window.positionListeners.resize.size,scroll:window.positionListeners.scroll.size,transitionend:window.positionListeners.transitionend.size,observed:Array.from(window.positionObserved.values()).reduce((sum,targets)=>sum+targets.size,0)})");
 }

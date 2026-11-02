@@ -1,7 +1,20 @@
-/* ChartForgeX enhance runtime: pointer and legend affordances for enhanced SVG. States live in cfx-states.css. */
-svg[data-cfx-enhance] [data-cfx-mark],svg[data-cfx-enhance] [role="button"]{cursor:pointer;outline:none}
-svg[data-cfx-brush]{touch-action:pan-y}
-svg[data-cfx-enhance]:focus:not(:focus-visible){outline:none}
-svg[data-cfx-crosshair] [data-cfx-mark]{cursor:crosshair}
-.cfx-e-legend-off{opacity:.45}
-.cfx-e-legend-off text{text-decoration:line-through}
+/* Enhancer hit geometry stays in the runtime; CSS paints its accessible states. */
+svg[data-cfx-enhance] [data-cfx-mark], svg[data-cfx-enhance] [role="button"] { cursor: pointer; outline: none; }
+svg[data-cfx-brush] { touch-action: pan-y; }
+svg[data-cfx-enhance]:focus:not(:focus-visible) { outline: none; }
+svg[data-cfx-crosshair] [data-cfx-mark] { cursor: crosshair; }
+svg[data-cfx-enhance] [role="button"]:focus-visible {
+  outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: 2px;
+}
+.cfx-e-legend-off { opacity: 1; }
+.cfx-e-legend-off :is(text, [data-cfx-role="legend-label"]) { opacity: .45; text-decoration: none; }
+.cfx-e-legend-off :is([data-cfx-role="legend-swatch"], [data-cfx-role="legend-symbol"], [data-cfx-role="legend-marker"]) {
+  fill: none; stroke: var(--cfx-series-color, var(--cfx-e-muted)); stroke-width: 1.5px; vector-effect: non-scaling-stroke;
+}
+svg[data-cfx-enhance] :is([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i]) :is(.cfx-e-faded, .cfx-e-dim) { opacity: 1; }
+svg[data-cfx-enhance] :is([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i]) .cfx-e-hover :is(rect, path, polygon) {
+  stroke: var(--cfx-e-focus); stroke-width: 2px; vector-effect: non-scaling-stroke;
+}
+
+svg[data-cfx-enhance] :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) :is(.cfx-e-faded, .cfx-e-dim) { opacity: 1; }
+svg[data-cfx-enhance] :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) .cfx-e-hover :is(rect, path, polygon) { stroke: var(--cfx-e-focus); stroke-width: 2px; vector-effect: non-scaling-stroke; }

@@ -73,7 +73,7 @@ public sealed class InteractiveChartLocalizationBrowserTests {
         await page.Locator("g[data-cfx-observation-id=north]").FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator("g[data-cfx-observation-id=north]").GetAttributeAsync("aria-selected"));
         Assert.True(await page.Locator("g[data-cfx-observation-id=north]").EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"));
-        Assert.Contains("مثبت", await page.Locator(".cfx-tooltip").EvaluateAsync<string>("node=>getComputedStyle(node,'::before').content"));
+        Assert.Equal("مثبت", await page.Locator(".cfx-tooltip").GetAttributeAsync("aria-description"));
         Assert.Contains("مقارنة 1", await page.Locator("[data-cfx-compare-tray]").InnerTextAsync());
         Assert.Contains("مسح <اختبار>", await page.Locator("[data-cfx-compare-tray]").InnerTextAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-compare-tray] اختبار").CountAsync());

@@ -103,6 +103,7 @@ public sealed class SvgHostProjectionBrowserTests {
                 return [plot.left+plot.width*.3,plot.top+plot.height*.4,plot.left+plot.width*.7,plot.top+plot.height*.6];
             }
             """);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync(positions[0], positions[1]);
         await page.Mouse.DownAsync();
@@ -124,6 +125,7 @@ public sealed class SvgHostProjectionBrowserTests {
                 controller.connectXViewport(request=>{projectionViewport.push(request);return new Promise(()=>{})});
             }
             """);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         await page.Mouse.MoveAsync(positions[0], positions[1]);
         await page.Mouse.WheelAsync(0, -100);

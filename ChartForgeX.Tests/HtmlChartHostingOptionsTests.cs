@@ -36,7 +36,7 @@ public sealed class HtmlChartHostingOptionsTests {
     public void ExistingHostingDefaultsRetainSingleDrawingAndOptInPoliciesAreRendered() {
         var defaults = new HtmlChartInteractionOptions();
         Assert.True(defaults.Tooltip.PinOnSelect);
-        Assert.Equal(HtmlChartToolbarLayout.Band, defaults.Toolbar);
+        Assert.Equal(HtmlChartToolbarLayout.Compact, defaults.Toolbar);
         Assert.Equal(HtmlChartResponsiveLayout.Readable, defaults.ResponsiveLayout);
         var chart = Chart.Create().AddLine("Measurements", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         var renderer = new HtmlInteractiveChartRenderer();

@@ -30,11 +30,13 @@ public sealed class PolarNavigationBrowserTests {
         Assert.Equal(1.3 / 1.08, await page.EvaluateAsync<double>("()=>{const a=polar.getPolarViewport().angle;return a.maximum-a.minimum}"), 8);
         Assert.Equal(source, await Source(page)); Assert.Equal(svg, await page.Locator(".cfx-stage svg").GetAttributeAsync("viewBox"));
         Assert.True(await page.EvaluateAsync<bool>("()=>Number(polar.root.dataset.cfxZoom)===1&&Number(polar.root.dataset.cfxPanX)===0&&Number(polar.root.dataset.cfxPanY)===0"));
+        await RevealToolbar(page);
         var zoom = page.Locator("button[data-cfx-zoom=in]"); await zoom.FocusAsync(); await page.Keyboard.PressAsync("Enter");
         await Pending(page, 2); var accepted = await Resolve(page, 1); await Changed(page, 2);
         Assert.Equal("zoom", await page.EvaluateAsync<string>("()=>requests[1].request.kind"));
         Assert.Equal(1.25, await page.EvaluateAsync<double>("()=>requests[1].request.factor"));
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>requests[0].request.basis"));
+        await RevealToolbar(page);
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The native polar SVG did not download.");
         var native = host.Snapshot(accepted, width < 700); var exported = XDocument.Load(path); var nativeSvg = XDocument.Parse(native.ToSvg());
@@ -53,7 +55,8 @@ public sealed class PolarNavigationBrowserTests {
         if (!Enabled) return;
         var host = new Host(false, reversed, seam: true); await using var session = await BrowserProofFonts.OpenAsync(host.Page, 900, 800);
         var page = session.Page; await Connect(page, host, "['angle']");
-        var before = await page.EvaluateAsync<string>("()=>polar.sceneRevision"); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
+        var before = await page.EvaluateAsync<string>("()=>polar.sceneRevision");
+        await RevealToolbar(page); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         var first = await ScreenBearing(page, 170 * Math.PI / 180, .8); var last = await ScreenBearing(page, 190 * Math.PI / 180, .8);
         await page.Mouse.MoveAsync(first.X, first.Y); await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync(last.X, last.Y, new MouseMoveOptions { Steps = 8 });
@@ -112,7 +115,7 @@ public sealed class PolarNavigationBrowserTests {
         if (!Enabled) return;
         var host = new Host(width == 390); await using var session = await BrowserProofFonts.OpenAsync(host.Page, width, 800);
         var page = session.Page; await Connect(page, host, "['radius','secondaryRadius']");
-        await page.Locator("[data-cfx-mode-button=pan]").ClickAsync(); var source = await Source(page);
+        await RevealToolbar(page); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync(); var source = await Source(page);
         var first = await Point(page, 6.1, .75); var last = await Point(page, 6.1, .85);
         await page.Mouse.MoveAsync(first.X, first.Y); await page.Mouse.DownAsync(); await page.Mouse.MoveAsync(last.X, last.Y, new MouseMoveOptions { Steps = 4 });
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>requests.length"));
@@ -131,7 +134,8 @@ public sealed class PolarNavigationBrowserTests {
     public async Task PointerCancelNeverManufacturesAPanRequest() {
         if (!Enabled) return;
         var host = new Host(false); await using var session = await BrowserProofFonts.OpenAsync(host.Page, 900, 800);
-        var page = session.Page; await Connect(page, host); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
+        var page = session.Page; await Connect(page, host);
+        await RevealToolbar(page); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         var first = await Point(page, 6.1, .8); await page.EvaluateAsync("()=>polar.root.querySelector('.cfx-stage').addEventListener('pointerdown',event=>window.gesturePointerId=event.pointerId,{once:true})"); await page.Mouse.MoveAsync(first.X, first.Y); await page.Mouse.DownAsync();
         await page.EvaluateAsync("()=>{const stage=polar.root.querySelector('.cfx-stage');stage.dispatchEvent(new PointerEvent('pointercancel',{pointerId:gesturePointerId,pointerType:'mouse',bubbles:true}));}");
         await page.Mouse.UpAsync();
@@ -144,7 +148,7 @@ public sealed class PolarNavigationBrowserTests {
         var host = new Host(false); await using var session = await BrowserProofFonts.OpenAsync(host.Page, 900, 800);
         var page = session.Page; await Connect(page, host); var revision = await page.EvaluateAsync<string>("()=>polar.sceneRevision");
         await page.EvaluateAsync("()=>polar.connectPolarViewport(async request=>(await preparePolarHost({...request,basis:'initial'})).html,{axes:['angle'],gestures:true})");
-        await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Changed(page, 1);
+        await RevealToolbar(page); await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Changed(page, 1);
         Assert.NotEqual(revision, await page.EvaluateAsync<string>("()=>polar.sceneRevision"));
         Assert.Equal(1.3 / 1.25, await page.EvaluateAsync<double>("()=>{const a=polar.getPolarViewport().angle;return a.maximum-a.minimum}"), 8);
         Assert.Equal(20, await page.EvaluateAsync<double>("()=>polar.getPolarViewport().radius.minimum")); AssertNoConsoleErrors(session);
@@ -164,9 +168,9 @@ public sealed class PolarNavigationBrowserTests {
         Assert.False(await WheelEvent(page, hit, ctrl: true)); Assert.False(await WheelEvent(page, hit, delta: 0));
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>requests.length"));
         Assert.Equal("auto", await page.Locator(".cfx-stage").EvaluateAsync<string>("node=>getComputedStyle(node).touchAction"));
-        await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
+        await RevealToolbar(page); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         Assert.Equal("none", await page.Locator(".cfx-stage").EvaluateAsync<string>("node=>getComputedStyle(node).touchAction"));
-        await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
+        await RevealToolbar(page); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         Assert.Equal("auto", await page.Locator(".cfx-stage").EvaluateAsync<string>("node=>getComputedStyle(node).touchAction"));
         AssertNoConsoleErrors(session);
     }
@@ -183,15 +187,15 @@ public sealed class PolarNavigationBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("()=>requests[0].signal.aborted"));
         await page.EvaluateAsync("()=>requests[0].resolve(cancelledReply)"); await Flush(page);
         Assert.Equal(revision, await page.EvaluateAsync<string>("()=>polar.sceneRevision")); Assert.Equal(0, await page.EvaluateAsync<int>("()=>changes.length"));
-        await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
+        await RevealToolbar(page); await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         await page.Mouse.MoveAsync(hit.X, hit.Y); await page.Mouse.DownAsync(); await page.Mouse.MoveAsync(hit.X + 10, hit.Y + 3);
         await page.Keyboard.PressAsync("Escape"); await page.Mouse.UpAsync();
         await Capture(page, "polar-escape-before-request-count-assertion-" + width);
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>requests.length"));
-        await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 2);
+        await RevealToolbar(page); await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 2);
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>requests[1].request.basis"));
         await Resolve(page, 1); await Changed(page, 1);
-        await page.Locator("[data-cfx-reset]").ClickAsync(); await Pending(page, 3); await Resolve(page, 2); await Changed(page, 2);
+        await RevealToolbar(page); await page.Locator("[data-cfx-reset]").ClickAsync(); await Pending(page, 3); await Resolve(page, 2); await Changed(page, 2);
         Assert.Equal(0, await page.EvaluateAsync<double>("()=>polar.getPolarViewport().radius.innerRadius"));
         Assert.Equal(Math.PI * 2, await page.EvaluateAsync<double>("()=>polar.getPolarViewport().angle.maximum"));
         await Capture(page, "polar-gesture-cancel-reset-" + width); AssertNoConsoleErrors(session);
@@ -207,7 +211,7 @@ public sealed class PolarNavigationBrowserTests {
         var host = new Host(false); await using var session = await BrowserProofFonts.OpenAsync(host.Page, width, 800);
         var page = session.Page; await Connect(page, host, "['angle']");
         var revision = await page.EvaluateAsync<string>("()=>polar.sceneRevision"); var source = await Source(page);
-        await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 1);
+        await RevealToolbar(page); await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 1);
         await page.EvaluateAsync("""
             async mutation=>{
                 const request=requests[0].request,reply=await preparePolarHost(request),template=document.createElement('template');
@@ -229,11 +233,13 @@ public sealed class PolarNavigationBrowserTests {
             """, mutation);
         await page.WaitForFunctionAsync("()=>errors.length===1"); Assert.Equal(revision, await page.EvaluateAsync<string>("()=>polar.sceneRevision"));
         Assert.Equal(source, await Source(page)); Assert.Equal(0, await page.EvaluateAsync<int>("()=>changes.length"));
-        await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 2);
+        await RevealToolbar(page); await page.Locator("button[data-cfx-zoom=in]").ClickAsync(); await Pending(page, 2);
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>requests[1].request.basis"));
         await Resolve(page, 1); await Changed(page, 1); await Capture(page, "polar-gesture-reject-" + mutation + "-" + width);
         AssertNoConsoleErrors(session);
     }
+
+    private static Task RevealToolbar(IPage page) => page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
 
     private static async Task Connect(IPage page, Host host, string axes = "['angle','radius','secondaryRadius']", bool gestures = true) {
         if (!await page.EvaluateAsync<bool>("()=>typeof preparePolarHost==='function'"))

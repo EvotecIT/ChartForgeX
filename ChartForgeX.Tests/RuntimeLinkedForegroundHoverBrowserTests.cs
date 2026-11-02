@@ -39,7 +39,7 @@ public sealed class RuntimeLinkedForegroundHoverBrowserTests {
                 window.foregroundRoot=document.querySelector('.cfx-interactive-chart');
                 window.foregroundController=ChartForgeXCharts.get(foregroundRoot);
                 window.foregroundTargets=['a','b','c'].map(id=>foregroundController.resolveTargets({observationIds:[id]})[0]);
-                window.foregroundPaint=foregroundRoot.querySelector('[data-cfx-point="1"]')
+                window.foregroundPaint=foregroundRoot.querySelector('.cfx-stage [data-cfx-target-kind="point"]:not([data-cfx-role="legend-native"]):not([data-cfx-role="legend-item"])[data-cfx-point="1"]')
                     .querySelector('[data-cfx-role="bar"],[data-cfx-role="donut-slice"],[data-cfx-role="pie-slice"]');
             }
             """);
@@ -78,21 +78,27 @@ public sealed class RuntimeLinkedForegroundHoverBrowserTests {
         return kind == ChartSeriesKind.Bar ? chart.WithBarStyle(ChartBarStyle.Flat) : chart;
     }
 
-    private static string Mark(int index) => "[data-cfx-target-kind='point'][data-cfx-series='0'][data-cfx-point='" + index + "']";
-    private static Task<string[]> Opacities(IPage page) => page.EvaluateAsync<string[]>("""
+    private static string Mark(int index) => ".cfx-stage [data-cfx-target-kind='point']:not([data-cfx-role='legend-native']):not([data-cfx-role='legend-item'])[data-cfx-series='0'][data-cfx-point='" + index + "']";
+    private static async Task<string[]> Opacities(IPage page) {
+        await SettlePresentationAsync(page);
+        return await page.EvaluateAsync<string[]>("""
         () => [0,1,2].map(index=>getComputedStyle(foregroundRoot.querySelector(
-            '[data-cfx-target-kind="point"][data-cfx-series="0"][data-cfx-point="'+index+'"]')).opacity)
+            '.cfx-stage [data-cfx-target-kind="point"]:not([data-cfx-role="legend-native"]):not([data-cfx-role="legend-item"])[data-cfx-series="0"][data-cfx-point="'+index+'"]')).opacity)
         """);
+    }
     private static Task<string[]> NativePaint(IPage page) => page.EvaluateAsync<string[]>(
         "()=>[foregroundPaint.getAttribute('fill'),getComputedStyle(foregroundPaint).fill]");
-    private static Task<JsonElement> State(IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> State(IPage page) {
+        await SettlePresentationAsync(page);
+        return await page.EvaluateAsync<JsonElement>("""
         () => ({selection:foregroundController.getSelection().map(target=>target.targetId),
             highlights:[...foregroundRoot.querySelectorAll('[data-cfx-highlighted=true]')].map(node=>node.dataset.cfxTargetId),
-            marks:[0,1,2].map(index=>{const node=foregroundRoot.querySelector('[data-cfx-target-kind="point"][data-cfx-series="0"][data-cfx-point="'+index+'"]');
+            marks:[0,1,2].map(index=>{const node=foregroundRoot.querySelector('.cfx-stage [data-cfx-target-kind="point"]:not([data-cfx-role="legend-native"]):not([data-cfx-role="legend-item"])[data-cfx-series="0"][data-cfx-point="'+index+'"]');
                 return{id:foregroundTargets[index].targetId,opacity:getComputedStyle(node).opacity,authoredOpacity:node.getAttribute('opacity'),classes:node.getAttribute('class')};}),
             nativePaint:{fill:foregroundPaint.getAttribute('fill'),computedFill:getComputedStyle(foregroundPaint).fill},
             hoverMode:foregroundRoot.dataset.cfxHoverMode,hoverUnit:foregroundRoot.dataset.cfxHoverUnit})
         """);
+    }
 
     private static async Task Capture(HtmlBrowserSession session, ChartSeriesKind kind, bool graphite, bool dark, int width,
         string phase, JsonElement state, List<string> pageErrors) {

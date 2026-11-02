@@ -45,12 +45,14 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         Assert.Equal("52", await reading.GetAttributeAsync(typed ? "data-cfx-start" : "data-cfx-y"));
         if (typed) { Assert.Equal("60", await reading.GetAttributeAsync("data-cfx-end")); Assert.Equal("reading-5", await reading.GetAttributeAsync("data-cfx-observation-id")); }
         Assert.True(await page.EvaluateAsync<bool>("() => [...managed.root.querySelectorAll('[data-cfx-export]')].every(button=>!button.disabled)"));
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         var svg = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svgPath = await svg.PathAsync() ?? throw new InvalidOperationException("The accepted native SVG did not download.");
         var exported = XDocument.Load(svgPath);
         Assert.Single(exported.Descendants(), node => (string?)node.Attribute("data-cfx-annotation-id") == "note");
         Assert.Contains(exported.Descendants(), node => (string?)node.Attribute("data-cfx-source-point") == "5"
             && (string?)node.Attribute(typed ? "data-cfx-start" : "data-cfx-y") == "52");
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         var png = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());
         var pngPath = await png.PathAsync() ?? throw new InvalidOperationException("The accepted native PNG did not download.");
         var decoded = PngReader.Decode(await File.ReadAllBytesAsync(pngPath)); Assert.True(decoded.Width > 0 && decoded.Height > 0);

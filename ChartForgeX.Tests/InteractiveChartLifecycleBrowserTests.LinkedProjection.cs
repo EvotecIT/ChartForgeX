@@ -215,6 +215,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     private static async Task<JsonElement> NativeProjectionBrushAsync(IPage page) {
+        await page.Locator(Root).First.HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var positions = await page.Locator(Root).EvaluateAsync<double[]>("""
             root=>{window.projectionBrush=null;root.addEventListener('cfxbrush',event=>window.projectionBrush=event.detail,{once:true});
                 const p=JSON.parse(root.dataset.cfxPreparedChart).dataProjection.plotBounds,m=root.querySelector('.cfx-stage svg').getScreenCTM();

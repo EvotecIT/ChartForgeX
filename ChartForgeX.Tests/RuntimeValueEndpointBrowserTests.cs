@@ -31,6 +31,7 @@ public sealed class RuntimeValueEndpointBrowserTests {
             Assert.NotEmpty(ticks);
             Assert.All(ticks, tick => Assert.EndsWith(" ms", tick.GetProperty("text").GetString()));
         }
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new Microsoft.Playwright.LocatorHoverOptions { Position = new Microsoft.Playwright.Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var points = await page.EvaluateAsync<JsonElement>("""
             () => {

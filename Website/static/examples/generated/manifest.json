@@ -699,7 +699,7 @@
     "enhance/canopyx-ui-overlays.83acc4346a232940.js",
     "enhance/canopyx-ui-overlays.bc49b6f13527aecd.css",
     "enhance/cfx-enhance.19ced771f953.js",
-    "enhance/cfx-enhance.d38eb6a099cb.css",
+    "enhance/cfx-enhance.5bc648f468b2.css",
     "enhance/enhance-page.css",
     "enhance/enhance-page.js",
     "enhance/enhance-story.html",
@@ -6469,8 +6469,8 @@
     "independent-progress-wide-light.svg",
     "independent-progress-wide-light.thumbnail.png",
     "independent-progress-wide-light.thumbnail.svg",
-    "interactive/cfx-interactive.746348d4f2d4.css",
-    "interactive/cfx-interactive.851207a8f166.js",
+    "interactive/cfx-interactive.8ef92505b4d2.css",
+    "interactive/cfx-interactive.34a79feb95a8.js",
     "interactive/cfx-native-text.4dbb7b4e18ea.js",
     "manifest.json",
     "mixed-schedule-compact-dark.csharp.txt",
@@ -10496,7 +10496,7 @@
       "title": "Weekly request volume",
       "variant": "wide",
       "variantLabel": "Standard",
-      "primary": false,
+      "primary": true,
       "seriesKinds": [
         "Line"
       ],
@@ -10568,7 +10568,7 @@
       "title": "Domain controller round-trip time",
       "variant": "latency-week",
       "variantLabel": "Latency Week",
-      "primary": true,
+      "primary": false,
       "seriesKinds": [
         "Line"
       ],
@@ -10712,7 +10712,7 @@
       "title": "Weekly request volume",
       "variant": "wide",
       "variantLabel": "Standard",
-      "primary": false,
+      "primary": true,
       "seriesKinds": [
         "Line"
       ],
@@ -10784,7 +10784,7 @@
       "title": "Domain controller round-trip time",
       "variant": "latency-week",
       "variantLabel": "Latency Week",
-      "primary": true,
+      "primary": false,
       "seriesKinds": [
         "Line"
       ],

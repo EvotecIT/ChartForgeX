@@ -28,6 +28,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
                 for(const name of ['cfxlasso','cfxcompare']) root.addEventListener(name,event=>window.regionEvents.push({name,detail:event.detail}));
             }
             """);
+        await page.Locator(RegionRoot).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var box = await BoxAsync(page, "[data-cfx-role=plot-region-fill]");
         await page.Mouse.MoveAsync((float)(box.X + 3), (float)(box.Y + 3));

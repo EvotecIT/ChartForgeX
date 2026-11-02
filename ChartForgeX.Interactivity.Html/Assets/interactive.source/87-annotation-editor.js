@@ -23,7 +23,6 @@
     const limit = options.historyLimit === undefined ? 32 : options.historyLimit;
     if (!Number.isInteger(limit) || limit < 0 || limit > 256 || options.createId !== undefined && typeof options.createId !== 'function')
       throw new TypeError('historyLimit: int 0..256; createId: function.');
-    if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Editor: native callback required.');
     if (lifetime.annotationEditor) {
       const state = lifetime.annotationEditor;
       if (state.pending) throw new TypeError('Editor: finish pending native edit.');

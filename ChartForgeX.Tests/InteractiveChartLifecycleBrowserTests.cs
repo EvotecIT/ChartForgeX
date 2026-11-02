@@ -53,7 +53,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 const template=document.createElement('template');template.innerHTML=other;
                 for(const change of ['svg','metadata','invalid-json','invalid-shape','swapped-series']) {
                     const next=root.cloneNode(true); next.removeAttribute('data-cfx-runtime-bound');
-                    if(change==='svg') next.querySelector('svg').remove();
+                    if(change==='svg') next.querySelector('.cfx-stage svg').remove();
                     else if(change==='metadata') next.removeAttribute('data-cfx-prepared-chart');
                     else if(change==='invalid-json') next.setAttribute('data-cfx-prepared-chart','{');
                     else if(change==='invalid-shape') next.setAttribute('data-cfx-prepared-chart',JSON.stringify({series:{},regions:[],xLabels:[]}));

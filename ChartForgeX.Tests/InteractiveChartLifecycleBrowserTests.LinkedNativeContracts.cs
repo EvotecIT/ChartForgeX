@@ -114,6 +114,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var replacement = NativeLinkedSection(Model(removeFirst: !native), native ? new ChartAxisWindow(2.6, 7.4) : null,
             ChartSelectionMode.Single);
         if (native) {
+            await page.Locator("#native-source " + Root).HoverAsync(new Microsoft.Playwright.LocatorHoverOptions { Position = new Microsoft.Playwright.Position { X = 1, Y = 1 } });
             await page.Locator("#native-source [data-cfx-zoom=in]").ClickAsync();
             await page.WaitForFunctionAsync("()=>nativeControlled.length===1");
             await page.EvaluateAsync("html=>nativeControlled[0].resolve(html)", replacement);

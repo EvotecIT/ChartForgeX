@@ -11,15 +11,20 @@ namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipAcquisitionBrowserTests {
     [BrowserFact]
-    public async Task DefaultRadiusRetains120CssPixelsWithTooltipsOnly() {
+    public async Task DefaultAutoUses120CssPixelCategoryLimitIndependentlyOfValueDistance() {
         if (!Enabled) return;
-        await using var session = await OpenAsync(Observation(false).ToInteractiveHtmlPage(options => options.Interaction.Features = ChartInteractionFeatures.Tooltips), 950, 720);
+        var chart = Chart.Create().WithSize(800, 540).WithLegend(true).WithTheme(VisualTheme.Report())
+            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddLine("Reading", new[] { new ChartPoint(5, 5) });
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Features = ChartInteractionFeatures.Tooltips), 950, 720);
         var page = session.Page;
-        await MoveToAsync(page, Point(0, 0), offsetY: 119);
+        Assert.Equal("auto", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-range"));
+        Assert.Equal("120", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-distance"));
+        await MoveToAsync(page, Point(0, 0), offsetX: 119, offsetY: 121);
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
-        await CaptureAsync(page, "acquisition-default120-tooltips-only", new { Offset = 119, Guide = false });
-        await MoveToAsync(page, Point(0, 0), offsetY: 121);
+        await CaptureAsync(page, "acquisition-default-auto-category120-tooltips-only", new { OffsetX = 119, OffsetY = 121, Guide = false });
+        await MoveToAsync(page, Point(0, 0), offsetX: 121, offsetY: 121);
+        await SettlePresentationAsync(page);
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         AssertNoConsoleErrors(session);
     }
@@ -103,7 +108,8 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         await native.BlurAsync();
         await native.EvaluateAsync("node=>node.style.setProperty('opacity','0','important')");
         await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption).First);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await BrowserProofCaptions.ClickAsync(page, page.Locator(caption).First);
         Assert.Equal("false", await native.GetAttributeAsync("aria-selected"));
         AssertNoConsoleErrors(session);
@@ -128,12 +134,15 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         await MoveToAsync(page, Point(0, 0), offsetY: 59);
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         Assert.Equal(!guide, await page.Locator(".cfx-crosshair").IsHiddenAsync());
-        var labelDisplay = await page.Locator(".cfx-crosshair__label").EvaluateAsync<string>("node => getComputedStyle(node).display");
-        Assert.Equal(!label, labelDisplay == "none");
+        var axisLabels = page.Locator(".cfx-crosshair [data-cfx-axis-value]:visible");
+        Assert.Equal(guide && label ? 2 : 0, await axisLabels.CountAsync());
+        if (guide && label) Assert.Equal(new[] { "5", "5" }, await axisLabels.AllTextContentsAsync());
+        Assert.Equal(0, await page.Locator(".cfx-crosshair__label:visible").CountAsync());
         var screenGeometry = await page.Locator(Point(0, 0)).EvaluateAsync<double[]>("node => { const svg = node.closest('svg'), stage = node.closest('.cfx-stage'), box = node.getBoundingClientRect(); return [svg.getBoundingClientRect().width, svg.viewBox.baseVal.width, stage.scrollLeft, box.x + box.width / 2, box.y + box.height / 2]; }");
-        await CaptureAsync(page, "acquisition-radius-" + layout + "-" + width + "-" + (dark ? "dark" : "light"), new { Offset = 59, Guide = guide, Label = label, LabelDisplay = labelDisplay, ScreenGeometry = screenGeometry });
+        await CaptureAsync(page, "acquisition-radius-" + layout + "-" + width + "-" + (dark ? "dark" : "light"), new { Offset = 59, Guide = guide, Label = label, AxisLabels = await axisLabels.AllTextContentsAsync(), ScreenGeometry = screenGeometry });
         await MoveToAsync(page, Point(0, 0), offsetY: 61);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.Equal(!guide, await page.Locator(".cfx-crosshair").IsHiddenAsync());
         AssertNoConsoleErrors(session);
     }
@@ -155,11 +164,16 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         await MoveToAsync(page, Point(0, 0));
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         await MoveToAsync(page, Point(0, 0), offsetY: 150);
-        Assert.Equal(!nearest, await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        if (nearest) Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        else {
+            Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+            await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
+        }
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
         await CaptureAsync(page, "acquisition-" + (nearest ? "nearest" : "exact") + "-guide-" + guide, new { Offset = 150, Nearest = nearest, Guide = guide });
         await MoveAwayAsync(page);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await page.Locator(Point(0, 0)).FocusAsync();
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Keyboard.PressAsync("Space");
@@ -232,13 +246,15 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         await CaptureAsync(page, "acquisition-restored-" + (markerFree ? "line" : "marker"), new { MarkerFree = markerFree });
         await page.Locator(surface).EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
         await MoveToAsync(page, point, offsetY: 71);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await page.Locator(surface).EvaluateAsync("node => node.style.setProperty('visibility', 'visible', 'important')");
         await page.Locator(Legend(0)).FocusAsync();
         await page.Keyboard.PressAsync("Space");
         await page.Locator(Legend(0)).BlurAsync();
         await MoveToAsync(page, point, offsetY: 70);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await page.Locator(Legend(0)).FocusAsync();
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Keyboard.PressAsync("Space");

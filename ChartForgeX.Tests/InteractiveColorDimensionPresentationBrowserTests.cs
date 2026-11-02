@@ -56,7 +56,7 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         if (sameValue) {
             var terms = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
             Assert.DoesNotContain("Color", terms); Assert.DoesNotContain("Default color", terms); Assert.DoesNotContain("Value", terms);
-        } else await AssertRowAsync(kind == ChartSeriesKind.Treemap ? "Value" : "Y", kind == ChartSeriesKind.Treemap ? "9.0 units"
+        } else await AssertRowAsync(kind == ChartSeriesKind.Treemap ? "Value" : "Work", kind == ChartSeriesKind.Treemap ? "9.0 units"
             : kind == ChartSeriesKind.Scatter ? "18.0 units" : "18");
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "9");
         await CaptureAsync("pointer");
@@ -85,8 +85,9 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
                     Assert.Equal("North Carolina", await missing.GetAttributeAsync("data-cfx-label"));
                     Assert.Equal("North Carolina (NC): Not sampled", await missing.GetAttributeAsync("aria-label"));
                 }
-                await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === label; }", kind == ChartSeriesKind.TileMap ? "North Carolina" : await missing.GetAttributeAsync("aria-label"));
-                Assert.DoesNotContain(name, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+                await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === label; }", kind == ChartSeriesKind.TileMap ? "North Carolina" : await missing.GetAttributeAsync("data-cfx-date"));
+                if (kind == ChartSeriesKind.TileMap) await AssertRowAsync(name, "Not sampled");
+                else Assert.DoesNotContain(name, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
                 Assert.Equal(kind == ChartSeriesKind.TileMap ? "Not sampled" : null, await missing.GetAttributeAsync(displayAttribute));
             } else { await AssertRowAsync(name, "Not sampled"); Assert.Null(await missing.GetAttributeAsync(rawAttribute)); }
             if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "81");
@@ -103,7 +104,7 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
             _ => Point(0, item == "measured" ? 0 : item == "zero" ? 1 : 2)
         };
 
-        Task AssertRowAsync(string label, string value) => page.WaitForFunctionAsync("expected => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === expected.label && term.nextElementSibling.textContent === expected.value); }", new { label = shared ? label == "Y" ? "Samples" : "Samples · " + label : label, value });
+        Task AssertRowAsync(string label, string value) => page.WaitForFunctionAsync("expected => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === expected.label && term.nextElementSibling.textContent === expected.value); }", new { label = shared ? label == "Work" ? "Samples" : "Samples · " + label : label, value });
 
         async Task CaptureAsync(string stage) {
             var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

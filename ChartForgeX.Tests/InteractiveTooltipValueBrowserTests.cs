@@ -20,7 +20,7 @@ public sealed class InteractiveTooltipValueBrowserTests {
     [InlineData("cell", true)]
     [InlineData("cartesian", false)]
     [InlineData("cartesian", true)]
-    public async Task TooltipFieldsDistinguishActualYFromValueOnlyFacts(string family, bool dark) {
+    public async Task TooltipValueRowsRetainRawCartesianYAndValueOnlyFacts(string family, bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 340).WithTheme(VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var nodes = new[] { new ChartNode("teams", "All teams"), new ChartNode("support", "Support") };
@@ -41,8 +41,13 @@ public sealed class InteractiveTooltipValueBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selection = event.detail.target)");
         await target.FocusAsync(); await page.Keyboard.PressAsync("Space");
         var rows = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
-        Assert.Contains(family == "cartesian" ? "Y" : "Value", rows);
-        Assert.DoesNotContain(family == "cartesian" ? "Value" : "Y", rows);
+        Assert.Contains("Value", rows);
+        Assert.DoesNotContain("Y", rows);
+        Assert.Equal(expected, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
+        if (family == "cartesian") {
+            Assert.Equal(new[] { "Value", "End", "Delta" }, rows);
+            Assert.Equal(new[] { "7", "12", "5" }, await page.Locator(".cfx-tooltip dd").AllTextContentsAsync());
+        }
         Assert.Equal(expected, await page.EvaluateAsync<string>("() => window.selection.value"));
         Assert.Equal(id, await page.EvaluateAsync<string>("() => window.selection.targetId"));
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

@@ -42,7 +42,8 @@ public sealed class BoxPlotDistributionBrowserTests {
         Assert.Contains("Dolny wąs=", accessible); Assert.Contains("Górny wąs=", accessible);
         Assert.Contains("Minimum próbek=", accessible);
         await MoveToAsync(page, Outlier);
-        Assert.Equal(new[] { "Series", "Latency", "Kategoria", "Service A", "Pomiar odstający", "100" }, await RowsAsync(page));
+        Assert.Equal("Latency: Service A", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal(new[] { "Kategoria", "Service A", "Pomiar odstający", "100" }, await RowsAsync(page));
         await FocusWithKeyboardAsync(page, outlier); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await outlier.GetAttributeAsync("aria-selected"));
         Assert.NotEqual("true", await summary.GetAttributeAsync("aria-selected"));

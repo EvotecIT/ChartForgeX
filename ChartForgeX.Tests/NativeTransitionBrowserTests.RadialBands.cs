@@ -25,7 +25,7 @@ public sealed partial class NativeTransitionBrowserTests {
         });
         var from = Section(60,45); var to = Section(80,55); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 3));
         var name = "bands-browser-" + family + "-" + automatic + "-" + width + "-" + dark + "-" + initial;
-        await using var session = await BrowserProofFonts.OpenAsync(Page(initial ? to : from), width + 24, 680); var page = session.Page; await ReadyAndPauseAsync(page);
+        await using var session = await BrowserProofFonts.OpenAsync(Page(initial ? to : from), width + 24, 900); var page = session.Page; await ReadyAndPauseAsync(page);
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         await page.EvaluateAsync("()=>{window.band=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));window.bandBefore=band.sceneRevision;window.bandEvents=[];band.root.addEventListener('cfxupdated',event=>bandEvents.push(event.detail));}");
         if (initial) await page.EvaluateAsync("payload=>band.presentInitial(payload,{sceneRevision:band.sceneRevision,motion:{duration:1000}})", payload);
@@ -42,7 +42,8 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal("80", rows.Single(row => row.GetProperty("cfxSeriesKey").GetString() == "parts").GetProperty("cfxValue").GetString()); Assert.Equal("55", rows.Single(row => row.GetProperty("cfxSeriesKey").GetString() == "outer").GetProperty("cfxValue").GetString());
         Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength()); Assert.Equal(initial, observed.GetProperty("before").GetString() == observed.GetProperty("revision").GetString());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=radial-point][data-cfx-series-key=outer][data-cfx-observation-id=primary] [data-cfx-role=donut-slice]", name + "-ink");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted native bands export missing.");
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
+        var download = await DownloadSvgAsync(page); var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted native bands export missing.");
         var exported = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exported);
         var native = System.Xml.Linq.XDocument.Parse(exported); var outerExport = native.Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "radial-point" && (string?)row.Attribute("data-cfx-series-key") == "outer" && (string?)row.Attribute("data-cfx-observation-id") == "primary"); Assert.Equal("55", (string?)outerExport.Attribute("data-cfx-value"));
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());

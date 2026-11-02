@@ -59,6 +59,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         await using var session = await OpenAsync(Host(graphite, layout, width, scale, pageScroll, ChartInteractionFeatures.Brush | ChartInteractionFeatures.Selection), 950, 760);
         var page = session.Page;
         await PrepareHostAsync(page, layout, width, pageScroll);
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await RecordEventsAsync(page);
         var extent = await ScrollExtentAsync(page);
@@ -129,25 +130,50 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     [InlineData(true, HtmlChartResponsiveLayout.Readable, 340, 0.8, true)]
     public async Task PanMovesNativeGeometryByTheScreenPointerDelta(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll) {
         if (!Enabled) return;
-        await using var session = await OpenAsync(Host(graphite, layout, width, scale, pageScroll, ChartInteractionFeatures.Pan), 950, 760);
+        await using var session = await OpenAsync(Host(graphite, layout, width, scale, pageScroll, ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan), 950, 760);
         var page = session.Page;
         await PrepareHostAsync(page, layout, width, pageScroll);
+        await page.Locator(Root).EvaluateAsync("r => window.ChartForgeXCharts.get(r).setViewport({x:{minimum:2,maximum:8},y:{minimum:2,maximum:8}})");
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
         await RecordEventsAsync(page);
-        var before = await BoxAsync(page, Point(0, 1));
+        var frame = await BoxAsync(page, ".cfx-stage svg");
+        var extent = await ScrollExtentAsync(page);
+        var beforeWindow = await ViewportAsync(page);
+        var before = await BoxAsync(page, PointMark(0, 1));
         var start = new double[] { before.X + before.Width / 2, before.Y + before.Height / 2 + 24 };
         var end = new[] { start[0] + 40, start[1] + 30 };
         await DragAsync(page, start, end);
-        // Observe the final native geometry after the browser finishes its CSS transform transition.
-        await page.Locator(".cfx-stage svg").EvaluateAsync("svg => new Promise(resolve => requestAnimationFrame(resolve)).then(() => Promise.all(svg.getAnimations().map(a => a.finished)))");
-        var after = await BoxAsync(page, Point(0, 1));
+        await FinishViewportTransitionAsync(page);
+        var after = await BoxAsync(page, PointMark(0, 1));
+        var afterWindow = await ViewportAsync(page);
+        var afterFrame = await BoxAsync(page, ".cfx-stage svg");
         var events = await EventsAsync(page);
-        await CaptureAsync(session, "overlay-pan-" + Variant(graphite, layout, width, scale, pageScroll), new { start, end, before, after, events });
+        await CaptureAsync(session, "overlay-pan-" + Variant(graphite, layout, width, scale, pageScroll), new { start, end, before, after, beforeWindow, afterWindow, frame, afterFrame, extent, events });
         Assert.InRange(after.X - before.X - 40, -1, 1);
         Assert.InRange(after.Y - before.Y - 30, -1, 1);
+        Assert.Equal(frame.X, afterFrame.X, 3);
+        Assert.Equal(frame.Y, afterFrame.Y, 3);
+        Assert.Equal(frame.Width, afterFrame.Width, 3);
+        Assert.Equal(frame.Height, afterFrame.Height, 3);
+        Assert.Equal(before.Width, after.Width, 3);
+        Assert.Equal(before.Height, after.Height, 3);
+        Assert.Equal(extent, await ScrollExtentAsync(page));
+        AssertWindow(beforeWindow.GetProperty("x"), 2, 8);
+        AssertWindow(beforeWindow.GetProperty("y"), 2, 8);
+        Assert.True(afterWindow.GetProperty("x").GetProperty("minimum").GetDouble() < 2);
+        Assert.True(afterWindow.GetProperty("y").GetProperty("minimum").GetDouble() > 2);
+        foreach (var axis in new[] { "x", "y" }) {
+            var window = afterWindow.GetProperty(axis);
+            Assert.Equal(6, window.GetProperty("maximum").GetDouble() - window.GetProperty("minimum").GetDouble(), 6);
+        }
         var viewport = Assert.Single(events.EnumerateArray(), e => e.GetProperty("name").GetString() == "cfxviewport");
-        Assert.InRange(viewport.GetProperty("detail").GetProperty("state").GetProperty("panX").GetDouble() - 40 / scale, -0.1, 0.1);
-        Assert.InRange(viewport.GetProperty("detail").GetProperty("state").GetProperty("panY").GetDouble() - 30 / scale, -0.1, 0.1);
+        foreach (var axis in new[] { "x", "y" }) {
+            var actual = viewport.GetProperty("detail").GetProperty("viewport").GetProperty(axis);
+            var expected = afterWindow.GetProperty(axis);
+            AssertWindow(actual, expected.GetProperty("minimum").GetDouble(), expected.GetProperty("maximum").GetDouble());
+            Assert.Equal(expected.GetProperty("scale").GetString(), actual.GetProperty("scale").GetString());
+        }
         AssertNoConsoleErrors(session);
     }
 
@@ -192,11 +218,13 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             // The rendered axes provide an independent geometry oracle, without reading adapter plot metadata.
             const ax=s.querySelector('[data-cfx-role="axis-x"]').getBoundingClientRect(), ay=s.querySelector('[data-cfx-role="axis-y"]').getBoundingClientRect();
             const plot={left:Math.max(ax.left,viewport.left),right:Math.min(ax.right,viewport.right),top:Math.max(ay.top,viewport.top),bottom:Math.min(ay.bottom,viewport.bottom)};
-            const label=c.querySelector('[data-cfx-crosshair-label]'), lb=label.getBoundingClientRect(), heading=s.querySelector('[data-cfx-role="frame-heading"]');
+            const axisLabels=[...c.querySelectorAll('[data-cfx-axis-value]')].map(label=>{
+                const lb=label.getBoundingClientRect();return {axis:label.dataset.cfxAxisValue,text:label.textContent,
+                    visible:!label.hidden&&getComputedStyle(label).display!=='none',left:lb.left,right:lb.right,top:lb.top,bottom:lb.bottom};
+            }), heading=s.querySelector('[data-cfx-role="frame-heading"]');
             return {visible:!c.hidden,x:x.left+x.width/2,y:y.top+y.height/2,left:y.left,right:y.right,top:x.top,bottom:x.bottom,
                 viewport,plot,headingBottom:heading?heading.getBoundingClientRect().bottom:null,
-                labelBounds:{visible:getComputedStyle(label).display!=='none',left:lb.left,right:lb.right,top:lb.top,bottom:lb.bottom},
-                targetId:(r.dataset.cfxCrosshair||'').split('|')[1],label:label.textContent};
+                axisLabels,targetId:(r.dataset.cfxCrosshair||'').split('|')[1]};
         }
         """);
 
@@ -209,14 +237,29 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             Assert.InRange(guide.GetProperty(edge).GetDouble() - plot.GetProperty(edge).GetDouble(), -1, 1);
         if (guide.GetProperty("headingBottom").ValueKind == JsonValueKind.Number)
             Assert.True(guide.GetProperty("top").GetDouble() >= guide.GetProperty("headingBottom").GetDouble() - 1);
-        var label = guide.GetProperty("labelBounds");
-        if (label.GetProperty("visible").GetBoolean()) {
-            Assert.True(label.GetProperty("left").GetDouble() >= plot.GetProperty("left").GetDouble() - 1);
-            Assert.True(label.GetProperty("right").GetDouble() <= plot.GetProperty("right").GetDouble() + 1);
-            Assert.True(label.GetProperty("top").GetDouble() >= plot.GetProperty("top").GetDouble() - 1);
-            Assert.True(label.GetProperty("bottom").GetDouble() <= plot.GetProperty("bottom").GetDouble() + 1);
+        var labels = guide.GetProperty("axisLabels").EnumerateArray().ToArray();
+        Assert.Equal(2, labels.Length);
+        foreach (var label in labels) {
+            Assert.True(label.GetProperty("visible").GetBoolean(), guide.GetRawText());
+            Assert.False(string.IsNullOrWhiteSpace(label.GetProperty("text").GetString()));
+            if (label.GetProperty("axis").GetString() == "x") {
+                Assert.True(label.GetProperty("left").GetDouble() >= plot.GetProperty("left").GetDouble() - 1);
+                Assert.True(label.GetProperty("right").GetDouble() <= plot.GetProperty("right").GetDouble() + 1);
+                Assert.True(label.GetProperty("top").GetDouble() >= plot.GetProperty("bottom").GetDouble() - 1);
+            } else {
+                Assert.Equal("y", label.GetProperty("axis").GetString());
+                Assert.True(label.GetProperty("right").GetDouble() <= plot.GetProperty("left").GetDouble() + 1);
+                Assert.True(label.GetProperty("top").GetDouble() >= plot.GetProperty("top").GetDouble() - 1);
+                Assert.True(label.GetProperty("bottom").GetDouble() <= plot.GetProperty("bottom").GetDouble() + 1);
+            }
         }
-        Assert.False(string.IsNullOrWhiteSpace(guide.GetProperty("label").GetString()));
+    }
+
+    private static string PointMark(int series, int point) => Point(series, point) + " :is(circle,ellipse,rect,path,line,polygon):not([data-cfx-browser-hit-area])";
+    private static Task<JsonElement> ViewportAsync(IPage page) => page.Locator(Root).EvaluateAsync<JsonElement>("r => window.ChartForgeXCharts.get(r).getViewport()");
+    private static void AssertWindow(JsonElement window, double minimum, double maximum) {
+        Assert.Equal(minimum, window.GetProperty("minimum").GetDouble(), 6);
+        Assert.Equal(maximum, window.GetProperty("maximum").GetDouble(), 6);
     }
 
     private static Task RecordEventsAsync(IPage page) => page.Locator(Root).EvaluateAsync("""

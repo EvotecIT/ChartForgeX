@@ -63,5 +63,5 @@ public sealed class WaterfallObservationIdentityBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    private static string Mark(int item) => "[data-cfx-waterfall-kind][data-cfx-point='" + item + "']:not([data-cfx-role='legend-item'])";
+    private static string Mark(int item) => ".cfx-stage [data-cfx-waterfall-kind][data-cfx-point='" + item + "']:not([data-cfx-role='legend-item']):not([data-cfx-role='legend-native'])";
 }

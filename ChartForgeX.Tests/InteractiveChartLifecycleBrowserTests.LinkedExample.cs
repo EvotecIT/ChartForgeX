@@ -24,6 +24,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             }
             """);
         const string timeSelector = "[data-cfx-chart-id=linked-time]";
+        await page.Locator(timeSelector).HoverAsync();
         await page.Locator(timeSelector + " [data-cfx-mode-button=brush]").ClickAsync();
         var positions = await page.Locator(timeSelector).EvaluateAsync<JsonElement>("""
             root => {
@@ -69,15 +70,17 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal(expectedDays.Sum(day => apiValues[day]), target.GetProperty("numericValue").GetDouble());
         Assert.Equal(2, await page.EvaluateAsync<int>("()=>linkedEvents.length"));
         Assert.Equal("lasso", await page.EvaluateAsync<string>("()=>linkedEvents[0].reason"));
+        await SettlePresentationAsync(page);
         Assert.True(await page.EvaluateAsync<bool>("""
             () => {
                 const time=document.querySelector('[data-cfx-chart-id="linked-time"]');
                 const api=[...time.querySelectorAll('g[data-cfx-role=point][data-cfx-series-key=api]')];
                 const worker=[...time.querySelectorAll('g[data-cfx-role=point][data-cfx-series-key=worker]')];
+                const opacity=mark=>{let value=1;for(let node=mark;node;node=node.parentElement)value*=Number(getComputedStyle(node).opacity);return value;};
                 return api.length===4 && worker.length===4
                     && api.every(mark=>mark.dataset.cfxHighlighted==='true')
                     && worker.every(mark=>mark.getAttribute('aria-selected')==='true'
-                        ? Number(getComputedStyle(mark).opacity)>.9 : Number(getComputedStyle(mark).opacity)<=.35);
+                        ? opacity(mark)>.9 : opacity(mark)<=.35);
             }
             """));
         await CaptureAsync(page, "linked-example-brushed-" + width + "-" + (dark ? "dark" : "light"), selection);

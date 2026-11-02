@@ -19,7 +19,7 @@
     hit.setAttribute('width', width); hit.setAttribute('height', height);
     hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
     hit.setAttribute('data-cfx-browser-hit-area', 'true');
-    node.appendChild(hit);
+    node.prepend(hit);
   };
 
   const prepareChartTargets = (root) => {
@@ -28,6 +28,8 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
+    const compactPoints = window.matchMedia?.('(pointer: coarse)').matches === true
+      || (root.getBoundingClientRect?.().width ?? Infinity) < 560;
     const reflow = metadata.visibility?.layout === 'reflow';
     const annotations = annotationCatalog(svg, metadata);
     svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
@@ -82,8 +84,8 @@
       if (data.cfxRole !== 'legend-entry-omitted') data.cfxRole = 'legend-item';
       data.cfxSeries = String(index);
       const region = regions.get(source);
-      if (series[index] && node.localName === 'g' && data.cfxRole === 'legend-item'
-        && region?.role === 'legend' && isInteractiveTarget(node)) appendNativeBrowserHitArea(node, region, 0);
+      // Legend regions include padded native glyph images. Browser targets are
+      // measured from visible ink by bindLegendTargets, never from this region.
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
       if (reference && !reflow) {
@@ -171,6 +173,14 @@
 
 
       if (retainedGeometryFact(node)) return;
+
+      if (node.localName === 'g' && data.cfxPoint !== undefined
+        && ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'scatter', 'bubble', 'radar'].includes(item.kind.toLowerCase())
+        && compactPoints) {
+        const matrix = typeof node.getScreenCTM === 'function' ? svgScreenMatrix(node) : null;
+        const scale = matrix && Math.min(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d));
+        if (scale > 0) appendNativeBrowserHitArea(node, region, 24 / scale);
+      }
 
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');

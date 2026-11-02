@@ -37,12 +37,12 @@ public sealed class RangeBarBrowserTests {
         await page.EvaluateAsync("() => { window.rangeSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.rangeSelections.push(event.detail.target)); }");
         var first = Point(0, 1); var neighbor = Point(1, 1);
         await MoveToAsync(page, first + " [data-cfx-role='range-bar']");
-        Assert.Equal(new[] { "Series", "Expected", "Kategoria", "Express delivery", "Początek", "10", "Koniec", "30" }, await RowsAsync(page));
+        Assert.Equal(new[] { "Kategoria", "Express delivery", "Początek", "10", "Koniec", "30" }, await RowsAsync(page));
         var customHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
         Assert.Equal("Expected: Promised delivery", customHeading);
         await MoveToAsync(page, neighbor + " [data-cfx-role='range-bar']");
         var rawRows = await RowsAsync(page);
-        Assert.Equal(new[] { "Series", "Observed", "Kategoria", "Express delivery", "Początek", "32", "Koniec", "12" }, rawRows);
+        Assert.Equal(new[] { "Kategoria", "Express delivery", "Początek", "32", "Koniec", "12" }, rawRows);
         var defaultHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
         Assert.Equal("Observed: Express delivery", defaultHeading);
         var rawAria = await page.Locator(neighbor).GetAttributeAsync("aria-label");
@@ -66,7 +66,7 @@ public sealed class RangeBarBrowserTests {
         await page.Locator(Legend(1)).ClickAsync();
         Assert.Equal(1, await page.Locator("g[data-cfx-role='series'][data-cfx-series='1'].cfx-series-muted").CountAsync());
         await FocusWithKeyboardAsync(page, page.Locator(first));
-        Assert.Equal("Expected", (await RowsAsync(page))[1]);
+        Assert.Equal("Expected: Promised delivery", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         if (!string.IsNullOrWhiteSpace(directory)) {
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-neighbors.png") });
             await File.WriteAllTextAsync(Path.Combine(directory, "range-bar-neighbors.json"), JsonSerializer.Serialize(new {

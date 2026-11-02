@@ -54,6 +54,7 @@
       lifetime.preparationSession = null;
       syncXViewportControls(root);
     }
+    if (connection) releaseStandaloneViewport(root);
     lifetime.preparationConnections[channel] = connection ? Object.freeze({ ...settings, callback: connection }) : null;
     syncHierarchyNavigation(root); syncNativePreparationAdmission(root);
   };
@@ -129,7 +130,7 @@
     // Keep pending through validation.
     if (nativeKind) lifetime.preparationPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
-    releaseChartLifetime(root);
+    releaseChartLifetime(root, true);
     installChartSection(root, next);
     // Retain root/connections.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();

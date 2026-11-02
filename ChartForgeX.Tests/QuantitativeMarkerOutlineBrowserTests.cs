@@ -54,7 +54,7 @@ public sealed class QuantitativeMarkerOutlineBrowserTests {
                 var foreground = phaseDark ? ChartColor.FromHex("#E8EEF6") : ChartColor.FromHex("#15253B");
                 var backdrop = phaseDark ? ChartColor.FromHex("#101722") : ChartColor.FromHex("#F4F7FB");
                 var ramp = phase == 0 ? ChartColor.FromHex("#2C98BB") : ChartColor.FromHex("#D27828");
-                await page.Locator("svg").EvaluateAsync("""
+                await page.Locator(".cfx-stage > svg").EvaluateAsync("""
                     (svg, colors) => {
                         svg.style.setProperty('--quant-foreground', colors.foreground);
                         svg.style.setProperty('--quant-surface', colors.backdrop);

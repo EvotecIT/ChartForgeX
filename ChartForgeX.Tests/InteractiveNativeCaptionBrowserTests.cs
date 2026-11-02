@@ -62,14 +62,16 @@ public sealed class InteractiveNativeCaptionBrowserTests {
         // A hidden native owner cannot acquire a readout merely because its caption has a browser hit box.
         await region.EvaluateAsync("node => node.style.opacity = '0'");
         await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await region.EvaluateAsync("node => node.style.removeProperty('opacity')");
         await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption)); await WaitForValueAsync();
 
         // A producer's independently identified nested target remains a boundary, even without its own paint.
         await page.Locator(caption).EvaluateAsync("node => { const ink = node.querySelector('[data-cfx-native-text-ink]') || node.querySelector('text'); const wrapper = ink.parentElement; wrapper.dataset.cfxTargetKind = 'annotation'; wrapper.dataset.cfxTargetId = 'independent-caption'; }");
         await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         AssertNoConsoleErrors(session);
 
         Task WaitForValueAsync() => page.WaitForFunctionAsync("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === 'Value' && term.nextElementSibling.textContent === '55'); }");

@@ -57,7 +57,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.positionedSelection = event.detail.target)");
         await MoveToAsync(page, clamped);
         await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "55");
-        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Y", "35");
+        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Processing time", "35");
         await CaptureAsync("clamped-pointer");
         if (kind != ChartSeriesKind.TileMap) {
             await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(Target(-30)));
@@ -65,7 +65,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
         }
         await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(zero));
         await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "0");
-        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Y", "20");
+        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Processing time", "20");
         await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(interpolated));
         await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "2.5");
         await page.Keyboard.PressAsync("Space");
@@ -90,7 +90,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
             if (kind == ChartSeriesKind.Scatter) {
                 Assert.Null(await missing.GetAttributeAsync("data-cfx-color-value"));
                 Assert.Equal("true", await missing.GetAttributeAsync("data-cfx-color-missing"));
-                await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Y", "22");
+                await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Processing time", "22");
             } else {
                 Assert.Equal("true", await missing.GetAttributeAsync("data-cfx-empty"));
                 Assert.Equal("", await missing.GetAttributeAsync("data-cfx-value"));
@@ -98,7 +98,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
                 Assert.Equal("North Carolina (NC): No data", await missing.GetAttributeAsync("aria-label"));
                 Assert.Equal("No data", await missing.GetAttributeAsync("data-cfx-formatted-value"));
                 await page.WaitForFunctionAsync("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === 'North Carolina'; }");
-                Assert.DoesNotContain("Value", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+                await AssertRowAsync("Value", "No data");
             }
             await CaptureAsync("missing-focus");
         }

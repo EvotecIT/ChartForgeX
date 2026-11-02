@@ -8,16 +8,8 @@ public enum HtmlChartText {
     ZoomIn,
     /// <summary>Text for zoom out.</summary>
     ZoomOut,
-    /// <summary>Text for zoom +.</summary>
-    ZoomInButton,
-    /// <summary>Text for zoom -.</summary>
-    ZoomOutButton,
-    /// <summary>Text for pan.</summary>
-    Pan,
     /// <summary>Text for pan chart.</summary>
     PanChart,
-    /// <summary>Text for brush.</summary>
-    Brush,
     /// <summary>Text for brush select region.</summary>
     BrushRegion,
     /// <summary>Text for download svg.</summary>
@@ -26,6 +18,8 @@ public enum HtmlChartText {
     DownloadPng,
     /// <summary>Text for reset view.</summary>
     ResetView,
+    /// <summary>Text for the toolbar control that restores the initial data window.</summary>
+    ResetZoom,
     /// <summary>Text for compare the count.</summary>
     Compare,
     /// <summary>Text for clear.</summary>
@@ -600,7 +594,7 @@ public enum HtmlChartText {
     AnnotationFailed,
     /// <summary>Annotation editor UI: Draft: move an anchor, then apply or cancel.</summary>
     AnnotationDraft,
-    /// <summary>Annotation editor UI: Connect native preparation to edit annotations.</summary>
+    /// <summary>Annotation editor UI: the disabled menu item shown while no host prepares annotation edits.</summary>
     AnnotationDisconnected,
     /// <summary>Accessible name for native hierarchy navigation.</summary>
     HierarchyNavigation,

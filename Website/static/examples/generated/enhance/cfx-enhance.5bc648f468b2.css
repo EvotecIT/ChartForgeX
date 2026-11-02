@@ -1,0 +1,75 @@
+/* Shared enhancer state chrome consumes the same page token roles as the HTML adapter. */
+:root, svg[data-cfx-enhance], .cfx-e-tip {
+  --cfx-e-info: var(--cfx-default-host-accent, var(--hfx-color-accent));
+  --cfx-e-surface: var(--cfx-tooltip-surface, var(--hfx-color-surface-card));
+  --cfx-e-focus: var(--cfx-focus-ring, var(--hfx-color-focus-ring));
+  --cfx-e-ink: var(--cfx-tooltip-text, var(--hfx-color-text-primary));
+  --cfx-e-muted: var(--cfx-tooltip-muted, var(--hfx-color-text-secondary));
+  --cfx-e-line: var(--cfx-tooltip-line, var(--hfx-color-surface-line-strong));
+}
+.cfx-e-hover :is(rect, path, circle, ellipse, polygon) { stroke: var(--cfx-e-surface); stroke-width: 2px; paint-order: stroke; }
+.cfx-e-faded, .cfx-e-dim, .cfx-e-filtered { opacity: .4; }
+.cfx-e-hidden, .cfx-e-gone { visibility: hidden; }
+.cfx-e-halo { fill: none; stroke: var(--cfx-e-surface); stroke-width: 4px; }
+.cfx-e-sel { fill: none; stroke: var(--cfx-e-ink); stroke-width: 2px; }
+.cfx-e-focus { fill: none; stroke: var(--cfx-e-focus); stroke-width: 2px; }
+.cfx-e-cross { stroke: var(--cfx-crosshair-axis, var(--cfx-e-muted)); stroke-opacity: .5; stroke-width: 1px; shape-rendering: crispEdges; }
+.cfx-e-cross[data-cfx-axis="y"] { stroke-dasharray: 3 3; }
+.cfx-e-dot { stroke: var(--cfx-e-surface); stroke-width: 2px; }
+.cfx-e-brush { fill: var(--cfx-e-info); fill-opacity: .12; stroke: var(--cfx-e-info); stroke-opacity: .5; }
+.cfx-e-tip {
+  position: fixed; z-index: 2147483000; box-sizing: border-box; pointer-events: none;
+  min-width: min(160px, calc(100vw - 16px)); max-width: min(320px, calc(100vw - 16px));
+  padding: 10px 12px; border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay));
+  background: var(--cfx-e-surface); color: var(--cfx-e-ink); border: 1px solid var(--cfx-e-line);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2));
+  font: 400 12px/18px var(--cfx-tooltip-font, var(--hfx-font-sans)); overflow-wrap: anywhere;
+  opacity: 1; translate: 0 0;
+  transition: opacity 120ms ease-out, translate 120ms ease-out, display 80ms allow-discrete;
+}
+.cfx-e-tip[hidden] { display: none; opacity: 0; translate: 0 2px; transition-duration: 80ms; }
+.cfx-e-tip-head { color: var(--cfx-e-muted); font-size: 12px; line-height: 16px; font-weight: 600; margin-bottom: 6px; }
+.cfx-e-tip-row { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.cfx-e-tip-key { width: 8px; height: 8px; border-radius: var(--cfx-swatch-radius, var(--hfx-radius-2xs)); }
+.cfx-e-tip-value { font-weight: 600; font-variant-numeric: tabular-nums; text-align: end; }
+.cfx-e-tip-name { font-weight: 400; }
+.cfx-e-tip-hint { margin-top: 6px; color: var(--cfx-e-muted); font-size: 11px; line-height: 16px; }
+.cfx-e-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@starting-style { .cfx-e-tip:not([hidden]) { opacity: 0; translate: 0 2px; } }
+@media (prefers-reduced-motion: no-preference) {
+  svg[data-cfx-enhance] :is([data-cfx-mark], [data-cfx-series]) { transition: opacity 250ms ease-out; }
+  svg[data-cfx-enhance] :is(.cfx-e-hover, .cfx-e-faded, .cfx-e-dim) { transition-duration: 150ms; }
+}
+@media (prefers-reduced-motion: reduce) { .cfx-e-tip { transition: none; translate: none; } }
+@media (forced-colors: active) {
+  .cfx-e-faded, .cfx-e-dim, .cfx-e-filtered { opacity: 1; }
+  .cfx-e-faded :is(rect, path, circle, ellipse, polygon), .cfx-e-dim :is(rect, path, circle, ellipse, polygon) { fill: GrayText; stroke: GrayText; }
+  .cfx-e-hover :is(rect, path, circle, ellipse, polygon) { stroke: Highlight; }
+  .cfx-e-sel, .cfx-e-focus { stroke: Highlight; }
+  .cfx-e-halo { stroke: Canvas; }
+  .cfx-e-ring { stroke-dasharray: 4 3; }
+  [data-cfx-role$="current-row-band"] { fill: Mark; }
+  .cfx-e-tip { border-color: CanvasText; }
+}
+
+/* Enhancer hit geometry stays in the runtime; CSS paints its accessible states. */
+svg[data-cfx-enhance] [data-cfx-mark], svg[data-cfx-enhance] [role="button"] { cursor: pointer; outline: none; }
+svg[data-cfx-brush] { touch-action: pan-y; }
+svg[data-cfx-enhance]:focus:not(:focus-visible) { outline: none; }
+svg[data-cfx-crosshair] [data-cfx-mark] { cursor: crosshair; }
+svg[data-cfx-enhance] [role="button"]:focus-visible {
+  outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: 2px;
+}
+.cfx-e-legend-off { opacity: 1; }
+.cfx-e-legend-off :is(text, [data-cfx-role="legend-label"]) { opacity: .45; text-decoration: none; }
+.cfx-e-legend-off :is([data-cfx-role="legend-swatch"], [data-cfx-role="legend-symbol"], [data-cfx-role="legend-marker"]) {
+  fill: none; stroke: var(--cfx-series-color, var(--cfx-e-muted)); stroke-width: 1.5px; vector-effect: non-scaling-stroke;
+}
+svg[data-cfx-enhance] :is([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i]) :is(.cfx-e-faded, .cfx-e-dim) { opacity: 1; }
+svg[data-cfx-enhance] :is([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i]) .cfx-e-hover :is(rect, path, polygon) {
+  stroke: var(--cfx-e-focus); stroke-width: 2px; vector-effect: non-scaling-stroke;
+}
+
+svg[data-cfx-enhance] :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) :is(.cfx-e-faded, .cfx-e-dim) { opacity: 1; }
+svg[data-cfx-enhance] :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) .cfx-e-hover :is(rect, path, polygon) { stroke: var(--cfx-e-focus); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+

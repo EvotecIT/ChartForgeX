@@ -26,7 +26,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
         var shared = mode == HtmlChartTooltipMode.SharedX;
-        Assert.Equal(shared ? new[] { "Current", "Baseline" } : new[] { "Series", "X", "Y" },
+        Assert.Equal(shared ? new[] { "Current", "Baseline" } : new[] { "Value" },
             await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         Assert.Equal("Tue", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await page.Locator(Point(0, 1)).BlurAsync();
@@ -49,7 +49,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         await page.Locator(Point(0, 1)).FocusAsync();
         var colours = await page.EvaluateAsync<string[][]>("() => Array.from(document.querySelectorAll('.cfx-tooltip dt')).map(row => [getComputedStyle(row.querySelector('.cfx-tooltip__swatch')).backgroundColor, getComputedStyle(document.querySelector('[data-cfx-role=\"series\"][data-cfx-series=\"' + row.dataset.cfxTooltipSeries + '\"] [data-cfx-role=\"line\"]')).stroke])");
         Assert.Equal(2, colours.Length);
-        foreach (var colour in colours) await AssertCssColorsEqualAsync(page, colour[1], colour[0]);
+        foreach (var colour in colours) await AssertCssColorsEqualAsync(page, "rgb(from " + colour[1] + " r g b / 1)", colour[0]);
         Assert.Equal(new[] { "1", "1" }, await OpacitiesAsync(page, ".cfx-tooltip dt"));
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.Equal(6, await page.Locator("[data-cfx-keyboard-component='data']").CountAsync());
@@ -70,7 +70,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
-        var swatch = mode == HtmlChartTooltipMode.SharedX ? ".cfx-tooltip dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip__title .cfx-tooltip__swatch";
+        var swatch = mode == HtmlChartTooltipMode.SharedX ? ".cfx-tooltip dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip dt:text-is('Value') .cfx-tooltip__swatch";
         var colour = await page.Locator(swatch).EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor");
         await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", colour);
         await AssertCssColorsEqualAsync(page, colour, await page.Locator(Point(0, 1) + " [data-cfx-role='bar']").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
@@ -93,8 +93,9 @@ public sealed class InteractiveTooltipModeBrowserTests {
         await page.Locator(Point(0, 0)).FocusAsync();
         Assert.Contains("Range", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         var envelope = page.Locator(area ? "[data-cfx-role='range-area']" : "[data-cfx-role='range-band']");
-        Assert.Equal(await envelope.EvaluateAsync<string>("node => getComputedStyle(node).fill"),
-            await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        var paint = await envelope.EvaluateAsync<string>("node => getComputedStyle(node).fill");
+        await AssertCssColorsEqualAsync(page, "rgb(from " + paint + " r g b / 1)",
+            await page.Locator(".cfx-tooltip dt:text-is('Value') .cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         AssertNoConsoleErrors(session);
     }
 

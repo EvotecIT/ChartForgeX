@@ -3,29 +3,35 @@
   const withPersistentExportPaint = (root, svg, read) => {
     const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
     const classes = Array.from(svg.querySelectorAll('[class]')).map(node => [node, node.getAttribute('class')]);
-    const attributes = ['data-cfx-hovering', 'data-cfx-hover-mode', 'data-cfx-hover-unit'];
+    const attributes = ['data-cfx-hovering', 'data-cfx-hover-mode', 'data-cfx-hover-unit', 'data-cfx-hover-continuous', 'data-cfx-flow-hover', 'data-cfx-export-probe'];
     const rootState = attributes.map(name => [name, root.getAttribute(name)]);
+    const probe = root.getAttribute('data-cfx-export-probe');
     const branchPaint = Array.from(svg.querySelectorAll('[data-cfx-highlight-paint]'))
       .map(node => [node, node.getAttribute('style')]);
     try {
       for (const [node] of classes) node.classList.remove(...transientClasses);
       for (const name of attributes) root.removeAttribute(name);
+      root.setAttribute('data-cfx-export-probe', '');
       for (const [node] of branchPaint) node.style.removeProperty('--cfx-highlight-opacity');
       return read();
     } finally {
       for (const [node, value] of classes) node.setAttribute('class', value);
       for (const [name, value] of rootState) {
+        if (name === 'data-cfx-export-probe') continue;
         if (value === null) root.removeAttribute(name); else root.setAttribute(name, value);
       }
       for (const [node, value] of branchPaint) {
         if (value === null) node.removeAttribute('style'); else node.setAttribute('style', value);
       }
+      svg.getBoundingClientRect();
+      if (probe === null) root.removeAttribute('data-cfx-export-probe'); else root.setAttribute('data-cfx-export-probe', probe);
     }
   };
   const serializeSvg = (root, png = false) => {
     settleChartUpdateMotion(root);
-    const svg = root.querySelector('.cfx-stage svg');
+    const svg = root._cfxStandaloneHierarchy?.overlay || root.querySelector('.cfx-stage svg');
     if (!svg) return null;
+    settleChartLoadMotion(root);
     return withPersistentExportPaint(root, svg, () => {
       const copy = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, copy, png);

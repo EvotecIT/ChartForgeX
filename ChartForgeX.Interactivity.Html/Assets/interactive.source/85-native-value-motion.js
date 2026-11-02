@@ -92,6 +92,11 @@
     lifetime.updateMotionRelease = release; svg.dataset.cfxUpdateMotion = 'true';
     const show = index => {
       const drawing = frames[index].cloneNode(true);
+      // The accepted reader owns these HTML replacements outside the captured SVG.
+      if (root.querySelector('.cfx-responsive-legend')?.style.display === 'flex')
+        drawing.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach(node => node.style.display = 'none');
+      if (root.querySelector('.cfx-responsive-heading')?.style.display === 'block')
+        drawing.querySelectorAll('[data-cfx-role="frame-heading-source"],[data-cfx-role="frame-subtitle-source"]').forEach(node => node.style.visibility = 'hidden');
       // The layer uses the accepted SVG's rendered viewport. Its captured child
       // must not apply that viewport's inherited camera transform a second time.
       for (const [name, value] of Object.entries({ transform: 'none', transition: 'none', margin: '0', display: 'block',

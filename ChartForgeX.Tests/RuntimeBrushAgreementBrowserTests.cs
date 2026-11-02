@@ -50,6 +50,7 @@ public sealed class RuntimeBrushAgreementBrowserTests {
               const b=new DOMPoint(p.x+p.width*ratios[1],p.y+p.height*.7).matrixTransform(m);return[a.x,a.y,b.x,b.y];
             }
             """, new[] { from, to });
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]); await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync((float)positions[2], (float)positions[3], new MouseMoveOptions { Steps = 4 }); await page.Mouse.UpAsync();

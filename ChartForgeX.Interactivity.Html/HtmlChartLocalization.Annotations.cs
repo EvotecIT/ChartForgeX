@@ -23,6 +23,6 @@ public sealed partial class HtmlChartLocalization {
         [HtmlChartText.AnnotationUpdating] = "Updating annotation…",
         [HtmlChartText.AnnotationFailed] = "The annotation could not be updated.",
         [HtmlChartText.AnnotationDraft] = "Draft: move an anchor, then apply or cancel.",
-        [HtmlChartText.AnnotationDisconnected] = "Connect native preparation to edit annotations.",
+        [HtmlChartText.AnnotationDisconnected] = "Annotations need a connected host",
     };
 }

@@ -24,15 +24,21 @@ public sealed class MermaidXYChartSourceDepthBrowserTests {
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 800); var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, message) => errors.Add(message);
         await page.WaitForSelectorAsync(Point(1, 0));
-        Assert.Equal(new[] { "Intake", "Completed" }, await page.Locator("[data-cfx-role=legend-label]").AllTextContentsAsync());
+        var legendOwners = page.Locator(".cfx-interactive-chart [data-cfx-role=legend-item]");
+        Assert.Equal(2, await legendOwners.CountAsync());
+        var legendLabels = new List<string>();
+        foreach (var owner in await legendOwners.AllAsync()) {
+            Assert.True(await owner.IsVisibleAsync());
+            var htmlOwner = await owner.EvaluateAsync<bool>("node => node instanceof HTMLButtonElement");
+            var caption = owner.Locator(htmlOwner ? ":scope > .cfx-responsive-legend__label" : "[data-cfx-role=legend-label]");
+            Assert.Equal(1, await caption.CountAsync());
+            Assert.True(await caption.IsVisibleAsync());
+            legendLabels.Add(await BrowserProofCaptions.TextAsync(caption));
+        }
+        Assert.Equal(new[] { "Intake", "Completed" }, legendLabels);
         var captions = await page.Locator("[data-cfx-role=data-label-source][data-cfx-full-label]").EvaluateAllAsync<string[]>("nodes=>nodes.map(node=>node.dataset.cfxFullLabel)");
         Assert.Equal(new[] { "Opened", "Reviewed, ready", "Released" }.OrderBy(text => text), captions.OrderBy(text => text));
-        var visibleCaptions = await page.Locator("[data-cfx-role=data-label-source][data-cfx-full-label]")
-            .EvaluateAllAsync<string[]>("""
-                nodes => nodes.map(node => [...node.querySelectorAll('text')].flatMap(text => {
-                  const rows=[...text.querySelectorAll('tspan')]; return rows.length ? rows.map(row=>row.textContent) : [text.textContent];
-                }).join(' ').replace(/\s+/g,' ').trim())
-                """);
+        var visibleCaptions = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role=data-label-source][data-cfx-full-label]"));
         Assert.Equal(new[] { "Opened", "Reviewed, ready", "Released" }.OrderBy(text => text), visibleCaptions.OrderBy(text => text));
         await page.Locator(Point(1, 2)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Point(1, 2)).GetAttributeAsync("aria-selected"));

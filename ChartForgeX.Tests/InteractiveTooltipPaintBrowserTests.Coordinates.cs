@@ -37,7 +37,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         if (bounded) Assert.InRange(empty[2], 40, 115);
         else Assert.True(empty[2] >= 40);
         await page.Mouse.MoveAsync((float)empty[0], (float)empty[1]);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
         Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-hover-key"));
         await CaptureContractAsync(page, "paint-native-only-" + family + "-" + bounded + "-empty", new { Empty = empty, Bounded = bounded, Guide = guide });

@@ -8,7 +8,7 @@ const source = name => fs.readFileSync(path.resolve(__dirname, '../../ChartForge
 function readouts() {
   return new Function('isDataTarget', 'targetCategory', 'seriesLabel', 'renderedTargetKind', 'renderedTargetId', 'seriesKey',
     'contributorObservationIds', 'targetRawX', 'targetDataRange', 'sourcePointIndex', 'sourcePointCollection', 'dataTargets', 'timeTarget',
-    source('00-bootstrap-tooltip') + '\n' + source('10-legend-summary') + '\nreturn {text,targetIdentity,compareItems,tooltipRows,comparisonLegendRows};')(
+    source('00-bootstrap-tooltip') + '\n' + source('02-tooltip-format') + '\n' + source('02-tooltip-content') + '\n' + source('10-legend-summary') + '\nreturn {text,targetIdentity,compareItems,tooltipRows,comparisonLegendRows};')(
     () => true, node => node.dataset.cfxXLabel, node => node.dataset.cfxSeriesName, () => 'point', node => node.dataset.cfxPoint,
     node => node.dataset.cfxSeriesKey, () => undefined, node => Number(node.dataset.cfxX), node => node.range,
     node => Number(node.dataset.cfxPoint), () => undefined, root => root.nodes, node => node.dataset.cfxXScale === 'time');
@@ -23,7 +23,7 @@ test('target readouts publish captured bin labels and retain exact closed logic 
   const target = runtime.targetIdentity(node);
   assert.equal(target.label, '40 – 60'); assert.equal(target.rangeLabel, '40 – 60');
   assert.deepEqual(target.range, [40, 59.99999999999999]);
-  assert.equal(runtime.compareItems({nodes:[node]})[0].label, '40 – 60');
+  assert.equal(runtime.compareItems({nodes:[node]})[0].label, 'Duration · 40 – 60 · 1');
 });
 test('time and numeric tooltip titles use captured axis text while compare chips identify observations or series', () => {
   const runtime = readouts();
@@ -32,7 +32,7 @@ test('time and numeric tooltip titles use captured axis text while compare chips
   const scatter = mark({cfxPoint:'1',cfxSeriesName:'Samples',cfxKind:'scatter',cfxX:'4.242394913100822',cfxY:'8.8888888888889',
     cfxDisplayLabel:'4,2',cfxFormattedX:'4,2'});
   assert.equal(runtime.text(time, true), '2026-03-05'); assert.equal(runtime.text(scatter, true), '4,2');
-  assert.deepEqual(runtime.compareItems({nodes:[time,scatter]}).map(item => item.label), ['Requests · 2026-03-05','Samples']);
+  assert.deepEqual(runtime.compareItems({nodes:[time,scatter]}).map(item => item.label), ['Requests · 2026-03-05 · 27','Samples · 4,2 · 8.888889']);
   time.dataset.cfxAuthoredLabel = '';
   assert.equal(runtime.text(time, true), ''); assert.equal(runtime.compareItems({nodes:[time]})[0].label, '');
 });

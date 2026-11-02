@@ -60,6 +60,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         }
         if (profile.Contains("lasso", StringComparison.Ordinal)) {
             await page.EvaluateAsync("()=>{scopeControllers[0].select({observationIds:['shared-a']});scopeControllers[1].select({observationIds:['shared-a','unrelated']});}");
+            await roots.First.HoverAsync(new Microsoft.Playwright.LocatorHoverOptions { Position = new Microsoft.Playwright.Position { X = 1, Y = 1 } });
             await roots.First.Locator("[data-cfx-mode-button=brush]").ClickAsync();
             var bounds = await roots.First.Locator("[data-cfx-observation-id=local-b]").BoundingBoxAsync()
                 ?? throw new InvalidOperationException("The native local observation has no bounds.");

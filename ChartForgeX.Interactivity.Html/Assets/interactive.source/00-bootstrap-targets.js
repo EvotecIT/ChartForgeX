@@ -21,6 +21,7 @@
     if (node.closest('[data-cfx-visible="false"]')) return false;
     const role = (node.dataset || {}).cfxRole;
     if (role === 'legend-entry-omitted') return false;
+    if (node.closest('[data-cfx-role="legend-native"],[data-cfx-role="legend-proxy"]')) return false;
     if (role === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
 

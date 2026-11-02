@@ -31,7 +31,7 @@ public sealed class MermaidXYOrientationBrowserTests {
         await using var session = await OpenAsync(html, width, 580);
         var page = session.Page;
         await page.WaitForSelectorAsync(Point(0, 0));
-        if (kind == "bar") Assert.Equal(new[] { "Jan", "Feb", "Mar" }, await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']")));
+        if (kind == "bar") Assert.Equal(new[] { "Jan", "Feb", "Mar" }, await ActiveLegendLabelsAsync(page.Locator("[data-cfx-role='legend-item']")));
         var points = new[] { await BoxAsync(page, Point(0, 0)), await BoxAsync(page, Point(0, 1)), await BoxAsync(page, Point(0, 2)) };
         // Named categories read like a table, first at the top, as Mermaid draws a horizontal xychart.
         Assert.True(points[0].Y < points[1].Y && points[1].Y < points[2].Y);
@@ -57,5 +57,20 @@ public sealed class MermaidXYOrientationBrowserTests {
             File.WriteAllText(Path.Combine(capture, name + ".json"), JsonSerializer.Serialize(new { kind, width, dark, points, tooltip, ConsoleErrors = session.ConsoleLog.Count(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error) }));
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, name + ".png"), FullPage = true });
         }
+    }
+
+    private static async Task<string[]> ActiveLegendLabelsAsync(ILocator entries) {
+        var labels = new List<string>();
+        foreach (var item in await entries.AllAsync()) {
+            Assert.True(await item.IsVisibleAsync());
+            var html = await item.EvaluateAsync<bool>("node => node instanceof HTMLButtonElement");
+            var caption = item.Locator(html ? ":scope > .cfx-responsive-legend__label" : "[data-cfx-role='legend-label']");
+            Assert.Equal(1, await caption.CountAsync());
+            Assert.True(await caption.IsVisibleAsync());
+            var text = await BrowserProofCaptions.TextAsync(caption);
+            Assert.False(string.IsNullOrWhiteSpace(text));
+            labels.Add(text);
+        }
+        return labels.ToArray();
     }
 }

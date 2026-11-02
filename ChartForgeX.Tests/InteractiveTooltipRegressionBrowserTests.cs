@@ -18,7 +18,10 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(1, 10), new ChartPoint(1, 20), new ChartPoint(2, 15) }))
             .AddScatter("Comparison", new[] { new ChartPoint(1, 30), new ChartPoint(1, 40), new ChartPoint(2, 25) });
         chart.Series[0].WithPointColor(1, "#7b61e8");
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
+            options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
+        }));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
         var focused = await ObservationAsync(page, "observations");
@@ -52,12 +55,12 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), width, 560);
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
-        var swatch = mode == HtmlChartTooltipMode.SharedX ? "dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip__title .cfx-tooltip__swatch";
+        var swatch = mode == HtmlChartTooltipMode.SharedX ? "dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip dt:text-is('Value') .cfx-tooltip__swatch";
         var gradient = await GradientPaintAsync(page, Point(0, 1) + " [data-cfx-role='bar']");
         var colour = await page.Locator(swatch).EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor");
         await RecordAsync(page, "tooltip-solid-bar-" + (dark ? "dark" : "light") + "-" + mode + "-" + width, new { gradient, colour });
         Assert.StartsWith("url(", gradient[0], StringComparison.Ordinal);
-        await AssertCssColorsEqualAsync(page, gradient[1], colour);
+        await AssertCssColorsEqualAsync(page, "rgb(from " + gradient[1] + " r g b / 1)", colour);
         Assert.Equal(1, await page.Locator(Point(0, 1) + " [data-cfx-role='bar-highlight']").CountAsync());
         Assert.True(await page.Locator(Point(0, 1) + " [data-cfx-role='bar-pattern']").CountAsync() > 0);
         Assert.True(await page.EvaluateAsync<bool>("() => { const box = document.querySelector('.cfx-tooltip').getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight; }"));
@@ -82,7 +85,12 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         await page.Locator(mark).EvaluateAsync("node => document.getElementById(node.getAttribute('fill').slice(5, -1)).querySelector('stop').setAttribute('stop-opacity', '0')");
         await page.Locator(Point(0, 0)).FocusAsync();
         var gradient = await GradientPaintAsync(page, mark, 1);
-        await AssertCssColorsEqualAsync(page, gradient[1], await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        var swatches = page.Locator(range
+            ? ".cfx-tooltip dt:text-is('Start') .cfx-tooltip__swatch, .cfx-tooltip dt:text-is('End') .cfx-tooltip__swatch"
+            : ".cfx-tooltip dt:text-is('Value') .cfx-tooltip__swatch");
+        Assert.Equal(range ? 2 : 1, await swatches.CountAsync());
+        foreach (var swatch in await swatches.AllAsync())
+            await AssertCssColorsEqualAsync(page, "rgb(from " + gradient[1] + " r g b / 1)", await swatch.EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         Assert.Equal(0, await page.Locator("[data-cfx-role='legend-item']").CountAsync());
         AssertNoConsoleErrors(session);
     }

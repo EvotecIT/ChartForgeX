@@ -21,6 +21,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             options.Columns = 1;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }));
         await MountPositionFocusChartAsync(page, true, "position-a");
         await page.EvaluateAsync("()=>window.positionRootA=window.positionFocusChart");

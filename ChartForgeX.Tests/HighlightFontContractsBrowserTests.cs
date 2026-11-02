@@ -55,6 +55,7 @@ public sealed class HighlightFontContractsBrowserTests {
         var other = page.Locator(Legend(1));
         var shift = new LocatorClickOptions { Modifiers = new[] { KeyboardModifier.Shift } };
         await other.ClickAsync(shift);
+        await SettlePresentationAsync(page);
         Assert.True(await page.Locator(Point(1, 0)).EvaluateAsync<bool>("node=>{let opacity=1;for(let p=node;p;p=p.parentElement)opacity*=Number(getComputedStyle(p).opacity);return opacity>.99}"));
         await other.ClickAsync(shift);
         Assert.Equal(1, await page.Locator("[data-cfx-highlighted=true]").CountAsync());

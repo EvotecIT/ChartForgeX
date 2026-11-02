@@ -37,6 +37,7 @@
 
 
   const bindStageLayout = (root, stage, crosshair) => {
+    bindResponsiveReadout(root);
     if (!stage || !hasFeature(root, 'Crosshair') && !hasFeature(root, 'KeyboardNavigation')) return;
     let width = stage.clientWidth, height = stage.clientHeight;
     let frame = 0;

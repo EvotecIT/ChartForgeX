@@ -30,7 +30,7 @@ public sealed class RadialAreaEncodingBrowserTests {
         await using var session = await BrowserProofFonts.OpenAsync(body, width, 650); var page = session.Page;
         await page.EvaluateAsync("() => { window.areaController=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart')); window.areaSelections=[]; areaController.root.addEventListener('cfxselect',e=>areaSelections.push(e.detail.target)); }");
         var mark = NumericRadialSeriesTests.Marks(first.PreparedVisual.Scene)[0]; var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;
-        var position = await page.EvaluateAsync<double[]>("point=>{const svg=areaController.root.querySelector('svg');const p=svg.createSVGPoint();p.x=point.x;p.y=point.y;const q=p.matrixTransform(svg.getScreenCTM());return [q.x,q.y];}",
+        var position = await page.EvaluateAsync<double[]>("point=>{const svg=areaController.root.querySelector('.cfx-stage svg');const p=svg.createSVGPoint();p.x=point.x;p.y=point.y;const q=p.matrixTransform(svg.getScreenCTM());return [q.x,q.y];}",
             new { x = mark.Cx + Math.Cos(angle) * radius, y = mark.Cy + Math.Sin(angle) * radius });
         await page.Mouse.MoveAsync((float)position[0], (float)position[1], new MouseMoveOptions { Steps = 3 }); Assert.Contains("25", await TooltipTextAsync(page));
         await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(North)); await page.Keyboard.PressAsync("Space");

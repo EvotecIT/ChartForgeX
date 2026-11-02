@@ -7,8 +7,9 @@ internal static class HtmlChartTooltipOptionsCopy {
         destination.Mode = source.Mode;
         destination.Range = source.Range;
         destination.DelayMilliseconds = source.DelayMilliseconds;
+        destination.Template = source.Template;
         destination.Position.Anchor = source.Position.Anchor;
-        destination.Position.Placements = source.Position.Placements;
+        destination.Position.CopyPlacementsFrom(source.Position);
         destination.Position.Gap = source.Position.Gap;
         destination.Position.OffsetX = source.Position.OffsetX;
         destination.Position.OffsetY = source.Position.OffsetY;

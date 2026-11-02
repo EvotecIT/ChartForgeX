@@ -100,12 +100,12 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <a href="Website/static/examples/generated/family-bar-issuers-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-bar-issuers-light.png">PNG</a> / <a href="Website/static/examples/generated/family-bar-issuers-light.csharp.txt">C#</a>
     </td>
     <td width="50%">
-      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-latency-week-light.html"><img src="Website/static/examples/generated/family-line-latency-week-light.thumbnail.png" alt="Domain controller round-trip time" width="100%" /></a>
+      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-light.html"><img src="Website/static/examples/generated/family-line-wide-light.thumbnail.png" alt="Weekly request volume" width="100%" /></a>
       <br />
-      <strong>Domain controller round-trip time</strong><br />Line
+      <strong>Weekly request volume</strong><br />Line
       <br />
-      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-latency-week-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-latency-week-dark.html">Dark HTML</a> /
-      <a href="Website/static/examples/generated/family-line-latency-week-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-line-latency-week-light.png">PNG</a> / <a href="Website/static/examples/generated/family-line-latency-week-light.csharp.txt">C#</a>
+      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-dark.html">Dark HTML</a> /
+      <a href="Website/static/examples/generated/family-line-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-line-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-line-wide-light.csharp.txt">C#</a>
     </td>
   </tr>
   <tr>

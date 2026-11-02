@@ -66,7 +66,7 @@
             if (root.dataset.cfxPinOnSelect === 'false') showTip(root, tip, node);
             else pinTip(root, tip, node, undefined, false);
           }
-          emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
+          emitHostEvent(root, 'cfxhover', { label: item.target.label ?? item.label, target: item.target });
         }
       }));
       tray.appendChild(chip);

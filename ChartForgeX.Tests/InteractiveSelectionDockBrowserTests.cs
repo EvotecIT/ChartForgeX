@@ -60,6 +60,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
             // A host can clip the drawing while leaving the comparison controls available.
             await stage.EvaluateAsync("node=>{node.style.height='0';node.style.overflow='clip'}");
             await page.Locator(".cfx-compare-chip").First.ClickAsync();
+            await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
             Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
             Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
             Assert.Equal(2, await page.EvaluateAsync<int>("()=>readableInspection.pins.length"));
@@ -103,6 +104,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         await AssertReadoutDoesNotCoverDockAsync(page);
         if (!pinOnSelect) {
             await MoveAwayAsync(page);
+            await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
             Assert.False(await page.Locator(".cfx-tooltip").IsVisibleAsync());
             await requested.ClickAsync();
         }
@@ -126,6 +128,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
                     button.focus({preventScroll:true});
                 }
                 """);
+            await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
             Assert.False(await page.Locator(".cfx-tooltip").IsVisibleAsync());
         }
         AssertNoConsoleErrors(session);
@@ -215,7 +218,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         Assert.Equal("cfx-interactive-chart", await page.EvaluateAsync<string>("() => document.activeElement.className"));
         await page.Keyboard.PressAsync("Tab");
         await CaptureAsync(page, "selection-dock-after-clear-tab-" + dark + "-" + layout + "-" + width + "x" + height);
-        Assert.Equal("data", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxKeyboardComponent"));
+        Assert.Equal("legend", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxKeyboardComponent"));
         AssertNoConsoleErrors(session);
     }
 

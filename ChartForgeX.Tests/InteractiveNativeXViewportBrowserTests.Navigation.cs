@@ -11,17 +11,17 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     private const string Navigation = "[data-cfx-x-navigation]";
 
     [BrowserTheory]
-    [InlineData(ChartSeriesKind.Candlestick, false, false, 900, false)]
-    [InlineData(ChartSeriesKind.Ohlc, true, true, 390, false)]
-    [InlineData(ChartSeriesKind.RangeBand, true, false, 900, false)]
-    [InlineData(ChartSeriesKind.RangeArea, false, true, 390, true)]
-    [InlineData(ChartSeriesKind.DifferenceArea, true, true, 900, false)]
-    public async Task NativeRangeControlsCarryTheCompleteWorkflowAcrossTupleFamilies(ChartSeriesKind kind, bool time, bool reversed, int width, bool adaptive) {
+    [InlineData(ChartSeriesKind.Candlestick, false, false, 900, false, true)]
+    [InlineData(ChartSeriesKind.Ohlc, true, true, 390, false, false)]
+    [InlineData(ChartSeriesKind.RangeBand, true, false, 900, false, false)]
+    [InlineData(ChartSeriesKind.RangeArea, false, true, 390, true, false)]
+    [InlineData(ChartSeriesKind.DifferenceArea, true, true, 900, false, false)]
+    public async Task NativeRangeControlsCarryTheCompleteWorkflowAcrossTupleFamilies(ChartSeriesKind kind, bool time, bool reversed, int width, bool adaptive, bool standalone) {
         if (!Enabled) return;
         var host = new NativeHost(kind: kind, time: time, dark: reversed, reversed: reversed, navigation: true, adaptive: adaptive);
         await using var session = await OpenAsync(host.Page(), width, 940);
         var page = session.Page;
-        Assert.True(await page.Locator(Navigation).IsHiddenAsync());
+        Assert.Equal(!standalone, await page.Locator(Navigation).IsHiddenAsync());
         await ConnectAsync(page, host);
         if (adaptive) await page.WaitForFunctionAsync("()=>chartController.root.dataset.cfxAdaptiveDrawing==='narrow'");
         if (adaptive) await page.EvaluateAsync("()=>{window.navigationCommitDrawings=[];chartController.root.addEventListener('cfxviewportchange',()=>navigationCommitDrawings.push(chartController.root.dataset.cfxAdaptiveDrawing));}");
@@ -58,6 +58,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.Locator("[data-cfx-x-range=position]").FocusAsync(); await page.Keyboard.PressAsync("Home"); await WaitForChangesAsync(page, 4);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), host.Origin, host.Origin + span);
 
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No committed export was downloaded.");
         var exported = XDocument.Load(path);
@@ -101,7 +102,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     }
 
     [BrowserFact]
-    public async Task NavigatorFollowsCommittedRepliesAndHidesOnDisconnectOrDispose() {
+    public async Task NavigatorFollowsNativeRepliesContinuesStandaloneAfterDisconnectAndHidesOnDispose() {
         if (!Enabled) return;
         var host = new NativeHost(navigation: true);
         await using var session = await OpenAsync(host.Page(), 900, 900);
@@ -127,7 +128,20 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 7);
         Assert.Equal("false", await page.Locator("[data-cfx-x-preset='8']").GetAttributeAsync("aria-pressed"));
         await page.EvaluateAsync("()=>chartController.connectXViewport(null)");
-        Assert.True(await page.Locator(Navigation).IsHiddenAsync());
+        Assert.True(await page.Locator(Navigation).IsVisibleAsync());
+        Assert.False(await page.Locator("[data-cfx-x-range=end]").IsDisabledAsync());
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 7);
+        var disconnectedGeometry = await StandaloneGeometryAsync(page);
+        Assert.Equal("TypeError", await page.EvaluateAsync<string>("()=>{try{chartController.setXWindow(8,12);return 'accepted';}catch(error){return error.name;}}"));
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 7);
+        await page.Locator("[data-cfx-x-range=end]").EvaluateAsync("""
+            input=>{input.value='0.8';input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
+            """);
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 6);
+        AssertStandaloneGeometry(disconnectedGeometry, await StandaloneGeometryAsync(page), 2, 6);
+        Assert.Equal("false", await page.Locator(Navigation).GetAttributeAsync("aria-busy"));
+        Assert.Equal(3, await page.EvaluateAsync<int>("()=>controlled.length"));
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
         await page.EvaluateAsync("()=>chartController.connectXViewport(()=>new Promise(()=>{}))");
         Assert.True(await page.Locator(Navigation).IsVisibleAsync());
         await page.EvaluateAsync("()=>chartController.dispose()");

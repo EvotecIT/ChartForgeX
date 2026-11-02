@@ -25,6 +25,13 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
 
         await page.Locator("#before-chart").FocusAsync();
         await page.Keyboard.PressAsync("Tab");
+        Assert.True(await page.Locator(Legend(0)).EvaluateAsync<bool>("node => node === document.activeElement"));
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.True(await page.Locator(Legend(1)).EvaluateAsync<bool>("node => node === document.activeElement"));
+        await page.Keyboard.PressAsync("End");
+        Assert.True(await page.Locator(Legend(2)).EvaluateAsync<bool>("node => node === document.activeElement"));
+        await CaptureAsync(page, "keyboard-components-" + (dark ? "dark" : "light") + ".png");
+        await page.Keyboard.PressAsync("Tab");
         await AssertActivePointAsync(page, 0, 0);
         await page.Keyboard.PressAsync("ArrowRight");
         await AssertActivePointAsync(page, 0, 1);
@@ -39,19 +46,11 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         await page.Keyboard.PressAsync("ArrowRight");
         await AssertActivePointAsync(page, 0, 6);
         await page.Keyboard.PressAsync("Tab");
-        Assert.True(await page.Locator(Legend(0)).EvaluateAsync<bool>("node => node === document.activeElement"));
-        await page.Keyboard.PressAsync("ArrowRight");
-        Assert.True(await page.Locator(Legend(1)).EvaluateAsync<bool>("node => node === document.activeElement"));
-        await page.Keyboard.PressAsync("End");
-        Assert.True(await page.Locator(Legend(2)).EvaluateAsync<bool>("node => node === document.activeElement"));
-        await CaptureAsync(page, "keyboard-components-" + (dark ? "dark" : "light") + ".png");
-
-        await page.Keyboard.PressAsync("Tab");
         Assert.True(await page.Locator("#after-chart").EvaluateAsync<bool>("node => node === document.activeElement"));
         await page.Keyboard.PressAsync("Shift+Tab");
-        Assert.True(await page.Locator(Legend(2)).EvaluateAsync<bool>("node => node === document.activeElement"));
-        await page.Keyboard.PressAsync("Shift+Tab");
         await AssertActivePointAsync(page, 0, 6);
+        await page.Keyboard.PressAsync("Shift+Tab");
+        Assert.True(await page.Locator(Legend(2)).EvaluateAsync<bool>("node => node === document.activeElement"));
         await page.Keyboard.PressAsync("Shift+Tab");
         Assert.True(await page.Locator("#before-chart").EvaluateAsync<bool>("node => node === document.activeElement"));
 

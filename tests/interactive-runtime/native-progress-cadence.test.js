@@ -192,7 +192,12 @@ for (const boundary of ['hidden', 'reduced', 'completed']) test(`captured native
     f.window.SVGElement.prototype.getBoundingClientRect = () => ({ left: 24, top: 34, width: 320, height: 220 });
     f.window.requestAnimationFrame = callback => { const id = ++sequence; frames.set(id, callback); return id; };
     f.window.cancelAnimationFrame = id => frames.delete(id);
-    f.window.matchMedia = () => ({ matches: false, addEventListener: (_, callback) => mediaListeners.add(callback), removeEventListener: (_, callback) => mediaListeners.delete(callback) });
+    const otherMediaListeners = new Map();
+    f.window.matchMedia = query => {
+      if (!otherMediaListeners.has(query)) otherMediaListeners.set(query, new Set());
+      const listeners = query === '(prefers-reduced-motion: reduce)' ? mediaListeners : otherMediaListeners.get(query);
+      return { matches: false, addEventListener: (_, callback) => listeners.add(callback), removeEventListener: (_, callback) => listeners.delete(callback) };
+    };
     f.connect({ motion: { duration: 1000 } });
     f.controller.setProgressValue(match, .6); await f.flush();
     const native = value => f.make(value).querySelector('svg').outerHTML;

@@ -57,7 +57,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.EvaluateAsync("()=>chartController.setXWindow(2,10)"); await WaitForChangesAsync(page, 1);
         var pointer = await page.EvaluateAsync<JsonElement>("""
             ()=>{const projection=JSON.parse(chartController.root.dataset.cfxPreparedChart).xProjection,
-                plot=projection.plotBounds,svg=chartController.root.querySelector('svg');
+                plot=projection.plotBounds,svg=chartController.root.querySelector('.cfx-stage svg');
                 const matrix=svg.getScreenCTM(),point=new DOMPoint(plot.x+plot.width*.25,plot.y+plot.height*.5).matrixTransform(matrix);
                 chartController.root.querySelector('.cfx-stage').addEventListener('wheel',event=>window.nativeWheelClientX=event.clientX,{once:true});
                 return{x:point.x,y:point.y,left:new DOMPoint(plot.x,plot.y).matrixTransform(matrix).x,
@@ -102,7 +102,12 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("()=>{const copy=chartController.getXWindow();copy.minimum=99;return chartController.getXWindow().minimum===0;}"));
         Assert.True(await page.EvaluateAsync<bool>("()=>nativeRequests.every(request=>Number.isFinite(request.left)&&Number.isFinite(request.right)&&request.left<request.right)"));
         await page.EvaluateAsync("()=>chartController.connectXViewport(null)");
-        Assert.Equal("TypeError", await page.EvaluateAsync<string>("()=>{try{chartController.setXWindow(2,8);return 'accepted';}catch(error){return error.name;}}"));
+        var disconnectedGeometry = await StandaloneGeometryAsync(page);
+        Assert.True(await page.EvaluateAsync<bool>("()=>chartController.setXWindow(2,8)===chartController"));
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 8);
+        AssertStandaloneGeometry(disconnectedGeometry, await StandaloneGeometryAsync(page), 2, 8, reversed: true);
+        Assert.Equal(3, await page.EvaluateAsync<int>("()=>nativeRequests.length"));
+        Assert.Equal(3, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
         Assert.Equal(4, host.PreparedCount);
         AssertNoConsoleErrors(session);
     }

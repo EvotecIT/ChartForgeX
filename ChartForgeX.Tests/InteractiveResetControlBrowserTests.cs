@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
 using ChartForgeX.Interactivity;
@@ -76,6 +77,10 @@ public sealed class InteractiveResetControlBrowserTests {
         var reset = page.Locator("[data-cfx-reset]");
         Assert.False(await reset.IsVisibleAsync());
 
+        var initialViewport = await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getViewport()");
+        var initialFrame = await BoxAsync(page, ".cfx-stage > svg");
+        var initialPoint = await BoxAsync(page, Point(1, 2) + " .cfx-prepared-point-marker");
+
         await page.Locator(Legend(1)).ClickAsync();
         await AssertResetBelowCardAsync(page);
         await ResetAsync(page);
@@ -89,15 +94,44 @@ public sealed class InteractiveResetControlBrowserTests {
 
         await page.Locator("[data-cfx-zoom=\"in\"]").ClickAsync();
         Assert.True(await reset.IsVisibleAsync());
+        var zoomedViewport = await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getViewport()");
+        var initialX = initialViewport.GetProperty("x");
+        var minimum = initialX.GetProperty("minimum").GetDouble();
+        var maximum = initialX.GetProperty("maximum").GetDouble();
+        Assert.Equal(minimum + (maximum - minimum) * .1, zoomedViewport.GetProperty("x").GetProperty("minimum").GetDouble(), 8);
+        Assert.Equal(maximum - (maximum - minimum) * .1, zoomedViewport.GetProperty("x").GetProperty("maximum").GetDouble(), 8);
+        Assert.Equal(initialViewport.GetProperty("y").GetRawText(), zoomedViewport.GetProperty("y").GetRawText());
+        var zoomedFrame = await BoxAsync(page, ".cfx-stage > svg");
+        Assert.Equal(initialFrame.Width, zoomedFrame.Width);
+        Assert.Equal(initialFrame.Height, zoomedFrame.Height);
+        var zoomedPoint = await BoxAsync(page, Point(1, 2) + " .cfx-prepared-point-marker");
+        Assert.True(zoomedPoint.X < initialPoint.X - .5, "The off-centre observation should move within the fixed frame when the X domain narrows.");
+        Assert.InRange(zoomedPoint.Width, initialPoint.Width - .03, initialPoint.Width + .03);
         await ResetAsync(page);
-        Assert.Equal("1.000", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-zoom"));
+        Assert.Equal(initialViewport.GetRawText(), (await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getViewport()")).GetRawText());
+        // Clicking the reset row can scroll this short viewport, so compare positions within the drawing.
+        var restoredPoint = await BoxAsync(page, Point(1, 2) + " .cfx-prepared-point-marker");
+        var restoredFrame = await BoxAsync(page, ".cfx-stage > svg");
+        Assert.InRange(restoredPoint.X - restoredFrame.X, initialPoint.X - initialFrame.X - .03, initialPoint.X - initialFrame.X + .03);
+        Assert.InRange(restoredPoint.Y - restoredFrame.Y, initialPoint.Y - initialFrame.Y - .03, initialPoint.Y - initialFrame.Y + .03);
 
-        foreach (var mode in new[] { "pan", "brush" }) {
-            await page.Locator("[data-cfx-mode-button=\"" + mode + "\"]").ClickAsync();
-            await DragAcrossStageAsync(page);
-            Assert.True(await reset.IsVisibleAsync(), mode + " should reveal the reset control.");
-            await ResetAsync(page);
-        }
+        // A data viewport can pan only after zoom creates room inside its full source domain.
+        await page.Locator("[data-cfx-zoom=\"in\"]").ClickAsync();
+        var beforePan = await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getXWindow()");
+        await page.Locator("[data-cfx-mode-button=pan]").ClickAsync();
+        await DragAcrossStageAsync(page);
+        var afterPan = await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getXWindow()");
+        Assert.True(afterPan.GetProperty("minimum").GetDouble() < beforePan.GetProperty("minimum").GetDouble());
+        Assert.Equal(beforePan.GetProperty("maximum").GetDouble() - beforePan.GetProperty("minimum").GetDouble(),
+            afterPan.GetProperty("maximum").GetDouble() - afterPan.GetProperty("minimum").GetDouble(), 8);
+        Assert.True(await reset.IsVisibleAsync());
+        await ResetAsync(page);
+        Assert.Equal(initialViewport.GetRawText(), (await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getViewport()")).GetRawText());
+
+        await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
+        await DragAcrossStageAsync(page);
+        Assert.True(await reset.IsVisibleAsync());
+        await ResetAsync(page);
 
         AssertNoConsoleErrors(session);
     }
@@ -117,7 +151,7 @@ public sealed class InteractiveResetControlBrowserTests {
         var frame = await BoxAsync(page, ".cfx-frame");
         var stage = await BoxAsync(page, ".cfx-stage");
         // The readable layout scrolls the chart horizontally; the control follows below the visible frame.
-        Assert.Equal(28, button.Height, 1);
+        Assert.Equal(32, button.Height, 1);
         Assert.InRange(frame.X + frame.Width - (button.X + button.Width), 6, 10);
         Assert.InRange(button.Y - stage.Y - stage.Height, 6, 10);
         Assert.True(button.X + button.Width <= 380, "The reset control should stay inside a 380 px viewport.");
@@ -171,7 +205,7 @@ public sealed class InteractiveResetControlBrowserTests {
         var button = await BoxAsync(page, "[data-cfx-reset]");
         var card = await BoxAsync(page, ".cfx-stage");
         var frame = await BoxAsync(page, ".cfx-frame");
-        Assert.Equal(28, button.Height, 1);
+        Assert.Equal(32, button.Height, 1);
         Assert.InRange(frame.X + frame.Width - (button.X + button.Width), 6, 10);
         Assert.InRange(button.Y - card.Y - card.Height, 6, 10);
         var style = await page.Locator("[data-cfx-reset]").EvaluateAsync<string[]>("node => { const s = getComputedStyle(node); return [s.backgroundColor, s.borderTopWidth, s.borderRadius, s.boxShadow]; }");

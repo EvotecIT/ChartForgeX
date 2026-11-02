@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using ChartForgeX.Interactivity.Html;
 using Microsoft.Playwright;
 using Xunit;
@@ -88,33 +87,17 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [InlineData(HtmlChartResponsiveLayout.Readable, 340, true)]
     [InlineData(HtmlChartResponsiveLayout.Fit, 950, true)]
     [InlineData(HtmlChartResponsiveLayout.Readable, 950, false)]
-    public async Task DefaultsRetainPointerOffsetAndPriorRuntimeGeometry(HtmlChartResponsiveLayout layout, int width, bool dark) {
+    public async Task DefaultScatterPlacementTriesAboveBeforeClampingToTheViewport(HtmlChartResponsiveLayout layout, int width, bool dark) {
         if (!Enabled) return;
         var html = Observations(dark).ToInteractiveHtmlPage(options => options.ResponsiveLayout = layout);
         await using var session = await OpenAsync(html, width, 760);
         var page = session.Page;
         await CentreReadableTargetAsync(page);
         var pointer = await PointerAsync(page);
-        var current = await AssertPositionAsync(page, HtmlChartTooltipAnchor.Pointer, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer);
-        var baseline = Environment.GetEnvironmentVariable("CFX_TOOLTIP_BASELINE_SCRIPT");
-        if (!string.IsNullOrWhiteSpace(baseline)) {
-            var oldScript = await File.ReadAllTextAsync(baseline);
-            await page.SetContentAsync(Regex.Replace(html, "<script[^>]*>.*?</script>", _ => "<script>" + oldScript + "</script>", RegexOptions.Singleline));
-            await CentreReadableTargetAsync(page);
-            await page.Mouse.MoveAsync(0, 0);
-            await PointerAsync(page);
-            var old = await GeometryAsync(page);
-            var before = ScreenRect.Read(old.GetProperty("tip")); var after = ScreenRect.Read(current.GetProperty("tip"));
-            Assert.InRange(after.X, before.X - .6, before.X + .6);
-            Assert.InRange(after.Y, before.Y - .6, before.Y + .6);
-            Assert.InRange(after.Width, before.Width - .6, before.Width + .6);
-            Assert.InRange(after.Height, before.Height - .6, before.Height + .6);
-            await CaptureAsync(page, $"position-default-before-{layout}-{width}", old);
-            await page.SetContentAsync(html);
-            await CentreReadableTargetAsync(page);
-            await page.Mouse.MoveAsync(0, 0);
-            await PointerAsync(page);
-        }
+        var current = await AssertPositionAsync(page, HtmlChartTooltipAnchor.Pointer, new[] {
+            HtmlChartTooltipPlacement.TopRight, HtmlChartTooltipPlacement.TopLeft,
+            HtmlChartTooltipPlacement.BottomRight, HtmlChartTooltipPlacement.BottomLeft
+        }, pointer: pointer);
         await CaptureAsync(page, $"position-default-current-{layout}-{width}", current);
         AssertNoConsoleErrors(session);
     }

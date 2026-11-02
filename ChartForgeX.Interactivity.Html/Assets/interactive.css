@@ -8,9 +8,9 @@
 
 body {
   margin: 0;
-  background: #0f172a;
-  color: #e5e7eb;
-  font-family: var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif);
+  background: var(--cfx-host-background, var(--hfx-color-surface-page));
+  color: var(--cfx-tooltip-text, var(--hfx-color-text));
+  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 
 .cfx-shell {
@@ -33,6 +33,17 @@ body {
 }
 
 .cfx-interactive-chart {
+  /* Chrome roles: remap control geometry onto host tokens here, in one place. */
+  --cfx-tooltip-radius: 8px;
+  --cfx-control-radius: 6px;
+  --cfx-chip-radius: 999px;
+  --cfx-swatch-radius: 2px;
+  --cfx-axis-label-radius: 4px;
+  --cfx-toolbar-control-size: 28px;
+  --cfx-toolbar-control-size-coarse: 36px;
+  --cfx-toolbar-icon-size: 16px;
+  --cfx-toolbar-inset: 8px;
+  --cfx-focus-ring: var(--cfx-host-accent, var(--hfx-color-focus-ring, var(--cfx-default-host-accent)));
   container: cfx-chart / inline-size;
   contain-intrinsic-inline-size: var(--cfx-intrinsic-width, 640px);
   position: relative;
@@ -47,9 +58,9 @@ body {
 
 .cfx-stage {
   position: relative;
-  background: #020617;
-  border: 1px solid #334155;
-  border-radius: 8px;
+  background: var(--cfx-tooltip-surface);
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   padding: 12px;
   overflow: hidden;
   touch-action: auto;
@@ -61,6 +72,11 @@ body {
   transform-origin: center center;
   transition: transform .12s ease;
   will-change: transform;
+}
+.cfx-interactive-chart[data-cfx-standalone-projection="true"] .cfx-stage svg {
+  transform: none;
+  transition: none;
+  will-change: auto;
 }
 
 .cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg,
@@ -95,32 +111,47 @@ body {
   justify-content: flex-end;
   gap: 8px;
   margin: 0 0 10px;
-  padding: 0;
-  border: 0;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, .58);
+}
+
+.cfx-interactive-chart .cfx-toolbar {
+  position: absolute;
+  inset: var(--cfx-toolbar-inset) auto auto;
+  inset-inline-end: var(--cfx-toolbar-inset);
+  z-index: 15;
+  gap: 2px;
+  max-width: calc(100% - 16px);
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"]:not([data-cfx-responsive-layout="fit"]):not([data-cfx-responsive-layout="adaptive"]) {
+  width: min(100%, var(--cfx-native-width, var(--cfx-intrinsic-width)));
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar {
+  position: static; inset: auto; width: 100%; max-width: 100%;
+  gap: 8px; margin: 8px auto 0; padding: 0; border: 0; box-shadow: none;
+  opacity: 1; pointer-events: auto;
+}
+.cfx-interactive-chart[data-cfx-toolbar="band"]:not([data-cfx-responsive-layout="fit"]) .cfx-toolbar {
+  max-width: var(--cfx-native-width);
 }
 
 .cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar {
-  padding: 0;
-  border: 0;
-  background: none;
-  gap: 4px;
+  gap: 2px;
 }
 
 .cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool {
   flex: 0 0 auto;
-  min-height: 28px;
-  padding: 4px 7px;
   border-color: transparent;
-  background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-muted);
-}
-
-.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool:hover,
-.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool[aria-pressed="true"] {
-  color: var(--cfx-tooltip-text);
-  background: var(--cfx-tooltip-line);
 }
 
 .cfx-frame {
@@ -132,36 +163,36 @@ body {
   outline: none;
 }
 
-/* Reserve the reset row so linked selections do not move the chart's following content. */
+/* Reserved control rows keep the plot still when selection and reset appear. */
 .cfx-reset {
+  z-index: 15;
   display: flex;
   width: max-content;
   margin: 8px 8px 0 auto;
   align-items: center;
-  height: 28px;
+  min-height: 32px;
   padding: 0 10px;
-  border: 1px solid rgba(148, 163, 184, .45);
-  border-radius: 6px;
-  background: rgba(15, 23, 42, .78);
-  color: #e5e7eb;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
   cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   white-space: nowrap;
+  transition: opacity 120ms ease-out;
 }
 
 .cfx-reset[hidden] {
   display: flex;
   visibility: hidden;
+  opacity: 0;
   pointer-events: none;
 }
 
 .cfx-reset:hover,
 .cfx-reset:focus-visible {
-  border-color: #38bdf8;
-  color: #7dd3fc;
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-default-host-accent);
 }
 
 .cfx-scenarios {
@@ -173,19 +204,19 @@ body {
 
 .cfx-tool,
 .cfx-scenario {
-  border: 1px solid #334155;
-  border-radius: 6px;
-  background: #111827;
-  color: #e5e7eb;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--hfx-type-caption-size, 12px);
+  font-weight: 600;
   padding: 6px 9px;
 }
 
 .cfx-scenario {
-  border-color: color-mix(in srgb, var(--cfx-scenario-color, #64748b) 45%, #334155);
+  border-color: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-tooltip-muted)) 45%, var(--cfx-tooltip-line));
 }
 
 .cfx-scenario::before {
@@ -194,8 +225,8 @@ body {
   width: 8px;
   height: 8px;
   margin-right: 7px;
-  border-radius: 999px;
-  background: var(--cfx-scenario-color, #64748b);
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-scenario-color, var(--cfx-tooltip-muted));
 }
 
 .cfx-tool:hover,
@@ -204,8 +235,8 @@ body {
 .cfx-scenario:hover,
 .cfx-scenario:focus-visible,
 .cfx-scenario[aria-pressed="true"] {
-  border-color: #38bdf8;
-  color: #7dd3fc;
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-default-host-accent);
 }
 
 .cfx-scenario-panel {
@@ -213,10 +244,10 @@ body {
   gap: 8px;
   margin: 0 0 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(51, 65, 85, .95);
-  border-radius: 8px;
-  background: rgba(15, 23, 42, .78);
-  color: #e5e7eb;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
 }
 
 .cfx-scenario-panel__summary {
@@ -225,14 +256,14 @@ body {
 }
 
 .cfx-scenario-panel__title {
-  color: var(--cfx-scenario-color, #f8fafc);
+  color: var(--cfx-scenario-color, var(--cfx-tooltip-text));
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cfx-scenario-panel__meta {
-  color: #94a3b8;
-  font-size: 12px;
+  color: var(--cfx-tooltip-muted);
+  font-size: var(--hfx-type-caption-size, 12px);
 }
 
 .cfx-scenario-panel__controls,
@@ -254,13 +285,13 @@ body {
   gap: 6px;
   min-height: 24px;
   padding: 3px 8px;
-  border: 1px solid rgba(51, 65, 85, .95);
-  border-radius: 6px;
-  background: rgba(2, 6, 23, .52);
-  color: #cbd5e1;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
   cursor: pointer;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cfx-scenario-panel__steps li::before {
@@ -269,31 +300,31 @@ body {
   place-items: center;
   width: 16px;
   height: 16px;
-  border-radius: 999px;
-  background: var(--cfx-scenario-color, #2563eb);
-  color: #fff;
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  color: var(--cfx-tooltip-surface);
   font-size: 10px;
 }
 
 .cfx-scenario-panel__steps li[aria-current="step"] {
-  border-color: var(--cfx-scenario-color, #38bdf8);
-  color: #f8fafc;
+  border-color: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  color: var(--cfx-tooltip-text);
 }
 
 .cfx-interactive-chart[data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
-  border-color: var(--cfx-scenario-color, #38bdf8);
-  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 30%, rgba(15, 23, 42, .92));
-  color: #fff;
+  border-color: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 30%, var(--cfx-tooltip-surface));
+  color: var(--cfx-tooltip-surface);
 }
 
 .cfx-scenario-progress {
   position: relative;
   min-height: 24px;
   overflow: hidden;
-  border: 1px solid rgba(51, 65, 85, .95);
-  border-radius: 999px;
-  background: rgba(2, 6, 23, .54);
-  color: #dbeafe;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
 }
 
 .cfx-scenario-progress[hidden] {
@@ -305,7 +336,7 @@ body {
   inset: 0 auto 0 0;
   width: var(--cfx-scenario-progress, 0%);
   border-radius: inherit;
-  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 46%, rgba(56, 189, 248, .2));
+  background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 46%, var(--cfx-default-host-accent));
   transition: width .18s ease;
 }
 
@@ -316,7 +347,7 @@ body {
   overflow: hidden;
   padding: 5px 10px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1.2;
   text-align: center;
   text-overflow: ellipsis;
@@ -327,7 +358,7 @@ body {
   width: 100%;
   min-height: 24px;
   margin: 0;
-  accent-color: var(--cfx-scenario-color, #38bdf8);
+  accent-color: var(--cfx-scenario-color, var(--cfx-default-host-accent));
   cursor: pointer;
 }
 
@@ -339,42 +370,47 @@ body {
 .cfx-tooltip {
   position: fixed;
   z-index: 20;
-  min-width: 180px;
-  max-width: 320px;
-  border: 1px solid rgba(56, 189, 248, .45);
-  border-radius: 7px;
-  background: rgba(15, 23, 42, .96);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .26);
-  color: #f8fafc;
-  font-size: 12px;
-  line-height: 1.35;
-  padding: 8px 10px;
+  box-sizing: border-box;
+  min-width: min(160px, calc(100vw - 16px));
+  max-width: min(320px, calc(100vw - 16px));
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  color: var(--cfx-tooltip-text);
+  font: 400 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
   pointer-events: none;
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 120ms ease-out, translate 120ms ease-out, display 80ms allow-discrete;
 }
 
 .cfx-tooltip--pinned {
-  border-color: rgba(250, 204, 21, .7);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, .30), 0 0 0 1px rgba(250, 204, 21, .16) inset;
+  border-inline-start: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent));
+  padding-inline-end: 28px;
+  pointer-events: auto;
 }
 
 .cfx-tooltip--pinned::before {
-  content: attr(data-cfx-pinned-label);
-  display: block;
-  margin-bottom: 4px;
-  color: inherit;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .04em;
-  text-transform: uppercase;
+  content: none;
 }
 
 .cfx-tooltip__title {
-  font-weight: 800;
+  margin: 0 0 6px;
+  color: var(--cfx-tooltip-muted);
+  font-size: var(--hfx-type-caption-size, 12px);
+  font-weight: 600;
+  line-height: 16px;
   overflow-wrap: anywhere;
 }
 
 .cfx-tooltip__secondary {
-  margin-top: 4px;
+  margin-top: 6px;
+  color: var(--cfx-tooltip-muted);
+  font-size: 11px;
+  line-height: 16px;
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
@@ -382,34 +418,41 @@ body {
 .cfx-tooltip__title--series {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cfx-tooltip__swatch {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  flex: 0 0 10px;
-  border-radius: 2px;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: var(--cfx-swatch-radius, var(--hfx-radius-2xs));
+  background: var(--cfx-series-color, currentColor);
 }
 
 .cfx-tooltip__meta {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 2px 10px;
-  margin: 6px 0 0;
-  color: #cbd5e1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 16px;
+  margin: 0;
+  color: var(--cfx-tooltip-text);
 }
 
 .cfx-tooltip__meta dt,
 .cfx-tooltip__meta dd {
-  margin: 0;
-  min-width: 0;
+  text-align: end;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .cfx-tooltip__meta dt {
-  color: #94a3b8;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  font-weight: 400;
 }
 
 .cfx-tooltip__meta dd {
@@ -418,13 +461,21 @@ body {
 
 .cfx-tooltip[hidden] {
   display: none;
+  opacity: 0;
+  translate: 0 2px;
+  transition-duration: 80ms;
+  transition-delay: 60ms;
+}
+
+@starting-style {
+  .cfx-tooltip:not([hidden]) { opacity: 0; translate: 0 2px; }
 }
 
 .cfx-brush-box {
   position: absolute;
   z-index: 10;
-  border: 1px solid rgba(56, 189, 248, .95);
-  background: rgba(56, 189, 248, .18);
+  border: 1px solid var(--cfx-default-host-accent);
+  background: var(--cfx-default-host-accent);
   pointer-events: none;
 }
 
@@ -434,7 +485,7 @@ body {
 
 .cfx-crosshair {
   position: absolute;
-  overflow: hidden;
+  overflow: visible;
   z-index: 9;
   pointer-events: none;
 }
@@ -446,11 +497,12 @@ body {
 .cfx-crosshair__line {
   position: absolute;
   box-sizing: border-box;
-  background: rgba(14, 165, 233, .58);
-  box-shadow: 0 0 10px rgba(14, 165, 233, .18);
+  background: none;
+  box-shadow: none;
+  opacity: .5;
 }
 
-/* Center background and border strokes so clipping retains ink at either plot edge. */
+/* Crosshair lines end at the plot; value labels remain outside those edges. */
 .cfx-crosshair__line--x {
   left: 0;
   right: 0;
@@ -469,20 +521,16 @@ body {
 
 .cfx-crosshair__label {
   position: absolute;
-  left: 0;
-  top: 0;
   box-sizing: border-box;
   width: max-content;
-  max-width: min(210px, 100%);
-  max-height: 100%;
+  max-width: min(210px, calc(100vw - 16px));
   overflow: hidden;
-  border: 1px solid rgba(14, 165, 233, .42);
-  border-radius: 999px;
-  background: rgba(15, 23, 42, .86);
-  color: #e0f2fe;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 8px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-crosshair-label-surface, var(--cfx-tooltip-text));
+  color: var(--cfx-crosshair-label-text, var(--cfx-tooltip-surface));
+  font: 600 11px/16px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  padding: 2px 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -503,13 +551,13 @@ body {
   position: absolute;
   max-width: min(220px, calc(100% - 16px));
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 42%, rgba(15, 23, 42, .7));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 18%, rgba(2, 6, 23, .9));
-  box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
-  color: #f8fafc;
+  border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 42%, var(--cfx-tooltip-surface));
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 18%, var(--cfx-tooltip-surface));
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  color: var(--cfx-tooltip-text);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1.15;
   padding: 5px 8px;
   text-overflow: ellipsis;
@@ -524,32 +572,32 @@ body {
   width: 16px;
   height: 16px;
   margin-right: 5px;
-  border-radius: 999px;
-  background: rgba(248, 250, 252, .16);
-  color: #bae6fd;
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent);
+  color: var(--cfx-tooltip-text);
   font-size: 10px;
 }
 
 .cfx-compare-tray {
   position: relative;
-  z-index: 11;
+  z-index: 14;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
   width: 100%;
   max-width: 100%;
-  height: 47px;
+  margin-top: 8px;
+  min-height: 46px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  margin-top: 8px;
   contain: inline-size;
-  border: 1px solid rgba(56, 189, 248, .36);
-  border-radius: 8px;
-  background: rgba(2, 6, 23, .82);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .24);
-  color: #e0f2fe;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  color: var(--cfx-tooltip-text);
   padding: 6px;
   pointer-events: auto;
 }
@@ -557,15 +605,14 @@ body {
 .cfx-compare-tray[hidden] {
   display: flex;
   visibility: hidden;
-  pointer-events: none;
 }
 
 .cfx-compare-tray__summary,
 .cfx-compare-tray__range {
   flex: 0 0 auto;
-  color: #7dd3fc;
+  color: var(--cfx-default-host-accent);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
   padding: 0 5px;
   white-space: nowrap;
 }
@@ -574,14 +621,14 @@ body {
 .cfx-compare-page,
 .cfx-compare-clear {
   min-width: 0;
-  border: 1px solid rgba(56, 189, 248, .34);
-  border-radius: 999px;
-  background: rgba(15, 23, 42, .72);
-  color: #f8fafc;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   padding: 6px 8px;
 }
@@ -598,8 +645,8 @@ body {
 .cfx-compare-chip:focus-visible,
 .cfx-compare-page:hover:not(:disabled),
 .cfx-compare-page:focus-visible {
-  border-color: #7dd3fc;
-  color: #bae6fd;
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-tooltip-text);
 }
 
 .cfx-compare-page { flex: 0 0 auto; white-space: nowrap; }
@@ -608,8 +655,8 @@ body {
 .cfx-compare-clear {
   flex: 0 0 auto;
   margin-left: auto;
-  border-color: rgba(250, 204, 21, .44);
-  color: #fde68a;
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-tooltip-text);
 }
 
 .cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
@@ -633,38 +680,38 @@ body {
 }
 .cfx-interactive-chart .cfx-selected:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selected[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, .75));
-  opacity: 1 !important;
+  filter: none;
+  opacity: 1;
   stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
 }
 
 .cfx-interactive-chart .cfx-hovered:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])) .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
-  stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
+  opacity: 1;
+  filter: none;
+  stroke-width: var(--cfx-interactive-hover-stroke-width, 1.5) !important;
 }
 
 .cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed],.cfx-selected,.cfx-highlighted)),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where(.cfx-selected,.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .82 !important;
-  filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
+  filter: none;
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed],.cfx-highlighted)),
-.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where(.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  opacity: .38;
+.cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed],.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where(.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .4;
 }
 
 .cfx-interactive-chart .cfx-trail:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 9px rgba(34, 211, 238, .44));
+  opacity: 1;
+  filter: none;
 }
 
 .cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"]:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="1"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  filter: drop-shadow(0 0 12px rgba(250, 204, 21, .72));
+  filter: none;
   stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
 }
 
@@ -692,18 +739,18 @@ body {
 
 .cfx-interactive-chart .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 10px rgba(250, 204, 21, .34));
+  opacity: 1;
+  filter: none;
 }
 
 .cfx-interactive-chart .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .10 !important;
-  filter: saturate(.35);
+  filter: none;
 }
 
 .cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-isolated="true"] {
-  filter: drop-shadow(0 0 8px rgba(250, 204, 21, .55));
+  filter: none;
 }
 
 .cfx-interactive-chart .cfx-scenario-muted:not(:where([data-cfx-highlight-managed])),
@@ -714,14 +761,14 @@ body {
 
 .cfx-interactive-chart .cfx-scenario-active:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 70%, transparent));
+  opacity: 1;
+  filter: none;
 }
 
 .cfx-interactive-chart .cfx-scenario-step-active:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  opacity: 1 !important;
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 80%, transparent));
+  opacity: 1;
+  filter: none;
 }
 
 .cfx-interactive-chart .cfx-scenario-step-muted:not(:where([data-cfx-highlight-managed])),
@@ -754,9 +801,7 @@ body {
 }
 
 @container cfx-chart (max-width: 900px) {
-  .cfx-interactive-chart:not([data-cfx-toolbar="compact"]) .cfx-toolbar,
   .cfx-scenario-panel__controls { justify-content: stretch; }
-  .cfx-interactive-chart:not([data-cfx-toolbar="compact"]) .cfx-toolbar .cfx-tool,
   .cfx-scenario-panel__controls .cfx-tool { flex: 1 1 auto; min-height: 36px; }
 }
 
