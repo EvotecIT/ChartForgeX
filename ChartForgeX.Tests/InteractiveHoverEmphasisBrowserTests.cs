@@ -34,13 +34,13 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, Legends));
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, "[data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker"));
         var tooltip = await TooltipTextAsync(page);
-        Assert.Matches("^Thu\\s+Failed\\s+31\\s+Warnings\\s+112\\s+Passed\\s+1k$", tooltip);
+        Assert.Matches("^Thu\\s+Failed\\s+31\\s+Warnings\\s+112\\s+Passed\\s+1,041$", tooltip);
 
         await MoveToAsync(page, Point(0, 3));
         await page.WaitForFunctionAsync("() => window.hoverEmphasisTarget?.seriesKey === 'passed'");
         var target = await page.EvaluateAsync<JsonElement>("() => window.hoverEmphasisTarget");
         Assert.Equal("passed:3", target.GetProperty("targetId").GetString());
-        Assert.Equal("1k", target.GetProperty("value").GetString());
+        Assert.Equal("1,041", target.GetProperty("value").GetString());
         Assert.Equal(1041, target.GetProperty("numericValue").GetDouble());
 
         await MoveAwayAsync(page);
