@@ -456,7 +456,7 @@ internal static partial class SmokeTests {
 
         // Room for a shortened caption that keeps six characters before its ellipsis.
         var gauge = Chart.Create()
-            .WithSize(420, 260)
+            .WithSize(460, 300)
             .WithValueFormatter(_ => longLabel)
             .AddGauge(longLabel, 87);
         AssertFamilyTextFitsReservedRegion(PreparedFamily(gauge), "gauge-label", longLabel);

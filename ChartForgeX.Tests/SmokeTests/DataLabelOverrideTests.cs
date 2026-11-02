@@ -215,7 +215,7 @@ internal static partial class SmokeTests {
             "donut-title",
             "donut");
         AssertCenterDataLabelSpacing(
-            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)),
+            () => Chart.Create().WithSize(460, 360).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)),
             "progress-ring-value",
             "progress-ring-title",
             "progress ring");
