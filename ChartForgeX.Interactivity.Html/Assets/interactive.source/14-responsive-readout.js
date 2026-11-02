@@ -26,7 +26,13 @@
       if (view) paintStandaloneAxes(root, view);
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(refresh); };
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(queue);
+    // The toolbar matters only for its height; Reset zoom widening it must not repaint the axes.
+    let observedToolbarHeight = -1;
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {
+      let changed = false;
+      for (const entry of entries) changed = entry.target !== toolbar || observedToolbarHeight !== (observedToolbarHeight = entry.contentRect.height) || changed;
+      if (changed) queue();
+    });
     observer?.observe(root); listenChart(root, window, 'resize', queue);
     if (toolbar) observer?.observe(toolbar);
     if (printMedia?.addEventListener) listenChart(root, printMedia, 'change', refresh);
