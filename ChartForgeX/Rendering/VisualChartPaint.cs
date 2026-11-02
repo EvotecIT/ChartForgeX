@@ -15,6 +15,8 @@ internal static class VisualChartPaint {
     internal static SvgPaint Series(ChartSeries series, ChartColor color, int point = -1, bool explicitOverride = false) {
         var role = SeriesRole(series, point, explicitOverride);
         if (explicitOverride || role != SvgColorRole.Series || series.Color.HasValue) return SvgPaint.Of(color, role);
+        // The neutral Other grey is a token blend, not a palette slot.
+        if (point >= 0 ? ChartSeriesColours.IsOtherCategory(series, point) : ChartSeriesColours.IsOtherSeries(series)) return SvgPaint.Literal(color);
         var ordinal = ChartSeriesColours.SlotOrdinal(series, point);
         return ordinal < 0 ? SvgPaint.Of(color, role) : SvgPaint.SeriesSlot(color, ordinal);
     }

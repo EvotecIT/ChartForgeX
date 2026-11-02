@@ -75,6 +75,8 @@ internal sealed class ChartHierarchySurface {
         if (parent < 0 && _series.Kind == ChartSeriesKind.Sunburst
             && !_series.NodeStates.ContainsKey(_series.HierarchyItems[index].Id))
             tone = new InheritedTone(_colors.Neutral2, SvgPaint.Of(_colors.Neutral2, SvgColorRole.Surface));
+        else if ((parent < 0 || _series.Kind == ChartSeriesKind.Sunburst && _parents[parent] < 0) && ChartSeriesColours.IsOther(_series.HierarchyItems[index].Label))
+            tone = new InheritedTone(_colors.Other, SvgPaint.Literal(_colors.Other));
         else if (parent < 0 || _series.Kind == ChartSeriesKind.Sunburst && _parents[parent] < 0) {
             var ordinal = _siblingOrdinals[index]; var color = _colors.CategoricalColor(ordinal);
             tone = new InheritedTone(color, SvgPaint.Palette(color, ordinal));

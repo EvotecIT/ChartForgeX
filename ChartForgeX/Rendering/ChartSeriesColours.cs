@@ -13,7 +13,21 @@ internal static class ChartSeriesColours {
 
     internal static ChartColor Resolve(ChartSeries series, int index, VisualThemeColors colors) {
         if (series.Color.HasValue) return series.Color.Value;
-        return State(series.StateRole, colors, Palette(series, index, colors));
+        return State(series.StateRole, colors, IsOtherSeries(series) ? colors.Other : Palette(series, index, colors));
+    }
+
+    /// <summary>A category or series named Other is the remainder: the neutral Other grey, never a categorical hue.</summary>
+    internal static bool IsOther(string? name) => name != null && string.Equals(name.Trim(), "Other", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>A bar series named Other is the remainder segment of its stack or group; other kinds keep their slot.</summary>
+    internal static bool IsOtherSeries(ChartSeries series) => series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar && IsOther(series.Name);
+
+    /// <summary>Whether a part-to-whole point is the authored Other category of its chart's category labels.</summary>
+    internal static bool IsOtherCategory(ChartSeries series, int point) {
+        if (series.Owner == null || point < 0 || point >= series.RenderPoints.Count || !ChartSeriesKindTraits.IsPieLikeKind(series.Kind)) return false;
+        var x = series.RenderPoints[point].X;
+        foreach (var label in series.Owner.Options.XAxisLabels) if (Math.Abs(label.Value - x) < 0.000001) return IsOther(label.Text);
+        return false;
     }
 
     internal static ChartColor Palette(ChartSeries series, int index, VisualThemeColors colors, int offset = 0) =>
@@ -21,7 +35,8 @@ internal static class ChartSeriesColours {
 
     /// <summary>Part-to-whole categories retain their own ordinal palette instead of inheriting one series slot.</summary>
     internal static ChartColor CategoryPoint(ChartSeries series, int point, VisualThemeColors colors) =>
-        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.CategoricalColor(CategorySourceOrdinal(series, point)));
+        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors,
+            IsOtherCategory(series, point) ? colors.Other : colors.CategoricalColor(CategorySourceOrdinal(series, point)));
 
     /// <summary>
     /// The palette ordinal an automatic colour of this paint came from: the category ordinal for part-to-whole and
@@ -43,13 +58,14 @@ internal static class ChartSeriesColours {
     private static int CategorySourceOrdinal(ChartSeries series, int point) {
         if (!ChartSeriesKindTraits.IsPieLikeKind(series.Kind) || point < 0) return point;
         if (series.CategoryPaletteOrdinals != null && point < series.CategoryPaletteOrdinals.Length) return series.CategoryPaletteOrdinals[point];
-        return CategoryRank(series.RenderPoints, point);
+        // Other takes no hue, so the ranked categories keep contiguous palette slots without it.
+        return CategoryRank(series.RenderPoints, point, other => IsOtherCategory(series, other));
     }
 
-    internal static int CategoryRank(IReadOnlyList<ChartPoint> points, int point) {
+    internal static int CategoryRank(IReadOnlyList<ChartPoint> points, int point, Func<int, bool>? excluded = null) {
         var rank = 0;
         for (var i = 0; i < points.Count; i++)
-            if (points[i].Y > points[point].Y || points[i].Y.Equals(points[point].Y) && i < point) rank++;
+            if (excluded?.Invoke(i) != true && (points[i].Y > points[point].Y || points[i].Y.Equals(points[point].Y) && i < point)) rank++;
         return rank;
     }
 
