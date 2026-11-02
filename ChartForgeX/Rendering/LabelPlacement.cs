@@ -121,6 +121,6 @@ public sealed class PlacedLabel {
     public bool HasLeaderLine => !IsDropped && Request.HasLeaderLine && (CandidateIndex > 0 || Request.LeaderOnFirstCandidate);
     /// <summary>Gets the leader's endpoint on the label box.</summary>
     public ChartPoint LeaderEnd => new(Math.Max(Bounds.Left, Math.Min(Bounds.Right, Request.Anchor.X)), Math.Max(Bounds.Top, Math.Min(Bounds.Bottom, Request.Anchor.Y)));
-    /// <summary>Gets the leader start, clipped to the boundary when its anchor is inside the associated source mark.</summary>
+    /// <summary>Gets the leader start, clipped to the source boundary when its anchor is inside the mark and its caption is outside.</summary>
     public ChartPoint LeaderStart { get; internal set; }
 }

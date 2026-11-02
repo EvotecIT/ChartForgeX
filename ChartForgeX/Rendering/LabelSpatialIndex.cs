@@ -39,6 +39,7 @@ internal sealed class LabelSpatialIndex {
             if (associated != null ? mark.Id != associated : !LabelPlacementService.Contains(mark.Bounds, new ChartRect(start.X, start.Y, 0, 0))) continue;
             if (mark.Shape != null) return mark.Shape.LeaderExit(start, end);
             var x1 = start.X; var y1 = start.Y; var x2 = end.X; var y2 = end.Y; var box = mark.Bounds;
+            if (LabelPlacementService.Contains(box, new ChartRect(end.X, end.Y, 0, 0))) return start;
             if (LabelPlacementService.Contains(box, new ChartRect(start.X, start.Y, 0, 0))
                 && ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, box.Left, box.Top, box.Right, box.Bottom)) return new ChartPoint(x2, y2);
         }
@@ -51,19 +52,17 @@ internal sealed class LabelSpatialIndex {
         foreach (var leader in _leaders)
             if (!Same(start, leader.Start) && (associated == null || leader.Source != associated)
                 && LabelLeaderGeometry.Intersects(start, end, leader.Start, leader.End)) return true;
+        ChartRect? sourceBounds = null;
+        if (associated != null) foreach (var mark in _marks) if (mark.Id == associated) { sourceBounds = mark.Bounds; break; }
         foreach (var mark in _marks) {
             var source = associated != null ? mark.Id == associated : LabelPlacementService.Contains(mark.Bounds, new ChartRect(start.X, start.Y, 0, 0));
-            var from = start;
-            if (source) {
-                var dx = end.X - start.X; var dy = end.Y - start.Y; var length = Math.Sqrt(dx * dx + dy * dy);
-                if (length <= 1) continue;
-                from = new ChartPoint(start.X + dx / length, start.Y + dy / length);
-            }
+            if (source) continue; // LeaderStart already clips the accepted segment to this source's contour.
+            // A surface enclosing the complete source, such as a map region under a dot, can be left.
+            if (sourceBounds.HasValue && (mark.Shape?.Contains(sourceBounds.Value) ?? LabelPlacementService.Contains(mark.Bounds, sourceBounds.Value))) continue;
             // Leaders may cross thin rules and outlines; they must not pass over another filled mark.
-            if (mark.Shape != null) { if (mark.Shape.IsFilled && mark.Shape.IntersectsLeader(from, end)) return true; }
-            else if (source) {
-                // Rectangle obstacles are often bounding boxes of slanted or curved marks, so only the source box is exact enough to clip against.
-                var x1 = from.X; var y1 = from.Y; var x2 = end.X; var y2 = end.Y; var box = mark.Bounds;
+            if (mark.Shape != null && mark.Shape.IsFilled && mark.Shape.IntersectsLeader(start, end)) return true;
+            if (mark.Shape == null) {
+                var x1 = start.X; var y1 = start.Y; var x2 = end.X; var y2 = end.Y; var box = mark.Bounds;
                 if (ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, box.Left, box.Top, box.Right, box.Bottom)) return true;
             }
         }

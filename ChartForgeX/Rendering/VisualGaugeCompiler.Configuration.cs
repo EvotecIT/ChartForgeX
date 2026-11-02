@@ -191,7 +191,8 @@ internal static partial class VisualGaugeCompiler {
             var inside = radius - stroke / 2 - bandWidth - gap / 2 - halfExtent;
             var candidates = new[] { At(clear), At(clear + labelHeight), At(inside) };
             var box = candidates.FirstOrDefault(candidate => FitsCaption(plot, candidate, occupied));
-            if (box.Width <= 0) box = candidates[0];            FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
+            if (box.Width <= 0) box = candidates[0];
+            FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
         }
     }
 

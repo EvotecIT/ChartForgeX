@@ -73,10 +73,12 @@ internal static partial class VisualMapCompiler {
         var dx = end.X - anchor.X; var dy = end.Y - anchor.Y;
         var distance = System.Math.Sqrt(dx * dx + dy * dy);
         // Centered labels need no leader. Keep the line outside the dot and clear of the measured text rectangle.
-        if (distance <= label.LeaderRadius + 1) return;
+        if (distance <= 1) return;
         var ux = dx / distance; var uy = dy / distance;
-        var start = new ChartPoint(anchor.X + ux * label.LeaderRadius, anchor.Y + uy * label.LeaderRadius);
-        var clearance = System.Math.Min(2, (distance - label.LeaderRadius) / 2);
+        var inset = System.Math.Max(label.LeaderRadius, (result.LeaderStart.X - anchor.X) * ux + (result.LeaderStart.Y - anchor.Y) * uy);
+        if (distance <= inset + 1) return;
+        var start = new ChartPoint(anchor.X + ux * inset, anchor.Y + uy * inset);
+        var clearance = System.Math.Min(2, (distance - inset) / 2);
         end = new ChartPoint(end.X - ux * clearance, end.Y - uy * clearance);
         var color = label.LeaderColor.Value; var paint = label.LeaderPaint ?? SvgPaint.Literal(color);
         foreach (var layer in ChartLineVisualLayers.Build(color, 1, ChartRouteVisualStyles.DottedMapLeader())) {

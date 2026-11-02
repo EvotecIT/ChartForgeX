@@ -96,7 +96,8 @@ internal static partial class VisualGaugeCompiler {
         var bottom = min != null ? labelHeight : 0;
         var top = target != null ? labelHeight : 0;
         // A target caption sits beyond the outer arc on its tick's ray, so keep room for it beside the arc.
-        var targetReserve = target != null ? chart.Measure(builder, target, chart.Style(colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true)).Width + gap : 0;
+        var targetReserve = target != null ? Math.Min(plot.Width / 4,
+            chart.Measure(builder, target, chart.Style(colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true)).Width + gap) : 0;
         var outer = Math.Max(0, Math.Min(plot.Width / 2 - gap - targetReserve, (plot.Height - top - bottom - gap) / 1.5));
         if (outer < 2) { builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "The viewport is too small for a gauge arc.")); return; }
         var cx = plot.Left + plot.Width / 2; var cy = plot.Top + top + outer;
@@ -254,7 +255,7 @@ internal static partial class VisualGaugeCompiler {
                 continue;
             }
             chart.Text(builder, result.Text, result.Bounds, style, roles[index], "series-0-" + roles[index], fallback: LabelFallbackRule.Drop);
-            if (result.HasLeaderLine) builder.Line(result.Request.Anchor.X, result.Request.Anchor.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
+            if (result.HasLeaderLine) builder.Line(result.LeaderStart.X, result.LeaderStart.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
                 context.Theme.Resolve(context.ThemeMode).Axis, 1, "data-label-connector", paint: VisualChartPaint.Stroke(context.Theme.Resolve(context.ThemeMode).Axis, SvgColorRole.Axis));
         }
     }

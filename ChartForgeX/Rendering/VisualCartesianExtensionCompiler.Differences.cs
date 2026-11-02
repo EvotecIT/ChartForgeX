@@ -78,6 +78,7 @@ internal static partial class VisualCartesianCompiler {
         var first = Color(series, index, colors);
         var color = configured.HasValue ? configured.Value.WithAlpha(255) : ChartSeriesColours.Palette(series, index, colors, 1);
         if (SameRgb(color, first)) color = ChartSeriesColours.Palette(series, index, colors, SameRgb(ChartSeriesColours.Palette(series, index, colors, 1), first) ? 2 : 1);
+        color = color.WithAlpha(first.A);
         return (color, VisualChartPaint.Series(series, color, explicitOverride: configured.HasValue));
     }
 

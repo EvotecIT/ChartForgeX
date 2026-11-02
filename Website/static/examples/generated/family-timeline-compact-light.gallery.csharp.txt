@@ -20,7 +20,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TimelineRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 264)), theme, mode,
     new VisualFrame("Project activities in March 2026", "", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = StateTimelineRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 258)), theme, mode,
     new VisualFrame("Availability throughout the day", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

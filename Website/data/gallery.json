@@ -11084,7 +11084,7 @@
           "image": "/examples/generated/family-gauge-precision-light.svg",
           "darkImage": "/examples/generated/family-gauge-precision-dark.svg",
           "width": 800,
-          "height": 440,
+          "height": 243,
           "source": "/examples/generated/family-gauge-precision-light.csharp.txt",
           "darkSource": "/examples/generated/family-gauge-precision-dark.csharp.txt"
         },
@@ -11306,7 +11306,7 @@
       "category": "indicators",
       "title": "Reviewed work against its targets",
       "width": 800,
-      "height": 440,
+      "height": 219,
       "kinds": [
         "Bullet"
       ],
@@ -11330,7 +11330,7 @@
           "image": "/examples/generated/family-bullet-compact-light.svg",
           "darkImage": "/examples/generated/family-bullet-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 219,
           "source": "/examples/generated/family-bullet-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-bullet-compact-dark.csharp.txt"
         },
@@ -11340,7 +11340,7 @@
           "image": "/examples/generated/independent-bullet-wide-light.svg",
           "darkImage": "/examples/generated/independent-bullet-wide-dark.svg",
           "width": 760,
-          "height": 340,
+          "height": 208,
           "source": "/examples/generated/independent-bullet-wide-light.csharp.txt",
           "darkSource": "/examples/generated/independent-bullet-wide-dark.csharp.txt"
         },
@@ -11622,7 +11622,7 @@
       "category": "schedule",
       "title": "Project activities in March 2026",
       "width": 800,
-      "height": 440,
+      "height": 264,
       "kinds": [
         "Timeline"
       ],
@@ -11670,7 +11670,7 @@
           "image": "/examples/generated/family-timeline-compact-light.svg",
           "darkImage": "/examples/generated/family-timeline-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 264,
           "source": "/examples/generated/family-timeline-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-timeline-compact-dark.csharp.txt"
         }
@@ -11682,7 +11682,7 @@
       "category": "schedule",
       "title": "Project delivery in March 2026",
       "width": 800,
-      "height": 440,
+      "height": 296,
       "kinds": [
         "Gantt"
       ],
@@ -11730,7 +11730,7 @@
           "image": "/examples/generated/family-gantt-compact-light.svg",
           "darkImage": "/examples/generated/family-gantt-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 314,
           "source": "/examples/generated/family-gantt-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-gantt-compact-dark.csharp.txt"
         },
@@ -11740,7 +11740,7 @@
           "image": "/examples/generated/mixed-schedule-reversed-light.svg",
           "darkImage": "/examples/generated/mixed-schedule-reversed-dark.svg",
           "width": 900,
-          "height": 660,
+          "height": 447,
           "source": "/examples/generated/mixed-schedule-reversed-light.csharp.txt",
           "darkSource": "/examples/generated/mixed-schedule-reversed-dark.csharp.txt"
         },
@@ -11760,7 +11760,7 @@
           "image": "/examples/generated/mixed-schedule-wide-light.svg",
           "darkImage": "/examples/generated/mixed-schedule-wide-dark.svg",
           "width": 900,
-          "height": 660,
+          "height": 447,
           "source": "/examples/generated/mixed-schedule-wide-light.csharp.txt",
           "darkSource": "/examples/generated/mixed-schedule-wide-dark.csharp.txt"
         },
@@ -11770,7 +11770,7 @@
           "image": "/examples/generated/embedding-support-schedule-light.svg",
           "darkImage": "/examples/generated/embedding-support-schedule-dark.svg",
           "width": 800,
-          "height": 360,
+          "height": 283,
           "source": "/examples/generated/embedding-support-schedule-light.csharp.txt",
           "darkSource": "/examples/generated/embedding-support-schedule-dark.csharp.txt"
         },
@@ -11780,7 +11780,7 @@
           "image": "/examples/generated/mixed-schedule-time-light.svg",
           "darkImage": "/examples/generated/mixed-schedule-time-dark.svg",
           "width": 900,
-          "height": 660,
+          "height": 447,
           "source": "/examples/generated/mixed-schedule-time-light.csharp.txt",
           "darkSource": "/examples/generated/mixed-schedule-time-dark.csharp.txt"
         }
@@ -12502,7 +12502,7 @@
       "category": "proportion",
       "title": "Completed assessments by team",
       "width": 800,
-      "height": 440,
+      "height": 205,
       "kinds": [
         "Pictorial"
       ],
@@ -12550,7 +12550,7 @@
           "image": "/examples/generated/pictorial-artwork-bottom-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-bottom-dark.svg",
           "width": 900,
-          "height": 460,
+          "height": 194,
           "source": "/examples/generated/pictorial-artwork-bottom-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-bottom-dark.csharp.txt"
         },
@@ -12560,7 +12560,7 @@
           "image": "/examples/generated/family-pictorial-compact-light.svg",
           "darkImage": "/examples/generated/family-pictorial-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 205,
           "source": "/examples/generated/family-pictorial-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-pictorial-compact-dark.csharp.txt"
         },
@@ -12570,7 +12570,7 @@
           "image": "/examples/generated/pictorial-artwork-contour-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-contour-dark.svg",
           "width": 900,
-          "height": 460,
+          "height": 194,
           "source": "/examples/generated/pictorial-artwork-contour-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-contour-dark.csharp.txt"
         },
@@ -12580,7 +12580,7 @@
           "image": "/examples/generated/pictorial-artwork-image-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-image-dark.svg",
           "width": 900,
-          "height": 460,
+          "height": 194,
           "source": "/examples/generated/pictorial-artwork-image-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-image-dark.csharp.txt"
         },
@@ -12590,7 +12590,7 @@
           "image": "/examples/generated/pictorial-artwork-right-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-right-dark.svg",
           "width": 900,
-          "height": 460,
+          "height": 194,
           "source": "/examples/generated/pictorial-artwork-right-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-right-dark.csharp.txt"
         },
@@ -12600,7 +12600,7 @@
           "image": "/examples/generated/pictorial-artwork-wide-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-wide-dark.svg",
           "width": 900,
-          "height": 460,
+          "height": 194,
           "source": "/examples/generated/pictorial-artwork-wide-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-wide-dark.csharp.txt"
         }
@@ -12612,7 +12612,7 @@
       "category": "indicators",
       "title": "Progress through delivery stages",
       "width": 800,
-      "height": 440,
+      "height": 205,
       "kinds": [
         "ProgressBar"
       ],
@@ -12660,7 +12660,7 @@
           "image": "/examples/generated/family-progress-bar-compact-light.svg",
           "darkImage": "/examples/generated/family-progress-bar-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 205,
           "source": "/examples/generated/family-progress-bar-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-progress-bar-compact-dark.csharp.txt"
         },
@@ -12670,7 +12670,7 @@
           "image": "/examples/generated/independent-progress-wide-light.svg",
           "darkImage": "/examples/generated/independent-progress-wide-dark.svg",
           "width": 760,
-          "height": 340,
+          "height": 194,
           "source": "/examples/generated/independent-progress-wide-light.csharp.txt",
           "darkSource": "/examples/generated/independent-progress-wide-dark.csharp.txt"
         }
@@ -13061,7 +13061,7 @@
           "image": "/examples/generated/family-state-timeline-compact-light.svg",
           "darkImage": "/examples/generated/family-state-timeline-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 258,
           "source": "/examples/generated/family-state-timeline-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-state-timeline-compact-dark.csharp.txt"
         },
@@ -13071,7 +13071,7 @@
           "image": "/examples/generated/family-state-timeline-wide-light.svg",
           "darkImage": "/examples/generated/family-state-timeline-wide-dark.svg",
           "width": 800,
-          "height": 440,
+          "height": 258,
           "source": "/examples/generated/family-state-timeline-wide-light.csharp.txt",
           "darkSource": "/examples/generated/family-state-timeline-wide-dark.csharp.txt"
         }
@@ -13083,7 +13083,7 @@
       "category": "schedule",
       "title": "Incidents and recovery in parallel",
       "width": 800,
-      "height": 440,
+      "height": 320,
       "kinds": [
         "GanttLane"
       ],
@@ -13131,7 +13131,7 @@
           "image": "/examples/generated/family-gantt-lane-compact-light.svg",
           "darkImage": "/examples/generated/family-gantt-lane-compact-dark.svg",
           "width": 360,
-          "height": 360,
+          "height": 320,
           "source": "/examples/generated/family-gantt-lane-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-gantt-lane-compact-dark.csharp.txt"
         }

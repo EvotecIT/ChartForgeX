@@ -20,7 +20,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = IndependentProgressRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(760, 340)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(760, 194)), theme, mode,
     new VisualFrame("Progress in each row\u0027s units", "Retained row domains preserve fraction, count and signed measurements", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

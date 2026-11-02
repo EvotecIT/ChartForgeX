@@ -20,7 +20,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = MixedScheduleRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(900, 660)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(900, 447)), theme, mode,
     new VisualFrame("Shared schedule evidence", "Source-ordered ranges, tasks, state intervals and packed resource items retain one native time axis", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

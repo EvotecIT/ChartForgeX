@@ -14010,7 +14010,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 16
     },
     {
       "id": "family-candlestick-compact-light",
@@ -14046,7 +14046,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-candlestick-options-light",
@@ -14226,7 +14226,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 16
     },
     {
       "id": "family-candlestick-compact-dark",
@@ -14262,7 +14262,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-candlestick-options-dark",
@@ -23310,8 +23310,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 440,
-      "naturalAspect": 1.7272727272727273,
+      "height": 224,
+      "naturalAspect": 3.392857142857143,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-dense-scale-light.csharp.txt",
@@ -23350,8 +23350,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 300,
-      "naturalAspect": 1.3,
+      "height": 224,
+      "naturalAspect": 1.7410714285714286,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-dense-scale-light.csharp.txt",
@@ -23390,8 +23390,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 243,
+      "naturalAspect": 3.292181069958848,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-precision-light.csharp.txt",
@@ -23426,8 +23426,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 260,
+      "naturalAspect": 1.3846153846153846,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-precision-light.csharp.txt",
@@ -23750,8 +23750,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 440,
-      "naturalAspect": 1.7272727272727273,
+      "height": 224,
+      "naturalAspect": 3.392857142857143,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-dense-scale-dark.csharp.txt",
@@ -23790,8 +23790,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 300,
-      "naturalAspect": 1.3,
+      "height": 224,
+      "naturalAspect": 1.7410714285714286,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-dense-scale-dark.csharp.txt",
@@ -23830,8 +23830,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 243,
+      "naturalAspect": 3.292181069958848,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-precision-dark.csharp.txt",
@@ -23866,8 +23866,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 260,
+      "naturalAspect": 1.3846153846153846,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-precision-dark.csharp.txt",
@@ -24550,8 +24550,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 219,
+      "naturalAspect": 3.65296803652968,
       "compact": false,
       "interactive": "family-bullet-wide-light.interactive.html",
       "source": "family-bullet-wide-light.csharp.txt",
@@ -24586,8 +24586,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 219,
+      "naturalAspect": 1.643835616438356,
       "compact": true,
       "interactive": null,
       "source": "family-bullet-compact-light.csharp.txt",
@@ -24718,8 +24718,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 219,
+      "naturalAspect": 3.65296803652968,
       "compact": false,
       "interactive": "family-bullet-wide-dark.interactive.html",
       "source": "family-bullet-wide-dark.csharp.txt",
@@ -24754,8 +24754,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 219,
+      "naturalAspect": 1.643835616438356,
       "compact": true,
       "interactive": null,
       "source": "family-bullet-compact-dark.csharp.txt",
@@ -26670,8 +26670,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 264,
+      "naturalAspect": 3.0303030303030303,
       "compact": false,
       "interactive": "family-timeline-wide-light.interactive.html",
       "source": "family-timeline-wide-light.csharp.txt",
@@ -26706,8 +26706,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 264,
+      "naturalAspect": 1.3636363636363635,
       "compact": true,
       "interactive": null,
       "source": "family-timeline-compact-light.csharp.txt",
@@ -26742,8 +26742,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 264,
+      "naturalAspect": 3.0303030303030303,
       "compact": false,
       "interactive": "family-timeline-wide-dark.interactive.html",
       "source": "family-timeline-wide-dark.csharp.txt",
@@ -26778,8 +26778,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 264,
+      "naturalAspect": 1.3636363636363635,
       "compact": true,
       "interactive": null,
       "source": "family-timeline-compact-dark.csharp.txt",
@@ -26814,8 +26814,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 296,
+      "naturalAspect": 2.7027027027027026,
       "compact": false,
       "interactive": "family-gantt-wide-light.interactive.html",
       "source": "family-gantt-wide-light.csharp.txt",
@@ -26850,8 +26850,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 314,
+      "naturalAspect": 1.1464968152866242,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-compact-light.csharp.txt",
@@ -26886,8 +26886,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 296,
+      "naturalAspect": 2.7027027027027026,
       "compact": false,
       "interactive": "family-gantt-wide-dark.interactive.html",
       "source": "family-gantt-wide-dark.csharp.txt",
@@ -26922,8 +26922,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 314,
+      "naturalAspect": 1.1464968152866242,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-compact-dark.csharp.txt",
@@ -31246,8 +31246,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 205,
+      "naturalAspect": 3.902439024390244,
       "compact": false,
       "interactive": "family-pictorial-wide-light.interactive.html",
       "source": "family-pictorial-wide-light.csharp.txt",
@@ -31282,8 +31282,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 205,
+      "naturalAspect": 1.7560975609756098,
       "compact": true,
       "interactive": null,
       "source": "family-pictorial-compact-light.csharp.txt",
@@ -31318,8 +31318,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 205,
+      "naturalAspect": 3.902439024390244,
       "compact": false,
       "interactive": "family-pictorial-wide-dark.interactive.html",
       "source": "family-pictorial-wide-dark.csharp.txt",
@@ -31354,8 +31354,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 205,
+      "naturalAspect": 1.7560975609756098,
       "compact": true,
       "interactive": null,
       "source": "family-pictorial-compact-dark.csharp.txt",
@@ -31390,8 +31390,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 205,
+      "naturalAspect": 3.902439024390244,
       "compact": false,
       "interactive": "family-progress-bar-wide-light.interactive.html",
       "source": "family-progress-bar-wide-light.csharp.txt",
@@ -31426,8 +31426,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 205,
+      "naturalAspect": 1.7560975609756098,
       "compact": true,
       "interactive": null,
       "source": "family-progress-bar-compact-light.csharp.txt",
@@ -31462,8 +31462,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 205,
+      "naturalAspect": 3.902439024390244,
       "compact": false,
       "interactive": "family-progress-bar-wide-dark.interactive.html",
       "source": "family-progress-bar-wide-dark.csharp.txt",
@@ -31498,8 +31498,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 205,
+      "naturalAspect": 1.7560975609756098,
       "compact": true,
       "interactive": null,
       "source": "family-progress-bar-compact-dark.csharp.txt",
@@ -31714,7 +31714,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 16
     },
     {
       "id": "family-ohlc-compact-light",
@@ -31750,7 +31750,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-ohlc-options-light",
@@ -31930,7 +31930,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 16
     },
     {
       "id": "family-ohlc-compact-dark",
@@ -31966,7 +31966,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-ohlc-options-dark",
@@ -33890,8 +33890,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 258,
+      "naturalAspect": 3.10077519379845,
       "compact": false,
       "interactive": "family-state-timeline-wide-light.interactive.html",
       "source": "family-state-timeline-wide-light.csharp.txt",
@@ -33926,8 +33926,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 258,
+      "naturalAspect": 1.3953488372093024,
       "compact": true,
       "interactive": null,
       "source": "family-state-timeline-compact-light.csharp.txt",
@@ -34034,8 +34034,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 258,
+      "naturalAspect": 3.10077519379845,
       "compact": false,
       "interactive": "family-state-timeline-wide-dark.interactive.html",
       "source": "family-state-timeline-wide-dark.csharp.txt",
@@ -34070,8 +34070,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 258,
+      "naturalAspect": 1.3953488372093024,
       "compact": true,
       "interactive": null,
       "source": "family-state-timeline-compact-dark.csharp.txt",
@@ -34178,8 +34178,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 320,
+      "naturalAspect": 2.5,
       "compact": false,
       "interactive": "family-gantt-lane-wide-light.interactive.html",
       "source": "family-gantt-lane-wide-light.csharp.txt",
@@ -34214,8 +34214,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 320,
+      "naturalAspect": 1.125,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-lane-compact-light.csharp.txt",
@@ -34250,8 +34250,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 440,
-      "naturalAspect": 1.8181818181818181,
+      "height": 320,
+      "naturalAspect": 2.5,
       "compact": false,
       "interactive": "family-gantt-lane-wide-dark.interactive.html",
       "source": "family-gantt-lane-wide-dark.csharp.txt",
@@ -34286,8 +34286,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 360,
-      "naturalAspect": 1,
+      "height": 320,
+      "naturalAspect": 1.125,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-lane-compact-dark.csharp.txt",
@@ -37046,7 +37046,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-compact-light",
@@ -37082,7 +37082,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-smooth-boundaries-light",
@@ -37118,7 +37118,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 25
     },
     {
       "id": "family-difference-area-compact-smooth-boundaries-light",
@@ -37154,7 +37154,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 25
     },
     {
       "id": "family-difference-area-dated-gaps-light",
@@ -37191,7 +37191,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -37228,7 +37228,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-step-start-light",
@@ -37264,7 +37264,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-step-middle-light",
@@ -37300,7 +37300,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-step-end-light",
@@ -37336,7 +37336,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-compact-step-middle-light",
@@ -37372,7 +37372,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 25
     },
     {
       "id": "family-difference-area-singleton-light",
@@ -37408,7 +37408,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 15
     },
     {
       "id": "family-difference-area-compact-singleton-light",
@@ -37444,7 +37444,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 15
     },
     {
       "id": "family-difference-area-dense-light",
@@ -37480,7 +37480,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 47
+      "semanticRegions": 49
     },
     {
       "id": "family-difference-area-compact-dense-light",
@@ -37516,7 +37516,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 44
     },
     {
       "id": "family-difference-area-wide-dark",
@@ -37552,7 +37552,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-compact-dark",
@@ -37588,7 +37588,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-smooth-boundaries-dark",
@@ -37624,7 +37624,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 25
     },
     {
       "id": "family-difference-area-compact-smooth-boundaries-dark",
@@ -37660,7 +37660,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 25
     },
     {
       "id": "family-difference-area-dated-gaps-dark",
@@ -37697,7 +37697,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -37734,7 +37734,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-step-start-dark",
@@ -37770,7 +37770,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-step-middle-dark",
@@ -37806,7 +37806,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-step-end-dark",
@@ -37842,7 +37842,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 24
     },
     {
       "id": "family-difference-area-compact-step-middle-dark",
@@ -37878,7 +37878,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 25
     },
     {
       "id": "family-difference-area-singleton-dark",
@@ -37914,7 +37914,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 15
     },
     {
       "id": "family-difference-area-compact-singleton-dark",
@@ -37950,7 +37950,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 15
     },
     {
       "id": "family-difference-area-dense-dark",
@@ -37986,7 +37986,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 47
+      "semanticRegions": 49
     },
     {
       "id": "family-difference-area-compact-dense-dark",
@@ -38022,7 +38022,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 44
     },
     {
       "id": "family-radial-column-mixed-light",
@@ -42070,8 +42070,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": "mixed-schedule-wide-light.interactive.html",
       "source": "mixed-schedule-wide-light.csharp.txt",
@@ -42106,8 +42106,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-light.csharp.txt",
@@ -42126,13 +42126,11 @@
       ],
       "diagnostics": [
         "text.overflow",
-        "text.overflow",
-        "schedule.annotation-label-overflow"
+        "text.overflow"
       ],
       "diagnosticMessages": [
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "An annotation label was shortened or omitted to avoid marks and other labels within the plot."
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 41
     },
@@ -42150,8 +42148,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-reversed-light.csharp.txt",
@@ -42186,8 +42184,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-reversed-light.csharp.txt",
@@ -42228,8 +42226,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-light.csharp.txt",
@@ -42264,8 +42262,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-light.csharp.txt",
@@ -42284,13 +42282,11 @@
       ],
       "diagnostics": [
         "text.overflow",
-        "text.overflow",
-        "schedule.annotation-label-overflow"
+        "text.overflow"
       ],
       "diagnosticMessages": [
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "An annotation label was shortened or omitted to avoid marks and other labels within the plot."
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 38
     },
@@ -42308,8 +42304,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-reversed-light.csharp.txt",
@@ -42344,8 +42340,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-reversed-light.csharp.txt",
@@ -42871,9 +42867,11 @@
         "html"
       ],
       "diagnostics": [
+        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
       "semanticRegions": 12
@@ -42910,8 +42908,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
+      ],
       "semanticRegions": 12
     },
     {
@@ -42948,9 +42950,11 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
+        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -42990,7 +42994,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 19
     },
     {
       "id": "aligned-difference-compact-light",
@@ -43026,7 +43030,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "aligned-difference-negative-log-light",
@@ -43062,7 +43066,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 19
     },
     {
       "id": "aligned-difference-compact-negative-log-light",
@@ -43098,7 +43102,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "aligned-difference-sym-log-light",
@@ -43134,7 +43138,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 20
     },
     {
       "id": "aligned-difference-compact-sym-log-light",
@@ -43170,7 +43174,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "aligned-difference-connect-light",
@@ -43206,7 +43210,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 19
     },
     {
       "id": "aligned-difference-compact-connect-light",
@@ -43242,7 +43246,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "funnel-presentation-wide-light",
@@ -44160,8 +44164,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": "pictorial-artwork-wide-light.interactive.html",
       "source": "pictorial-artwork-wide-light.csharp.txt",
@@ -44196,8 +44200,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 460,
-      "naturalAspect": 0.8478260869565217,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "pictorial-artwork-compact-light.csharp.txt",
@@ -44232,8 +44236,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-right-light.csharp.txt",
@@ -44268,8 +44272,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-bottom-light.csharp.txt",
@@ -44304,8 +44308,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-top-light.csharp.txt",
@@ -44340,8 +44344,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-image-light.csharp.txt",
@@ -44376,8 +44380,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-contour-light.csharp.txt",
@@ -44716,8 +44720,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 340,
-      "naturalAspect": 2.235294117647059,
+      "height": 194,
+      "naturalAspect": 3.917525773195876,
       "compact": false,
       "interactive": "independent-progress-wide-light.interactive.html",
       "source": "independent-progress-wide-light.csharp.txt",
@@ -44804,14 +44808,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "gauge.label-overflow",
-        "gauge.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions.",
-        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 15
     },
     {
@@ -44828,8 +44826,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 340,
-      "naturalAspect": 1.1470588235294117,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "independent-progress-compact-light.csharp.txt",
@@ -44902,8 +44900,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 340,
-      "naturalAspect": 2.235294117647059,
+      "height": 208,
+      "naturalAspect": 3.6538461538461537,
       "compact": false,
       "interactive": "independent-bullet-wide-light.interactive.html",
       "source": "independent-bullet-wide-light.csharp.txt",
@@ -44920,8 +44918,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 13
     },
     {
@@ -44938,8 +44946,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 340,
-      "naturalAspect": 1.1470588235294117,
+      "height": 225,
+      "naturalAspect": 1.7333333333333334,
       "compact": true,
       "interactive": null,
       "source": "independent-bullet-compact-light.csharp.txt",
@@ -44956,8 +44964,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 13
     },
     {
@@ -45558,8 +45576,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": "mixed-schedule-wide-dark.interactive.html",
       "source": "mixed-schedule-wide-dark.csharp.txt",
@@ -45594,8 +45612,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-dark.csharp.txt",
@@ -45614,13 +45632,11 @@
       ],
       "diagnostics": [
         "text.overflow",
-        "text.overflow",
-        "schedule.annotation-label-overflow"
+        "text.overflow"
       ],
       "diagnosticMessages": [
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "An annotation label was shortened or omitted to avoid marks and other labels within the plot."
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 41
     },
@@ -45638,8 +45654,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-reversed-dark.csharp.txt",
@@ -45674,8 +45690,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-reversed-dark.csharp.txt",
@@ -45716,8 +45732,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-dark.csharp.txt",
@@ -45752,8 +45768,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-dark.csharp.txt",
@@ -45772,13 +45788,11 @@
       ],
       "diagnostics": [
         "text.overflow",
-        "text.overflow",
-        "schedule.annotation-label-overflow"
+        "text.overflow"
       ],
       "diagnosticMessages": [
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "An annotation label was shortened or omitted to avoid marks and other labels within the plot."
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 38
     },
@@ -45796,8 +45810,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 660,
-      "naturalAspect": 1.3636363636363635,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-reversed-dark.csharp.txt",
@@ -45832,8 +45846,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 660,
-      "naturalAspect": 0.5909090909090909,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-reversed-dark.csharp.txt",
@@ -46359,9 +46373,11 @@
         "html"
       ],
       "diagnostics": [
+        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
       "semanticRegions": 12
@@ -46398,8 +46414,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
+      ],
       "semanticRegions": 12
     },
     {
@@ -46436,9 +46456,11 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
+        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -46478,7 +46500,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 19
     },
     {
       "id": "aligned-difference-compact-dark",
@@ -46514,7 +46536,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "aligned-difference-negative-log-dark",
@@ -46550,7 +46572,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 19
     },
     {
       "id": "aligned-difference-compact-negative-log-dark",
@@ -46586,7 +46608,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "aligned-difference-sym-log-dark",
@@ -46622,7 +46644,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 20
     },
     {
       "id": "aligned-difference-compact-sym-log-dark",
@@ -46658,7 +46680,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "aligned-difference-connect-dark",
@@ -46694,7 +46716,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 19
     },
     {
       "id": "aligned-difference-compact-connect-dark",
@@ -46730,7 +46752,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 11
+      "semanticRegions": 13
     },
     {
       "id": "funnel-presentation-wide-dark",
@@ -47648,8 +47670,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": "pictorial-artwork-wide-dark.interactive.html",
       "source": "pictorial-artwork-wide-dark.csharp.txt",
@@ -47684,8 +47706,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 460,
-      "naturalAspect": 0.8478260869565217,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "pictorial-artwork-compact-dark.csharp.txt",
@@ -47720,8 +47742,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-right-dark.csharp.txt",
@@ -47756,8 +47778,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-bottom-dark.csharp.txt",
@@ -47792,8 +47814,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-top-dark.csharp.txt",
@@ -47828,8 +47850,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-image-dark.csharp.txt",
@@ -47864,8 +47886,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 460,
-      "naturalAspect": 1.9565217391304348,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-contour-dark.csharp.txt",
@@ -48204,8 +48226,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 340,
-      "naturalAspect": 2.235294117647059,
+      "height": 194,
+      "naturalAspect": 3.917525773195876,
       "compact": false,
       "interactive": "independent-progress-wide-dark.interactive.html",
       "source": "independent-progress-wide-dark.csharp.txt",
@@ -48292,14 +48314,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "gauge.label-overflow",
-        "gauge.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions.",
-        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 15
     },
     {
@@ -48316,8 +48332,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 340,
-      "naturalAspect": 1.1470588235294117,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "independent-progress-compact-dark.csharp.txt",
@@ -48390,8 +48406,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 340,
-      "naturalAspect": 2.235294117647059,
+      "height": 208,
+      "naturalAspect": 3.6538461538461537,
       "compact": false,
       "interactive": "independent-bullet-wide-dark.interactive.html",
       "source": "independent-bullet-wide-dark.csharp.txt",
@@ -48408,8 +48424,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 13
     },
     {
@@ -48426,8 +48452,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 340,
-      "naturalAspect": 1.1470588235294117,
+      "height": 225,
+      "naturalAspect": 1.7333333333333334,
       "compact": true,
       "interactive": null,
       "source": "independent-bullet-compact-dark.csharp.txt",
@@ -48444,8 +48470,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 13
     },
     {
@@ -50106,8 +50142,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 360,
-      "naturalAspect": 2.2222222222222223,
+      "height": 283,
+      "naturalAspect": 2.8268551236749118,
       "compact": false,
       "interactive": null,
       "source": "embedding-support-schedule-light.csharp.txt",
@@ -50214,8 +50250,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 360,
-      "naturalAspect": 1.0833333333333333,
+      "height": 283,
+      "naturalAspect": 1.3780918727915195,
       "compact": true,
       "interactive": null,
       "source": "embedding-compact-support-schedule-light.csharp.txt",
@@ -50322,8 +50358,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 360,
-      "naturalAspect": 2.2222222222222223,
+      "height": 283,
+      "naturalAspect": 2.8268551236749118,
       "compact": false,
       "interactive": null,
       "source": "embedding-support-schedule-dark.csharp.txt",
@@ -50430,8 +50466,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 360,
-      "naturalAspect": 1.0833333333333333,
+      "height": 283,
+      "naturalAspect": 1.3780918727915195,
       "compact": true,
       "interactive": null,
       "source": "embedding-compact-support-schedule-dark.csharp.txt",

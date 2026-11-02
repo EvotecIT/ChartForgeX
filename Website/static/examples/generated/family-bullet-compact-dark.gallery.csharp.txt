@@ -20,7 +20,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = BulletRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 219)), theme, mode,
     new VisualFrame("Reviewed work against its targets", "", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

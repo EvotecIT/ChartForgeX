@@ -24,7 +24,7 @@ internal sealed class LabelMarkShape {
     internal bool IsFilled => _filled;
     internal LabelMarkShape WithClip(ChartRect clip) => new(_contours, _filled, _stroke, clip);
     internal ChartPoint LeaderExit(ChartPoint start, ChartPoint end) {
-        if (!_filled || !Inside(start)) return start;
+        if (!_filled || !Inside(start) || Inside(end)) return start;
         foreach (var contour in _contours) for (var i = 0; i < contour.Count; i++)
             if (LabelLeaderGeometry.Intersects(start, start, contour[i], contour[(i + 1) % contour.Count], .1)) return start;
         var ratio = 1d;

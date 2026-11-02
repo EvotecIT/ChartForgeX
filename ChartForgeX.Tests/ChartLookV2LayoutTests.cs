@@ -26,8 +26,10 @@ public sealed class ChartLookV2LayoutTests {
         Assert.Equal("Complete caption", results[1].Text);
     }
 
-    [Fact]
-    public void LeadersLeaveTheirSourceBoundaryAndAvoidOtherMarks() {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LeadersLeaveTheirSourceBoundaryAndAvoidOtherMarks(bool shapedObstacle) {
         var source = new ChartRect(10, 40, 20, 20);
         var request = new LabelPlacementRequest("Target caption", new ChartPoint(20, 50), Style,
             new[] { new LabelCandidate(120, 0), new LabelCandidate(120, -45) }) {
@@ -35,7 +37,9 @@ public sealed class ChartLookV2LayoutTests {
             LeaderOnFirstCandidate = true, Fallback = LabelFallbackRule.Drop
         };
         var result = Assert.Single(new LabelPlacementService().Place(new[] { request }, new ChartRect(0, 0, 200, 100),
-            new[] { new LabelObstacle("source", source), new LabelObstacle("other", new LabelMarkShape(new[] { new List<ChartPoint> { new(70, 40), new(90, 40), new(90, 60), new(70, 60) } }, true, 0)) }, LabelPlacementService.DefaultGap, Measure, avoidLeaderLabels: true));
+            new[] { new LabelObstacle("source", source), shapedObstacle
+                ? new LabelObstacle("other", new LabelMarkShape(new[] { new List<ChartPoint> { new(70, 40), new(90, 40), new(90, 60), new(70, 60) } }, true, 0))
+                : new LabelObstacle("other", new ChartRect(70, 40, 20, 20)) }, LabelPlacementService.DefaultGap, Measure, avoidLeaderLabels: true));
         Assert.False(result.IsDropped); Assert.Equal(1, result.CandidateIndex);
         Assert.Equal(source.Right, result.LeaderStart.X, 6);
         Assert.InRange(result.LeaderStart.Y, source.Top, source.Bottom);
