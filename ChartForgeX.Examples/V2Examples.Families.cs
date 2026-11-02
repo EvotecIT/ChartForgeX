@@ -101,6 +101,7 @@ public static partial class V2Examples {
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) WriteMixedRadial(output, artifacts, mode);
         WriteSupportedCombinations(output, artifacts);
         WriteExpandedDiagrams(output, artifacts, curated);
+        WriteShowcaseFamilies(output, artifacts);
     }
 
     private static void WriteMixedRadial(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
@@ -181,11 +182,15 @@ public static partial class V2Examples {
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
         WriteThumbnail(output, model, id, title, family, mode, legend);
-        var artifactKind = family is "topology" or "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
+        var artifactKind = model is TopologyChart ? "Topology" : family is "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
         WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, artifactKind);
+        var interactive = !compact && (model is Chart && (id.Contains("-wide-") || IsScenarioVariant(variant))
+            || model is TopologyChart && family == "org-chart");
+        if (interactive && model is Chart chart) WriteInteractive(output, chart, id, title, subtitle, mode, width, height, legend);
+        else if (interactive) WriteInteractiveTopology(output, (TopologyChart)model, id, title, subtitle, mode);
         artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
             prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count, kinds,
-            prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), compact));
+            prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), compact, interactive));
     }
 
     private static VisualRenderContext GalleryContext(int width, int height, VisualThemeMode mode, string title, string subtitle, bool? legend) =>
