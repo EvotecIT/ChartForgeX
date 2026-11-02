@@ -222,7 +222,8 @@ internal static partial class VisualCartesianCompiler {
         string? labelId = null, ChartValueLabelOptions? valueLabel = null) {
         if (valueLabel?.Visible == false) return;
         if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || resolvedLabel.Text.Length == 0) return;
-        if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
+        // An empty bin draws nothing, including a floating "0" caption; authored captions still paint.
+        if (series.HistogramBinLayout != null && (!series.HistogramBins[pointIndex].Value.HasValue || series.HistogramBins[pointIndex].Count == 0) &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.RenderPoints[pointIndex].Y;
         var spacing = context.Theme.Spacing;

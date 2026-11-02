@@ -194,7 +194,7 @@ public sealed class HistogramOptionsTests {
         var prepared = Prepare(chart);
         Assert.Equal("0", Point(prepared, 1, 2).Metadata["data-cfx-base"]);
         Assert.Equal("1", Point(prepared, 1, 2).Metadata["data-cfx-stack-end"]);
-        Assert.Equal(2, Bounds(prepared, 0, 2).Width / Bounds(prepared, 1, 2).Width, 8);
+        Assert.Equal(2, Footprint(prepared, 0, 2) / Footprint(prepared, 1, 2), 8);
         var equivalent = Chart.Create().WithStackedBars().AddHistogram("First", new[] { 5d }, left)
             .AddHistogram("Same bins", new[] { 5d }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d, 7d, 8d, 10d }));
         Assert.Equal("1", Point(Prepare(equivalent), 1, 2).Metadata["data-cfx-base"]);
@@ -211,7 +211,7 @@ public sealed class HistogramOptionsTests {
         Assert.Same(layout, chart.Series[0].HistogramBinLayout);
         Assert.Equal(new[] { 1d, 3d }, chart.Series[0].HistogramBins.Select(bin => bin.Value!.Value));
         var prepared = Prepare(chart);
-        Assert.Equal(3, Bounds(prepared, 0, 1).Width / Bounds(prepared, 0, 0).Width, 8);
+        Assert.Equal(3, Footprint(prepared, 0, 1) / Footprint(prepared, 0, 0), 8);
         Assert.Equal(new[] { 3d, 0d, 1d, 4d }, chart.Series[0].HistogramSourcePoints.Select(point => point.X));
         Assert.All(chart.Series[0].HistogramSourcePoints, point => Assert.Equal(1, point.Y));
         Assert.Equal("0,2,3", Point(prepared, 0, 1).Metadata["data-cfx-source-points"]);
@@ -265,6 +265,8 @@ public sealed class HistogramOptionsTests {
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(640, 400)), frame: new VisualFrame(showLegend: false)));
+    // Contiguous bins give up the same 1px surface seam each; the interval footprint includes it.
+    private static double Footprint(PreparedVisual prepared, int series, int point) => Bounds(prepared, series, point).Width + ChartMarkSurface.HistogramSeam;
     private static ChartRect Bounds(PreparedVisual prepared, int series, int point) =>
         prepared.Regions.Single(region => region.Id == "series-" + series + "-point-" + point && region.Role == "point").Bounds;
     private static VisualSceneGroup Point(PreparedVisual prepared, int series, int point) =>

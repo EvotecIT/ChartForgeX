@@ -5,10 +5,9 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Resolves histogram bins into shared SVG/PNG bar slots while preserving numeric bin widths.
+/// Resolves histogram bins into shared SVG/PNG bar slots while preserving numeric bin widths. Bins stay contiguous.
 /// </summary>
 internal static class ChartHistogramBarSlot {
-    private const double OuterInsetRatio = 0.08;
     private const double GroupGapRatio = 0.04;
 
     public static bool TryResolve(Chart chart, ChartBarCoordinateMap coordinateMap, ChartStackLayout stacks, int seriesIndex, int pointIndex, ChartMapper map, out double left, out double width) {
@@ -33,7 +32,8 @@ internal static class ChartHistogramBarSlot {
         var slot = stacks.Slot(groupedSeries, seriesIndex);
         var groupCount = slot.Count;
         var groupPosition = slot.Position;
-        var inset = binWidth * OuterInsetRatio;
+        // Bins are contiguous intervals: neighbours share an edge and keep only a 1 px surface seam.
+        var inset = Math.Min(ChartMarkSurface.HistogramSeam / 2, binWidth / 4);
         var occupiedWidth = Math.Max(0, binWidth - inset * 2);
         var gap = groupCount == 1 ? 0 : occupiedWidth * GroupGapRatio / (groupCount - 1);
         width = Math.Max(1, (occupiedWidth - gap * (groupCount - 1)) / groupCount);
