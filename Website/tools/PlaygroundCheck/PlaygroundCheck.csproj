@@ -15,6 +15,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
   <ItemGroup>
+    <AssemblyMetadata Include="RepositoryRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../..'))" />
     <Compile Include="..\Playground\PlaygroundEngine.cs" Link="Engine\PlaygroundEngine.cs" />
     <Compile Include="..\Playground\PlaygroundEngine.Png.cs" Link="Engine\PlaygroundEngine.Png.cs" />
     <Compile Include="..\Playground\PlaygroundEngine.Fonts.cs" Link="Engine\PlaygroundEngine.Fonts.cs" />
