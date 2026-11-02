@@ -60,9 +60,12 @@ public sealed class InteractiveKeyboardFocusRecoveryBrowserTests {
         await AssertFocusedAsync(root.Locator(Legend(0)));
         await CaptureAsync(page, "keyboard-focus-recovered-all-muted-legend.png");
 
+        // Keyboard reach follows the restored data while the rescale is still easing.
+        await root.EvaluateAsync("node => node.dataset.cfxMotionDuration = '4000'");
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("false", await root.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         await AssertFocusedAsync(root.Locator(Legend(0)));
+        await page.WaitForTimeoutAsync(200);
         await page.Keyboard.PressAsync("Tab");
         await AssertFocusedAsync(root.Locator(Point(0, 0)));
         await page.Keyboard.PressAsync("ArrowRight");

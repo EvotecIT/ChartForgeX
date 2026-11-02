@@ -169,6 +169,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false");
         if (!axis.MaximumInclusive) json.Append(",\"maximumInclusive\":false");
+        if (axis.IntegerTicks) json.Append(",\"integerTicks\":true");
+        if (axis.DefaultCaptions) json.Append(",\"captions\":\"compact\"");
         AppendLogarithmicPolicy(json, axis.LogarithmBase, axis.LogarithmicDomain);
         AppendTimeSessions(json, axis.TimeSessions);
         AppendTimeSpacing(json, axis.TimeDomain);

@@ -149,6 +149,53 @@ public sealed class StandaloneInteractionBrowserTests {
         Assert.Equal(0, card.GetProperty("rasterLabels").GetInt32());
         Assert.Equal("0", card.GetProperty("hiddenSwatch").GetString());
         Assert.Equal("1", card.GetProperty("shownSwatch").GetString());
+        // A hidden entry stays readable: its label holds at least 3:1 against the card and its
+        // outlined marker keeps the series colour at reduced strength.
+        var hidden = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const item=document.querySelector('.cfx-responsive-legend__item'),label=item.querySelector('.cfx-responsive-legend__label');
+              const swatch=item.querySelector('[data-cfx-role=legend-swatch]'),style=getComputedStyle(swatch);
+              const rgb=text=>{const c=document.createElement('canvas').getContext('2d');c.fillStyle=text;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data];};
+              let alpha=rgb(getComputedStyle(label).color)[3]/255;for(let node=label;node&&node!==document;node=node.parentElement)alpha*=Number(getComputedStyle(node).opacity);
+              const fg=rgb(getComputedStyle(label).color),bg=rgb(getComputedStyle(document.querySelector('.cfx-frame')).getPropertyValue('--cfx-card-fill').trim());
+              const mix=fg.slice(0,3).map((v,i)=>v*alpha+bg[i]*(1-alpha)),lum=c=>c.map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+              const [a,b]=[lum(mix),lum(bg.slice(0,3))].sort((x,y)=>y-x);
+              const chain=[];for(let node=label;node&&node!==document;node=node.parentElement)chain.push(node.tagName+'.'+node.className+':'+getComputedStyle(node).opacity);
+              return {contrast:(a+.05)/(b+.05),chain:chain.slice(0,4).join(' > ')+' color='+getComputedStyle(label).color,stroke:style.stroke,fill:swatch.getAttribute('fill'),strokeOpacity:Number(style.strokeOpacity)};}
+            """);
+        Assert.True(hidden.GetProperty("contrast").GetDouble() >= 3, "Hidden legend label contrast: " + hidden.GetProperty("contrast").GetDouble() + " " + hidden.GetProperty("chain").GetString());
+        Assert.InRange(hidden.GetProperty("strokeOpacity").GetDouble(), .3, .9);
+        Assert.NotEqual("none", hidden.GetProperty("stroke").GetString());
+        AssertNoConsoleErrors(session);
+    }
+
+    // Whole-number axes keep 1/2/5 steps; fractional axes may use 2.5. Either way new captions use the
+    // native invariant notation rather than the browser's locale.
+    [BrowserTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ZoomedTicksKeepTheNativeStepPolicyAndCaptionNotation(bool whole) {
+        if (!Enabled) return;
+        var points = Enumerable.Range(0, whole ? 24 : 49).Select(index => new ChartForgeX.Primitives.ChartPoint(whole ? index : index * .5, 10 + index % 7)).ToArray();
+        var html = Chart.Create().WithSize(800, 400).WithTitle("Ticks").AddLine("Samples", points).ToInteractiveHtmlPage(options =>
+            options.Interaction.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom));
+        await using var session = await OpenAsync(html, 1100, 700, configurePageAsync: page => page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce }));
+        var page = session.Page;
+        var fractional = false;
+        foreach (var window in whole ? new[] { (4.14, 18.86), (5.61, 17.39), (6.4, 9.6) } : new[] { (4.14, 18.86), (5.61, 17.39), (6.4, 9.6), (7.05, 8.45) }) {
+            await page.EvaluateAsync("w=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).setXWindow(w[0],w[1])", new[] { window.Item1, window.Item2 });
+            var ticks = await page.Locator("[data-cfx-browser-axis=x] text").EvaluateAllAsync<string[][]>("nodes=>nodes.map(node=>[node.dataset.cfxAxisValue,node.textContent])");
+            Assert.True(ticks.Length >= 3, string.Join(" ", ticks.Select(tick => tick[1])) + " in " + window);
+            foreach (var tick in ticks) {
+                var value = double.Parse(tick[0], System.Globalization.CultureInfo.InvariantCulture);
+                Assert.DoesNotContain(",", tick[1]);
+                fractional |= tick[1].Contains('.');
+                Assert.Equal(value, double.Parse(tick[1], System.Globalization.CultureInfo.InvariantCulture), 9);
+                if (whole) Assert.True(value == Math.Round(value), "Whole-number axes never tick between integers: " + tick[1]);
+            }
+            var steps = ticks.Zip(ticks.Skip(1), (a, b) => double.Parse(b[0], System.Globalization.CultureInfo.InvariantCulture) - double.Parse(a[0], System.Globalization.CultureInfo.InvariantCulture)).Distinct().ToArray();
+            if (whole) Assert.All(steps, step => Assert.Contains(step / Math.Pow(10, Math.Floor(Math.Log10(step))), new[] { 1d, 2d, 5d }));
+        }
+        Assert.Equal(!whole, fractional);
         AssertNoConsoleErrors(session);
     }
 

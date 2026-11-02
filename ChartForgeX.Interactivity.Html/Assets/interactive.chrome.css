@@ -352,7 +352,7 @@
 }
 .cfx-interactive-chart :is(.cfx-hovered, .cfx-hover-column) > .cfx-prepared-point-marker { r: var(--cfx-hover-marker-radius, 4.5px); }
 .cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: 1; filter: none; }
-.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { opacity: .45 !important; text-decoration: none; }
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"]:not(.cfx-responsive-legend__label) { opacity: .45 !important; text-decoration: none; }
 .cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] :is([data-cfx-role="legend-swatch"], [data-cfx-role="legend-symbol"], [data-cfx-role="legend-marker"]) {
   fill: none; stroke: var(--cfx-series-color, var(--cfx-tooltip-muted)); stroke-width: 1.5px; vector-effect: non-scaling-stroke;
 }
@@ -409,8 +409,8 @@
 /* Every entry shares one unboxed style; a hidden series dims its label and hollows its marker. */
 .cfx-interactive-chart .cfx-responsive-legend__item:is([aria-pressed], :not([aria-pressed])) { border-color: transparent; background: transparent; color: var(--cfx-tooltip-text); }
 .cfx-interactive-chart .cfx-responsive-legend__item:is(.cfx-series-muted, .cfx-series-isolated-out) { opacity: 1; }
-.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) > span { opacity: .45; }
-.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) [data-cfx-role="legend-swatch"] { fill-opacity: 0; }
+.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) > span { opacity: 1; color: var(--cfx-tooltip-muted); }
+.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) [data-cfx-role="legend-swatch"] { fill-opacity: 0; stroke-opacity: .6; }
 .cfx-interactive-chart .cfx-responsive-legend__item:hover { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); }
 
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
@@ -470,7 +470,8 @@
 }
 @container cfx-chart (max-width: 900px) {
   .cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar .cfx-tool { min-height: 36px; }
-}.cfx-interactive-chart .cfx-tool:hover,
+}
+.cfx-interactive-chart .cfx-tool:hover,
 .cfx-interactive-chart .cfx-scenario:hover,
 .cfx-interactive-chart .cfx-compare-chip:hover,
 .cfx-interactive-chart .cfx-compare-clear:hover,

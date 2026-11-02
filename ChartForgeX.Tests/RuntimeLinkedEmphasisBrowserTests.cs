@@ -120,7 +120,8 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
         await page.EvaluateAsync("() => { window.linkedRoot=document.querySelector('.cfx-interactive-chart'); window.linkedController=ChartForgeXCharts.get(linkedRoot); linkedController.highlight({observationIds:['a-1']},{dim:true}); }");
         var first = page.Locator("[data-cfx-role='legend-item'][data-cfx-series='0'][data-cfx-point='0']");
         var second = page.Locator("[data-cfx-role='legend-item'][data-cfx-series='0'][data-cfx-point='1']");
-        await MoveToAsync(page, "[data-cfx-observation-id='a-3']");
+        // Point the third legend entry, whichever surface (drawing or flowing row) presents it.
+        await MoveToAsync(page, "[data-cfx-role='legend-item'][data-cfx-observation-id='a-3']");
         await SettlePresentationAsync(page);
         Assert.Equal("1", await first.EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         Assert.Equal("0.3", await second.EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));

@@ -124,13 +124,15 @@
     for (const name of ['y', 'y1', 'y2', 'cy']) if (attrs[name] !== undefined) set(name, y.at(Number(attrs[name])));
     for (const [name, map] of [['width', x], ['height', y]]) if (attrs[name] !== undefined) set(name, Number(attrs[name]) * Math.abs(map.scale));
   };
-  // Mirrors ChartNiceNumbers.Step and ChartTicks.GenerateInside for a linear window.
-  const standaloneNiceStep = value => {
+  // Mirrors ChartNiceNumbers.Step and ChartTicks.GenerateInside for a linear window. Whole-number
+  // axes (hours, counts, indexes) step by 1, 2 or 5 × 10ⁿ only, never below one.
+  const standaloneNiceStep = (value, whole) => {
+    if (whole) value = Math.max(1, value);
     const power = Math.pow(10, Math.floor(Math.log10(value))), fraction = value / power, tolerance = fraction * 8 * 2.220446049250313e-16;
-    return (fraction <= 1 + tolerance ? 1 : fraction <= 2 + tolerance ? 2 : fraction <= 2.5 + tolerance ? 2.5 : fraction <= 5 + tolerance ? 5 : 10) * power;
+    return (fraction <= 1 + tolerance ? 1 : fraction <= 2 + tolerance ? 2 : !whole && fraction <= 2.5 + tolerance ? 2.5 : fraction <= 5 + tolerance ? 5 : 10) * power;
   };
-  const standaloneInsideTicks = (minimum, maximum, count) => {
-    const step = standaloneNiceStep((maximum - minimum) / (count - 1)), start = Math.ceil(minimum / step) * step, values = [];
+  const standaloneInsideTicks = (minimum, maximum, count, whole) => {
+    const step = standaloneNiceStep((maximum - minimum) / (count - 1), whole), start = Math.ceil(minimum / step) * step, values = [];
     for (let index = 0; index < count && Number.isFinite(step) && step > 0; index++) {
       let value = start + step * index;
       if (value > maximum) {
@@ -139,11 +141,29 @@
       }
       values.push(Math.abs(value) < step / 1e6 ? 0 : value);
     }
-    return { values: values.length >= 2 ? values : [minimum, maximum], step };
+    // A whole-number window narrower than two steps keeps its whole values rather than fractional endpoints.
+    return { values: values.length >= 2 || whole && values.length ? values : [minimum, maximum], step };
+  };
+  // ChartValueFormat's invariant compact captions ("0.##", or "0.#" with k/M/B), with the
+  // native plain-significant fallback when a caption would not name its own tick.
+  const standaloneCompact = value => {
+    const fixed = (number, digits) => String(Number(number.toFixed(digits)) || 0), magnitude = Math.abs(value);
+    return magnitude >= 1e9 ? fixed(value / 1e9, 1) + 'B' : magnitude >= 1e6 ? fixed(value / 1e6, 1) + 'M'
+      : magnitude >= 1e3 ? fixed(value / 1e3, 1) + 'k' : fixed(value, 2);
+  };
+  const standaloneCompactValue = text => Number(text.replace(/[kMB]$/, '')) * ({ k: 1e3, M: 1e6, B: 1e9 }[text.slice(-1)] || 1);
+  const standaloneCaptions = (axis, values, step) => {
+    const captured = [...(axis.displayTicks || []), ...(axis.displayBounds || [])];
+    const exact = value => captured.find(tick => Math.abs(tick.value - value) <= Math.abs(value) * 1e-12)?.text;
+    if (axis.scale === 'time') return values.map(value => exact(value) ?? String(dataValue(value, value >= 0)));
+    let texts = values.map(value => standaloneCompact(value));
+    if (texts.some((text, index) => Math.abs(standaloneCompactValue(text) - values[index]) > step * .01))
+      texts = values.map(value => value === 0 ? '0' : String(Number(value.toPrecision(6))));
+    return values.map((value, index) => exact(value) ?? texts[index]);
   };
   // Picks the static tick policy's densest layout whose labels keep their own room,
   // preferring at least three ticks wherever three fit along the axis.
-  const standaloneTicks = (axis, length, room, desired, categories) => {
+  const standaloneTicks = (axis, length, room, desired, categories, whole) => {
     const position = value => (value - axis.minimum) / (axis.maximum - axis.minimum) * length;
     const fits = ticks => ticks.every((tick, index) => !index
       || Math.abs(position(tick.value) - position(ticks[index - 1].value)) >= (room(tick.text) + room(ticks[index - 1].text)) / 2);
@@ -155,21 +175,23 @@
       }
       return values.slice(0, 1);
     }
-    const captured = [...(axis.displayTicks || []), ...(axis.displayBounds || [])];
-    const format = (value, step) => captured.find(tick => Math.abs(tick.value - value) <= Math.abs(value) * 1e-12)?.text
-      ?? (axis.scale === 'time' ? String(dataValue(value, value >= 0))
-        : new Intl.NumberFormat(undefined, { maximumSignificantDigits: 7 }).format(Math.abs(value) < step * 1e-10 ? 0 : value));
+    const label = generated => standaloneCaptions(axis, generated.values, generated.step).map((text, index) => ({ value: generated.values[index], text }));
     const target = Math.max(3, desired), candidates = [];
     for (let count = 2; count <= Math.max(target * 2, 6) && count <= 40; count++) {
-      const generated = standaloneInsideTicks(axis.minimum, axis.maximum, count);
-      const ticks = generated.values.map(value => ({ value, text: format(value, generated.step) }));
+      const ticks = label(standaloneInsideTicks(axis.minimum, axis.maximum, count, whole));
       if (fits(ticks) && !candidates.some(item => item.length === ticks.length)) candidates.push(ticks);
     }
     candidates.sort((first, second) => first.length - second.length);
     const readable = candidates.filter(ticks => ticks.length >= 3);
     return readable.filter(ticks => ticks.length <= target).pop() || readable[0] || candidates.pop()
-      || standaloneInsideTicks(axis.minimum, axis.maximum, 2).values.map(value => ({ value, text: format(value, axis.maximum - axis.minimum) }));
+      || label(standaloneInsideTicks(axis.minimum, axis.maximum, 2, whole));
   };
+  // An axis is whole-numbered when the static policy said so, or when its full domain and every
+  // observation on it are whole numbers.
+  const standaloneWholeAxis = (view, name, axis) => (view.whole ||= {})[name] ??= !!axis.integerTicks || [axis.fullMinimum ?? axis.minimum, axis.fullMaximum ?? axis.maximum,
+    ...view.points.filter(point => name === 'x' || point.axis === name).flatMap(point => name === 'x' ? [point.x]
+      : [point.y, ...['cfxLow', 'cfxHigh', 'cfxOpen', 'cfxClose'].filter(key => point.node.dataset[key] !== undefined).map(key => Number(point.node.dataset[key]))])]
+    .every(value => Number.isFinite(value) && Number.isInteger(value));
   let standaloneMeasure = null;
   const standaloneTextWidth = (font, text) => {
     standaloneMeasure ||= document.createElement('canvas').getContext('2d');
@@ -207,7 +229,7 @@
       // The drawing's own label count is the static density target for this size.
       const ticks = standaloneTicks(projection, vertical ? plot.height : plot.width, room,
         axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
-        !vertical && view.source.categoryLabels?.length ? view.source.categoryLabels : null);
+        !vertical && view.source.categoryLabels?.length ? view.source.categoryLabels : null, standaloneWholeAxis(view, axis.name, projection));
       for (const tick of ticks) {
         const position = standaloneCoordinate(projection, tick.value, plot, vertical);
         const text = template ? template.cloneNode(false) : document.createElementNS(ns, 'text');
@@ -297,14 +319,18 @@
     if (Object.keys(to).every(name => from[name] && from[name].minimum === to[name].minimum && from[name].maximum === to[name].maximum)) {
       paintStandaloneViewport(root); return;
     }
-    // Controls follow the logical window at once; only the drawing eases.
-    view.motionTarget = target; syncXNavigation(root); syncResetControl(root);
-    view.cancelMotion = motion.tween(root, chartFeatureKernel, progress => {
+    // Controls and keyboard reach follow the logical window at once: paint it once for its
+    // keyboard stops, then show the starting frame before anything renders. Only the drawing eases.
+    paintStandaloneViewport(root);
+    const frame = progress => {
       view.windows = Object.fromEntries(Object.keys(to).map(name => [name, {
         minimum: from[name].minimum + (to[name].minimum - from[name].minimum) * progress,
         maximum: from[name].maximum + (to[name].maximum - from[name].maximum) * progress }]));
       paintStandaloneViewport(root);
-    }, () => { view.cancelMotion = null; view.motionTarget = null; view.windows = target; paintStandaloneViewport(root); });
+    };
+    view.motionTarget = target; frame(0);
+    view.cancelMotion = motion.tween(root, chartFeatureKernel, frame,
+      () => { view.cancelMotion = null; view.motionTarget = null; view.windows = target; paintStandaloneViewport(root); });
   };
   const requestStandaloneWindow = (root, windows, sync = true, accepted, emit = true, animate = false) => {
     if (chartLifetimes.get(root)?.preparationPending) return false;
@@ -332,9 +358,10 @@
   };
   const zoomStandaloneViewport = (root, factor, logicalX, logicalY, axes = ['x'], animate = false) => {
     const view = standaloneViewport(root); if (!view || !Number.isFinite(factor) || factor <= 0) return false;
+    // Zoom and pan start from the logical window, so a gesture during a transition continues from its target.
     const plot = view.source.dataProjection.plotBounds, windows = {};
     for (const name of axes) {
-      const axis = standaloneAxis(root, name); if (!axis) continue;
+      const axis = standaloneAxis(root, name, true); if (!axis) continue;
       const vertical = name !== 'x', value = vertical ? logicalY : logicalX;
       const first = vertical ? plot.y : plot.x, size = vertical ? plot.height : plot.width;
       const ratio = Number.isFinite(value) ? clamp((value - first) / size, 0, 1) : .5;
@@ -348,7 +375,7 @@
     const view = standaloneViewport(root); if (!view) return false;
     const plot = view.source.dataProjection.plotBounds, windows = {};
     for (const [name, delta, size] of [['x', deltaX, plot.width], ['y', -deltaY, plot.height]]) {
-      const axis = standaloneAxis(root, name), shift = delta / size * (axis.reversed ? -1 : 1);
+      const axis = standaloneAxis(root, name, true), shift = delta / size * (axis.reversed ? -1 : 1);
       const lo = transformedAxisBound(axis, axis.fullMinimum ?? axis.minimum, false), hi = transformedAxisBound(axis, axis.fullMaximum ?? axis.maximum, true);
       const span = axis.transformedMaximum - axis.transformedMinimum;
       const start = clamp(axis.transformedMinimum - shift * span, lo, hi - span);

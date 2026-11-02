@@ -140,14 +140,21 @@ domain. Legend toggles rescale the value axis to the remaining visible series;
 bar and area views retain zero in their value domain.
 
 New windows tick with the static renderer's step policy (1, 2, 2.5 and 5 × 10ⁿ
-inside the window). The drawing's own label count sets the density, each label
-keeps its measured width plus 16 CSS pixels, and an axis keeps at least three
-ticks wherever three fit.
+inside the window). An axis whose domain and observations are whole numbers, or
+that sets `IntegerTicks`, steps by 1, 2 or 5 × 10ⁿ only and never between
+integers. The drawing's own label count sets the density, each label keeps its
+measured width plus 16 CSS pixels, and an axis keeps at least three ticks
+wherever three fit. New captions use the native default axis notation
+(invariant compact, so "7.5" and "1.2k" regardless of the browser's locale);
+values the drawing already captioned keep their native text. An axis with an
+authored label formatter keeps its captured captions and uses the same compact
+notation for values it never captioned.
 
 Toolbar zoom, brush zoom, both resets and legend rescaling ease from the
 displayed window to the new one (see [Motion](#motion)). Wheel, pinch, pan and
 controller windows repaint at once. During a transition `getViewport()` and the
-`cfxviewport` event already report the new window.
+`cfxviewport` event already report the new window, keyboard navigation reaches
+the data of the new window, and a further zoom or pan continues from it.
 
 Below 560 CSS pixels the chart's title and subtitle move into HTML inside the
 same card, so they wrap beside the toolbar, or start below it when fewer than
@@ -196,7 +203,9 @@ the same formatted values as the tooltip.
 Legends use buttons with `aria-pressed`. Their hit areas follow visible label
 ink, including native raster labels. Crowded or clipped legend labels move into
 flowing HTML rows; a hit area that only overflows a tight legend band does not.
-Compact and touch layouts use 44-pixel legend targets. Space toggles visibility,
+Compact and touch layouts use 44-pixel legend targets. Flowing rows use HTML
+text and one unboxed style; a hidden series shows its label in the muted text
+colour and its marker as an outline in the series colour at reduced strength. Space toggles visibility,
 and double-click, double-tap or Alt-click isolates a series. Repeating isolation
 restores the previous visibility choices.
 
@@ -440,7 +449,7 @@ Keyboard focus and explicit pins appear immediately and cancel pending pointer r
 The [light Graphite example](../Website/static/examples/generated/graphite-light-line-interactive.html) and [dark Graphite example](../Website/static/examples/generated/graphite-dark-line-interactive.html) use a 360 ms delay with shared readouts. Generate both with `dotnet run --project ChartForgeX.Examples -c Release -- --graphite-only`.
 ## Tooltip position
 
-`Tooltip.Position` selects the readout's screen anchor and placement independently of its content or acquisition range. `HtmlChartTooltipAnchor.Pointer` is the default and follows the latest pointer; keyboard focus uses the target's centre. `Node` uses the acquired native target's current bounds. `Chart` uses the displayed chart stage, excluding controls and compare panels; a narrow `Readable` chart uses its contained viewport rather than its wider SVG.
+`Tooltip.Position` selects the readout's screen anchor and placement independently of its content or acquisition range. `HtmlChartTooltipAnchor.Pointer` is the default and follows the latest pointer; keyboard focus uses the target's centre. `Node` uses the acquired native target's current bounds. `Chart` uses the displayed chart stage, excluding controls and compare panels; a narrow `Readable` chart uses its contained viewport rather than its wider SVG. A readout below a flowing legend row is placed under that row, so the legend stays reachable while a readout is pinned.
 
 By default, placement is automatic with a 12 CSS pixel `Gap`. Line and Area prefer a side placement, followed by centred and diagonal alternatives; other families prefer a diagonal placement above the anchor. The adapter uses the rendered tooltip size and an 8 CSS pixel inset inside the visual viewport and any containing host that clips the fixed readout. When no direction fits completely, automatic placement tries a clamped position that keeps the gap from the anchor before clamping its first choice.
 

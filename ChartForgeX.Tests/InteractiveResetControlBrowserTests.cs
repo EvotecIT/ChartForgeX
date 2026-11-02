@@ -104,6 +104,8 @@ public sealed class InteractiveResetControlBrowserTests {
         var zoomedFrame = await BoxAsync(page, ".cfx-stage > svg");
         Assert.Equal(initialFrame.Width, zoomedFrame.Width);
         Assert.Equal(initialFrame.Height, zoomedFrame.Height);
+        // Zoom eases the drawing; geometry is read once the final window is presented.
+        await SettlePresentationAsync(page);
         var zoomedPoint = await BoxAsync(page, Point(1, 2) + " .cfx-prepared-point-marker");
         Assert.True(zoomedPoint.X < initialPoint.X - .5, "The off-centre observation should move within the fixed frame when the X domain narrows.");
         Assert.InRange(zoomedPoint.Width, initialPoint.Width - .03, initialPoint.Width + .03);
@@ -217,6 +219,7 @@ public sealed class InteractiveResetControlBrowserTests {
     private static async Task ResetAsync(IPage page) {
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.False(await page.Locator("[data-cfx-reset]").IsVisibleAsync());
+        await SettlePresentationAsync(page);
     }
 
     private static async Task DragAcrossStageAsync(IPage page) {

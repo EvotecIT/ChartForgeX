@@ -76,7 +76,9 @@ public sealed class PatternOnlyPaintBrowserTests {
         var fragment = chart.ToInteractiveHtmlFragment();
         await using var session = await OpenAsync("<!doctype html><html><head><style>.cfx-interactive-chart,.cfx-stage{background:transparent!important}</style></head><body style='margin:0;background:#20344e'>" + fragment + "</body></html>", 800, 560);
         var target = session.Page.Locator(Legend(0)).First;
-        await target.HoverAsync();
+        // The native legend's physical target is its swatch hit area; the transparent caption has no ink to hit.
+        var hit = session.Page.Locator(Legend(0) + " > [data-cfx-browser-hit-area]").First;
+        await (await hit.CountAsync() > 0 ? hit : target).HoverAsync();
         var hover = await TooltipTextAsync(session.Page);
         await MoveAwayAsync(session.Page);
         await FocusWithKeyboardAsync(session.Page, target); var keyboard = await TooltipTextAsync(session.Page);

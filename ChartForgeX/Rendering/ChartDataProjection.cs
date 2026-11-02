@@ -57,7 +57,12 @@ internal sealed class ChartDataAxisProjection {
         LogarithmBase = axis.LogarithmBase; LogarithmicDomain = axis.LogarithmicDomain;
         TimeSessions = axis.TimeSessions; TimeDomain = axis.PreparedTimeDomain;
         TransformedMinimum = transformedMinimum; TransformedMaximum = transformedMaximum;
+        IntegerTicks = axis.IntegerTicks;
+        // Browser re-ticking can reproduce only the default invariant compact captions.
+        DefaultCaptions = axis.LabelFormatter == null && axis.Labels.Count == 0 && axis.Scale != ChartScaleKind.Time;
     }
+    internal bool IntegerTicks { get; }
+    internal bool DefaultCaptions { get; }
 
     internal static ChartDataAxisProjection? TryCreate(double minimum, double maximum, ChartAxis axis) {
         if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum) return null;

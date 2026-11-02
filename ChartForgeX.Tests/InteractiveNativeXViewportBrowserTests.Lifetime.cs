@@ -167,8 +167,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.True(await page.Locator("[data-cfx-reset]").EvaluateAsync<bool>("button=>button.hidden"));
         var disconnectedGeometry = await StandaloneGeometryAsync(page);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
-        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2.6, 7.4);
-        AssertStandaloneGeometry(disconnectedGeometry, await StandaloneGeometryAsync(page), 2.6, 7.4);
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2.6, 7.4);        AssertStandaloneGeometry(disconnectedGeometry, await StandaloneGeometryAsync(page), 2.6, 7.4);
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>controlled.length"));
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
         Assert.True(await page.Locator("[data-cfx-reset]").IsVisibleAsync());
@@ -180,7 +179,10 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Task<JsonElement> StandaloneGeometryAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+    // Zoom eases the window; geometry is read once the final window is presented.
+    private static async Task<JsonElement> StandaloneGeometryAsync(IPage page) {
+        await SettlePresentationAsync(page);
+        return await page.EvaluateAsync<JsonElement>("""
         ()=>{const root=chartController.root,stage=root.querySelector('.cfx-stage'),svg=stage.querySelector('svg'),
             view=svg.viewBox.baseVal,frame=svg.getBoundingClientRect(),stageBox=stage.getBoundingClientRect(),
             point=root.querySelector('g[data-cfx-role=point][data-cfx-observation-id=sample-3]'),
@@ -192,6 +194,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                     y:view.y+(box.top+box.height/2-frame.top)*view.height/frame.height,
                     width:box.width*view.width/frame.width,height:box.height*view.height/frame.height}};}
         """);
+    }
 
     private static void AssertStandaloneGeometry(JsonElement before, JsonElement after, double minimum, double maximum, bool reversed = false) {
         Assert.Equal(before.GetProperty("frame").GetRawText(), after.GetProperty("frame").GetRawText());

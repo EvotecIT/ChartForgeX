@@ -229,6 +229,9 @@
       if (box.right > bounds.left && box.left < bounds.right && box.top < bounds.bottom
         && box.top >= bounds.top + tip.getBoundingClientRect().height + 16) bounds.bottom = box.top;
     }
+    // A flowing legend row above the drawing stays reachable while a readout is shown.
+    const row = root.querySelector('.cfx-responsive-legend[style*="display: flex"]')?.getBoundingClientRect();
+    if (row?.bottom <= anchor.top) bounds.top = Math.max(bounds.top, row.bottom);
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
     // Fix measured shrink-to-fit width.

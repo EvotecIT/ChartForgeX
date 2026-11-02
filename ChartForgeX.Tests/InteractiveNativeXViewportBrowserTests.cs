@@ -137,7 +137,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), Configure);
         var initial = renderer.PrepareSection(chart, configure: Configure);
         var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
         await using var session = await OpenAsync(html, width, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         await page.Locator(Root).HoverAsync();
@@ -208,7 +208,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartCartesianViewport(x: new ChartAxisWindow(minimum, maximum)), ConfigureSection).Html;
         internal string Page(params NativeHost[] peers) => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + Initial + string.Concat(peers.Select(peer => peer.Initial))
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
         private void ConfigureSection(HtmlChartInteractionOptions options) {
             Configure(options); options.Interaction.ChartId = Id;
             options.XNavigation.Enabled = _navigation;
@@ -335,6 +335,8 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     private static Task WaitForChangesAsync(IPage page, int count) => page.WaitForFunctionAsync("count=>nativeChanges.length===count", count);
     private static async Task<JsonElement> SceneAsync(IPage page) {
         await BrowserProofCaptions.InstallNativeAsync(page);
+        // Zoom eases the window; captions are read once the final window is presented.
+        await SettlePresentationAsync(page);
         return await page.EvaluateAsync<JsonElement>("""
         () => {const root=chartController.root;return {
             revision:chartController.sceneRevision,projection:JSON.parse(root.dataset.cfxPreparedChart).xProjection,

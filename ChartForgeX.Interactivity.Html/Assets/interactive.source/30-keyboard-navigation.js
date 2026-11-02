@@ -104,7 +104,9 @@
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
     const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
-    const targets = keyboardTargets(root);
+    // Viewport transition frames are not keyboard state: keep the targets of the final window.
+    const targets = root._cfxStandaloneViewport?.motionTarget && state.targets || keyboardTargets(root);
+    state.targets = targets;
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
     state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
     state.data = state.groups.flatMap((group) => group.nodes);

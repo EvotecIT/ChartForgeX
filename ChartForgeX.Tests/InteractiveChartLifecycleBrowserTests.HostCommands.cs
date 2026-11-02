@@ -133,6 +133,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Mouse.WheelAsync(0, -120);
         await page.WaitForFunctionAsync("()=>Number(document.querySelector('.cfx-interactive-chart').dataset.cfxZoom)>1");
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeInput.viewport.length"));
+        await SettlePresentationAsync(page);
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var mark = await BoxAsync(page, North);
         var x = mark.X + mark.Width / 2; var y = mark.Y + mark.Height / 2;
