@@ -382,5 +382,6 @@ Contributions are welcome. [Contributing](CONTRIBUTING.md) explains how to build
 - [Visual artifacts](docs/visual-artifacts.md), [visual blocks](docs/visual-blocks.md), [canvases](docs/visual-canvas.md), and [stories](docs/stories.md)
 - [Interaction adapters](docs/interactivity.md) and [graph explorer](docs/graph-explorer.md)
 - [Architecture](docs/v2/architecture.md), [migration](docs/v2/migration.md), and [active roadmap](TODO.md)
+- [Next-major API proposal](docs/design/next-major-api.md) and [example migrations](docs/design/next-major-api-examples.md)
 
 ChartForgeX is maintained by [EvotecIT](https://github.com/EvotecIT). Ask questions in [Discord](https://evo.yt/discord) or report reproducible problems in [GitHub Issues](https://github.com/EvotecIT/ChartForgeX/issues). If the library helps your work, you can support its development through [GitHub Sponsors](https://github.com/sponsors/PrzemyslawKlys).
