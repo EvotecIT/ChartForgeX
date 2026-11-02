@@ -37,12 +37,12 @@ internal static partial class VisualCartesianCompiler {
         string category, Func<double, ChartPoint> project, ChartColor color, SvgPaint paint, List<LabelObstacle> obstacles) {
         if (groupIndex >= series.BoxPlotDistributions.Count) return;
         var distribution = series.BoxPlotDistributions[groupIndex];
+        var markers = series.ResolvePointMarkers(groupIndex);
+        var radius = markers.Radius ?? 4.5;
         foreach (var source in distribution.OutlierSourceIndices) {
             var value = series.BoxPlotSourceSamples[source]; var center = project(value);
             var point = series.BoxPlots.Count + source; var id = PointId(seriesIndex, point);
-            var bounds = series.Markers.CustomPath == null
-                ? VisualMarkerScene.Bounds(center.X, center.Y, VisualMarkerScene.Extent(series, 4.5))
-                : VisualMarkerScene.Bounds(series, center.X, center.Y, 4.5);
+            var bounds = VisualMarkerScene.Bounds(series, center.X, center.Y, radius, markers);
             var formatted = Value(chart, value);
             var description = series.Name + ": " + category + " " + formatted;
             var metadata = new Dictionary<string, string> {
@@ -57,7 +57,7 @@ internal static partial class VisualCartesianCompiler {
             };
             builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));
             using (builder.PushGroup(id, "point", metadata))
-                VisualMarkerScene.Draw(builder, series, groupIndex, center.X, center.Y, 4.5, color, paint, "boxplot-outlier");
+                VisualMarkerScene.Draw(builder, series, groupIndex, center.X, center.Y, radius, color, paint, "boxplot-outlier", markerOptions: markers);
             obstacles.Add(new LabelObstacle(id, bounds));
         }
     }

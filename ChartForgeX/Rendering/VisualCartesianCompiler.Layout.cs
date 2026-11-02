@@ -16,9 +16,10 @@ internal static partial class VisualCartesianCompiler {
         var raw = item * 2;
         var startsRun = raw == 0 || series.RenderPoints[raw].BreakBefore || series.RenderPoints[raw + 1].BreakBefore;
         var endsRun = raw + 2 == series.RenderPoints.Count || series.RenderPoints[raw + 2].BreakBefore || series.RenderPoints[raw + 3].BreakBefore;
-        var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue
+        var markers = series.ResolvePointMarkers(item);
+        var hasOverride = series.PreparedItemStyle(item) != null || item < series.PointColors.Count && series.PointColors[item].HasValue
             || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
-        return VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue || startsRun && endsRun);
+        return VisualMarkerScene.Enabled(series, hasOverride || markers.Radius.HasValue || startsRun && endsRun, markers);
     }
 
     /// <summary>Contains finite-size marks by extending only automatic ends of the final pixel-space axes.</summary>
@@ -43,10 +44,12 @@ internal static partial class VisualCartesianCompiler {
                 continue;
             }
             if (series.Kind == ChartSeriesKind.Dumbbell) {
-                var startMarker = series.ResolveDumbbellMarker(start: true); var endMarker = series.ResolveDumbbellMarker(start: false);
-                var startExtent = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, startMarker), startMarker);
-                var endExtent = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, endMarker), endMarker);
+                var startOptions = series.ResolveDumbbellMarker(start: true); var endOptions = series.ResolveDumbbellMarker(start: false);
                 for (var raw = 0; raw + 1 < series.RenderPoints.Count; raw += 2) {
+                    var startMarker = series.ResolvePointMarkers(raw / 2, startOptions);
+                    var endMarker = series.ResolvePointMarkers(raw / 2, endOptions);
+                    var startExtent = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, startMarker), startMarker);
+                    var endExtent = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, endMarker), endMarker);
                     var first = series.RenderPoints[raw]; var second = series.RenderPoints[raw + 1];
                     if (horizontal) {
                         Include(first.Y, first.X, startExtent, series.ValueAxis); Include(second.Y, second.X, endExtent, series.ValueAxis);
@@ -79,7 +82,7 @@ internal static partial class VisualCartesianCompiler {
                 var point = series.RenderPoints[raw];
                 var markers = series.ResolvePointMarkers(item);
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
-                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, series.Markers)
+                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, markers)
                     : ReferenceEquals(markers, series.Markers) ? radius : VisualMarkerScene.Radius(series, context, markers);
                 markerRadius = VisualMarkerScene.Extent(series, markerRadius, markers);
                 if (markerRadius <= 0) continue;

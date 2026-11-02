@@ -37,7 +37,7 @@ internal static partial class VisualNumericRadialCompiler {
             : 0;
         radius = Math.Max(0, radius - lane);
         var radarExtent = chart.Series.Select((series, index) => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0
-            ? Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
+            ? Math.Max(VisualMarkerScene.MaximumExtent(series, context),
                 VisualPolarSeriesScene.StrokeExtent(chart, context, series, ChartSeriesColours.Resolve(series, index, context.Theme.Resolve(context.ThemeMode))) / 2)
             : 0).DefaultIfEmpty(0).Max();
         radius = Math.Max(0, radius - radarExtent);

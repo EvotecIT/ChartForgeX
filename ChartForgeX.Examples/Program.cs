@@ -44,6 +44,7 @@ SwimlaneLayoutDepthExamples.Write(Path.Combine(output, "swimlane-layout-depth"))
 ConsumerRenderingExamples.Write(Path.Combine(output, "consumer-regressions"));
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 CartesianCategoryExamples.Write(output, DemoPngOutputScale);
+ConfigurabilityExamples.Write(output, DemoPngOutputScale);
 NumericAxisExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);
 SunburstBranchHighlightExamples.Write(output);

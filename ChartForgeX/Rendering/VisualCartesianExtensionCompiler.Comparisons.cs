@@ -15,13 +15,15 @@ internal static partial class VisualCartesianCompiler {
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series); var stride = dumbbell ? 2 : 1;
         if (horizontal && chart.Options.YAxis.Scale is not (ChartScaleKind.Linear or ChartScaleKind.Time))
             throw new NotSupportedException("Horizontal comparison charts require a linear or time category axis.");
-        var startMarker = dumbbell ? series.ResolveDumbbellMarker(start: true) : series.Markers;
-        var endMarker = dumbbell ? series.ResolveDumbbellMarker(start: false) : series.Markers;
-        var startRadius = VisualMarkerScene.Radius(series, context, startMarker);
-        var endRadius = VisualMarkerScene.Radius(series, context, endMarker);
-        var endExtent = VisualMarkerScene.Extent(series, endRadius, endMarker);
+        var startOptions = dumbbell ? series.ResolveDumbbellMarker(start: true) : series.Markers;
+        var endOptions = dumbbell ? series.ResolveDumbbellMarker(start: false) : series.Markers;
         var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
         for (var item = 0; item < series.RenderPoints.Count / stride; item++) {
+            var startMarker = series.ResolvePointMarkers(item, startOptions);
+            var endMarker = series.ResolvePointMarkers(item, endOptions);
+            var startRadius = VisualMarkerScene.Radius(series, context, startMarker);
+            var endRadius = VisualMarkerScene.Radius(series, context, endMarker);
+            var endExtent = VisualMarkerScene.Extent(series, endRadius, endMarker);
             var raw = item * stride; var first = series.RenderPoints[raw]; var end = series.RenderPoints[raw + stride - 1].Y;
             var category = horizontal ? map.Y(first.X) : map.X(first.X);
             var start = dumbbell ? horizontal ? map.X(first.Y) : map.Y(first.Y) : horizontal ? map.XBaseline() : map.YBaseline();
@@ -29,11 +31,11 @@ internal static partial class VisualCartesianCompiler {
             var startPoint = horizontal ? new ChartPoint(start, category) : new ChartPoint(category, start);
             var endPoint = horizontal ? new ChartPoint(finish, category) : new ChartPoint(category, finish);
             var visible = ComparisonVisible(horizontal, dumbbell, plot, map, xViewport, yViewport, first.X, first.Y, end, start, finish);
-            var connectorStroke = dumbbell ? series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth
-                : Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, SeriesStroke(series, context) * .62);
+            var connectorStroke = series.StrokeStyle?.Width ?? (dumbbell ? VisualSeriesStroke.Width(series, ChartVisualPrimitives.DumbbellConnectorStrokeWidth)
+                : Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, SeriesStroke(series, context) * .62));
             // Hidden glyphs retain the family's existing descriptive/hit-region footprint around their source endpoints.
-            var regionExtent = Math.Max(dumbbell ? VisualMarkerScene.FootprintExtent(series, startRadius, startMarker) : 0,
-                VisualMarkerScene.FootprintExtent(series, endRadius, endMarker));
+            var regionExtent = Math.Max(connectorStroke / 2, Math.Max(dumbbell ? VisualMarkerScene.FootprintExtent(series, startRadius, startMarker) : 0,
+                VisualMarkerScene.FootprintExtent(series, endRadius, endMarker)));
             var bounds = Extents(startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, regionExtent);
             if (startMarker.CustomPath != null || endMarker.CustomPath != null) {
                 bounds = Extents(startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, connectorStroke / 2);
@@ -51,7 +53,7 @@ internal static partial class VisualCartesianCompiler {
                     var opacity = dumbbell ? ChartVisualPrimitives.DumbbellConnectorOpacity : ChartVisualPrimitives.LollipopStemOpacity;
                     var stroke = connectorStroke;
                     var lineColor = ChartColorMath.WithOpacity(color, opacity);
-                    builder.Line(startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, lineColor, stroke,
+                    VisualSeriesStroke.DrawLine(builder, series, startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, lineColor, stroke,
                         role: dumbbell ? "dumbbell-connector" : "lollipop-stem", paint: VisualChartPaint.Stroke(paint.WithOpacity(lineColor, opacity)));
                     if (dumbbell) VisualMarkerScene.Draw(builder, series, item, startPoint.X, startPoint.Y, startRadius,
                         colors.MutedForeground, SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text), "dumbbell-start", markerOptions: startMarker);

@@ -251,10 +251,13 @@
     const shared = root && (root.dataset.cfxTooltipMode === 'shared-x'
       || root.dataset.cfxTooltipMode === 'auto' && automaticSharedKinds.has((node.dataset.cfxKind || '').toLowerCase()));
     if (shared && renderSharedXTip(tip, node, root)) return true;
-    const label = tooltipHeading(node);
+    // Authored tooltip text replaces the generated readout; an empty text suppresses it.
+    const captured = (node.dataset || {}).cfxTooltipText;
+    if (captured === '') { tip.replaceChildren(); tip.hidden = true; return false; }
+    const label = captured === undefined ? tooltipHeading(node) : captured;
 
     if (label === undefined || label === null) return false;
-    return renderTooltipContent(tip, label, tooltipDomainRows(node, tooltipRows(node)), node);
+    return renderTooltipContent(tip, label, captured === undefined ? tooltipDomainRows(node, tooltipRows(node)) : [], node);
   };
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips') || root.dataset.cfxTooltipPinned === 'true') { cancelTooltipRequest(root); return; }

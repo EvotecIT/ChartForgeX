@@ -19,7 +19,7 @@ public sealed partial class ChartSeries {
             numeric.Add(new ChartPoint(point.X, values == null ? point.Y : values[index], source.Kind == ChartSeriesKind.Line ? breakBefore : point.BreakBefore).WithColorValue(point.ColorValue).WithMarkOptions(point.MarkOptions)); breakBefore = false;
         }
         var model = new ChartSeries(source.Id, source.Name, source.Kind, numeric) {
-            _visibilityPreparation = true, Color = source.Color, StateRole = source.State, FillPattern = source.Pattern,
+            _visibilityPreparation = true, Color = source.Color, Fill = source.Fill, StateRole = source.State, FillPattern = source.Pattern,
             ValueAxis = source.ValueAxis, ShowInLegend = source.ShowInLegend, SemanticRole = source.SemanticRole,
             ShowDataLabels = source.Labels, DataLabelPlacement = source.Placement, DataLabelStyle = source.CopyLabelStyle(), Markers = source.CopyMarkers(),
             Interpolation = source.Interpolation, StepPosition = source.Step, MarkOptions = source.MarkOptions, RowOptions = source.RowOptions
@@ -48,6 +48,7 @@ public sealed partial class ChartSeries {
             model.RestoreVisibilityFinancial(source, selected);
         }
         if (source.StrokeWidth.HasValue) model.StrokeWidth = source.StrokeWidth.Value;
+        model.StrokeStyle = source.StrokeStyle;
         model.StackGroup = source.StackGroup; model.NormalizedTo = source.NormalizedTo; model.StackedAreaMissingData = source.StackedAreaMissingData;
         model.RadialBand = source.RadialBand;
         if (source.Kind == ChartSeriesKind.BoxPlot) {
@@ -71,6 +72,14 @@ public sealed partial class ChartSeries {
         model.PointColors.AddRange(RemapObservationOverrides(source.PointColors, selected));
         model.PointFillPatterns.AddRange(RemapObservationOverrides(source.PointPatterns, selected));
         model.PointLabels.AddRange(RemapObservationOverrides(source.PointLabels, selected));
+        for (var index = 0; index < selected.Length; index++)
+            if (source.PointFills.TryGetValue(selected[index], out var fill)) model.PointFillOverrides.Add(index, fill);
+        if (source.PreparedLabels.Count > 0)
+            model._preparedLabels = Array.AsReadOnly(RemapObservationOverrides(source.PreparedLabels, selected));
+        if (source.ItemStyles.Count > 0)
+            model._preparedItemStyles = Array.AsReadOnly(RemapObservationOverrides(source.ItemStyles, selected));
+        if (source.Tooltips.Count > 0)
+            model._preparedTooltips = Array.AsReadOnly(RemapObservationOverrides(source.Tooltips, selected));
         var pointStyles = Enumerable.Range(0, source.PointStyleCount).Select(source.CopyPointStyle).ToArray();
         model.PointDataLabelStyles.AddRange(RemapObservationOverrides(pointStyles, selected));
         if (ChartSeriesKindTraits.IsPieLikeKind(source.Kind)) {

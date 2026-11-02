@@ -61,7 +61,7 @@ internal static partial class VisualScalarProgressCompiler {
         min = series.RenderPoints[0].X; max = series.RenderPoints[1].X;
         if (!Finite(min) || !Finite(max) || max <= min || !Finite(max - min)) throw new InvalidOperationException("Scalar progress charts require a finite positive range.");
     }
-    private static string Value(Chart chart, ChartSeries series, int index, double value) => index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
+    private static string Value(Chart chart, ChartSeries series, int index, double value) => index < series.PreparedLabels.Count && series.PreparedLabels[index] != null ? series.PreparedLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
     private static string Category(Chart chart, double value) => ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) ?? ChartAxisValueFormatter.Format(chart.Options.XAxis, value);
     private static string Id(int series, int? point = null) => "series-" + series.ToString(CultureInfo.InvariantCulture) + (point.HasValue ? "-point-" + point.Value.ToString(CultureInfo.InvariantCulture) : "");
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);

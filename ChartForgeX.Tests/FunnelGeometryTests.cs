@@ -167,7 +167,8 @@ public sealed class FunnelGeometryTests {
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "fill-pattern");
         var label = prepared.Scene.Nodes.OfType<VisualSceneText>().First(text => text.Role == "funnel-label");
         Assert.Equal(ink, label.Color);
-        Assert.Contains(prepared.Regions, region => region.Role == "funnel-label" && region.Label == "Stage 0: Complete");
+        Assert.Contains(prepared.Regions, region => region.Role == "funnel-label" && region.Label == "Complete");
+        Assert.Contains(prepared.Regions, region => region.Role == "funnel-stage" && region.Label?.StartsWith("Stage 0: Complete,", StringComparison.Ordinal) == true);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.Funnel.Form = form == ChartFunnelForm.Cone ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
         chart.Options.Funnel.Orientation = ChartOrientation.Horizontal;

@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualChordCompiler {
     private static void Labels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartChordModel model, TextStyle[] styles, string[] labels, VisualThemeColors colors) {
-        var nodes = model.Nodes.Where(node => node.IsVisible).ToArray();
+        var nodes = model.Nodes.Where(node => node.IsVisible && labels[node.Index].Length > 0).ToArray();
         var requests = new List<LabelPlacementRequest>();
         var gap = context.Theme.Spacing;
         foreach (var node in nodes) {

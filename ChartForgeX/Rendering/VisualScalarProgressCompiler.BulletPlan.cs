@@ -75,7 +75,7 @@ internal static partial class VisualScalarProgressCompiler {
         internal BulletRow(Chart chart, ChartSeries series, int index, VisualRenderContext context, VisualThemeColors colors) {
             Range(series, out _, out _); Index = index; Name = series.Name; SeriesKey = series.Id.Value; Local = series.Id.IsAutomatic;
             ObservationId = series.ObservationIds.TryGetValue(0, out var id) ? id.Value : null;
-            AuthoredLabel = series.PointLabels.Count > 0 ? series.PointLabels[0] : null; Reading = series.BulletValues[0];
+            AuthoredLabel = series.PreparedLabels.Count > 0 ? series.PreparedLabels[0] : null; Reading = series.BulletValues[0];
             ShowLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true); StateRole = series.StateRole;
             Color = BulletColor(series, index, colors); Paint = BulletPaint(series, Color); TextPolicy = new VisualValueTextPolicy(chart, series, context);
             Axis = series.CaptureBulletAxis(); _hasAxisFormat = Axis.ValueFormat != null; _axisFormat = Axis.ValueFormat?.CapturedValuePolicy; _axisFormatKey = FormatKey(_axisFormat);

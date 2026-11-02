@@ -52,10 +52,13 @@ internal static partial class VisualArtifactInterchangeJson {
         OptionalString(writer, "color", WaterfallColor(source.Color)); String(writer, "state", source.State.ToString()); String(writer, "pattern", source.Pattern.ToString());
         String(writer, "valueAxis", source.ValueAxis.ToString()); Boolean(writer, "showInLegend", source.ShowInLegend); OptionalString(writer, "semanticRole", source.SemanticRole);
         if (source.Labels.HasValue) Boolean(writer, "labels", source.Labels.Value); OptionalString(writer, "placement", source.Placement?.ToString());
-        OptionalNumber(writer, "strokeWidth", source.StrokeWidth); String(writer, "interpolation", source.Interpolation.ToString()); String(writer, "step", source.Step.ToString());
+        OptionalNumber(writer, "strokeWidth", source.StrokeWidth); VisibilitySourceStroke(writer, "stroke", source.StrokeStyle);
+        String(writer, "interpolation", source.Interpolation.ToString()); String(writer, "step", source.Step.ToString());
         OptionalString(writer, "stackGroup", source.StackGroup); OptionalNumber(writer, "normalizedTo", source.NormalizedTo); DetailTextStyle(writer, source.CopyLabelStyle());
         if (source.Kind == ChartSeriesKind.StackedArea) String(writer, "stackedAreaMissingData", source.StackedAreaMissingData.ToString());
         VisibilitySourceMarker(writer, source.CopyMarkers());
+        VisibilitySourceFills(writer, source);
+        VisibilitySourceItemStyles(writer, source);
         writer.Property("points"); writer.StartArray(); foreach (var point in source.Points) { writer.StartArray(); writer.Number(point.X); if (includeValues) writer.Number(point.Y); writer.Boolean(point.BreakBefore); writer.EndArray(); } writer.EndArray();
         writer.Property("suppliedSummaries"); writer.StartArray(); foreach (var box in source.Boxes) { writer.StartArray(); writer.Number(box.X); writer.Number(box.Minimum); writer.Number(box.Q1); writer.Number(box.Median); writer.Number(box.Q3); writer.Number(box.Maximum); writer.EndArray(); } writer.EndArray();
         Boolean(writer, "raw", source.Raw); writer.Property("rawGroups"); writer.StartArray();
@@ -67,6 +70,12 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.Property("pointColors"); writer.StartArray(); foreach (var color in source.PointColors) writer.String(WaterfallColor(color)); writer.EndArray();
         writer.Property("pointPatterns"); writer.StartArray(); foreach (var pattern in source.PointPatterns) writer.String(pattern?.ToString()); writer.EndArray();
         writer.Property("pointLabels"); writer.StartArray(); foreach (var label in source.PointLabels) writer.String(label); writer.EndArray();
+        if (source.PreparedLabels.Count > 0) {
+            writer.Property("preparedLabels"); writer.StartArray(); foreach (var label in source.PreparedLabels) writer.String(label); writer.EndArray();
+        }
+        if (source.Tooltips.Count > 0) {
+            writer.Property("preparedTooltips"); writer.StartArray(); foreach (var tooltip in source.Tooltips) writer.String(tooltip); writer.EndArray();
+        }
         writer.Property("pointStyles"); writer.StartArray(); for (var index = 0; index < source.PointStyleCount; index++) {
             var style = source.CopyPointStyle(index); if (style == null) writer.String(null); else { writer.StartObject(); DetailTextStyle(writer, style); writer.EndObject(); }
         }

@@ -85,7 +85,7 @@ internal static partial class VisualScalarProgressCompiler {
                 Rows[index] = new Row {
                     Label = labels[index],
                     Display = displays[index],
-                    FixedDisplay = index < series.PointLabels.Count ? series.PointLabels[index] : null,
+                    FixedDisplay = index < series.PreparedLabels.Count ? series.PreparedLabels[index] : null,
                     Value = raw, Minimum = item?.Minimum ?? 0, Maximum = item?.Maximum ?? _maximum,
                     ExplicitDomain = item?.Maximum != null, Color = color,
                     Paint = VisualChartPaint.Series(series, color, index, explicitOverride: item?.Color.HasValue == true),

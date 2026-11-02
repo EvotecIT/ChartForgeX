@@ -12,6 +12,8 @@ internal static partial class VisualCartesianCompiler {
         VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         ChartAxisWindow? xViewport, ChartAxisWindow? yViewport) {
         var source = series.ErrorBars[item];
+        var markers = series.ResolvePointMarkers(item);
+        radius = VisualMarkerScene.Radius(series, context, markers);
         var sourceLeft = source.XBounds?.Lower ?? source.X; var sourceRight = source.XBounds?.Upper ?? source.X;
         var sourceLow = source.YBounds?.Lower ?? source.Y; var sourceHigh = source.YBounds?.Upper ?? source.Y;
         var visible = map.OverlapsSourceWindow(xViewport, sourceLeft, sourceRight, horizontalAxis: true)
@@ -19,8 +21,8 @@ internal static partial class VisualCartesianCompiler {
         var x = map.X(source.X); var y = map.Y(source.Y);
         var left = map.X(sourceLeft); var right = map.X(sourceRight); var low = map.Y(sourceLow); var high = map.Y(sourceHigh);
         var horizontalCap = ErrorCap(plot.Width, series.ErrorBars.Count); var verticalCap = ErrorCap(plot.Height, series.ErrorBars.Count);
-        var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.ErrorBarStrokeWidth;
-        var extent = VisualMarkerScene.FootprintExtent(series, radius);
+        var stroke = VisualSeriesStroke.Width(series, ChartVisualPrimitives.ErrorBarStrokeWidth);
+        var extent = VisualMarkerScene.FootprintExtent(series, radius, markers);
         var halfWidth = Math.Max(extent, source.YBounds.HasValue ? (horizontalCap + stroke) / 2 : 0);
         var halfHeight = Math.Max(extent, source.XBounds.HasValue ? (verticalCap + stroke) / 2 : 0);
         var xStroke = source.XBounds.HasValue ? stroke / 2 : 0; var yStroke = source.YBounds.HasValue ? stroke / 2 : 0;
@@ -36,14 +38,14 @@ internal static partial class VisualCartesianCompiler {
                 var linePaint = VisualChartPaint.Stroke(sourcePaint.WithOpacity(paint, ChartVisualPrimitives.ErrorBarRangeOpacity));
                 var capPaint = VisualChartPaint.Stroke(sourcePaint);
                 if (source.XBounds.HasValue) {
-                    builder.Line(left, y, right, y, paint, stroke, role: "error-range-x", paint: linePaint);
-                    builder.Line(left, y - verticalCap / 2, left, y + verticalCap / 2, color, stroke, role: "error-cap-x", paint: capPaint);
-                    builder.Line(right, y - verticalCap / 2, right, y + verticalCap / 2, color, stroke, role: "error-cap-x", paint: capPaint);
+                    VisualSeriesStroke.DrawLine(builder, series, left, y, right, y, paint, stroke, role: "error-range-x", paint: linePaint);
+                    VisualSeriesStroke.DrawLine(builder, series, left, y - verticalCap / 2, left, y + verticalCap / 2, color, stroke, role: "error-cap-x", paint: capPaint);
+                    VisualSeriesStroke.DrawLine(builder, series, right, y - verticalCap / 2, right, y + verticalCap / 2, color, stroke, role: "error-cap-x", paint: capPaint);
                 }
                 if (source.YBounds.HasValue) {
-                    builder.Line(x, low, x, high, paint, stroke, role: "error-range", paint: linePaint);
-                    builder.Line(x - horizontalCap / 2, low, x + horizontalCap / 2, low, color, stroke, role: "error-cap", paint: capPaint);
-                    builder.Line(x - horizontalCap / 2, high, x + horizontalCap / 2, high, color, stroke, role: "error-cap", paint: capPaint);
+                    VisualSeriesStroke.DrawLine(builder, series, x, low, x, high, paint, stroke, role: "error-range", paint: linePaint);
+                    VisualSeriesStroke.DrawLine(builder, series, x - horizontalCap / 2, low, x + horizontalCap / 2, low, color, stroke, role: "error-cap", paint: capPaint);
+                    VisualSeriesStroke.DrawLine(builder, series, x - horizontalCap / 2, high, x + horizontalCap / 2, high, color, stroke, role: "error-cap", paint: capPaint);
                 }
                 VisualMarkerScene.Draw(builder, series, item, x, y, radius, color, sourcePaint, "error-marker",
                     pattern: ObservationPattern(series, item), backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "error-marker-pattern");
@@ -57,9 +59,11 @@ internal static partial class VisualCartesianCompiler {
     /// <summary>Fits both physical whiskers and their perpendicular caps through the existing automatic-axis paint owner.</summary>
     private static void IncludeErrorBarPaintExtents(ChartSeries series, VisualRenderContext context, ChartRect plot,
         ChartAxis xAxis, ChartAxis yAxis, MarkerExtents x, MarkerExtents y) {
-        var radius = VisualMarkerScene.Enabled(series) ? VisualMarkerScene.Extent(series, ResolveMarkerRadius(series, context)) : 0;
-        var strokeRadius = (series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.ErrorBarStrokeWidth) / 2;
-        foreach (var source in series.ErrorBars) {
+        var strokeRadius = VisualSeriesStroke.Width(series, ChartVisualPrimitives.ErrorBarStrokeWidth) / 2;
+        for (var item = 0; item < series.ErrorBars.Count; item++) {
+            var source = series.ErrorBars[item];
+            var markers = series.ResolvePointMarkers(item);
+            var radius = VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context, markers), markers);
             x.Include(source.X, radius, xAxis); y.Include(source.Y, radius, yAxis);
             if (source.XBounds is { } xb) {
                 x.Include(xb.Lower, strokeRadius, xAxis); x.Include(xb.Upper, strokeRadius, xAxis);

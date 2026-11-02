@@ -7,10 +7,11 @@ namespace ChartForgeX.Core;
 public sealed partial class Chart {
     private readonly List<ChartSeries> _series = new();
     private IReadOnlyList<ChartSeries>? _seriesView;
+    private IReadOnlyList<ChartSeries>? _preparationSeries;
     private long _nextAutomaticSeriesId;
 
     /// <summary>Gets attached series in paint order. Retain the series itself to configure it independently of this order.</summary>
-    public IReadOnlyList<ChartSeries> Series => _seriesView ??= new ReadOnlyCollection<ChartSeries>(_series);
+    public IReadOnlyList<ChartSeries> Series => _preparationSeries ?? (_seriesView ??= new ReadOnlyCollection<ChartSeries>(_series));
 
     /// <summary>Attaches a configured series, preserving its stable identity and data ownership.</summary>
     /// <remarks>A series can belong to only one chart at a time. IDs must be unique within the chart.</remarks>
@@ -71,7 +72,11 @@ public sealed partial class Chart {
         _nextAutomaticSeriesId = Math.Max(_nextAutomaticSeriesId, sequence);
     }
 
-    internal int IndexOfSeries(ChartSeries series) => _series.IndexOf(series);
+    internal int IndexOfSeries(ChartSeries series) {
+        var current = Series;
+        for (var index = 0; index < current.Count; index++) if (ReferenceEquals(current[index], series)) return index;
+        return -1;
+    }
 
     private int OwnedSeriesIndex(ChartSeries series) {
         if (series == null) throw new ArgumentNullException(nameof(series));

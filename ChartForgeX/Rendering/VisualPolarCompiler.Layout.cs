@@ -20,7 +20,7 @@ internal static partial class VisualPolarCompiler {
         }
         var gap = context.Theme.Spacing;
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var markExtent = chart.Series.Select((series, index) => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
+        var markExtent = chart.Series.Select((series, index) => Math.Max(VisualMarkerScene.MaximumExtent(series, context),
             VisualPolarSeriesScene.StrokeExtent(chart, context, series, ChartSeriesColours.Resolve(series, index, colors)) / 2)).Max();
         if (chart.Options.ShowGrid) markExtent = Math.Max(markExtent, Math.Max(
             VisualReferenceStroke.PaintedWidth(chart.Options.PolarAxisStroke, colors.Axis, context.Theme.AxisStrokeWidth),

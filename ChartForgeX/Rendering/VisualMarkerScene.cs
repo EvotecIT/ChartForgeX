@@ -56,11 +56,23 @@ internal static partial class VisualMarkerScene {
         return ChartMarkerGeometry.Extent(markers, radius) + OutlineExtent(series, markers);
     }
 
+    /// <summary>Fits the resolved observation outlines before the shared radar/polar frame is projected.</summary>
+    internal static double MaximumExtent(ChartSeries series, VisualRenderContext context) {
+        var extent = 0d;
+        for (var point = 0; point < series.ObservationCount; point++) {
+            var markers = series.ResolvePointMarkers(point);
+            extent = System.Math.Max(extent, Extent(series, Radius(series, context, markers), markers));
+        }
+        return extent;
+    }
+
     internal static ChartRect Bounds(double x, double y, double extent) => new(x - extent, y - extent, extent * 2, extent * 2);
 
     /// <summary>Resolves the actual fill for native marks and their contained text using the same override precedence.</summary>
     internal static (ChartColor Color, SvgPaint Paint) ResolveFill(ChartSeries series, int point, ChartColor fill, SvgPaint paint, ChartMarkerOptions? markerOptions = null) {
-        var markers = markerOptions ?? series.Markers;
+        var markers = markerOptions ?? series.ResolvePointMarkers(point);
+        if (series.PreparedItemStyle(point)?.Color is { } itemColor)
+            return (itemColor, SvgPaint.Literal(itemColor));
         var authoredPoint = point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue;
         return markers.Fill.HasValue && !authoredPoint
             ? (markers.Fill.Value, VisualChartPaint.Series(series, markers.Fill.Value, explicitOverride: true)) : (fill, paint);
@@ -70,8 +82,11 @@ internal static partial class VisualMarkerScene {
         ChartColor fill, SvgPaint fillPaint, string role, ChartColor? stroke = null, double strokeWidth = 1,
         SvgPaint? strokePaint = null, ChartFillPattern pattern = ChartFillPattern.None, ChartColor? backdrop = null,
         string? patternRole = null, (ChartColor Color, SvgPaint Paint)? quantitativeOutline = null, ChartMarkerOptions? markerOptions = null) {
+        markerOptions ??= series.ResolvePointMarkers(point);
         if (radius <= 0 || !Enabled(series, markerOptions: markerOptions)) return;
+        var first = series.PreparedItemStyle(point)?.Stroke != null ? builder.NodeCount : -1;
         ResolvePaint(series, point, fill, fillPaint, role, stroke, strokeWidth, strokePaint, pattern, backdrop, patternRole, quantitativeOutline, markerOptions).Paint(builder, x, y, radius);
+        if (first >= 0) builder.CaptureMarkerStroke(first);
     }
 
     internal static NativeMarkerPaint CapturePaint(ChartSeries series, int point, ChartColor fill, SvgPaint fillPaint,
@@ -81,7 +96,7 @@ internal static partial class VisualMarkerScene {
     private static NativeMarkerPaint ResolvePaint(ChartSeries series, int point, ChartColor fill, SvgPaint fillPaint, string role,
         ChartColor? stroke, double strokeWidth, SvgPaint? strokePaint, ChartFillPattern pattern, ChartColor? backdrop,
         string? patternRole, (ChartColor Color, SvgPaint Paint)? quantitativeOutline, ChartMarkerOptions? markerOptions) {
-        var markers = markerOptions ?? series.Markers;
+        var markers = markerOptions ?? series.ResolvePointMarkers(point);
         (fill, fillPaint) = ResolveFill(series, point, fill, fillPaint, markers);
         if (UsesQuantitativeOutline(series) && quantitativeOutline.HasValue) {
             stroke = quantitativeOutline.Value.Color;

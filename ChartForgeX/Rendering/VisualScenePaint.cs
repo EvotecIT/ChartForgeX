@@ -29,6 +29,14 @@ internal readonly struct VisualGradientStop {
 }
 
 internal sealed class VisualSceneGradient : VisualSceneNode {
+    internal VisualSceneGradient(VisualSceneMark shape, ChartFill fill, ChartRect bounds) : base(shape.Role, shape.Id) {
+        Shape = shape; AuthoredFill = fill; FillBounds = bounds;
+        Start = new ChartPoint(bounds.X + fill.Start.X * bounds.Width, bounds.Y + fill.Start.Y * bounds.Height);
+        End = new ChartPoint(bounds.X + fill.End.X * bounds.Width, bounds.Y + fill.End.Y * bounds.Height);
+        var stops = new VisualGradientStop[fill.Stops.Count];
+        for (var i = 0; i < stops.Length; i++) stops[i] = new VisualGradientStop(fill.Stops[i].Offset, fill.Stops[i].Color);
+        Stops = Array.AsReadOnly(stops);
+    }
     internal VisualSceneGradient(VisualSceneMark shape, ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops)
         : base(shape.Role, shape.Id) {
         if (stops == null || stops.Count < 2) throw new ArgumentException("A gradient needs at least two ordered stops.", nameof(stops));
@@ -40,6 +48,17 @@ internal sealed class VisualSceneGradient : VisualSceneNode {
         Shape = shape; Start = start; End = end; Stops = Array.AsReadOnly(copy);
     }
     internal VisualSceneMark Shape { get; }
+    internal ChartFill? AuthoredFill { get; }
+    internal ChartRect FillBounds { get; }
+    private VisualSceneGradient(VisualSceneMark shape, VisualSceneGradient source, IReadOnlyList<VisualGradientStop> stops) : base(shape.Role, shape.Id) {
+        Shape = shape; AuthoredFill = source.AuthoredFill; FillBounds = source.FillBounds;
+        Start = source.Start; End = source.End;
+        var copy = new VisualGradientStop[stops.Count];
+        for (var i = 0; i < copy.Length; i++) copy[i] = stops[i];
+        Stops = Array.AsReadOnly(copy);
+    }
+    internal VisualSceneGradient WithShape(VisualSceneMark shape) => new(shape, this, Stops);
+    internal VisualSceneGradient WithPaint(VisualSceneMark shape, IReadOnlyList<VisualGradientStop> stops) => new(shape, this, stops);
     internal ChartPoint Start { get; }
     internal ChartPoint End { get; }
     internal IReadOnlyList<VisualGradientStop> Stops { get; }

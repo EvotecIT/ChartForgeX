@@ -30,8 +30,8 @@ internal static class VisualStateSceneTools {
             ? VisualChartPaint.Text(style) : defaultPaint ?? SvgPaint.Literal(style.Color);
 
     internal static string Value(Chart chart, ChartSeries series, int index, double value) =>
-        index >= 0 && index < series.PointLabels.Count && series.PointLabels[index] != null
-            ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
+        index >= 0 && index < series.PreparedLabels.Count && series.PreparedLabels[index] != null
+            ? series.PreparedLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
 
     internal static string Number(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     internal static string SourceId(int series, int point) => "series-" + series.ToString(CultureInfo.InvariantCulture) + "-point-" + point.ToString(CultureInfo.InvariantCulture);

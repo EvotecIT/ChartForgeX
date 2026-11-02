@@ -72,6 +72,7 @@ internal static class ChartWordCloudLayout {
             var bounds = new List<ChartRect>();
             foreach (var item in values) {
                 var text = WordLabel(chart, item.Point.X, item.Index);
+                if (text.Length == 0) continue;
                 var ratio = max <= min ? 1 : (item.Point.Y - min) / (max - min);
                 var preferredFontSize = Math.Max(minFontSize, (minFontSize + Math.Sqrt(Math.Max(0, ratio)) * (maxFontSize - minFontSize)) * cloudScale);
                 allAtMinimum &= preferredFontSize <= minFontSize;
@@ -140,6 +141,7 @@ internal static class ChartWordCloudLayout {
         first.Left < second.Right && first.Right > second.Left && first.Top < second.Bottom && first.Bottom > second.Top;
 
     private static string WordLabel(Chart chart, double x, int index) {
+        if (chart.Series[0].PreparedLabel(index) is string captured) return captured;
         foreach (var label in chart.Options.XAxisLabels) if (Math.Abs(label.Value - x) < 0.000001) return label.Text;
         return "Term " + (index + 1).ToString(CultureInfo.InvariantCulture);
     }

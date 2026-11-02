@@ -130,7 +130,7 @@ internal static partial class VisualSpecialtyCompiler {
         ChartColor color, VisualThemeColors colors, double raw, double? retention, double? drop, ChartFunnelForm form) {
         var index = stage.SourceIndex;
         var value = FunnelValue(chart, index);
-        var text = Category(chart, index) + ": " + value;
+        var text = chart.Series[0].PreparedLabel(index) ?? Category(chart, index) + ": " + value;
         var inside = raw > 0 && form == ChartFunnelForm.StageBars;
         var textColor = inside ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
         var style = Style(chart, context, index, textColor);

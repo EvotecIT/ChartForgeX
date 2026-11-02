@@ -77,6 +77,7 @@
           return c ? { label: ms[0].head, range: api.timeX ? span(c, c) : undefined } : undefined;
         },
         tooltip: function (ms, content) {
+          if (ms.some(function (m) { return m.tooltip != null; })) return content;
           // The data island also lists series whose marks were not drawn at this X.
           var c = single(ms), points = c && k.data.points && k.data.points.filter(function (p) { return p.x === c.raw && k.series[p.s] && !k.series[p.s].hidden; });
           if (points && points.length) content.rows = points.map(function (p) { return { color: k.color(p.s), value: p.v || "", name: k.series[p.s].name || "" }; });

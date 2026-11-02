@@ -206,7 +206,7 @@ internal static partial class VisualCartesianCompiler {
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
                     xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
-                builder.Append(seriesBuilder.Build());
+                builder.Append(seriesBuilder);
             }
             DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null,
                 xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);

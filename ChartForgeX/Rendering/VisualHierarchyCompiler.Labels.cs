@@ -78,7 +78,7 @@ internal static partial class VisualHierarchyCompiler {
 
     /// <summary>Uses authored per-observation captions consistently without changing source hierarchy names.</summary>
     private static string HierarchyCaption(ChartSeries series, int index, string fallback) =>
-        index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : fallback;
+        index < series.PreparedLabels.Count && series.PreparedLabels[index] != null ? series.PreparedLabels[index]! : fallback;
 
     /// <summary>Resolves the same authored caption typography for rectangular and radial hierarchy marks.</summary>
     private static TextStyle LabelStyle(Chart chart, VisualRenderContext context, ChartColor fill, int pointIndex) {

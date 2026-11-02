@@ -42,8 +42,9 @@ internal static partial class VisualCartesianCompiler {
             var radius = ResolveMarkerRadius(series, context);
             if (series.Kind == ChartSeriesKind.Bubble) {
                 var size = series.RenderPoints[raw + 1].Y;
-                radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot, series.Markers) : 0;
-                var bounds = VisualMarkerScene.Bounds(series, x, y, radius);
+                var markers = series.ResolvePointMarkers(item);
+                radius = VisualMarkerScene.Enabled(series, markerOptions: markers) ? bubbleScale!.Radius(size, plot, markers) : 0;
+                var bounds = VisualMarkerScene.Bounds(series, x, y, radius, markers);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, _ => bubbleScale!.Presentation.Value(size));
                 var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
                 var fillPaint = sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity);
@@ -81,7 +82,7 @@ internal static partial class VisualCartesianCompiler {
                 : new ChartPoint(map.X(point.X), map.Y(point.Y), point.BreakBefore)).ToArray();
         var path = ChartPathBuilder.FromPoints(points, ChartInterpolation.Linear);
         var sourceColor = Color(series, index, colors);
-        DrawLayeredPath(chart, builder, path, sourceColor, VisualChartPaint.Series(series, sourceColor), Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context)),
+        DrawLayeredPath(chart, builder, series, path, sourceColor, VisualChartPaint.Series(series, sourceColor), Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context)),
             trend ? "trend-line" : "slope-line", trend ? new[] { 8d, 6d } : null);
         if (trend) {
             var slope = (last.Y - first.Y) / (last.X - first.X);
@@ -94,8 +95,10 @@ internal static partial class VisualCartesianCompiler {
             ChartPointSegments.Split(points).Select(segment => segment.ToList()).ToArray(), false, SeriesStroke(series, context), plot)));
         var radius = ResolveMarkerRadius(series, context);
         for (var endpoint = 0; endpoint < points.Length; endpoint++) {
+            var markers = series.ResolvePointMarkers(endpoint);
+            radius = VisualMarkerScene.Radius(series, context, markers);
             var raw = trend && endpoint != 0 ? series.RenderPoints.Count - 1 : endpoint; var source = series.RenderPoints[raw]; var point = points[endpoint];
-            var bounds = trend ? Extents(point.X, point.Y, point.X, point.Y) : VisualMarkerScene.Bounds(series, point.X, point.Y, radius);
+            var bounds = trend ? Extents(point.X, point.Y, point.X, point.Y) : VisualMarkerScene.Bounds(series, point.X, point.Y, radius, markers);
             var label = ResolveObservationLabel(chart, context, series, endpoint, colors, format => format("value", source.Y));
             var visible = ViewportObservationVisible(xViewport, yViewport, horizontal ? source.Y : source.X,
                 horizontal ? source.X : source.Y, horizontal ? source.X : source.Y, map);

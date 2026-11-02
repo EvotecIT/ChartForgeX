@@ -55,7 +55,7 @@ internal static partial class VisualRadialProgressCompiler {
                     SeparatorStroke = layer.SeparatorStrokeWidth, SeparatorInset = layer.SeparatorInsetRatio,
                     PinStateColors = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None,
                     ObservationId = series.ObservationIds.TryGetValue(index, out var id) ? id.Value : null,
-                    AuthoredLabel = index < series.PointLabels.Count ? series.PointLabels[index] : null
+                    AuthoredLabel = index < series.PreparedLabels.Count ? series.PreparedLabels[index] : null
                 };
             }
             _centerRadius = centerRadius; _format = chart.Options.ValueFormat.CapturedValuePolicy;
@@ -98,7 +98,7 @@ internal static partial class VisualRadialProgressCompiler {
             for (var index = 0; index < _layers.Length; index++) {
                 var layer = _layers[index]; var raw = readings == null ? layer.Value : readings[index];
                 var sweep = layer.Sweep * VisualRadialPrimitives.Clamp((raw - layer.Minimum) / (layer.Maximum - layer.Minimum));
-                centerValue = readings == null ? layer.Display : _format!.Format(raw);
+                centerValue = layer.AuthoredLabel ?? (readings == null ? layer.Display : _format!.Format(raw));
                 var bounds = new ChartRect(_cx - layer.Radius - layer.Stroke / 2, _cy - layer.Radius - layer.Stroke / 2,
                     layer.Radius * 2 + layer.Stroke, layer.Radius * 2 + layer.Stroke);
                 builder.AddRegion(new VisualSemanticRegion(Id(index), "layered-radial-layer", bounds, layer.Name + ": " + centerValue));

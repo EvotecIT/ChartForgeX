@@ -34,6 +34,7 @@ internal static partial class VisualSceneRasterRenderer {
     internal static void CollectBorrowedNativeImages(VisualScene scene, ISet<byte[]> borrowed) {
         foreach (var node in scene.Nodes) {
             if (node is VisualSceneImage image) borrowed.Add(image.Image.Pixels);
+            if (node is VisualSceneGradient { AuthoredFill.ImageData: { } fillImage }) borrowed.Add(fillImage.Image.Pixels);
             if (node is VisualSceneGroup { RetainedEffect: not null } group && group.RetainedEffect!.Effect.Mask is { } mask)
                 borrowed.Add(mask.Image.Pixels);
         }
