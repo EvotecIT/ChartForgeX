@@ -28,4 +28,15 @@ public sealed partial class VisualTypography {
         return width < wide.CompactBreakpoint ? wide.CompactScale ?? wide : wide;
     }
     internal double CenterSize(double radius) => Math.Max(CenterMinimumSize, Math.Min(CenterMaximumSize, radius * CenterRadiusFactor));
+
+    // A portable prepared scene retains its measured scale even when its layout is later placed in a wider viewport.
+    internal VisualTypography CaptureResolvedScale() {
+        if (CompactScale == null && WideScale == null) return this;
+        var scale = (VisualTypography)MemberwiseClone();
+        scale.WideScale = null;
+        scale.CompactScale = (VisualTypography)scale.MemberwiseClone();
+        scale.CompactScale.WideScale = scale;
+        scale.CompactScale.CompactScale = null;
+        return scale;
+    }
 }
