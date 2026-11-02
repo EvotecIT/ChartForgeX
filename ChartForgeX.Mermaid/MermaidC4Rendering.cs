@@ -48,7 +48,7 @@ public static partial class MermaidC4Rendering {
             node.FitLabelToContent = true;
             var fontSize = options.Presentation?.FontSize ?? document.Configuration.FontSize
                 ?? options.Presentation?.Theme?.Typography.DataLabelSize ?? chart.Theme.Typography.DataLabelSize;
-            node.MaximumTextWidth = 220 * Math.Max(1, fontSize / chart.Theme.Typography.DataLabelSize);
+            node.MaximumTextWidth = DiagramTheme.CardTextMaxWidth *Math.Max(1, fontSize / chart.Theme.Typography.DataLabelSize);
             node.MaximumLabelCharacters = node.Label.Length;
             node.Href = element.Link;
             node.Shape = MermaidC4Shapes.Resolve(element.Shape, element.Sprite, element.Tags);
@@ -74,6 +74,7 @@ public static partial class MermaidC4Rendering {
             if (relationship.AuthoredIndex != null) edge.Metadata["mermaid.authoredIndex"] = relationship.AuthoredIndex;
             ApplyPortHints(edge, relationship.Kind);
         }
+        if (document.Direction == null) OrientBoundaries(chart, document, MermaidTopologyRendering.PreferredDirection(options));
 
         var sourceSettings = document.Configuration.C4;
         if (sourceSettings?.HasSettings == true) {

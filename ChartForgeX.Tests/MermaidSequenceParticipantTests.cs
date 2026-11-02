@@ -46,8 +46,9 @@ public sealed partial class MermaidSequenceParticipantTests {
         Assert.Single(xml.Descendants(), element => element.Name.LocalName == "a" && element.Attributes().Any(attribute => attribute.Name.LocalName == "href" && attribute.Value == storage.Href));
         Assert.DoesNotContain(xml.Descendants(), element => element.Name.LocalName is "script" or "foreignObject");
         Assert.Null(sequence.Participants.Single(participant=>participant.Kind==SequenceArtifactParticipantKind.Actor).SurfaceShadow);
-        Assert.All(sequence.Participants.Where(participant=>participant.Kind!=SequenceArtifactParticipantKind.Actor),participant=>Assert.NotNull(participant.SurfaceShadow));
-        Assert.Equal((sequence.Participants.Count-1)*2,xml.Descendants().Count(element=>element.Name.LocalName=="image"));
+        // Unthemed participants are flat; Mermaid neo elevation needs an explicit look or theme.
+        Assert.All(sequence.Participants,participant=>Assert.Null(participant.SurfaceShadow));
+        Assert.DoesNotContain(xml.Descendants(),element=>element.Name.LocalName=="image");
         var json = artifact.ToInterchangeJson(); var portable = VisualArtifactInterchangeEnvelope.FromJson(json);
         Assert.Equal(SequenceArtifactParticipantKind.Database, portable.Nodes.Single(node => node.Id == "D").Sequence!.Kind);
         Assert.Equal(storage.Metadata["mermaid.properties.statements"], portable.Nodes.Single(node => node.Id == "D").Extensions["mermaid.properties.statements"]);

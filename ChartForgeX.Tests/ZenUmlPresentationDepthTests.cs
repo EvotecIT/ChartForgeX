@@ -57,7 +57,8 @@ public sealed partial class ZenUmlPresentationDepthTests {
         Assert.Contains(xml.Descendants(),item=>(string?)item.Attribute("data-cfx-role")=="sequence-divider");
         Assert.DoesNotContain(xml.Descendants(),item=>item.Name.LocalName is "script" or "foreignObject");
         var shadows=xml.Descendants().Where(item=>item.Name.LocalName=="image").ToArray();
-        Assert.NotEmpty(shadows);
+        // Elevation is the neo look requested by the dark source theme; the unthemed light source stays flat.
+        if(dark)Assert.NotEmpty(shadows);else Assert.Empty(shadows);
         Assert.All(shadows,item=>{Assert.Equal("true",item.Attribute("aria-hidden")?.Value);Assert.Equal("none",item.Attribute("pointer-events")?.Value);Assert.StartsWith("data:image/png;base64,",item.Attribute("href")!.Value);});
         var nativeSvg=SequencePreparedCompiler.PrepareDefault(model).ToSvg(new VisualSvgOptions(effectProfile:VisualSvgEffectProfile.NativeFilters));
         Capture("zen-native-filter-"+fixture+"-"+width+(dark?"-dark":"-light"),nativeSvg,png,json);
