@@ -165,7 +165,7 @@ internal static class VisualFrameLayout {
                 var widthScale = LegendWidthScale(legendStyle);
                 legendStyle.FontSize = Math.Max(Math.Min(12, legendStyle.FontSize), legendStyle.FontSize * widthScale);
             }
-            var columnWidth = 0d;
+            var columnWidth = 0d; var groupedValueList = false;
             List<List<VisualLegendEntry>> PlanRows() {
                 var planned = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
                 foreach (var entry in entries) {
@@ -191,6 +191,7 @@ internal static class VisualFrameLayout {
                     // One column: every entry spans it, so values and percentages align.
                     columnWidth = legendWidth;
                     numericWidths = null;
+                    groupedValueList = partToWhole;
                     rows = PlanRows();
                 } else if (!wideFrame && (rows.Count > LegendMaximumAutomaticRows || partToWhole && rows.Count > 1)) {
                     columnWidth = Math.Max(0, (legendWidth - gap) / 2);
@@ -220,6 +221,19 @@ internal static class VisualFrameLayout {
             if (height > 0) legendHeight = height + legendGap;
             var x = position == ChartLegendPosition.Right ? right - legendWidth : left;
             var y = side || above ? top : bottom - height;
+            // A part-to-whole value list beside its pie reads as one group: a square plot and the list, a fixed gap apart,
+            // centred together in the frame, with the list centred vertically against the pie.
+            var groupLeft = 0d; var groupPlot = 0d;
+            if (groupedValueList && height > 0) {
+                var plotHeight = Math.Max(0, bottom - top);
+                var groupGap = Math.Max(0, LegendValueListGap - gap);
+                groupPlot = Math.Max(0, Math.Min(plotHeight, right - left - legendWidth - groupGap));
+                // The pie paints inside its plot by the theme spacing, so centre what is visible: pie edge to list edge.
+                var visibleWidth = groupPlot - gap + groupGap + legendWidth;
+                groupLeft = Math.Max(left, left + (right - left - visibleWidth) / 2 - gap);
+                x = groupLeft + groupPlot + groupGap;
+                y = top + Math.Max(0, (plotHeight - height) / 2);
+            }
             using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {
                 if (!string.IsNullOrWhiteSpace(legendTitle)) {
                     var titleBounds = new ChartRect(x, y, titleHeight > 0 ? legendWidth : 0, titleHeight > 0 ? titleLineHeight : 0);
@@ -299,7 +313,8 @@ internal static class VisualFrameLayout {
                 }
             }
             if (height > 0) {
-                if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + legendGap; else right -= legendWidth + legendGap; }
+                if (groupedValueList) { left = groupLeft; right = groupLeft + groupPlot; }
+                else if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + legendGap; else right -= legendWidth + legendGap; }
                 else if (above) top += height + legendGap; else bottom -= height + legendGap;
             }
             double LegendWidth(VisualLegendEntry entry, double overhead, double? limit = null) {
@@ -437,6 +452,8 @@ internal static class VisualFrameLayout {
     /// <summary>A part-to-whole value list moves beside a plot wider than this aspect ratio.</summary>
     internal const double LegendSideAspect = 1.4;
     private const double LegendSideMaximumShare = .36;
+    /// <summary>The visible gap between a pie and its value list; the pie's own inset (the theme spacing) counts toward it.</summary>
+    internal const double LegendValueListGap = 32;
 
     internal static LegendGlyph Glyph(VisualLegendEntry entry) => entry.State != null ? LegendGlyph.Square : entry.Kind switch {
         ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine or ChartSeriesKind.Slope

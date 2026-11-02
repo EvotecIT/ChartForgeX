@@ -153,6 +153,10 @@ public sealed class ChartLookV2DefaultsTests {
         if (width >= VisualFrameLayout.LegendCompactFrameWidth) {
             Assert.All(entries, entry => Assert.True(entry.Left >= slice.Cx + slice.Outer, "The value list sits right of the pie."));
             Assert.Single(entries.Select(entry => Math.Round(entry.Width, 3)).Distinct());
+            // The pie and its list form one group: a fixed gap apart, centred together, the list centred against the pie.
+            Assert.InRange(entries.Min(entry => entry.Left) - (slice.Cx + slice.Outer) - VisualFrameLayout.LegendValueListGap, -1.5, 1.5);
+            Assert.InRange((slice.Cx - slice.Outer + entries.Max(entry => entry.Right)) / 2 - width / 2d, -1.5, 1.5);
+            Assert.InRange((entries.Min(entry => entry.Top) + entries.Max(entry => entry.Bottom)) / 2 - slice.Cy, -1.5, 1.5);
         } else {
             Assert.Equal(2, entries.Select(entry => Math.Round(entry.Left, 3)).Distinct().Count());
             Assert.All(entries, entry => Assert.True(entry.Bottom <= slice.Cy - slice.Outer + .001, "The compact grid stays above the pie."));
