@@ -10,13 +10,23 @@ Run the full repository quality loop before opening a pull request:
 ./Build.ps1 -Configuration Release
 ```
 
-That command restores packages, builds all projects, runs the smoke suite through `dotnet test`, regenerates example outputs, packs the library packages, verifies their dependency boundaries, and checks the symbol packages.
+That command restores packages, builds all projects, runs the smoke suite through `dotnet test`, checks the pinned Mermaid reference corpus, runs the AOT smoke, regenerates example outputs, checks the visual-health baselines, packs the library packages, verifies their dependency boundaries, and checks the symbol packages.
 
 For a faster test-only loop:
 
 ```powershell
 dotnet test .\ChartForgeX.sln -c Release
 ```
+
+Use a supported Node.js runtime for the Mermaid reference checks. CI selects Node 24, starting at 24.15.0; the npm restore enforces dependency engine requirements.
+
+For slow native test runs, add `-TestDiagnosticsDirectory <output-directory>`. This records named test timings, warnings identifying tests still running after 30 seconds, a final TRX report, and incremental VSTest logs that remain available if the process times out. It preserves the existing 900-second command limit and test scheduling. CI retains these files in the `chartforgex-native-results-<OS>` artifacts, including after a failed run.
+
+## Package Consumers
+
+`-QualifyPackages` additionally builds and runs isolated consumers of the packed packages. The Windows CI quality job enables this gate and retains its reports. Core, Visuals and Stories execute net472 consumers on the runner's installed .NET Framework. All five consumer lanes execute net8.0 and net10.0, while netstandard2.0 has compile proof.
+
+The downstream lane loads public OfficeIMO.ChartForgeX and HtmlForgeX.ChartForgeX adapter packages with the candidate ChartForgeX packages and saves real Office files and report HTML. Running [package qualification](Build/Test-PackageQualification.ps1) with `HFX_TEST_ENABLE_PLAYWRIGHT=1` also exercises packed chart selection, graph editor add/undo/redo and downstream HTML at compact and wide sizes through HtmlTinkerX. Native Office appearance, other installed hosts and private consumers need their own acceptance.
 
 ## Change Expectations
 
@@ -50,7 +60,10 @@ The website presents the examples; the executable projects own their source and 
 - `ChartForgeX.Examples` generates the gallery manifest, SVG/PNG/HTML artifacts, downloadable programs and visual-health results. It also supplies fixtures to the browser quality lane.
 - `ChartForgeX.Examples.Snippets` links the core-only recipes and executes their advertised selections without referencing the examples executable.
 - `Website/build/Sync-GeneratedExamples.ps1` imports the gallery manifest and its artifacts. The website does not maintain a separate family catalog.
+- `Website/build/Sync-GeneratedExamples.ps1` also writes one page per chart family under `Website/content/pages/gallery/`. Those pages are front matter only; never edit them by hand.
 - `Website/tools/SiteVisuals` generates the site's curated examples and presentation artwork. Shared documentation comes from the source-backed collections configured in `Website/site.json`.
+
+Gallery recipes should sell their chart: realistic names, several series where the family supports them and enough points to show a shape. Keep edge-case data (empty, zero, sparse or single observations) in separate variants; the family pages leave those to the catalog. Downloadable programs keep imports and output plumbing in a `#region Setup` block so the site shows the chart model first.
 
 Keep offline fixtures that cover distinct rendering or interaction contracts, even when they are not public gallery cards. Keep branding and page composition in the website generator. After changing a recipe, compile its displayed program, inspect the affected SVG and PNG, and regenerate the website through its existing owners. [The website guide](Website/AGENTS.md) describes those sources and commands.
 

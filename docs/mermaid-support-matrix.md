@@ -1,12 +1,14 @@
 ---
-description: "Check native Mermaid rendering, retained syntax, diagnostics and fidelity limits by family, with explicit pinned-reference qualification boundaries."
+description: "Check which Mermaid diagram types ChartForgeX renders, what syntax each one supports, and where the output differs from Mermaid.js."
 ---
 
 # Mermaid Support Matrix
 
-This matrix is the working contract for ChartForgeX Mermaid support. A family is complete only when it has source-preserving parsing, typed semantic models where rendering is implemented, diagnostics for unsupported syntax, deterministic SVG and PNG output where renderable, Markdown fence coverage, Mermaid.js conformance fixtures, and smoke tests that prove the public artifact contract.
+Use this page to check whether ChartForgeX can render your Mermaid diagram. Each family lists the syntax ChartForgeX draws, what it keeps without drawing, and the diagnostics it reports. ChartForgeX renders Mermaid natively, without a browser, so layouts differ from Mermaid.js even when the content matches.
 
-The current semantic reference is **Mermaid.js 12.2.0**. The [test-time harness](../tests/mermaid-conformance/package.json) also pins 10.9.8 and 11.17.2; [per-fixture compatibility metadata](../tests/mermaid-conformance/compatibility.json) records syntax outcomes and explicit older semantic differences. These tested examples do not establish full compatibility with every release or syntax form in those majors. The family inventory follows upstream 12.1.0 documentation. Release-specific fixtures cover 12.2.0 mindmap branch/depth coloring; its other new syntax and layout changes still need qualification. The [Mermaid roadmap](../TODO.md#mermaid) records additional grammar, observed render comparisons, and qualification of newer reference versions.
+We count a family as complete only when it has source-preserving parsing, typed semantic models where rendering is implemented, diagnostics for unsupported syntax, deterministic SVG and PNG output where renderable, Markdown fence coverage, Mermaid.js conformance fixtures, and smoke tests that prove the public artifact contract.
+
+The current semantic reference is **Mermaid.js 12.2.0**. The [test-time harness](../tests/mermaid-conformance/package.json) also pins 10.9.8 and 11.17.2; [per-fixture compatibility metadata](../tests/mermaid-conformance/compatibility.json) records syntax outcomes and explicit older semantic differences. These tested examples do not establish full compatibility with every release or syntax form in those majors. The family inventory follows upstream 12.1.0 documentation. Release-specific fixtures cover 12.2.0 mindmap branch/depth coloring; its other new syntax and layout changes are not tested yet.
 
 ## What support means
 
@@ -79,21 +81,6 @@ The source evidence is [header dispatch and parse results](../ChartForgeX.Mermai
 ## Shared Owners
 
 Native hierarchy options, authored identities, chart orientation and relationship styling use the shared chart owner. Retained series replace complete hierarchy or flow data through `ReplaceHierarchyItems` and `ReplaceFlowData`; the [API conventions](v2/api-conventions.md) document configuration and identity rules. Bounded source configuration and located class/state/ER diagnostics belong to the Mermaid parser. Extend these owners when completing language mappings.
-
-Remaining shared-owner work and its qualification belong in the [Mermaid roadmap](../TODO.md#mermaid).
-
-## Completion Order
-
-The implementation checklist lives in [TODO.md](../TODO.md#mermaid):
-
-1. Establish versioned feature/semantic evidence and truthful diagnostics, including missing-family recognition.
-2. Complete shared configuration, labels, styling, policy and layout owners.
-3. Close core flowchart/sequence/class/state/ER/requirement semantics.
-4. Qualify chart/calendar fidelity through the implemented shared native owners.
-5. Complete specialized diagrams and implement missing language families against the same shared owners.
-6. Qualify host delivery, visible exports, frameworks/AOT and package consumers; settle merge/release gates separately.
-
-A family closes only when its documented syntax, semantics, diagnostics, visible scene, SVG/PNG exports and fence/consumer contracts pass. Retaining raw text or accepting one fixture is insufficient.
 
 ## Upstream References
 
