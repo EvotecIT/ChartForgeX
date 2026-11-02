@@ -49,6 +49,12 @@ internal static class MermaidPresentation {
             topology.DefaultRenderOptions.AllowMultilineNodeLabels = true;
             topology.DefaultRenderOptions.WrapNodeLabels = true;
             topology.DefaultRenderOptions.MaxNodeSubtitleLines = 8;
+            // Diagram connectors are flat single strokes, like node outlines; no glow layers.
+            topology.DefaultRenderOptions.EdgeVisualStyle ??= ChartLineVisualStyle.Plain();
+            // Mermaid has no health; an unknown status must not turn notation into a dashed warning line.
+            // Families whose notation is dashed declare it on the edge.
+            foreach (var edge in topology.Edges)
+                if (edge.LineStyle == TopologyEdgeLineStyle.Auto && edge.DashPattern.Count == 0 && edge.Status == TopologyHealthStatus.Unknown) edge.LineStyle = TopologyEdgeLineStyle.Solid;
             foreach (var node in topology.Nodes) if (node.Status == TopologyHealthStatus.Unknown) node.ShowStatusBadge = false;
             MermaidNativeStyles.ResolveLetterSpacing(topology);
         } else if (model is Chart chart) {

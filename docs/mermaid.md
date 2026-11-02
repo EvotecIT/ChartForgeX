@@ -14,6 +14,8 @@ This split keeps ChartForgeX dependency-free at runtime, keeps Markdown support 
 
 Unconfigured diagrams use Graphite in the selected light or dark mode. Fonts come from `VisualTheme.Typography.Family`; a host theme or font override remains authoritative. Diagram roles use a 20-pixel title, 14-pixel subtitle, 13-pixel node caption and smaller relationship/member text. Explicit source typography still applies.
 
+Every family shares one flat look. Connectors are single 1.5-pixel strokes without glow layers, solid unless the notation is dashed (dotted flowchart links, class dependencies, non-identifying ER relationships, traced requirement relationships). Relationship captions sit on a borderless chip just off the canvas tone that hugs the text, and multiplicities only mask their line. Cards with an icon (C4, architecture) fit their content up to a shared wrapping width. Sequence participants are flat; Mermaid's neo elevation applies when the source sets `look: neo` or names one of Mermaid's themes. A C4 boundary whose containers form a chain lays that chain along the requested canvas's long axis, with people and external systems across it.
+
 To retain Mermaid's lavender default palette, request it in the source:
 
 ```mermaid

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 
@@ -42,6 +43,8 @@ public static class MermaidArchitectureRendering {
             chart.AddAutoNode(service.Id, string.IsNullOrWhiteSpace(service.Title) ? service.Id : service.Title, ServiceKind(service.Icon), TopologyHealthStatus.Unknown, groupId: service.GroupId, width: 150, height: 72, cssClass: "cfx-mermaid-architecture-service", iconId: MermaidArchitectureIcons.NativeId(service.Icon));
             var node = chart.Nodes[chart.Nodes.Count - 1];
             node.ShowLabel = !string.IsNullOrWhiteSpace(service.Title);
+            // Same card as C4: icon beside a centered, content-fitted caption.
+            node.Shape = TopologyNodeShape.Rounded; node.CornerRadius = DiagramTheme.CardCornerRadius; node.FitLabelToContent = true;
             node.Metadata["mermaid.kind"] = "service";
             if (!string.IsNullOrWhiteSpace(service.Icon)) node.Metadata["mermaid.icon"] = service.Icon!;
             if (!string.IsNullOrWhiteSpace(service.GroupId)) node.Metadata["mermaid.group"] = service.GroupId!;

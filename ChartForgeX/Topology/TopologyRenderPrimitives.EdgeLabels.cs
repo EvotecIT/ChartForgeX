@@ -65,7 +65,7 @@ internal static partial class TopologyRenderPrimitives {
                 var labels = new[] { label, secondary, tertiary };
                 for (var index = 0; index < labels.Length; index++) {
                     var value = labels[index]; if (string.IsNullOrWhiteSpace(value)) continue;
-                    var weight = index == 0 ? 600 : 400;
+                    var weight = index == 0 ? EdgeLabelPrimaryWeight(options) : 400;
                     var style = TopologyTextPolicy.Resolve(edge.TextStyle, sourceMeasurement.Font, size, weight);
                     var measurement = TopologyTextPolicy.Measurement(edge.TextStyle, sourceMeasurement, weight);
                     var rows = TopologyTextLayout.AuthoredRows(value!, options.AllowMultilineNodeLabels);

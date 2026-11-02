@@ -97,7 +97,7 @@ public sealed class SequenceRetainedSurfaceSourceTests {
         SequencePresetFixture.Capture("surface-source-stick-actor", actor);
         Assert.Empty(actor.Diagnostics);
         Assert.Null(Assert.IsType<SequenceArtifact>(actor.Artifact!.Model).Participants[0].SurfaceShadow);
-        var ordinary = MermaidRenderer.Render(Body + Annotations,
+        var ordinary = MermaidRenderer.Render(Directive(new { look = "neo" }) + Body + Annotations,
             new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
         SequencePresetFixture.Capture("surface-source-known-preset-url-no-paint", ordinary);
         Assert.Empty(ordinary.Diagnostics);
@@ -115,8 +115,8 @@ public sealed class SequenceRetainedSurfaceSourceTests {
             WarningPolicy = MermaidWarningPolicy.Reject,
             Presentation = new MermaidPresentationOptions { ThemeMode = mode }
         };
-        var ordinary = MermaidRenderer.Render(Body + Annotations, options);
-        var disabled = MermaidRenderer.Render(Directive(new { themeVariables = new { dropShadow = "none" } }) + Body + Annotations, options);
+        var ordinary = MermaidRenderer.Render(Directive(new { look = "neo" }) + Body + Annotations, options);
+        var disabled = MermaidRenderer.Render(Directive(new { look = "neo", themeVariables = new { dropShadow = "none" } }) + Body + Annotations, options);
         SequencePresetFixture.Capture("surface-source-default-actual164-" + mode, ordinary);
         SequencePresetFixture.Capture("surface-source-none-post-" + mode, disabled);
         Assert.Empty(ordinary.Diagnostics);

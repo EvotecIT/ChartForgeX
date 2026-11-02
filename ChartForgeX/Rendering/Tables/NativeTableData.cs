@@ -16,6 +16,8 @@ internal sealed class NativeTableData {
     internal FontSpec Font = null!;
     internal ChartRect Bounds;
     internal bool Dense, ShowHeader = true, RowStriping = true, Grid;
+    // A table inside a diagram card: the card already frames it, so the header is a quiet caption row.
+    internal bool Embedded;
     internal int? StatusColumn, WeightOverride;
     internal double Scale = 1, Opacity = 1;
     internal ChartColor? Foreground;
