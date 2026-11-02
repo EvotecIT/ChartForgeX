@@ -80,14 +80,20 @@ public sealed class GalleryBaselineProvenanceTests {
     [InlineData("advanced-topology", "same", true, false, false)]
     [InlineData("advanced-topology", "different", true, true, false)]
     [InlineData("advanced-topology", "different", false, true, false)]
+    [InlineData("fitted-topology", "different", true, false, true)]
+    [InlineData("fitted-topology", "same", true, false, false)]
+    [InlineData("fitted-topology", "request-changed", true, false, false)]
     public void NaturalFrameRequiresChangedResolvedFontAndExactRasterAllocation(string name, string fontState, bool changedWidth, bool extraPixel, bool matches) {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-font-baseline-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
             var builder = new VisualSceneBuilder(new VisualSize(160, 100.014), FontSpec.SystemSans());
             builder.Rect(new ChartRect(0, 0, 160, 100.014), ChartColor.White, role: "background");
+            // A content-fitted topology owns its canvas without being listed by name.
+            var canvas = name == "fitted-topology" ? builder.PushGroup(null, "topology", new Dictionary<string, string> { ["data-fit-content-to-viewport"] = "false" }) : null;
             builder.Text("Frame", 15, 30, new TextStyle { Font = FontSpec.SystemSans(), FontSize = 12 }, role: "frame-heading");
             for (var index = 0; index < 10; index++) builder.Rect(new ChartRect(15 + index * 12, 45, 10, 30), ChartColor.FromRgb((byte)(index * 20), 100, 150));
+            canvas?.Dispose();
             var scene = builder.Build();
             File.WriteAllText(Path.Combine(output, name + ".svg"), VisualSceneSvgRenderer.Render(scene));
             var image = VisualSceneRasterRenderer.Render(scene, 1, supersampling: 1);
