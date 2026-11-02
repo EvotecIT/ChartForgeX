@@ -742,21 +742,21 @@ The private reporting consumer keeps domain data, report layout, category keys a
 
 The private reporting consumer's local dependency overrides reference unavailable development snapshots. A later consumer task must restore a reproducible dependency closure before claiming build proof; nominal package pins do not establish that newer report APIs are published.
 
-## Canonical color import
+## Canonical visual-token import
 
-HtmlForgeX owns the values; ChartForgeX owns its generic theme contract. The imported input is **the generated chart palette**, not the full owner token schema:
+HtmlForgeX supplies the canonical values; ChartForgeX owns its generic theme contract. Import the generated chart visual-token file, which has its own bounded contract:
 
 | Evidence | Pinned identity |
 | --- | --- |
-| Owner source | `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, token schema version `1.1.0` |
+| Canonical source | `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, token version `1.6.0` |
 | Generated export | `Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json` |
 | Generator / contract | `Tools/HfxTokens/Generator/DesignTokenTargetWriters.cs`, `Build/Build-HfxTokens.ps1`, `Docs/DESIGN_TOKENS.md` |
 
-The export has `name`, `decision`, `source`, `notes`, `light`, `dark`; it has no numeric schema-version field. Each mode supplies surface page/card/cardAlt/line/lineStrong, text primary/secondary/muted, chrome background/text/textMuted/accent, accent base/soft, five severity fill/ink pairs, outcome pass/neutral pairs, state maintenance pair, six ordered series colors, five sequential steps and diverging negative-three/neutral/positive-three. Values are resolved hex colors. Series colors carry category identity, not status.
+The export declares `contractVersion: 2` and a source `version`, alongside `name`, `decision`, `source`, `notes`, `light` and `dark`. Each mode supplies surfaces, text, accent, severity/outcome/state fill and ink pairs, ten ordered chart series colours, neutral Other, five sequential steps and diverging negative/neutral/positive steps. Series colours carry category identity; status colours retain their own semantic roles.
 
 The full owner source defines aliases and treatments omitted from that palette export: fail uses severity when known, otherwise neutral; notEvaluated is neutral plus hatching; couldNotEvaluate is neutral plus dashed outline; up→pass, degraded→medium, down→critical, recovering→low, unknown/notObservable→neutral plus hatching. Preserve separate semantic keys and legend labels even when colors match. A shared presentation model does not collapse these vocabularies into one enum.
 
-The export also omits typography, spacing, radius, elevation, motion and accessibility overrides. `VisualTheme` supplies the chart geometry and typography roles described in this guide while retaining the canonical palette. Expanding the palette export belongs to its token owner. Do not import the full owner source with a parser expecting the generated chart shape.
+The generated contract also includes sans/mono families, the general and responsive chart type ramps, tabular numerals, radius roles, mode-specific elevation, tooltip surface/text/muted/line/shadow and focus-ring chrome. Graphite consumes those fields from its embedded copy without a runtime dependency. The build drift check compares version and hash with the generated HtmlForgeX file when a sibling or explicit package source is available, and reports an explicit skip otherwise. Spacing, motion and complete accessibility overlays remain outside this chart export; its importer does not accept the full source schema.
 
 Color intake alone does not establish universal status-treatment rendering. Hatch patterns, dashed-outline outcomes, forced-colors behavior and status legend treatment require their own family and host fixtures. Matching neutral colors alone is insufficient proof that not-evaluated, could-not-evaluate, unknown and not-observable remain distinguishable.
 
