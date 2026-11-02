@@ -6469,8 +6469,8 @@
     "independent-progress-wide-light.svg",
     "independent-progress-wide-light.thumbnail.png",
     "independent-progress-wide-light.thumbnail.svg",
+    "interactive/cfx-interactive.8ef92505b4d2.css",
     "interactive/cfx-interactive.34a79feb95a8.js",
-    "interactive/cfx-interactive.4c6ef83986da.css",
     "interactive/cfx-native-text.4dbb7b4e18ea.js",
     "manifest.json",
     "mixed-schedule-compact-dark.csharp.txt",
@@ -12110,8 +12110,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -12146,8 +12150,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -12908,8 +12916,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -12944,8 +12956,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -13380,7 +13396,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-wide-dark",
@@ -13814,7 +13830,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 27
     },
     {
       "id": "family-error-bar-wide-light",
@@ -14934,7 +14950,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-compact-independent-boundaries-light",
@@ -15222,7 +15238,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-compact-independent-boundaries-dark",
@@ -15618,7 +15634,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 43
     },
     {
       "id": "family-bar-wide-dark",
@@ -15834,7 +15850,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 43
     },
     {
       "id": "family-lollipop-wide-light",
@@ -18436,8 +18452,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 11
     },
     {
@@ -18800,8 +18820,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 11
     },
     {
@@ -20474,7 +20498,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 144
     },
     {
       "id": "family-calendar-heatmap-color-scale-light",
@@ -20546,7 +20570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 143
     },
     {
       "id": "family-calendar-heatmap-color-dimension-light",
@@ -20618,7 +20642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 144
     },
     {
       "id": "family-calendar-heatmap-wide-dark",
@@ -20690,7 +20714,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 144
     },
     {
       "id": "family-calendar-heatmap-color-scale-dark",
@@ -20762,7 +20786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 143
     },
     {
       "id": "family-calendar-heatmap-color-dimension-dark",
@@ -20834,7 +20858,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 144
     },
     {
       "id": "family-dotted-map-wide-light",
@@ -21308,11 +21332,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21392,12 +21414,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -21476,9 +21494,7 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "radial.text-overflow"
+        "map.label-overflow"
       ],
       "diagnosticMessages": [
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21524,9 +21540,7 @@
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "Radial text was shortened; the complete value remains in descriptive regions."
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
       ],
       "semanticRegions": 109
     },
@@ -21562,12 +21576,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -21646,11 +21656,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21730,12 +21738,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -21820,8 +21824,7 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
-        "radial.text-overflow"
+        "map.label-overflow"
       ],
       "diagnosticMessages": [
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21873,8 +21876,7 @@
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "Radial text was shortened; the complete value remains in descriptive regions."
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
       ],
       "semanticRegions": 109
     },
@@ -21990,11 +21992,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22226,11 +22226,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22310,12 +22308,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -22394,9 +22388,7 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "radial.text-overflow"
+        "map.label-overflow"
       ],
       "diagnosticMessages": [
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22442,9 +22434,7 @@
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "Radial text was shortened; the complete value remains in descriptive regions."
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
       ],
       "semanticRegions": 109
     },
@@ -22480,12 +22470,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -22564,11 +22550,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22648,12 +22632,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -22738,8 +22718,7 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
-        "radial.text-overflow"
+        "map.label-overflow"
       ],
       "diagnosticMessages": [
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22791,8 +22770,7 @@
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "Radial text was shortened; the complete value remains in descriptive regions."
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
       ],
       "semanticRegions": 109
     },
@@ -22908,11 +22886,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -23358,7 +23334,7 @@
       "diagnosticMessages": [
         "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 24
     },
     {
       "id": "family-gauge-compact-dense-scale-light",
@@ -23798,7 +23774,7 @@
       "diagnosticMessages": [
         "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 24
     },
     {
       "id": "family-gauge-compact-dense-scale-dark",
@@ -24484,12 +24460,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 8
     },
     {
@@ -24560,12 +24532,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 8
     },
     {
@@ -24600,12 +24568,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 13
     },
     {
@@ -24722,22 +24686,10 @@
         "radial.text-overflow",
         "radial.text-overflow",
         "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
         "bullet.label-overflow",
         "bullet.label-overflow"
       ],
       "diagnosticMessages": [
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
@@ -24784,12 +24736,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 13
     },
     {
@@ -24906,22 +24854,10 @@
         "radial.text-overflow",
         "radial.text-overflow",
         "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
         "bullet.label-overflow",
         "bullet.label-overflow"
       ],
       "diagnosticMessages": [
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
@@ -25152,8 +25088,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 22
     },
     {
@@ -25224,8 +25164,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 26
     },
     {
@@ -25596,8 +25540,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 22
     },
     {
@@ -25668,8 +25616,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 26
     },
     {
@@ -26412,16 +26364,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 14
     },
     {
@@ -26636,16 +26580,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 14
     },
     {
@@ -26934,7 +26870,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 16
     },
     {
       "id": "family-gantt-wide-dark",
@@ -27006,7 +26942,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 16
     },
     {
       "id": "family-sankey-wide-light",
@@ -27077,11 +27013,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 19
@@ -27543,11 +27477,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 19
@@ -28009,11 +27941,9 @@
         "html"
       ],
       "diagnostics": [
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
       ],
       "semanticRegions": 11
@@ -28123,11 +28053,9 @@
         "html"
       ],
       "diagnostics": [
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
       ],
       "semanticRegions": 11
@@ -28410,13 +28338,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28498,13 +28430,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28750,13 +28686,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28838,13 +28778,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -30815,9 +30759,11 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
@@ -30892,8 +30838,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
+      ],
       "semanticRegions": 13
     },
     {
@@ -31081,9 +31031,11 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
@@ -31158,8 +31110,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
+      ],
       "semanticRegions": 13
     },
     {
@@ -31602,7 +31558,7 @@
       "diagnosticMessages": [
         "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
       ],
-      "semanticRegions": 53
+      "semanticRegions": 52
     },
     {
       "id": "family-word-cloud-compact-light",
@@ -31642,7 +31598,7 @@
       "diagnosticMessages": [
         "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 30
     },
     {
       "id": "family-word-cloud-wide-dark",
@@ -31682,7 +31638,7 @@
       "diagnosticMessages": [
         "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
       ],
-      "semanticRegions": 53
+      "semanticRegions": 52
     },
     {
       "id": "family-word-cloud-compact-dark",
@@ -31722,7 +31678,7 @@
       "diagnosticMessages": [
         "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 30
     },
     {
       "id": "family-ohlc-wide-light",
@@ -34914,9 +34870,13 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35149,9 +35109,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35404,9 +35366,13 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35639,9 +35605,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -39616,8 +39584,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "topology.shape-content-overflow",
+        "topology.label-height",
+        "topology.shape-content-overflow",
+        "topology.label-height"
+      ],
+      "diagnosticMessages": [
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+      ],
       "semanticRegions": 17
     },
     {
@@ -39760,8 +39738,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "topology.shape-content-overflow",
+        "topology.label-height",
+        "topology.shape-content-overflow",
+        "topology.label-height"
+      ],
+      "diagnosticMessages": [
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+      ],
       "semanticRegions": 17
     },
     {
@@ -39942,9 +39930,23 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 28
+      "diagnostics": [
+        "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
+        "text.overflow"
+      ],
+      "diagnosticMessages": [
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 29
     },
     {
       "id": "family-dashboard-wide-light",
@@ -39982,8 +39984,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 107
     },
     {
@@ -40128,9 +40134,23 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 28
+      "diagnostics": [
+        "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
+        "text.overflow"
+      ],
+      "diagnosticMessages": [
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 29
     },
     {
       "id": "family-dashboard-wide-dark",
@@ -40168,8 +40188,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 107
     },
     {
@@ -41108,7 +41132,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 35
     },
     {
       "id": "financial-layers-compact-light",
@@ -41404,7 +41428,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 35
     },
     {
       "id": "financial-layers-compact-dark",
@@ -41857,9 +41881,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "light",
-      "width": 1304,
+      "width": 1295,
       "height": 698,
-      "naturalAspect": 1.8681948424068768,
+      "naturalAspect": 1.8553008595988538,
       "compact": false,
       "interactive": null,
       "source": "usecase-advanced-actors-wide-light.csharp.txt",
@@ -41933,9 +41957,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "light",
-      "width": 689,
+      "width": 698,
       "height": 1160,
-      "naturalAspect": 0.5939655172413794,
+      "naturalAspect": 0.6017241379310345,
       "compact": true,
       "interactive": null,
       "source": "usecase-advanced-actors-compact-light.csharp.txt",
@@ -43254,13 +43278,17 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-light",
@@ -43300,8 +43328,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -43310,11 +43336,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-cone-light",
@@ -43356,7 +43380,7 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-cone-light",
@@ -43394,23 +43418,15 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-horizontal-light",
@@ -43452,7 +43468,7 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-horizontal-light",
@@ -43496,6 +43512,8 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -43508,9 +43526,11 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-cone-horizontal-light",
@@ -43544,15 +43564,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 22
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-cone-horizontal-light",
@@ -43596,8 +43610,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -43610,11 +43622,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "pyramid-presentation-wide-light",
@@ -44422,9 +44432,11 @@
       ],
       "diagnostics": [
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
@@ -44556,9 +44568,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -44791,9 +44805,11 @@
         "html"
       ],
       "diagnostics": [
+        "gauge.label-overflow",
         "gauge.label-overflow"
       ],
       "diagnosticMessages": [
+        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions.",
         "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
       ],
       "semanticRegions": 15
@@ -45353,9 +45369,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "dark",
-      "width": 1304,
+      "width": 1295,
       "height": 698,
-      "naturalAspect": 1.8681948424068768,
+      "naturalAspect": 1.8553008595988538,
       "compact": false,
       "interactive": null,
       "source": "usecase-advanced-actors-wide-dark.csharp.txt",
@@ -45429,9 +45445,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "dark",
-      "width": 689,
+      "width": 698,
       "height": 1160,
-      "naturalAspect": 0.5939655172413794,
+      "naturalAspect": 0.6017241379310345,
       "compact": true,
       "interactive": null,
       "source": "usecase-advanced-actors-compact-dark.csharp.txt",
@@ -46750,13 +46766,17 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-dark",
@@ -46796,8 +46816,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -46806,11 +46824,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-cone-dark",
@@ -46852,7 +46868,7 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-cone-dark",
@@ -46890,23 +46906,15 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-horizontal-dark",
@@ -46948,7 +46956,7 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-horizontal-dark",
@@ -46992,6 +47000,8 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
+        "text.overflow",
+        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -47004,9 +47014,11 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
+        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
+        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-cone-horizontal-dark",
@@ -47040,15 +47052,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 22
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
     },
     {
       "id": "funnel-presentation-compact-cone-horizontal-dark",
@@ -47092,8 +47098,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -47106,11 +47110,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "pyramid-presentation-wide-dark",
@@ -47918,9 +47920,11 @@
       ],
       "diagnostics": [
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
@@ -48052,9 +48056,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -48287,9 +48293,11 @@
         "html"
       ],
       "diagnostics": [
+        "gauge.label-overflow",
         "gauge.label-overflow"
       ],
       "diagnosticMessages": [
+        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions.",
         "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
       ],
       "semanticRegions": 15
