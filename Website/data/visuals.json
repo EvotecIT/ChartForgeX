@@ -197,7 +197,7 @@
         "ext": "svg",
         "w": 548,
         "h": 267,
-        "kb": 16.8
+        "kb": 14.7
       },
       "topology": {
         "base": "/site/docs/topology",
@@ -304,7 +304,7 @@
         "ext": "svg",
         "w": 700,
         "h": 363,
-        "kb": 23.5,
+        "kb": 21,
         "source": "---\ntitle: Review workflow\n---\nagentflow-beta LR\nconnector store[\u0022Object store\u0022]\nstore@{ endpoint: \u0022https://example.invalid/data\u0022, protocol: http }\nglobal\n  shared[\u0022Policy guide\u0022]@{ shape: refdoc }\nend\nflow team[\u0022Review team\u0022]\n  brief[\u0022Request\u0022]@{ shape: input }\n  flow worker[\u0022Worker\u0022]\n    read[\u0022Read input\u0022]@{\n      shape: tool\n      connectorRef: store.read\n      policy:\n        retries: 2\n        enabled: true\n        tags: [safe, deterministic]\n        constructor: ignored\n      instruction: \u0022Display data, never execute it.\u0022\n    }\n    gate[\u0022Ready?\u0022]@{ shape: decision }\n    read edge1@--\u003E gate\n    gate -- no --\u003E read\n    read -.- shared\n  end\n  worker@{ view: collapsed }\n  publish[\u0022Publish\u0022]@{ shape: action }\n  brief --\u003E read\n  gate --x publish\nend\nedge1@{ instruction: \u0022Only after validation\u0022 }",
         "lines": 33,
         "warnings": 0
@@ -314,7 +314,7 @@
         "ext": "svg",
         "w": 952,
         "h": 659,
-        "kb": 31.4,
+        "kb": 25.4,
         "source": "---\ntitle: Report platform\n---\narchitecture-beta\ngroup edge(cloud)[Edge]\ngroup core(cloud)[Platform]\ngroup data(database)[Data] in core\nservice web(internet)[Web] in edge\nservice api(server)[API] in core\nservice renderer(server)[Renderer] in core\nservice sql(database)[SQL] in data\nservice blob(disk)[Cache] in data\nweb:R --\u003E L:api\napi:R --\u003E L:renderer\nrenderer:B --\u003E T:blob\napi:B --\u003E T:sql",
         "lines": 16,
         "warnings": 2
@@ -332,9 +332,9 @@
       "c4": {
         "base": "/site/atlas/c4",
         "ext": "svg",
-        "w": 425,
-        "h": 791,
-        "kb": 30.4,
+        "w": 729,
+        "h": 657,
+        "kb": 26.1,
         "source": "C4Container\ntitle Checkout platform\nPerson(customer, \u0022Customer\u0022, \u0022Places an order\u0022)\nEnterprise_Boundary(company, \u0022Company\u0022) {\n  System_Boundary(shop, \u0022Store\u0022) {\n    Container(web, \u0022Web app\u0022, \u0022Browser\u0022, \u0022Browse products and complete checkout\u0022)\n    Container(api, \u0022Order service\u0022, \u0022.NET\u0022, \u0022Validate orders and coordinate payment\u0022)\n    ContainerDb(db, \u0022Orders\u0022, \u0022SQL\u0022, \u0022Store orders and their fulfilment state\u0022)\n  }\n}\nRel(customer, web, \u0022Places an order\u0022)\nRel(web, api, \u0022Submits checkout\u0022, \u0022HTTPS\u0022)\nRel(api, db, \u0022Stores the order\u0022)",
         "lines": 13,
         "warnings": 1
@@ -344,7 +344,7 @@
         "ext": "svg",
         "w": 208,
         "h": 430,
-        "kb": 17.2,
+        "kb": 16.2,
         "source": "---\ntitle: Chart model\n---\nclassDiagram\n  class Chart {\n    \u002Bstring Title\n    \u002BWithSize(width, height)\n    \u002BToSvg() string\n  }\n  class ChartSeries {\n    \u002Bstring Name\n    \u002BChartPoint[] Points\n  }\n  class VisualTheme {\n    \u002BVisualTypography Typography\n  }\n  Chart \u00221\u0022 *-- \u0022many\u0022 ChartSeries : contains\n  Chart --\u003E VisualTheme : uses",
         "lines": 18,
         "warnings": 0
@@ -354,7 +354,7 @@
         "ext": "svg",
         "w": 901,
         "h": 676,
-        "kb": 21.4,
+        "kb": 20,
         "source": "cynefin-beta\ntitle Service decisions\ncomplex\n \u0022Discover demand\u0022\ncomplicated\n \u0022Analyze capacity\u0022\nchaotic\n \u0022Contain outage\u0022\nclear\n \u0022Run checklist\u0022\nconfusion\n \u0022Investigate context\u0022\ncomplex --\u003E complicated : \u0022Learn\u0022",
         "lines": 13,
         "warnings": 0
@@ -364,7 +364,7 @@
         "ext": "svg",
         "w": 422,
         "h": 592,
-        "kb": 34.6,
+        "kb": 32.8,
         "source": "---\ntitle: Orders schema\n---\nerDiagram\n  CUSTOMER ||--o{ ORDER : places\n  ORDER ||--|{ LINE_ITEM : contains\n  PRODUCT ||--o{ LINE_ITEM : \u0022ordered in\u0022\n  CUSTOMER {\n    string id PK\n    string name\n    string email\n  }\n  ORDER {\n    string id PK\n    string customerId FK\n    date placed\n  }",
         "lines": 17,
         "warnings": 0
@@ -374,7 +374,7 @@
         "ext": "svg",
         "w": 1536,
         "h": 981,
-        "kb": 35.1,
+        "kb": 28,
         "source": "---\ntitle: Shopping cart events\n---\neventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt Cart.ItemAdded [[ItemAdded01]]\ntf 04 rmo Cart.CartView -\u003E\u003E 03\nrf 05 pcr InventoryProcessor\ntimeframe 06 event Inventory.Reserved\ndata ItemAdded01 \u0060json\u0060{\n  \u0022sku\u0022: \u0022ABC\u0022,\n  \u0022quantity\u0022: 1\n}",
         "lines": 14,
         "warnings": 0
@@ -384,7 +384,7 @@
         "ext": "svg",
         "w": 375,
         "h": 652,
-        "kb": 32.4,
+        "kb": 27.9,
         "source": "---\ntitle: Incident response\n---\nflowchart TD\n  alert([Alert raised]) --\u003E triage{Known issue?}\n  triage --\u003E|yes| runbook[Run the runbook]\n  triage --\u003E|no| owner[Page the\u003Cbr/\u003Eservice owner]\n  runbook --\u003E verify[Verify recovery]\n  owner --\u003E fix[Ship a fix]\n  fix --\u003E verify",
         "lines": 10,
         "warnings": 0
@@ -504,7 +504,7 @@
         "ext": "svg",
         "w": 541,
         "h": 406,
-        "kb": 30.5,
+        "kb": 26.1,
         "source": "---\ntitle: Sign-in requirements\n---\nrequirementDiagram\ndirection LR\nfunctionalRequirement mfa_req {\n  id: \u0022SEC-1\u0022\n  text: Every account signs in with a strong method.\n  risk: High\n  verifymethod: Test\n}\nperformanceRequirement report_req {\n  id: \u0022OPS-4\u0022\n  text: The weekly report renders in under a second.\n  risk: Low\n  verifymethod: Analysis\n}\nelement auth_service {\n  type: service\n  docref: \u0022Identity provider\u0022\n}\nelement report_job {\n  type: job\n  docref: \u0022ChartForgeX report\u0022\n}\nauth_service - satisfies -\u003E mfa_req\nreport_job - verifies -\u003E mfa_req\nreport_job - satisfies -\u003E report_req",
         "lines": 28,
         "warnings": 0
@@ -524,7 +524,7 @@
         "ext": "svg",
         "w": 952,
         "h": 915,
-        "kb": 25.7,
+        "kb": 19.4,
         "source": "---\ntitle: Dashboard sign-in\n---\nsequenceDiagram\n  autonumber\n  actor User\n  participant App\n  participant IdP as Identity provider\n  participant API\n  User-\u003E\u003EApp: Open dashboard\n  App-\u003E\u003EIdP: Authorization request\n  IdP--\u003E\u003EApp: ID token \u002B access token\n  App-\u003E\u003EAPI: GET /reports (Bearer token)\n  alt token valid\n    API--\u003E\u003EApp: 200 report data\n  else token expired\n    API--\u003E\u003EApp: 401 Unauthorized\n  end\n  Note over App,API: Tokens refresh silently before expiry\n  App--\u003E\u003EUser: Render charts",
         "lines": 20,
         "warnings": 0
@@ -534,7 +534,7 @@
         "ext": "svg",
         "w": 1368,
         "h": 436,
-        "kb": 24.6,
+        "kb": 22.6,
         "source": "---\ntitle: Document review\n---\nstateDiagram-v2\ndirection LR\nclassDef marked fill:#fef9c3,stroke:#92400e,color:#78350f\nReady --\u003E Review:::marked: submit\nclass Ready marked\nstyle Review fill:#dbeafe,color:#1e3a8a\nstate Processing {\n  direction TB\n  InnerReady --\u003E InnerDone: finish\n}\nReview --\u003E Processing: accept\nProcessing --\u003E Done: complete",
         "lines": 15,
         "warnings": 0
@@ -544,7 +544,7 @@
         "ext": "svg",
         "w": 1236,
         "h": 638,
-        "kb": 24.2,
+        "kb": 21.6,
         "source": "---\ntitle: Pull request flow\n---\nswimlane-beta LR\nsubgraph Author\n A[Write source] --\u003E B[Open pull request]\nend\nsubgraph Build\n C{Checks pass?} --\u003E D[Render report]\nend\nsubgraph Reader\n E[Read in email]\nend\nB --\u003E C\nD --\u003E E",
         "lines": 15,
         "warnings": 0
@@ -584,7 +584,7 @@
         "ext": "svg",
         "w": 960,
         "h": 432,
-        "kb": 19.7,
+        "kb": 17.4,
         "source": "---\ntitle: Online store\n---\nusecase-beta\ndirection LR\nactor Customer\nsystemBoundary Store[Online store]\n Browse(\u0022Browse products\u0022)\n Pay(\u0022Pay for order\u0022)\n Authenticate(\u0022Authenticate\u0022)\nend\nCustomer --\u003E Browse\nBrowse ..\u003E : include Authenticate\nPay --|\u003E Browse",
         "lines": 14,
         "warnings": 0
@@ -624,7 +624,7 @@
         "ext": "svg",
         "w": 920,
         "h": 1320,
-        "kb": 33.7,
+        "kb": 31.2,
         "source": "zenuml\ntitle Checkout occurrences\ngroup \u0022Application\u0022 {\n  @Actor User\n  @Control Service\n}\n@Database Store\n@Queue Bus\n@Starter(User)\n// Accept the request\nService.checkout(order) {\n  if (valid \u0026\u0026 !cancelled) {\n    String receipt = new Receipt(order) {\n      Store.save(order)\n      return saved\n    }\n  } else {\n    return declined\n  }\n  loop (retries \u003C 3) {\n    Store.retry(order)\n  }\n  par {\n    Bus: ready(order)\n  }\n  critical (commitLock) {\n    Store.commit()\n  }\n  opt (notify) {\n    Bus: notify(order)\n  }\n  try {\n    Store.flush()\n  } catch (StorageError error) {\n    Store.recover(error)\n  } finally {\n    Store.close()\n  }\n  return accepted\n}\nService --\u003E User: confirmed",
         "lines": 41,
         "warnings": 0
@@ -639,7 +639,7 @@
         "ext": "svg",
         "w": 482,
         "h": 164,
-        "kb": 11.4
+        "kb": 10.4
       },
       "docs": {
         "base": "/site/docs/topology",
@@ -667,7 +667,7 @@
         "ext": "svg",
         "w": 566,
         "h": 267,
-        "kb": 16.8
+        "kb": 14.7
       },
       "playground": {
         "base": "/site/nav/playground",
