@@ -10,6 +10,36 @@ namespace ChartForgeX.Tests;
 
 public sealed class StageIndependentCaptionTests {
     [Theory]
+    [InlineData(VisualThemeMode.Dark, 12)]
+    [InlineData(VisualThemeMode.Light, 13.5)]
+    public void FiveStageConePaintsEverySeparateCaptionWhenTheMeasuredRailHasRoom(VisualThemeMode mode, double fontSize) {
+        var names = new[] { "Visitors", "Sign-ups", "Trials", "Paid", "Renewed" };
+        var chart = ConeFunnelRecipe.Create().WithSize(800, 480).ConfigureDataLabelStyle(style => style.WithFontSize(fontSize));
+        RoundedRadialSeriesTests.UseFixtureFont(chart);
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 480)),
+            VisualTheme.Graphite(), mode, new VisualFrame("From visitor to renewed subscription",
+                "Each stage narrows the cone by the customers it keeps"),
+            ChartForgeX.Typography.FontSpec.FromFile(chart.Options.PngFontPath!)));
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>()
+            .Where(node => node.Role?.StartsWith("funnel-", StringComparison.Ordinal) == true && node.Role.EndsWith("-label", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(19, labels.Length);
+        Assert.Equal(names, labels.Where(node => node.Role == "funnel-category-label").Select(node => Assert.Single(node.Text.Lines).Text));
+        Assert.Equal(new[] { "12.4k", "5,270", "2,130", "860", "610" },
+            labels.Where(node => node.Role == "funnel-value-label").Select(node => Assert.Single(node.Text.Lines).Text));
+        Assert.Equal(4, labels.Count(node => node.Role == "funnel-dropoff-label"));
+        Assert.All(labels, node => Assert.Equal(fontSize, node.Text.Size));
+        var bounds = labels.Select(node => prepared.Regions.Single(region => region.Id == node.Id).Bounds).ToArray();
+        for (var first = 0; first < bounds.Length; first++) {
+            Assert.InRange(bounds[first].Top, 0, 480);
+            Assert.InRange(bounds[first].Bottom, 0, 480);
+            for (var second = first + 1; second < bounds.Length; second++) Assert.False(Overlap(bounds[first], bounds[second]));
+        }
+        Assert.Equal(new[] { "12400", "5270", "2130", "860", "610" }, XDocument.Parse(prepared.ToSvg()).Descendants()
+            .Where(node => (string?)node.Attribute("data-cfx-role") == "funnel-stage").Select(node => (string?)node.Attribute("data-cfx-value")));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData(false, ChartFunnelForm.StageBars, ChartOrientation.Vertical, 390, VisualThemeMode.Light)]
     [InlineData(false, ChartFunnelForm.StageBars, ChartOrientation.Horizontal, 800, VisualThemeMode.Dark)]
     [InlineData(false, ChartFunnelForm.Cone, ChartOrientation.Vertical, 800, VisualThemeMode.Light)]

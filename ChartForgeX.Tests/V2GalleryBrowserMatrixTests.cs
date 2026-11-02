@@ -23,18 +23,22 @@ public sealed class V2GalleryBrowserMatrixTests {
             await session.Page.Locator("[data-cfx-role=funnel-stage]").EvaluateAllAsync<string[]>(
                 "nodes => nodes.map(node => node.getAttribute('data-cfx-label'))"));
         var clipped = await session.Page.EvaluateAsync<string[]>("""
-            () => [...document.querySelectorAll('g[data-cfx-role]')].filter(node =>
-                /^funnel-(category|value|retention|dropoff)-label$/.test(node.dataset.cfxRole)).flatMap(node => {
+            () => {
+              const nodes = [...document.querySelectorAll('g[data-cfx-role]')].filter(node =>
+                /^funnel-(category|value|retention|dropoff)-label$/.test(node.dataset.cfxRole));
+              if (!nodes.length) return ['No painted funnel captions'];
+              return nodes.flatMap(node => {
                 const owner = node.closest('[clip-path]');
                 const id = owner?.getAttribute('clip-path').match(/#([^\)]+)/)?.[1];
                 const clip = id && document.getElementById(id)?.querySelector('rect');
                 if (!clip) return [];
                 const ink = node.getBBox(), x = clip.x.baseVal.value, y = clip.y.baseVal.value;
-                return ink.x < x - 1 || ink.y < y - 1
+                return ink.width <= 0 || ink.height <= 0 || ink.x < x - 1 || ink.y < y - 1
                     || ink.x + ink.width > x + clip.width.baseVal.value + 1
                     || ink.y + ink.height > y + clip.height.baseVal.value + 1
                     ? [node.dataset.cfxSourceId] : [];
-            })
+              });
+            }
             """);
         Assert.Empty(clipped);
     }
