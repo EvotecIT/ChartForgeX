@@ -57,7 +57,8 @@ public sealed class PolarAxisFactorTests {
             Assert.InRange(spoke.End.Y, plot.Top, plot.Bottom);
         }
         Assert.Equal(4, prepared.Regions.Count(r => r.Role.EndsWith("-point")));
-        Assert.DoesNotContain("NaN", prepared.ToSvg()); Assert.DoesNotContain("Infinity", prepared.ToSvg());
+        var numericMarkup = SmokeTests.NumericMarkup(prepared.ToSvg());
+        Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
     }
 
     [Fact]
@@ -70,7 +71,8 @@ public sealed class PolarAxisFactorTests {
         chart.WithGrid(true); chart.Options.PolarGridRingCount = double.Epsilon;
         var visible = Prepare(chart);
         Assert.Single(visible.Scene.Nodes.OfType<VisualSceneEllipse>(), n => n.Role == "radar-ring");
-        Assert.DoesNotContain("NaN", visible.ToSvg()); Assert.DoesNotContain("Infinity", visible.ToSvg());
+        var numericMarkup = SmokeTests.NumericMarkup(visible.ToSvg());
+        Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
         Assert.NotEmpty(visible.ToPng());
     }
 

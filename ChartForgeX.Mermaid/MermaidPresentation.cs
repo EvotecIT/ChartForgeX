@@ -100,7 +100,8 @@ internal static class MermaidPresentation {
 
     private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, double? defaultFontSize = null) {
         var fontSize = host?.FontSize ?? configuration.FontSize ?? defaultFontSize;
-        var scale = fontSize.HasValue ? fontSize.Value / source.DataLabelSize : 1;
+        if (!fontSize.HasValue) return source.WithFamily(host?.FontFamily ?? configuration.FontFamily ?? source.Family);
+        var scale = fontSize.Value / source.DataLabelSize;
         return new VisualTypography(host?.FontFamily ?? configuration.FontFamily ?? source.Family, source.TitleSize * scale,
             source.SubtitleSize * scale, source.AxisSize * scale, source.LegendSize * scale,
             fontSize ?? source.DataLabelSize, source.ScalarValueSize * scale, source.CenterValueSize * scale,

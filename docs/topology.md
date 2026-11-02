@@ -15,7 +15,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
-var theme = VisualTheme.Graphite().WithFontFamily("Segoe UI, sans-serif");
+var theme = VisualTheme.Graphite();
 var mode = VisualThemeMode.Dark;
 var trend = Chart.Create().WithTheme(theme, mode)
     .AddLine("Requests", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });

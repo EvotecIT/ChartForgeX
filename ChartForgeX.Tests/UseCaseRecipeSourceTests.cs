@@ -33,6 +33,6 @@ public sealed class UseCaseRecipeSourceTests {
         var literal = Regex.Match(sourceProgram, @"var source = (.+);"); Assert.True(literal.Success);
         Assert.Equal(source, JsonSerializer.Deserialize<string>(literal.Groups[1].Value)!.ReplaceLineEndings("\n"));
         Assert.Contains("MermaidRenderer.Render(source", sourceProgram); Assert.DoesNotContain("{{", sourceProgram);
-        Assert.Contains("fonts/Carlito-Regular.ttf", ExampleRecipeSource.EmitUseCaseSource(variant, mode, galleryTypography: true));
+        Assert.Contains("FontFamily = ChartFontStacks.ProductSans", ExampleRecipeSource.EmitUseCaseSource(variant, mode, galleryTypography: true));
     }
 }

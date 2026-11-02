@@ -17,7 +17,7 @@ public sealed partial class VisualDesignTokens {
     /// <c>ramps.diverging.negative.1</c> …, <c>ramps.diverging.neutral</c>, and <c>ramps.diverging.positive.1</c> ….
     /// They are added in that order, so when two tokens share a colour the earlier one names a paint without a role.
     /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
-    /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>Ramp</c>; accents <c>Any</c>), so a renderer
+    /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>SequentialRamp</c> or <c>DivergingRamp</c>; accents <c>Any</c>), so a renderer
     /// that writes a colour for a role names the same token in every theme. Text matched by value never takes a surface
     /// token. Paired <c>series.*.ink</c>, ramp ink and state contrast-ink variables let filled-mark labels retain
     /// readable contrast when a host switches themes.
@@ -30,12 +30,14 @@ public sealed partial class VisualDesignTokens {
     /// <exception cref="ArgumentException"><paramref name="variableName"/> returned a name that is not a valid custom property name.</exception>
     public SvgColorVariables ToSvgColorVariables(Func<string, string?>? variableName = null) {
         var name = variableName ?? DefaultSvgVariableName;
-        var variables = new SvgColorVariables().WithPaletteSlots(_palette.Length);
+        var variables = new SvgColorVariables().WithPaletteSlots(_palette);
         void Add(string path, ChartColor color, int? paletteIndex = null) {
             var variable = name(path);
+            var role = RoleOf(path);
+            if (role is SvgColorRole.SequentialRamp or SvgColorRole.DivergingRamp) { variables.AddRamp(variable, color, role); return; }
             if (variable == null) return;
             if (paletteIndex.HasValue) variables.AddPalette(variable, color, paletteIndex.Value);
-            else variables.Add(variable, color, RoleOf(path));
+            else variables.Add(variable, color, role);
         }
 
         void AddList(string path, ChartColor[] colors) {
@@ -56,6 +58,7 @@ public sealed partial class VisualDesignTokens {
         if (Muted.HasValue) Add("text.muted", Muted.Value);
         if (Grid.HasValue) Add("guide.grid", Grid.Value);
         if (Axis.HasValue) Add("guide.axis", Axis.Value);
+        if (Other.HasValue) Add("chart.other", Other.Value);
         AddList("series", _palette);
         AddPair("severity.critical", Status.Critical);
         AddPair("severity.high", Status.High);
@@ -92,7 +95,7 @@ public sealed partial class VisualDesignTokens {
             }
             for (var i = 0; i < _palette.Length; i++) Ink("series." + (i + 1).ToString(CultureInfo.InvariantCulture), _palette[i], SvgColorRole.Series);
             if (_sequentialRamp != null)
-                for (var i = 0; i < _sequentialRamp.Length; i++) Ink("ramps.sequential." + (i + 1).ToString(CultureInfo.InvariantCulture), _sequentialRamp[i], SvgColorRole.Ramp);
+                for (var i = 0; i < _sequentialRamp.Length; i++) Ink("ramps.sequential." + (i + 1).ToString(CultureInfo.InvariantCulture), _sequentialRamp[i], SvgColorRole.SequentialRamp);
             if (Neutral3.HasValue) Ink("surface.neutral3", Neutral3.Value, SvgColorRole.Surface);
             Ink("mark.danger", Negative, SvgColorRole.Status);
             Ink("mark.warning", Warning, SvgColorRole.Status);
@@ -120,7 +123,9 @@ public sealed partial class VisualDesignTokens {
         if (path.StartsWith("series.", StringComparison.Ordinal)) return SvgColorRole.Series;
         if (path == "guide.grid") return SvgColorRole.Grid;
         if (path == "guide.axis") return SvgColorRole.Axis;
-        if (path.StartsWith("ramps.", StringComparison.Ordinal)) return SvgColorRole.Ramp;
+        if (path == "chart.other") return SvgColorRole.Status;
+        if (path.StartsWith("ramps.sequential.", StringComparison.Ordinal)) return SvgColorRole.SequentialRamp;
+        if (path.StartsWith("ramps.diverging.", StringComparison.Ordinal)) return SvgColorRole.DivergingRamp;
         if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal) || path.StartsWith("status.", StringComparison.Ordinal)) return SvgColorRole.Status;
         return SvgColorRole.Any;
     }

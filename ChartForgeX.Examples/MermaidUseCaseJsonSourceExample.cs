@@ -6,7 +6,7 @@ public static class MermaidUseCaseJsonSourceExample {
         var compact = variant == "compact"; if (compact) source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);
         var result = ChartForgeX.Mermaid.MermaidRenderer.Render(source, new ChartForgeX.Mermaid.MermaidRenderOptions {
             WarningPolicy = ChartForgeX.Mermaid.MermaidWarningPolicy.Reject,
-            UseCase = new ChartForgeX.Mermaid.MermaidFlowchartRenderOptions { Width = compact ? 390 : 1000, Height = compact ? 1000 : 680,
+            UseCase = new ChartForgeX.Mermaid.MermaidFlowchartRenderOptions { Width = compact ? 390 : 1000, Height = compact ? 1000 : 680, Padding = compact ? 24 : 32,
                 Presentation = new ChartForgeX.Mermaid.MermaidPresentationOptions { FontFamily = fontFamily, ThemeMode = mode,
                     TopologySizing = ChartForgeX.Mermaid.MermaidTopologySizing.FixedViewport } } });
         if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException("The complete UseCase JSON source must lower through its canonical native table owner.");

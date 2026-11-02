@@ -10,7 +10,7 @@ body {
   margin: 0;
   background: var(--cfx-host-background, var(--hfx-color-surface-page));
   color: var(--cfx-tooltip-text, var(--hfx-color-text));
-  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans));
+  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 
 .cfx-shell {
@@ -34,11 +34,11 @@ body {
 
 .cfx-interactive-chart {
   /* Chrome roles: remap control geometry onto host tokens here, in one place. */
-  --cfx-tooltip-radius: 8px;
-  --cfx-control-radius: 6px;
-  --cfx-chip-radius: 999px;
-  --cfx-swatch-radius: 2px;
-  --cfx-axis-label-radius: 4px;
+  --cfx-tooltip-radius: var(--hfx-radius-overlay, 10px);
+  --cfx-control-radius: var(--hfx-radius-control, 6px);
+  --cfx-chip-radius: var(--hfx-radius-pill, 999px);
+  --cfx-swatch-radius: var(--hfx-radius-2xs, 2px);
+  --cfx-axis-label-radius: var(--hfx-radius-sm, 4px);
   --cfx-toolbar-control-size: 28px;
   --cfx-toolbar-control-size-coarse: 36px;
   --cfx-toolbar-icon-size: 16px;
@@ -60,7 +60,7 @@ body {
   position: relative;
   background: var(--cfx-tooltip-surface);
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   padding: 12px;
   overflow: hidden;
   touch-action: auto;
@@ -123,9 +123,9 @@ body {
   margin: 0;
   padding: 2px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease-out;
@@ -173,11 +173,11 @@ body {
   min-height: 32px;
   padding: 0 10px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
   cursor: pointer;
-  font: 600 12px/1 var(--cfx-tooltip-font);
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   white-space: nowrap;
   transition: opacity 120ms ease-out;
 }
@@ -205,12 +205,12 @@ body {
 .cfx-tool,
 .cfx-scenario {
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
   font-weight: 600;
   padding: 6px 9px;
 }
@@ -245,7 +245,7 @@ body {
   margin: 0 0 10px;
   padding: 10px 12px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
 }
@@ -263,7 +263,7 @@ body {
 
 .cfx-scenario-panel__meta {
   color: var(--cfx-tooltip-muted);
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
 }
 
 .cfx-scenario-panel__controls,
@@ -286,7 +286,7 @@ body {
   min-height: 24px;
   padding: 3px 8px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
   cursor: pointer;
@@ -374,11 +374,11 @@ body {
   min-width: min(160px, calc(100vw - 16px));
   max-width: min(320px, calc(100vw - 16px));
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
-  font: 400 12px/18px var(--cfx-tooltip-font);
+  font: 400 var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   padding: 10px 12px;
   overflow-wrap: anywhere;
   pointer-events: none;
@@ -400,7 +400,7 @@ body {
 .cfx-tooltip__title {
   margin: 0 0 6px;
   color: var(--cfx-tooltip-muted);
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
   font-weight: 600;
   line-height: 16px;
   overflow-wrap: anywhere;
@@ -526,10 +526,10 @@ body {
   max-width: min(210px, calc(100vw - 16px));
   overflow: hidden;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-crosshair-label-surface, var(--cfx-tooltip-text));
   color: var(--cfx-crosshair-label-text, var(--cfx-tooltip-surface));
-  font: 600 11px/16px var(--cfx-tooltip-font);
+  font: 600 11px/16px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   padding: 2px 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -554,7 +554,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 42%, var(--cfx-tooltip-surface));
   border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
   background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 18%, var(--cfx-tooltip-surface));
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
   font-size: 11px;
   font-weight: 600;
@@ -594,9 +594,9 @@ body {
   scrollbar-width: thin;
   contain: inline-size;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
   padding: 6px;
   pointer-events: auto;

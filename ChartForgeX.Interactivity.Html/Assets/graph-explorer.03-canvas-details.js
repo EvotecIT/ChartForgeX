@@ -1,6 +1,6 @@
   // Match the SVG's inherited family without changing the host's UI typography.
   const graphNodeFontFamily = root => root?.ownerDocument?.defaultView?.getComputedStyle(root)?.fontFamily
-    || 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    || 'Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif';
   const graphNodePrimaryRingPaint = node => ({ radius: node.size + 9, color: '#0f766e', width: 3 });
   const drawCanvasNodeDetails = (context, root, node, compact, moving, gpuNodes, fontFamily) => {
     if (!visible(node.el)) return;
@@ -40,7 +40,7 @@
       context.strokeStyle = palette.halo;
       context.lineWidth = 2;
       context.stroke();
-      context.font = '800 7px Inter, "Segoe UI", Arial, sans-serif';
+      context.font = `800 7px ${fontFamily}`;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.fillStyle = palette.paper;

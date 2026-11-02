@@ -152,7 +152,7 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
+    private static (double Width, double Offset, double CaptionWidth) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
         var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar && (!chart.Series[i].IsVisibilityPreparation || chart.Series[i].HasSourceData)
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
         var slot = stacks.Slot(barIndices, index);
@@ -162,7 +162,7 @@ internal static partial class VisualCartesianCompiler {
             maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: false),
             minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
             sampleSlots: sampleSlots, maximumPitch: map.CalendarBandPitch(horizontal: false));
-        return (layout.Thickness, layout.Offset);
+        return (layout.Thickness, layout.Offset, slot.Count > 1 ? layout.Stride : layout.Pitch);
     }
 
     private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {
@@ -184,7 +184,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static TextStyle SeriesLabelStyle(Chart chart, VisualRenderContext context, ChartSeries series, VisualThemeColors colors) =>
         series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
         }));
 
     // Only automatic captions of a series' own points share a unit; authored labels and histogram gaps keep their text.

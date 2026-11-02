@@ -526,9 +526,17 @@ public sealed class DenseTopologyLayoutTests {
         var clipId = clipReference.Substring(5, clipReference.Length - 6);
         var clip = document.Descendants().Single(element => element.Name.LocalName == "clipPath" && (string?)element.Attribute("id") == clipId)
             .Elements().Single();
-        var left = (double)clip.Attribute("x")!; var top = (double)clip.Attribute("y")!;
-        var right = left + (double)clip.Attribute("width")!; var bottom = top + (double)clip.Attribute("height")!;
-        Assert.True(top > 0 && bottom <= prepared.Height, "Measured headings and legend must reserve real content space.");
+        var nativeClip = prepared.Visual.Scene.Nodes.SkipWhile(node => node.Role != "topology").OfType<VisualSceneGroup>()
+            .First(group => group.Clip.HasValue).Clip!.Value;
+        // SVG encodes coordinates to three decimals; keep viewport/route checks on exact native geometry.
+        const double halfSvgUnit = .0005 + 1e-9;
+        Assert.InRange(Math.Abs(nativeClip.Left - (double)clip.Attribute("x")!), 0, halfSvgUnit);
+        Assert.InRange(Math.Abs(nativeClip.Top - (double)clip.Attribute("y")!), 0, halfSvgUnit);
+        Assert.InRange(Math.Abs(nativeClip.Width - (double)clip.Attribute("width")!), 0, halfSvgUnit);
+        Assert.InRange(Math.Abs(nativeClip.Height - (double)clip.Attribute("height")!), 0, halfSvgUnit);
+        var left = nativeClip.Left; var top = nativeClip.Top;
+        var right = nativeClip.Right; var bottom = nativeClip.Bottom;
+        Assert.True(top > 0 && bottom <= prepared.Height, $"Measured headings and legend must reserve real content space: clip={clipId}, top={top}, bottom={bottom}, height={prepared.Height}.");
         Assert.Contains(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "frame-heading");
         Assert.Contains(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-entry");
         var headings = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>()

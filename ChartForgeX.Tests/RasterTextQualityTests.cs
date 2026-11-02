@@ -156,7 +156,10 @@ public sealed class RasterTextQualityTests {
         var spec = FontSpec.FromFile(path);
         spec.Family = "Segoe UI";
         var face = TypographyFontResolver.ResolveFace(spec);
-        Assert.Same(TrueTypeFont.TryLoadFromPath(path), face.Font);
+        var loaded = Assert.IsType<TrueTypeFont>(TrueTypeFont.TryLoadFromPath(path));
+        var selected = Assert.IsType<TrueTypeFont>(face.Font);
+        Assert.Same(loaded.Root, selected.Root);
+        Assert.Equal(path, face.Path);
         Assert.False(face.SynthesizeBold);
     }
 

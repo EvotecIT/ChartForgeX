@@ -42,7 +42,7 @@ public sealed partial class VisualTheme {
         colors.Palette = ChartPalettes.FromHex("#0EA5E9", "#EC4899", "#14B8A6", "#A855F7", "#F59E0B", "#6366F1", "#22C55E", "#F43F5E");
         SetPresetSemantics(colors, ChartColor.FromHex("#14B8A6"), ChartColor.FromHex("#F59E0B"), ChartColor.FromHex("#F43F5E"));
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Geometric);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans);
         builder.CardRadius = 24;
         builder.PlotRadius = builder.BarRadius = 16;
         builder.CardShadowOpacity = 0.24;
@@ -96,13 +96,13 @@ public sealed partial class VisualTheme {
         colors.Palette = ChartPalettes.Vivid;
         SetPresetSemantics(colors, ChartColor.FromRgb(45, 212, 191), ChartColor.FromRgb(250, 204, 21), ChartColor.FromRgb(251, 113, 133));
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Geometric);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans);
         builder.CardShadowOpacity = 0.24;
         builder.SeriesStrokeWidth = 3.4;
         builder.MarkerRadius = 3.6;
     });
 
-    /// <summary>Creates a warm publication palette with serif typography.</summary>
+    /// <summary>Creates a warm publication palette with shared product typography.</summary>
     /// <remarks>The authored light palette is used in both modes.</remarks>
     public static VisualTheme Editorial() => SinglePalettePreset(VisualThemeMode.Light, colors => {
         colors.ElevatedSurface = ChartColor.FromRgb(255, 252, 247);
@@ -116,13 +116,13 @@ public sealed partial class VisualTheme {
         colors.Palette = ChartPalettes.Editorial;
         SetPresetSemantics(colors, ChartColor.FromRgb(22, 101, 52), ChartColor.FromRgb(180, 83, 9), ChartColor.FromRgb(185, 28, 28));
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Serif);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans);
         builder.CardRadius = 8;
         builder.PlotRadius = builder.BarRadius = 6;
         builder.CardShadowOpacity = 0.08;
     });
 
-    /// <summary>Creates a soft light palette with rounded typography and surfaces.</summary>
+    /// <summary>Creates a soft light palette with rounded surfaces and shared product typography.</summary>
     /// <remarks>The authored light palette is used in both modes.</remarks>
     public static VisualTheme Candy() => SinglePalettePreset(VisualThemeMode.Light, colors => {
         colors.ElevatedSurface = ChartColor.FromRgb(255, 255, 255);
@@ -136,7 +136,7 @@ public sealed partial class VisualTheme {
         colors.Palette = ChartPalettes.Pastel;
         SetPresetSemantics(colors, ChartColor.FromRgb(20, 184, 166), ChartColor.FromRgb(245, 158, 11), ChartColor.FromRgb(244, 63, 94));
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Rounded);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans);
         builder.CardRadius = 24;
         builder.PlotRadius = builder.BarRadius = 18;
         builder.CardShadowOpacity = 0.11;
@@ -156,7 +156,7 @@ public sealed partial class VisualTheme {
         colors.Palette = ChartPalettes.PeopleInfographic;
         SetPresetSemantics(colors, ChartColor.FromHex("#06B6D4"), ChartColor.FromHex("#FB923C"), ChartColor.FromHex("#DB2777"));
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Geometric, 24, 12, 11, 10, 11, 10);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans, 24, 12, 11, 10, 11, 10);
         builder.CardRadius = 8;
         builder.PlotRadius = builder.BarRadius = 6;
         builder.CardShadowOpacity = 0;
@@ -178,7 +178,7 @@ public sealed partial class VisualTheme {
         colors.Palette = ChartPalettes.Terminal;
         SetPresetSemantics(colors, ChartColor.FromRgb(74, 222, 128), ChartColor.FromRgb(250, 204, 21), ChartColor.FromRgb(248, 113, 113));
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Mono, 23, 12, 11, 10, 11, 10);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductMono, 23, 12, 11, 10, 11, 10);
         builder.CardRadius = 10;
         builder.PlotRadius = builder.BarRadius = 6;
         builder.CardShadowOpacity = 0.2;
@@ -217,7 +217,7 @@ public sealed partial class VisualTheme {
         colors.Axis = ChartColor.FromRgba(51, 65, 85, 120);
         colors.Palette = ChartPalettes.Jewel;
     }).Configure(builder => {
-        builder.Typography = ClassicPresetTypography(ChartFontStacks.Humanist);
+        builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans);
         builder.CardRadius = 6;
         builder.PlotRadius = builder.BarRadius = 4;
         builder.CardShadowOpacity = 0;
@@ -264,7 +264,7 @@ public sealed partial class VisualTheme {
         double plotRadius, double shadowOpacity, double markerRadius = 2.8) => SinglePalettePreset(VisualThemeMode.Light, configure)
         .Configure(builder => {
             // Design rule 7: ticks and legends share one secondary size, well below the titles.
-            builder.Typography = ClassicPresetTypography(ChartFontStacks.Humanist, 26, 14, 13, 14, 14, 16);
+            builder.Typography = ClassicPresetTypography(ChartFontStacks.ProductSans, 26, 14, 13, 14, 14, 16);
             builder.CardRadius = 24;
             builder.PlotRadius = builder.BarRadius = plotRadius;
             builder.CardShadowOpacity = shadowOpacity;
@@ -272,7 +272,7 @@ public sealed partial class VisualTheme {
             builder.MarkerRadius = markerRadius;
         });
 
-    private static VisualTypography ClassicPresetTypography(string family = ChartFontStacks.SystemSans,
+    private static VisualTypography ClassicPresetTypography(string family = ChartFontStacks.ProductSans,
         double title = 25, double subtitle = 12.5, double axisTitle = 11.5, double axis = 10.5,
         double legend = 11.5, double dataLabel = 10.5) => new(family, title, subtitle, axis, legend, dataLabel,
             axisTitleSize: axisTitle);

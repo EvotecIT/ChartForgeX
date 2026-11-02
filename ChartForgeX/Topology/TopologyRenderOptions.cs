@@ -9,6 +9,8 @@ namespace ChartForgeX.Topology;
 /// Defines topology rendering options.
 /// </summary>
 public sealed class TopologyRenderOptions {
+    // Retains prepared caption fitting without requesting a second viewport transform.
+    internal bool? CapturedSingleLineFitting { get; set; }
     internal TextMeasurementContext? TextMeasurement { get; set; }
     internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
     internal double ResolvedSubtitleChipFontSize { get; set; } = 9.5;

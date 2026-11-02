@@ -46,6 +46,8 @@ internal sealed partial class TrueTypeFont {
     private readonly string? _languageTag;
     private readonly int _colorPaletteIndex;
     /// <summary>The family that selected this face, including registered aliases and fallback families.</summary>
+    internal bool TabularNumerals { get; }
+    internal TrueTypeFont WithTabularNumerals(bool enabled = true) => TabularNumerals == enabled ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, _languageTag, _variationSettings, _colorPaletteIndex, PaletteContext, tabularNumerals: enabled);
     internal string? SelectedFamily { get; }
     internal TrueTypeFont WithSelectedFamily(string family) => string.Equals(SelectedFamily, family, StringComparison.Ordinal) ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, _languageTag, _variationSettings, _colorPaletteIndex, PaletteContext, family);
     internal FontPaletteContext? PaletteContext { get; }
@@ -58,7 +60,7 @@ internal sealed partial class TrueTypeFont {
     private double? _xHeight;
     private double? _capHeight;
 
-    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null, string? languageTag = null, FontVariationSettings? variations = null, int colorPaletteIndex = 0, FontPaletteContext? paletteContext = null, string? selectedFamily = null) {
+    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null, string? languageTag = null, FontVariationSettings? variations = null, int colorPaletteIndex = 0, FontPaletteContext? paletteContext = null, string? selectedFamily = null, bool tabularNumerals = false) {
         _data = data;
         _tables = tables;
         _tableLengths = lengths;
@@ -72,6 +74,7 @@ internal sealed partial class TrueTypeFont {
         _colorPaletteIndex = colorPaletteIndex;
         PaletteContext = paletteContext;
         SelectedFamily = selectedFamily;
+        TabularNumerals = tabularNumerals;
         _cmap = FontCmap.Read(data, tables["cmap"]);
         _glyf = tables.TryGetValue("glyf", out var glyf) ? glyf : -1;
         _loca = tables.TryGetValue("loca", out var loca) ? loca : -1;
@@ -206,18 +209,19 @@ internal sealed partial class TrueTypeFont {
     internal TrueTypeFont WithLanguage(string? tag) => tag == _languageTag ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, tag, _variationSettings, _colorPaletteIndex, PaletteContext);
     internal string? LanguageTag => _languageTag;
 
-    private TrueTypeFont View(IReadOnlyList<string> families, int? weight, bool? italic, string? languageTag, FontVariationSettings variations, int colorPaletteIndex, FontPaletteContext? paletteContext = null, string? selectedFamily = null) {
+    private TrueTypeFont View(IReadOnlyList<string> families, int? weight, bool? italic, string? languageTag, FontVariationSettings variations, int colorPaletteIndex, FontPaletteContext? paletteContext = null, string? selectedFamily = null, bool? tabularNumerals = null) {
+        var numeric = tabularNumerals ?? TabularNumerals;
         selectedFamily ??= SelectedFamily;
         var requestedWeight = weight ?? _root.Weight;
         var requestedItalic = italic ?? _root.IsItalic;
-        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic && languageTag == null && variations.Count == 0 && colorPaletteIndex == 0 && paletteContext == null && selectedFamily == null) return _root;
-        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n") + "|" + languageTag + "|" + variations.Key + "|" + colorPaletteIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + (paletteContext?.Identity ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + selectedFamily;
+        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic && languageTag == null && variations.Count == 0 && colorPaletteIndex == 0 && paletteContext == null && selectedFamily == null && !numeric) return _root;
+        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n") + "|" + languageTag + "|" + variations.Key + "|" + colorPaletteIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + (paletteContext?.Identity ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + selectedFamily + (numeric ? "|tnum" : "");
         lock (_root._viewLock) {
             _root._views ??= new Dictionary<string, TrueTypeFont>(StringComparer.Ordinal);
             if (_root._views.TryGetValue(key, out var view)) return view;
             var names = new string[families.Count];
             for (var i = 0; i < names.Length; i++) names[i] = families[i];
-            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _root._compact, _root, names, requestedWeight, requestedItalic, languageTag, variations, colorPaletteIndex, paletteContext, selectedFamily);
+            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _root._compact, _root, names, requestedWeight, requestedItalic, languageTag, variations, colorPaletteIndex, paletteContext, selectedFamily, numeric);
             if (_root._views.Count >= 32) _root._views.Clear();
             _root._views[key] = view;
             return view;

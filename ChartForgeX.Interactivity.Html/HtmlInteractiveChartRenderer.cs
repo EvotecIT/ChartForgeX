@@ -34,6 +34,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chart);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
             options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute);
+        WriteProductFontStyle(writer, options);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
@@ -63,6 +64,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var writer = new HtmlMarkupWriter();
         writer.StartElement("style")
             .Attribute("data-cfx-interactive-assets", "true")
+            .RawTrusted(options.TextPresentation == HtmlChartTextPresentation.NativeContours ? null : ChartForgeX.Typography.ChartFontAssets.StyleSheet)
             .RawTrusted(InteractiveFragmentStyle)
             .EndElement()
             .Line()
@@ -120,6 +122,14 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// Builds the stylesheet used by embeddable interactive chart fragments.
     /// </summary>
     /// <returns>CSS ready to register once in a host document.</returns>
+    /// <remarks>This is style-only CSS. For bundled browser text, also register
+    /// <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/> once, unless the host already supplies matching fonts.
+    /// NativeContours needs no font stylesheet. Explicitly registered families require matching host-provided browser CSS.</remarks>
+    /// <example><code>
+    /// var css = ChartFontAssets.StyleSheet + HtmlInteractiveChartRenderer.BuildFragmentStyle();
+    /// var fragment = renderer.RenderFragmentWithoutAssets(chart, options =&gt; options.TextPresentation = HtmlChartTextPresentation.Browser);
+    /// // Register css and BuildInteractionScript() once outside the asset-free fragments.
+    /// </code></example>
     public static string BuildFragmentStyle() => InteractiveFragmentStyle;
 
     /// <summary>
@@ -129,6 +139,12 @@ public sealed partial class HtmlInteractiveChartRenderer {
     public static string BuildInteractionScript() => InteractiveScript;
 
     internal static string InteractiveStyle => HtmlInteractiveAssets.Style;
+
+    private static void WriteProductFontStyle(HtmlMarkupWriter writer, HtmlChartInteractionOptions options) {
+        if (options.TextPresentation != HtmlChartTextPresentation.NativeContours)
+            writer.StartElement("style").Attribute("data-cfx-product-fonts", "true")
+                .RawTrusted(ChartForgeX.Typography.ChartFontAssets.StyleSheet).EndElement();
+    }
 
     internal static string InteractiveFragmentStyle => HtmlInteractiveAssets.Style
         .Replace(":root {", ".cfx-interactive-chart {")

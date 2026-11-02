@@ -17,7 +17,7 @@ public sealed class V2GalleryBrowserTests {
         await page.EvaluateAsync("async () => { await document.fonts.ready; }");
 
         var defects = await page.EvaluateAsync<string[]>("""
-            () => {
+            async () => {
                 const defects = [];
                 const ids = new Set();
                 for (const node of document.querySelectorAll('[id]')) {
@@ -30,9 +30,10 @@ public sealed class V2GalleryBrowserTests {
                     if (!resolved || resolved.ownerSVGElement !== node.ownerSVGElement)
                         defects.push('Clip resolves outside its own SVG');
                 }
-                const faces = [...document.fonts].filter(face => face.family.replaceAll('"', '').replaceAll("'", '') === 'CFX Proof Carlito');
-                if (!faces.some(face => face.weight === '400' && face.status === 'loaded')) defects.push('Regular fixture font not loaded');
-                if (!faces.some(face => face.weight === '700' && face.status === 'loaded')) defects.push('Bold fixture font not loaded');
+                for (const weight of [400, 500, 600, 650, 700]) {
+                    const faces = await document.fonts.load(weight + ' 16px "Archivo"');
+                    if (!faces.length || faces.some(face => face.status !== 'loaded')) defects.push('Product Archivo weight ' + weight + ' not loaded');
+                }
                 if (document.documentElement.scrollWidth > innerWidth + 1) defects.push('Horizontal page overflow');
                 for (const preview of [...document.querySelectorAll('.preview')].filter(node => node.getClientRects().length)) {
                     const svg = preview.querySelector('svg');

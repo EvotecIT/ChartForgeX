@@ -20,12 +20,12 @@ public static class TopologyAccentExamples {
             var colors = theme.Resolve(mode);
             var stage = status ? "after" : "before";
             var html = "<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><style>"
-                + "body{margin:0;padding:24px;font:14px Arial;background:" + colors.Background.ToCss() + ";color:" + colors.Foreground.ToCss()
+                + "body{margin:0;padding:24px;font-size:14px;background:" + colors.Background.ToCss() + ";color:" + colors.Foreground.ToCss()
                 + "}main{max-width:1120px;margin:auto;min-width:0}svg,img{display:block;max-width:100%}h1{font-size:22px}h2{font-size:14px}</style></head><body><main>"
                 + "<h1>Node status and catalogue icons</h1><p>" + (status ? "Status accent follows the current theme." : "Default accent follows the catalogue icon.")
                 + "</p><h2>Native SVG</h2>" + prepared.ToSvg() + "<h2>Native PNG</h2><img alt='Native PNG comparison' src='data:image/png;base64,"
                 + Convert.ToBase64String(prepared.ToPng()) + "'></main></body></html>";
-            File.WriteAllText(Path.Combine(output, $"topology-accent-{stage}-{width}-{(dark ? "dark" : "light")}.html"), html);
+            File.WriteAllText(Path.Combine(output, $"topology-accent-{stage}-{width}-{(dark ? "dark" : "light")}.html"), ExampleTypography.EmbedInHost(html));
         }
     }
 }

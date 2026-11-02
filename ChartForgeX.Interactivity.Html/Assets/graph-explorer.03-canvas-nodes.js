@@ -18,7 +18,7 @@
       let width = Array.from(node.icon).length * 12;
       if (typeof document?.createElement === 'function') {
         graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
-        if (graphNodeMeasureContext) { graphNodeMeasureContext.font = 'bold 12px Segoe UI, Arial, sans-serif'; width = graphNodeMeasureContext.measureText(node.icon).width; }
+        if (graphNodeMeasureContext) { graphNodeMeasureContext.font = `bold 12px ${graphNodeFontFamily(node.root || node.el?.closest?.('.cfx-graph-explorer'))}`; width = graphNodeMeasureContext.measureText(node.icon).width; }
       }
       include(node.card ? node.x - extents.x + 28 : node.x, node.y + 1, width / 2, 12);
     }
@@ -84,7 +84,7 @@
     context.shadowBlur = 0;
     context.shadowOffsetY = 0;
     if (node.icon && !moving) {
-      context.font = 'bold 12px Segoe UI, Arial, sans-serif';
+      context.font = `bold 12px ${graphNodeFontFamily(root)}`;
       context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = graphNodeIconColor(root, node.el, palette || graphThemePalette(root), paint.fill);
       context.fillText(node.icon, node.card ? node.x - node.size * 1.45 + 28 : node.x, node.y + 1);
     }

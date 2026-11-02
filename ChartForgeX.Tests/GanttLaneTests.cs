@@ -97,7 +97,7 @@ public sealed class GanttLaneTests {
         Assert.Equal(plot.Left, model.X(model.Min, plot), 6);
         Assert.Equal(plot.Left + plot.Width / 2, model.X(0, plot), 6);
         Assert.Equal(plot.Right, model.X(model.Max, plot), 6);
-        Assert.DoesNotContain("NaN", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", SmokeTests.NumericMarkup(chart.ToSvg()), StringComparison.Ordinal);
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -184,8 +184,9 @@ public sealed class GanttLaneTests {
         Assert.True(double.IsFinite(model.Max));
         Assert.True(model.Max > 1e308);
         var svg = chart.ToSvg();
-        Assert.DoesNotContain("Infinity", svg, StringComparison.Ordinal);
-        Assert.DoesNotContain("NaN", svg, StringComparison.Ordinal);
+        var numericMarkup = SmokeTests.NumericMarkup(svg);
+        Assert.DoesNotContain("Infinity", numericMarkup, StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", numericMarkup, StringComparison.Ordinal);
         Assert.Contains("duration exceeds numeric range", svg, StringComparison.Ordinal);
         Assert.NotEmpty(chart.ToPng());
     }

@@ -17,11 +17,11 @@ internal static class ChartSeriesColours {
     }
 
     internal static ChartColor Palette(ChartSeries series, int index, VisualThemeColors colors, int offset = 0) =>
-        colors.Palette[(PaletteIndex(series, index, colors.Palette.Count) + offset) % colors.Palette.Count];
+        colors.CategoricalColor(PaletteIndex(series, index, colors.Palette.Count) + offset);
 
     /// <summary>Part-to-whole categories retain their own ordinal palette instead of inheriting one series slot.</summary>
     internal static ChartColor CategoryPoint(ChartSeries series, int point, VisualThemeColors colors) =>
-        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.Palette[CategorySourceOrdinal(series, point) % colors.Palette.Count]);
+        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.CategoricalColor(CategorySourceOrdinal(series, point)));
 
     /// <summary>
     /// The palette ordinal an automatic colour of this paint came from: the category ordinal for part-to-whole and
@@ -32,15 +32,26 @@ internal static class ChartSeriesColours {
         if (series.Kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea or ChartSeriesKind.ProgressRing or ChartSeriesKind.LayeredRadial)
             return point >= 0 ? CategorySourceOrdinal(series, point) : -1;
         var owner = series.Owner;
-        if (owner == null || owner.Options.SeriesColorAssignment == ChartSeriesColorAssignment.Identity && series.AutomaticIdentityOwner == null && series.HasIdentity) return -1;
+        if (owner == null) return -1;
         // A presentation copy retains its authored owner and identity, while the owner keeps its original handles.
-        for (var index = 0; index < owner.Series.Count; index++) if (owner.Series[index].Id == series.Id) return index;
+        for (var index = 0; index < owner.Series.Count; index++) if (owner.Series[index].Id == series.Id)
+            return PaletteIndex(series, index, owner.Options.Theme.Resolve(owner.Options.ThemeMode).Palette.Count);
         return -1;
     }
 
     // Filtered Pie/Donut models keep source category palette identity while sparse overrides follow the visible native ordinal.
-    private static int CategorySourceOrdinal(ChartSeries series, int point) => series.IsVisibilityPreparation
-        && ChartSeriesKindTraits.IsPieLikeKind(series.Kind) && point >= 0 && point < series.SourcePointIndices.Count ? series.SourcePointIndices[point] : point;
+    private static int CategorySourceOrdinal(ChartSeries series, int point) {
+        if (!ChartSeriesKindTraits.IsPieLikeKind(series.Kind) || point < 0) return point;
+        if (series.CategoryPaletteOrdinals != null && point < series.CategoryPaletteOrdinals.Length) return series.CategoryPaletteOrdinals[point];
+        return CategoryRank(series.RenderPoints, point);
+    }
+
+    internal static int CategoryRank(IReadOnlyList<ChartPoint> points, int point) {
+        var rank = 0;
+        for (var i = 0; i < points.Count; i++)
+            if (points[i].Y > points[point].Y || points[i].Y.Equals(points[point].Y) && i < point) rank++;
+        return rank;
+    }
 
     /// <summary>The share of white each successive funnel or pyramid stage blends into the series colour (about 12% lightness on a mid-tone).</summary>
     internal const double StageWhiteStep = .24;
@@ -97,21 +108,33 @@ internal static class ChartSeriesColours {
             ChartSeriesState.Info => t.Info,
             ChartSeriesState.Neutral => t.Neutral,
             ChartSeriesState.Success or ChartSeriesState.Quiet => ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind) ? t.QuietLine : t.Quiet,
-            _ => t.Palette[PaletteIndex(series, index, t.Palette.Length)]
+            _ => t.CategoricalColor(PaletteIndex(series, index, t.Palette.Length))
         };
     }
 
     /// <summary>Series take palette colours in series order, so the first series is always the theme accent.</summary>
     /// <remarks>With <see cref="ChartSeriesColorAssignment.Identity"/>, explicit identities select deterministic palette slots instead:
-    /// hashing never depends on the current series set, so adding or removing another series cannot recolor an existing ID.
-    /// A finite palette can then repeat; an explicit series color remains the way to guarantee a distinct authored color.</remarks>
+    /// collisions are resolved in identifier order, independently of drawing order. Membership changes can recolor a
+    /// colliding identity; explicit colours and semantic state colours retain their authored meaning.</remarks>
     internal static int PaletteIndex(ChartSeries series, int index, int count) {
         if (series.Owner?.Options.SeriesColorAssignment != ChartSeriesColorAssignment.Identity
-            || series.AutomaticIdentityOwner != null || !series.HasIdentity) return index % count;
+            || series.AutomaticIdentityOwner != null || !series.HasIdentity) return index;
         // FNV-1a over UTF-16 code units is stable across runtimes and platforms, unlike string.GetHashCode().
-        var hash = 2166136261u;
-        foreach (var value in series.Id.Value) hash = unchecked((hash ^ value) * 16777619u);
-        return (int)(hash % (uint)count);
+        uint Hash(ChartSeries candidate) {
+            var hash = 2166136261u;
+            foreach (var value in candidate.Id.Value) hash = unchecked((hash ^ value) * 16777619u);
+            return hash;
+        }
+        var automatic = series.Owner.Series.Where(s => !s.Color.HasValue && s.StateRole == ChartSeriesState.None).ToArray();
+        var occupied = new HashSet<int>(automatic.Where(s => s.AutomaticIdentityOwner != null || !s.HasIdentity)
+            .Select(s => series.Owner.IndexOfSeries(s)));
+        foreach (var candidate in automatic.Where(s => s.AutomaticIdentityOwner == null && s.HasIdentity)
+            .OrderBy(s => s.Id.Value, System.StringComparer.Ordinal)) {
+            var slot = (int)(Hash(candidate) % (uint)count);
+            while (!occupied.Add(slot)) slot++;
+            if (ReferenceEquals(candidate, series)) return slot;
+        }
+        return (int)(Hash(series) % (uint)count);
     }
     internal static int Priority(ChartSeriesState role) => role switch {
         ChartSeriesState.Success or ChartSeriesState.Quiet => 0,

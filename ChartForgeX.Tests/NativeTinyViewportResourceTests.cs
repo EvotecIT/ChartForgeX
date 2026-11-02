@@ -46,7 +46,8 @@ public sealed class NativeTinyViewportResourceTests {
             Assert.Equal(y?.Minimum ?? 0, drawing.YProjection!.Minimum);
             Assert.Equal(y?.Maximum ?? 10, drawing.YProjection.Maximum);
             var svg = drawing.ToSvg();
-            Assert.DoesNotContain("NaN", svg); Assert.DoesNotContain("Infinity", svg);
+            var numericMarkup = SmokeTests.NumericMarkup(svg);
+            Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
             var observations = XDocument.Parse(svg).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
             Assert.Equal(new[] { "reading-0", "reading-1", "reading-2" }, observations.Select(node => (string?)node.Attribute("data-cfx-observation-id")));
             Assert.Equal(new[] { "0", "1", "2" }, observations.Select(node => (string?)node.Attribute("data-cfx-x")));

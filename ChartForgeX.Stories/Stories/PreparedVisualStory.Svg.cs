@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading;
 using ChartForgeX.Svg;
 using ChartForgeX.Accessibility;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Stories;
 
@@ -24,6 +26,7 @@ public sealed partial class PreparedVisualStory {
         EnsureSceneCoverage(count, index => TimeSpan.FromTicks(SampleTicks(index, sampling.FramesPerSecond)), chapterSamples: chapterSamples);
         var provisional = SvgRenderedIdentity.CreateProvisionalId("cfx-story", idScope, Title, Width.ToString(CultureInfo.InvariantCulture), Height.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(16384, SvgVisualStoryRenderer.MaximumDocumentCharacters);
+        var images = new VisualSvgImageResources(provisional);
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg").Attribute("id", provisional)
             .Attribute("width", Width).Attribute("height", Height).Attribute("viewBox", "0 0 " + Width + " " + Height)
             .Attribute("role", "img").Attribute("aria-labelledby", provisional + "-title " + provisional + "-desc")
@@ -48,6 +51,8 @@ public sealed partial class PreparedVisualStory {
             var timestamp = index == count - 1 ? ContentDuration : TimeSpan.FromTicks(start);
             var frame = PrepareFrame(timestamp, sampling.OutputScale).ToSvg(new VisualAccessibility { IsDecorative = true }, "story-frame");
             embedded = SvgVisualStoryRenderer.ReserveEmbeddedMedia(embedded, Encoding.UTF8.GetByteCount(frame), _story.Scenes[0].Id);
+            var image = VisualSceneImageResource.EmbeddedSvg(frame, new ChartRect(0, 0, Width, Height), null, 1, null, null);
+            var imageReference = images.Reference(writer, image);
             var chapter = FindChapter(timestamp < ContentDuration ? timestamp : ContentDuration);
             var name = provisional + "-motion-frame-" + index;
             var last = index == count - 1;
@@ -56,8 +61,7 @@ public sealed partial class PreparedVisualStory {
                 .Attribute("data-cfx-scene-title", _story.Scenes[chapter].Title)
                 .Attribute("data-cfx-chapter-start", Chapters[chapter].Start.TotalSeconds.ToString("0.#########", CultureInfo.InvariantCulture))
                 .Attribute("data-cfx-frame-time", (start / (double)TimeSpan.TicksPerSecond).ToString("0.#########", CultureInfo.InvariantCulture)).EndStartElement()
-                .StartElement("image").Attribute("width", Width).Attribute("height", Height)
-                .Attribute("href", "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(frame))).EndEmptyElement().EndElement();
+                .StartElement("use").Attribute("href", imageReference).EndEmptyElement().EndElement();
             css.Append('@').Append("keyframes ").Append(name).Append("{0%{opacity:").Append(index == 0 ? '1' : '0').Append('}');
             if (index > 0) css.Append(Percent(start, total)).Append("{opacity:1}");
             if (!last) css.Append(Percent(end, total)).Append("{opacity:0}");

@@ -14,7 +14,7 @@ internal static class HtmlTopologyAssets {
     private static readonly Lazy<string> IconStencilBrowserScriptResource = new(() => ReadResource(IconStencilBrowserScriptResourceName));
 
     internal static string InteractionScript => InteractionScriptResource.Value;
-    internal static string IconStencilBrowserStyle => IconStencilBrowserStyleResource.Value;
+    internal static string IconStencilBrowserStyle => ChartForgeX.Typography.ChartFontAssets.StyleSheet + "\n" + IconStencilBrowserStyleResource.Value;
     internal static string IconStencilBrowserScript => IconStencilBrowserScriptResource.Value;
 
     private static string ReadResource(string resourceName) {

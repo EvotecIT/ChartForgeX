@@ -5,6 +5,7 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Typography;
 
 internal static partial class TextShaper {
+    private static readonly string[] TabularSubstitution = { "tnum" };
     private static readonly string[] VariationSubstitution = { "rvrn" };
     private static readonly string[] CommonSubstitution = { "ccmp", "locl" };
     private static readonly string[] ArabicForms = { "isol", "fina", "init", "medi" };
@@ -89,6 +90,7 @@ internal static partial class TextShaper {
             if (run.Script == "arab") layout.Apply(glyphs, run.Script, ArabicForms, budget: budget);
             layout.Apply(glyphs, run.Script, run.Spaced ? SpacedSubstitution : StandardSubstitution, budget: budget);
         }
+        if (face.TabularNumerals) layout.Apply(glyphs, tag, TabularSubstitution, budget: budget);
         glyphs.RemoveAll(glyph => glyph.Ignorable);
         foreach (var glyph in glyphs) glyph.XAdvance = complex && (run.Script == "mymr" || run.Script == "sinh") && layout.IsMarkGlyph(glyph) ? 0 : face.AdvanceWidth(glyph.Glyph);
         if (positioned) {

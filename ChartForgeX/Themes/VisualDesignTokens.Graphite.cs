@@ -4,6 +4,9 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Themes;
 
 public sealed partial class VisualDesignTokens {
+    /// <summary>Gets or sets the neutral aggregate fill for Other, independently of operational status and empty tracks.</summary>
+    public ChartColor? Other { get; set; }
+    internal double ChildLightnessOffset { get; set; } = .1;
     /// <summary>Gets or sets the independent plot border; null uses the shared border.</summary>
     public ChartColor? PlotBorder { get; set; }
     /// <summary>Gets or sets muted annotation text; null retains the secondary foreground mapping.</summary>

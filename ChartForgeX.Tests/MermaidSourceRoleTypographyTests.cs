@@ -11,9 +11,10 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidSourceRoleTypographyTests {
     [Theory] [InlineData("flowchart")] [InlineData("agentflow")]
     public void FiniteSourceFontRolesShareTheMeasuredDirectFenceAndPortableNativeOwners(string family) {
+        var sourceFamily=BrowserProofFonts.Family.Replace(",","\\,");
         var source=MermaidGraphStyleSettingsRenderingTests.Fixture(family)
-            .Replace("classDef framed ","classDef framed font-size:24px,font-family:"+BrowserProofFonts.Family+",font-weight:700,font-style:italic,")
-            .Replace("classDef association ","classDef association font-size:18px,font-family:"+BrowserProofFonts.Family+",font-weight:400,");
+            .Replace("classDef framed ","classDef framed font-size:24px,font-family:"+sourceFamily+",font-weight:700,font-style:italic,")
+            .Replace("classDef association ","classDef association font-size:18px,font-family:"+sourceFamily+",font-weight:400,");
         var options=new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family}};
         var result=MermaidRenderer.Render(source,options);Capture(result,source,family);
         var fenced=new MermaidVisualMarkupParser(options).Parse("```mermaid\n"+source+"\n```");

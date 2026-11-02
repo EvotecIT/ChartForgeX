@@ -6,6 +6,28 @@ description: "Upgrade to the current ChartForgeX packages: what changed in prepa
 
 Upgrading an existing project? Move every ChartForgeX package to the same version, build, and then work through the changes below. Each one names what changed and what to write instead. The newest changes come first.
 
+## Product typography
+
+The shared product face is Archivo, replacing the Calibri/Carlito chart defaults and separate gallery proof alias. JetBrains Mono supplies technical text. Use `ChartFontStacks.ProductSans` and `ChartFontStacks.ProductMono` for the complete stacks. The core package bundles native TrueType and matching browser WOFF2 faces; consumers no longer need to register gallery Carlito files to reproduce the default typography. Custom font requests remain explicit.
+
+All built-in sans presets, including Report, Editorial, Candy and the dashboard presets, use Archivo. Terminal uses JetBrains Mono. Each preset retains its palette and geometry choices; Graphite's revised type scale is listed below. The former system, humanist, geometric, rounded, serif and mono stacks remain available through `ChartFontStacks` for explicit `WithFontFamily(...)` choices. Ordinary example hosts share the bundled faces; typography demonstrations retain their authored fonts.
+
+This is a visible change: glyph widths, line breaks, fitted label counts and content-sized diagram dimensions can differ. Inspect compact and wide output in both modes before accepting new visual baselines. Existing prepared artifacts retain their captured typography; prepare them again to adopt the new face. Numeric hosts should use `font-variant-numeric: tabular-nums`. See [product typography](typography.md) for font delivery, pinned OFL provenance, supported weights and fallback-script limitations.
+
+Graphite uses the shared chart type scale: titles are 17 pixels wide and 15 compact; subtitles 13/12; ticks and data labels 12/11; legends 12.5/12. Compact means narrower than 480 logical pixels. Panel titles use 15/14 pixels, and centre values follow the radius-based 20–40 pixel clamp. Chart text below 10 logical pixels is hidden rather than painted as tiny text. See the [role mapping](typography.md#chart-roles-in-the-shared-type-ramp) for weights, the remaining roles and explicit-size precedence.
+
+A prepared topology table retains its measured type scale when restored or placed in a new viewport, including the proportions of headings and cells. Compact captures carry the complete theme in a version 2 definition. Charts and source diagrams resolve their shared theme for the requested width. Reset to `VisualTheme.Graphite()` to restore the complete canonical scale; `new VisualTypography(...)` supplies an explicit custom scale.
+
+### Categorical palette v2
+
+The default categorical palette has ten slots: blue, teal, orange, violet, magenta, red, gold, green, cyan and charcoal. Orange is slot 3, and the sixth slot is red rather than another blue. Pie and donut colours follow value rank rather than source position; point-colour overrides still follow their source observations. Excess slices aggregate into a separate neutral grey Other. Unscaled hierarchy children inherit their parent's hue with lightness variation; an explicit colour scale continues to encode its supplied colour observations.
+
+Automatic series colours stay distinct when the base palette is exhausted or identity hashes collide. Additional series use shade extensions and report `palette.extended` so crowded charts can be split or aggregated. Identity collisions resolve in identifier order: adding or removing a colliding identifier can recolour a series. Assign explicit colours when a linked application needs a fixed mapping. Explicit paint and semantic state colours keep their configured meaning.
+
+Shared SVG categorical bindings use `--hfx-color-chart-series-1..10` and `--hfx-color-chart-other`. These data fills are separate from the UI series ink roles, whose text and control contrast requirements remain in effect. Use the generated contract and `SvgColorVariables.SharedRoles()` together when migrating a host.
+
+## Layout and authoring changes
+
 Automatic Swimlane layouts now honor existing `TopologyGroup.LayoutDirection` when it differs from the inherited direction. Such diagrams use the existing recursive native group composer: the local region follows its authored direction and preserves membership/containment, while process ranks are no longer globally aligned across every responsibility. Leave the direction null, or equal to its inherited/global direction, to retain the incumbent shared-rank lane path. Source links from a member to outside the group retain the existing parent-direction inheritance; a shell-to-shell handoff does not erase a local direction.
 
 `TopologyRenderOptions.LayeredNodeSpacing` and `LayeredRankSpacing` now apply to automatic Swimlane layouts as well as Layered layouts; null retains the old Swimlane 24/96 spacing constants. The new nullable `SwimlaneIgnoreCrossLaneRankConstraints` changes ranking only when true, through the existing native rank owner, and preserves real edges/ports and authored rank minima. It is host render policy, not a new portable editable-layout protocol. Use the source-owned `swimlane-native-layout-depth.mmd` and complete downloadable program for a before/after consumer example.
@@ -752,21 +774,21 @@ The private reporting consumer keeps domain data, report layout, category keys a
 
 The private reporting consumer's local dependency overrides reference unavailable development snapshots. A later consumer task must restore a reproducible dependency closure before claiming build proof; nominal package pins do not establish that newer report APIs are published.
 
-## Canonical color import
+## Canonical visual-token import
 
-HtmlForgeX owns the values; ChartForgeX owns its generic theme contract. The imported input is **the generated chart palette**, not the full owner token schema:
+HtmlForgeX supplies the canonical values; ChartForgeX owns its generic theme contract. Import the generated chart visual-token file, which has its own bounded contract:
 
 | Evidence | Pinned identity |
 | --- | --- |
-| Owner source | `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, token schema version `1.1.0` |
+| Canonical source | `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, token version `1.6.0` |
 | Generated export | `Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json` |
 | Generator / contract | `Tools/HfxTokens/Generator/DesignTokenTargetWriters.cs`, `Build/Build-HfxTokens.ps1`, `Docs/DESIGN_TOKENS.md` |
 
-The export has `name`, `decision`, `source`, `notes`, `light`, `dark`; it has no numeric schema-version field. Each mode supplies surface page/card/cardAlt/line/lineStrong, text primary/secondary/muted, chrome background/text/textMuted/accent, accent base/soft, five severity fill/ink pairs, outcome pass/neutral pairs, state maintenance pair, six ordered series colors, five sequential steps and diverging negative-three/neutral/positive-three. Values are resolved hex colors. Series colors carry category identity, not status.
+The export declares `contractVersion: 2` and a source `version`, alongside `name`, `decision`, `source`, `notes`, `light` and `dark`. Each mode supplies surfaces, text, accent, severity/outcome/state fill and ink pairs, ten ordered chart series colours, neutral Other, five sequential steps and diverging negative/neutral/positive steps. Series colours carry category identity; status colours retain their own semantic roles.
 
 The full owner source defines aliases and treatments omitted from that palette export: fail uses severity when known, otherwise neutral; notEvaluated is neutral plus hatching; couldNotEvaluate is neutral plus dashed outline; up→pass, degraded→medium, down→critical, recovering→low, unknown/notObservable→neutral plus hatching. Preserve separate semantic keys and legend labels even when colors match. A shared presentation model does not collapse these vocabularies into one enum.
 
-The export also omits typography, spacing, radius, elevation, motion and accessibility overrides. `VisualTheme` supplies the chart geometry and typography roles described in this guide while retaining the canonical palette. Expanding the palette export belongs to its token owner. Do not import the full owner source with a parser expecting the generated chart shape.
+The generated contract also includes sans/mono families, the general and responsive chart type ramps, tabular numerals, radius roles, mode-specific elevation, tooltip surface/text/muted/line/shadow and focus-ring chrome. Graphite consumes those fields from its embedded copy without a runtime dependency. The build drift check compares version and hash with the generated HtmlForgeX file when a sibling or explicit package source is available, and reports an explicit skip otherwise. Spacing, motion and complete accessibility overlays remain outside this chart export; its importer does not accept the full source schema.
 
 Color intake alone does not establish universal status-treatment rendering. Hatch patterns, dashed-outline outcomes, forced-colors behavior and status legend treatment require their own family and host fixtures. Matching neutral colors alone is insufficient proof that not-evaluated, could-not-evaluate, unknown and not-observable remain distinguishable.
 

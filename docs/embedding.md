@@ -134,12 +134,12 @@ CanopyX and HtmlForgeX pages define the shared `--hfx-*` design roles (surfaces,
 var chart = Chart.Create().AddBar("Updates", updates).AddBar("Fixes", fixes);
 var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
     new VisualSvgOptions("weekly-activity").WithSharedDesignRoles());
-// fill="var(--hfx-color-series-1, #2A78D6)", stroke="var(--hfx-color-surface-line, #E2E4E7)", ...
+// fill="var(--hfx-color-chart-series-1, #2A78D6)", stroke="var(--hfx-color-surface-line, #E2E4E7)", ...
 ```
 
 That is all the page needs. Inside a CanopyX or HtmlForgeX page, the chart follows the page's theme, including its dark mode, without further configuration. A page that defines none of the properties shows the default Graphite colours and its own font. For a chart prepared with another theme or mode, pass them: `WithSharedDesignRoles(theme, VisualThemeMode.Dark)`. `chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, mode))` applies the same colours to `chart.ToSvg()`, and visual blocks accept them through `WithSvgColorVariables(...)`. PNG, email and Office output use the resolved theme colours.
 
-Series keep their palette slot: series 3 writes `--hfx-color-series-3` even when its colour equals slot 1. Light and dark are separate token sets selected by `ThemeMode`; nothing is inverted automatically. A brand theme is token values only:
+Series keep their chart palette slot: series 3 writes `--hfx-color-chart-series-3`. Automatic allocation gives different series distinct colours, extending the base palette with shades when needed; explicit colours retain precedence. Light and dark are separate token sets selected by `ThemeMode`; nothing is inverted automatically. A brand theme is token values only:
 
 ```csharp
 var brand = VisualTheme.Graphite()

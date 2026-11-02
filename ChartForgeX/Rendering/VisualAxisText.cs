@@ -67,6 +67,14 @@ internal static class VisualAxisText {
 
     /// <summary>Keeps a bounded named-category gutter useful when even a balanced line is too wide.</summary>
     internal static string FitWrappedCategory(VisualSceneBuilder builder, string text, TextStyle style, double width, out bool shortened) {
+        var measured = builder.MeasureText(text, style);
+        // Subtracting the measured gutter's padding can lose a few ulps. Use the
+        // placement owner's containment rule before changing a fitting caption.
+        if (LabelPlacementService.Contains(new ChartRect(0, 0, width, measured.Height),
+            new ChartRect(0, 0, measured.Width, measured.Height))) {
+            shortened = false;
+            return text;
+        }
         var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
             (value, _) => builder.MeasureText(value, style).Width);
         var displayed = lines.Select(line => ChartTextFitting.FitEnd(line, width,

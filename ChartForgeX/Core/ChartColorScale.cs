@@ -16,6 +16,7 @@ public sealed partial class ChartColorScale {
     private readonly ChartColorBand[] _bands;
     private readonly ChartColorStop[] _stops;
     private readonly ChartColorScaleCaption[] _captions;
+    private readonly SvgColorRole _paintRole;
 
     /// <summary>Gets the color-selection mode.</summary>
     public ChartColorScaleMode Mode => _bands.Length > 0 ? ChartColorScaleMode.Discrete
@@ -91,7 +92,8 @@ public sealed partial class ChartColorScale {
         string? highLabel,
         ChartColorBand[]? bands = null,
         ChartColorStop[]? stops = null,
-        ChartColorScaleCaption[]? captions = null) {
+        ChartColorScaleCaption[]? captions = null,
+        SvgColorRole paintRole = SvgColorRole.Ramp) {
         ValidateNullableFinite(midpointValue, nameof(midpointValue));
         ValidateNullableFinite(minimumValue, nameof(minimumValue));
         ValidateNullableFinite(maximumValue, nameof(maximumValue));
@@ -102,6 +104,7 @@ public sealed partial class ChartColorScale {
         _bands = bands ?? Array.Empty<ChartColorBand>();
         _stops = stops ?? Array.Empty<ChartColorStop>();
         _captions = captions ?? Array.Empty<ChartColorScaleCaption>();
+        _paintRole = paintRole;
         MidpointValue = midpointValue;
         MinimumValue = minimumValue;
         MaximumValue = maximumValue;
@@ -199,7 +202,7 @@ public sealed partial class ChartColorScale {
                 throw new ArgumentException("Positioned color stops require both fixed endpoint bounds.", !minimumValue.HasValue ? nameof(minimumValue) : nameof(maximumValue));
             return WithPositionedRange(minimumValue.Value, maximumValue.Value);
         }
-        return new(_colors, _midpointIndex, MidpointValue, minimumValue, maximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel, captions: _captions);
+        return new(_colors, _midpointIndex, MidpointValue, minimumValue, maximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel, captions: _captions, paintRole: _paintRole);
     }
 
     /// <summary>
@@ -212,7 +215,7 @@ public sealed partial class ChartColorScale {
         ValidateFinite(midpointValue, nameof(midpointValue));
         if (Mode != ChartColorScaleMode.Diverging) throw new InvalidOperationException("Only a diverging color scale has a configurable midpoint.");
         if (HasPositionedStops) return WithPositionedMidpoint(midpointValue);
-        return new(_colors, _midpointIndex, midpointValue, MinimumValue, MaximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel, captions: _captions);
+        return new(_colors, _midpointIndex, midpointValue, MinimumValue, MaximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel, captions: _captions, paintRole: _paintRole);
     }
 
     /// <summary>
@@ -221,7 +224,7 @@ public sealed partial class ChartColorScale {
     /// <param name="noDataColor">The color used for regions without values.</param>
     /// <returns>A color scale.</returns>
     public ChartColorScale WithNoDataColor(ChartColor noDataColor) =>
-        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, noDataColor, LowLabel, MidpointLabel, HighLabel, _bands, _stops, _captions);
+        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, noDataColor, LowLabel, MidpointLabel, HighLabel, _bands, _stops, _captions, _paintRole);
 
     /// <summary>
     /// Creates a copy with custom legend labels.
@@ -232,8 +235,13 @@ public sealed partial class ChartColorScale {
     /// <returns>A color scale.</returns>
     public ChartColorScale WithLabels(string? lowLabel, string? midpointLabel, string? highLabel) {
         EnsureContinuous();
-        return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor, lowLabel, midpointLabel, highLabel, stops: _stops, captions: _captions);
+        return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor, lowLabel, midpointLabel, highLabel, stops: _stops, captions: _captions, paintRole: _paintRole);
     }
+
+    /// <summary>Retains the theme ramp family without changing the public factories' value-based paint policy.</summary>
+    internal ChartColorScale WithPaintRole(SvgColorRole role) =>
+        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor,
+            LowLabel, MidpointLabel, HighLabel, _bands, _stops, _captions, role);
 
     /// <summary>Resolves a finite value using discrete bands or the continuous scale's explicit domain.</summary>
     /// <param name="value">The finite numeric value to color.</param>
@@ -262,7 +270,7 @@ public sealed partial class ChartColorScale {
         ValidateSourceRange(sourceMinimum, sourceMaximum);
         if (Mode == ChartColorScaleMode.Discrete) return ChartColorBlend.Solid(_bands[BandIndex(value)].Color, SvgColorRole.Ramp);
         var (min, max) = ResolveRange(sourceMinimum, sourceMaximum);
-        if (max == min) return ChartColorBlend.Solid(CollapsedRatio(value, min) == 0 ? LowColor : HighColor, SvgColorRole.Ramp);
+        if (max == min) return ChartColorBlend.Solid(CollapsedRatio(value, min) == 0 ? LowColor : HighColor, _paintRole);
         if (HasPositionedStops) return AlongPositioned(value);
 
         var last = _colors.Length - 1;
@@ -329,9 +337,9 @@ public sealed partial class ChartColorScale {
     private ChartColorBlend Along(int from, int to, double ratio) {
         var scaled = (to - from) * ratio;
         var step = (int)Math.Floor(scaled);
-        if (step >= to - from) return ChartColorBlend.Solid(_colors[to], SvgColorRole.Ramp);
+        if (step >= to - from) return ChartColorBlend.Solid(_colors[to], _paintRole);
         var first = _colors[from + step]; var second = _colors[from + step + 1]; var amount = scaled - step;
-        return new ChartColorBlend(first, SvgColorRole.Ramp, second, SvgColorRole.Ramp, amount);
+        return new ChartColorBlend(first, _paintRole, second, _paintRole, amount);
     }
 
     /// <summary>

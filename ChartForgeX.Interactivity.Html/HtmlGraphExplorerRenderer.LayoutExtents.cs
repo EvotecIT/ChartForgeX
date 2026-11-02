@@ -44,7 +44,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static PreparedNodeExtents MeasureStaticNodeExtents(GraphSceneNode node, bool includeLabels) {
         var extents = MeasurePreparedNodeExtents(node, includeLabels);
         if (!includeLabels || IsCardNode(node)) return extents;
-        var font = FontSpec.FromFamily("Inter, Segoe UI, Arial, sans-serif");
+        var font = FontSpec.FromFamily(ChartForgeX.Themes.ChartFontStacks.ProductSans);
         var primary = TextLayoutEngine.Measure(node.Label, new TextStyle { Font = font, FontSize = 12 }).Width;
         var halfWidth = Math.Max(extents.HalfWidth, Math.Max(primary, EstimatedCardTextWidth(node.Label, false)) / 2 + 8);
         if (!string.IsNullOrWhiteSpace(node.Style.LabelBackgroundColor)) halfWidth = Math.Max(halfWidth, Math.Max(24, node.Label.Length * 3.8));

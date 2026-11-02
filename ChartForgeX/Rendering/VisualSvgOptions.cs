@@ -10,6 +10,17 @@ namespace ChartForgeX.Rendering;
 public sealed partial class VisualSvgOptions {
     private SvgColorVariables? _colorVariables;
     private bool _patternTiles;
+    internal bool IncludeProductFonts { get; private set; } = true;
+    /// <summary>Omits bundled product font styles from SVG embedded in a host that supplies the fonts.</summary>
+    /// <returns>An independent export policy retaining all other settings.</returns>
+    /// <remarks>
+    /// The host must register matching <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/> once,
+    /// or supply equivalent font faces. Explicitly registered families require their matching host CSS.
+    /// Prepared text metrics, glyphs, geometry and IDs are retained. Standalone SVG includes its product fonts by default.
+    /// </remarks>
+    public VisualSvgOptions WithoutProductFonts() {
+        var copy = Copy(); copy.IncludeProductFonts = false; return copy;
+    }
     /// <summary>Gets whether native hatch marks serialize as user-space SVG tiles instead of individual clipped lines.</summary>
     public bool PatternTiles => _patternTiles;
     /// <summary>Returns an export policy with native user-space pattern tiles, retaining the other host settings.</summary>

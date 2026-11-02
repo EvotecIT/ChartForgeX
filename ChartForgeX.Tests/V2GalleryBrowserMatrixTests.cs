@@ -89,9 +89,10 @@ public sealed class V2GalleryBrowserMatrixTests {
                     if (matching.length !== 1) defects.push(kind + ': missing or duplicate ' + variant + '/' + theme + ' export');
                     else if (!matching[0].seriesKinds.includes(kind)) report(matching[0], 'Canonical example lost its declared ' + kind + ' series');
                 }
-                const faces = [...document.fonts].filter(face => face.family.replaceAll('"', '').replaceAll("'", '') === 'CFX Proof Carlito');
-                for (const weight of ['400', '700'])
-                    if (!faces.some(face => face.weight === weight && face.status === 'loaded')) defects.push('Fixture font weight ' + weight + ' not loaded');
+                for (const weight of [400, 500, 600, 650, 700]) {
+                    const faces = await document.fonts.load(weight + ' 16px "Archivo"');
+                    if (!faces.length || faces.some(face => face.status !== 'loaded')) defects.push('Product Archivo weight ' + weight + ' not loaded');
+                }
 
                 const host = document.createElement('section');
                 host.style.cssText = 'position:absolute;left:0;top:0;width:100%;overflow:hidden;';
@@ -164,7 +165,7 @@ public sealed class V2GalleryBrowserMatrixTests {
                             const fontSize = parseFloat(style.fontSize);
                             if (!Number.isFinite(fontSize) || fontSize < 10 || (nativeInk && !text.hasAttribute('font-size')))
                                 report(artifact, 'Text below 10 native pixels or missing captured size: ' + caption);
-                            if (!nativeInk && (!style.fontFamily.includes('CFX Proof Carlito') || !document.fonts.check(style.fontWeight + ' ' + fontSize + 'px "CFX Proof Carlito"', text.textContent)))
+                            if (!nativeInk && (!style.fontFamily.includes('Archivo') || !document.fonts.check(style.fontWeight + ' ' + fontSize + 'px "Archivo"', text.textContent)))
                                 report(artifact, 'Text uses an unavailable fixture font');
                             const box = text.getBoundingClientRect();
                             if (![box.left, box.top, box.right, box.bottom].every(Number.isFinite) || box.width <= 0 || box.height <= 0)

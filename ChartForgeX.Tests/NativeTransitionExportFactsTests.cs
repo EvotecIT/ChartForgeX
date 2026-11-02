@@ -27,8 +27,9 @@ public sealed class NativeTransitionExportFactsTests {
     [Fact]
     public void AutomaticNativeNamespaceIsReturnedFromTheSameOwnerWithoutScrapingOrSemanticIdChanges() {
         var section = NativeTransitionExportDefaultControls.Section("native-native-scope", 760, false, true);
-        var normal = section.PreparedVisual.ExportSvgEmission(new VisualSvgOptions());
-        Assert.Equal(section.PreparedVisual.ToSvg(new VisualSvgOptions()), normal.Svg);
+        var options = new VisualSvgOptions().WithoutProductFonts();
+        var normal = section.PreparedVisual.ExportSvgEmission(options);
+        Assert.Equal(section.PreparedVisual.ToSvg(options), normal.Svg);
         Assert.Contains(normal.Prefix + "-node-", normal.Svg, StringComparison.Ordinal);
         Assert.Contains("data-cfx-series-key=\"reviewed\"", normal.Svg, StringComparison.Ordinal);
         Assert.Contains("data-cfx-source-id=\"series-0", normal.Svg, StringComparison.Ordinal);
