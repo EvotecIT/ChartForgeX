@@ -5,17 +5,20 @@ namespace ChartForgeX.Playground;
 /// <summary>One bundled playground sample.</summary>
 public sealed class PlaygroundSample {
     /// <summary>Creates a sample.</summary>
-    public PlaygroundSample(string id, string title, string language, string source) {
+    public PlaygroundSample(string id, string title, string language, string source, string? group = null) {
         Id = id;
         Title = title;
         Language = language;
         Source = source;
+        Group = group ?? (language == PlaygroundEngine.MermaidLanguage ? "Mermaid" : "Diagrams and documents");
     }
 
     /// <summary>Stable sample id.</summary>
     public string Id { get; }
     /// <summary>Display title.</summary>
     public string Title { get; }
+    /// <summary>Picker group the sample is listed under.</summary>
+    public string Group { get; }
     /// <summary>Playground language name.</summary>
     public string Language { get; }
     /// <summary>Sample source.</summary>
@@ -26,11 +29,12 @@ public sealed class PlaygroundSample {
 public static class PlaygroundSamples {
     private const string Mermaid = PlaygroundEngine.MermaidLanguage;
     private const string Cfx = PlaygroundEngine.ChartForgeXLanguage;
+    private const string Charts = "Charts";
 
-    /// <summary>All samples in picker order: Mermaid first, then ChartForgeX markup.</summary>
+    /// <summary>All samples: Mermaid first, then ChartForgeX markup. The page lists charts first and opens on <c>cfx-line</c>.</summary>
     public static IReadOnlyList<PlaygroundSample> All { get; } = new[] {
         new PlaygroundSample("mermaid-flowchart", "Flowchart", Mermaid, """
-            flowchart LR
+            flowchart TD
               alert([Alert raised]) --> triage{Known issue?}
               triage -->|yes| runbook[Run the runbook]
               triage -->|no| owner[Page the service owner]
@@ -225,9 +229,32 @@ public static class PlaygroundSamples {
               done[Done]
                 site[chartforgex.com]
             """),
+        new PlaygroundSample("cfx-line", "Line chart", Cfx, """
+            ```chartforgex chart v1 {#latency title="API latency by region" type="smoothLine"}
+            subtitle "p95 response time over the last 12 weeks"
+            | Week | Europe | Americas | Asia Pacific |
+            | ---- | ------ | -------- | ------------ |
+            | W1   | 182    | 214      | 236          |
+            | W2   | 176    | 206      | 229          |
+            | W3   | 190    | 199      | 241          |
+            | W4   | 168    | 203      | 222          |
+            | W5   | 157    | 192      | 210          |
+            | W6   | 149    | 181      | 204          |
+            | W7   | 143    | 175      | 193          |
+            | W8   | 139    | 168      | 186          |
+            | W9   | 134    | 162      | 171          |
+            | W10  | 131    | 158      | 166          |
+            | W11  | 127    | 151      | 158          |
+            | W12  | 124    | 147      | 152          |
+            annotation hLine 160 "Target 160 ms"
+            option yAxisTitle "Milliseconds"
+            option yAxisMinimum 100
+            option yAxisMaximum 260
+            ```
+            """, Charts),
         new PlaygroundSample("cfx-bar", "Bar chart", Cfx, """
             ```chartforgex chart v1 {#releases title="Releases per quarter" type="bar"}
-            subtitle "Stable and preview builds"
+            subtitle "Stable and preview builds shipped"
             | Quarter | Stable | Preview |
             | ------- | ------ | ------- |
             | Q1      | 4      | 9       |
@@ -236,18 +263,25 @@ public static class PlaygroundSamples {
             | Q4      | 8      | 10      |
             option yAxisTitle "Releases"
             ```
-            """),
-        new PlaygroundSample("cfx-line", "Line chart with target", Cfx, """
-            ```chartforgex chart v1 {#latency title="API latency" type="smoothLine"}
-            subtitle "p95 response time, last 8 weeks"
-            labels W1 W2 W3 W4 W5 W6 W7 W8
-            series "Europe" values 182 176 190 168 150 142 139 131
-            series "Americas" values 210 205 198 201 188 170 162 158
-            annotation hLine 160 "Target" color:#16A34A
-            option yAxisTitle "Milliseconds"
-            option yAxisMinimum 100
+            """, Charts),
+        new PlaygroundSample("cfx-hbar", "Ranked bars", Cfx, """
+            ```chartforgex chart v1 {#mfa title="MFA coverage by department" type="horizontalBar"}
+            subtitle "Share of active accounts with a strong second factor"
+            series "Coverage %"
+            | Label       | Value |
+            | ----------- | ----- |
+            | Engineering | 97    |
+            | Finance     | 92    |
+            | Legal       | 88    |
+            | Sales       | 81    |
+            | Support     | 74    |
+            | Facilities  | 63    |
+            dataLabels true
+            annotation vLine 90 "Target"
+            option xAxisMinimum 0
+            option xAxisMaximum 100
             ```
-            """),
+            """, Charts),
         new PlaygroundSample("cfx-area", "Stacked area chart", Cfx, """
             ```chartforgex chart v1 {#sign-ins title="Sign-ins by method" type="stackedArea"}
             subtitle "Weekly sign-ins across the tenant"
@@ -261,17 +295,126 @@ public static class PlaygroundSamples {
             | W6   | 8100    | 6400              | 1500     | 1800          |
             option yAxisTitle "Sign-ins"
             ```
-            """),
-        new PlaygroundSample("cfx-donut", "Donut chart", Cfx, """
-            ```chartforgex chart v1 {#results title="Health check results" type="donut"}
-            series "Checks"
-            | Label    | Value |
-            | -------- | ----- |
-            | Passed   | 1260  |
-            | Warnings | 68    |
-            | Failed   | 10    |
+            """, Charts),
+        new PlaygroundSample("cfx-scatter", "Scatter plot", Cfx, """
+            ```chartforgex chart v1 {#builds title="Build duration per commit" type="scatter"}
+            subtitle "Last 14 commits on main, by runner"
+            | Commit | Windows | Linux | macOS |
+            | ------ | ------- | ----- | ----- |
+            | C1     | 412     | 288   | 351   |
+            | C2     | 398     | 301   | 342   |
+            | C3     | 441     | 276   | 368   |
+            | C4     | 405     | 292   | 337   |
+            | C5     | 389     | 269   | 329   |
+            | C6     | 376     | 281   | 345   |
+            | C7     | 452     | 310   | 372   |
+            | C8     | 361     | 258   | 318   |
+            | C9     | 348     | 262   | 309   |
+            | C10    | 355     | 249   | 314   |
+            | C11    | 337     | 244   | 301   |
+            | C12    | 329     | 251   | 296   |
+            | C13    | 341     | 238   | 288   |
+            | C14    | 318     | 231   | 279   |
+            option xAxisTitle "Commit"
+            option yAxisTitle "Seconds"
             ```
-            """),
+            """, Charts),
+        new PlaygroundSample("cfx-donut", "Donut chart", Cfx, """
+            ```chartforgex chart v1 {#methods title="Sign-ins by method" type="donut"}
+            subtitle "All interactive sign-ins this month"
+            series "Sign-ins"
+            | Label             | Value |
+            | ----------------- | ----- |
+            | Passkey           | 8900  |
+            | Authenticator app | 6200  |
+            | Password only     | 1500  |
+            | SMS code          | 1300  |
+            ```
+            """, Charts),
+        new PlaygroundSample("cfx-radar", "Radar chart", Cfx, """
+            ```chartforgex chart v1 {#posture title="Security posture" type="radar"}
+            subtitle "Domain scores against the target profile"
+            | Area         | Current | Target |
+            | ------------ | ------- | ------ |
+            | Mail auth    | 91      | 95     |
+            | DNSSEC       | 72      | 90     |
+            | TLS          | 88      | 95     |
+            | Certificates | 95      | 95     |
+            | Policy       | 79      | 90     |
+            | Monitoring   | 84      | 92     |
+            ```
+            """, Charts),
+        new PlaygroundSample("cfx-waterfall", "Waterfall chart", Cfx, """
+            ```chartforgex chart v1 {#licences title="Licence count this quarter" type="waterfall"}
+            subtitle "From opening balance to closing balance"
+            series "Licences"
+            | Label        | Value |
+            | ------------ | ----- |
+            | Opening      | 1200  |
+            | New hires    | 180   |
+            | Contractors  | 65    |
+            | Leavers      | -140  |
+            | Clean-up     | -95   |
+            | Pilot        | 40    |
+            option yAxisTitle "Licences"
+            ```
+            """, Charts),
+        new PlaygroundSample("cfx-funnel", "Funnel chart", Cfx, """
+            ```chartforgex chart v1 {#onboarding title="Device onboarding" type="funnel"}
+            subtitle "Devices reaching each stage this month"
+            series "Devices"
+            | Label      | Value |
+            | ---------- | ----- |
+            | Discovered | 4200  |
+            | Enrolled   | 3650  |
+            | Compliant  | 3120  |
+            | Encrypted  | 2890  |
+            | Healthy    | 2610  |
+            ```
+            """, Charts),
+        new PlaygroundSample("cfx-treemap", "Treemap", Cfx, """
+            ```mermaid
+            ---
+            title: Storage by workload (TB)
+            ---
+            treemap-beta
+            "Infrastructure"
+                "Identity": 42
+                "Messaging": 18
+                "Endpoints"
+                    "Windows": 24
+                    "macOS": 9
+                    "Linux": 6
+            "Applications"
+                "Reporting": 21
+                "Billing": 14
+                "Portal": 8
+            ```
+            """, Charts),
+        new PlaygroundSample("cfx-sankey", "Sankey flow", Cfx, """
+            ```mermaid
+            ---
+            title: Sign-ins by network and method
+            ---
+            sankey-beta
+            Office network,Passkey,5200
+            Office network,Authenticator app,3100
+            Remote,Passkey,3700
+            Remote,Authenticator app,3100
+            Remote,SMS code,1300
+            Remote,Password only,1500
+            ```
+            """, Charts),
+        new PlaygroundSample("cfx-gantt", "Gantt plan", Cfx, """
+            ```chartforgex timeline v1 {#launch title="Launch plan" type="gantt" today="2026-10-12"}
+            | kind      | label          | start      | end        | progress | dependsOn |
+            | --------- | -------------- | ---------- | ---------- | -------- | --------- |
+            | task      | Design         | 2026-10-01 | 2026-10-08 | 1        |           |
+            | task      | Build engine   | 2026-10-06 | 2026-10-20 | 0.6      | 0         |
+            | task      | Playground UI  | 2026-10-14 | 2026-10-24 | 0.2      | 1         |
+            | milestone | Launch         | 2026-10-27 |            |          | 2         |
+            ```
+            """, Charts),
         new PlaygroundSample("cfx-topology", "Topology diagram", Cfx, """
             ```chartforgex topology v1
             id service-map
@@ -292,16 +435,6 @@ public static class PlaygroundSamples {
             edge api -> cache "3 ms" kind:dependency status:healthy direction:forward
             edge api -> worker "queue" kind:dataflow status:warning direction:forward
             edge worker -> sql "84 ms" kind:dependency status:warning direction:forward
-            ```
-            """),
-        new PlaygroundSample("cfx-gantt", "Gantt plan", Cfx, """
-            ```chartforgex timeline v1 {#launch title="Launch plan" type="gantt" today="2026-10-12"}
-            | kind      | label          | start      | end        | progress | dependsOn |
-            | --------- | -------------- | ---------- | ---------- | -------- | --------- |
-            | task      | Design         | 2026-10-01 | 2026-10-08 | 1        |           |
-            | task      | Build engine   | 2026-10-06 | 2026-10-20 | 0.6      | 0         |
-            | task      | Playground UI  | 2026-10-14 | 2026-10-24 | 0.2      | 1         |
-            | milestone | Launch         | 2026-10-27 |            |          | 2         |
             ```
             """),
         new PlaygroundSample("cfx-sequence", "Sequence (native)", Cfx, """

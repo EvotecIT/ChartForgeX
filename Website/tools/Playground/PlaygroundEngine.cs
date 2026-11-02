@@ -53,7 +53,7 @@ public static partial class PlaygroundEngine {
         return outcome.ToJson(stopwatch.Elapsed.TotalMilliseconds);
     }
 
-    /// <summary>Returns the bundled samples as a JSON array of <c>{ id, title, language, source }</c>.</summary>
+    /// <summary>Returns the bundled samples as a JSON array of <c>{ id, title, language, group, source }</c>.</summary>
     public static string SamplesJson() {
         var json = new PlaygroundJson().BeginArray();
         foreach (var sample in PlaygroundSamples.All) {
@@ -61,6 +61,7 @@ public static partial class PlaygroundEngine {
                 .Property("id", sample.Id)
                 .Property("title", sample.Title)
                 .Property("language", sample.Language)
+                .Property("group", sample.Group)
                 .Property("source", sample.Source)
                 .EndObject();
         }

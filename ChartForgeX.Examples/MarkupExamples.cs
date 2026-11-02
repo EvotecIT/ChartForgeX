@@ -5,9 +5,10 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>
 /// Writes examples generated from ChartForgeX v1 markup fences.
 /// </summary>
-internal static class MarkupExamples {
+internal static partial class MarkupExamples {
     public static void Write(string output) {
         foreach (var example in Examples) SaveExample(output, example);
+        foreach (var example in ChartFamilyExamples) SaveExample(output, example);
     }
 
     private static void SaveExample(string output, MarkupExample example) {

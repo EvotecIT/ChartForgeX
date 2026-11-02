@@ -1,9 +1,13 @@
-// ChartForgeX playground page: editor, live WebAssembly render, theme preview, zoom, downloads and share links.
+// ChartForgeX playground page: editor, live WebAssembly render, chart options, theme preview, zoom, downloads and share links.
 import { loadPlaygroundEngine } from '/themes/chartforgex/assets/playground-engine.js';
+import { applyChartOption, readChartOptions } from '/themes/chartforgex/assets/playground-markup.js';
 
 const MAX_SOURCE = 65536;
 const STORAGE_KEY = 'cfx-playground';
 const RENDER_DELAY = 220;
+// Fit enlarges small renders to fill the preview, up to this factor.
+const MAX_FIT = 2;
+const SAMPLE_GROUPS = ['Charts', 'Diagrams and documents', 'Mermaid'];
 const SNIPPETS = {
   mermaid: {
     package: 'dotnet add package ChartForgeX.Mermaid',
@@ -50,12 +54,15 @@ function start(root) {
     meter: $('[data-pg-meter]'), status: $('[data-pg-status]'), share: $('[data-pg-share]'),
     snippet: $('[data-pg-snippet]'), snippetIntro: $('[data-pg-snippet-intro]'), packageText: $('[data-pg-package]'),
     copyPackage: $('[data-pg-copy-package]'),
-    languages: $$('[data-language]'), themes: $$('[data-pg-theme]'), zooms: $$('[data-pg-zoom]'), downloads: $$('[data-pg-download]')
+    languages: $$('[data-language]'), themes: $$('[data-pg-theme]'), zooms: $$('[data-pg-zoom]'), downloads: $$('[data-pg-download]'),
+    options: Object.fromEntries($$('[data-pg-opt]').map((node) => [node.dataset.pgOpt, node])),
+    type: $('[data-pg-type]'), legend: $('[data-pg-legend]'),
+    stacks: $$('[data-pg-stack]'), sizes: $$('[data-pg-size]'), labels: $$('[data-pg-labels]')
   };
 
   const stored = readStorage();
   const state = {
-    language: (new URLSearchParams(location.search).get('lang') || stored.language) === 'chartforgex' ? 'chartforgex' : 'mermaid',
+    language: (new URLSearchParams(location.search).get('lang') || stored.language) === 'mermaid' ? 'mermaid' : 'chartforgex',
     sources: { mermaid: null, chartforgex: null, ...(stored.sources || {}) },
     theme: siteTheme(),
     themeLocked: false,
@@ -73,8 +80,8 @@ function start(root) {
     leaveOnTab: false
   };
   if (state.sources[state.language]) ui.source.value = state.sources[state.language];
-  // The page ships a Mermaid starter; other languages start from their first sample once the engine is ready.
-  else if (state.language !== 'mermaid') ui.source.value = '';
+  // The page ships the line chart starter; Mermaid starts from its first sample once the engine is ready.
+  else if (state.language !== 'chartforgex') ui.source.value = '';
 
   const engine = loadPlaygroundEngine({ onProgress: showProgress });
 
@@ -88,6 +95,10 @@ function start(root) {
       if (state.language === initialLanguage && ui.source.value === initialSource) {
         state.language = shared.language;
         ui.source.value = shared.source;
+        if (shared.theme && !state.themeLocked) {
+          state.themeLocked = true;
+          setPreviewTheme(shared.theme);
+        }
       }
     }
     selectLanguageTab();
@@ -98,6 +109,7 @@ function start(root) {
     state.samples = await engine.samples();
     fillSamples();
     if (!ui.source.value.trim()) loadFirstSample(state.language);
+    else matchSample();
     showCanvas();
     renderNow();
   }).catch(showBootFailure);
@@ -144,7 +156,15 @@ function start(root) {
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   setPreviewTheme(state.theme);
 
+  // Chart options rewrite the markup, so the source, share links and the .NET snippet stay the whole truth.
+  ui.type.addEventListener('change', () => editChart('type', ui.type.value));
+  ui.legend.addEventListener('change', () => editChart('legend', ui.legend.value));
+  ui.stacks.forEach((button) => button.addEventListener('click', () => editChart('stack', button.dataset.pgStack)));
+  ui.sizes.forEach((button) => button.addEventListener('click', () => editChart('size', button.dataset.pgSize)));
+  ui.labels.forEach((button) => button.addEventListener('click', () => editChart('labels', button.dataset.pgLabels)));
+
   ui.zooms.forEach((button) => button.addEventListener('click', () => setZoom(button.dataset.pgZoom)));
+  new ResizeObserver(() => { if (state.zoom === 'fit') applyZoom(); }).observe(ui.stage);
   ui.downloads.forEach((button) => button.addEventListener('click', () => download(button.dataset.pgDownload, button)));
   ui.share.addEventListener('click', share);
   ui.copyPackage.addEventListener('click', () => copy(ui.packageText.textContent, ui.copyPackage));
@@ -154,10 +174,17 @@ function start(root) {
     state.sources[state.language] = ui.source.value;
     state.language = language;
     selectLanguageTab();
-    if (state.sources[language]) setSource(state.sources[language]);
-    else if (state.samples.length) loadFirstSample(language);
+    if (state.sources[language]) {
+      setSource(state.sources[language]);
+      matchSample();
+    } else if (state.samples.length) loadFirstSample(language);
     else setSource('');
     writeStorage();
+  }
+
+  // Shows the picked sample while the source still is that sample.
+  function matchSample() {
+    ui.samples.value = state.samples.find((item) => item.language === state.language && item.source === ui.source.value)?.id || '';
   }
 
   function selectLanguageTab() {
@@ -191,15 +218,60 @@ function start(root) {
     ui.samples.textContent = '';
     const placeholder = new Option('Choose a sample', '');
     ui.samples.add(placeholder);
-    const groups = [['mermaid', 'Mermaid'], ['chartforgex', 'ChartForgeX markup']];
-    for (const [language, label] of groups) {
+    const labels = [...new Set([...SAMPLE_GROUPS, ...state.samples.map((sample) => sample.group || 'Mermaid')])];
+    for (const label of labels) {
+      const items = state.samples.filter((sample) => (sample.group || 'Mermaid') === label);
+      if (!items.length) continue;
       const group = document.createElement('optgroup');
       group.label = label;
-      state.samples.filter((sample) => sample.language === language)
-        .forEach((sample) => group.appendChild(new Option(sample.title, sample.id)));
+      items.forEach((sample) => group.appendChild(new Option(sample.title, sample.id)));
       ui.samples.appendChild(group);
     }
     ui.samples.disabled = false;
+  }
+
+  // Chart options.
+  function editChart(option, value) {
+    const text = applyChartOption(ui.source.value, option, value);
+    if (text === ui.source.value) return;
+    const scroll = ui.source.scrollTop;
+    ui.samples.value = '';
+    ui.source.value = text;
+    ui.source.scrollTop = scroll;
+    state.sources[state.language] = text;
+    writeStorage();
+    refreshEditor();
+    updateSnippet();
+    renderNow();
+  }
+
+  function syncOptions() {
+    const options = state.language === 'chartforgex' ? readChartOptions(ui.source.value) : null;
+    const chart = options && options.kind === 'chart' ? options : null;
+    ui.options.type.hidden = !(chart && chart.types);
+    if (chart && chart.types) {
+      const values = chart.types.map(([value]) => value).join('|');
+      if (ui.type.dataset.values !== values) {
+        ui.type.replaceChildren(...chart.types.map(([value, label]) => new Option(label, value)));
+        ui.type.dataset.values = values;
+      }
+      ui.type.value = chart.type;
+    }
+    ui.options.stack.hidden = !(chart && chart.stack);
+    if (chart && chart.stack) press(ui.stacks, 'pgStack', chart.stack);
+    ui.options.size.hidden = !options;
+    if (options) press(ui.sizes, 'pgSize', options.size);
+    ui.options.legend.hidden = !chart;
+    if (chart) {
+      if (![...ui.legend.options].some((option) => option.value === chart.legend)) ui.legend.add(new Option(chart.legend, chart.legend));
+      ui.legend.value = chart.legend;
+    }
+    ui.options.labels.hidden = !chart;
+    if (chart) press(ui.labels, 'pgLabels', String(chart.labels));
+  }
+
+  function press(buttons, key, value) {
+    buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset[key] === value)));
   }
 
   // Line numbers, error band, cursor and length.
@@ -221,6 +293,7 @@ function start(root) {
     ui.length.classList.toggle('is-over', count > MAX_SOURCE);
     updateCursor();
     syncScroll();
+    syncOptions();
   }
 
   function markErrorLine(line) {
@@ -401,8 +474,21 @@ function start(root) {
   function applyZoom() {
     const fit = state.zoom === 'fit';
     ui.canvas.classList.toggle('is-fit', fit);
-    ui.canvas.querySelectorAll(':scope > svg').forEach((svg) => {
-      svg.style.width = fit ? '' : Math.round(naturalSize(svg).width * state.scale) + 'px';
+    const svgs = Array.from(ui.canvas.querySelectorAll(':scope > svg'));
+    // Fit scales a single render to the whole stage, and a document of several renders to its width,
+    // so small diagrams grow to a readable size instead of sitting at their natural size.
+    const style = getComputedStyle(ui.canvas);
+    const width = ui.stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const height = ui.stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    svgs.forEach((svg) => {
+      const size = naturalSize(svg);
+      let scale = state.scale;
+      if (fit) {
+        scale = Math.min(MAX_FIT, width / size.width);
+        if (svgs.length === 1) scale = Math.min(scale, (height - 1) / size.height);
+        scale = Math.max(scale, 0.05);
+      }
+      svg.style.width = (fit ? Math.floor(size.width * scale) : Math.round(size.width * scale)) + 'px';
     });
     ui.zooms.forEach((button) => {
       const pressed = (fit && button.dataset.pgZoom === 'fit') || (!fit && state.scale === 1 && button.dataset.pgZoom === '1');
@@ -489,7 +575,7 @@ function start(root) {
   }
 
   async function share() {
-    const payload = JSON.stringify({ v: 1, l: state.language, s: ui.source.value });
+    const payload = JSON.stringify({ v: 1, l: state.language, s: ui.source.value, t: state.theme });
     let hash;
     if ('CompressionStream' in window) {
       const stream = new Blob([payload]).stream().pipeThrough(new CompressionStream('deflate-raw'));
@@ -528,7 +614,11 @@ function start(root) {
       }
       const data = JSON.parse(new TextDecoder().decode(bytes));
       if (typeof data.s !== 'string') return null;
-      return { language: data.l === 'chartforgex' ? 'chartforgex' : 'mermaid', source: data.s.slice(0, MAX_SOURCE) };
+      return {
+        language: data.l === 'chartforgex' ? 'chartforgex' : 'mermaid',
+        source: data.s.slice(0, MAX_SOURCE),
+        theme: data.t === 'dark' || data.t === 'light' ? data.t : null
+      };
     } catch {
       ui.status.replaceChildren(element('span', 'is-error', 'The shared link could not be read, so your last draft is shown.'));
       return null;
