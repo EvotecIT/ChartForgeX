@@ -193,10 +193,12 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeEdgeLabelBackplates && UsesQuietEdgeLabelSurface(_options)) {
                 var surface = QuietEdgeLabelSurface(edge, bounds, labels, units);
                 var authored = !string.IsNullOrWhiteSpace(edge.LabelBackgroundColor);
-                var tone = authored ? Color(edge.LabelBackgroundColor, _colors.Surface) : ChartColorMath.Blend(_colors.Background, _colors.Foreground, EdgeLabelQuietTint);
+                // The chip is a step off the surface it sits on: the canvas, or the group around the label.
+                var underlay = LabelUnderlay(layout);
+                var tone = authored ? Color(edge.LabelBackgroundColor, _colors.Surface) : ChartColorMath.Blend(underlay.Fill, _colors.Foreground, EdgeLabelQuietTint);
                 var fill = LabelColor(tone);
                 var paint = authored ? EdgeLabelSurfacePaint(edge, fill, EdgeLabelOpacity(edge), false)
-                    : SvgPaint.Mix(tone, BackgroundPaint(_colors.Background), ForegroundPaint(_colors.Foreground), EdgeLabelQuietTint).WithOpacity(fill, EdgeLabelOpacity(edge));
+                    : SvgPaint.Mix(tone, underlay.Paint, ForegroundPaint(_colors.Foreground), EdgeLabelQuietTint).WithOpacity(fill, EdgeLabelOpacity(edge));
                 _builder.Rect(surface, fill, radius: surface.Height / 2, role: "topology-edge-label-surface", paint: new VisualScenePaintBinding(paint));
             }
             else if (_options.IncludeEdgeLabelBackplates) {
@@ -208,18 +210,10 @@ internal sealed partial class VisualTopologyCompiler {
                         BorderPaint(stroke, EdgeLabelBackplateStrokeOpacity(_options) * EdgeLabelOpacity(edge))));
             }
             else if (ShouldDrawEdgeLabelClearance(layout, _options)) {
-                var containingGroup = EdgeLabelClearanceGroup(_chart, layout);
-                var hasGroupSurface = containingGroup != null && _options.IncludeGroups;
-                var groupAccent = containingGroup == null ? _colors.Accent : Color(containingGroup.Color ?? ResolveGroupIcon(containingGroup, _options)?.Color, Status(containingGroup.Status));
-                var tintAmount = IsMonitoringDashboardStyle(_options) ? .055 : .10;
-                var explicitGroupFill = hasGroupSurface && !string.IsNullOrWhiteSpace(containingGroup!.BackgroundColor);
-                var baseFill = !hasGroupSurface ? _colors.Background : explicitGroupFill ? Color(containingGroup!.BackgroundColor, _colors.Surface)
-                    : UseNeutralGroupSurface(_options) ? _colors.Surface : ChartColorMath.BlendPremultiplied(_colors.Background, groupAccent, tintAmount);
-                var fill = ChartColorMath.WithOpacity(baseFill, EdgeLabelClearanceOpacity(containingGroup));
-                var fillPaint = !hasGroupSurface ? BackgroundPaint(baseFill)
-                    : explicitGroupFill ? GroupFillPaint(containingGroup!, baseFill, true, true)
-                    : UseNeutralGroupSurface(_options) ? CardPaint(baseFill)
-                    : SvgPaint.Mix(baseFill, BackgroundPaint(_colors.Background), GroupAccentPaint(containingGroup!, groupAccent, true), tintAmount);
+                var underlay = LabelUnderlay(layout);
+                var containingGroup = underlay.Group;
+                var fill = ChartColorMath.WithOpacity(underlay.Fill, EdgeLabelClearanceOpacity(containingGroup));
+                var fillPaint = underlay.Paint;
                 using var clearance = _builder.PushGroup(null, null, new Dictionary<string, string> {
                     ["data-clearance-surface"] = containingGroup == null ? "background" : "group",
                     ["data-clearance-group-id"] = containingGroup?.Id ?? string.Empty
