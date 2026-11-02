@@ -49,15 +49,18 @@
     });
     const card = svg.querySelector('[data-cfx-role="frame-card"]'), fill = card && getComputedStyle(card).fill;
     const matrix = svg.getScreenCTM?.();
-    if (!reveal || !matrix || !fill || fill === 'none' || /rgba\(.*,\s*0\)$/.test(fill)) return;
-    const corner = (x, y) => new DOMPoint(x, y).matrixTransform(matrix), box = stage.getBoundingClientRect();
+    // A horizontally scrolling stage keeps its own extent; it skips the curtain rather than growing.
+    if (!reveal || !matrix || !fill || fill === 'none' || /rgba\(.*,\s*0\)$/.test(fill) || stage.scrollWidth > stage.clientWidth + 1) return;
+    // The curtain sits in the frame, beside the stage, so the stage's own content and extent never change.
+    const host = stage.parentElement, corner = (x, y) => new DOMPoint(x, y).matrixTransform(matrix), box = host.getBoundingClientRect();
     const start = corner(plot.x, plot.y), end = corner(plot.x + plot.width, plot.y + plot.height);
     const curtain = document.createElement('div');
     curtain.dataset.cfxMotionCurtain = '';
     Object.assign(curtain.style, { position: 'absolute', zIndex: '1', pointerEvents: 'none', background: fill, transformOrigin: '100% 50%',
-      left: start.x - box.left + stage.scrollLeft + 1 + 'px', top: start.y - box.top + stage.scrollTop - 8 + 'px',
-      width: Math.max(0, end.x - start.x + 8) + 'px', height: Math.max(0, end.y - start.y + 7) + 'px' });
-    stage.appendChild(curtain);
+      left: start.x - box.left + 1 + 'px', top: start.y - box.top - 8 + 'px',
+      // Insets rather than sizes, so the curtain never outgrows a stage that narrows while it runs.
+      right: Math.max(1, box.right - end.x - 7) + 'px', bottom: Math.max(0, box.bottom - end.y - 1) + 'px' });
+    host.appendChild(curtain);
     curtain.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { ...options, fill: 'forwards' }).finished
       .catch(() => {}).then(() => curtain.remove());
   };  registry.motion = Object.freeze({ tween, enter });

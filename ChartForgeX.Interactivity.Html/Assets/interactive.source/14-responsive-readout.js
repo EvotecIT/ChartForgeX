@@ -39,8 +39,8 @@
       const plotTop = root._cfxDataProjection?.plotBounds?.y;
       const crop = Math.min(bottom + 4, Number.isFinite(plotTop) ? plotTop - 16 : bottom) - (svg.viewBox.baseVal?.y || 0);
       if (!(scale > 0) || !(crop > 0)) return;
-      // The stylesheet clips the drawing's band; the drawing element itself is never restyled.
-      frameNode.dataset.cfxHeadingCrop = 'true'; frameNode.style.setProperty('--cfx-heading-crop', crop * scale + 'px');
+      // The stylesheet clips the drawing's band on a whole pixel; the drawing element itself is never restyled.
+      frameNode.dataset.cfxHeadingCrop = 'true'; frameNode.style.setProperty('--cfx-heading-crop', Math.round(crop * scale) + 'px');
       // The title wraps beside the toolbar, or sits below it when the remaining line would be too short.
       if (toolbar) {
         // Reserve room for Reset zoom too, so the toolbar never grows over the title.
