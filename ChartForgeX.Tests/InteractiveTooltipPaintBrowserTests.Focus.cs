@@ -11,7 +11,10 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         if (!Enabled) return;
         var chart = Frame(false).WithTitle("Offscreen intervals").WithXAxisBounds(0, 10)
             .AddTimelineRange("Beginning", 0, 1).AddTimelineRange("Outside", 5, 10);
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ExactFeatures), 300, 720);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            ExactFeatures(options);
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
+        }), 240, 720);
         var page = session.Page;
         var targets = page.Locator("[data-cfx-keyboard-component=data]");
         Assert.Equal(2, await targets.CountAsync());

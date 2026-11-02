@@ -22,6 +22,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
         var values = new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 9) };
         const string name = "Reading with a long observation label that must fit the plot";
+        chart.WithXLabels(values.Select(point => new ChartAxisLabel(point.X, name + " " + point.X)));
         if (horizontal) chart.AddSeries(new ChartSeries(new ChartSeriesId("reading-source"), name, ChartSeriesKind.HorizontalBar, values));
         else {
             chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), name, values)).AddLine("Secondary", new[] { new ChartPoint(1, 2000), new ChartPoint(9, 8000) });
@@ -40,6 +41,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             await page.Mouse.MoveAsync((float)native[0], (float)native[1]);
             var guide = await GuideGeometryAsync(page);
             AssertGuideGeometry(guide, native);
+            Assert.Contains(guide.GetProperty("axisLabels").EnumerateArray(), label => label.GetProperty("text").GetString()!.Contains(name, StringComparison.Ordinal));
             Assert.Equal("reading-source:" + index, guide.GetProperty("targetId").GetString());
             await CaptureAsync(session, "overlay-plot-" + (horizontal ? "horizontal" : "secondary") + "-" + layout + "-" + index, new { native, guide });
         }
@@ -55,13 +57,25 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         await using var session = await OpenAsync(Host(false, layout, 340, 0.8, false, features, includeResetButton: true), 950, 760);
         var page = session.Page;
         await PrepareHostAsync(page, layout, 340, false);
+        var originalMark = await BoxAsync(page, PointMark(0, 1));
+        var frame = await BoxAsync(page, ".cfx-stage svg");
         await MoveToAsync(page, Point(0, 1));
         Assert.True(await page.Locator(".cfx-crosshair").IsVisibleAsync());
-        await page.Locator(Root).EvaluateAsync("r => r.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:{viewport:{zoom:1.35,panX:25,panY:-10}}}}))");
+        await page.Locator(Root).EvaluateAsync("r => r.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:{nativeViewport:{x:{minimum:1,maximum:7},y:{minimum:2,maximum:9}}}}}))");
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
         // Reacquire only after the owned transition settles; automation latency is not a motion budget.
         await FinishViewportTransitionAsync(page);
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
+        var window = await ViewportAsync(page);
+        AssertWindow(window.GetProperty("x"), 1, 7);
+        AssertWindow(window.GetProperty("y"), 2, 9);
+        var projectedMark = await BoxAsync(page, PointMark(0, 1));
+        Assert.True(Math.Abs(projectedMark.X - originalMark.X) > 1);
+        var changedFrame = await BoxAsync(page, ".cfx-stage svg");
+        Assert.Equal(frame.X, changedFrame.X, 3);
+        Assert.Equal(frame.Y, changedFrame.Y, 3);
+        Assert.Equal(frame.Width, changedFrame.Width, 3);
+        Assert.Equal(frame.Height, changedFrame.Height, 3);
         await MoveToAsync(page, Point(0, 1));
         Assert.True(await page.Locator(".cfx-crosshair").IsVisibleAsync());
         var mark = await BoxAsync(page, Point(0, 1));
@@ -69,19 +83,24 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         var changed = await GuideGeometryAsync(page);
         AssertGuideGeometry(changed, native);
         Assert.Equal("reading-source:1", changed.GetProperty("targetId").GetString());
-        await CaptureAsync(session, "overlay-plot-viewport-" + layout, new { native, changed });
+        await CaptureAsync(session, "overlay-plot-viewport-" + layout, new { native, changed, window, originalMark, projectedMark, frame, changedFrame });
 
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
-        Assert.Equal("1.000", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
         await FinishViewportTransitionAsync(page);
+        var resetWindow = await ViewportAsync(page);
+        AssertWindow(resetWindow.GetProperty("x"), 0, 10);
+        AssertWindow(resetWindow.GetProperty("y"), 0, 10);
+        var resetMark = await BoxAsync(page, PointMark(0, 1));
+        Assert.InRange(resetMark.X - originalMark.X, -1, 1);
+        Assert.InRange(resetMark.Y - originalMark.Y, -1, 1);
         await MoveToAsync(page, Point(0, 1));
         mark = await BoxAsync(page, Point(0, 1));
         native = new double[] { mark.X + mark.Width / 2, mark.Y + mark.Height / 2 };
         var reset = await GuideGeometryAsync(page);
         AssertGuideGeometry(reset, native);
         Assert.Equal("reading-source:1", reset.GetProperty("targetId").GetString());
-        await CaptureAsync(session, "overlay-plot-reset-" + layout, new { native, reset });
+        await CaptureAsync(session, "overlay-plot-reset-" + layout, new { native, reset, resetWindow, resetMark });
         AssertNoConsoleErrors(session);
     }
 
@@ -101,7 +120,8 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         });
         await using var session = await OpenAsync(html, 950, 760);
         await MoveToAsync(session.Page, Point(0, 1));
-        Assert.Contains("Reading", await TooltipTextAsync(session.Page), StringComparison.Ordinal);
+        Assert.Equal("Observation 5", await session.Page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Contains("5", await session.Page.Locator(".cfx-tooltip__meta dd").AllTextContentsAsync());
         Assert.True(await session.Page.Locator(".cfx-crosshair").IsHiddenAsync());
         Assert.Null(await session.Page.Locator(Root).GetAttributeAsync("data-cfx-crosshair"));
         AssertNoConsoleErrors(session);

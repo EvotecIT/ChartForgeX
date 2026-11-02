@@ -36,6 +36,7 @@ public sealed class RuntimeBrushScaleBrowserTests {
         var page = session.Page;
         var errors = new List<string>();
         page.PageError += (_, error) => errors.Add(error);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var positions = await page.Locator(".cfx-interactive-chart").EvaluateAsync<double[]>("""
             (root,symmetric) => {

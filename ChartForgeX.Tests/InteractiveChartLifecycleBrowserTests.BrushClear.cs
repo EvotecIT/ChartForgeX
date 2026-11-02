@@ -84,6 +84,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task LinkedSelectionKeepsHostHeightAndToolbarBandAligned(bool dark, int width, bool compare) {
         if (!Enabled) return;
         await using var session = await OpenAsync(Readings(dark).ToInteractiveHtmlPage(options => {
+            options.Toolbar = HtmlChartToolbarLayout.Band;
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Brush);
             if (!compare) options.Interaction.Disable(ChartInteractionFeatures.CompareMarkers);
         }), width, 800);
@@ -113,6 +114,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 const screen=(x,y)=>{const point=new DOMPoint(p.x+x*p.width,p.y+y*p.height).matrixTransform(svg.getScreenCTM());return{x:point.x,y:point.y}};
                 return{from:screen(.15,.2),to:screen(.85,.8)}}
             """);
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions.GetProperty("from").GetProperty("x").GetDouble(), (float)positions.GetProperty("from").GetProperty("y").GetDouble());
         await page.Mouse.DownAsync();

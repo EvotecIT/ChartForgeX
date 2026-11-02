@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
@@ -28,11 +29,18 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Equal("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         var tip = page.Locator(".cfx-tooltip");
         Assert.True(await tip.IsVisibleAsync());
+        Assert.Equal(caption, await tip.GetAttributeAsync("aria-description"));
+        var close = tip.GetByRole(AriaRole.Button, new() { Name = "Close tooltip", Exact = true });
+        await Assertions.Expect(close).ToBeVisibleAsync(new() { Timeout = 1000 });
+        Assert.Equal("×", await close.InnerTextAsync());
+        Assert.Equal("8", await page.Locator(Point(0, 1)).GetAttributeAsync("data-cfx-y"));
+        Assert.Equal("8", await tip.Locator("dd").InnerTextAsync());
+        Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         var paint = await tip.EvaluateAsync<JsonElement>("""
             tip=>{
-                const badge=getComputedStyle(tip,'::before'),surface=getComputedStyle(tip);
-                return {ink:badge.color,surface:surface.backgroundColor,content:badge.content,
-                    weight:badge.fontWeight,transform:badge.textTransform};
+                const close=tip.querySelector('.cfx-tooltip__close'),control=getComputedStyle(close),surface=getComputedStyle(tip);
+                return {ink:control.color,surface:surface.backgroundColor,accentWidth:surface.borderInlineStartWidth,
+                    description:tip.getAttribute('aria-description'),closeLabel:close.getAttribute('aria-label')};
             }
             """);
         var rgba = await ResolveCssColorsAsync(page, paint.GetProperty("ink").GetString()!, paint.GetProperty("surface").GetString()!);
@@ -40,10 +48,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Equal(255, rgba[1][3]);
         var contrast = ChartColorMath.ContrastRatio(Color(rgba[0]), Color(rgba[1]));
         await CaptureContractAsync(page, "paint-pinned-label-" + (dark ? "dark" : "light"), new { paint, contrast, rgba });
-        Assert.True(contrast >= 4.5, "Pinned label contrast is " + contrast);
-        Assert.Contains(caption, paint.GetProperty("content").GetString()!, StringComparison.Ordinal);
-        Assert.Equal("900", paint.GetProperty("weight").GetString());
-        Assert.Equal("uppercase", paint.GetProperty("transform").GetString());
+        Assert.True(contrast >= 4.5, "Pinned close control contrast is " + contrast);
+        Assert.Equal("2px", paint.GetProperty("accentWidth").GetString());
         AssertNoConsoleErrors(session);
     }
 }

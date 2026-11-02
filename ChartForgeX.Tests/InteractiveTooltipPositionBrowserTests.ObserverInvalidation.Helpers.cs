@@ -10,6 +10,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         "<html><head><style>svg [hidden]{display:none}.position-hidden-opacity{opacity:0}#position-observer-host .position-hidden-target-opacity{opacity:0!important}.position-hidden-visibility{visibility:hidden}</style></head><body id='position-observer-host' style='margin:20px'><div id='outside-content'></div>" +
         Observations(false).ToInteractiveHtmlFragment(options => {
             options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
         }) + "<aside id='unrelated-dashboard' style='position:fixed;left:8px;bottom:8px'><span>Background dashboard</span></aside></body></html>";
 
@@ -23,7 +24,10 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         return pointer;
     }
 
-    private static Task SettleObservedPositionAsync(IPage page) => page.EvaluateAsync("async()=>{for(let frame=0;frame<3;frame++)await new Promise(resolve=>requestAnimationFrame(resolve));}");
+    private static async Task SettleObservedPositionAsync(IPage page) {
+        await InteractiveChartBrowser.SettlePresentationAsync(page);
+        await page.EvaluateAsync("async()=>{for(let frame=0;frame<3;frame++)await new Promise(resolve=>requestAnimationFrame(resolve));}");
+    }
 
     private static Task InstallPositionWorkProbeAsync(IPage page) => page.EvaluateAsync("""
         ()=>{

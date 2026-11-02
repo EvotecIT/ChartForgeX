@@ -15,7 +15,9 @@
   const xNavigationCaption = (root, value) => {
     const axis = root._cfxDataProjection?.x;
     const native = [...(axis?.displayBounds || []), ...(axis?.displayTicks || [])].find(tick => tick.value === value);
-    return native ? native.text : String(dataValue(value, axis?.scale === 'time' && value >= 0));
+    const shown = dataValue(value, axis?.scale === 'time' && value >= 0);
+    // Window arithmetic leaves binary residue (0.9999999999999998); captions show the represented value.
+    return native ? native.text : String(typeof shown === 'number' ? +shown.toPrecision(12) : shown);
   };
   const paintXNavigationRange = (root, first, last, rawWindow) => {
     const panel = root.querySelector('[data-cfx-x-navigation]'), projection = chartXProjection(root), axis = fullXNavigationAxis(root);

@@ -25,8 +25,10 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         var page = session.Page;
         var baseline = await ObserveAsync(page);
         var defaultPaint = await PaintAsync(page);
-        foreach (var line in defaultPaint) {
-            Assert.Equal("dashed", line.GetProperty("pattern").GetString());
+        Assert.Equal(2, defaultPaint.Length);
+        for (var index = 0; index < defaultPaint.Length; index++) {
+            var line = defaultPaint[index];
+            Assert.Equal(index == 0 ? "dashed" : "solid", line.GetProperty("pattern").GetString());
             Assert.Equal("1px", line.GetProperty("width").GetString());
             Assert.Equal("none", line.GetProperty("shadow").GetString());
         }
@@ -41,6 +43,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         }, showLabel));
         var configured = await ObserveAsync(page);
         var paint = await PaintAsync(page);
+        Assert.Equal(2, paint.Length);
         var expectedStroke = await page.EvaluateAsync<string>("""
             color => {
                 const reference=document.createElement('span');
@@ -52,7 +55,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
             }
             """, ChartColor.FromArgb(128, 37, 99, 235).ToCss());
         Assert.Equal(baseline.GetRawText(), configured.GetRawText());
-        Assert.Equal(!showLabel, await page.Locator(".cfx-crosshair__label").IsHiddenAsync());
+        await AssertAxisEdgeLabelsAsync(page, showLabel);
         foreach (var line in paint) {
             Assert.Equal(lineStyle.ToString().ToLowerInvariant(), line.GetProperty("pattern").GetString());
             Assert.Equal("2px", line.GetProperty("width").GetString());
@@ -97,17 +100,15 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         }), 700, 720);
         var contract = await ObserveAsync(session.Page);
         var paint = await PaintAsync(session.Page);
-        foreach (var line in paint) {
-            Assert.Equal("dashed", line.GetProperty("pattern").GetString());
+        Assert.Equal(2, paint.Length);
+        for (var index = 0; index < paint.Length; index++) {
+            var line = paint[index];
+            Assert.Equal(index == 0 ? "dashed" : "solid", line.GetProperty("pattern").GetString());
             Assert.Equal(zeroWidth ? "0px" : "1px", line.GetProperty("width").GetString());
             if (!zeroWidth) await AssertCssColorsEqualAsync(session.Page, "rgba(0, 0, 0, 0)", line.GetProperty("color").GetString()!);
             Assert.Equal("none", line.GetProperty("shadow").GetString());
         }
-        Assert.False(await session.Page.Locator(".cfx-crosshair__label").IsHiddenAsync());
-        Assert.True(await session.Page.Locator(".cfx-crosshair").EvaluateAsync<bool>("""
-            c => { const b=c.getBoundingClientRect(), l=c.querySelector('[data-cfx-crosshair-label]').getBoundingClientRect();
-                return l.left>=b.left-1 && l.right<=b.right+1 && l.top>=b.top-1 && l.bottom<=b.bottom+1; }
-            """));
+        await AssertAxisEdgeLabelsAsync(session.Page, showLabel: true);
         await CaptureAsync(session, "crosshair-sparse-" + (graphite ? "graphite" : "ordinary") + (zeroWidth ? "-zero" : "-transparent"), new { contract, paint });
         AssertNoConsoleErrors(session);
     }
@@ -167,10 +168,34 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         () => {
             const root=document.querySelector('.cfx-interactive-chart');
             return {guideId:(root.dataset.cfxCrosshair||'').split('|')[1],hoverId:(root.dataset.cfxHoverKey||'').split('|')[1],
-                label:root.querySelector('.cfx-crosshair__label').textContent,tooltip:root.querySelector('.cfx-tooltip').innerText,
+                labels:Array.from(root.querySelectorAll('.cfx-crosshair__axis-value')).map(label=>({axis:label.dataset.cfxAxisValue,value:label.textContent})),tooltip:root.querySelector('.cfx-tooltip').innerText,
                 events:window.crosshairStyleTrace.slice()};
         }
         """);
+
+    private static async Task AssertAxisEdgeLabelsAsync(IPage page, bool showLabel) {
+        var labels = page.Locator(".cfx-crosshair__axis-value");
+        Assert.Equal(2, await labels.CountAsync());
+        foreach (var label in await labels.AllAsync()) Assert.Equal(!showLabel, await label.IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-crosshair__label").IsHiddenAsync());
+        Assert.Equal(new[] { "5", "5" }, await labels.AllTextContentsAsync());
+        if (!showLabel) return;
+        foreach (var label in await labels.AllAsync()) {
+            Assert.Equal("11px", await label.EvaluateAsync<string>("node => getComputedStyle(node).fontSize"));
+            Assert.Equal("600", await label.EvaluateAsync<string>("node => getComputedStyle(node).fontWeight"));
+        }
+        Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("""
+            crosshair => {
+                const plot=crosshair.getBoundingClientRect();
+                const x=crosshair.querySelector('[data-cfx-axis-value="x"]').getBoundingClientRect();
+                const y=crosshair.querySelector('[data-cfx-axis-value="y"]').getBoundingClientRect();
+                return x.left>=plot.left-1 && x.right<=plot.right+1
+                    && x.top>=plot.bottom+3 && x.top<=plot.bottom+5
+                    && y.top>=plot.top-1 && y.bottom<=plot.bottom+1
+                    && y.right>=plot.left-5 && y.right<=plot.left-3;
+            }
+            """));
+    }
 
     private static async Task<JsonElement[]> PaintAsync(IPage page) {
         using var paint = JsonDocument.Parse(await page.Locator(".cfx-crosshair__line").EvaluateAllAsync<string>("""

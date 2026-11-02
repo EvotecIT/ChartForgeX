@@ -44,7 +44,7 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
         foreach (var (id, key) in cases) {
             var selector = "[data-cfx-node=" + id + "]";
             await MoveAwayAsync(page);
-            if (key) await page.Locator("[data-cfx-legend-target-id=" + id + "]").FocusAsync();
+            if (key) await page.Locator("[data-cfx-role=legend-item][data-cfx-legend-target-id=" + id + "]").FocusAsync();
             else if (id == "zero") await page.Locator(selector).FocusAsync();
             else await MoveToAsync(page, selector + " > [data-cfx-role=treemap-tile-mark]");
             await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent.includes(label); }",

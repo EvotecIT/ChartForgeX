@@ -38,6 +38,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 return {from:screen(.22,.27),to:screen(.78,.73)};
             }
             """);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions.GetProperty("from").GetProperty("x").GetDouble(), (float)positions.GetProperty("from").GetProperty("y").GetDouble());
         await page.Mouse.DownAsync();
@@ -123,6 +124,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 return [[.22,.27],[.78,.73]].flatMap(([x,y])=>{const q=new DOMPoint(p.x+x*p.width,p.y+y*p.height).matrixTransform(svg.getScreenCTM());return[q.x,q.y];});
             }
             """);
+        await source.HoverAsync();
         await source.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]); await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync((float)positions[2], (float)positions[3], new MouseMoveOptions { Steps = 5 }); await page.Mouse.UpAsync();
@@ -138,6 +140,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Single(brushEvents.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxlasso");
         Assert.Contains(brushEvents.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxsync" && item.GetProperty("detail").GetProperty("action").GetString() == "brush");
         Assert.Empty(brushEvents.GetProperty("peer").EnumerateArray());
+        Assert.Single(brushEvents.GetProperty("source").EnumerateArray(), item => item.GetProperty("name").GetString() == "cfxviewport");
+        // A completed brush commits its own data window; count the subsequent toolbar action independently.
+        await page.EvaluateAsync("()=>{groupedSource.length=0;groupedPeer.length=0}");
+        await source.HoverAsync();
         await source.Locator("[data-cfx-zoom=in]").ClickAsync();
         var zoom = await source.GetAttributeAsync("data-cfx-zoom"); Assert.NotEqual("1.000", zoom);
         Assert.Equal(zoom, await peer.GetAttributeAsync("data-cfx-zoom"));
@@ -191,7 +197,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal("Down", result.GetProperty("individual").GetProperty("category").GetString());
         await page.Locator("[data-cfx-role=radial-point][data-cfx-observation-id=down]").FocusAsync();
         Assert.Equal("Down", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal("Down", await page.Locator(".cfx-compare-chip").InnerTextAsync());
+        Assert.Equal("Parts · Down · 25", await page.Locator(".cfx-compare-chip").InnerTextAsync());
         await CaptureAsync(page, "linked-pie-category", result);
         AssertNoConsoleErrors(session);
     }

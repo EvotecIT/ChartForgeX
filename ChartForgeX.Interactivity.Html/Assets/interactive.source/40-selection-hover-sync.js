@@ -19,6 +19,10 @@
     node.classList.toggle('cfx-selected', selected);
     const value = selected ? 'true' : 'false';
     if (node.getAttribute('aria-selected') !== value) node.setAttribute('aria-selected', value);
+    const source = node.closest?.('.cfx-interactive-chart')?._cfxStandaloneHierarchy?.byId.get(node.dataset.cfxNode);
+    if (source && source !== node) {
+      source.classList.toggle('cfx-selected', selected); source.setAttribute('aria-selected', value);
+    }
   };
   const setNodeHovered = (node, hovered, related) => {
     node.classList.toggle('cfx-hovered', hovered);
@@ -40,7 +44,9 @@
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
     root.removeAttribute('data-cfx-hover-mode');
+    root.removeAttribute('data-cfx-hover-continuous');
     root.removeAttribute('data-cfx-hover-unit');
+    root.removeAttribute('data-cfx-flow-hover');
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
@@ -54,6 +60,12 @@
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
 
+  const clearUnavailableHover = (root, node) => {
+    if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(node))) return;
+    clearHover(root, true, true);
+    const crosshair = root.querySelector('.cfx-crosshair');
+    if (crosshair) crosshair.hidden = true;
+  };
   const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
   const legendItemUnit = (root, target) => {
@@ -80,14 +92,35 @@
   const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
     : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
 
+  const continuousHoverTarget = node => {
+    const data = node?.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
+    return ['heatmap', 'hexbinheatmap', 'calendarheatmap', 'regionmap', 'map', 'tilemap', 'dottedmap'].includes(kind)
+      || kind === 'treemap' && (data.cfxColorValue !== undefined || data.cfxColorMissing === 'true');
+  };
+
 
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) { clearHover(root, false, false); return false; }
     const nodes = interactiveTargets(root);
-    const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
+    const hierarchyView = root._cfxStandaloneHierarchy?.overlay;
+    const localNode = nodes.find((node) => matchesTargetIdentity(node, target) && (!hierarchyView || hierarchyView.contains(node)));
     if (!localNode && target.targetKind && target.targetId) { clearHover(root, false, false); return false; }
 
     const localTarget = localNode ? targetIdentity(localNode) : target;
+    root.toggleAttribute('data-cfx-hover-continuous', continuousHoverTarget(localNode));
+    if (localNode && (localNode.dataset.cfxKind || '').toLowerCase() === 'sankey') {
+      const active = localNode.dataset, connections = nodes.filter(node => node.dataset.cfxSource === active.cfxNode || node.dataset.cfxTarget === active.cfxNode);
+      const connectedIds = new Set(connections.flatMap(node => [node.dataset.cfxSource, node.dataset.cfxTarget]));
+      if (active.cfxSource) { connectedIds.add(active.cfxSource); connectedIds.add(active.cfxTarget); }
+      nodes.forEach(node => {
+        const hovered = matchesTargetIdentity(node, localTarget);
+        const related = connections.includes(node) || connectedIds.has(node.dataset.cfxNode);
+        setNodeHovered(node, hovered, related && !hovered);
+      });
+      root.dataset.cfxHovering = 'true'; root.dataset.cfxFlowHover = 'true'; root.dataset.cfxHoverMode = 'flow';
+      root.dataset.cfxHoverLabel = localTarget.label || '';
+      return true;
+    }
     const hoverMode = hoverModeForTarget(root, localNode, mode);
     if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
@@ -307,14 +340,15 @@
         .map(name => [name, source[name]]));
       requestNativePolarWindow(root, viewport, false);
     }
-    else if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
+    else if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && (cartesianViewportConnected(root) || standaloneViewport(root))) {
 
       const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
       const binding = nativePreparationBinding(root, 'viewport');
-      const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
+      const viewport = Object.fromEntries((binding?.axes || cartesianAxisNames).filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
         .map(name => [name, source[name]]));
       if (source.valueDomain !== undefined) viewport.valueDomain = source.valueDomain;
-      requestNativeCartesianWindow(root, viewport, false);
+      if (standaloneViewport(root)) requestStandaloneWindow(root, viewport, false, undefined, false);
+      else requestNativeCartesianWindow(root, viewport, false);
     }
     else if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);

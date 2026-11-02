@@ -70,6 +70,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         await target.BlurAsync(); await MoveAwayAsync(page);
         await ink.EvaluateAsync("node=>node.style.opacity='0'");
         await target.FocusAsync();
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         await ink.EvaluateAsync("node=>node.style.removeProperty('opacity')");
         await target.BlurAsync(); await FocusWithKeyboardAsync(page, target);
@@ -104,6 +105,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         await page.AddStyleTagAsync(new() { Content = "[data-cfx-node=a] [data-cfx-role=sunburst-segment-mark], [data-cfx-node=a] [data-cfx-role=sunburst-pattern]{opacity:0!important}" });
         await MoveAwayAsync(page); await BrowserProofCaptions.MoveAsync(page, target);
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         AssertNoConsoleErrors(session);
     }

@@ -51,7 +51,7 @@
       <iframe class="cfx-showcase__iframe cfx-family__live" style="aspect-ratio: {{ f.width }} / {{ f.height + 48 }}" title="{{ item.title }}, interactive"
         data-cfx-live-frame data-light="{{ item.interactive }}" data-dark="{{ item.darkInteractive }}"></iframe>
       <noscript><div class="cfx-showcase__plate"><img src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" loading="lazy" decoding="async" alt="{{ item.title }}" /></div></noscript>
-      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, click legend items to hide or show series, and use the keyboard to navigate{{ else }}diagram. Hover and select nodes for details{{ end }}.</figcaption>
+      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, click legend items to hide or show series, and use the keyboard to navigate{{ if slug == "line" }}. Use the wheel to zoom, choose Pan to move the window, or choose Brush and drag to zoom to a range. Reset returns to the full chart{{ end }}{{ else }}diagram. Hover and select nodes for details{{ end }}.</figcaption>
       {{~ else ~}}
       <div class="cfx-showcase__plate">
         <img class="cfx-only-light" src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" fetchpriority="high" decoding="async" alt="{{ item.title }}, rendered by ChartForgeX." />

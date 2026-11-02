@@ -45,6 +45,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await page.EvaluateAsync("()=>chartController.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:sessionBookmark,sync:false}}))");
         await WaitForChangesAsync(page, 4);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), minimum, host.Maximum);
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("No compressed-time SVG export.");
         var exported = XDocument.Load(path);

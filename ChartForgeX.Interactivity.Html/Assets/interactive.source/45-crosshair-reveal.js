@@ -135,6 +135,26 @@
   const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
     'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
 
+  const categoricalPointerKind = node => ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar'].includes((node.dataset.cfxKind || '').toLowerCase());
+  const eventCoarsePointer = root => root.ownerDocument.defaultView.matchMedia?.('(pointer: coarse)').matches === true;
+  const radarPointerPoint = (root, event, styles) => {
+    const spoke = root.querySelector('[data-cfx-role="radar-spoke"]'), matrix = spoke && svgScreenMatrix(spoke);
+    if (!matrix) return null;
+    const center = new DOMPoint(Number(spoke.getAttribute('x1')), Number(spoke.getAttribute('y1'))).matrixTransform(matrix);
+    const edge = new DOMPoint(Number(spoke.getAttribute('x2')), Number(spoke.getAttribute('y2'))).matrixTransform(matrix);
+    if (Math.hypot(event.clientX - center.x, event.clientY - center.y) > Math.hypot(edge.x - center.x, edge.y - center.y) + 12) return null;
+    const angle = Math.atan2(event.clientY - center.y, event.clientX - center.x);
+    const tip = root.querySelector('.cfx-tooltip');
+    const points = Array.from(root.querySelectorAll('[data-cfx-role="radar-point-source"][data-cfx-angle]'))
+      .filter(node => isInteractiveTarget(node) && pointerTargetPaint(node, styles) && tooltipSourceInView({ node, tip: tip || node })).map(node => {
+        const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
+        const theta = Math.atan2(y - center.y, x - center.x);
+        return { node, x, y, distance: Math.hypot(x - event.clientX, y - event.clientY),
+          rank: Math.abs(Math.atan2(Math.sin(theta - angle), Math.cos(theta - angle))), exact: true };
+      });
+    return points.sort((a, b) => a.rank - b.rank || a.distance - b.distance)[0] || null;
+  };
+
   const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target, withinSeries = null) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
@@ -148,37 +168,64 @@
       if (hit.dataset.cfxRole === 'legend-entry-omitted') { hit = null; break; }
       hit = hit.parentElement && hit.parentElement.closest(targetSelector);
     }
-    let native = null;
+    let native = null, enlarged = false;
+    const svg = stage.querySelector('svg');
+    const plotSurface = nativeTarget === stage || nativeTarget === svg || nativeTarget instanceof SVGElement
+      && svg?.contains(nativeTarget) && !nativeTarget.closest('foreignObject')
+      && (isPassiveTarget(nativeTarget) || inferredPlotSurfaceRoles.has(nativeTarget.dataset.cfxRole));
+    const radar = root.querySelector('[data-cfx-role="radar-spoke"]');
+    if (radar && (hit || plotSurface) && !hit?.closest('[data-cfx-role="legend-item"]') && nativeTarget instanceof SVGElement) {
+      const point = radarPointerPoint(root, event, styles);
+      if (point) return { native: point, observation: point };
+    }
+    // A painted bar owns its interior even when a line or a generous point hit
+    // area sits above it in the SVG paint order.
+    const bar = Array.from(root.querySelectorAll('[data-cfx-point]')).find(node => {
+      if (!['bar', 'horizontalbar'].includes((node.dataset.cfxKind || '').toLowerCase()) || !pointerTargetPaint(node, styles)) return false;
+      const box = node.querySelector('[data-cfx-role="bar"],[data-cfx-role="horizontal-bar"]')?.getBoundingClientRect() || nativeRegionScreenBox(node) || node.getBoundingClientRect();
+      return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+    });
+    if (bar && (hit || plotSurface) && !hit?.closest('[data-cfx-role="legend-item"]')) {
+      const box = bar.querySelector('[data-cfx-role="bar"],[data-cfx-role="horizontal-bar"]')?.getBoundingClientRect() || nativeRegionScreenBox(bar) || bar.getBoundingClientRect();
+      native = { node: bar, x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2, distance: 0, exact: true };
+      return { native, observation: native };
+    }
     if (hit && root.contains(hit) && pointerTargetPaint(hit, styles)) {
       const box = hit.getBoundingClientRect();
       const summary = renderedTargetKind(hit) === 'series' && !hit.hasAttribute('data-cfx-point') && !hit.hasAttribute('data-cfx-value');
       native = { node: hit, x: usesPolarCoordinates(hit) || summary ? event.clientX : box.left + box.width / 2,
         y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
-      if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
+      enlarged = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-browser-hit-area]') && hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit);
+      if (!summary && !enlarged) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
 
 
-    const svg = stage.querySelector('svg');
-    const plotSurface = nativeTarget === stage || nativeTarget === svg || nativeTarget instanceof SVGElement
-      && svg?.contains(nativeTarget) && !nativeTarget.closest('foreignObject')
-      && (isPassiveTarget(nativeTarget) || inferredPlotSurfaceRoles.has(nativeTarget.dataset.cfxRole));
-    if (!searchNearest || !native && !plotSurface) return { native, observation: null };
+    if (!searchNearest && !enlarged || !native && !plotSurface) return { native, observation: null };
     const candidates = [];
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
       if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node)
         || withinSeries && !matchesLocalSeriesTarget(node, withinSeries)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
+      const area = enlarged && node.querySelector('[data-cfx-browser-hit-area]')?.getBoundingClientRect();
+      const exact = area && event.clientX >= area.left && event.clientX <= area.right && event.clientY >= area.top && event.clientY <= area.bottom;
+      if (enlarged && !exact) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
       const distance = Math.hypot(x - event.clientX, y - event.clientY);
-      const rank = withinSeries ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
-      candidates.push({ node, x, y, distance, rank, order: candidates.length, exact: false });
+      const category = !enlarged && root.dataset.cfxTooltipRange === 'auto' && categoricalPointerKind(node);
+      const rank = withinSeries || category ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
+      candidates.push({ node, x, y, distance, rank, category, order: candidates.length, exact: !!exact });
     });
 
     candidates.sort((first, second) => first.rank - second.rank || first.distance - second.distance || first.order - second.order);
     return { native, observation: candidates.find(candidate => pointerTargetPaint(candidate.node, styles)) || null };
   };
   const pointerActivationTarget = (root, node, event) => {
+    if (event instanceof MouseEvent && event.detail > 0 && isDataTarget(node)) {
+      const candidates = pointerCandidates(root, event, true, event.target);
+      const acquired = candidates?.observation?.exact ? candidates.observation : acquiredTooltipPoint(root, candidates);
+      if (acquired && isDataTarget(acquired.node)) return acquired.node;
+    }
     if (isDataTarget(node) || renderedTargetKind(node) !== 'series' || !usesCartesianCoordinates(node)
       || !(event instanceof MouseEvent) || event.detail <= 0) return node;
 
@@ -193,7 +240,8 @@
     if (!point || !hasFeature(root, 'Tooltips')) return false;
     if (point.exact) return true;
     const range = root.dataset.cfxTooltipRange || 'distance';
-    return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
+    return range === 'nearest' || (range === 'distance' || range === 'auto') && (point.category ? point.rank : point.distance) <= Math.max(
+      eventCoarsePointer(root) ? 24 : 0, Number(root.dataset.cfxTooltipDistance ?? 120));
   };
   const acquiredTooltipPoint = (root, candidates) => candidates && (tooltipAcquiresPoint(root, candidates.observation)
     ? candidates.observation : tooltipAcquiresPoint(root, candidates.native) ? candidates.native : null);
@@ -218,12 +266,8 @@
     crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
-    if (label) {
-      label.textContent = text(point.node);
-
-      label.style.left = clamp(x + 10, 0, Math.max(0, bounds.width - label.offsetWidth)) + 'px';
-      label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
-    }
+    if (label) label.hidden = true;
+    paintCrosshairAxisLabels(root, crosshair, point.node, x, y, bounds);
     const target = targetIdentity(point.node);
     const key = targetKey(target), mode = crosshairHoverMode(event, point.node, nativeTarget);
 
@@ -253,7 +297,8 @@
       const available = hasFeature(root, 'Tooltips') ? currentPointerTooltip(root, event) === legend : pointerTargetPaint(legend);
       if (available) {
         const key = targetKey(targetIdentity(legend));
-        if (root.dataset.cfxHoverKey !== key) setHover(root, legend, true, true);
+        if (!legendEntryShown(root, legend)) clearHover(root, true, true);
+        else if (root.dataset.cfxHoverKey !== key) setHover(root, legend, true, true);
         showTip(root, tip, legend, event);
       } else {
         clearHover(root, true, true);
@@ -266,7 +311,8 @@
     const observation = candidates && candidates.observation;
 
     const tooltipPoint = acquiredTooltipPoint(root, candidates);
-    const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
+    const guidePoint = guideEnabled && observation && usesCartesianCoordinates(observation.node)
+      && (observation.exact || (observation.category ? observation.rank : observation.distance) <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
       clearHover(root, true, true);

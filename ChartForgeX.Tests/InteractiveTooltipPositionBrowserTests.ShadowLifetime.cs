@@ -26,6 +26,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await InstallListenerProbeAsync(page);
         await page.SetContentAsync("<html><body style='margin:20px'>" + Observations(true).WithLegend().ToInteractiveHtmlFragment(options => {
             options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }) + "</body></html>");
         await MountPositionFocusChartAsync(page, shadow: true);
         var baseline = await ListenerStateAsync(page);

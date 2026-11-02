@@ -31,6 +31,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         // Hosts may hide SVG groups through their ordinary hidden-attribute convention.
         await page.SetContentAsync("<html><head><style>svg [hidden]{display:none}</style></head><body>" + Observations(false).ToInteractiveHtmlFragment(options => {
             options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
         }) + "<input id='position-host-after' aria-label='Continue report' /></body></html>");
         var nativeButtonIsTabStop = pinned && subject == "target" && await NativeButtonsParticipateInTabOrderAsync(page);
@@ -69,7 +70,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             // A boundary arrow, re-entry with Tab and explicit pinning each resume that target normally.
             await page.Keyboard.PressAsync("ArrowLeft");
             var resumed = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, selector: replacement);
-            Assert.Contains("X\n7\nY\n6", resumed.GetProperty("text").GetString()!, StringComparison.Ordinal);
+            Assert.Contains("Observation 7\nReading\nValue\n6", resumed.GetProperty("text").GetString()!, StringComparison.Ordinal);
             Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component=data][tabindex='0']").CountAsync());
             await page.Keyboard.PressAsync("Tab");
             // Match the independently observed native button policy, while keeping the chart's next stop strict.
@@ -103,7 +104,10 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await using var session = await OpenAsync("<html><body></body></html>", 950, 760);
         var page = session.Page;
         await InstallListenerProbeAsync(page);
-        await page.SetContentAsync("<html><body>" + Observations(true).ToInteractiveHtmlFragment(options => options.Tooltip.Position.Anchor = anchor) + "</body></html>");
+        await page.SetContentAsync("<html><body>" + Observations(true).ToInteractiveHtmlFragment(options => {
+            options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
+        }) + "</body></html>");
         await MountPositionFocusChartAsync(page, shadow: true);
         var baseline = await ListenerStateAsync(page);
         await page.EvaluateAsync("selector=>window.positionFocusChart.querySelector(selector).focus()", Reading);
@@ -135,6 +139,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }), 950, 760);
         var page = session.Page;
         await page.Locator(Reading).FocusAsync();

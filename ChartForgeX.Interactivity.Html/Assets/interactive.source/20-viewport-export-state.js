@@ -5,6 +5,10 @@
     panY: Number(root.dataset.cfxPanY || '0')
   });
   const applyViewport = (root, state) => {
+    if (standaloneViewport(root)) {
+      if (state.zoom === 1 && state.panX === 0 && state.panY === 0) resetStandaloneViewport(root);
+      return;
+    }
     state.zoom = clamp(state.zoom, 0.5, 6);
     state.panX = clamp(state.panX, -4000, 4000);
     state.panY = clamp(state.panY, -4000, 4000);
@@ -21,16 +25,26 @@
     refreshTooltipPosition(root);
   };
 
-  const viewChanged = (root) => {
-    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
+  const viewportZoomed = root => {
+    if (root._cfxStandaloneViewport && Object.keys(root._cfxStandaloneViewport.windows).length) return true;
     if (polarViewportConnected(root) && nativePolarViewportChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
-    if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
+    return Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05;
+  };
+  const viewChanged = (root) => {
+    if (root._cfxStandaloneHierarchy?.rootId != null || viewportZoomed(root)) return true;
+    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
     return root.querySelector('.cfx-selected,.cfx-series-muted,[data-cfx-muted="true"]') !== null;
   };
   const syncResetControl = (root) => {
+    const zoomReset = root.querySelector('[data-cfx-zoom-reset]');
+    if (zoomReset) {
+      const zoomed = viewportZoomed(root);
+      if (!zoomed && root.getRootNode().activeElement === zoomReset) zoomReset.previousElementSibling?.focus();
+      zoomReset.hidden = !zoomed;
+    }
     const reset = root.querySelector('[data-cfx-reset]');
     if (!reset) return;
     const changed = viewChanged(root) || nativeSeriesVisibilityChanged(root) || nativePreparationBackpressureBusy(root);
@@ -105,10 +119,20 @@
   };
   const resetViewport = (root) => {
     suspendPointerReadout(root);
+    if (root._cfxStandaloneHierarchy?.rootId != null) navigateStandaloneHierarchy(root, null);
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     clearBrush(root);
     applyMode(root, '');
     syncResetControl(root);
+  };
+  // Toolbar reset restores only the data window; selection, legend and brush state stay with Reset view.
+  const emitViewportReset = root => {
+    emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+    emitSync(root, { action: 'viewport', state: getState(root), ...(standaloneViewport(root) ? { viewport: nativeViewportWindows(root, true) } : {}) });
+  };
+  const resetZoom = root => {
+    if (nativePreparationBinding(root, 'viewport')) { requestViewportReset(root); return; }
+    applyViewport(root, { zoom: 1, panX: 0, panY: 0 }); emitViewportReset(root);
   };
   const storeInteractionState = (root, snapshot) => {
     try {
@@ -124,7 +148,7 @@
       source: source || '',
       viewport: getState(root),
       ...(polarViewportConnected(root) ? { nativePolarViewport: nativePolarViewport(root) } : {}),
-      nativeViewport: polarViewportConnected(root) ? null : cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
+      nativeViewport: polarViewportConnected(root) ? null : cartesianViewportConnected(root) || standaloneViewport(root) ? nativeViewportWindows(root, true)
         : connectedXViewport(root) ? { x: nativeXWindow(root) } : null,
       nativeHierarchy: hierarchyConnected(root) ? hierarchySnapshot(root) : null,
       mode: root.dataset.cfxMode || '',
@@ -169,7 +193,7 @@
     if (!nativeAccepted && snapshot.nativeViewport) {
       const captured = copyHostValue(snapshot);
       const accepted = () => applyInteractionState(root, captured, emit, sync, true);
-      if (cartesianViewportConnected(root))
+      if (cartesianViewportConnected(root) || standaloneViewport(root))
         requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
       else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
         requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
@@ -206,6 +230,7 @@
   };
   const zoomBy = (root, factor, logicalX, logicalY) => {
     if (!hasFeature(root, 'Zoom')) return;
+    if (zoomStandaloneViewport(root, factor, logicalX, logicalY)) return;
     if (connectedXViewport(root)) {
       requestXViewportZoom(root, factor, logicalX, logicalY);
       return;

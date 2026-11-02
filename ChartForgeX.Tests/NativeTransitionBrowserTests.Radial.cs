@@ -41,7 +41,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal("80", observed.GetProperty("accepted").GetString()); Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength());
         Assert.Equal(initial, observed.GetProperty("before").GetString() == observed.GetProperty("revision").GetString());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=radial-point][data-cfx-observation-id=primary] [data-cfx-role=" + (donut ? "donut-slice" : "pie-slice") + "]", name + "-ink");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var download = await DownloadSvgAsync(page);
         var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted radial export is missing."); var exportedText = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exportedText); var exported = System.Xml.Linq.XDocument.Parse(exportedText);
         Assert.Equal("80", exported.Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "radial-point" && (string?)row.Attribute("data-cfx-observation-id") == "primary").Attribute("data-cfx-value")!.Value);
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
@@ -70,7 +70,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var accepted = await page.EvaluateAsync<JsonElement>("()=>({other:[...radial.root.querySelectorAll('[data-cfx-native-legend]')].find(node=>node.dataset.cfxPoint==='-1')?.dataset,points:[...radial.root.querySelectorAll('.cfx-stage>svg [data-cfx-role=radial-point]')].map(node=>({...node.dataset})),header:JSON.parse(radial.root.dataset.cfxPreparedChart)})");
         NativeRadialMotionBeforeControls.Save(name + ".accepted.json", accepted.GetRawText());
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } acceptedOutput) await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(acceptedOutput, name + ".accepted.png"), FullPage = true });
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var download = await DownloadSvgAsync(page);
         var file = await download.PathAsync() ?? throw new InvalidOperationException("Accepted Other export is missing.");
         var exportedText = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exportedText);
         var exported = System.Xml.Linq.XDocument.Parse(exportedText); Assert.Equal(2, exported.Descendants().Count(row => (string?)row.Attribute("data-cfx-role") == "radial-point"));

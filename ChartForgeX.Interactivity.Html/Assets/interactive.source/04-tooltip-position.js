@@ -126,7 +126,7 @@
       }
       for (const state of Array.from(activeTooltipPositions)) {
         if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
-        if (!tooltipPositionAvailable(state)) { hideTip(state.root, state.tip, true); continue; }
+        if (!tooltipPositionAvailable(state)) { clearUnavailableHover(state.root, state.node); hideTip(state.root, state.tip, true); continue; }
         state.paintChanged = false;
         placeTooltip(state, true);
       }
@@ -212,6 +212,14 @@
     return [anchor.left, anchor.top, anchor.width, anchor.height, stage.left, stage.top, stage.width, stage.height,
       tip.left, tip.top, tip.width, tip.height, bounds.left, bounds.top, bounds.right, bounds.bottom];
   };
+  const tooltipPlacements = state => {
+    const configured = state.root.dataset.cfxTooltipPlacements;
+    if (configured && configured !== 'auto') return configured.split(',');
+    const kind = (state.node.dataset.cfxKind || '').toLowerCase();
+    return /^(line|stepline|area|steparea|stackedarea|trendline|slope)$/.test(kind)
+      ? ['right', 'left', 'top', 'bottom', 'top-right', 'top-left', 'bottom-right', 'bottom-left']
+      : ['top-right', 'top-left', 'bottom-right', 'bottom-left', 'right', 'left'];
+  };
   const placeTooltip = (state, skipUnchanged = false) => {
     const { root, tip } = state, anchor = tooltipAnchorRect(state);
     const bounds = tooltipClippingBounds(state.placementClippingAncestors);
@@ -232,9 +240,9 @@
     const unit = tip.getBoundingClientRect();
 
     const scaleX = unit.left - origin.left || 1, scaleY = unit.top - origin.top || 1;
-    const gap = Number(root.dataset.cfxTooltipGap ?? 14);
+    const gap = Number(root.dataset.cfxTooltipGap ?? 12);
     const offsetX = Number(root.dataset.cfxTooltipOffsetX || 0), offsetY = Number(root.dataset.cfxTooltipOffsetY || 0);
-    const placements = (root.dataset.cfxTooltipPlacements || 'bottom-right').split(',');
+    const placements = tooltipPlacements(state);
     const candidates = placements.map(placement => {
       const [dx, dy] = tooltipDirections[placement] || tooltipDirections['bottom-right'];
       return {
@@ -242,10 +250,16 @@
         y: (dy > 0 ? anchor.bottom + gap : dy < 0 ? anchor.top - gap - unit.height : anchor.top + (anchor.height - unit.height) / 2) + offsetY
       };
     });
+    const constrain = candidate => ({
+      x: clamp(candidate.x, bounds.left + 8, Math.max(bounds.left + 8, bounds.right - unit.width - 8)),
+      y: clamp(candidate.y, bounds.top + 8, Math.max(bounds.top + 8, bounds.bottom - unit.height - 8))
+    });
     const position = candidates.find(candidate => candidate.x >= bounds.left + 8 && candidate.y >= bounds.top + 8
-      && candidate.x + unit.width <= bounds.right - 8 && candidate.y + unit.height <= bounds.bottom - 8) || candidates[0];
-    const x = clamp(position.x, bounds.left + 8, Math.max(bounds.left + 8, bounds.right - unit.width - 8));
-    const y = clamp(position.y, bounds.top + 8, Math.max(bounds.top + 8, bounds.bottom - unit.height - 8));
+      && candidate.x + unit.width <= bounds.right - 8 && candidate.y + unit.height <= bounds.bottom - 8)
+      || (root.dataset.cfxTooltipPlacements || 'auto') === 'auto' && candidates.map(constrain).find(candidate =>
+        candidate.x >= anchor.right + gap || candidate.x + unit.width <= anchor.left - gap
+        || candidate.y >= anchor.bottom + gap || candidate.y + unit.height <= anchor.top - gap) || candidates[0];
+    const { x, y } = constrain(position);
     tip.style.left = (x - origin.left) / scaleX + 'px';
     tip.style.top = (y - origin.top) / scaleY + 'px';
     state.style = tip.getAttribute('style');

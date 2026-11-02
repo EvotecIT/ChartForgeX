@@ -632,6 +632,12 @@
     background: Canvas;
     box-shadow: none;
   }
+
+  /* Forced colours drop elevation; a control's label shadow must not tint the focus ring beside it. */
+  .cfx-graph-command-rail .cfx-graph-tool[data-cfx-tooltip]::before,
+  .cfx-graph-command-menu > summary[data-cfx-tooltip]::before {
+    box-shadow: none;
+  }
 }
 
 .cfx-graph-neighborhood-navigation {

@@ -44,7 +44,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         Assert.Equal(0, await page.Locator("[data-cfx-point],[data-cfx-source-point]").CountAsync());
         await page.EvaluateAsync("() => { window.events = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxseries', event => window.events.push(event.detail)); }");
         await key.FocusAsync();
-        Assert.Equal(new[] { "Support", "Value", "6" }, (await TooltipTextAsync(page)).Split('\n'));
+        Assert.Equal(new[] { "Support", "Allocation", "Value", "6" }, (await TooltipTextAsync(page)).Split('\n'));
         var colors = await page.EvaluateAsync<string[]>("() => [getComputedStyle(document.querySelector('.cfx-tooltip__swatch')).backgroundColor, getComputedStyle(document.querySelector('[data-cfx-legend-target-id=\"north/support:A\"] [data-cfx-role=legend-swatch]')).fill]");
         Assert.Equal(colors[1], colors[0]);
         await page.Keyboard.PressAsync("Space");
@@ -54,6 +54,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         Assert.Equal(1, await page.Locator("[data-cfx-target-kind=node].cfx-series-muted").CountAsync());
         Assert.Equal(1, await page.Locator("[data-cfx-role=legend-item][data-cfx-muted=true]").CountAsync());
         await key.BlurAsync(); await MoveAwayAsync(page);
+        await SettlePresentationAsync(page);
         Assert.Equal(1, await EffectiveOpacity(page.Locator(Node("sibling"))));
         Assert.Equal(1, await EffectiveOpacity(page.Locator(Node("services"))));
         Assert.True(await EffectiveOpacity(page.Locator(Node(FirstId))) < .4);
@@ -64,6 +65,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         Assert.Equal(0, await page.Locator(".cfx-series-muted").CountAsync());
         await page.Keyboard.PressAsync("i");
         Assert.Equal("true", await key.GetAttributeAsync("data-cfx-isolated"));
+        await SettlePresentationAsync(page);
         Assert.Equal(1, await EffectiveOpacity(page.Locator(Node(FirstId))));
         Assert.Equal(1, await EffectiveOpacity(page.Locator(Node("services"))));
         Assert.True(await EffectiveOpacity(page.Locator(Node("sibling"))) < .2);
@@ -99,6 +101,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         Assert.Equal(0, await roots.Nth(2).Locator(".cfx-series-muted").CountAsync());
         await page.Keyboard.PressAsync("Space"); await page.Keyboard.PressAsync("i");
         Assert.Equal("true", await renamed.GetAttributeAsync("data-cfx-isolated"));
+        await SettlePresentationAsync(page);
         Assert.Equal(1, await EffectiveOpacity(roots.Nth(1).Locator(Node(FirstId))));
         Assert.True(await EffectiveOpacity(roots.Nth(1).Locator(Node("sibling"))) < .2);
         Assert.Equal(0, await roots.Nth(2).Locator(".cfx-series-isolated-out").CountAsync());
@@ -139,9 +142,10 @@ public sealed class InteractiveTreemapLegendBrowserTests {
             var node = session.Page.Locator(Node(id)); var key = session.Page.Locator(Key(id));
             Assert.Equal(0, await node.Locator("rect,path,circle").CountAsync());
             var raw = await node.GetAttributeAsync("data-cfx-value");
+            Assert.Equal(id == "tiny" ? "1E-310" : "0", raw);
             Assert.Equal(raw, await key.GetAttributeAsync("data-cfx-value"));
             await key.FocusAsync();
-            Assert.Equal(new[] { id == "tiny" ? "Tiny" : "Zero", "Value", raw }, (await TooltipTextAsync(session.Page)).Split('\n'));
+            Assert.Equal(new[] { id == "tiny" ? "Tiny" : "Zero", "Sizes", "Value", raw }, (await TooltipTextAsync(session.Page)).Split('\n'));
         }
         Assert.NotEqual("0", await session.Page.Locator(Key("tiny")).GetAttributeAsync("data-cfx-value"));
         await Capture(session.Page, html, "leaf-legend-small-values-" + dark);
@@ -204,7 +208,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
             await AssertCssColorsEqualAsync(page, expected, await tile.EvaluateAsync<string>("node => getComputedStyle(node).fill"));
             await AssertCssColorsEqualAsync(page, expected, await key.Locator("[data-cfx-role=legend-swatch]").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
             await key.FocusAsync();
-            await AssertCssColorsEqualAsync(page, expected, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+            await AssertCssColorsEqualAsync(page, expected, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         }
         await Capture(page, html, "leaf-legend-host-palette-" + width + "-" + dark);
         AssertNoConsoleErrors(session);

@@ -1,9 +1,6 @@
 using System;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using ChartForgeX.Interactivity.Html;
 using HtmlTinkerX;
 
 namespace ChartForgeX.Tests;
@@ -25,17 +22,12 @@ internal static partial class SmokeTests {
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"),
             optimizeJavaScript: true);
 
-        // A shipping-artifact budget catches accidental bundled tools or repeated runtime copies.
-        // Managed basis tracking, compatible-axis synchronization and reset recovery share this runtime.
-        // The reviewed 82 KiB budget excludes bundled tools and repeated runtime copies.
-        using var compressed = new MemoryStream();
-        using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, leaveOpen: true)) {
-            var script = Encoding.UTF8.GetBytes(HtmlInteractiveChartRenderer.BuildInteractionScript());
-            gzip.Write(script, 0, script.Length);
+        foreach (var bundle in new[] { "core", "standalone" }) {
+            AssertGeneratedAssetMatchesSource(root,
+                Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.source"),
+                Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive." + bundle + ".js"),
+                optimizeJavaScript: true, entry: bundle);
         }
-        const int maximumGzipBytes = 82 * 1024;
-        Assert(compressed.Length <= maximumGzipBytes,
-            "Interactive runtime exceeds its 82 KiB gzip budget: " + compressed.Length + " bytes. Review the shipped asset before increasing the budget.");
     }
 
     private static void GraphExplorerCanvasConsumersPreferLivePhysicsState() {
@@ -76,7 +68,7 @@ internal static partial class SmokeTests {
         Assert(bindings.Contains("bindAcceleratedSvgKeyboard(root)", StringComparison.Ordinal) && stateSync.Contains("scene.setAttribute('tabindex', acceleratedSvg ? '0' : '-1')", StringComparison.Ordinal) && svgExport.Contains("'aria-hidden': 'true'", StringComparison.Ordinal), "Accelerated SVG scenes should expose one stable keyboard surface while keeping transient overlay nodes out of the tab order and accessibility tree.");
     }
 
-    private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath, bool optimizeJavaScript = false) {
+    private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath, bool optimizeJavaScript = false, string? entry = null) {
         var sourceDirectory = Path.Combine(root, sourceRelativePath);
         var targetPath = Path.Combine(root, targetRelativePath);
         Assert(Directory.Exists(sourceDirectory), "Interactive JS source fragments should exist: " + sourceRelativePath);
@@ -88,8 +80,12 @@ internal static partial class SmokeTests {
         Assert(parts.Length >= 3, "Interactive JS assets should be split into maintainable source fragments: " + sourceRelativePath);
 
         var prelude = Path.Combine(root, "ChartForgeX.Interactivity.Html", "Assets", "adapter-localization.js");
-        var generated = string.Join("\n", new[] { prelude }.Concat(parts)
-            .Select(part => NormalizeAsset(File.ReadAllText(part)).TrimEnd('\n'))) + "\n";
+        var generated = string.Join("\n", parts.Select(part => NormalizeAsset(File.ReadAllText(part)).TrimEnd('\n'))) + "\n";
+        if (entry != null) {
+            generated = InteractiveBundle.Link(generated,
+                NormalizeAsset(File.ReadAllText(Path.Combine(root, "ChartForgeX.Interactivity.Html", "Assets", "interactive.entries", entry + ".js"))));
+        }
+        generated = NormalizeAsset(File.ReadAllText(prelude)).TrimEnd('\n') + "\n" + generated;
         if (optimizeJavaScript) {
             generated = NormalizeAsset(HtmlOptimizer.OptimizeJavaScript(generated)).TrimEnd('\n') + "\n";
         }

@@ -39,7 +39,7 @@ public sealed class RadialAngularReversalBrowserTests {
         var sourceId = $"series-{series}-point-{point}";
         var role = kind == ChartSeriesKind.PolarArea ? "polar-area-point-source" : kind == ChartSeriesKind.Polar ? "polar-point-source" : "radar-point-source";
         var selector = $"[data-cfx-role='{role}'][data-cfx-source-id='{sourceId}']";
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), compact ? 390 : 880, compact ? 560 : 600);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), compact ? 390 : 880, compact ? 560 : 600);
         var page = session.Page; var target = page.Locator(selector);
         await page.EvaluateAsync("() => { window.angularSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.angularSelections.push(event.detail)); }");
         await target.ScrollIntoViewIfNeededAsync();

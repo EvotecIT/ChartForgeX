@@ -33,10 +33,11 @@ public sealed class NumericRadialBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), compact ? 390 : 880, compact ? 460 : 560);
         var page = session.Page;
         await page.EvaluateAsync("() => { window.cfxSelections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.cfxSelections.push(event.detail)); }");
-        var screen = await page.EvaluateAsync<double[]>("point => { const svg = document.querySelector('.cfx-interactive-chart svg'); const p = svg.createSVGPoint(); p.x=point.x; p.y=point.y; const screen=p.matrixTransform(svg.getScreenCTM()); return [screen.x,screen.y]; }",
+        var screen = await page.EvaluateAsync<double[]>("point => { const svg = document.querySelector('.cfx-stage > svg'); const p = svg.createSVGPoint(); p.x=point.x; p.y=point.y; const screen=p.matrixTransform(svg.getScreenCTM()); return [screen.x,screen.y]; }",
             new { x = mark.Cx + Math.Cos(angle) * radius, y = mark.Cy + Math.Sin(angle) * radius });
         await page.Mouse.MoveAsync((float)screen[0], (float)screen[1], new MouseMoveOptions { Steps = 4 });
         Assert.Matches("1,?200", await TooltipTextAsync(page));
+        Assert.Equal("Requests", await page.Locator(".cfx-tooltip__secondary").InnerTextAsync());
         Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
         var empty = await page.EvaluateAsync<double[]>("point => { const svg=document.querySelector('.cfx-stage svg'); const p=svg.createSVGPoint(); p.x=point.x; p.y=point.y; const screen=p.matrixTransform(svg.getScreenCTM()); return [screen.x,screen.y]; }", new { x = mark.Cx, y = mark.Cy });
         await page.Mouse.MoveAsync((float)empty[0], (float)empty[1]);

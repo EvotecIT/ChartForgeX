@@ -53,7 +53,8 @@
       failed: () => { root._cfxHierarchyError = uiText(root, 'HierarchyFailed', 'The hierarchy view could not be updated.'); syncHierarchyNavigation(root); }
     });
   };
-  const activateHierarchyTarget = (root, node) => hierarchyConnected(root) && node.dataset.cfxLeaf === 'false'
+  const activateHierarchyTarget = (root, node) => !nativePreparationBinding(root, 'hierarchy') && node.dataset.cfxLeaf === 'false'
+    && navigateStandaloneHierarchy(root, node.dataset.cfxNode) || hierarchyConnected(root) && node.dataset.cfxLeaf === 'false'
     && (capturedHierarchy(root)?.kind === 'topology' ? toggleTopologyHierarchy(root, node.dataset.cfxTargetId)
       : node.dataset.cfxTargetId !== capturedHierarchy(root).rootId && requestNativeHierarchy(root, { rootId: node.dataset.cfxTargetId }));
   const bindHierarchyNavigation = root => {

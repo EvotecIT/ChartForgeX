@@ -9,7 +9,6 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     [InlineData("xy-missing-projections")]
     [InlineData("legacy-unsupported")]
     [InlineData("legacy-empty")]
-    [InlineData("disconnected")]
     [InlineData("xy-to-legacy")]
     public async Task NativeBookmarksCannotPartiallyApplyWhenTheirCompleteWindowCannotStart(string capability) {
         if (!Enabled) return;
@@ -38,7 +37,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 window.controlled=[];
                 const callback=(request,signal)=>new Promise((resolve,reject)=>controlled.push({request,signal,resolve,reject}));
                 if(capability==='xy-missing-projections')chartController.connectViewport(callback,{axes:['x','y']});
-                else chartController.connectXViewport(capability==='disconnected'?null:callback);
+                else chartController.connectXViewport(callback);
                 chartController.update(html);
                 const root=chartController.root;
                 root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{emit:false,sync:false,snapshot:{
@@ -73,27 +72,57 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     }
 
     [BrowserFact]
-    public async Task GeometricOnlyBookmarksStillApplyWithoutANativeConnection() {
+    public async Task CapturedNativeBookmarksRestoreStandaloneDomainScenarioAndSelectionWithoutACallback() {
         if (!Enabled) return;
         var host = new NativeHost(scenarios: true);
         await using var session = await OpenAsync(host.Page(), 980, 720);
-        var page = session.Page; await ControlledConnectionAsync(page);
+        var page = session.Page; await ConnectAsync(page, host);
+        await page.EvaluateAsync("()=>chartController.setXWindow(2,10)"); await WaitForChangesAsync(page, 1);
+        await page.Locator(Middle).FocusAsync(); await page.Keyboard.PressAsync("Space");
         await page.EvaluateAsync("""
             ()=>{
-                chartController.connectXViewport(null);window.geometricApplied=0;
-                const root=chartController.root;root.addEventListener('cfxstateapplied',()=>geometricApplied++);
-                root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{sync:false,snapshot:{viewport:{zoom:2,panX:25,panY:15},
-                    mode:'pan',scenario:{id:'review',stepIndex:'0',playback:'paused'},selectedTargets:[]}}}));
+                const root=chartController.root;
+                root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{emit:false,sync:false,snapshot:{mode:'pan',
+                    scenario:{id:'review',stepIndex:'0',playback:'paused'},selectedTargets:chartController.getSelection()}}}));
+                root.dispatchEvent(new CustomEvent('cfx-capture-state',{detail:{source:'native-bookmark',sync:false}}));
+                window.disconnectedBookmark=JSON.parse(root.dataset.cfxInteractionSnapshot);
+                chartController.connectXViewport(null);
             }
             """);
-        Assert.Equal(1, await page.EvaluateAsync<int>("()=>geometricApplied"));
-        Assert.Equal("2.000", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
-        Assert.Equal("25.0", await page.Locator(Root).GetAttributeAsync("data-cfx-pan-x"));
-        Assert.Equal("15.0", await page.Locator(Root).GetAttributeAsync("data-cfx-pan-y"));
+        await page.EvaluateAsync("html=>chartController.update(html)", host.Initial);
+        await page.EvaluateAsync("""
+            ()=>chartController.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{emit:false,sync:false,
+                snapshot:{mode:'',scenario:{id:''},selectedTargets:[]}}}))
+            """);
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 0, 12);
+        Assert.Empty(await page.EvaluateAsync<JsonElement[]>("()=>chartController.getSelection()"));
+        Assert.Equal("", await page.Locator(Root).GetAttributeAsync("data-cfx-mode"));
+        Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-active-scenario"));
+        var initialGeometry = await StandaloneGeometryAsync(page);
+        await page.EvaluateAsync("""
+            ()=>{const root=chartController.root;window.standaloneBookmarkCommits=[];window.standaloneBookmarkSync=0;
+                root.addEventListener('cfxstateapplied',()=>standaloneBookmarkCommits.push({window:chartController.getXWindow(),
+                    mode:root.dataset.cfxMode,scenario:root.dataset.cfxActiveScenario,selection:chartController.getSelection()}));
+                root.addEventListener('cfxsync',()=>standaloneBookmarkSync++);
+                root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{sync:false,snapshot:disconnectedBookmark}}));}
+            """);
+        var receipt = Assert.Single((await page.EvaluateAsync<JsonElement>("()=>standaloneBookmarkCommits")).EnumerateArray());
+        AssertWindow(receipt.GetProperty("window"), 2, 10);
+        Assert.Equal("pan", receipt.GetProperty("mode").GetString());
+        Assert.Equal("review", receipt.GetProperty("scenario").GetString());
+        Assert.Single(receipt.GetProperty("selection").EnumerateArray());
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 10);
+        AssertStandaloneGeometry(initialGeometry, await StandaloneGeometryAsync(page), 2, 10);
         Assert.Equal("pan", await page.Locator(Root).GetAttributeAsync("data-cfx-mode"));
         Assert.Equal("review", await page.Locator(Root).GetAttributeAsync("data-cfx-active-scenario"));
-        Assert.Empty(await page.EvaluateAsync<JsonElement[]>("()=>controlled.map(item=>item.request)"));
-        await CaptureAsync(page, "bookmark-geometric-only");
+        Assert.Equal("0", await page.Locator(Root).GetAttributeAsync("data-cfx-active-scenario-step"));
+        Assert.Equal("paused", await page.Locator(Root).GetAttributeAsync("data-cfx-scenario-playback"));
+        Assert.Equal("true", await page.Locator(Middle).GetAttributeAsync("aria-selected"));
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeRequests.length"));
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
+        Assert.Equal(0, await page.EvaluateAsync<int>("()=>standaloneBookmarkSync"));
+        Assert.Equal(2, host.PreparedCount);
+        await CaptureAsync(page, "bookmark-standalone-source-window");
         AssertNoConsoleErrors(session);
     }
 }

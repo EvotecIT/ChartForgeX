@@ -48,6 +48,7 @@ public sealed class MapPeriodicRouteCopyBrowserTests {
                 return defects;
             }
             """);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export='svg']").ClickAsync());
         var svgPath = await svgDownload.PathAsync() ?? throw new InvalidOperationException("No periodic map SVG download.");
         var svg = XDocument.Parse(await File.ReadAllTextAsync(svgPath));
@@ -55,6 +56,7 @@ public sealed class MapPeriodicRouteCopyBrowserTests {
         Assert.Equal(2, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "dotted-map-connector"));
         Assert.Equal(1, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "dotted-map-connector-label-source"));
         Assert.Equal(4, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "dotted-map-point-source"));
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var pngDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export='png']").ClickAsync());
         var pngPath = await pngDownload.PathAsync() ?? throw new InvalidOperationException("No periodic map PNG download.");
         var image = RasterImageDecoder.Decode(await File.ReadAllBytesAsync(pngPath)); Assert.Equal(width, image.Width); Assert.Equal(360, image.Height);

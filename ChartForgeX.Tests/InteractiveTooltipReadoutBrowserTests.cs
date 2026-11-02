@@ -43,9 +43,12 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         Assert.DoesNotContain("Role", rows);
         Assert.DoesNotContain("Point", rows);
         Assert.DoesNotContain("Kind", rows);
-        var valueLabel = family == "scatter" ? "Y" : "Value";
-        var valueRow = page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = valueLabel }).Locator("+ dd");
+        Assert.DoesNotContain("Series", rows);
+        Assert.DoesNotContain("X", rows);
+        var valueRow = page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd");
         Assert.Equal(family is "scatter" or "gauge" ? "0" : "7", await valueRow.InnerTextAsync());
+        var seriesName = family == "scatter" ? "Observed" : family == "gauge" ? "Capacity" : "Requests";
+        Assert.Contains(seriesName, await page.Locator(".cfx-tooltip__title:visible, .cfx-tooltip__secondary:visible").AllTextContentsAsync());
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         var name = "tooltip-readout-" + family + "-" + (dark ? "dark-compact" : "light-wide");
         if (!string.IsNullOrWhiteSpace(capture)) {
@@ -128,8 +131,13 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         }
         Assert.True(await target.EvaluateAsync<bool>("node => node === document.activeElement"),
             await target.EvaluateAsync<string>("node => JSON.stringify({ role: node.dataset.cfxRole, source: node.dataset.cfxSourceId, target: node.dataset.cfxTargetId, component: node.dataset.cfxKeyboardComponent, tabindex: node.getAttribute('tabindex') })"));
-        var displayed = await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Percent" }).Locator("+ dd").InnerTextAsync();
+        var percentLabel = family == "sunburst" ? "% of total" : "Percent";
+        var displayed = await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = percentLabel }).Locator("+ dd").InnerTextAsync();
         Assert.Equal(expected, displayed);
+        if (family == "sunburst") {
+            Assert.Equal("Teams › Support", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+            Assert.Equal(expected, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "% of parent" }).Locator("+ dd").InnerTextAsync());
+        }
         if (gauge) await AssertScalarSwatchAsync(page, target, family == "gauge-needle" ? "gauge-needle" : "gauge-value", family == "gauge-needle" ? "stroke" : "fill");
         if (family == "pie") {
             var title = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
@@ -173,6 +181,9 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         await page.EvaluateAsync("() => { const root = document.querySelector('.cfx-interactive-chart'); root.addEventListener('cfxselect', event => window.circleSelection = event.detail.target); root.addEventListener('cfxhover', event => window.circleHover = event.detail.target); }");
         await page.Locator("#before-chart").FocusAsync();
         await page.Keyboard.PressAsync("Tab");
+        Assert.Equal("legend", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxKeyboardComponent"));
+        Assert.Equal("Capacity", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        await page.Keyboard.PressAsync("Tab");
         Assert.True(await target.EvaluateAsync<bool>("node => node === document.activeElement"));
         Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component='data'][tabindex='0']").CountAsync());
         Assert.Equal("61.54%", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Percent" }).Locator("+ dd").InnerTextAsync());
@@ -212,6 +223,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         var empty = await CircleLocationAsync(target, true);
         Assert.True(await page.EvaluateAsync<bool>("position => !document.elementFromPoint(...position)?.closest('[data-cfx-target-kind=\"series\"][data-cfx-value]')", empty));
         await page.Mouse.MoveAsync((float)empty[0], (float)empty[1]);
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.Null(await root.GetAttributeAsync("data-cfx-hover-key"));
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
@@ -224,6 +236,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         center = await CircleLocationAsync(target, false);
         await page.Mouse.MoveAsync((float)center[0], (float)center[1]);
         await CaptureCircleAsync(page, dark, "muted");
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.Null(await root.GetAttributeAsync("data-cfx-hover-key"));
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
@@ -234,6 +247,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         await target.EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
         center = await CircleLocationAsync(target, false);
         await page.Mouse.MoveAsync((float)center[0], (float)center[1]);
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.Null(await root.GetAttributeAsync("data-cfx-hover-key"));
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
@@ -257,7 +271,8 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
 
     private static async Task AssertScalarSwatchAsync(IPage page, ILocator target, string role, string paint) {
         var native = await target.Locator("[data-cfx-role='" + role + "']").First.EvaluateAsync<string>("(node, property) => getComputedStyle(node)[property]", paint);
-        Assert.Equal(native, await page.Locator(".cfx-tooltip__title .cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        Assert.Equal(native, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" })
+            .Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
     }
 
     private static async Task CaptureCircleAsync(IPage page, bool dark, string state) {

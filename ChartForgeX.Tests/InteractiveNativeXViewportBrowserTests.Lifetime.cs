@@ -15,6 +15,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         var middle = host.Window(2, 8); var stale = host.Window(3, 9); var narrow = host.Window(4, 6);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("()=>controlled.length===2");
@@ -47,6 +48,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         var window = host.Window(2, 8);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await page.EvaluateAsync("""
             ({action,initial})=>{
@@ -84,6 +86,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         var before = await SceneAsync(page);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await page.EvaluateAsync("""
             ({failure,html})=>{
@@ -105,6 +108,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
         await page.Locator(Middle).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Middle).GetAttributeAsync("aria-selected"));
+        await page.Locator(Root).HoverAsync();
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The retained scene cannot export.");
         Assert.Contains("sample-0", await File.ReadAllTextAsync(path));
@@ -132,34 +136,73 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal("1.000", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
         await page.EvaluateAsync("html=>chartController.update(html)", host.Initial);
         Assert.False(await page.Locator("[data-cfx-zoom=in]").IsDisabledAsync());
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await CaptureAsync(page, "capability-" + empty);
         AssertNoConsoleErrors(session);
     }
 
     [BrowserFact]
-    public async Task StandaloneControlsKeepGeometricZoomAndDisconnectDoesNotPretendToResetANativeDomain() {
+    public async Task StandaloneControlsRetickDataAndResetToTheSceneCapturedAtDisconnect() {
         if (!Enabled) return;
         var host = new NativeHost();
         await using var session = await OpenAsync(host.Page(), 980, 680);
         var page = session.Page;
         await page.EvaluateAsync("()=>window.chartController=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart'))");
         var initial = await SceneAsync(page);
+        var initialGeometry = await StandaloneGeometryAsync(page);
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
-        Assert.Equal("1.250", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
-        Assert.Equal(initial.GetProperty("xLabels").GetRawText(), (await SceneAsync(page)).GetProperty("xLabels").GetRawText());
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 1.2, 10.8);
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()"), 0, 100);
+        Assert.NotEqual(initial.GetProperty("xLabels").GetRawText(), (await SceneAsync(page)).GetProperty("xLabels").GetRawText());
+        AssertStandaloneGeometry(initialGeometry, await StandaloneGeometryAsync(page), 1.2, 10.8);
         await page.Locator("[data-cfx-reset]").ClickAsync();
-        Assert.Equal("1.000", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 0, 12);
+        AssertStandaloneGeometry(initialGeometry, await StandaloneGeometryAsync(page), 0, 12);
         await ControlledConnectionAsync(page);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
         await page.EvaluateAsync("html=>controlled[0].resolve(html)", host.Window(2, 8)); await WaitForChangesAsync(page, 1);
         await page.EvaluateAsync("()=>chartController.connectXViewport(null)");
         Assert.True(await page.Locator("[data-cfx-reset]").EvaluateAsync<bool>("button=>button.hidden"));
+        var disconnectedGeometry = await StandaloneGeometryAsync(page);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
-        Assert.Equal("1.250", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
-        Assert.Equal(2, (await SceneAsync(page)).GetProperty("projection").GetProperty("minimum").GetDouble());
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2.6, 7.4);
+        AssertStandaloneGeometry(disconnectedGeometry, await StandaloneGeometryAsync(page), 2.6, 7.4);
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>controlled.length"));
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeChanges.length"));
+        Assert.True(await page.Locator("[data-cfx-reset]").IsVisibleAsync());
+        await page.Locator("[data-cfx-reset]").ClickAsync();
+        AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 2, 8);
+        AssertStandaloneGeometry(disconnectedGeometry, await StandaloneGeometryAsync(page), 2, 8);
+        Assert.True(await page.Locator("[data-cfx-reset]").IsHiddenAsync());
         await CaptureAsync(page, "standalone");
         AssertNoConsoleErrors(session);
+    }
+
+    private static Task<JsonElement> StandaloneGeometryAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+        ()=>{const root=chartController.root,stage=root.querySelector('.cfx-stage'),svg=stage.querySelector('svg'),
+            view=svg.viewBox.baseVal,frame=svg.getBoundingClientRect(),stageBox=stage.getBoundingClientRect(),
+            point=root.querySelector('g[data-cfx-role=point][data-cfx-observation-id=sample-3]'),
+            paint=point.querySelector('.cfx-prepared-point-marker'),box=paint.getBoundingClientRect(),
+            plot=JSON.parse(root.dataset.cfxPreparedChart).xProjection.plotBounds;
+            return{frame:{width:frame.width,height:frame.height,stageWidth:stageBox.width,stageHeight:stageBox.height,
+                viewBox:svg.getAttribute('viewBox'),transform:getComputedStyle(stage).transform},plot,
+                mark:{x:view.x+(box.left+box.width/2-frame.left)*view.width/frame.width,
+                    y:view.y+(box.top+box.height/2-frame.top)*view.height/frame.height,
+                    width:box.width*view.width/frame.width,height:box.height*view.height/frame.height}};}
+        """);
+
+    private static void AssertStandaloneGeometry(JsonElement before, JsonElement after, double minimum, double maximum, bool reversed = false) {
+        Assert.Equal(before.GetProperty("frame").GetRawText(), after.GetProperty("frame").GetRawText());
+        var plot = after.GetProperty("plot");
+        var ratio = (3 - minimum) / (maximum - minimum);
+        var expectedX = plot.GetProperty("x").GetDouble() + (reversed ? 1 - ratio : ratio) * plot.GetProperty("width").GetDouble();
+        Assert.InRange(after.GetProperty("mark").GetProperty("x").GetDouble(), expectedX - .03, expectedX + .03);
+        foreach (var field in new[] { "y", "width", "height" }) {
+            var expected = before.GetProperty("mark").GetProperty(field).GetDouble();
+            Assert.InRange(after.GetProperty("mark").GetProperty(field).GetDouble(), expected - .03, expected + .03);
+        }
     }
 
     private static Task ControlledConnectionAsync(IPage page) => page.EvaluateAsync("""

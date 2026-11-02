@@ -4,6 +4,7 @@
     const existing = root && chartLifetimes.get(root);
     if (existing && !root.isConnected) { existing.controller.dispose(); throw new TypeError('Mount: connected section required.'); }
     if (existing && !existing.disposed) return existing.controller;
+    root?.[Symbol.for('ChartForgeX.chartRuntime')]?.dispose();
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount: connected section required.');
     const lifetime = { cleanups: new Set(), disposed: false, controller: null, preparationConnections: {},
@@ -23,6 +24,14 @@
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },
+      setTooltipRenderer: renderer => {
+        requireMounted();
+        if (renderer !== null && typeof renderer !== 'function') throw new TypeError('Tooltip renderer must be a function or null.');
+        if (renderer === null) delete root.cfxTooltipRenderer; else root.cfxTooltipRenderer = renderer;
+        return controller;
+      },
+      exportData: (format, options = {}) => { requireMounted(); return options.copy ? copyChartData(root, format) : exportChartData(root, format); },
+      setContextMenuItems: items => { requireMounted(); lifetime.contextMenuItems = captureContextMenuItems(items); return controller; },
       update: (section, options = {}) => {
         requireMounted();
         const motion = captureChartUpdateMotion(options.motion);

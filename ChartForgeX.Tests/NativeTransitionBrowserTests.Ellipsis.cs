@@ -42,7 +42,7 @@ public sealed partial class NativeTransitionBrowserTests {
         var caption = Assert.Single(observed.GetProperty("texts").EnumerateArray()).GetString() ?? throw new InvalidOperationException("Native caption observation missing."); Assert.EndsWith("…", caption); Assert.NotEqual("…", caption);
         Assert.StartsWith(caption[..^1], observed.GetProperty("full").GetString()!);
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-node=leaf-a] [data-cfx-role=treemap-tile-mark]", name + "-ink");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var path = await download.PathAsync() ?? throw new InvalidOperationException("Accepted Ellipsis export missing.");
+        var download = await DownloadSvgAsync(page); var path = await download.PathAsync() ?? throw new InvalidOperationException("Accepted Ellipsis export missing.");
         var exportedText = await File.ReadAllTextAsync(path); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exportedText); var exported = System.Xml.Linq.XDocument.Parse(exportedText);
         Assert.Equal("40", exported.Descendants().Single(row => (string?)row.Attribute("data-cfx-node") == "leaf-a").Attribute("data-cfx-authored-value")!.Value);
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());

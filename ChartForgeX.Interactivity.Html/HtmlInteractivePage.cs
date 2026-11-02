@@ -26,15 +26,18 @@ internal static class HtmlInteractivePage {
         return writer;
     }
 
-    internal static void EndDocument(HtmlMarkupWriter writer, string? scriptNonce, HtmlAssetReferences? assets = null) {
+    internal static void EndDocument(HtmlMarkupWriter writer, string? scriptNonce, HtmlAssetReferences? assets = null,
+        HtmlChartRuntime runtime = HtmlChartRuntime.Full,
+        ChartForgeX.Interactivity.ChartInteractionFeatures features = ChartForgeX.Interactivity.ChartInteractionFeatures.ReportReview,
+        bool adaptive = false) {
         if (assets == null) {
             writer.StartElement("script")
                 .Attribute("nonce", scriptNonce)
                 .EndStartElement()
-                .RawTrusted(HtmlInteractiveAssets.Script)
+                .RawTrusted(HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive))
                 .EndElement();
         } else {
-            HtmlInteractiveAssetFiles.WriteScript(writer, assets, HtmlInteractiveAssetFiles.ChartScript, scriptNonce);
+            HtmlInteractiveAssetFiles.WriteScript(writer, assets, HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features, adaptive), scriptNonce);
         }
 
         writer.Line()

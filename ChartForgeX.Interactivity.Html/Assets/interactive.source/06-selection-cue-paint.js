@@ -22,7 +22,7 @@
     let cache = root._cfxSelectionCuePaint;
     if (!cache && !root.hasAttribute('data-cfx-has-selection') && !root._cfxHostHighlight) return;
     cache ||= root._cfxSelectionCuePaint = new Map();
-    const desired = new Set(), styles = new Map();
+    const desired = new Set(), styles = new Map(), updates = [];
     for (const node of nodes || dataTargets(root)) {
       const selected = node.classList.contains('cfx-selected');
       if ((!selected && !node.classList.contains('cfx-highlighted')) || !pointerTargetPaint(node, styles)) continue;
@@ -40,37 +40,44 @@
         if (!seen) geometryByParent.set(source.parentNode, seen = new Set());
         if (seen.has(signature)) continue;
         seen.add(signature); desired.add(source); geometricCue = true;
-        let paint = cache.get(source);
-        if (!paint || paint.parentNode !== source.parentNode) {
-          paint?.remove(); paint = createSelectionCuePaint(image?'rect':source.localName);
-          source.parentNode.insertBefore(paint, source); cache.set(source, paint);
-        }
         const native = paintStyle(source, styles), width = image ? 0 : parseFloat(native.strokeWidth) || 0;
-        styleSelectionCuePaint(paint, selected, width);
-        for (const shape of paint.children) {
-          for (const key of stateCueGeometry) {
-            const value = image&&['x','y','width','height'].includes(key)?String(bounds[key]):source.getAttribute(key);
-            if (value === null) { if (shape.hasAttribute(key)) shape.removeAttribute(key); }
-            else if (shape.getAttribute(key) !== value) shape.setAttribute(key, value);
+        const geometry = stateCueGeometry.map(key => [key, image&&['x','y','width','height'].includes(key)?String(bounds[key]):source.getAttribute(key)]);
+        const stroke = ['stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin'].map(key => [key, native.getPropertyValue(key)]);
+        updates.push(() => {
+          let paint = cache.get(source);
+          if (!paint || paint.parentNode !== source.parentNode) {
+            paint?.remove(); paint = createSelectionCuePaint(image?'rect':source.localName);
+            source.parentNode.insertBefore(paint, source); cache.set(source, paint);
           }
-          for (const key of ['stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin'])
-            stateCueStyle(shape, key, native.getPropertyValue(key));
-        }
+          styleSelectionCuePaint(paint, selected, width);
+          for (const shape of paint.children) {
+            for (const [key, value] of geometry) {
+              if (value === null) { if (shape.hasAttribute(key)) shape.removeAttribute(key); }
+              else if (shape.getAttribute(key) !== value) shape.setAttribute(key, value);
+            }
+            for (const [key, value] of stroke) stateCueStyle(shape, key, value);
+          }
+        });
       }
       if (!geometricCue) {
         const text = primaryTextPaint(node, false, styles)?.textNode;
         const footprint = text && interactionOutlineFootprint(text);
         if (footprint) {
           desired.add(node);
-          let paint = cache.get(node);
-          if (!paint || paint.parentNode !== footprint.svg) {
-            paint?.remove(); paint = createSelectionCuePaint('path');
-            paint.setAttribute('data-cfx-state-footprint', ''); footprint.svg.appendChild(paint); cache.set(node, paint);
-          }
-          styleSelectionCuePaint(paint, selected, 0);
-          for (const shape of paint.children) if (shape.getAttribute('d') !== footprint.path) shape.setAttribute('d', footprint.path);
+          updates.push(() => {
+            let paint = cache.get(node);
+            if (!paint || paint.parentNode !== footprint.svg) {
+              paint?.remove(); paint = createSelectionCuePaint('path');
+              paint.setAttribute('data-cfx-state-footprint', ''); footprint.svg.appendChild(paint); cache.set(node, paint);
+            }
+            styleSelectionCuePaint(paint, selected, 0);
+            for (const shape of paint.children) if (shape.getAttribute('d') !== footprint.path) shape.setAttribute('d', footprint.path);
+          });
         }
       }
     }
+    // Measure every native mark before changing SVG paint, so a dense selection
+    // does not force a fresh style/layout calculation for each observation.
+    updates.forEach(apply => apply());
     for (const [source, paint] of cache) if (!desired.has(source)) { paint.remove(); cache.delete(source); }
   };

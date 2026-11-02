@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserFact]
-    public async Task ClosedShadowNativeViewportTransitionDismissesFullyClippedPin() {
+    public async Task ClosedShadowHostTransformTransitionDismissesFullyClippedPin() {
         if (!Enabled) return;
         var html = StatusLines(true).ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
@@ -29,7 +29,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             selector => {
                 const root = window.positionFocusChart, node = root.querySelector(selector);
                 const svg = root.querySelector('.cfx-stage svg'), stage = root.querySelector('.cfx-stage');
-                svg.style.transitionDuration = '4s';
+                svg.style.transition = 'transform 4s linear';
                 window.transitionSource = node;
                 window.transitionEvents = {native:0, document:0, run:0};
                 window.transitionTrees = [];
@@ -88,8 +88,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.EvaluateAsync("""
             () => {
                 const root = window.positionFocusChart, b = transitionSource.getBoundingClientRect(), clip = root.querySelector('.cfx-stage').getBoundingClientRect();
-                // A real built-in transform transition ends just beyond the clip; extending only its duration makes the partial interval observable.
-                root.dispatchEvent(new CustomEvent('cfx-apply-state', {detail:{snapshot:{viewport:{zoom:1,panX:clip.left-b.right-3,panY:0}}}}));
+                // Hosts can transform an embedded chart independently of its data windows.
+                root.querySelector('.cfx-stage svg').style.transform='translateX('+(clip.left-b.right-3)+'px)';
             }
             """);
         await ScrollSettledAsync(page);

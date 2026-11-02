@@ -63,7 +63,7 @@ public sealed class InteractiveKeyboardFocusRecoveryBrowserTests {
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("false", await root.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         await AssertFocusedAsync(root.Locator(Legend(0)));
-        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Tab");
         await AssertFocusedAsync(root.Locator(Point(0, 0)));
         await page.Keyboard.PressAsync("ArrowRight");
         await AssertFocusedAsync(root.Locator(Point(0, 1)));

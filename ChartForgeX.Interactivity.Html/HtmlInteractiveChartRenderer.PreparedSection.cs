@@ -64,10 +64,11 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-brush-axis", options.Interaction.BrushAxis.ToString().ToLowerInvariant())
             .Attribute("data-cfx-dim-others-selected", options.Highlight.DimOthersWhileSelected ? "true" : "false")
             .Attribute("data-cfx-pin-on-select", options.Tooltip.PinOnSelect ? "true" : "false")
-            .Attribute("data-cfx-tooltip-mode", options.Tooltip.Mode == HtmlChartTooltipMode.Single ? "single" : "shared-x")
+            .Attribute("data-cfx-tooltip-mode", options.Tooltip.Mode == HtmlChartTooltipMode.Auto ? "auto" : options.Tooltip.Mode == HtmlChartTooltipMode.Single ? "single" : "shared-x")
             .Attribute("data-cfx-tooltip-range", options.Tooltip.Range.SerializedKind)
             .Attribute("data-cfx-tooltip-distance", options.Tooltip.Range.CssPixels?.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-tooltip-delay", options.Tooltip.DelayMilliseconds.ToString(CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-template", options.Tooltip.Template)
             .Attribute("data-cfx-tooltip-anchor", options.Tooltip.Position.Anchor.ToString().ToLowerInvariant())
             .Attribute("data-cfx-tooltip-placements", options.Tooltip.Position.SerializedPlacements)
             .Attribute("data-cfx-tooltip-gap", options.Tooltip.Position.Gap.ToString("R", CultureInfo.InvariantCulture))
@@ -81,13 +82,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 + "px" + source.ThemeTokens + CrosshairInteractionTokens(options.Crosshair));
         WriteHighlightOptions(writer, options.Highlight);
         writer.EndStartElement().Line();
-        var toolbar = BuildToolbar(options);
-        if (toolbar.Length > 0) {
-            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", options.Localization[HtmlChartText.ChartControls]).EndStartElement()
-                .RawTrusted(toolbar)
-                .EndElement().Line();
-        }
-
         if (scenarioControls) {
             writer.RawTrusted(BuildScenarioControls(options));
             writer.RawTrusted(BuildScenarioPanel(options));
@@ -104,8 +98,17 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
             .EndElement().Line()
-            .RawTrusted(BuildResetControl(options))
-            .RawTrusted(source.NativeNavigation)
+            .RawTrusted(BuildResetControl(options));
+        // The toolbar follows the plot in focus order and floats over the frame's top-right corner.
+        var toolbar = BuildToolbar(options);
+        if (toolbar.Length > 0) {
+            writer.StartElement("div").Attribute("class", "cfx-toolbar")
+                .Attribute("aria-label", options.Localization[HtmlChartText.ChartControls]).EndStartElement()
+                .RawTrusted(toolbar)
+                .EndElement().Line();
+        }
+
+        writer.RawTrusted(source.NativeNavigation)
             .RawTrusted(source.HierarchyNavigation)
             .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()

@@ -8,8 +8,12 @@ namespace ChartForgeX.Interactivity.Html;
 /// <summary>Configures HTML tooltip anchoring, ordered placement fallback, and screen offsets.</summary>
 public sealed class HtmlChartTooltipPositionOptions {
     private HtmlChartTooltipAnchor _anchor;
-    private ReadOnlyCollection<HtmlChartTooltipPlacement> _placements = Array.AsReadOnly(new[] { HtmlChartTooltipPlacement.BottomRight });
-    private double _gap = 14;
+    private ReadOnlyCollection<HtmlChartTooltipPlacement> _placements = Array.AsReadOnly(new[] {
+        HtmlChartTooltipPlacement.TopRight, HtmlChartTooltipPlacement.TopLeft,
+        HtmlChartTooltipPlacement.BottomRight, HtmlChartTooltipPlacement.BottomLeft
+    });
+    private bool _automaticPlacements = true;
+    private double _gap = 12;
     private double _offsetX;
     private double _offsetY;
 
@@ -25,8 +29,11 @@ public sealed class HtmlChartTooltipPositionOptions {
 
     /// <summary>
     /// Gets or sets a copied, read-only sequence of directions, tried in order against the browser viewport
-    /// with an 8 CSS pixel inset. If none fits, the first direction is clamped to that viewport.
-    /// The default contains only <see cref="HtmlChartTooltipPlacement.BottomRight"/>.
+    /// with an 8 CSS pixel inset. An assigned sequence clamps its first direction if none fits.
+    /// Until assigned, the browser chooses family defaults: above-right for bars and right for lines,
+    /// with opposite-side fallbacks. If none fits, automatic placement tries a clamped position that keeps the gap from the anchor.
+    /// The initial sequence describes the general above-right fallback.
+    /// Assigning a sequence makes that exact order authoritative, even if it equals the initial sequence.
     /// </summary>
     /// <exception cref="ArgumentNullException">The sequence is null.</exception>
     /// <exception cref="ArgumentException">The sequence is empty.</exception>
@@ -40,12 +47,13 @@ public sealed class HtmlChartTooltipPositionOptions {
             foreach (var placement in copy)
                 if (!Enum.IsDefined(typeof(HtmlChartTooltipPlacement), placement)) throw new ArgumentOutOfRangeException(nameof(Placements));
             _placements = Array.AsReadOnly(copy);
+            _automaticPlacements = false;
         }
     }
 
     /// <summary>
     /// Gets or sets the finite, non-negative gap in CSS pixels, applied on each directed axis.
-    /// The default is 14; diagonal directions apply the gap both horizontally and vertically.
+    /// The default is 12; diagonal directions apply the gap both horizontally and vertically.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The gap is negative or non-finite.</exception>
     public double Gap {
@@ -67,7 +75,13 @@ public sealed class HtmlChartTooltipPositionOptions {
         set => _offsetY = Finite(value, nameof(OffsetY));
     }
 
-    internal string SerializedPlacements => string.Join(",", _placements.Select(placement => placement switch {
+    /// <summary>Retains automatic family placement when copying options; the shared sequence is immutable.</summary>
+    internal void CopyPlacementsFrom(HtmlChartTooltipPositionOptions source) {
+        _placements = source._placements;
+        _automaticPlacements = source._automaticPlacements;
+    }
+
+    internal string SerializedPlacements => _automaticPlacements ? "auto" : string.Join(",", _placements.Select(placement => placement switch {
         HtmlChartTooltipPlacement.TopRight => "top-right",
         HtmlChartTooltipPlacement.BottomRight => "bottom-right",
         HtmlChartTooltipPlacement.BottomLeft => "bottom-left",

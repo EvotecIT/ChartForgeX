@@ -1,11 +1,12 @@
   const refreshAnnotationEditor = root => {
     const state = annotationEditorState(root), view = state?.view;
     if (!state) return;
+    // Editing needs a host that re-prepares the scene, so a saved page keeps the editor hidden.
+    const connected = !!nativePreparationBinding(root, 'annotation');
     if (view && root.contains(view.element)) {
       const admissionBusy = nativePreparationBackpressureBusy(root);
-      view.element.hidden = !state.enabled;
+      view.element.hidden = !state.enabled || !connected;
       view.element.setAttribute('aria-busy', state.pending || admissionBusy ? 'true' : 'false');
-      const connected = !!nativePreparationBinding(root, 'annotation');
       const selected = view.select.value, ids = Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
         .filter(node => ['Note', 'LineSegment', 'ParallelChannel'].includes(node.dataset.cfxKind));
       view.select.replaceChildren();
@@ -20,9 +21,10 @@
         || kind === 'undo' && (!!state.draft || state.undo.length === 0) || kind === 'redo' && (!!state.draft || state.redo.length === 0);
 
       view.buttons.cancel.disabled = admissionBusy || !state.draft && !state.pending;
+      view.buttons.close.disabled = admissionBusy;
       view.label.disabled = state.pending || admissionBusy || !state.draft?.drawing;
       view.label.value = state.draft?.drawing?.label ?? '';
-      view.status.textContent = !connected ? uiText(root, 'AnnotationDisconnected', 'Connect native preparation to edit annotations.') : state.pending ? uiText(root, 'AnnotationUpdating', 'Updating annotation…') : state.error
+      view.status.textContent = state.pending ? uiText(root, 'AnnotationUpdating', 'Updating annotation…') : state.error
         || (state.draft ? uiText(root, 'AnnotationDraft', 'Draft: move an anchor, then apply or cancel.') : '');
     }
     drawAnnotationEditorPreview(root);

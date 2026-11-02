@@ -33,7 +33,7 @@ public sealed partial class NativeTransitionBrowserTests {
         Assert.Equal("40", observed.GetProperty("transient").GetProperty("y").GetString()); Assert.Equal("40", observed.GetProperty("transient").GetProperty("size").GetString());
         Assert.Equal(initial ? 0 : 1, observed.GetProperty("events").GetArrayLength()); Assert.Equal(initial, observed.GetProperty("before").GetString() == observed.GetProperty("revision").GetString());
         await NativeValueFrameBrowserProof.AssertAsync(page, "[data-cfx-role=point][data-cfx-series-key=delivery][data-cfx-observation-id=current] [data-cfx-role=bubble]", name + "-ink");
-        var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
+        var download = await DownloadSvgAsync(page);
         var file = await download.PathAsync() ?? throw new InvalidOperationException("Bubble accepted export missing."); var exported = await File.ReadAllTextAsync(file); NativeRadialMotionBeforeControls.Save(name + ".exported.svg", exported);
         var point = System.Xml.Linq.XDocument.Parse(exported).Descendants().Single(row => (string?)row.Attribute("data-cfx-role") == "point" && (string?)row.Attribute("data-cfx-series-key") == "delivery" && (string?)row.Attribute("data-cfx-observation-id") == "current");
         Assert.Equal("50", point.Attribute("data-cfx-y")!.Value); Assert.Equal("70", point.Attribute("data-cfx-size")!.Value);

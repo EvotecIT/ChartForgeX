@@ -49,7 +49,9 @@
     try {
       const url = new URL(reference[1], node.ownerDocument.baseURI);
       if (url.href.split('#')[0] !== node.ownerDocument.URL.split('#')[0]) return null;
-      server = node.ownerSVGElement.getElementById(decodeURIComponent(url.hash.slice(1)));
+      const id = decodeURIComponent(url.hash.slice(1));
+      server = node.ownerSVGElement.getElementById(id)
+        || node.closest('.cfx-interactive-chart')?.querySelector('.cfx-stage svg')?.getElementById(id);
     } catch (_) { return null; }
 
     if (server && server.matches('pattern')) return { colour: '' };
@@ -212,6 +214,14 @@
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
+
+    if (decoration && role === 'legend-item' && !node.ownerSVGElement) {
+      const label = node.querySelector('.cfx-responsive-legend__label');
+      if (label && !label.querySelector('[data-cfx-native-text-ink]') && label.textContent.trim() && paintNodeVisible(label, styles)) {
+        const box = label.getBoundingClientRect(), colour = solidPaintColour(paintStyle(label, styles).color, 1);
+        if (box.width > 0 && box.height > 0 && colour) return { colour };
+      }
+    }
 
     if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
     for (const text of node.querySelectorAll('text,[data-cfx-native-text-ink]')) {

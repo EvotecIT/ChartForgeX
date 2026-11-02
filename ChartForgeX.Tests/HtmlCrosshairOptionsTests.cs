@@ -91,9 +91,12 @@ public sealed class HtmlCrosshairOptionsTests {
         });
         Assert.Equal(svg, chart.ToSvg());
         Assert.Equal(png, chart.ToPng());
-        var example = Assert.Single(Roots(HtmlCrosshairExamples.CreatePage(HtmlChartCrosshairLineStyle.Dotted)));
-        Assert.Contains("--cfx-crosshair-line-style:dotted", example, StringComparison.Ordinal);
-        Assert.Contains("--cfx-crosshair-stroke-width:2px", example, StringComparison.Ordinal);
+        var examples = Roots(HtmlCrosshairExamples.CreatePage(HtmlChartCrosshairLineStyle.Dotted));
+        Assert.Equal(2, examples.Length);
+        Assert.All(examples, example => {
+            Assert.Contains("--cfx-crosshair-line-style:dotted", example, StringComparison.Ordinal);
+            Assert.Contains("--cfx-crosshair-stroke-width:2px", example, StringComparison.Ordinal);
+        });
     }
 
     private static string[] RenderSurfaces(Action<HtmlChartCrosshairOptions> configure) => Renderers()

@@ -1,4 +1,5 @@
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -15,12 +16,17 @@ public static class HtmlCrosshairExamples {
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddScatter("Processing time", new[] { new ChartPoint(2, 7), new ChartPoint(5, 5), new ChartPoint(8, 3) });
-        return chart.ToInteractiveHtmlPage(options => {
-            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
+        var html = chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush);
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
+            options.XNavigation.Enabled = true;
+            options.IncludeContextMenu = true;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Crosshair.Stroke = dark ? ChartColor.FromRgb(125, 211, 252) : ChartColor.FromRgb(14, 116, 144);
             options.Crosshair.StrokeWidth = 2;
             options.Crosshair.LineStyle = lineStyle;
         });
+        const string editor = "<script>ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart')).editAnnotations();</script>";
+        return html.Replace("</body>", editor + "</body>", StringComparison.Ordinal);
     }
 }

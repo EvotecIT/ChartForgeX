@@ -209,7 +209,7 @@ public sealed class InteractiveChordBrowserTests {
         Assert.Equal(0, await page.Locator(dataStop).CountAsync());
         Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component=legend][tabindex='0']").CountAsync());
         await page.Keyboard.PressAsync("Space");
-        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Tab");
         Assert.True(await retained.EvaluateAsync<bool>("node => node === document.activeElement"));
         AssertNoConsoleErrors(session);
     }

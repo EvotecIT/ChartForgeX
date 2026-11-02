@@ -28,11 +28,13 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]);
         Assert.True(await page.EvaluateAsync<bool>("() => window.nativeEnter.visible"));
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
-        Assert.Equal(new[] { "Series" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.Contains("Reading", await page.Locator(".cfx-tooltip__title:visible, .cfx-tooltip__secondary:visible").AllTextContentsAsync());
+        Assert.Empty(await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         await AssertHoverIdentityAsync(page, "series", id!);
         await page.Mouse.MoveAsync((float)positions[2], (float)positions[3]);
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
-        Assert.Equal(new[] { "Series" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.Contains("Reading", await page.Locator(".cfx-tooltip__title:visible, .cfx-tooltip__secondary:visible").AllTextContentsAsync());
+        Assert.Empty(await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         await AssertHoverIdentityAsync(page, "series", id!);
         Assert.Equal(!guide, await page.Locator(".cfx-crosshair").IsHiddenAsync());
         if (guide) {
@@ -57,8 +59,12 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         var page = session.Page;
         var positions = await NativeSeriesPositionsAsync(page, "line");
         var expected = await page.EvaluateAsync<string>("p => Array.from(document.querySelectorAll('[data-cfx-point]')).map(n => { const b = n.getBoundingClientRect(); return { id:n.dataset.cfxTargetId, d:Math.hypot(b.x+b.width/2-p[0], b.y+b.height/2-p[1]) }; }).sort((a,b) => a.d-b.d)[0].id", positions);
+        var expectedCategory = await page.Locator("[data-cfx-point][data-cfx-target-id='" + expected + "']").GetAttributeAsync("data-cfx-x");
         await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]);
-        Assert.Equal(new[] { "Series", "X", "Y" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.Equal(expectedCategory, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("Reading", await page.Locator(".cfx-tooltip__secondary").InnerTextAsync());
+        Assert.Equal(new[] { "Value" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.Equal("5", await page.Locator(".cfx-tooltip dd").InnerTextAsync());
         Assert.Contains("5", await TooltipTextAsync(page), StringComparison.Ordinal);
         await AssertHoverIdentityAsync(page, "point", expected);
         Assert.Equal(!guide, await page.Locator(".cfx-crosshair").IsHiddenAsync());

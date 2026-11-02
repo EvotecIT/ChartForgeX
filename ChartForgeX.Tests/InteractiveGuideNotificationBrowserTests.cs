@@ -30,7 +30,10 @@ public sealed class InteractiveGuideNotificationBrowserTests {
             Assert.Equal(tooltips ? summary : "reading-source:" + index, state.GetProperty("sourceHoverId").GetString());
             Assert.Equal(tooltips ? 1 : index + 2, state.GetProperty("hoverCount").GetInt32());
             Assert.Equal(tooltips, state.GetProperty("tipVisible").GetBoolean());
-            if (tooltips) Assert.Equal(new[] { "Series" }, await source.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+            if (tooltips) {
+                Assert.Empty(await source.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+                Assert.Equal("Reading", await source.Locator(".cfx-tooltip__title").InnerTextAsync());
+            }
             trace.Add(state);
             await page.Mouse.MoveAsync((float)positions[index * 2] + 1, (float)positions[index * 2 + 1]);
             var stable = await AssertGuideAsync(page, "reading-source:" + index, "series", index + 1);
@@ -41,6 +44,7 @@ public sealed class InteractiveGuideNotificationBrowserTests {
         await AssertEmptySourcePositionAsync(source, background);
         await page.Mouse.MoveAsync((float)background[0], (float)background[1]);
         trace.Add(await AssertGuideAsync(page, "reading-source:2", "shared", 4));
+        await Assertions.Expect(source.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await source.Locator(".cfx-tooltip").IsHiddenAsync());
         await page.Mouse.MoveAsync((float)background[0] + 1, (float)background[1]);
         trace.Add(await AssertGuideAsync(page, "reading-source:2", "shared", 4));
@@ -81,7 +85,8 @@ public sealed class InteractiveGuideNotificationBrowserTests {
         Assert.Equal("series", trace[0].GetProperty("sourceHoverKind").GetString());
         Assert.Equal("series", trace[0].GetProperty("sourceHoverMode").GetString());
         Assert.Equal(1, trace[0].GetProperty("hoverCount").GetInt32());
-        Assert.Equal(new[] { "Series" }, await root.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.Empty(await root.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.Equal("Line reading", await root.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Contains("Line reading", await root.Locator(".cfx-tooltip").InnerTextAsync(), StringComparison.Ordinal);
         await page.Mouse.MoveAsync((float)native[0] + 1, (float)native[1]);
         trace.Add(await AssertGuideAsync(page, "nearby-source:0", "shared", 1));

@@ -64,6 +64,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 const a=new DOMPoint(p.x+p.width*.25,p.y+p.height*.25).matrixTransform(m),b=new DOMPoint(p.x+p.width*.75,p.y+p.height*.75).matrixTransform(m);
                 return[a.x,a.y,b.x,b.y]}
             """);
+        await session.Page.Locator(Root).HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         await session.Page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await session.Page.Mouse.MoveAsync((float)positions[0], (float)positions[1]); await session.Page.Mouse.DownAsync();
         await session.Page.Mouse.MoveAsync((float)positions[2], (float)positions[3], new MouseMoveOptions { Steps = 4 }); await session.Page.Mouse.UpAsync();

@@ -15,14 +15,15 @@ public sealed class HtmlTooltipPositionOptionsTests {
         var dashboard = new HtmlInteractiveDashboardOptions().Tooltip.Position;
         Assert.NotSame(chart, dashboard);
         Assert.Equal(HtmlChartTooltipAnchor.Pointer, chart.Anchor);
-        Assert.Equal(new[] { HtmlChartTooltipPlacement.BottomRight }, chart.Placements);
-        Assert.Equal(14, chart.Gap);
+        Assert.Equal(new[] { HtmlChartTooltipPlacement.TopRight, HtmlChartTooltipPlacement.TopLeft,
+            HtmlChartTooltipPlacement.BottomRight, HtmlChartTooltipPlacement.BottomLeft }, chart.Placements);
+        Assert.Equal(12, chart.Gap);
         Assert.Equal(0, chart.OffsetX);
         Assert.Equal(0, chart.OffsetY);
         chart.Anchor = HtmlChartTooltipAnchor.Node;
         chart.Gap = 0;
         Assert.Equal(HtmlChartTooltipAnchor.Pointer, dashboard.Anchor);
-        Assert.Equal(14, dashboard.Gap);
+        Assert.Equal(12, dashboard.Gap);
     }
 
     [Fact]

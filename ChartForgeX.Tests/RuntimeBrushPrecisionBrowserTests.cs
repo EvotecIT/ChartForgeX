@@ -130,6 +130,7 @@ public sealed class RuntimeBrushPrecisionBrowserTests {
               return[a.x,a.y,b.x,b.y];
             }
             """, ratios);
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]);
         await page.Mouse.DownAsync();

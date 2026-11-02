@@ -18,7 +18,7 @@
       && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
   };
   const chartXProjection = root => chartAxisProjection(root, 'x');
-  const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
+  const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport') || !!standaloneViewport(root);
   const syncXViewportControls = root => {
     const binding = nativePreparationBinding(root, 'viewport');
     const unsupported = !!binding && !polarGestureProjection(root) && (!chartXProjection(root) || !binding.legacy && binding.axes.some(name => !chartAxisProjection(root, name)));
@@ -56,6 +56,7 @@
     return nativeProjectionWindow(projection, projection?.scale || 'linear');
   };
   const requestNativeXWindow = (root, window, sync = true, accepted) => {
+    if (!nativePreparationBinding(root, 'viewport') && standaloneViewport(root)) return requestStandaloneWindow(root, { x: window }, sync, accepted);
     if (cartesianViewportConnected(root)) return requestNativeCartesianWindow(root, { x: window }, sync, accepted);
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     if (!connectedXViewport(root) || !projection || !axis || !window

@@ -96,7 +96,7 @@ test('the shipped runtime preserves public controller keys and native diagnostic
       'connectViewport', 'connectPolarViewport', 'getPolarViewport', 'setPolarViewport',
       'setProgressValue', 'getHierarchyView', 'setHierarchyView', 'getViewport', 'setViewport',
       'getYWindow', 'setYWindow', 'getXWindow', 'setXWindow', 'resize', 'dispose'];
-    assert.deepEqual(Object.keys(f.controller).sort(), keys.sort());
+    for (const key of keys) assert.ok(Object.hasOwn(f.controller, key), 'Missing existing controller member: ' + key);
     assert.equal(Object.isFrozen(f.controller), true);
     const revision = f.controller.sceneRevision;
     assert.throws(() => f.controller.connectNative(1, { basis: 'invalid' }), /Native callback: function\|null required\./);

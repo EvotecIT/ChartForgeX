@@ -93,10 +93,12 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
         var page = session.Page;
         await page.EvaluateAsync("() => { window.linkedRoot=document.querySelector('.cfx-interactive-chart'); window.linkedController=ChartForgeXCharts.get(linkedRoot); linkedController.highlight({observationIds:['a-1']},{dim:true}); }");
         await MoveToAsync(page, "[data-cfx-observation-id='b-1']");
+        await SettlePresentationAsync(page);
         Assert.Equal("0.3", await page.Locator("[data-cfx-observation-id='b-2']").EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         Assert.Equal(new[] { "1", "0.3" }, (await Paint(page)).GetProperty("legends").EnumerateArray().Select(value => value.GetString()).ToArray());
         await page.EvaluateAsync("() => { linkedController.clearHighlight(); linkedController.select({observationIds:['a-1']}); }");
         await MoveToAsync(page, "[data-cfx-observation-id='b-2']");
+        await SettlePresentationAsync(page);
         Assert.Equal("0.3", await page.Locator("[data-cfx-observation-id='b-1']").EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         Assert.Equal(new[] { "1", "0.3" }, (await Paint(page)).GetProperty("legends").EnumerateArray().Select(value => value.GetString()).ToArray());
         await Capture(page, "linked-bar-hover-" + dark + "-" + width, await page.EvaluateAsync<JsonElement>("() => ({selected:linkedController.getSelection(),opacities:[...linkedRoot.querySelectorAll('.cfx-selection-dim')].map(n=>getComputedStyle(n).opacity)})"));
@@ -119,11 +121,14 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
         var first = page.Locator("[data-cfx-role='legend-item'][data-cfx-series='0'][data-cfx-point='0']");
         var second = page.Locator("[data-cfx-role='legend-item'][data-cfx-series='0'][data-cfx-point='1']");
         await MoveToAsync(page, "[data-cfx-observation-id='a-3']");
+        await SettlePresentationAsync(page);
         Assert.Equal("1", await first.EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         Assert.Equal("0.3", await second.EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         await first.ClickAsync(new Microsoft.Playwright.LocatorClickOptions { Modifiers = new[] { Microsoft.Playwright.KeyboardModifier.Shift } });
+        await SettlePresentationAsync(page);
         Assert.Equal("0.1", await second.EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         await first.ClickAsync(new Microsoft.Playwright.LocatorClickOptions { Modifiers = new[] { Microsoft.Playwright.KeyboardModifier.Shift } });
+        await SettlePresentationAsync(page);
         Assert.Equal("0.3", await second.EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         await Capture(page, "linked-point-legend-" + dark + "-" + width, await Paint(page));
         await page.EvaluateAsync("() => linkedController.clearHighlight()");
@@ -133,7 +138,9 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Task<JsonElement> Paint(Microsoft.Playwright.IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> Paint(Microsoft.Playwright.IPage page) {
+        await SettlePresentationAsync(page);
+        return await page.EvaluateAsync<JsonElement>("""
         () => {
           const marker=linkedRoot.querySelector('[data-cfx-observation-id="a-1"] .cfx-prepared-point-marker');
           return {series:[...linkedRoot.querySelectorAll('[data-cfx-role="series"][data-cfx-coordinate-system="cartesian"]')].map(n=>getComputedStyle(n).opacity),
@@ -141,6 +148,7 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
             markerOpacity:marker?getComputedStyle(marker).opacity:null,markerRadius:marker?parseFloat(getComputedStyle(marker).r):0};
         }
         """);
+    }
 
     private static Chart Create(ChartSeriesKind kind, bool dark) {
         var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)

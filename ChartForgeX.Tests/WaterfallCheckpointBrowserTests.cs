@@ -65,7 +65,7 @@ public sealed class WaterfallCheckpointBrowserTests {
             Assert.Equal(Signed(120, sign), await openingMark.GetAttributeAsync("data-cfx-end"));
             Assert.Equal(openingCategory, await openingMark.GetAttributeAsync("data-cfx-category-label"));
             Assert.Equal(openingCategory, await openingMark.GetAttributeAsync("data-cfx-x-label"));
-            Assert.Equal(new[] { "Category", openingCategory }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
+            Assert.Equal(openingCategory, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Category" }).Locator("+ dd").InnerTextAsync());
             if (horizontal) Assert.Contains("Initial balance", await page.Locator("[data-cfx-role='axis-y-label']").AllTextContentsAsync());
             Assert.Null(await openingMark.GetAttributeAsync("data-cfx-delta")); Assert.Null(await openingMark.GetAttributeAsync("data-cfx-derived"));
             Assert.Null(await openingMark.GetAttributeAsync("data-cfx-derived-identity")); Assert.Null(await openingMark.GetAttributeAsync("data-cfx-source-points"));
@@ -99,7 +99,8 @@ public sealed class WaterfallCheckpointBrowserTests {
         var subtotalX = (float)(subtotalBox.X + subtotalBox.Width * .2); var subtotalY = (float)(subtotalBox.Y + subtotalBox.Height * .25);
         await page.Mouse.MoveAsync(subtotalX, subtotalY, new MouseMoveOptions { Steps = 4 });
         AssertRows(await TooltipRowsAsync(page), "Subtotal", Signed(-130, sign), "Start", Signed(90, sign), "End", Signed(-40, sign));
-        Assert.Equal(new[] { "Category", "Costs" }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
+        Assert.Equal("Costs", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Category" }).Locator("+ dd").InnerTextAsync());
+        Assert.Equal("Movement", await page.Locator(".cfx-tooltip__secondary").InnerTextAsync());
         Assert.Equal("Costs", await subtotal.GetAttributeAsync("data-cfx-x-label"));
         Assert.Null(await subtotal.GetAttributeAsync("data-cfx-source-point"));
         Assert.Equal("2", await subtotal.GetAttributeAsync("data-cfx-source-points"));
@@ -121,7 +122,7 @@ public sealed class WaterfallCheckpointBrowserTests {
         var captionBox = await caption.BoundingBoxAsync() ?? throw new InvalidOperationException("The total caption was not painted.");
         await page.Mouse.MoveAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5), new MouseMoveOptions { Steps = 4 });
         AssertRows(await TooltipRowsAsync(page), "Total", Signed(30, sign), "Start", "0", "End", Signed(30, sign));
-        Assert.Equal(new[] { "Category", totalCategory }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
+        Assert.Equal(totalCategory, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Category" }).Locator("+ dd").InnerTextAsync());
         await page.Mouse.ClickAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5));
         var total = page.Locator(Mark(6));
         Assert.Equal(totalCategory, await total.GetAttributeAsync("data-cfx-x-label"));

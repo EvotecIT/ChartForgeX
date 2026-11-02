@@ -39,7 +39,7 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         Assert.Equal(new[] { "30 S", "-10 E" }, await page.Locator(captions + " text").AllTextContentsAsync());
         var ids = await page.Locator("[id]").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.id)");
         Assert.Equal(ids.Length, ids.Distinct().Count());
-        var rows = new[] { "Series", "Expected", "Kategoria", "Express", "Początek", "30", "Koniec", "-10" };
+        var rows = new[] { "Kategoria", "Express", "Początek", "30", "Koniec", "-10" };
         for (var caption = 0; caption < 2; caption++) {
             var box = await page.Locator(captions).Nth(caption).BoundingBoxAsync() ?? throw new InvalidOperationException("Endpoint caption has no layout box");
             await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2, new MouseMoveOptions { Steps = 4 });
@@ -54,7 +54,7 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         await page.Locator(Point(1, 0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Point(1, 0)).GetAttributeAsync("aria-selected"));
         await page.Locator(point).FocusAsync();
-        Assert.Equal("Observed", (await RowsAsync(page))[1]);
+        Assert.Equal("Observed: Express", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
         // Focus preserves an explicitly pinned readout. Activate its owner again before inspecting another observation.
         await page.Locator(Point(1, 0)).FocusAsync(); await page.Keyboard.PressAsync("Space");

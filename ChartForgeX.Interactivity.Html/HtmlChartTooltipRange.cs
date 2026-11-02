@@ -18,6 +18,10 @@ public readonly struct HtmlChartTooltipRange : IEquatable<HtmlChartTooltipRange>
     /// <summary>Gets a range that acquires the nearest painted Cartesian observation anywhere inside the chart stage.</summary>
     public static HtmlChartTooltipRange Nearest => new HtmlChartTooltipRange(1, 0);
 
+    /// <summary>Gets the default family-aware range: nearest category within 120 CSS pixels for
+    /// line, area and bar charts, or nearest observation within 120 CSS pixels for other Cartesian charts.</summary>
+    public static HtmlChartTooltipRange Auto => new HtmlChartTooltipRange(3, 120);
+
     /// <summary>Creates a range that acquires a painted Cartesian observation within the given distance from its screen centre.</summary>
     /// <param name="cssPixels">A finite, non-negative distance in CSS pixels, independent of SVG scaling. Native hits remain eligible at zero.</param>
     /// <returns>The bounded pointer acquisition range.</returns>
@@ -28,8 +32,8 @@ public readonly struct HtmlChartTooltipRange : IEquatable<HtmlChartTooltipRange>
         return new HtmlChartTooltipRange(2, cssPixels);
     }
 
-    internal string SerializedKind => _kind == 1 ? "nearest" : _kind == 2 ? "distance" : "exact";
-    internal double? CssPixels => _kind == 2 ? _cssPixels : (double?)null;
+    internal string SerializedKind => _kind == 1 ? "nearest" : _kind == 2 ? "distance" : _kind == 3 ? "auto" : "exact";
+    internal double? CssPixels => _kind >= 2 ? _cssPixels : (double?)null;
 
     /// <summary>Returns whether another range has the same acquisition rule and distance.</summary>
     public bool Equals(HtmlChartTooltipRange other) => _kind == other._kind && _cssPixels.Equals(other._cssPixels);

@@ -8,22 +8,23 @@ namespace ChartForgeX.Tests;
 
 public sealed class HtmlTooltipOptionsTests {
     [Fact]
-    public void SharedXIsTheDefaultForChartsAndDashboardChildren() {
-        Assert.Equal(HtmlChartTooltipMode.SharedX, new HtmlChartInteractionOptions().Tooltip.Mode);
-        Assert.Equal(HtmlChartTooltipMode.SharedX, new HtmlInteractiveDashboardOptions().Tooltip.Mode);
-        Assert.Equal(HtmlChartTooltipRange.WithinDistance(120), new HtmlChartInteractionOptions().Tooltip.Range);
-        Assert.Equal(HtmlChartTooltipRange.WithinDistance(120), new HtmlInteractiveDashboardOptions().Tooltip.Range);
+    public void AutomaticModeIsTheDefaultForChartsAndDashboardChildren() {
+        Assert.Equal(HtmlChartTooltipMode.Auto, new HtmlChartInteractionOptions().Tooltip.Mode);
+        Assert.Equal(HtmlChartTooltipMode.Auto, new HtmlInteractiveDashboardOptions().Tooltip.Mode);
+        Assert.Equal(HtmlChartTooltipRange.Auto, new HtmlChartInteractionOptions().Tooltip.Range);
+        Assert.Equal(HtmlChartTooltipRange.Auto, new HtmlInteractiveDashboardOptions().Tooltip.Range);
         Assert.True(new HtmlChartInteractionOptions().Crosshair.ShowLabel);
         Assert.True(new HtmlInteractiveDashboardOptions().Crosshair.ShowLabel);
         Assert.Equal(0, new HtmlChartInteractionOptions().Tooltip.DelayMilliseconds);
         Assert.Equal(0, new HtmlInteractiveDashboardOptions().Tooltip.DelayMilliseconds);
-        AssertModes(Chart().ToInteractiveHtmlPage(), "shared-x", 1);
-        AssertModes(new[] { Chart(), Chart() }.ToInteractiveHtmlDashboardPage(), "shared-x", 2);
+        AssertModes(Chart().ToInteractiveHtmlPage(), "auto", 1);
+        AssertModes(new[] { Chart(), Chart() }.ToInteractiveHtmlDashboardPage(), "auto", 2);
     }
 
     [Theory]
     [InlineData(HtmlChartTooltipMode.Single, "single")]
     [InlineData(HtmlChartTooltipMode.SharedX, "shared-x")]
+    [InlineData(HtmlChartTooltipMode.Auto, "auto")]
     public void ExplicitModeReachesPagesFragmentsAndEveryDashboardChild(HtmlChartTooltipMode mode, string serialized) {
         AssertModes(Chart().ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), serialized, 1);
         AssertModes(Chart().ToInteractiveHtmlFragment(options => options.Tooltip.Mode = mode), serialized, 1);
@@ -107,7 +108,7 @@ public sealed class HtmlTooltipOptionsTests {
         var culture = CultureInfo.CurrentCulture;
         try {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("pl-PL");
-            foreach (var range in new[] { HtmlChartTooltipRange.Exact, HtmlChartTooltipRange.Nearest, HtmlChartTooltipRange.WithinDistance(0), HtmlChartTooltipRange.WithinDistance(48.5) }) {
+            foreach (var range in new[] { HtmlChartTooltipRange.Auto, HtmlChartTooltipRange.Exact, HtmlChartTooltipRange.Nearest, HtmlChartTooltipRange.WithinDistance(0), HtmlChartTooltipRange.WithinDistance(48.5) }) {
                 void Configure(HtmlChartInteractionOptions options) { options.Tooltip.Range = range; options.Crosshair.ShowLabel = false; }
                 var surfaces = new[] {
                     Chart().ToInteractiveHtmlPage(Configure), Chart().ToInteractiveHtmlFragment(Configure), Chart().ToInteractiveHtmlFragmentWithoutAssets(Configure),
@@ -118,7 +119,11 @@ public sealed class HtmlTooltipOptionsTests {
                     Assert.NotEmpty(roots.Cast<Match>());
                     Assert.All(roots.Cast<Match>(), root => {
                         Assert.Contains("data-cfx-crosshair-label=\"false\"", root.Value, StringComparison.Ordinal);
-                        if (range == HtmlChartTooltipRange.Exact) Assert.Contains("data-cfx-tooltip-range=\"exact\"", root.Value, StringComparison.Ordinal);
+                        if (range == HtmlChartTooltipRange.Auto) {
+                            Assert.Contains("data-cfx-tooltip-range=\"auto\"", root.Value, StringComparison.Ordinal);
+                            Assert.Contains("data-cfx-tooltip-distance=\"120\"", root.Value, StringComparison.Ordinal);
+                        }
+                        else if (range == HtmlChartTooltipRange.Exact) Assert.Contains("data-cfx-tooltip-range=\"exact\"", root.Value, StringComparison.Ordinal);
                         else if (range == HtmlChartTooltipRange.Nearest) Assert.Contains("data-cfx-tooltip-range=\"nearest\"", root.Value, StringComparison.Ordinal);
                         else {
                             Assert.Contains("data-cfx-tooltip-range=\"distance\"", root.Value, StringComparison.Ordinal);

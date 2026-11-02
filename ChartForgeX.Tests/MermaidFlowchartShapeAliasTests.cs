@@ -52,6 +52,10 @@ public sealed class MermaidFlowchartShapeAliasTests {
         Directory.CreateDirectory(captures);
         var name = Path.Combine(captures, dark ? "shape-aliases-dark" : "shape-aliases-light");
         File.WriteAllText(name + ".svg", svg); File.WriteAllBytes(name + ".native.png", png);
+        var nativeChart = session.Page.Locator("body > svg[role=img][aria-label='Mermaid flowchart']");
+        Assert.Equal(1, await nativeChart.CountAsync());
+        Assert.True(await nativeChart.IsVisibleAsync());
+        Assert.Equal(expected.RootElement.GetProperty("nodes").GetArrayLength(), await nativeChart.Locator("[data-cfx-role=topology-node]").CountAsync());
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = name + ".browser.png", FullPage = true });
     }
 }

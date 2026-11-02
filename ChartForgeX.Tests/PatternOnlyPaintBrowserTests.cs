@@ -34,7 +34,9 @@ public sealed class PatternOnlyPaintBrowserTests {
         var page = session.Page;
         if (kind == ChartSeriesKind.Radar)
             await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "[data-cfx-role='radar-point']{fill:none;stroke:none}" });
-        var target = page.Locator("g[data-cfx-series='0'][data-cfx-point='0']:not([data-cfx-role='legend-item'])").First;
+        var target = page.Locator(".cfx-stage > svg g[data-cfx-source-id='series-0-point-0'][data-cfx-target-kind='point']");
+        Assert.Equal(1, await target.CountAsync());
+        Assert.Equal(chart.Series[0].Id.Value + ":0", await target.GetAttributeAsync("data-cfx-target-id"));
         var screen = await ScreenAsync(page, prepared);
         await page.Mouse.MoveAsync((float)screen[0], (float)screen[1], new MouseMoveOptions { Steps = 4 });
         var hover = await TooltipTextAsync(page);

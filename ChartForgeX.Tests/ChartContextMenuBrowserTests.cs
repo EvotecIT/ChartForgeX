@@ -32,12 +32,13 @@ public sealed class ChartContextMenuBrowserTests {
         Assert.True(await menu.IsVisibleAsync());
         Assert.Equal(rtl ? "rtl" : "ltr", await menu.EvaluateAsync<string>("node => getComputedStyle(node).direction"));
         Assert.Equal(rtl ? "Chart actions translated" : "Chart controls", await menu.GetAttributeAsync("aria-label"));
-        Assert.Equal(new[] { rtl ? "Save vector translated" : "Download SVG", "Download PNG", rtl ? "Reset translated" : "Reset view" },
+        Assert.Equal(new[] { rtl ? "Reset translated" : "Reset view", rtl ? "Save vector translated" : "Download SVG",
+                "Download PNG", "Download CSV", "Copy CSV", "Download JSON", "Copy JSON" },
             await menu.Locator("[role=menuitem]").AllTextContentsAsync());
         await page.Keyboard.PressAsync("End");
-        Assert.Equal("reset", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxContextAction"));
+        Assert.Equal("copy-json", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxContextAction"));
         await page.Keyboard.PressAsync("Home");
-        Assert.Equal("svg", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxContextAction"));
+        Assert.Equal("reset", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxContextAction"));
         await Capture(page, rtl, "keyboard");
         await page.Keyboard.PressAsync("Escape");
         Assert.Equal(0, await menu.CountAsync());

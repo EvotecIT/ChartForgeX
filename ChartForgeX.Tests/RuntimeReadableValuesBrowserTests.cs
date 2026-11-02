@@ -28,14 +28,14 @@ public sealed class RuntimeReadableValuesBrowserTests {
         var time = await ReadAsync(page, 1, "time-middle", "[data-cfx-observation-id=time-middle]");
         Assert.Equal("2026-09-06", time.GetProperty("target").GetProperty("label").GetString());
         Assert.Equal("2026-09-06", time.GetProperty("title").GetString());
-        Assert.Equal("Requests · 2026-09-06", time.GetProperty("chip").GetString());
+        Assert.Equal("Requests · 2026-09-06 · 27", time.GetProperty("chip").GetString());
         Assert.Equal(First.AddDays(5), DateTimeOffset.Parse(time.GetProperty("target").GetProperty("x").GetString()!, CultureInfo.InvariantCulture).UtcDateTime);
         readings.Add("time", time);
         await CaptureAsync(page, "time", dark, width, time);
 
         var scatter = await ReadAsync(page, 2, "scatter-first", "[data-cfx-observation-id=scatter-first]");
-        Assert.Equal("4,2", scatter.GetProperty("title").GetString());
-        Assert.Equal("Samples", scatter.GetProperty("chip").GetString());
+        Assert.Equal("Observation 4,2", scatter.GetProperty("title").GetString());
+        Assert.Equal("Samples · 4,2 · 8,9", scatter.GetProperty("chip").GetString());
         Assert.Equal(ScatterX, scatter.GetProperty("target").GetProperty("x").GetDouble());
         Assert.Equal(ScatterY, scatter.GetProperty("target").GetProperty("numericValue").GetDouble());
         Assert.Contains("8,9", scatter.GetProperty("tooltip").GetString());
@@ -44,7 +44,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
 
         var histogram = await ReadAsync(page, 3, "histogram-second", "[data-cfx-bin-index='1']");
         Assert.Equal("40 – 60", histogram.GetProperty("title").GetString());
-        Assert.Equal("40 – 60", histogram.GetProperty("chip").GetString());
+        Assert.Equal("Duration · 40 – 60 · 1", histogram.GetProperty("chip").GetString());
         Assert.Equal("40 – 60", histogram.GetProperty("target").GetProperty("rangeLabel").GetString());
         // This final bin is inclusive. The first bin below proves a half-open endpoint remains exact too.
         Assert.Equal(60, histogram.GetProperty("target").GetProperty("range")[1].GetDouble());
@@ -57,7 +57,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
 
         var state = await ReadAsync(page, 4, "state-run", "[data-cfx-observation-id=state-run]");
         Assert.Equal("Service · Available", state.GetProperty("title").GetString());
-        Assert.Equal("Service · 2026-09-01 00:00 – 2026-09-01 06:00", state.GetProperty("chip").GetString());
+        Assert.Equal("Service · 2026-09-01 00:00 – 2026-09-01 06:00 · Available", state.GetProperty("chip").GetString());
         Assert.Equal("Available", state.GetProperty("target").GetProperty("value").GetString());
         Assert.False(state.GetProperty("target").TryGetProperty("numericValue", out _));
         Assert.Equal("2026-09-01 00:00 – 2026-09-01 06:00", state.GetProperty("target").GetProperty("rangeLabel").GetString());
@@ -68,7 +68,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
 
         var box = await ReadAsync(page, 5, "box-first", "[data-cfx-observation-id=box-first]");
         Assert.Equal("Latency: Service A", box.GetProperty("title").GetString());
-        Assert.Equal("Service A", box.GetProperty("chip").GetString());
+        Assert.Equal("Latency · Service A · 3", box.GetProperty("chip").GetString());
         Assert.Equal(3, box.GetProperty("target").GetProperty("numericValue").GetDouble());
         Assert.Equal("3", box.GetProperty("target").GetProperty("value").GetString());
         readings.Add("box", box);
@@ -126,6 +126,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
     private static async Task<JsonElement> BrushTimeAsync(IPage page) {
         var root = page.Locator(Root(1));
         await root.ScrollIntoViewIfNeededAsync();
+        await root.HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         await root.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var points = await root.EvaluateAsync<JsonElement>("""
             root => {

@@ -9,25 +9,25 @@ using static ChartForgeX.Tests.ScatterBubbleColorRenderingTests;
 
 namespace ChartForgeX.Tests;
 
-/// <summary>Default shared and point-legend readouts preserve each observation's independent measurements.</summary>
+/// <summary>Shared and point-legend readouts preserve each observation's independent measurements.</summary>
 public sealed class InteractiveSharedColorDimensionBrowserTests {
     [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 800)]
-    public async Task DefaultSharedReadoutRetainsDimensionsZeroMissingSourceSortingAndPinning(bool bubble, int width) {
+    public async Task SharedReadoutRetainsDimensionsZeroMissingSourceSortingAndPinning(bool bubble, int width) {
         if (!Enabled) return;
         var chart = Model(width);
         Add(chart, bubble, "Samples", new[] { 1d, 1, 2 }, new[] { 18d, 0, 24 }, new[] { 9d, 36, 81 }, new double?[] { -12, 0, null });
         Add(chart, bubble, "Alerts", new[] { 1d, 2 }, new[] { 2d, 30 }, new[] { 4d, 16 }, new double?[] { null, -8 });
         chart.Series[1].StateRole = ChartSeriesState.Danger;
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 24, 600);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX), width + 24, 600);
         var page = session.Page; var root = page.Locator(".cfx-interactive-chart");
         Assert.Equal("shared-x", await root.GetAttributeAsync("data-cfx-tooltip-mode"));
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.dimensionSelection = event.detail.target)");
         await page.Locator(Point(0, 1)).FocusAsync();
-        Assert.Equal(new[] { "Alerts", "Samples" }, await page.Locator("dt[data-cfx-tooltip-series]").AllTextContentsAsync());
-        Assert.Equal("0", await page.Locator("dt[data-cfx-tooltip-series='0'] + dd").InnerTextAsync());
-        Assert.Equal("1", await page.Locator("dt[data-cfx-tooltip-series='0']").GetAttributeAsync("data-cfx-tooltip-source-point"));
+        Assert.Equal(new[] { "Alerts", "Samples" }, await page.Locator("dt[data-cfx-tooltip-series]:not([data-cfx-tooltip-dimension])").AllTextContentsAsync());
+        Assert.Equal("0", await page.Locator("dt[data-cfx-tooltip-series='0']:not([data-cfx-tooltip-dimension]) + dd").InnerTextAsync());
+        Assert.Equal("1", await page.Locator("dt[data-cfx-tooltip-series='0']:not([data-cfx-tooltip-dimension])").GetAttributeAsync("data-cfx-tooltip-source-point"));
         await AssertDimensionAsync(page, "samples-source", "color", "Samples · Temperature (°C)", "0", "1");
         await AssertDimensionAsync(page, "alerts-source", "color", "Alerts · Temperature (°C)", "Not sampled", "0");
         if (bubble) await AssertDimensionAsync(page, "samples-source", "size", "Samples · Volume (m³)", "36", "1");
@@ -36,7 +36,7 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
 
         await page.Locator(Point(0, 1)).BlurAsync(); await MoveToAsync(page, Point(0, 0));
         await AssertDimensionAsync(page, "samples-source", "color", "Samples · Temperature (°C)", "-12", "0");
-        Assert.Equal("18", await page.Locator("dt[data-cfx-tooltip-series='0'] + dd").InnerTextAsync());
+        Assert.Equal("18", await page.Locator("dt[data-cfx-tooltip-series='0']:not([data-cfx-tooltip-dimension]) + dd").InnerTextAsync());
         await page.Locator(Point(0, 0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
         var selected = await page.EvaluateAsync<JsonElement>("() => window.dimensionSelection");
@@ -48,11 +48,11 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
         await page.Keyboard.PressAsync("Space"); await MoveAwayAsync(page);
         await page.Locator(Point(0, 2)).FocusAsync();
         await AssertDimensionAsync(page, "samples-source", "color", "Samples · Temperature (°C)", "Not sampled", "2");
-        Assert.Equal("24", await page.Locator("dt[data-cfx-tooltip-series='0'] + dd").InnerTextAsync());
+        Assert.Equal("24", await page.Locator("dt[data-cfx-tooltip-series='0']:not([data-cfx-tooltip-dimension]) + dd").InnerTextAsync());
         if (bubble) await AssertDimensionAsync(page, "samples-source", "size", "Samples · Volume (m³)", "81", "2");
         await page.Locator(Legend(1)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         await page.Locator(Point(0, 2)).FocusAsync();
-        Assert.Equal(new[] { "Samples" }, await page.Locator("dt[data-cfx-tooltip-series]").AllTextContentsAsync());
+        Assert.Equal(new[] { "Samples" }, await page.Locator("dt[data-cfx-tooltip-series]:not([data-cfx-tooltip-dimension])").AllTextContentsAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-tooltip-observation='alerts-source']").CountAsync());
         await CaptureAsync(page, "shared-dimensions-missing-" + (bubble ? "bubble" : "scatter"));
         await page.Locator(Legend(0)).FocusAsync();
