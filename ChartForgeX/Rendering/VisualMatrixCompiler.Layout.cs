@@ -209,7 +209,7 @@ internal static partial class VisualMatrixCompiler {
         var steps = VisualColorScaleLegendScene.NumericTicks(floor, max);
         var captions = presentation.ScaleValues(steps);
         var captionGap = context.Theme.Spacing;
-        var desiredWidth = captions.Max(text => builder.MeasureText(text, style).Width + captionGap) * steps.Length;
+        var desiredWidth = captions.Max(text => Math.Max(40, builder.MeasureText(text, style).Width + captionGap * 2)) * steps.Length;
         var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth - missingWidth), Math.Max(160, desiredWidth)) : 0;
         // The key starts at the plot's left edge, under the first column, like its title.
         var scaleLeft = bounds.Left;
