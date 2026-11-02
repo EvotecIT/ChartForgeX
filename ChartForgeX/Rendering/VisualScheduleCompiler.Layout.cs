@@ -27,7 +27,8 @@ internal static partial class VisualScheduleCompiler {
         var rowStyle = hasRowState ? EmphasizedRowStyle(style) : style;
         var nameWidth = names.Select(name => builder.MeasureText(name, rowStyle).Width).DefaultIfEmpty(0).Max() + (hasRowState ? 6 : 0);
         var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, rowStyle).Width).DefaultIfEmpty(0).Max();
-        summaryWidth = Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width);
+        // A whole-pixel reserve keeps right-edge subtraction from undercutting fractional measured advances.
+        summaryWidth = Math.Ceiling(Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width));
         var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var tickHeight = ticks.Select(tick => VisualAxisText.RotatedMetrics(builder.MeasureText(format(tick), style), angle).Height).DefaultIfEmpty(lineHeight).Max();
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
