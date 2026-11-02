@@ -71,7 +71,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
         Assert.NotEmpty(png);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 460);
-        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text')].every(t=>{ const b=t.getBoundingClientRect(); return b.width>0 && b.left>=-.01 && b.right<=innerWidth+.01 && b.top>=-.01 && b.bottom<=460.01; })"));
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text')].filter(t=>t.textContent.length).every(t=>{ const b=t.getBoundingClientRect(); return b.width>0 && b.left>=-.01 && b.right<=innerWidth+.01 && b.top>=-.01 && b.bottom<=460.01; })"));
         if (venn) Assert.True(await session.Page.EvaluateAsync<bool>("() => { const boxes=[...document.querySelectorAll('svg text')].filter(t=>['API','UI','Shared','Data'].includes(t.textContent)).map(t=>t.getBoundingClientRect()); return boxes.every((a,i)=>boxes.slice(i+1).every(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)<=.01 || Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)<=.01)); }"), "Venn captions must remain separate as well as inside the viewport.");
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

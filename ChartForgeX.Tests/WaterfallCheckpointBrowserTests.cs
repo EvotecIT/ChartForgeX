@@ -76,7 +76,7 @@ public sealed class WaterfallCheckpointBrowserTests {
             await openingMark.FocusAsync(); await page.Keyboard.PressAsync("Space");
             Assert.Equal("false", await openingMark.GetAttributeAsync("aria-selected"));
             await MoveAwayAsync(page);
-            var openingCaption = await BoxAsync(page, "[data-cfx-label-for='series-0-point-0'] text");
+            var openingCaption = await BoxAsync(page, "[data-cfx-label-for='series-0-point-0'] [data-cfx-native-text-ink],[data-cfx-label-for='series-0-point-0'] text");
             if (horizontal) Assert.Equal("IB", await page.Locator("[data-cfx-label-for='series-0-point-0'] text").TextContentAsync());
             var captionX = (float)(openingCaption.X + openingCaption.Width * .4); var captionY = (float)(openingCaption.Y + openingCaption.Height * .5);
             await page.Mouse.MoveAsync(captionX, captionY, new MouseMoveOptions { Steps = 4 });
@@ -118,7 +118,7 @@ public sealed class WaterfallCheckpointBrowserTests {
         await CaptureAsync(page, capture, name + "-subtotal");
 
         await MoveAwayAsync(page);
-        var caption = page.Locator("[data-cfx-label-for='series-0-point-6'] text");
+        var caption = page.Locator("[data-cfx-label-for='series-0-point-6'] [data-cfx-native-text-ink],[data-cfx-label-for='series-0-point-6'] text").First;
         var captionBox = await caption.BoundingBoxAsync() ?? throw new InvalidOperationException("The total caption was not painted.");
         await page.Mouse.MoveAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5), new MouseMoveOptions { Steps = 4 });
         AssertRows(await TooltipRowsAsync(page), "Total", Signed(30, sign), "Start", "0", "End", Signed(30, sign));
