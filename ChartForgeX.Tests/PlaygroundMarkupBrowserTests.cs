@@ -68,7 +68,7 @@ public sealed class PlaygroundMarkupBrowserTests {
                 return source;
             }
             """, new { module = Module(), source });
-        Assert.Contains(data, edited);
+        Assert.Contains(data.ReplaceLineEndings("\n"), edited);
         var original = Parse(source);
         var chart = Parse(edited);
         Assert.Equal(original.Series.Count, chart.Series.Count);
