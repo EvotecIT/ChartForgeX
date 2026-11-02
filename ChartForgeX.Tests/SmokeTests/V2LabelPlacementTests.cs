@@ -23,7 +23,7 @@ public sealed class V2LabelPlacementTests {
             const string original = "bBbBbBbBbBbBbBbBbB";
             var displayed = TextCaseTransformer.Apply(original, style.TextCase, System.Globalization.CultureInfo.InvariantCulture);
             var shownStyle = style.Clone(); shownStyle.TextCase = TextCaseTransform.None;
-            var shortMetrics = builder.MeasureText(displayed.Substring(0, 3) + "…", shownStyle);
+            var shortMetrics = builder.MeasureText(displayed.Substring(0, ChartTextFitting.MinimumEllipsizedTextElements) + "…", shownStyle);
             var bounds = new ChartRect(0, 0, shortMetrics.Width + .001, shortMetrics.Height + .001);
             var request = new LabelPlacementRequest(original, new ChartPoint(0, 0), style, new[] { new LabelCandidate(0, 0) }) {
                 MeasuredSize = builder.MeasureText(original, style)

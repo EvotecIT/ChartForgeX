@@ -20,14 +20,16 @@ public sealed class ShortCategoryTickTests {
         var svg = XDocument.Parse(chart.ToSvg());
         var captions = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label").ToArray();
 
-        Assert.Equal(Steps.Length, captions.Length);
-        Assert.Contains(captions, caption => caption.Value.EndsWith("…", StringComparison.Ordinal));
-        for (var index = 0; index < Steps.Length; index++) {
-            var shown = captions[index].Value;
-            Assert.StartsWith(shown.TrimEnd('…'), Steps[index], StringComparison.Ordinal);
+        // A name that cannot keep six characters before its ellipsis thins out at the regular stride instead.
+        Assert.InRange(captions.Length, 2, Steps.Length);
+        var sources = captions.Select(caption => Array.FindIndex(Steps, step => step.StartsWith(caption.Value.TrimEnd('…'), StringComparison.Ordinal))).ToArray();
+        Assert.DoesNotContain(-1, sources);
+        Assert.Equal(sources.OrderBy(index => index), sources);
+        for (var position = 0; position < captions.Length; position++) {
+            var index = sources[position]; var shown = captions[position].Value;
             if (shown == Steps[index]) continue;
-            Assert.True(shown.TrimEnd('…').Length >= 3, "A shortened name keeps enough of itself to identify the category: " + shown);
-            var tooltip = captions[index].Ancestors().Select(group => group.Elements().FirstOrDefault(child => child.Name.LocalName == "title")).FirstOrDefault(title => title != null);
+            Assert.True(shown.TrimEnd('…').Length >= ChartTextFitting.MinimumEllipsizedTextElements, "A shortened name keeps enough of itself to identify the category: " + shown);
+            var tooltip = captions[position].Ancestors().Select(group => group.Elements().FirstOrDefault(child => child.Name.LocalName == "title")).FirstOrDefault(title => title != null);
             Assert.Equal(Steps[index], tooltip?.Value);
         }
     }

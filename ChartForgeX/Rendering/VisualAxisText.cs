@@ -70,9 +70,10 @@ internal static class VisualAxisText {
         var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
             (value, _) => builder.MeasureText(value, style).Width);
         var displayed = lines.Select(line => ChartTextFitting.FitEnd(line, width,
-            value => builder.MeasureText(value, style).Width, "…")).ToArray();
+            value => builder.MeasureText(value, style).Width, "…", ChartTextFitting.MinimumEllipsizedTextElements)).ToArray();
         shortened = lines.Where((line, index) => line != displayed[index]).Any();
-        return string.Join("\n", displayed);
+        // A line too narrow for the shortened-text minimum hides the whole caption rather than half of it.
+        return displayed.Any(line => line.Length == 0) ? string.Empty : string.Join("\n", displayed);
     }
 
     /// <summary>Paints the displayed text within the same footprint used for full and shortened placement.</summary>

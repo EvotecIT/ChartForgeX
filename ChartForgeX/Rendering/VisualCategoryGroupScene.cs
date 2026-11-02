@@ -149,7 +149,7 @@ internal static class VisualCategoryGroupScene {
         if (source.IndexOf('\n') < 0 && source.IndexOf('\r') < 0)
             return VisualAxisText.FitWrappedCategory(builder, source, style, width, out shortened);
         var lines = source.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var fitted = lines.Select(line => ChartTextFitting.FitEnd(line, width, value => builder.MeasureText(value, style).Width, "…")).ToArray();
+        var fitted = lines.Select(line => ChartTextFitting.FitEnd(line, width, value => builder.MeasureText(value, style).Width, "…", ChartTextFitting.MinimumEllipsizedTextElements)).ToArray();
         shortened = !lines.SequenceEqual(fitted);
         return string.Join("\n", fitted);
     }

@@ -25,7 +25,7 @@ internal static partial class VisualHierarchyCompiler {
 
         string shortened = string.Empty; double rotation = 0;
         foreach (var degrees in orientations) {
-            var candidate = ChartTextFitting.FitEnd(secondary, value => fits(Block(builder.MeasureText(value, style)), degrees), "…");
+            var candidate = ChartTextFitting.FitEnd(secondary, value => fits(Block(builder.MeasureText(value, style)), degrees), "…", ChartTextFitting.MinimumEllipsizedTextElements);
             if (candidate.Length <= shortened.Length || candidate == "…") continue;
             shortened = candidate; rotation = degrees;
         }
