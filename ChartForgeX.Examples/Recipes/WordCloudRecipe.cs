@@ -1,9 +1,17 @@
 /// <summary>Deterministic placement of weighted service-observation terms.</summary>
 public static class WordCloudRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
-        Chart.Create().AddWordCloud("Topics", new[] {
-            new ChartWordCloudItem("Availability", 20), new ChartWordCloudItem("Identity", 16), new ChartWordCloudItem("Network", 14),
-            new ChartWordCloudItem("Storage", 12), new ChartWordCloudItem("Recovery", 10), new ChartWordCloudItem("Capacity", 8),
-            new ChartWordCloudItem("Services", 6), new ChartWordCloudItem("Validation", 4)
-        }).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        // How often each topic appeared in a quarter of service review notes.
+        var terms = new (string Text, double Mentions)[] {
+            ("Availability", 96), ("Identity", 81), ("Latency", 74), ("Network", 69), ("Storage", 61), ("Recovery", 57),
+            ("Capacity", 52), ("Backups", 47), ("Certificates", 44), ("Patching", 41), ("Monitoring", 38), ("Access reviews", 35),
+            ("DNS", 33), ("Licensing", 30), ("Firewall", 28), ("Replication", 26), ("Alerts", 24), ("Onboarding", 22),
+            ("Encryption", 20), ("Audit", 19), ("Change control", 18), ("Escalation", 16), ("Runbooks", 15), ("MFA", 14),
+            ("Retention", 13), ("Cost", 12), ("Vendors", 11), ("Training", 10), ("Load balancing", 9), ("Failover", 9),
+            ("Inventory", 8), ("Tickets", 8), ("Compliance", 7), ("Endpoints", 7), ("Mail flow", 6), ("Quotas", 6)
+        };
+        var count = variant == "compact" ? 20 : terms.Length;
+        return Chart.Create().AddWordCloud("Mentions", terms.Take(count).Select(term => new ChartWordCloudItem(term.Text, term.Mentions)).ToArray())
+            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+    }
 }

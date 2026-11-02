@@ -1,3 +1,4 @@
+#region Setup
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -32,6 +33,7 @@ var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
 File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion
 
 /// <summary>Authors every finite native Actor form and a business use case through the Core topology model.</summary>
 /// <remarks>The separately shared .mmd fixture proves parsed-source consumption. This recipe has no Mermaid dependency.</remarks>

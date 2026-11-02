@@ -1,0 +1,27 @@
+/// <summary>An organization chart: people, their roles and reporting lines laid out as cards.</summary>
+public static class OrgChartRecipe {
+    /// <summary>Creates a three-level team; the compact variant stacks the deepest branch vertically.</summary>
+    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var compact = variant == "compact";
+        var chart = TopologyChart.Create().WithViewport(compact ? 390 : 960, compact ? 520 : 520).WithLegend(null);
+        chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;
+        chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
+        chart.AddTeam("company", "Northwind Services", new[] {
+            // Wide charts keep each team in one row; compact ones stack every team under its manager.
+            Person("avery", "Avery Quinn", "Managing director", policy: compact ? TopologyHierarchyLayoutPolicy.Vertical : TopologyHierarchyLayoutPolicy.Standard),
+            Person("jordan", "Jordan Vale", "Engineering", "avery"),
+            Person("morgan", "Morgan Reed", "Operations", "avery"),
+            Person("casey", "Casey Lund", "Customer success", "avery"),
+            Person("riley", "Riley Shaw", "Platform", "jordan"),
+            Person("sam", "Sam Okafor", "Security", "jordan"),
+            Person("taylor", "Taylor Brandt", "Service desk", "morgan"),
+            Person("drew", "Drew Alvarez", "Field support", "morgan"),
+            Person("kim", "Kim Novak", "Onboarding", "casey")
+        }, new TopologyTeamOptions { IncludeTeamNode = false });
+        return chart;
+    }
+
+    private static TopologyTeamMember Person(string id, string name, string role, string? manager = null, TopologyHierarchyLayoutPolicy? policy = null) =>
+        new(id, name, role) { ParentId = manager, LayoutPolicy = policy };
+}

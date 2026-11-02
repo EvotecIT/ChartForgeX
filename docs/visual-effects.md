@@ -1,10 +1,12 @@
 ---
-description: "Use the implemented finite native effects and explicit replay contracts, and read the remaining shared-effects design."
+description: "Add shadows, glow, glass panels, masks and fades to charts, diagrams and canvases, with the same result in SVG and PNG."
 ---
 
 # Visual effects
 
-Finite native effects are implemented through the capture, retained-surface, composition and ordered-replay owners documented below. The broader vocabulary, theme and generator design remains a proposal; it is not a claim that every listed type or filter graph exists. The active checklist lives in [TODO.md](../TODO.md#visual-effects).
+ChartForgeX can draw soft shadows, glow, frosted glass, masks, fades and other effects on charts, diagrams and canvas compositions, and it draws them the same way in SVG and in PNG. The first sections show the effects you can use today and how to apply them. The later sections describe the design for a shared effects vocabulary; treat those as a plan rather than a list of available types.
+
+The effects available today are built from captured surfaces that are composed and replayed in order, as the sections below describe.
 
 ## Purpose
 
