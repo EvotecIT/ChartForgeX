@@ -16,6 +16,16 @@ The core package embeds upright variable TrueType faces for native PNG rendering
 
 `ChartForgeX.Typography.ChartFontAssets.StyleSheet` supplies both embedded browser faces. Add it once to a host page's stylesheet when that page needs the fonts outside chart SVGs. Product-font SVG output includes the required face for standalone viewing. The gallery and browser/native proof helpers use these product assets directly, without registering a separate fixture alias. Explicit custom fonts remain available through `WithFontFamily`, `FontSpec` and `FontRegistry`.
 
+A host that emits the shared stylesheet once can omit the bundled product faces from each child SVG with `VisualSvgOptions.WithoutProductFonts()`. Captured custom fonts remain embedded. Preserve the chart's colour-variable mappings when supplying export options:
+
+```csharp
+var svgOptions = new VisualSvgOptions(colorVariables: chart.Options.SvgColorVariables)
+    .WithoutProductFonts();
+var svg = chart.ToSvg(svgOptions, "monthly-sales");
+```
+
+Use the default export for a standalone SVG that needs its own font faces. Built-in graph, stencil, sequence and motion-player hosts load the shared product faces for their controls and surrounding text as well as their visual content.
+
 Numeric text uses tabular numerals where the face supports them. Hosts should use `font-variant-numeric: tabular-nums` for axis ticks, data labels and numeric table/grid cells so that changing a value does not shift its digit columns. The native bundled-font path applies the corresponding tabular substitutions.
 
 ## Chart roles in the shared type ramp

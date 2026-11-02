@@ -3,6 +3,8 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
+using ChartForgeX.Interactivity;
+using ChartForgeX.VisualArtifacts;
 using System.Xml.Linq;
 using Xunit;
 
@@ -61,6 +63,8 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     [InlineData("topology-page")]
     [InlineData("topology-host")]
     [InlineData("responsive-host")]
+    [InlineData("graph-page")]
+    [InlineData("sequence-page")]
     public void DocumentedHostRegistrationSuppliesProductFontsWhileFragmentsStayAssetFree(string path) {
         var (html, fragment) = ProductHost(path);
         Assert.Contains("@font-face{font-family:'Archivo'", html, StringComparison.Ordinal);
@@ -73,13 +77,15 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
 
     [Fact]
     public void BrowserHostsDoNotReplaceAnExplicitlyRegisteredProductFamily() {
+        Assert.Contains("@font-face{font-family:'Archivo'", HtmlGraphExplorerRenderer.BuildFragmentStyle(), StringComparison.Ordinal);
         FontRegistry.Register("Archivo", ProductFont("JetBrainsMono", "ttf"));
         var renderer = new HtmlInteractiveChartRenderer();
         var chart = Model().WithTitle("11118888");
         foreach (var html in new[] {
             renderer.RenderPage(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
             renderer.RenderFragment(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
-            ChartFontAssets.StyleSheet
+            ChartFontAssets.StyleSheet,
+            HtmlGraphExplorerRenderer.BuildFragmentStyle()
         }) {
             Assert.DoesNotContain("@font-face{font-family:'Archivo'", html, StringComparison.Ordinal);
             Assert.Contains("@font-face{font-family:'JetBrains Mono'", html, StringComparison.Ordinal);
@@ -106,11 +112,16 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     [InlineData("topology-page")]
     [InlineData("topology-host")]
     [InlineData("responsive-host")]
+    [InlineData("graph-page")]
+    [InlineData("sequence-page")]
     public async Task ProductHostLoadsItsOwnBrowserFontWithoutTheProofFontInjector(string path) {
         if (!InteractiveChartBrowser.Enabled) return;
         var (html, _) = ProductHost(path);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 800, 560, waitForOwnedFonts: false);
         Assert.True(await session.Page.EvaluateAsync<bool>("async()=>{const faces=await document.fonts.load('600 16px Archivo');await document.fonts.ready;return faces.length>0&&faces.every(face=>face.status==='loaded')}"));
+        Assert.True(await session.Page.EvaluateAsync<bool>("async()=>{const faces=await document.fonts.load('500 16px \"JetBrains Mono\"');return faces.length>0&&faces.every(face=>face.status==='loaded')}"));
+        if (path is "graph-page" or "sequence-page")
+            Assert.StartsWith("Archivo", await session.Page.EvaluateAsync<string>("()=>getComputedStyle(document.body).fontFamily"), StringComparison.Ordinal);
         Assert.True(await session.Page.EvaluateAsync<bool>("()=>[...document.querySelectorAll('svg text')].some(node=>node.getBoundingClientRect().width>0&&node.getComputedTextLength()>0)"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
@@ -175,6 +186,14 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         var topology = TopologyChart.Create().WithTitle("Product font delivery").WithViewport(720, 420, 24)
             .AddNode("node", "Bundled face", 40, 60, width: 180, height: 72);
         if (path == "topology-page") return (new TopologyHtmlRenderer().RenderPage(topology), null);
+        if (path == "graph-page") return (GraphScene.Create("product-graph", "Product font delivery")
+            .AddNode("node", "Bundled face").ToGraphExplorerHtmlPage(), null);
+        if (path == "sequence-page") {
+            var sequence = SequenceArtifact.Create("product-navigation").AddParticipant("reader", "Reader")
+                .AddParticipant("archive", "Archive").AddMessage("reader", "archive", "Save");
+            sequence.Participants[0].NavigationLinks = new[] { new VisualNavigationLink("Guide", "#guide") };
+            return (sequence.ToNavigationHtmlPage(), null);
+        }
         var fragment = path switch {
             "chart-host" => new HtmlInteractiveChartRenderer().RenderFragmentWithoutAssets(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
             "topology-host" => new TopologyHtmlRenderer().RenderFragmentWithoutAssets(topology),

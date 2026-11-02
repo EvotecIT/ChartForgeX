@@ -87,7 +87,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     /// <summary>Measures the complete badge text and reserves padding without changing its corner anchor.</summary>
     private static ChartRect NodeBadgeBounds(GraphSceneNode node, double size) {
-        var font = FontSpec.FromFamily("Inter, Segoe UI, Arial, sans-serif");
+        var font = FontSpec.FromFamily(ChartForgeX.Themes.ChartFontStacks.ProductSans);
         font.Weight = 800;
         var width = Math.Max(16, TextLayoutEngine.Measure(node.BadgeText ?? string.Empty, new TextStyle { Font = font, FontSize = 7 }).Width + 8);
         var x = IsCardNode(node) ? BoxHalfWidth(size) - 18 : size * .82;

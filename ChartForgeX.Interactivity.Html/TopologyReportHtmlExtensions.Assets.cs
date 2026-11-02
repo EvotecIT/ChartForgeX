@@ -1,8 +1,8 @@
 namespace ChartForgeX.Interactivity.Html;
 
 public static partial class TopologyReportHtmlExtensions {
-    private const string ReportStyles = """
-        :root{color-scheme:light;font-family:Inter,Segoe UI,Arial,sans-serif;color:#17243b;background:#f3f6fa}
+    private static string ReportStyles => ChartForgeX.Typography.ChartFontAssets.StyleSheet + """
+        :root{color-scheme:light;font-family:var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif);color:#17243b;background:#f3f6fa}
         *{box-sizing:border-box}
         body{margin:0}
         main{max-width:1480px;margin:auto;padding:36px}

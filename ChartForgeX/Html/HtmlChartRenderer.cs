@@ -90,7 +90,7 @@ public sealed partial class HtmlChartRenderer {
     }
 
     internal static string CssFontFamily(string value) {
-        if (string.IsNullOrWhiteSpace(value)) return "system-ui, sans-serif";
+        if (string.IsNullOrWhiteSpace(value)) return ChartForgeX.Themes.ChartFontStacks.ProductSans;
         return value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
     }
 
