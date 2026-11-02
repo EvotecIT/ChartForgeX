@@ -6,7 +6,7 @@
         "ext": "svg",
         "w": 760,
         "h": 440,
-        "kb": 7.8,
+        "kb": 8.8,
         "png": "/site/docs/axis-calendar-month"
       },
       "axis-negative-log": {
@@ -14,7 +14,7 @@
         "ext": "svg",
         "w": 760,
         "h": 440,
-        "kb": 7.6,
+        "kb": 7.8,
         "png": "/site/docs/axis-negative-log"
       },
       "axis-ordinal": {
@@ -22,7 +22,7 @@
         "ext": "svg",
         "w": 760,
         "h": 440,
-        "kb": 7.4,
+        "kb": 8.3,
         "png": "/site/docs/axis-ordinal"
       },
       "axis-positive-log": {
@@ -30,7 +30,7 @@
         "ext": "svg",
         "w": 760,
         "h": 440,
-        "kb": 7.6,
+        "kb": 7.8,
         "png": "/site/docs/axis-positive-log"
       },
       "hierarchy": {
@@ -54,7 +54,7 @@
         "ext": "svg",
         "w": 760,
         "h": 480,
-        "kb": 14.5,
+        "kb": 14.4,
         "png": "/site/docs/hierarchy-sunburst-engineering"
       },
       "hierarchy-sunburst-full": {
@@ -62,7 +62,7 @@
         "ext": "svg",
         "w": 760,
         "h": 480,
-        "kb": 20.4,
+        "kb": 20.5,
         "png": "/site/docs/hierarchy-sunburst-full"
       },
       "hierarchy-treemap-engineering": {
@@ -78,7 +78,7 @@
         "ext": "svg",
         "w": 760,
         "h": 480,
-        "kb": 11.5,
+        "kb": 11.4,
         "png": "/site/docs/hierarchy-treemap-full"
       },
       "install": {
@@ -108,7 +108,7 @@
         "ext": "svg",
         "w": 1032,
         "h": 540,
-        "kb": 39.8
+        "kb": 41.6
       },
       "stories-1": {
         "base": "/site/docs/stories-1",
@@ -129,7 +129,7 @@
         "ext": "svg",
         "w": 1280,
         "h": 720,
-        "kb": 32
+        "kb": 32.4
       },
       "topology": {
         "base": "/site/docs/topology",
@@ -152,14 +152,14 @@
         "ext": "svg",
         "w": 1200,
         "h": 630,
-        "kb": 16.7
+        "kb": 17.7
       },
       "chart": {
         "base": "/site/docs/surface-chart",
         "ext": "svg",
         "w": 480,
         "h": 300,
-        "kb": 12.3
+        "kb": 14
       },
       "graph": {
         "base": "/site/examples/interactive-topology",
@@ -181,7 +181,7 @@
         "ext": "svg",
         "w": 2064,
         "h": 1184,
-        "kb": 33.7,
+        "kb": 36.4,
         "pngKb": 103,
         "interactive": false,
         "code": {
@@ -245,7 +245,7 @@
       "ext": "svg",
       "w": 2064,
       "h": 1184,
-      "kb": 33.7,
+      "kb": 36.4,
       "pngKb": 103,
       "interactive": false,
       "code": {
@@ -261,7 +261,7 @@
       "ext": "svg",
       "w": 1180,
       "h": 640,
-      "kb": 18.4,
+      "kb": 18.1,
       "pngKb": 37,
       "interactive": false,
       "code": {
@@ -637,37 +637,37 @@
       "api": {
         "base": "/site/nav/api",
         "ext": "svg",
-        "w": 1027,
-        "h": 560,
-        "kb": 11.1
+        "w": 482,
+        "h": 164,
+        "kb": 11.4
       },
       "docs": {
         "base": "/site/docs/topology",
         "ext": "svg",
-        "w": 1224,
+        "w": 1200,
         "h": 700,
-        "kb": 31.1
+        "kb": 31.4
       },
       "examples": {
         "base": "/site/nav/examples",
         "ext": "svg",
         "w": 240,
         "h": 150,
-        "kb": 17.8
+        "kb": 18
       },
       "gallery": {
         "base": "/site/nav/gallery",
         "ext": "svg",
         "w": 240,
         "h": 150,
-        "kb": 30.6
+        "kb": 30.9
       },
       "mermaid": {
         "base": "/site/nav/mermaid",
         "ext": "svg",
-        "w": 615,
-        "h": 320,
-        "kb": 19.4
+        "w": 566,
+        "h": 267,
+        "kb": 16.8
       },
       "playground": {
         "base": "/site/nav/playground",
@@ -690,6 +690,6 @@
     "ext": "svg",
     "w": 560,
     "h": 300,
-    "kb": 8
+    "kb": 8.4
   }
 }
