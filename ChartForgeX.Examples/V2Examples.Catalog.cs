@@ -16,19 +16,21 @@ public static partial class V2Examples {
             schemaVersion = 1,
             matrixScope = curated ? "selected" : "full",
             pipeline = "model-to-prepared-scene-to-svg-or-raster",
-            assets = CatalogAssets(artifacts).Concat(EnhanceExamples.Files(output)).Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray(),
+            assets = CatalogAssets(artifacts).Concat(EnhanceExamples.Files(output)).Concat(WriteInteractiveAssets(output)).Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray(),
             chartKinds = artifacts.SelectMany(ArtifactKinds).Distinct().OrderBy(kind => kind).ToArray(),
             groups = CatalogGroups.Select(group => new { id = group.Id, label = group.Label }),
+            families = artifacts.Select(artifact => artifact.Family).Distinct(StringComparer.Ordinal).OrderBy(family => family, StringComparer.Ordinal)
+                .ToDictionary(family => family, FamilyReference),
             fonts = new[] { "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf" }.Select(file => new {
                 file, sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(Path.Combine(output, file))))
             }),
             artifacts = artifacts.Select(artifact => new {
                 id = artifact.Id, family = artifact.Family, familyLabel = FamilyLabel(artifact.Family),
-                group = GroupFor(artifact.Family), title = artifact.Title, variant = artifact.Variant,
+                group = GroupFor(artifact.Family), title = artifact.Title, variant = artifact.Variant, variantLabel = VariantLabel(artifact.Variant),
                 primary = primaryIds.Contains(artifact.Id), seriesKinds = ArtifactKinds(artifact),
                 theme = artifact.Theme, width = artifact.Width, height = artifact.Height,
                 naturalAspect = (double)artifact.Width / artifact.Height,
-                compact = artifact.Compact, source = artifact.Id + ".csharp.txt", gallerySource = artifact.Id + ".gallery.csharp.txt",
+                compact = artifact.Compact, interactive = artifact.HtmlAdapter ? artifact.Id + ".interactive.html" : null, source = artifact.Id + ".csharp.txt", gallerySource = artifact.Id + ".gallery.csharp.txt",
                 svg = artifact.Id + ".svg", png = artifact.Id + ".png", html = artifact.Id + ".html",
                 thumbnail = artifact.Id + ".thumbnail.svg", thumbnailPng = artifact.Id + ".thumbnail.png",
                 thumbnailWidth = ThumbnailWidth, thumbnailHeight = ThumbnailHeight,
@@ -59,8 +61,12 @@ public static partial class V2Examples {
     private static IEnumerable<ProofArtifact> PrimaryArtifacts(IReadOnlyList<ProofArtifact> artifacts) =>
         artifacts.GroupBy(artifact => (artifact.Family, artifact.Theme)).Select(group => group
             .OrderBy(artifact => artifact.Id.StartsWith("family-", StringComparison.Ordinal) ? 0 : 1)
-            .ThenBy(artifact => artifact.Variant switch { "expanded" => 0, "wide" => 1, "feasibility" => 2, _ => 3 })
+            .ThenBy(artifact => IsScenarioPrimary(artifact) ? -1 : artifact.Variant switch { "expanded" => 0, "wide" => 1, "feasibility" => 2, _ => 3 })
             .ThenBy(artifact => artifact.Id, StringComparer.Ordinal).First());
+
+    // Product scenarios with real-looking data represent their family better than the generic fixture.
+    private static bool IsScenarioPrimary(ProofArtifact artifact) => IsScenarioVariant(artifact.Variant)
+        && (artifact.Variant != "availability" || artifact.Family == "state-timeline");
 
     private static string ExampleKey(ProofArtifact artifact) => artifact.Id.Substring(0, artifact.Id.Length - artifact.Theme.Length - 1);
 

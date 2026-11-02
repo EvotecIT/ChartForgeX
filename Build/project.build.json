@@ -1,17 +1,17 @@
 {
   "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/project.build.schema.json",
   "RootPath": "..",
-  "ExpectedVersion": "3.2.X",
+  "ExpectedVersion": "3.3.X",
   "ExpectedVersionMap": {
-    "ChartForgeX": "3.2.X",
-    "ChartForgeX.Visuals": "3.2.X",
-    "ChartForgeX.Stories": "3.2.X",
-    "ChartForgeX.Interactivity": "3.2.X",
-    "ChartForgeX.Interactivity.Html": "3.2.X",
-    "ChartForgeX.Markup": "3.2.X",
-    "ChartForgeX.Mermaid": "3.2.X",
-    "ChartForgeX.Markup.Mermaid": "3.2.X",
-    "ChartForgeX.Markup.Cli": "3.2.X"
+    "ChartForgeX": "3.3.X",
+    "ChartForgeX.Visuals": "3.3.X",
+    "ChartForgeX.Stories": "3.3.X",
+    "ChartForgeX.Interactivity": "3.3.X",
+    "ChartForgeX.Interactivity.Html": "3.3.X",
+    "ChartForgeX.Markup": "3.3.X",
+    "ChartForgeX.Mermaid": "3.3.X",
+    "ChartForgeX.Markup.Mermaid": "3.3.X",
+    "ChartForgeX.Markup.Cli": "3.3.X"
   },
   "VersionBindings": [
     {
@@ -56,7 +56,7 @@
   "GitHubRepositoryName": "ChartForgeX",
   "GitHubIsPreRelease": false,
   "GitHubIncludeProjectNameInTag": true,
-  "GitHubGenerateReleaseNotes": true,
+  "GitHubGenerateReleaseNotes": false,
   "GitHubReleaseMode": "Single",
   "GitHubPrimaryProject": "ChartForgeX",
   "GitHubTagTemplate": "{Repo}-v{PrimaryVersion}",

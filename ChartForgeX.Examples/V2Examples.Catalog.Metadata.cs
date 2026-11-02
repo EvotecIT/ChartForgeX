@@ -2,17 +2,19 @@ public static partial class V2Examples {
     private static readonly (string Id, string Label)[] CatalogGroups = {
         ("compare", "Compare values"), ("trends", "Trends and ranges"), ("distribution", "Distributions"),
         ("proportion", "Parts of a whole"), ("indicators", "Progress and targets"),
-        ("matrices-maps", "Matrices and maps"), ("schedule", "Schedules"), ("relationships", "Relationships")
+        ("matrices-maps", "Matrices and maps"), ("schedule", "Schedules"), ("relationships", "Relationships"),
+        ("dashboards", "Dashboards and reports")
     };
 
     private static string GroupFor(string family) => family switch {
         "line" or "step-line" or "area" or "step-area" or "stacked-area" or "range-band" or "range-area" or "difference-area" or "trend-line" or "cartesian" => "trends",
-        "scatter" or "bubble" or "histogram" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
-        "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "pyramid" or "pictorial" => "proportion",
-        "gauge" or "circle" or "progress-ring" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
+        "scatter" or "quadrant" or "bubble" or "histogram" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
+        "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "cone-funnel" or "pyramid" or "pictorial" => "proportion",
+        "gauge" or "linear-gauge" or "circle" or "progress-ring" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
         "heatmap" or "hexbin-heatmap" or "calendar-heatmap" or "dotted-map" or "tile-map" or "region-map" => "matrices-maps",
         "timeline" or "state-timeline" or "gantt" or "gantt-lane" => "schedule",
-        "tree" or "sankey" or "topology" or "flow" or "sequence" or "chord" => "relationships",
+        "tree" or "org-chart" or "sankey" or "topology" or "flow" or "sequence" or "chord" => "relationships",
+        "chart-grid" or "dashboard" => "dashboards",
         _ => "compare"
     };
 
@@ -23,6 +25,7 @@ public static partial class V2Examples {
     private static string FamilyLabel(string family) => family switch {
         "cartesian" => "Combination chart", "chart-grid" => "Chart grid", "circle" => "Circular progress",
         "ohlc" => "OHLC", "hexbin-heatmap" => "Hexbin heatmap", "state-timeline" => "State timeline",
+        "quadrant" => "Quadrant chart", "org-chart" => "Org chart", "cone-funnel" => "Cone funnel", "linear-gauge" => "Linear gauge",
         _ => string.Join(" ", family.Split('-').Select(word => char.ToUpperInvariant(word[0]) + word.Substring(1)))
     };
 

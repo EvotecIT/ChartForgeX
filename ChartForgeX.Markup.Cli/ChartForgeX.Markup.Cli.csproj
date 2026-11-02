@@ -15,6 +15,7 @@
     <Authors>Evotec</Authors>
     <Description>Command-line renderer and code generator for ChartForgeX markup.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReleaseNotes>ChartForgeX 3.3.0 adds shared design roles, optional enhance hooks and linked views, server-rendered mark policies, SVG accessibility modes, and architecture scenarios with sequence, story and terminal output. Includes responsive chart and packaging fixes. Release notes: https://github.com/EvotecIT/ChartForgeX/releases/tag/ChartForgeX-v3.3.0</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>

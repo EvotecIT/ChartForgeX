@@ -12,7 +12,12 @@
       <h2 id="cfx-viewer-title" data-cfx-viewer-title></h2>
       <p class="cfx-viewer__family" data-cfx-viewer-family></p>
     </div>
+    <div class="cfx-seg cfx-viewer__mode" role="group" aria-label="Output" data-cfx-viewer-modes hidden>
+      <button type="button" aria-pressed="true" data-cfx-viewer-mode="static" style="--key: var(--cfx-s1)"><span class="cfx-key" aria-hidden="true"></span>Static</button>
+      <button type="button" aria-pressed="false" data-cfx-viewer-mode="interactive" style="--key: var(--cfx-s2)"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Interactive</button>
+    </div>
     <div class="cfx-viewer__links">
+      <a class="cfx-viewer__link" data-cfx-viewer-family-page href="#" hidden>All variants</a>
       <a class="cfx-viewer__link" data-cfx-viewer-open href="#">{{ v_open }}</a>
       <a class="cfx-viewer__link" data-cfx-viewer-page href="#">{{ v_page }}</a>
     </div>
@@ -21,7 +26,7 @@
     </button>
   </div>
   <div class="cfx-viewer__body">
-    <div class="cfx-viewer__image"><img data-cfx-viewer-image alt="" /></div>
+    <div class="cfx-viewer__image"><img data-cfx-viewer-image alt="" /><iframe class="cfx-viewer__live" title="Interactive chart" data-cfx-viewer-frame hidden></iframe></div>
     <div class="cfx-seg cfx-viewer__tabs" role="tablist" aria-label="Source" data-cfx-viewer-tabs hidden></div>
     <figure class="cfx-codeblock cfx-viewer__source" id="cfx-viewer-source" data-lang="{{ v_lang }}">
       <figcaption class="cfx-codeblock__bar">
