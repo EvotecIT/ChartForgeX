@@ -141,7 +141,7 @@
       "neutral": { "fill": "#7c818a", "ink": "#5b6069" }
     },
     "state": { "maintenance": { "fill": "#6b5bd2", "ink": "#5a4bc0" } },
-    "series": ["#2a78d6", "#0f9f8c", "#d9711f", "#8055c4", "#c24fa8", "#cc4048", "#a97800", "#37813e", "#1685a3", "#5f5f5f"],
+    "series": ["#2a78d6", "#0f9f8c", "#d9711f", "#8055c4", "#c24fa8", "#cc4048", "#a97800", "#37813e", "#00739b", "#5f5f5f"],
     "other": "#737373",
     "ramps": {
       "sequential": ["#9ab8dc", "#5598e7", "#2171ce", "#1c5cab", "#104281"],
@@ -171,7 +171,7 @@
       "neutral": { "fill": "#8a8f98", "ink": "#a0a5ae" }
     },
     "state": { "maintenance": { "fill": "#a497f2", "ink": "#a497f2" } },
-    "series": ["#4a90ea", "#22b39e", "#ee8a3a", "#ad86eb", "#e479c4", "#f47479", "#e8b83e", "#73be79", "#55bed9", "#b1b1b1"],
+    "series": ["#4a90ea", "#22b39e", "#ee8a3a", "#ad86eb", "#e479c4", "#e15f55", "#e8b83e", "#73be79", "#55bed9", "#b1b1b1"],
     "other": "#929292",
     "ramps": {
       "sequential": ["#324c6e", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
