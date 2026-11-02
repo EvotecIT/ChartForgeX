@@ -12,22 +12,7 @@ internal static partial class VisualMarkerScene {
         if (!ChartSeriesKindTraits.SupportsMarkers(series.Kind)) return null;
         var markers = series.ResolvePointMarkers(point);
         if (series.Kind == ChartSeriesKind.Dumbbell && series.Dumbbell.IsConfigured) return DumbbellLegend(chart, series, color, paint, point, pattern);
-        if (series.Kind == ChartSeriesKind.DifferenceArea) return (builder, bounds, context) => {
-            var colors = context.Theme.Resolve(context.ThemeMode);
-            foreach (var positive in new[] { true, false }) {
-                var half = new ChartRect(bounds.Left + (positive ? 0 : bounds.Width / 2), bounds.Top, bounds.Width / 2, bounds.Height);
-                var (fill, fillPaint) = VisualCartesianCompiler.DifferenceFill(series, chart.IndexOfSeries(series), positive, colors, context);
-                builder.Rect(half, fill, role: positive ? "legend-difference-positive" : "legend-difference-negative", paint: VisualChartPaint.Fill(fillPaint));
-                if (fill.A > 0) VisualFrameLayout.DrawLegendPattern(builder, half, pattern, context, role: "legend-area-pattern");
-            }
-            var y = bounds.Top + bounds.Height / 2;
-            VisualSeriesStroke.DrawLine(builder, series, bounds.Left, y, bounds.Right, y, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth),
-                role: "legend-line", paint: VisualChartPaint.Stroke(paint));
-            if (Enabled(series, series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
-                || series.PointFillPatterns.Any(value => value.HasValue)) && Radius(series, context) > 0)
-                Draw(builder, series, point, bounds.Left + bounds.Width / 2, y, Math.Min(bounds.Width, bounds.Height) * .4,
-                    color, paint, "legend-swatch", pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame));
-        };
+        if (series.Kind == ChartSeriesKind.DifferenceArea) return DifferenceLegend(chart, series, color, paint, positive: true);
         var connected = series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area
             or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
         var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartLineAreaForm.Area
@@ -82,6 +67,22 @@ internal static partial class VisualMarkerScene {
                 quantitativeOutline: QuantitativeOutline(series, colors), markerOptions: markers);
         };
     }
+
+    /// <summary>One boundary of a difference area: the shading where it leads, its line and its marker.</summary>
+    internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DifferenceLegend(Chart chart, ChartSeries series,
+        ChartColor color, SvgPaint paint, bool positive, double[]? dash = null) => (builder, bounds, context) => {
+            var colors = context.Theme.Resolve(context.ThemeMode);
+            var (fill, fillPaint) = VisualCartesianCompiler.DifferenceFill(series, chart.IndexOfSeries(series), positive, colors, context);
+            builder.Rect(bounds, fill, role: positive ? "legend-difference-positive" : "legend-difference-negative", paint: VisualChartPaint.Fill(fillPaint));
+            if (fill.A > 0) VisualFrameLayout.DrawLegendPattern(builder, bounds, series.FillPattern, context, role: "legend-area-pattern");
+            var y = bounds.Top + bounds.Height / 2;
+            VisualSeriesStroke.DrawLine(builder, series, bounds.Left, y, bounds.Right, y, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth),
+                "legend-line", VisualChartPaint.Stroke(paint), dash);
+            if (Enabled(series, series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
+                || series.PointFillPatterns.Any(value => value.HasValue)) && Radius(series, context) > 0)
+                Draw(builder, series, -1, bounds.Left + bounds.Width / 2, y, Math.Min(bounds.Width, bounds.Height) * .4,
+                    color, paint, "legend-swatch", pattern: series.FillPattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame));
+        };
 
     /// <summary>Uses the same endpoint overrides as native comparisons while retaining the existing bounded legend swatch.</summary>
     private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DumbbellLegend(Chart chart, ChartSeries series,

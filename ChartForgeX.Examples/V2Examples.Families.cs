@@ -178,6 +178,7 @@ public static partial class V2Examples {
             return;
         }
         var prepared = model.Prepare(context);
+        height = (int)Math.Ceiling(prepared.Size.Height);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
         WriteThumbnail(output, model, id, title, family, mode, legend);
@@ -193,6 +194,6 @@ public static partial class V2Examples {
     }
 
     private static VisualRenderContext GalleryContext(int width, int height, VisualThemeMode mode, string title, string subtitle, bool? legend) =>
-        new(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode, new VisualFrame(title, subtitle, showLegend: legend), FontSpec.FromFamily(ProofFont));
+        new(new VisualLayoutOptions(new VisualSize(width, height), fitHeightToContent: true), VisualTheme.Graphite(), mode, new VisualFrame(title, subtitle, showLegend: legend), FontSpec.FromFamily(ProofFont));
     private static string FamilyName(ChartSeriesKind kind) => System.Text.RegularExpressions.Regex.Replace(kind.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
 }

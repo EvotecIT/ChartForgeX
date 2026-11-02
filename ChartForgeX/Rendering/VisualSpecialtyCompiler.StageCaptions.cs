@@ -239,7 +239,7 @@ internal static partial class VisualSpecialtyCompiler {
             foreach (var item in captions) {
                 var placed = item.Placed!; var id = Id(index) + "-" + item.Component + "-label";
                 var bounds = placed.IsDropped ? new ChartRect(placed.Request.Anchor.X, placed.Request.Anchor.Y, 0, 0) : placed.Bounds;
-                if (placed.HasLeaderLine) VisualStateSceneTools.Connector(builder, chart.Options, placed.Request.Anchor, placed.LeaderEnd, colors.MutedForeground,
+                if (placed.HasLeaderLine) VisualStateSceneTools.Connector(builder, chart.Options, placed.LeaderStart, placed.LeaderEnd, colors.MutedForeground,
                     _cone ? ChartDataLabelConnectorStyle.Straight : null);
                 StageText(builder, item.Text, bounds, item.Style, family + "-" + item.Component + "-label", id,
                     TextAlignment.Left, item.Paint, family, halo: item.Halo, haloPaint: item.HaloPaint);

@@ -14,11 +14,11 @@ internal static class ChartMarkSurface {
     /// <summary>Design rule 5: the surface-coloured ring around a marker without an authored outline.</summary>
     public const double MarkerRing = 2;
 
-    /// <summary>Design rule 4: a stacked column or bar is at most this thick unless a maximum width is authored.</summary>
-    public const double StackedMaximumThickness = 24;
+    /// <summary>A horizontal bar is at most this thick unless a maximum width is authored, so long category lists stay compact.</summary>
+    public const double HorizontalMaximumThickness = 28;
 
-    /// <summary>The automatic maximum bar thickness: the theme's, capped for stacks so segments read as one column.</summary>
-    public static double MaximumThickness(double themeMaximum, bool stacked) => stacked ? System.Math.Min(themeMaximum, StackedMaximumThickness) : themeMaximum;
+    /// <summary>The automatic maximum bar thickness: the theme's for columns, stacked or grouped alike, and a thinner cap for horizontal bars.</summary>
+    public static double MaximumThickness(double themeMaximum, bool horizontal) => horizontal ? System.Math.Min(themeMaximum, HorizontalMaximumThickness) : themeMaximum;
 
     /// <summary>Design rule 4: the default radius of a bar's data end.</summary>
     public const double DataEndRadius = 4;

@@ -48,6 +48,10 @@ internal static partial class VisualCartesianCompiler {
                 entries.AddRange(DumbbellLegendEntries(chart, series, index, colors));
                 continue;
             }
+            if (series.ShowInLegend && series.Kind == ChartSeriesKind.DifferenceArea) {
+                entries.AddRange(DifferenceLegendEntries(chart, series, index, colors));
+                continue;
+            }
             if (series.ShowInLegend) {
                 var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
                 entries.Add(new VisualLegendEntry(series.Name, color, SeriesId(index), series.Kind, series.FillPattern, series.StateRole,

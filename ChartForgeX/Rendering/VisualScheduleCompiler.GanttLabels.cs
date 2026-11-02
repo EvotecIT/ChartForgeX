@@ -129,7 +129,7 @@ internal static partial class VisualScheduleCompiler {
             contained ? ink.Color : ChartColorMath.AccessibleTextOnBackground(colors.Surface));
         style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
         if (!contained && (label.Bounds.Right <= item.Bounds.Left || label.Bounds.Left >= item.Bounds.Right))
-            VisualStateSceneTools.Connector(builder, chart.Options, label.Request.Anchor, label.LeaderEnd, colors.MutedForeground);
+            VisualStateSceneTools.Connector(builder, chart.Options, label.LeaderStart, label.LeaderEnd, colors.MutedForeground);
         builder.Text(label.Text, label.Bounds.Left + label.Request.Padding,
             label.Bounds.Top + label.Request.Padding + builder.TextAscent(style), style, role: "data-label", id: id,
             paint: VisualStateSceneTools.DataPaint(chart, series, index, style, contained ? ink.Paint : null));

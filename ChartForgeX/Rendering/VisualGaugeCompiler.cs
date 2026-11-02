@@ -95,7 +95,10 @@ internal static partial class VisualGaugeCompiler {
         var labelHeight = context.Theme.Typography.AxisSize * 1.5;
         var bottom = min != null ? labelHeight : 0;
         var top = target != null ? labelHeight : 0;
-        var outer = Math.Max(0, Math.Min(plot.Width / 2 - gap, (plot.Height - top - bottom - gap) / 1.5));
+        // A target caption sits beyond the outer arc on its tick's ray, so keep room for it beside the arc.
+        var targetReserve = target != null ? Math.Min(plot.Width / 4,
+            chart.Measure(builder, target, chart.Style(colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true)).Width + gap) : 0;
+        var outer = Math.Max(0, Math.Min(plot.Width / 2 - gap - targetReserve, (plot.Height - top - bottom - gap) / 1.5));
         if (outer < 2) { builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "The viewport is too small for a gauge arc.")); return; }
         var cx = plot.Left + plot.Width / 2; var cy = plot.Top + top + outer;
         var stroke = Math.Min(context.Theme.GaugeStrokeWidth, outer * .3);
@@ -153,7 +156,7 @@ internal static partial class VisualGaugeCompiler {
                 Math.Max(0, Math.Min(chart.Measure(builder, caption, captionStyle).Height, captionBottom - captionTop))),
                 captionStyle, "gauge-title", "series-0-gauge-title");
         }
-        CircularLabels(chart, context, builder, plot, data, target, min, max, cx, cy, radius, stroke, start, sweep, labelHeight);
+        CircularLabels(chart, context, builder, plot, data, target, min, max, cx, cy, radius, stroke, start, sweep, labelHeight, outer);
     }
 
     private static TextStyle FitNeedleSummary(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -215,34 +218,50 @@ internal static partial class VisualGaugeCompiler {
 
     private static void CircularLabels(GaugePaintContext chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         GaugeData data, string? target, string? min, string? max, double cx, double cy, double radius, double stroke,
-        double start, double sweep, double height) {
-        var gap = context.Theme.Spacing;
-        var labelY = CircularScaleLabelTop(plot, cy, radius, stroke, gap, height);
-        var endpointWidth = Math.Min(plot.Width / 3, Math.Max(gap * 2, radius * .55));
-        ChartRect Endpoint(double angle) => new(
-            Math.Max(plot.Left, Math.Min(plot.Right - endpointWidth, cx + Math.Cos(angle) * radius - endpointWidth / 2)),
-            labelY, endpointWidth, height);
-        var minimum = Endpoint(start); var maximum = Endpoint(start + sweep);
-        if (min != null && max != null) {
-            Label(chart, context, builder, min, minimum, "gauge-min-label", context.Theme.Typography.AxisSize, ticks: true);
-            Label(chart, context, builder, max, maximum, "gauge-max-label", context.Theme.Typography.AxisSize, ticks: true);
-        }
-        if (target == null) return;
-        var angle = start + sweep * Ratio(data, data.Targets[0].Value);
+        double start, double sweep, double height, double outer) {
         var style = chart.Style(context.Theme.Resolve(context.ThemeMode).MutedForeground,
             context.Theme.Typography.AxisSize, ticks: true);
-        var width = Math.Min(plot.Width / 3, chart.Measure(builder, target, style).Width + gap);
-        var outside = radius + stroke / 2 + gap + height / 2;
-        var left = Math.Max(plot.Left, Math.Min(plot.Right - width, cx + Math.Cos(angle) * outside - width / 2));
-        var labelTop = Math.Max(plot.Top, Math.Min(plot.Bottom - height, cy + Math.Sin(angle) * outside - height / 2));
-        // Near either arc end the scale label already occupies the lower exterior row.
-        if (min != null && labelTop + height > minimum.Top && labelTop < minimum.Bottom
-            && (left + width > minimum.Left && left < minimum.Right || left + width > maximum.Left && left < maximum.Right))
-            labelTop = Math.Max(plot.Top, minimum.Top - height - gap / 2);
-        Label(chart, context, builder, target, new ChartRect(left, labelTop, width, height),
-            "gauge-target-label", context.Theme.Typography.AxisSize, ticks: true);
+        var requests = new List<LabelPlacementRequest>(); var roles = new List<string>();
+        var labelY = CircularScaleLabelTop(plot, cy, radius, stroke, context.Theme.Spacing, height);
+        void Endpoint(string? text, double angle, string role) {
+            if (text == null) return;
+            var measured = chart.Measure(builder, text, style);
+            var left = Math.Max(plot.Left, Math.Min(plot.Right - measured.Width, cx + Math.Cos(angle) * radius - measured.Width / 2));
+            requests.Add(new LabelPlacementRequest(text, new ChartPoint(left, labelY), style,
+                new[] { new LabelCandidate(0, 0) }, 100) { MeasuredSize = measured, Fallback = LabelFallbackRule.Drop });
+            roles.Add(role);
+        }
+        Endpoint(min, start, "gauge-min-label"); Endpoint(max, start + sweep, "gauge-max-label");
+        if (target != null) {
+            var angle = start + sweep * Ratio(data, data.Targets[0].Value);
+            var measured = chart.Measure(builder, target, style);
+            var cos = Math.Cos(angle); var sin = Math.Sin(angle);
+            // Centre the caption on the tick's ray, pushed out by its half-extent along that ray so its nearest edge
+            // keeps a small gap from the outer status arc and the tick end.
+            var clear = outer + 4 + (Math.Abs(cos) * measured.Width + Math.Abs(sin) * measured.Height) / 2;
+            var anchor = new ChartPoint(cx + cos * clear, cy + sin * clear);
+            var candidates = new List<LabelCandidate> { new LabelCandidate(0, 0, .5, .5) };
+            for (var shift = 1; shift <= 3; shift++) candidates.Add(new LabelCandidate(cos * shift * measured.Height, sin * shift * measured.Height, .5, .5));
+            requests.Add(new LabelPlacementRequest(target, anchor, style, candidates, 80) {
+                MeasuredSize = measured, Fallback = LabelFallbackRule.Drop
+            });
+            roles.Add("gauge-target-label");
+        }
+        var mark = new LabelObstacle("gauge-arc", new LabelMarkShape(VisualSceneGeometry.Flatten(
+            new VisualSceneSlice(cx, cy, radius + stroke / 2, Math.Max(0, radius - stroke / 2), start, sweep, ChartColor.Transparent, null, 0, null, null), 1), true, 0));
+        var placed = new LabelPlacementService().Place(requests, plot, new[] { mark }, 2, (text, textStyle) => chart.Measure(builder, text, textStyle), avoidLeaderLabels: true);
+        for (var index = 0; index < placed.Count; index++) {
+            var result = placed[index];
+            if (result.IsDropped) {
+                builder.AddDiagnostic(new VisualDiagnostic("gauge.label-overflow", "A scale or target caption has no clear position; its complete value remains available."));
+                builder.AddRegion(new VisualSemanticRegion("series-0-" + roles[index], roles[index], new ChartRect(result.Request.Anchor.X, result.Request.Anchor.Y, 0, 0), result.Request.Text));
+                continue;
+            }
+            chart.Text(builder, result.Text, result.Bounds, style, roles[index], "series-0-" + roles[index], fallback: LabelFallbackRule.Drop);
+            if (result.HasLeaderLine) builder.Line(result.LeaderStart.X, result.LeaderStart.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
+                context.Theme.Resolve(context.ThemeMode).Axis, 1, "data-label-connector", paint: VisualChartPaint.Stroke(context.Theme.Resolve(context.ThemeMode).Axis, SvgColorRole.Axis));
+        }
     }
-
     /// <summary>Locates the lower scale row, also bounding the needle's central summary above it.</summary>
     private static double CircularScaleLabelTop(ChartRect plot, double cy, double radius, double stroke, double gap, double height) =>
         Math.Min(plot.Bottom - height, cy + radius * .5 + stroke / 2 + gap / 2);

@@ -33,7 +33,7 @@ internal static partial class VisualChordCompiler {
             var result = placed[index];
             if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("chord.label-overflow", "Chord labels were shortened or omitted to fit; full labels and endpoint totals remain in node semantics."));
             if (result.IsDropped) continue;
-            if (result.HasLeaderLine) builder.Line(result.Request.Anchor.X, result.Request.Anchor.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
+            if (result.HasLeaderLine) builder.Line(result.LeaderStart.X, result.LeaderStart.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
                 colors.MutedForeground, 1, "chord-label-leader", paint: VisualChartPaint.Stroke(colors.MutedForeground, SvgColorRole.Text));
             var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
             style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;

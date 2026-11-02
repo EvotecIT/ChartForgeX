@@ -31,6 +31,11 @@ public sealed partial class Chart : IVisualRenderable {
     private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null, ChartHierarchyView? hierarchyView = null, bool requireHierarchy = false, ChartPolarViewport? polarViewport = null, bool requirePolar = false) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         var view = PresentationView(context);
+        if (viewport == null && context.Layout.FitHeightToContent) {
+            // Row families trim unused height before any preparation captures the presentation options.
+            var fitted = ChartContentFit.Resolve(view, context);
+            if (!ReferenceEquals(fitted, context)) { context = fitted; view.Options = Options.PresentationView(context); }
+        }
         view.HierarchyPreparation = ChartHierarchyPreparation.Resolve(view, hierarchyView ?? view.NativeHierarchyVisibility?.HierarchyView, requireHierarchy, view.NativeHierarchyVisibility);
         foreach (var series in view.Series) series.ResolveFormatting(view);
         ChartTimeSpacingPreparation.Capture(view);

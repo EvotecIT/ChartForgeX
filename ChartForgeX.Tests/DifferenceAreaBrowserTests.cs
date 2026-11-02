@@ -54,12 +54,17 @@ public sealed class DifferenceAreaBrowserTests {
         }
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.NotEqual("comparison:2", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
-        await page.Locator(Legend(0)).ClickAsync(); await MoveAwayAsync(page);
-        Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
+        var legends = page.Locator(Legend(0));
+        Assert.Equal(2, await legends.CountAsync());
+        await legends.First.ClickAsync(); await MoveAwayAsync(page);
+        Assert.Equal("true", await legends.First.GetAttributeAsync("data-cfx-muted"));
+        Assert.Equal("true", await legends.Last.GetAttributeAsync("data-cfx-muted"));
         Assert.True(await point.EvaluateAsync<bool>("node => !!node.closest('.cfx-series-muted')"));
         Assert.Equal(0, await page.Locator("[data-cfx-role='point'][data-cfx-series='0'][tabindex='0']").CountAsync());
         Assert.Equal(first, await point.GetAttributeAsync("data-cfx-first"));
         Assert.Equal(second, await point.GetAttributeAsync("data-cfx-second"));
+        await legends.Last.ClickAsync(); await MoveAwayAsync(page);
+        Assert.False(await point.EvaluateAsync<bool>("node => !!node.closest('.cfx-series-muted')"));
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.Equal(0, await page.Locator("[data-cfx-point][aria-selected='true']").CountAsync());
         Assert.Equal(0, await page.Locator(".cfx-series-muted").CountAsync());

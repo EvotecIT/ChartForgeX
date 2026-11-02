@@ -28,7 +28,8 @@ internal static partial class VisualCartesianCompiler {
                 new LabelMarkShape(new[] { region.Path.Flatten() }, true, stroke, plot)));
         }
         DrawLayeredPath(chart, builder, series, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.First, true), color, paint, stroke, "difference-first");
-        DrawLayeredPath(chart, builder, series, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.Second, false), color, paint, stroke, "difference-second");
+        var (secondColor, secondPaint, secondDash) = DifferenceSecondPaint(series, index, colors);
+        DrawLayeredPath(chart, builder, series, ChartPairedBoundaryGeometry.BoundaryPath(series, geometry.Second, false), secondColor, secondPaint, stroke, "difference-second", secondDash);
         for (var item = 0; item < geometry.First.Count; item++) {
             var first = series.RenderPoints[item * 2]; var second = series.RenderPoints[item * 2 + 1];
             var showMarkers = PairedObservationMarkersEnabled(series, item);
@@ -52,9 +53,13 @@ internal static partial class VisualCartesianCompiler {
                 ("x", first.X), ("first", first.Y), ("second", second.Y))) {
                 if (visible && showMarkers) {
                     var pointColor = PointColor(series, index, item, colors); var pointPaint = VisualChartPaint.Series(series, pointColor, item);
-                    foreach (var point in new[] { a, b }) VisualMarkerScene.Draw(builder, series, item, point.X, point.Y, radius,
-                        pointColor, pointPaint, "difference-marker", pattern: ObservationPattern(series, item),
-                        backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "difference-marker-pattern");
+                    // An authored point colour marks the observation; otherwise each marker keeps its boundary's identity.
+                    var pointOverride = item < series.PointColors.Count && series.PointColors[item].HasValue;
+                    foreach (var (point, ownColor, ownPaint) in new[] { (a, pointColor, pointPaint),
+                        (b, pointOverride ? pointColor : secondColor, pointOverride ? pointPaint : secondPaint) })
+                        VisualMarkerScene.Draw(builder, series, item, point.X, point.Y, radius,
+                            ownColor, ownPaint, "difference-marker", pattern: ObservationPattern(series, item),
+                            backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "difference-marker-pattern");
                 }
             }
             if (!visible) continue;
@@ -65,14 +70,75 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
+    /// <summary>
+    /// Uses the authored negative colour or an unoccupied palette slot; exhausted palettes retain a dashed Second boundary.
+    /// </summary>
+    internal static (ChartColor Color, SvgPaint Paint, double[]? Dash) DifferenceSecondPaint(ChartSeries series, int index, VisualThemeColors colors) {
+        var configured = series.DifferenceArea.NegativeFill;
+        var first = Color(series, index, colors);
+        if (configured.HasValue) {
+            var authored = configured.Value.WithAlpha(first.A);
+            return (authored, VisualChartPaint.Series(series, authored, explicitOverride: true), SameRgb(authored, first) ? new[] { 8d, 6d } : null);
+        }
+        var count = colors.Palette.Count;
+        var used = new HashSet<ChartColor> { first.WithAlpha(255) };
+        if (series.Owner is { } owner) {
+            for (var other = 0; other < owner.Series.Count; other++) {
+                var peer = owner.Series[other];
+                used.Add(Color(peer, other, colors).WithAlpha(255));
+                if (peer.Kind == ChartSeriesKind.DifferenceArea && peer.DifferenceArea.NegativeFill is { } authored)
+                    used.Add(authored.WithAlpha(255));
+            }
+            // Earlier automatic pairs reserve their secondary slots in canonical series order.
+            for (var other = 0; other < index; other++) {
+                var peer = owner.Series[other];
+                if (peer.Kind == ChartSeriesKind.DifferenceArea && !peer.DifferenceArea.NegativeFill.HasValue)
+                    Select(peer, other);
+            }
+        }
+        var (selected, available) = Select(series, index);
+        var color = colors.Palette[selected].WithAlpha(first.A);
+        return (color, SvgPaint.SeriesSlot(color, selected), available ? null : new[] { 8d, 6d });
+
+        (int Slot, bool Available) Select(ChartSeries pair, int ordinal) {
+            var start = ChartSeriesColours.PaletteIndex(pair, ordinal, count);
+            var selected = (start + 1) % count;
+            for (var offset = 1; offset <= count; offset++) {
+                var slot = (start + offset) % count;
+                if (used.Contains(colors.Palette[slot].WithAlpha(255))) continue;
+                used.Add(colors.Palette[slot].WithAlpha(255));
+                return (slot, true);
+            }
+            return (selected, false);
+        }
+    }
+
+    private static bool SameRgb(ChartColor a, ChartColor b) => a.R == b.R && a.G == b.G && a.B == b.B;
+
     internal static (ChartColor Color, SvgPaint Paint) DifferenceFill(ChartSeries series, int index, bool positive,
         VisualThemeColors colors, VisualRenderContext context) {
         var options = series.DifferenceArea;
         var configured = positive ? options.PositiveFill : options.NegativeFill;
-        var color = configured ?? (positive || series.Color.HasValue || series.StateRole != ChartSeriesState.None
-            ? Color(series, index, colors) : ChartSeriesColours.Palette(series, index, colors, 1));
         var opacity = (positive ? options.PositiveFillOpacity : options.NegativeFillOpacity) ?? context.Theme.AreaWash(context.ThemeMode);
+        if (!positive && !configured.HasValue) {
+            var (second, secondPaint, _) = DifferenceSecondPaint(series, index, colors);
+            return (ChartColorMath.WithOpacity(second, opacity), secondPaint.WithOpacity(ChartColorMath.WithOpacity(second, opacity), opacity));
+        }
+        var color = configured ?? Color(series, index, colors);
         var fill = ChartColorMath.WithOpacity(color, opacity);
         return (fill, VisualChartPaint.Series(series, color, explicitOverride: configured.HasValue).WithOpacity(fill, opacity));
+    }
+
+    /// <summary>A difference area compares two observations, so its legend names both boundaries in their own colours.</summary>
+    private static IEnumerable<VisualLegendEntry> DifferenceLegendEntries(Chart chart, ChartSeries series, int index, VisualThemeColors colors) {
+        var first = Color(series, index, colors); var firstPaint = VisualChartPaint.Series(series, first);
+        var (second, secondPaint, secondDash) = DifferenceSecondPaint(series, index, colors);
+        var pairedSeries = 0;
+        foreach (var peer in chart.Series) if (peer.Kind == ChartSeriesKind.DifferenceArea) pairedSeries++;
+        var prefix = pairedSeries > 1 ? series.Name + ": " : string.Empty;
+        yield return new VisualLegendEntry(prefix + series.DifferenceArea.FirstName, first, SeriesId(index) + "-first", series.Kind, series.FillPattern, series.StateRole,
+            series.InteractionIdentityKey, marker: VisualMarkerScene.DifferenceLegend(chart, series, first, firstPaint, positive: true), paint: firstPaint);
+        yield return new VisualLegendEntry(prefix + series.DifferenceArea.SecondName, second, SeriesId(index) + "-second", series.Kind, series.FillPattern, series.StateRole,
+            series.InteractionIdentityKey, marker: VisualMarkerScene.DifferenceLegend(chart, series, second, secondPaint, positive: false, secondDash), paint: secondPaint);
     }
 }
