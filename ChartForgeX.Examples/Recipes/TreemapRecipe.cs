@@ -18,9 +18,8 @@ public static class TreemapRecipe {
             new ChartHierarchyItem("south-services", "Services", parentId: "south"),
             new ChartHierarchyItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
             new ChartHierarchyItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
-            new ChartHierarchyItem("south-operations", "Operations", parentId: "south", value: 15),
-            new ChartHierarchyItem("research", "Independent research", value: 8, colorValue: 14),
-            new ChartHierarchyItem("reserve", "Reserve", value: 0)
+            new ChartHierarchyItem("south-operations", "Operations", parentId: "south", value: 15, colorValue: -6),
+            new ChartHierarchyItem("research", "Independent research", value: 8, colorValue: 14)
         };
         var colors = VisualTheme.Graphite().Resolve(mode);
         var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
@@ -34,7 +33,8 @@ public static class TreemapRecipe {
             options.Gap = 3;
             options.ShowGroupLabels = true;
             options.ColorDimension.Name = "Change (%)";
-            options.ColorScale = scale.WithNoDataColor(colors.Surface);
+            // Only the sparse model has an item without a measured change, so only it needs a no-data colour.
+            options.ColorScale = variant == "sparse" ? scale.WithNoDataColor(colors.Surface) : scale;
         });
         if (variant == "options") allocation.WithNodeState("south-support", ChartSeriesState.Warning);
         return chart;

@@ -19,11 +19,22 @@ public static class LineRecipe {
                 chart.AddSeries(series);
             }
         }
-        else {
-            var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
-                .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+        else if (variant == "sparse") {
+            var points = Enumerable.Range(1, 6).Where(index => index is 1 or 3 or 6)
+                .Select(index => new ChartPoint(index, 20 + index * 7 % 29, index == 6));
             chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
                 .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", points));
+        }
+        else {
+            // Twelve weeks of requests per channel: the portal grows, email declines and the API stays seasonal.
+            var weeks = Enumerable.Range(1, 12).ToArray();
+            chart.WithXLabels(weeks.Select(week => "W" + week).ToArray()).WithYAxis("Requests");
+            chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Portal",
+                weeks.Select(week => new ChartPoint(week, Math.Round(820 + week * 64 + Math.Sin(week * 1.1) * 60)))));
+            chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("api"), "API",
+                weeks.Select(week => new ChartPoint(week, Math.Round(640 + Math.Sin(week * .7) * 140)))));
+            chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("email"), "Email",
+                weeks.Select(week => new ChartPoint(week, Math.Round(760 - week * 38 + Math.Cos(week * 1.4) * 40)))));
         }
         return chart;
     }

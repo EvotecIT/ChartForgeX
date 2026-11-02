@@ -343,6 +343,50 @@
     });
   });
 
+  // Family pages: the live chart and its source follow the page theme. Generated programs keep imports and output
+  // plumbing in a Setup region; the page shows the chart model and the download keeps the whole file.
+  // Live chart pages are same-origin, so a frame takes the height its page needs instead of scrolling inside.
+  var fitFrame = function (live) {
+    live.addEventListener('load', function () {
+      try {
+        var page = live.contentDocument && live.contentDocument.documentElement;
+        if (!page) return;
+        // Measure at a minimal height: pages that fill the viewport would otherwise report the frame's own height.
+        page.style.overflow = 'hidden';
+        live.style.aspectRatio = 'auto';
+        live.style.height = '1px';
+        live.style.height = (page.scrollHeight + 2) + 'px';
+      } catch (e) { /* a cross-origin page keeps its CSS height */ }
+    });
+  };
+  var stripSetup = function (text) { return text.replace(/^#region Setup\n[\s\S]*?^#endregion[^\n]*\n+/m, ''); };
+  var themedFamily = function () {
+    document.querySelectorAll('[data-cfx-live-frame]').forEach(function (live) {
+      var url = live.getAttribute(theme() === 'dark' ? 'data-dark' : 'data-light');
+      if (url && live.getAttribute('src') !== url) live.setAttribute('src', url);
+    });
+    document.querySelectorAll('[data-cfx-source]').forEach(function (figure) {
+      var url = figure.getAttribute(theme() === 'dark' ? 'data-dark' : 'data-light');
+      if (!url || figure.getAttribute('data-loaded') === url) return;
+      figure.setAttribute('data-loaded', url);
+      var code = figure.querySelector('[data-cfx-source-code]');
+      var link = figure.querySelector('[data-cfx-source-download]');
+      if (link) link.href = url;
+      fetch(url).then(function (response) { return response.ok ? response.text() : Promise.reject(); }).then(function (text) {
+        if (figure.getAttribute('data-loaded') !== url) return;
+        text = stripSetup(text);
+        figure.cfxSource = text;
+        code.textContent = text;
+        highlight(code);
+      }).catch(function () { code.textContent = 'The source file could not be loaded. Use the download link instead.'; });
+    });
+  };
+  document.querySelectorAll('[data-cfx-live-frame]').forEach(fitFrame);
+  if (document.querySelector('[data-cfx-live-frame], [data-cfx-source]')) {
+    themedFamily();
+    themeListeners.push(themedFamily);
+  }
+
   // Viewer dialog for gallery cards (gallery-card.html). A card names its output in each theme, the full-size file,
   // a page link and its source file; gallery sources are standalone .csharp.txt programs. A card may also carry tabs,
   // line ranges of that one source. A card without
@@ -363,6 +407,12 @@
     var openLink = viewer.querySelector('[data-cfx-viewer-open]');
     var pageLink = viewer.querySelector('[data-cfx-viewer-page]');
     var download = viewer.querySelector('[data-cfx-viewer-download]');
+    var modes = viewer.querySelector('[data-cfx-viewer-modes]');
+    var frame = viewer.querySelector('[data-cfx-viewer-frame]');
+    fitFrame(frame);
+    var familyLink = viewer.querySelector('[data-cfx-viewer-family-page]');
+    // Static or interactive output; the choice carries over to the next card that has a live page.
+    var viewMode = 'static';
     var pick = function (light, darkValue) { return theme() === 'dark' && darkValue ? darkValue : light; };
     var fileName = function (url) { return url.split('/').pop().replace(/\.csharp\.txt$/, '.cs').replace(/\.txt$/, ''); };
 
@@ -387,6 +437,8 @@
         .then(function (text) {
           if (ticket !== request) return;
           if (range && range.from) text = text.split('\n').slice(range.from - 1, range.to).join('\n') + '\n';
+          // Generated programs keep imports and output plumbing in a Setup region; the download keeps the whole file.
+          text = stripSetup(text);
           block.cfxSource = text;
           code.textContent = text;
           highlight(code);
@@ -447,6 +499,21 @@
       image.alt = current.alt || current.title + ', ' + current.family + ' rendered by ChartForgeX';
       viewer.querySelector('[data-cfx-viewer-title]').textContent = current.title;
       viewer.querySelector('[data-cfx-viewer-family]').textContent = [current.family, current.note].filter(Boolean).join(' · ');
+      var live = pick(current.interactive, current.darkInteractive);
+      modes.hidden = !live;
+      var showLive = !!live && viewMode === 'interactive';
+      modes.querySelectorAll('[data-cfx-viewer-mode]').forEach(function (button) {
+        button.setAttribute('aria-pressed', (button.getAttribute('data-cfx-viewer-mode') === 'interactive') === showLive ? 'true' : 'false');
+      });
+      image.hidden = showLive;
+      frame.hidden = !showLive;
+      if (showLive) {
+        if (frame.getAttribute('src') !== live) frame.setAttribute('src', live);
+      } else if (frame.getAttribute('src')) {
+        frame.removeAttribute('src');
+      }
+      familyLink.hidden = !current.familyPage;
+      if (current.familyPage) familyLink.href = current.familyPage;
       openLink.href = pick(current.full, current.darkFull) || image.getAttribute('src');
       var page = pick(current.page, current.darkPage);
       pageLink.hidden = !page;
@@ -461,7 +528,8 @@
         try { tabs = d.tabs ? JSON.parse(d.tabs) : null; } catch (e) { tabs = null; }
         current = {
           title: d.title, family: d.family, note: d.note, alt: d.alt, image: d.image, darkImage: d.darkImage, full: d.full,
-          darkFull: d.darkFull, source: d.source, darkSource: d.darkSource, page: d.page, darkPage: d.darkPage, tabs: tabs
+          darkFull: d.darkFull, source: d.source, darkSource: d.darkSource, page: d.page, darkPage: d.darkPage, tabs: tabs,
+          interactive: d.interactive, darkInteractive: d.darkInteractive, familyPage: d.familyPage
         };
         opener = button;
         var card = button.closest('.cfx-card');
@@ -473,10 +541,19 @@
       });
     });
 
+    modes.querySelectorAll('[data-cfx-viewer-mode]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        viewMode = button.getAttribute('data-cfx-viewer-mode');
+        render();
+      });
+    });
     viewer.querySelector('[data-cfx-viewer-close]').addEventListener('click', function () { viewer.close(); });
     viewer.addEventListener('click', function (event) { if (event.target === viewer) viewer.close(); });
     // Escape and the close button both end here: focus goes back to the card that opened the viewer.
-    viewer.addEventListener('close', function () { if (opener && opener.isConnected) opener.focus(); });
+    viewer.addEventListener('close', function () {
+      frame.removeAttribute('src');
+      if (opener && opener.isConnected) opener.focus();
+    });
     themeListeners.push(function () { if (viewer.open) render(); });
   }
 })();

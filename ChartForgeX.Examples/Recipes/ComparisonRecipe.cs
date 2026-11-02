@@ -1,13 +1,14 @@
-/// <summary>Line, area and bar observations share categories, including explicit missing and empty states.</summary>
+/// <summary>Bars, a forecast area and an observed line share daily categories, including explicit missing and empty states.</summary>
 public static class ComparisonRecipe {
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        var count = variant == "empty" ? 0 : variant == "dense" ? 24 : 7;
+        var count = variant == "empty" ? 0 : variant == "dense" ? 24 : 12;
         var names = variant == "wrapped-legend"
             ? new[] { "Observed checks across all locations", "Expected coverage of monitored services", "Capacity available for the next assessment" }
             : new[] { "Observed", "Expected", "Capacity" };
-        var observed = ChartSeries.CreateLine(new ChartSeriesId("observed"), names[0], Points(count, variant, 0));
-        var expected = ChartSeries.CreateArea(new ChartSeriesId("expected"), names[1], Points(count, variant, 1));
+        // Bars sit behind the forecast area and the observed line, so the series are added back to front.
         var capacity = ChartSeries.CreateBar(new ChartSeriesId("capacity"), names[2], Points(count, variant, 2, false));
+        var expected = ChartSeries.CreateArea(new ChartSeriesId("expected"), names[1], Points(count, variant, 1));
+        var observed = ChartSeries.CreateLine(new ChartSeriesId("observed"), names[0], Points(count, variant, 0));
         if (variant is "explicit-status" or "explicit-series") {
             var colors = VisualTheme.Graphite().Resolve(mode);
             var selected = variant == "explicit-status"
@@ -16,14 +17,19 @@ public static class ComparisonRecipe {
             observed.WithColor(selected[0]); expected.WithColor(selected[1]); capacity.WithColor(selected[2]);
         }
         return Chart.Create().WithXLabels(Enumerable.Range(1, count).Select(index => "Day " + index).ToArray())
-            .AddSeries(observed).AddSeries(expected).AddSeries(capacity);
+            .AddSeries(capacity).AddSeries(expected).AddSeries(observed);
     }
 
     private static IEnumerable<ChartPoint> Points(int count, string variant, int series, bool allowBreaks = true) {
         for (var index = 0; index < count; index++) {
             if (variant == "missing" && (index == 2 || index == 3)) continue;
-            var value = variant == "zero" ? 0 : 20 + series * 14 + index * (series + 3) % 23;
-            yield return new ChartPoint(index + 1, value, allowBreaks && variant == "missing" && index == 4);
+            // Capacity grows in steps, the forecast follows it and observed checks swing around the forecast.
+            var value = variant == "zero" ? 0 : series switch {
+                2 => 64 + index / 3 * 5 + index % 3,
+                1 => 46 + index * 1.6,
+                _ => 44 + index * 1.7 + Math.Round(Math.Sin(index * 1.3) * 7)
+            };
+            yield return new ChartPoint(index + 1, Math.Round(value), allowBreaks && variant == "missing" && index == 4);
         }
     }
 }

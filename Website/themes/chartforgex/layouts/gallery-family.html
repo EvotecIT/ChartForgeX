@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--gallery-family{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## One chart family: its primary example live, the variants the generator writes, its source and its options.
+     Pages under content/pages/gallery/ are written by build/Sync-GeneratedExamples.ps1; everything here comes from
+     data.gallery (families and items) by the page slug. ## ~}}
+{{~ slug = current_path | string.replace "/gallery/" "" | string.replace "/" ""
+    f = null; for family in data.gallery.families; if family.slug == slug; f = family; end; end
+    item = null; for candidate in data.gallery.items; if candidate.slug == slug; item = candidate; end; end
+    category = null; key_index = 1; for cat in data.gallery.categories; if f && cat.id == f.category; category = cat; key_index = (for.index % 6) + 1; end; end ~}}
+<main id="main" class="cfx-main" style="--key: var(--cfx-s{{ key_index }})">
+  {{~ capture masthead_extra ~}}
+  <p class="cfx-tags cfx-masthead__tags">
+    <a class="cfx-tag cfx-tag--link" href="/gallery/">All charts</a>
+    {{~ if category ~}}<span class="cfx-tag"><span class="cfx-key" aria-hidden="true"></span>{{ category.label }}</span>{{~ end ~}}
+    {{~ for kind in f.kinds ~}}<span class="cfx-tag">{{ kind }}</span>{{~ end ~}}
+  </p>
+  {{~ end ~}}
+  {{~ masthead_title = page.title; masthead_lede = page.description ~}}
+  {{ include "masthead" }}
+
+  {{~ if f && item ~}}
+  <section class="cfx-wide cfx-showcase" aria-labelledby="cfx-family-live">
+    <h2 id="cfx-family-live" class="cfx-family__heading">{{ item.title }}</h2>
+    <figure class="cfx-showcase__frame">
+      <div class="cfx-showcase__bar">
+        <span class="cfx-showcase__name">{{ if item.interactive }}{{ slug }}.interactive.html{{ else }}{{ slug }}.svg{{ end }}</span>
+        <span class="cfx-showcase__links">
+          <a class="cfx-only-light" aria-label="SVG, light theme" href="{{ item.image }}">SVG</a>
+          <a class="cfx-only-dark" aria-label="SVG, dark theme" href="{{ item.darkImage }}">SVG</a>
+          {{~ if item.interactive ~}}
+          <a class="cfx-only-light" aria-label="Open live page, light theme" href="{{ item.interactive }}">Open live page</a>
+          <a class="cfx-only-dark" aria-label="Open live page, dark theme" href="{{ item.darkInteractive }}">Open live page</a>
+          {{~ end ~}}
+          <a class="cfx-only-light" aria-label="C# program, light theme" href="{{ item.source }}" download="Program.cs">C# program</a>
+          <a class="cfx-only-dark" aria-label="C# program, dark theme" href="{{ item.darkSource }}" download="Program.cs">C# program</a>
+        </span>
+      </div>
+      {{~ if item.interactive ~}}
+      <iframe class="cfx-showcase__iframe cfx-family__live" style="aspect-ratio: {{ f.width }} / {{ f.height + 48 }}" title="{{ item.title }}, interactive"
+        data-cfx-live-frame data-light="{{ item.interactive }}" data-dark="{{ item.darkInteractive }}"></iframe>
+      <noscript><div class="cfx-showcase__plate"><img src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" loading="lazy" decoding="async" alt="{{ item.title }}" /></div></noscript>
+      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, click legend items to hide or show series, and use the keyboard to navigate{{ else }}diagram. Hover and select nodes for details{{ end }}.</figcaption>
+      {{~ else ~}}
+      <div class="cfx-showcase__plate">
+        <img class="cfx-only-light" src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" fetchpriority="high" decoding="async" alt="{{ item.title }}, rendered by ChartForgeX." />
+        <img class="cfx-only-dark" src="{{ item.darkImage }}" width="{{ f.width }}" height="{{ f.height }}" loading="lazy" decoding="async" alt="{{ item.title }}, rendered by ChartForgeX in the dark theme." />
+      </div>
+      <figcaption>Rendered by ChartForgeX from the program below. The files follow the page theme.</figcaption>
+      {{~ end ~}}
+    </figure>
+  </section>
+
+  <section class="cfx-wide cfx-family__code" aria-labelledby="cfx-family-code">
+    <div class="cfx-family__code-text">
+      <h2 id="cfx-family-code" class="cfx-family__heading">Build it in C#</h2>
+      <p>The chart model comes first. The download adds the few lines that write SVG, PNG and HTML, so it runs as a complete console program with the ChartForgeX package.</p>
+    </div>
+    <figure class="cfx-codeblock" data-lang="csharp" data-cfx-source data-light="{{ item.source }}" data-dark="{{ item.darkSource }}">
+      <figcaption class="cfx-codeblock__bar">
+        <span class="cfx-codeblock__lang">C#</span>
+        <span class="cfx-codeblock__file">Program.cs</span>
+        <span class="cfx-codeblock__actions"><a class="cfx-codeblock__btn" data-cfx-source-download href="{{ item.source }}" download="Program.cs">Download</a></span>
+      </figcaption>
+      <pre><code class="language-csharp" data-cfx-source-code>Loading source…</code></pre>
+    </figure>
+  </section>
+
+  {{~ if f.variants.size > 0 ~}}
+  <section class="cfx-wide cfx-family__variants" aria-labelledby="cfx-family-variants">
+    <h2 id="cfx-family-variants" class="cfx-family__heading">Variants</h2>
+    <ul class="cfx-family__grid">
+      {{~ for v in f.variants ~}}
+      <li>
+        <figure class="cfx-family__variant">
+          <div class="cfx-family__plate">
+            <img class="cfx-only-light" src="{{ v.image }}" width="{{ v.width }}" height="{{ v.height }}" loading="lazy" decoding="async" alt="{{ v.title }}, {{ v.label | string.downcase }} variant." />
+            <img class="cfx-only-dark" src="{{ v.darkImage }}" width="{{ v.width }}" height="{{ v.height }}" loading="lazy" decoding="async" alt="{{ v.title }}, {{ v.label | string.downcase }} variant, dark theme." />
+          </div>
+          <figcaption>
+            <span class="cfx-family__variant-label"><span class="cfx-key" aria-hidden="true"></span>{{ v.label }}</span>
+            <a class="cfx-only-light" aria-label="C# program for the {{ v.label | string.downcase }} variant, light theme" href="{{ v.source }}" download="Program.cs">C#</a>
+            <a class="cfx-only-dark" aria-label="C# program for the {{ v.label | string.downcase }} variant, dark theme" href="{{ v.darkSource }}" download="Program.cs">C#</a>
+          </figcaption>
+        </figure>
+      </li>
+      {{~ end ~}}
+    </ul>
+  </section>
+  {{~ end ~}}
+
+  {{~ if f.options.size > 0 ~}}
+  <section class="cfx-wide cfx-family__options" aria-labelledby="cfx-family-options">
+    <h2 id="cfx-family-options" class="cfx-family__heading">Options</h2>
+    <p>{{~ if f.configure ~}}Set these on <code>chart.{{ f.configure }}(options =&gt; …)</code>. The full list is on the <a href="{{ f.api }}">{{ f.optionsType }}</a> reference page.{{~ else ~}}Common <a href="{{ f.api }}">{{ f.optionsType }}</a> builder calls for this family. Every member is listed in the API reference.{{~ end ~}}</p>
+    <div class="cfx-tablewrap">
+      <table class="cfx-family__table">
+        <thead><tr><th scope="col">{{ if f.configure }}Option{{ else }}Method{{ end }}</th><th scope="col">What it does</th></tr></thead>
+        <tbody>
+          {{~ for o in f.options ~}}
+          <tr><td><a href="{{ f.api }}"><code>{{ o.name }}</code></a></td><td>{{ o.summary }}</td></tr>
+          {{~ end ~}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {{~ end ~}}
+
+  <nav class="cfx-wide cfx-family__more" aria-labelledby="cfx-family-more">
+    <h2 id="cfx-family-more" class="cfx-family__heading">More {{ if category }}{{ category.label | string.downcase }}{{ else }}charts{{ end }}</h2>
+    <ul class="cfx-family__chips">
+      {{~ for other in data.gallery.families ~}}
+      {{~ if other.category == f.category && other.slug != slug ~}}
+      <li><a class="cfx-tag cfx-tag--link" href="/gallery/{{ other.slug }}/">{{ other.label }}</a></li>
+      {{~ end ~}}
+      {{~ end ~}}
+      <li><a class="cfx-tag cfx-tag--link" href="/gallery/">Every chart family</a></li>
+    </ul>
+  </nav>
+  {{~ end ~}}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>
