@@ -97,7 +97,7 @@ internal static partial class VisualColorScaleLegendScene {
         ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
         bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
-        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null, bool showStepLabels = false) {
+        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null, bool showStepLabels = false, bool numericIntervals = false) {
         if (scale.Captions.Count > 0) {
             DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingBlend, formatValues,
                 diagnosticCode, hasDomain, missingBounds, heading, valueName, legendStyle);
@@ -178,13 +178,31 @@ internal static partial class VisualColorScaleLegendScene {
                     return;
                 }
                 {
+                    var ticks = NumericTicks(scale.EffectiveMinimum(min), scale.EffectiveMaximum(max));
+                    var intervalKey = numericIntervals && !scale.HasPositionedStops && legendStyle != ChartColorLegendStyle.Swatches && ticks.Length > 1;
                     var steps = ChartColorScaleLegend.Steps(scale, min, max); var width = bounds.Width / steps.Length;
                     if (scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min))
-                        midpointX = legendStyle == ChartColorLegendStyle.Gradient ? bounds.Left + bounds.Width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
+                        midpointX = legendStyle == ChartColorLegendStyle.Gradient || intervalKey ? bounds.Left + bounds.Width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
                             : bounds.Left + (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width;
                     if (legendStyle == ChartColorLegendStyle.Gradient)
                         Gradient(builder, scale, new ChartRect(bounds.Left, y, bounds.Width, swatchHeight), min, max, prefix + "-gradient");
-                    else {
+                    else if (intervalKey) {
+                        // Numeric captions name interval boundaries. Sample each interval's
+                        // colour at its midpoint instead of putting stop captions under swatch centres.
+                        var boundaryLabels = formatValues(ticks);
+                        for (var index = 0; index < ticks.Length - 1; index++) {
+                            var value = ChartMath.InterpolateRange(ticks[index], ticks[index + 1], .5);
+                            var left = bounds.Left + bounds.Width * ChartMath.Normalize(ticks[index], ticks[0], ticks[ticks.Length - 1]);
+                            var right = bounds.Left + bounds.Width * ChartMath.Normalize(ticks[index + 1], ticks[0], ticks[ticks.Length - 1]);
+                            Tile(index, new ChartRect(left, y, right - left, swatchHeight), scale.BlendFor(value, min, max),
+                                boundaryLabels[index] + "–" + boundaryLabels[index + 1], new Dictionary<string, string> {
+                                    ["data-cfx-value"] = VisualStateSceneTools.Number(value),
+                                    ["data-cfx-formatted-value"] = formatValues(new[] { value })[0],
+                                    ["data-cfx-lower-bound"] = VisualStateSceneTools.Number(ticks[index]),
+                                    ["data-cfx-upper-bound"] = VisualStateSceneTools.Number(ticks[index + 1])
+                                });
+                        }
+                    } else {
                         var stepLabels = formatValues(steps);
                         for (var index = 0; index < steps.Length; index++)
                             Tile(index, new ChartRect(bounds.Left + index * width, y, width, swatchHeight), scale.BlendFor(steps[index], min, max), stepLabels[index],
@@ -196,7 +214,6 @@ internal static partial class VisualColorScaleLegendScene {
                     Caption((scale.HighLabel ?? labels.More) + " · " + endpoints[1],
                         new ChartRect(bounds.Left + bounds.Width / 2, y + swatchHeight + gap / 2, bounds.Width / 2, row), "high", TextAlignment.Right);
                     if (showStepLabels && steps[0] != steps[steps.Length - 1]) {
-                        var ticks = NumericTicks(scale.EffectiveMinimum(min), scale.EffectiveMaximum(max));
                         var positions = ticks.Select(value => bounds.Left + bounds.Width *
                             ChartMath.Normalize(value, scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))).ToArray();
                         ChartRect? midpoint = null;
@@ -223,7 +240,7 @@ internal static partial class VisualColorScaleLegendScene {
         void Midpoint(double top) {
             var text = scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0];
             var lane = MidpointCaptionLane(builder, text, style, new ChartRect(bounds.Left, top, bounds.Width, row), midpointX,
-                inwardEdges: legendStyle == ChartColorLegendStyle.Gradient);
+                inwardEdges: legendStyle == ChartColorLegendStyle.Gradient || (numericIntervals && !scale.HasPositionedStops && legendStyle != ChartColorLegendStyle.Swatches));
             Caption(text, lane.Bounds, "midpoint", lane.Alignment);
         }
 
@@ -241,7 +258,7 @@ internal static partial class VisualColorScaleLegendScene {
 
         void Tile(int index, ChartRect box, ChartColorBlend blend, string label, Dictionary<string, string> source) {
             if (valueName != null && source.ContainsKey("data-cfx-value")) {
-                source["data-cfx-formatted-value"] = label;
+                if (!source.ContainsKey("data-cfx-formatted-value")) source["data-cfx-formatted-value"] = label;
                 source["data-cfx-label-value"] = valueName;
             }
             using (VisualStateSceneTools.Mark(builder, prefix + "-" + index, prefix + "-step", box, label, source))

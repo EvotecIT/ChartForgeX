@@ -41,5 +41,13 @@ public sealed class ConeBoundaryCaptionTests {
         chart.WithValueFormat(ChartValueFormat.Number("0.00"));
         Assert.Contains(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>(),
             node => node.Role == "funnel-label" && node.Text.Lines.Single().Text == "Reviewed: 162.36");
+        var large = Chart.Create().WithSize(width, 440).WithThemeMode(mode).WithLegend(false).WithDataLabels()
+            .WithXLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
+            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+            .AddFunnel("Stages", new[] { 12400d, 5270, 2130, 860, 610 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        RoundedRadialSeriesTests.UseFixtureFont(large);
+        var grouped = large.Prepare(VisualExportRequest.ForChart(large).Context);
+        Assert.Equal(new[] { "Visits: 12,400", "Qualified: 5,270", "Reviewed: 2,130", "Won: 860", "Renewed: 610" },
+            grouped.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "funnel-label").Select(node => node.Text.Lines.Single().Text));
     }
 }

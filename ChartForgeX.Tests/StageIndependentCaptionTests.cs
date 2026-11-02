@@ -24,7 +24,7 @@ public sealed class StageIndependentCaptionTests {
             .Where(node => node.Role?.StartsWith("funnel-", StringComparison.Ordinal) == true && node.Role.EndsWith("-label", StringComparison.Ordinal)).ToArray();
         Assert.Equal(19, labels.Length);
         Assert.Equal(names, labels.Where(node => node.Role == "funnel-category-label").Select(node => Assert.Single(node.Text.Lines).Text));
-        Assert.Equal(new[] { "12.4k", "5,270", "2,130", "860", "610" },
+        Assert.Equal(new[] { "12,400", "5,270", "2,130", "860", "610" },
             labels.Where(node => node.Role == "funnel-value-label").Select(node => Assert.Single(node.Text.Lines).Text));
         Assert.Equal(4, labels.Count(node => node.Role == "funnel-dropoff-label"));
         Assert.All(labels, node => Assert.Equal(fontSize, node.Text.Size));

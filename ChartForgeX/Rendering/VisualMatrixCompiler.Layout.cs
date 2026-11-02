@@ -201,16 +201,12 @@ internal static partial class VisualMatrixCompiler {
         var zeroLabel = zero ? presentation.Value(0) : string.Empty;
         var zeroWidth = zero ? Math.Min(bounds.Width * .3, builder.MeasureText(zeroLabel, style).Width + context.Theme.Spacing) : 0;
         if (nonZero.Length == 0) zeroWidth = bounds.Width;
-        // Keep the complete key together: captions belong to the swatches, rather
-        // than the unrelated edges of a wide matrix plotting area.
         // Missing cells get their own hatched key (design rule 9), distinct from the zero swatch and the weakest step.
         var noData = missing ? chart.Options.Labels.NoData : string.Empty;
         var missingWidth = missing ? Math.Min(bounds.Width * .3, Math.Max(12, builder.MeasureText(noData, style).Width) + context.Theme.Spacing) : 0;
         var steps = VisualColorScaleLegendScene.NumericTicks(floor, max);
         var captions = presentation.ScaleValues(steps);
-        var captionGap = context.Theme.Spacing;
-        var desiredWidth = captions.Max(text => Math.Max(40, builder.MeasureText(text, style).Width + captionGap * 2)) * steps.Length;
-        var rampWidth = nonZero.Length > 0 ? Math.Min(Math.Max(0, bounds.Width - zeroWidth - missingWidth), Math.Max(160, desiredWidth)) : 0;
+        var rampWidth = nonZero.Length > 0 ? Math.Max(0, bounds.Width - zeroWidth - missingWidth) : 0;
         // The key starts at the plot's left edge, under the first column, like its title.
         var scaleLeft = bounds.Left;
         using (builder.PushGroup("matrix-scale", "heatmap-scale", new Dictionary<string, string> {
@@ -234,11 +230,14 @@ internal static partial class VisualMatrixCompiler {
             }
             if (nonZero.Length == 0) return;
             var area = new ChartRect(scaleLeft + zeroWidth, bounds.Top, rampWidth, bounds.Height);
-            var width = area.Width / steps.Length; var left = area.Left;
             for (var index = 0; index < steps.Length; index++) {
                 var value = steps[index];
                 var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
-                var box = new ChartRect(left + index * width, bounds.Top, Math.Max(0, width - 2), swatch);
+                var left = index == 0 ? area.Left : area.Left + area.Width * ChartMath.Normalize(
+                    ChartMath.InterpolateRange(steps[index - 1], value, .5), floor, max);
+                var right = index == steps.Length - 1 ? area.Right : area.Left + area.Width * ChartMath.Normalize(
+                    ChartMath.InterpolateRange(value, steps[index + 1], .5), floor, max);
+                var box = new ChartRect(left, bounds.Top, Math.Max(0, right - left - 2), swatch);
                 var label = captions[index];
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-" + index, "heatmap-scale-step", box, label,
                     ScaleMetadata(value, ChartHeatmapSurface.Ratio(chart, value, min, max)))) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
@@ -246,7 +245,7 @@ internal static partial class VisualMatrixCompiler {
             VisualStateSceneTools.Text(builder, captions[0], new ChartRect(area.Left, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
             VisualStateSceneTools.Text(builder, captions[captions.Length - 1], new ChartRect(area.Left + area.Width / 2, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
             if (chart.Options.ShowHeatmapScaleStepLabels && floor != max)
-                VisualColorScaleLegendScene.StepLabels(builder, steps.Select((_, index) => left + (index + .5) * width).ToArray(), captions, style,
+                VisualColorScaleLegendScene.StepLabels(builder, steps.Select(value => area.Left + area.Width * ChartMath.Normalize(value, floor, max)).ToArray(), captions, style,
                     new ChartRect(area.Left, bounds.Top + swatch, area.Width, textHeight), builder.MeasureText(captions[0], style).Width,
                     builder.MeasureText(captions[captions.Length - 1], style).Width, context.Theme.Spacing / 2, "heatmap-scale");
         }

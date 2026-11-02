@@ -24,8 +24,8 @@ internal static class ChartNumericFormatter {
         foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) finite.Add(value);
         var largest = 0d;
         foreach (var value in finite) largest = Math.Max(largest, Math.Abs(value));
-        if (largest < 10000) {
-            if (!sharePrecision || finite.Count < 2 || largest == 0) return null;
+        if (sharePrecision) {
+            if (finite.Count < 2 || largest == 0) return null;
             // Three significant places at the chart's largest observation give counts one
             // common precision. Preserve small positive observations instead of rounding them to zero.
             var decimals = Math.Max(0, Math.Min(6, 2 - (int)Math.Floor(Math.Log10(largest))));
@@ -33,10 +33,9 @@ internal static class ChartNumericFormatter {
             var precision = ChartValueFormat.ForTickStep(Math.Pow(10, -decimals), 0);
             return value => value != 0 && Math.Round(value, decimals) == 0 ? format.Format(value) : precision.Format(value);
         }
+        if (largest < 10000) return null;
         var (divisor, suffix) = largest >= 1e9 ? (1e9, "B") : largest >= 1e6 ? (1e6, "M") : (1e3, "k");
         return value => {
-            if (sharePrecision && Math.Abs(value) < 10000) return Math.Abs(value) >= 1
-                ? ChartValueFormat.ForTickStep(1, 0).Format(value) : format.Format(value);
             var scaled = Math.Round(value / divisor, 1);
             if (Math.Abs(value) < divisor || Math.Abs(scaled) >= 10000) return format.Format(value);
             return scaled.ToString("0.#", format.Culture) + suffix;
