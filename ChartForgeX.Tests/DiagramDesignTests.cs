@@ -53,7 +53,8 @@ public sealed class DiagramDesignTests {
             var pill = Assert.Single(label.Descendants(), node => Role(node) == "topology-edge-label-surface");
             Assert.True(ChartColor.TryParse((string?)pill.Attribute("fill"), out var fill));
             Assert.Equal(255, fill.A);
-            Assert.Equal(chart.Theme.Resolve(chart.ThemeMode).Background, fill);
+            var colors = chart.Theme.Resolve(chart.ThemeMode);
+            Assert.Equal(ChartColorMath.Blend(colors.Background, colors.Foreground, TopologyRenderPrimitives.EdgeLabelQuietTint), fill);
             var id = (string)label.Attribute("data-edge-id")!;
             var edge = Assert.Single(envelope.Edges, item => item.Id == id);
             var x = Number(label, "data-label-x"); var y = Number(label, "data-label-y");

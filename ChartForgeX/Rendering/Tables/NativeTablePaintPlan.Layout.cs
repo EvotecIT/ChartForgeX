@@ -37,13 +37,15 @@ internal sealed partial class NativeTablePaintPlan {
         foreach (var width in widths) RequiredWidth += width;
         RequiredHeight = y - content.Y + (data.ShowHeader ? headerHeight + 4 * s : 0) + rowHeights.Sum();
         if (data.ShowHeader) {
+            // Inside a card the header is a borderless band; the card outline already frames the grid.
             Rect("table-header", new ChartRect(content.X, y, content.Width, headerHeight), Math.Min(6, theme.PlotCornerRadius) * s,
-                theme.PlotBackground, theme.PlotBorder, ChartVisualPrimitives.SvgGuideStrokeClass);
+                theme.PlotBackground, data.Embedded ? null : theme.PlotBorder, data.Embedded ? null : ChartVisualPrimitives.SvgGuideStrokeClass);
             var x = content.X;
             for (var i = 0; i < data.Columns.Count; i++) {
                 var column = data.Columns[i];
                 using (Identity(ChildId("header", column.Id), "table-header-cell", new Dictionary<string, string> { ["data-column-id"] = column.Id }))
-                    Text(column.Label, x + 9 * s, y + headerHeight * .66, widths[i] - 18 * s, column.Alignment, data.Foreground ?? theme.Text, OutputFontSize(data, theme.SubtitleFontSize), 700);
+                    Text(column.Label, x + 9 * s, y + headerHeight * .66, widths[i] - 18 * s, column.Alignment,
+                        data.Foreground ?? (data.Embedded ? theme.MutedText : theme.Text), data.Embedded ? cellSize : OutputFontSize(data, theme.SubtitleFontSize), 700);
                 x += widths[i];
             }
             y += headerHeight + 4 * s;

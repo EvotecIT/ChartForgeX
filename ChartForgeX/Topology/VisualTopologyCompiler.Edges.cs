@@ -135,10 +135,12 @@ internal sealed partial class VisualTopologyCompiler {
             });
             var size = layout.FontSize;
             var b = Bounds(layout.Bounds.X, layout.Bounds.Y, layout.Bounds.Width, layout.Bounds.Height);
-            var fill = EdgeLabelColor(Color(edge.LabelBackgroundColor, _colors.Surface), edge);
-            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: new VisualScenePaintBinding(EdgeLabelSurfacePaint(edge, fill, EdgeLabelOpacity(edge), true)));
+            // Quiet multiplicities only mask the line beneath them with the canvas tone.
+            var quiet = UsesQuietEdgeLabelSurface(_options);
+            var fill = EdgeLabelColor(Color(edge.LabelBackgroundColor, quiet ? _colors.Background : _colors.Surface), edge);
+            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: new VisualScenePaintBinding(EdgeLabelSurfacePaint(edge, fill, EdgeLabelOpacity(edge), !quiet)));
             var ink = EdgeLabelColor(Color(edge.LabelColor, _colors.Foreground), edge);
-            Text(text!, b, size, ink, 600, "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge), paint: EdgeTextPaint(edge, ink), defaultUnits: units);
+            Text(text!, b, size, ink, EdgeLabelPrimaryWeight(_options), "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge), paint: EdgeTextPaint(edge, ink), defaultUnits: units);
         }
     }
 
@@ -187,7 +189,17 @@ internal sealed partial class VisualTopologyCompiler {
                 var color = LabelColor(_colors.Border);
                 _builder.Line(from.X, from.Y, to.X, to.Y, color, _context.Theme.AxisStrokeWidth * units * _scale, "topology-edge-label-leader", paint: new VisualScenePaintBinding(stroke: BorderPaint(color, EdgeLabelOpacity(edge))));
             }
-            if (_options.IncludeEdgeLabelBackplates) {
+            var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
+            if (_options.IncludeEdgeLabelBackplates && UsesQuietEdgeLabelSurface(_options)) {
+                var surface = QuietEdgeLabelSurface(edge, bounds, labels, units);
+                var authored = !string.IsNullOrWhiteSpace(edge.LabelBackgroundColor);
+                var tone = authored ? Color(edge.LabelBackgroundColor, _colors.Surface) : ChartColorMath.Blend(_colors.Background, _colors.Foreground, EdgeLabelQuietTint);
+                var fill = LabelColor(tone);
+                var paint = authored ? EdgeLabelSurfacePaint(edge, fill, EdgeLabelOpacity(edge), false)
+                    : SvgPaint.Mix(tone, BackgroundPaint(_colors.Background), ForegroundPaint(_colors.Foreground), EdgeLabelQuietTint).WithOpacity(fill, EdgeLabelOpacity(edge));
+                _builder.Rect(surface, fill, radius: surface.Height / 2, role: "topology-edge-label-surface", paint: new VisualScenePaintBinding(paint));
+            }
+            else if (_options.IncludeEdgeLabelBackplates) {
                 var fill = LabelColor(ChartColorMath.WithOpacity(Color(edge.LabelBackgroundColor ?? EdgeLabelBackplateFill(Theme(), _options), _colors.Surface), EdgeLabelBackplateFillOpacity(_options)));
                 var stroke = LabelColor(ChartColorMath.WithOpacity(_colors.Border, EdgeLabelBackplateStrokeOpacity(_options)));
                 _builder.Rect(bounds, fill, stroke, EdgeLabelBackplateStrokeWidth * units * _scale,
@@ -216,14 +228,13 @@ internal sealed partial class VisualTopologyCompiler {
                     EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout)), LabelColor(fill),
                     radius: EdgeLabelClearanceRadius * units * _scale, role: "topology-edge-label-clearance", paint: new VisualScenePaintBinding(fillPaint.WithOpacity(LabelColor(fill), EdgeLabelClearanceOpacity(containingGroup) * EdgeLabelOpacity(edge))));
             }
-            var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
             var height = bounds.Height / Math.Max(1, lineCount);
             var rowOffset = 0;
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var rows = EdgeLabelRows(labels[i], _options);
                 var textBounds = Text(i == 0 ? EdgeCaptionContent(edge, labels[i]) : ChartForgeX.Typography.TextContent.Plain(labels[i]), new ChartRect(bounds.X + 4 * units * _scale, bounds.Y + rowOffset * height, Math.Max(0, bounds.Width - 8 * units * _scale), rows * height),
-                    TextPolicySize(_context.Theme.Typography.DataLabelSize) * (edge.TextStyle?.FontSize.HasValue == true ? 1 : units) * (i == 0 ? 1 : .85), LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i == 0 ? 600 : 400, "topology-edge-label-text", rows, centered: true, verticallyCentered: true,
+                    TextPolicySize(_context.Theme.Typography.DataLabelSize) * (edge.TextStyle?.FontSize.HasValue == true ? 1 : units) * (i == 0 ? 1 : .85), LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i == 0 ? EdgeLabelPrimaryWeight(_options) : 400, "topology-edge-label-text", rows, centered: true, verticallyCentered: true,
                     paint: EdgeTextPaint(edge, LabelColor(Color(edge.LabelColor, i == 0 ? _colors.Foreground : _colors.MutedForeground)), i > 0), opacity: EdgeLabelOpacity(edge), defaultUnits: units);
                 rowOffset += rows;
                 if (!textBounds.HasValue) continue;

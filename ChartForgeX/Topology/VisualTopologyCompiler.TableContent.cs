@@ -18,6 +18,7 @@ internal sealed partial class VisualTopologyCompiler {
         var style = TopologyTextPolicy.Resolve(node.TextStyle, _context.Font, size, 400);
         var data = NativeTableData.Capture(node.TableContent!, bounds, new ResolvedVisualTheme(theme, _context.ThemeMode), style.Font,
             node.Id + "/table/" + node.TableContent!.Id, scale);
+        data.Embedded = true;
         if (node.TextStyle?.FontSize != null || node.TableContent!.CapturedPresentationScale != 1)
             data.AbsoluteDataLabelSize = size * scale;
         if (node.TextStyle?.FontWeight != null) data.WeightOverride = style.Font.Weight;

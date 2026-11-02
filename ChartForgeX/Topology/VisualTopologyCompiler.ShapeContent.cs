@@ -127,11 +127,16 @@ internal sealed partial class VisualTopologyCompiler {
         if (node.MaximumTextWidth.HasValue && _options.WrapNodeLabels) {
             // Text is measured by the same fitter the painter will use. The configured width
             // is a line-allocation limit, not a new font floor or an arbitrary caption margin.
-            node.Width = Math.Max(node.Width, node.MaximumTextWidth.Value * spacing + glyph + 20 * spacing + 2 * padding);
-            for (var attempt = 0; attempt < 64; attempt++) {
+            // Short content keeps its natural width; only longer rows wrap at the limit.
+            var cap = node.MaximumTextWidth.Value * spacing + glyph + 20 * spacing + 2 * padding;
+            node.Width = Math.Max(node.Width, Math.Min(cap, width + 20 * spacing + 2 * padding));
+            for (var attempt = 0; attempt < 128; attempt++) {
                 if (node.Shape is TopologyNodeShape.Circle or TopologyNodeShape.DoubleCircle) node.Width = node.Height = Math.Max(node.Width, node.Height);
                 if (ShapeContent(node, size).Complete) return;
-                node.Height += Math.Max(1, MeasurePolicyText("Ag", size, 600).LineHeight);
+                // Widen toward the wrapping limit before adding rows, so a caption that
+                // nearly fits does not wrap inside a card that could still grow.
+                if (node.Width < cap - 1e-6) node.Width = Math.Min(cap, node.Width + 4 * spacing);
+                else node.Height += Math.Max(1, MeasurePolicyText("Ag", size, 600).LineHeight);
             }
             return; // The existing overflow diagnostic still describes exhausted explicit row ceilings.
         }
