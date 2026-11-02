@@ -33,14 +33,20 @@ public sealed class ChartLookV2RegressionTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void FinancialPricesFitTheirOwnAxisBesideNonFinancialObservations(bool secondary) {
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void FinancialPricesFitTheirOwnAxisBesideEmptyAndOtherAxisSeries(bool secondary, bool emptyPeer) {
         var chart = Chart.Create().WithSize(800, 440).WithLegend(false)
             .AddCandlestick("Price", new[] { new ChartCandlestick(1, 102, 110, 98, 108), new ChartCandlestick(2, 108, 114, 104, 106) });
         if (secondary) chart.Series[0].UseSecondaryValueAxis();
         chart.AddLine("Count", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         if (!secondary) chart.Series[1].UseSecondaryValueAxis();
+        if (emptyPeer) {
+            chart.AddLine("Pending", Array.Empty<ChartPoint>());
+            if (secondary) chart.Series[2].UseSecondaryValueAxis();
+        }
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = secondary ? "axis-secondary-y-label" : "axis-y-label";
         var ticks = prepared.Regions.Where(item => item.Role == role).Select(item => double.Parse(item.Label!.Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture)).ToArray();
@@ -110,6 +116,32 @@ public sealed class ChartLookV2RegressionTests {
             new[] { new LabelObstacle("source", new ChartRect(10, 40, 20, 20)), new LabelObstacle("foreign", new ChartRect(25, 40, 20, 20)) },
             2, (_, _) => new(10, 10, 10), avoidLeaderLabels: true));
         Assert.True(result.IsDropped);
+    }
+
+    [Fact]
+    public void FittedImplicitTimelineLegendReservesTheSameHeightAsAnExplicitlyHiddenLegend() {
+        var chart = Chart.Create().WithSize(600, 560).AddTimelineRange("North", 0, 10).AddTimelineRange("South", 2, 8);
+        var automatic = Fit(chart, new VisualFrame());
+        var hidden = Fit(chart.WithLegend(false), new VisualFrame());
+        Assert.DoesNotContain(automatic.Scene.Nodes, node => node.Role == "legend-entry");
+        Assert.Equal(hidden.Size.Height, automatic.Size.Height);
+    }
+
+    [Fact]
+    public void ATargetCaptionNeverPaintsAcrossItsMatchingGaugeNeedle() {
+        const string caption = "Release target";
+        var chart = Chart.Create().WithSize(360, 360).WithLegend(false)
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
+                new ChartGaugeValue(100, targets: new[] { new ChartGaugeTarget(100, caption) })))
+            .ConfigureGauge(options => { options.Form = ChartGaugeForm.ArcWithNeedle; options.StartAngleDegrees = 180; options.SweepAngleDegrees = 180; options.TickCount = 3; });
+        RoundedRadialSeriesTests.UseFixtureFont(chart);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var needle = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-needle");
+        var obstacle = new LabelMarkShape(new[] { new List<ChartPoint> { needle.Start, needle.End } }, false, needle.StrokeWidth);
+        var captions = NumericRadialAxisTextTests.Footprints(prepared.Scene).Where(item => item.Text.Role == "gauge-target-label").ToArray();
+        Assert.Contains(prepared.Regions, region => region.Role == "gauge-target-label" && region.Label == caption);
+        Assert.All(captions, item => Assert.False(obstacle.Intersects(item.Bounds), "The caption must clear the needle stroke."));
+        if (captions.Length == 0) Assert.Contains(prepared.Diagnostics, item => item.Code == "gauge.label-overflow");
     }
 
     private static PreparedVisual Fit(Chart chart, VisualFrame? frame = null) {

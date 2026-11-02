@@ -72,14 +72,14 @@ internal static partial class VisualMarkerScene {
 
     /// <summary>One boundary of a difference area: the shading where it leads, its line and its marker.</summary>
     internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DifferenceLegend(Chart chart, ChartSeries series,
-        ChartColor color, SvgPaint paint, bool positive) => (builder, bounds, context) => {
+        ChartColor color, SvgPaint paint, bool positive, double[]? dash = null) => (builder, bounds, context) => {
             var colors = context.Theme.Resolve(context.ThemeMode);
             var (fill, fillPaint) = VisualCartesianCompiler.DifferenceFill(series, chart.IndexOfSeries(series), positive, colors, context);
             builder.Rect(bounds, fill, role: positive ? "legend-difference-positive" : "legend-difference-negative", paint: VisualChartPaint.Fill(fillPaint));
             if (fill.A > 0) VisualFrameLayout.DrawLegendPattern(builder, bounds, series.FillPattern, context, role: "legend-area-pattern");
             var y = bounds.Top + bounds.Height / 2;
             builder.Line(bounds.Left, y, bounds.Right, y, color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
-                role: "legend-line", paint: VisualChartPaint.Stroke(paint));
+                role: "legend-line", dash: dash, paint: VisualChartPaint.Stroke(paint));
             if (Enabled(series, series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
                 || series.PointFillPatterns.Any(value => value.HasValue)) && Radius(series, context) > 0)
                 Draw(builder, series, -1, bounds.Left + bounds.Width / 2, y, Math.Min(bounds.Width, bounds.Height) * .4,

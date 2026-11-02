@@ -38,8 +38,9 @@ internal static class ChartContentFit {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var source = context.Frame;
         var type = context.Theme.Typography;
+        var entries = VisualChartCompiler.LegendEntries(family, chart, colors);
         var frame = new VisualFrame(source.Title ?? chart.Title, source.Subtitle ?? chart.Subtitle,
-            source.HasExplicitLegend ? source.ShowLegend : chart.Options.ShowLegend,
+            source.HasExplicitLegend ? source.ShowLegend : ChartLegendVisibility.ForPreparedContent(chart, entries.Count),
             source.HasExplicitLegendPosition ? source.LegendPosition : chart.Options.LegendPosition,
             source.ShowSurface, source.TransparentBackground,
             Chart.ResolveFrameTextStyle(context, source.TitleStyle, chart.Options.TitleStyle, type.TitleSize, colors.Foreground, 700),
@@ -48,7 +49,7 @@ internal static class ChartContentFit {
             source.LegendMaximumRows, source.LegendMaximumHeightFraction, source.ShowCard, source.LegendTitle);
         var probeContext = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
-        var content = VisualFrameLayout.Build(builder, probeContext, VisualChartCompiler.LegendEntries(family, chart, colors), out var legendHeight);
+        var content = VisualFrameLayout.Build(builder, probeContext, entries, out var legendHeight);
         var axisStyle = VisualStateSceneTools.TickStyle(chart, context);
         var axisHeight = axisRows * (builder.MeasureText("Mg", axisStyle).Height + context.Theme.Spacing);
         if (chart.XAxisTitle.Length > 0) axisHeight += type.AxisTitleSize * 1.5 + context.Theme.Spacing;

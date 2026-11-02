@@ -63,4 +63,72 @@ public sealed partial class DifferenceAreaTests {
         Assert.Contains(">Actual<", svg); Assert.Contains(">Forecast<", svg);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
+    [Fact]
+    public void AutomaticSecondBoundaryUsesAnUnoccupiedPaletteWithoutRecoloringOrdinarySeries() {
+        var green = ChartColor.FromHex("#189060");
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite().WithPalette(Red, Blue, green))
+            .AddDifferenceArea("Comparison", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) })
+            .AddLine("Other", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4) });
+        var prepared = Prepare(chart);
+        Assert.Equal(Red, Boundary(prepared, "difference-first").Stroke);
+        Assert.Equal(green, Boundary(prepared, "difference-second").Stroke);
+        Assert.Equal(Blue, Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line").Stroke);
+        var fill = Boundary(prepared, "difference-negative").Fill!.Value;
+        Assert.Equal((green.R, green.G, green.B), (fill.R, fill.G, fill.B));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExhaustedPalettesDistinguishTheSecondBoundaryAndItsLegendWithDashes(bool twoColors) {
+        var chart = Chart.Create().WithLegend().WithTheme(VisualTheme.Graphite().WithPalette(twoColors ? new[] { Red, Blue } : new[] { Red }))
+            .AddDifferenceArea("Comparison", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) })
+            .AddLine("Other", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4) });
+        var document = System.Xml.Linq.XDocument.Parse(Prepare(chart).ToSvg());
+        var second = document.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "difference-second");
+        var lines = document.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "legend-line").ToArray();
+        var dash = (string?)second.Attribute("stroke-dasharray");
+        Assert.False(string.IsNullOrEmpty(dash));
+        Assert.Equal(dash, (string?)lines[1].Attribute("stroke-dasharray"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DuplicateRgbPaletteSlotsRetainTheSelectedSecondBoundaryToken(bool explicitFirst) {
+        var palette = new[] { Red, Blue, Red };
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite().WithPalette(palette))
+            .AddLine("Other", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4) }, ChartColor.FromHex("#606060"))
+            .AddDifferenceArea("Comparison", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) });
+        if (explicitFirst) chart.Series[1].WithColor(Blue);
+        var variables = new VisualDesignTokens { Palette = palette }.ToSvgColorVariables();
+        var svg = Prepare(chart).ToSvg(new VisualSvgOptions(colorVariables: variables));
+        var second = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "difference-second");
+        Assert.Contains("var(--cfx-series-3,", (string?)second.Attribute("stroke"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AutomaticSecondBoundariesReserveOtherPairsColors(bool authoredSecond) {
+        var green = ChartColor.FromHex("#189060"); var purple = ChartColor.FromHex("#8450C0");
+        var pairs = new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) };
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite().WithPalette(Red, Blue, green, purple))
+            .AddDifferenceArea("North", pairs).AddDifferenceArea("South", pairs);
+        if (authoredSecond) chart.Series[0].DifferenceArea.NegativeFill = green;
+        var prepared = Prepare(chart);
+        var first = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "difference-first").ToArray();
+        var second = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "difference-second").ToArray();
+        Assert.Equal(new ChartColor?[] { Red, Blue }, first.Select(node => node.Stroke));
+        Assert.Equal(new ChartColor?[] { green, purple }, second.Select(node => node.Stroke));
+    }
+
+    [Fact]
+    public void MultipleDifferenceLegendsIncludeTheirOwningSeriesNames() {
+        var pairs = new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) };
+        var chart = Chart.Create().WithLegend().AddDifferenceArea("North", pairs).AddDifferenceArea("South", pairs);
+        var svg = Prepare(chart).ToSvg();
+        foreach (var series in new[] { "North", "South" }) foreach (var boundary in new[] { "First", "Second" })
+            Assert.Contains(">" + series + ": " + boundary + "<", svg);
+    }
 }

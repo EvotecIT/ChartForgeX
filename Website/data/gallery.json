@@ -11084,7 +11084,7 @@
           "image": "/examples/generated/family-gauge-precision-light.svg",
           "darkImage": "/examples/generated/family-gauge-precision-dark.svg",
           "width": 800,
-          "height": 243,
+          "height": 213,
           "source": "/examples/generated/family-gauge-precision-light.csharp.txt",
           "darkSource": "/examples/generated/family-gauge-precision-dark.csharp.txt"
         },
@@ -11306,7 +11306,7 @@
       "category": "indicators",
       "title": "Reviewed work against its targets",
       "width": 800,
-      "height": 219,
+      "height": 189,
       "kinds": [
         "Bullet"
       ],
@@ -11330,7 +11330,7 @@
           "image": "/examples/generated/family-bullet-compact-light.svg",
           "darkImage": "/examples/generated/family-bullet-compact-dark.svg",
           "width": 360,
-          "height": 219,
+          "height": 189,
           "source": "/examples/generated/family-bullet-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-bullet-compact-dark.csharp.txt"
         },
@@ -11622,7 +11622,7 @@
       "category": "schedule",
       "title": "Project activities in March 2026",
       "width": 800,
-      "height": 264,
+      "height": 234,
       "kinds": [
         "Timeline"
       ],
@@ -11670,7 +11670,7 @@
           "image": "/examples/generated/family-timeline-compact-light.svg",
           "darkImage": "/examples/generated/family-timeline-compact-dark.svg",
           "width": 360,
-          "height": 264,
+          "height": 234,
           "source": "/examples/generated/family-timeline-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-timeline-compact-dark.csharp.txt"
         }
@@ -11682,7 +11682,7 @@
       "category": "schedule",
       "title": "Project delivery in March 2026",
       "width": 800,
-      "height": 296,
+      "height": 266,
       "kinds": [
         "Gantt"
       ],
@@ -11730,7 +11730,7 @@
           "image": "/examples/generated/family-gantt-compact-light.svg",
           "darkImage": "/examples/generated/family-gantt-compact-dark.svg",
           "width": 360,
-          "height": 314,
+          "height": 266,
           "source": "/examples/generated/family-gantt-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-gantt-compact-dark.csharp.txt"
         },
@@ -12502,7 +12502,7 @@
       "category": "proportion",
       "title": "Completed assessments by team",
       "width": 800,
-      "height": 205,
+      "height": 175,
       "kinds": [
         "Pictorial"
       ],
@@ -12560,7 +12560,7 @@
           "image": "/examples/generated/family-pictorial-compact-light.svg",
           "darkImage": "/examples/generated/family-pictorial-compact-dark.svg",
           "width": 360,
-          "height": 205,
+          "height": 175,
           "source": "/examples/generated/family-pictorial-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-pictorial-compact-dark.csharp.txt"
         },
@@ -12612,7 +12612,7 @@
       "category": "indicators",
       "title": "Progress through delivery stages",
       "width": 800,
-      "height": 205,
+      "height": 175,
       "kinds": [
         "ProgressBar"
       ],
@@ -12660,7 +12660,7 @@
           "image": "/examples/generated/family-progress-bar-compact-light.svg",
           "darkImage": "/examples/generated/family-progress-bar-compact-dark.svg",
           "width": 360,
-          "height": 205,
+          "height": 175,
           "source": "/examples/generated/family-progress-bar-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-progress-bar-compact-dark.csharp.txt"
         },

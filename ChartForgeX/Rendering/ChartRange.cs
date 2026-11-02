@@ -400,7 +400,7 @@ internal sealed partial class ChartRange {
         || kind == ChartSeriesKind.RangeBar || kind == ChartSeriesKind.BoxPlot || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Slope;
 
     private static bool HasOnlyFinancialSeries(Chart chart, ChartAxisSide axis) {
-        var series = chart.Series.Where(item => item.ValueAxis == axis).ToArray();
+        var series = chart.Series.Where(item => item.ValueAxis == axis && item.HasSourceData).ToArray();
         return series.Length > 0 && series.All(item => item.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc);
     }
 

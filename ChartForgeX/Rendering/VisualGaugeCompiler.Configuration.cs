@@ -158,9 +158,12 @@ internal static partial class VisualGaugeCompiler {
         }
         if (chart.Options.Form is ChartGaugeForm.Arc or ChartGaugeForm.ArcWithNeedle)
             VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep * data.Ratio, data.Color, "gauge-value", "series-0-value", paint: chart.ValuePaint(data));
+        LabelMarkShape? needle = null;
         if (chart.Options.Form is ChartGaugeForm.Needle or ChartGaugeForm.ArcWithNeedle) {
             var angle = start + sweep * data.Ratio;
-            builder.Line(cx, cy, cx + Math.Cos(angle) * (radius - stroke), cy + Math.Sin(angle) * (radius - stroke), chart.Options.NeedleColor ?? data.Color,
+            var end = new ChartPoint(cx + Math.Cos(angle) * (radius - stroke), cy + Math.Sin(angle) * (radius - stroke));
+            needle = new LabelMarkShape(new[] { new List<ChartPoint> { new(cx, cy), end } }, false, Math.Max(1, context.Theme.SeriesStrokeWidth));
+            builder.Line(cx, cy, end.X, end.Y, chart.Options.NeedleColor ?? data.Color,
                 Math.Max(1, context.Theme.SeriesStrokeWidth), "gauge-needle", paint: VisualChartPaint.Stroke(NeedlePaint(chart, data)));
             builder.Ellipse(cx, cy, stroke / 3, stroke / 3, colors.Foreground, role: "gauge-pivot", paint: VisualChartPaint.Fill(colors.Foreground, SvgColorRole.Axis));
         }
@@ -190,7 +193,7 @@ internal static partial class VisualGaugeCompiler {
             var clear = exterior + gap / 2 + halfExtent;
             var inside = radius - stroke / 2 - bandWidth - gap / 2 - halfExtent;
             var candidates = new[] { At(clear), At(clear + labelHeight), At(inside) };
-            var box = candidates.FirstOrDefault(candidate => FitsCaption(plot, candidate, occupied));
+            var box = candidates.FirstOrDefault(candidate => FitsCaption(plot, candidate, occupied) && needle?.Intersects(candidate) != true);
             if (box.Width <= 0) box = candidates[0];
             FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
         }
