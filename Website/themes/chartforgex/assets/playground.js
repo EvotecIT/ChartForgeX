@@ -95,10 +95,10 @@ function start(root) {
       if (state.language === initialLanguage && ui.source.value === initialSource) {
         state.language = shared.language;
         ui.source.value = shared.source;
-      }
-      if (shared.theme && !state.themeLocked) {
-        state.themeLocked = true;
-        setPreviewTheme(shared.theme);
+        if (shared.theme && !state.themeLocked) {
+          state.themeLocked = true;
+          setPreviewTheme(shared.theme);
+        }
       }
     }
     selectLanguageTab();

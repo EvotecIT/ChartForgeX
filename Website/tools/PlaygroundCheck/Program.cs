@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using ChartForgeX.Playground;
 
@@ -26,11 +27,14 @@ using (var samplesDocument = JsonDocument.Parse(PlaygroundEngine.SamplesJson()))
 }
 
 // The page ships its starter source before the engine loads; it must stay the first chart sample.
-var pageData = Path.Combine("data", "playground.json");
-if (File.Exists(pageData)) {
+var repository = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>()
+    .Single(item => item.Key == "RepositoryRoot").Value!;
+var pageData = Path.Combine(repository, "Website", "data", "playground.json");
+if (!File.Exists(pageData)) failures.Add("Website/data/playground.json is missing.");
+else {
     using var page = JsonDocument.Parse(File.ReadAllText(pageData));
     if (Text(page.RootElement, "initial") != PlaygroundSamples.All.First(sample => sample.Id == "cfx-line").Source)
-        failures.Add("data/playground.json 'initial' does not match the cfx-line sample.");
+        failures.Add("Website/data/playground.json 'initial' does not match the cfx-line sample.");
 }
 using (var info = JsonDocument.Parse(PlaygroundEngine.InfoJson())) {
     Console.WriteLine("Engine info: " + info.RootElement.GetRawText());

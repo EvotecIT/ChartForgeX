@@ -10,13 +10,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class PlaygroundMarkupBrowserTests {
     [BrowserTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task OptionsTableControlsUpdateTheParsedChartWithoutChangingItsData(bool comments) {
+    [InlineData(false, "\n")]
+    [InlineData(true, "\n")]
+    [InlineData(false, "\r\n")]
+    public async Task OptionsTableControlsUpdateTheParsedChartWithoutChangingItsData(bool comments, string newline) {
         if (!Enabled) return;
         var docs = File.ReadAllText(Path.Combine(Repository(), "docs", "markup.md"));
         var source = Regex.Match(docs, "```chartforgex chart v1 \\{#trend[^\\r\\n]*[\\s\\S]*?\\r?\\n```(?=\\r?\\n)").Value;
         Assert.NotEmpty(source);
+        source = source.Replace("\r\n", "\n").Replace("\n", newline);
         if (comments) source = source.Replace("options:", "options: // render settings");
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>");
         var result = await session.Page.EvaluateAsync<JsonElement>("""
@@ -41,6 +43,79 @@ public sealed class PlaygroundMarkupBrowserTests {
         Assert.False(labels.Options.ShowDataLabels);
         foreach (var chart in new[] { wide, legend, labels })
             Assert.Equal(original.Series[0].Points.ToArray(), chart.Series[0].Points.ToArray());
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task ControlsPreserveDataRowsNamedAfterCommands() {
+        if (!Enabled) return;
+        const string data = """
+            data:
+            | Label | Portal | API |
+            | ----- | ------ | --- |
+            legend | 3 | 4
+            dataLabels | 5 | 6
+            size | 7 | 8
+            type | 9 | 10
+            """;
+        var source = "```chartforgex chart v1 {type=\"bar\"}\n" + data + "\n```";
+        await using var session = await OpenAsync("<!doctype html><html><body></body></html>");
+        var edited = await session.Page.EvaluateAsync<string>("""
+            async ({module, source}) => {
+                const {applyChartOption} = await import(module);
+                for (const [option, value] of [['type','line'], ['legend','Top'], ['labels',true], ['size','wide']])
+                    source = applyChartOption(source, option, value);
+                return source;
+            }
+            """, new { module = Module(), source });
+        Assert.Contains(data, edited);
+        var original = Parse(source);
+        var chart = Parse(edited);
+        Assert.Equal(original.Series.Count, chart.Series.Count);
+        for (var index = 0; index < original.Series.Count; index++)
+            Assert.Equal(original.Series[index].Points.ToArray(), chart.Series[index].Points.ToArray());
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData("````", "")]
+    [InlineData("~~~~", "")]
+    [InlineData("````", "    ")]
+    [InlineData("````", "\t")]
+    public async Task ControlsSkipChartExamplesInsideOtherFences(string marker, string falseCloseIndent) {
+        if (!Enabled) return;
+        var falseClose = falseCloseIndent.Length == 0 ? "" : falseCloseIndent + marker + "\n";
+        var example = marker + "markdown\n" + falseClose + "```chartforgex chart v1 {type=\"bar\"}\nlabels Example\nvalues 99\n```\n" + marker;
+        var source = example + "\n```chartforgex chart v1 {type=\"line\"}\nlabels A B\nvalues 3 4\n```";
+        await using var session = await OpenAsync("<!doctype html><html><body></body></html>");
+        var edited = await session.Page.EvaluateAsync<string>("""
+            async ({module, source}) => (await import(module)).applyChartOption(source, 'size', 'wide')
+            """, new { module = Module(), source });
+        Assert.Contains(example, edited);
+        var chart = Parse(edited);
+        Assert.Equal(1200, chart.Options.Size.Width);
+        Assert.Equal(520, chart.Options.Size.Height);
+        Assert.Equal(Parse(source).Series[0].Points.ToArray(), chart.Series[0].Points.ToArray());
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData("    ")]
+    [InlineData("\t")]
+    public async Task ControlsSkipIndentedCodeExamples(string indent) {
+        if (!Enabled) return;
+        var example = string.Join("\n", new[] { "```chartforgex chart v1 {type=\"bar\"}", "labels Example", "values 99", "```" }
+            .Select(line => indent + line));
+        var source = example + "\n```chartforgex chart v1 {type=\"line\"}\nlabels A B\nvalues 3 4\n```";
+        await using var session = await OpenAsync("<!doctype html><html><body></body></html>");
+        var edited = await session.Page.EvaluateAsync<string>("""
+            async ({module, source}) => (await import(module)).applyChartOption(source, 'size', 'wide')
+            """, new { module = Module(), source });
+        Assert.Contains(example, edited);
+        var chart = Parse(edited);
+        Assert.Equal(1200, chart.Options.Size.Width);
+        Assert.Equal(520, chart.Options.Size.Height);
+        Assert.Equal(Parse(source).Series[0].Points.ToArray(), chart.Series[0].Points.ToArray());
         AssertNoConsoleErrors(session);
     }
 

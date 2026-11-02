@@ -1,7 +1,7 @@
 // Chart options for the playground. Reads and edits the first chartforgex chart or timeline fence in a
 // markup document, so the options panel changes the source text and the source stays the only state.
 
-const FENCE = /^\s*(`{3,}|~{3,})\s*chartforgex\s+(chart|timeline)\s+v1\b(.*)$/i;
+const FENCE = /^ {0,3}(`{3,}|~{3,})\s*chartforgex\s+(chart|timeline)\s+v1\b(.*)$/i;
 const SIZES = { compact: '640x400', wide: '1200x520' };
 const ATTRIBUTE = /(^|\s+)([\w-]+)\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s}]+)/g;
 
@@ -22,19 +22,31 @@ const key = (value) => String(value || '').replace(/[^a-z0-9]/gi, '').toLowerCas
 
 /** Finds the first chart or timeline fence: its line range, kind and the line holding its attributes. */
 export function findChartFence(source) {
-  const lines = source.split('\n');
+  const lines = source.replace(/\r\n?/g, '\n').split('\n');
+  let enclosing = null;
   for (let index = 0; index < lines.length; index++) {
+    if (enclosing) {
+      if (closesFence(lines[index], enclosing)) enclosing = null;
+      continue;
+    }
+    const opening = /^ {0,3}(`{3,}|~{3,})/.exec(lines[index]);
+    if (!opening) continue;
     const match = FENCE.exec(lines[index]);
-    if (!match) continue;
+    if (!match) { enclosing = opening[1]; continue; }
     const marker = match[1];
     let end = lines.length;
     for (let next = index + 1; next < lines.length; next++) {
-      const trimmed = lines[next].trim();
-      if (trimmed.length >= marker.length && trimmed[0] === marker[0] && /^([`~])\1*$/.test(trimmed)) { end = next; break; }
+      if (closesFence(lines[next], marker)) { end = next; break; }
     }
     return { lines, start: index, end, kind: match[2].toLowerCase(), indent: /^\s*/.exec(lines[index])[0] };
   }
   return null;
+}
+
+function closesFence(line, marker) {
+  if (!/^ {0,3}[`~]/.test(line)) return false;
+  const trimmed = line.trim();
+  return trimmed.length >= marker.length && trimmed[0] === marker[0] && /^([`~])\1*$/.test(trimmed);
 }
 
 /** Returns the options panel state for the source, or null when it has no chart or timeline fence. */
@@ -129,13 +141,15 @@ function commandEntries(fence, names) {
       continue;
     }
     if (section === 'nodes' || section === 'flows') continue;
-    if (section === 'options' && line.includes('|') && (line.startsWith('|') || headers)) {
+    if (line.includes('|') && (line.startsWith('|') || headers)) {
       const cells = line.replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map(cell => cell.trim());
       if (cells.every(cell => /^:?-+:?$/.test(cell))) continue;
       if (!headers) { headers = cells.map(key); continue; }
-      const name = cells[headers.findIndex(header => ['option', 'key', 'name'].includes(header))];
-      if (names.some(item => key(item) === key(name)))
-        entries.push({ index, value: unquote(cells[headers.indexOf('value')] ?? '') });
+      if (section === 'options') {
+        const name = cells[headers.findIndex(header => ['option', 'key', 'name'].includes(header))];
+        if (names.some(item => key(item) === key(name)))
+          entries.push({ index, value: unquote(cells[headers.indexOf('value')] ?? '') });
+      }
       continue;
     }
     const match = pattern.exec(line);
