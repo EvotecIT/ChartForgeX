@@ -41,6 +41,8 @@ internal sealed partial class VisualTopologyCompiler {
         var maximumSubtitle = subtitle && !chip ? Math.Max(1, _options.MaxNodeSubtitleLines) : 1;
         var detailHeight = showText && node.Details.Count > 0 ? 8 + DetailRowsHeight(node, size * .8, detailLine) + node.Details.Count(detail => detail.StartsSection) * 8 * spacing : 0;
         var tableHeight = TableHeight(node, size);
+        // An embedded grid must also fit across the body at this size, not only down it.
+        var tableWidth = node.TableContent == null ? 0 : NativeTablePaintPlan.PreferredWidth(TableData(node, new ChartRect(0, 0, 1, 1), size));
         detailHeight += tableHeight;
         // Candidate row allocations repeatedly use the same measured width. Retain
         // every candidate and its order, but fit each exact title/subtitle cell once.
@@ -61,7 +63,7 @@ internal sealed partial class VisualTopologyCompiler {
                 Math.Max(0, bounds.Width - 2 * inset), Math.Max(0, bounds.Height - 2 * inset)); }
             var width = Math.Max(0, bounds.Width - glyph);
             var count = 0;
-            var complete = bounds.Height + 1e-8 >= totalHeight && bounds.Width >= footerWidth && width > 0;
+            var complete = bounds.Height + 1e-8 >= totalHeight && bounds.Width >= footerWidth && width > 0 && tableWidth <= width + 1e-8;
             if (showText) {
                 var titleKey = (width, titleRows);
                 if (!titleFits.TryGetValue(titleKey, out var titleFit)) {
