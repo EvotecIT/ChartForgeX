@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualColorScaleLegendScene {
+    /// <summary>Keeps observed endpoints while choosing rounded interior numbers through the shared tick owner.</summary>
+    internal static double[] NumericTicks(double min, double max) => new[] { min }
+        .Concat(ChartTicks.GenerateInside(min, max, 7).Where(value => value > min && value < max))
+        .Concat(new[] { max }).Distinct().ToArray();
     /// <summary>Fits intermediate numeric captions between complete endpoints and any named midpoint.</summary>
     internal static void StepLabels(VisualSceneBuilder builder, IReadOnlyList<double> positions, IReadOnlyList<string> captions,
         TextStyle style, ChartRect area, double leftReserved, double rightReserved, double gap, string prefix, ChartRect? obstacle = null) {

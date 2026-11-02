@@ -34,7 +34,7 @@ internal static partial class VisualSpecialtyCompiler {
             for (var index = 0; index < series.RenderPoints.Count; index++) {
                 var raw = series.RenderPoints[index].Y;
                 Add(index, "category", Category(chart, index), funnel ? chart.Options.Funnel.CategoryLabel : chart.Options.Pyramid.CategoryLabel, false);
-                Add(index, "value", VisualStateSceneTools.Value(chart, series, index, raw), funnel ? chart.Options.Funnel.ValueLabel : chart.Options.Pyramid.ValueLabel, true);
+                Add(index, "value", funnel ? FunnelValue(chart, index) : VisualStateSceneTools.Value(chart, series, index, raw), funnel ? chart.Options.Funnel.ValueLabel : chart.Options.Pyramid.ValueLabel, true);
                 if (!funnel) continue;
                 var retention = series.RenderPoints[0].Y > 0 ? raw / series.RenderPoints[0].Y : (double?)null;
                 var previous = index > 0 ? series.RenderPoints[index - 1].Y : 0;

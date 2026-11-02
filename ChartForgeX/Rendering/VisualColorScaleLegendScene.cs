@@ -194,15 +194,15 @@ internal static partial class VisualColorScaleLegendScene {
                     Caption((scale.HighLabel ?? labels.More) + " · " + endpoints[1],
                         new ChartRect(bounds.Left + bounds.Width / 2, y + swatchHeight + gap / 2, bounds.Width / 2, row), "high", TextAlignment.Right);
                     if (showStepLabels && steps[0] != steps[steps.Length - 1]) {
-                        var positions = steps.Select((value, index) => legendStyle == ChartColorLegendStyle.Gradient
-                            ? bounds.Left + bounds.Width * ChartMath.Normalize(value, scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))
-                            : bounds.Left + (index + .5) * width).ToArray();
+                        var ticks = NumericTicks(scale.EffectiveMinimum(min), scale.EffectiveMaximum(max));
+                        var positions = ticks.Select(value => bounds.Left + bounds.Width *
+                            ChartMath.Normalize(value, scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))).ToArray();
                         ChartRect? midpoint = null;
                         if (inlineMidpoint) {
                             var size = builder.MeasureText(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0], style);
                             midpoint = new ChartRect(midpointX - size.Width / 2, y + swatchHeight + gap / 2, size.Width, row);
                         }
-                        StepLabels(builder, positions, formatValues(steps), style,
+                        StepLabels(builder, positions, formatValues(ticks), style,
                             new ChartRect(bounds.Left, y + swatchHeight + gap / 2, bounds.Width, row),
                             builder.MeasureText((scale.LowLabel ?? labels.Less) + " · " + endpoints[0], style).Width,
                             builder.MeasureText((scale.HighLabel ?? labels.More) + " · " + endpoints[1], style).Width, gap, prefix, midpoint);

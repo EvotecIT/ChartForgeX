@@ -31,7 +31,7 @@ internal static partial class VisualMatrixCompiler {
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartColorPresentation? presentation = null) {
         if (viewport.Width <= 0 || viewport.Height <= 0 || chart.Series.Count == 0) return;
-        presentation ??= new ChartColorPresentation(chart.Options.HeatmapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
+        presentation ??= new ChartColorPresentation(chart.Options.HeatmapColorDimension, chart.Options.Labels, ChartColorPresentationSet.HeatmapName(chart), chart.Options.ValueFormat);
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Matrix families cannot mix different layout kinds.");
         if (kind == ChartSeriesKind.CalendarHeatmap) { Calendar(chart, context, builder, viewport, presentation); return; }

@@ -23,7 +23,7 @@ public sealed class FunnelGeometryTests {
         var role = content == ChartStageLabelContent.Separate ? "funnel-value-label" : "funnel-label";
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role).ToArray();
         Assert.Equal(5, labels.Length);
-        var values = new[] { "1,000", "410", "162.36", "14", "2" };
+        var values = new[] { "1,000", "410", "162", "14", "2" };
         var categories = new[] { "Visits", "Qualified", "Reviewed", "Won", "Renewed" };
         Assert.Equal(values.Select((value, index) => content == ChartStageLabelContent.Combined ? categories[index] + ": " + value : value),
             labels.Select(label => string.Join("", label.Text.Lines.Select(line => line.Text))));

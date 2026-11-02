@@ -11,22 +11,32 @@ internal static class ChartNumericFormatter {
         (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat.Format(value);
 
     /// <summary>
-    /// Picks one compact unit for a series' automatic value captions, so a series doesn't mix "9,800" with "12.5k".
-    /// Returns null when the chart has an authored format or no caption would be compact.
+    /// Picks one compact unit for automatic captions, with optional shared precision for count-like stages.
+    /// Returns null when an authored format owns the captions or no refinement is needed.
     /// </summary>
-    internal static Func<double, string>? SeriesCaptionFormat(ChartOptions options, IEnumerable<double> values) {
+    internal static Func<double, string>? SeriesCaptionFormat(ChartOptions options, IEnumerable<double> values, bool sharePrecision = false) {
         var format = (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat;
-        return SeriesCaptionFormat(format, values);
+        return SeriesCaptionFormat(format, values, sharePrecision);
     }
-    private static Func<double, string>? SeriesCaptionFormat(ChartValueFormat format, IEnumerable<double> values) {
+    private static Func<double, string>? SeriesCaptionFormat(ChartValueFormat format, IEnumerable<double> values, bool sharePrecision = false) {
         if (!ReferenceEquals(format, ChartValueFormat.ExistingValue)) return null;
         var finite = new List<double>();
         foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) finite.Add(value);
         var largest = 0d;
         foreach (var value in finite) largest = Math.Max(largest, Math.Abs(value));
-        if (largest < 10000) return null;
+        if (largest < 10000) {
+            if (!sharePrecision || finite.Count < 2 || largest == 0) return null;
+            // Three significant places at the chart's largest observation give counts one
+            // common precision. Preserve small positive observations instead of rounding them to zero.
+            var decimals = Math.Max(0, Math.Min(6, 2 - (int)Math.Floor(Math.Log10(largest))));
+            while (decimals < 6 && finite.Exists(value => value != 0 && Math.Round(value, decimals) == 0)) decimals++;
+            var precision = ChartValueFormat.ForTickStep(Math.Pow(10, -decimals), 0);
+            return value => value != 0 && Math.Round(value, decimals) == 0 ? format.Format(value) : precision.Format(value);
+        }
         var (divisor, suffix) = largest >= 1e9 ? (1e9, "B") : largest >= 1e6 ? (1e6, "M") : (1e3, "k");
         return value => {
+            if (sharePrecision && Math.Abs(value) < 10000) return Math.Abs(value) >= 1
+                ? ChartValueFormat.ForTickStep(1, 0).Format(value) : format.Format(value);
             var scaled = Math.Round(value / divisor, 1);
             if (Math.Abs(value) < divisor || Math.Abs(scaled) >= 10000) return format.Format(value);
             return scaled.ToString("0.#", format.Culture) + suffix;

@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 public sealed class HeatmapColorScaleLegendTests {
     [Theory]
     [InlineData(true, "5", "10", "15")]
-    [InlineData(false, "12.5", "15", "17.5")]
+    [InlineData(false, "12", "14", "16")]
     public void IntermediateStepCaptionsFitWithoutOverlap(bool configured, string first, string middle, string last) {
         var chart = ContinuousKey(configured);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
