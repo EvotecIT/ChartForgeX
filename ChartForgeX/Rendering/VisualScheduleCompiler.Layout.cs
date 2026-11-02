@@ -32,7 +32,7 @@ internal static partial class VisualScheduleCompiler {
         var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var tickHeight = ticks.Select(tick => VisualAxisText.RotatedMetrics(builder.MeasureText(format(tick), style), angle).Height).DefaultIfEmpty(lineHeight).Max();
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground
         });
         var axisTitle = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
         axisTitleStyle = VisualAxisText.FitOversized(builder, axisTitleStyle, new ChartRect(0, 0, viewport.Width, viewport.Height * .15), new[] { axisTitle });
@@ -78,7 +78,7 @@ internal static partial class VisualScheduleCompiler {
             TickLabels(chart, context, builder, viewport, layout, ticks, project, format, style);
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, "schedule-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var title = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
-            var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
+            var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
             VisualStateSceneTools.Text(builder, title, new ChartRect(plot.Left, plot.Bottom + layout.AxisReserve, plot.Width, Math.Max(0, viewport.Bottom - plot.Bottom - layout.AxisReserve)),
                 titleStyle, "schedule-x-axis-title", "schedule-x-title", TextAlignment.Center);
         }

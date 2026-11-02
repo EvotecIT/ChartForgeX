@@ -106,6 +106,8 @@ public sealed partial class SvgColorVariables {
         copy._literalRamps.UnionWith(_literalRamps);
         foreach (var entry in _themeTokens) copy._themeTokens.Add(entry.Key, entry.Value);
         copy._paletteSlots = _paletteSlots == null ? null : (SvgColorVariable?[])_paletteSlots.Clone();
+        // The sequence owns immutable basis colours; its derived cache is synchronized and safe to share.
+        copy._categoricalColors = _categoricalColors;
         return copy;
     }
 

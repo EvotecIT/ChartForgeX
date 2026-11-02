@@ -29,6 +29,7 @@ public sealed partial class VisualDesignTokens {
         && Neutral.Equals(other.Neutral)
         && Neutral2.Equals(other.Neutral2)
         && Neutral3.Equals(other.Neutral3)
+        && Other.Equals(other.Other) && ChildLightnessOffset.Equals(other.ChildLightnessOffset)
         && SameColors(_palette, other._palette) && SameColors(_sequentialRamp, other._sequentialRamp)
         && SameRamp(DivergingRamp, other.DivergingRamp)
         && SamePair(_status.Critical, other._status.Critical)

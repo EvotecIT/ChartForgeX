@@ -12,7 +12,7 @@ internal static partial class VisualRadialCompiler {
     /// <summary>Observes latent native request policy, including zero/omitted captions and a possible native Other caption; no latent mark is painted.</summary>
     private static void ObserveRawRadialValueText(Chart chart, VisualRenderContext context, VisualSceneBuilder builder) {
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var noData = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.MutedForeground };
+        var noData = new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.MutedForeground };
         builder.MeasureText(chart.Options.Labels.NoData, noData); builder.MeasureText("Mg", noData); builder.TextAscent(noData);
         for (var series = 0; series < chart.Series.Count; series++) {
             foreach (var slice in GetSourceSlices(chart, colors, series)) {

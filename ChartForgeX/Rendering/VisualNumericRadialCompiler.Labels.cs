@@ -18,7 +18,7 @@ internal static partial class VisualNumericRadialCompiler {
         var ink = inside && mark.Painted ? ChartMarkText.OnPreparedMark(fill, VisualChartPaint.SeriesRole(series, point),
             ChartStateMark.Backdrop(chart.Options, colors, context.Frame)) : ChartColorBlend.Solid(colors.Foreground, SvgColorRole.Text);
         var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize,
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize,
             Color = ink.Color
         }));
         if (point < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[point] != null) style = series.PointDataLabelStyles[point]!.Resolve(style);
@@ -52,7 +52,7 @@ internal static partial class VisualNumericRadialCompiler {
             var mark = Mark(chart, geometry, scales[total.Axis], 0, total.Value, category, categories.Length, stacks.Slot(participants, total.SeriesIndex), bars);
             var id = "stack-total-" + ordinal++;
             var text = ChartNumericFormatter.FormatValue(chart.Options, total.Value);
-            var style = chart.Options.DataLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize,
+            var style = chart.Options.DataLabelStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize,
                 Color = context.Theme.Resolve(context.ThemeMode).Foreground });
             var facts = new Dictionary<string, string> {
                 ["data-cfx-x"] = N(total.Coordinate), ["data-cfx-y"] = N(total.Value), ["data-cfx-source-total"] = N(total.SourceValue),

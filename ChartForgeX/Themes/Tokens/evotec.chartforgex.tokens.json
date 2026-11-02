@@ -1,11 +1,11 @@
 {
   "contractVersion": 2,
   "version": "1.6.0",
-  "name": "Evotec palette v1 (Graphite)",
-  "decision": "D14, owner, 2026-09-26",
+  "name": "Evotec palette v2 (Graphite)",
+  "decision": "Palette and typography review, 2026-11-02",
   "source": "HtmlForgeX HtmlForgeX/Resources/Tokens/evotec.tokens.json 1.6.0 (generated, do not edit)",
   "notes": [
-    "Semantic roles, status and categorical colours follow the selected design style. Diverging ramps retain the existing shared palette."
+    "Semantic roles and status follow the selected design style. Chart data fills use the shared categorical palette; text and control inks retain their independent contrast requirements."
   ],
   "typography": {
     "family": {
@@ -51,7 +51,60 @@
         "weight": "600"
       }
     },
+    "chart": {
+      "minimumSize": "10px",
+      "compactBreakpoint": "480px",
+      "title": {
+        "size": "17px",
+        "compactSize": "15px",
+        "weight": "600"
+      },
+      "subtitle": {
+        "size": "13px",
+        "compactSize": "12px",
+        "weight": "400"
+      },
+      "panelTitle": {
+        "size": "15px",
+        "compactSize": "14px",
+        "weight": "600"
+      },
+      "axisTitle": {
+        "size": "12px",
+        "compactSize": "11px",
+        "weight": "500"
+      },
+      "tick": {
+        "size": "12px",
+        "compactSize": "11px",
+        "weight": "400"
+      },
+      "legend": {
+        "size": "12.5px",
+        "compactSize": "12px",
+        "weight": "400",
+        "valueWeight": "500"
+      },
+      "dataLabel": {
+        "size": "12px",
+        "compactSize": "11px",
+        "weight": "500"
+      },
+      "centerValue": {
+        "minimumSize": "20px",
+        "maximumSize": "40px",
+        "radiusFactor": "0.16",
+        "weight": "700",
+        "captionSize": "12px",
+        "captionGap": "4px"
+      }
+    },
     "referencePixels": 16
+  },
+  "palette": {
+    "paletteVersion": 2,
+    "rankOrder": "descending",
+    "childLightnessOffset": 0.1
   },
   "radius": {
     "none": "0",
@@ -88,10 +141,11 @@
       "neutral": { "fill": "#7c818a", "ink": "#5b6069" }
     },
     "state": { "maintenance": { "fill": "#6b5bd2", "ink": "#5a4bc0" } },
-    "series": ["#2171ce", "#19695d", "#7459e0", "#b7459e", "#5a7c0d", "#1d4f9e"],
+    "series": ["#2a78d6", "#0f9f8c", "#d9711f", "#8055c4", "#c24fa8", "#cc4048", "#a97800", "#37813e", "#1685a3", "#5f5f5f"],
+    "other": "#737373",
     "ramps": {
       "sequential": ["#9ab8dc", "#5598e7", "#2171ce", "#1c5cab", "#104281"],
-      "diverging": { "negative": ["#f0a39d", "#e0645b", "#b8292a"], "neutral": "#eceef0", "positive": ["#9ab8dc", "#2171ce", "#1c5cab"] }
+      "diverging": { "negative": ["#f5cfad", "#eaa363", "#d9711f"], "neutral": "#eceef0", "positive": ["#9ab8dc", "#2171ce", "#1c5cab"] }
     }
   },
   "dark": {
@@ -117,10 +171,11 @@
       "neutral": { "fill": "#8a8f98", "ink": "#a0a5ae" }
     },
     "state": { "maintenance": { "fill": "#a497f2", "ink": "#a497f2" } },
-    "series": ["#509efe", "#429484", "#9681fc", "#ce5ca4", "#6f9120", "#7b9be8"],
+    "series": ["#4a90ea", "#22b39e", "#ee8a3a", "#ad86eb", "#e479c4", "#f47479", "#e8b83e", "#73be79", "#55bed9", "#b1b1b1"],
+    "other": "#929292",
     "ramps": {
       "sequential": ["#324c6e", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
-      "diverging": { "negative": ["#8f2f2c", "#d4504b", "#f7a09b"], "neutral": "#2b2e34", "positive": ["#324c6e", "#509efe", "#9ec5f4"] }
+      "diverging": { "negative": ["#5a3823", "#9b5c29", "#ee8a3a"], "neutral": "#2b2e34", "positive": ["#324c6e", "#509efe", "#9ec5f4"] }
     }
   }
 }

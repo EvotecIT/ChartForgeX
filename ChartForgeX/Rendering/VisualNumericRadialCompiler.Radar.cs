@@ -96,7 +96,7 @@ internal static partial class VisualNumericRadialCompiler {
     private static void RadarDataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartSeries series,
         int source, string id, string text, ChartPoint point, double angle, List<RadialSeriesLabel> labels) {
         var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
         }));
         if (source >= 0 && source < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[source] != null)
             style = series.PointDataLabelStyles[source]!.Resolve(style);

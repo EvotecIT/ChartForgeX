@@ -90,6 +90,8 @@ public sealed partial class VisualDesignTokens {
         PlotBorder = copy.PlotBorder; Muted = copy.Muted; Grid = copy.Grid; Axis = copy.Axis;
         Info = copy.Info; Quiet = copy.Quiet; QuietLine = copy.QuietLine;
         Neutral = copy.Neutral; Neutral2 = copy.Neutral2; Neutral3 = copy.Neutral3;
+        Other = copy.Other;
+        ChildLightnessOffset = copy.ChildLightnessOffset;
         Chrome = copy.Chrome;
     }
 
@@ -112,6 +114,8 @@ public sealed partial class VisualDesignTokens {
         SequentialRamp = SequentialRamp,
         DivergingRamp = DivergingRamp,
         Chrome = Chrome,
+        Other = Other,
+        ChildLightnessOffset = ChildLightnessOffset,
         PlotBorder = PlotBorder, Muted = Muted, Grid = Grid, Axis = Axis,
         Info = Info, Quiet = Quiet, QuietLine = QuietLine, Neutral = Neutral, Neutral2 = Neutral2, Neutral3 = Neutral3
     };

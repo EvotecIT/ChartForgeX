@@ -64,6 +64,7 @@ public sealed partial class VisualFrame {
         HasExplicitLegend = showLegend.HasValue; HasExplicitLegendPosition = legendPosition.HasValue;
         ShowSurface = showSurface; TransparentBackground = transparentBackground;
         _titleStyle = titleStyle?.Clone(); _subtitleStyle = subtitleStyle?.Clone(); _legendStyle = legendStyle?.Clone();
+        HasExplicitLegendWeight = legendStyle != null;
         LegendMaximumRows = legendMaximumRows; LegendMaximumHeightFraction = legendMaximumHeightFraction;
         ShowCard = showCard;
         LegendTitle = legendTitle;
@@ -76,6 +77,7 @@ public sealed partial class VisualFrame {
     public bool ShowLegend { get; }
     internal bool HasExplicitLegend { get; }
     internal bool HasExplicitLegendPosition { get; }
+    internal bool HasExplicitLegendWeight { get; set; }
     /// <summary>Gets an optional measured heading above the legend entries. Null uses the producer's source title.</summary>
     public string? LegendTitle { get; }
     /// <summary>Gets the legend placement.</summary>
@@ -97,9 +99,9 @@ public sealed partial class VisualFrame {
     /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
     public double LegendMaximumHeightFraction { get; }
     internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle) { HasExplicitLegendWeight = HasExplicitLegendWeight };
     internal VisualFrame WithLegendTitle(string? legendTitle) => new(Title, Subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle) { HasExplicitLegendWeight = HasExplicitLegendWeight };
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>
@@ -111,6 +113,8 @@ public sealed class VisualRenderContext {
         if (!Enum.IsDefined(typeof(VisualThemeMode), themeMode)) throw new ArgumentOutOfRangeException(nameof(themeMode));
         Layout = layout ?? new VisualLayoutOptions(new VisualSize(640, 400));
         Theme = theme ?? VisualTheme.Graphite(); ThemeMode = themeMode; Frame = frame ?? new VisualFrame();
+        var typography = Theme.Typography.ForWidth(Layout.Size.Width);
+        if (!ReferenceEquals(typography, Theme.Typography)) Theme = Theme.WithTypography(typography);
         _font = font?.Clone() ?? new FontSpec { Family = Theme.Typography.Family };
     }
     internal bool CaptureNativeValueSource { get; private set; }
@@ -145,4 +149,5 @@ public sealed class VisualRenderContext {
     public VisualFrame Frame { get; }
     /// <summary>Gets an independent copy of the font request.</summary>
     public FontSpec Font => _font.Clone();
+    internal FontSpec FontWithWeight(int weight) { var font = Font; font.Weight = weight; return font; }
 }

@@ -178,7 +178,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static TextStyle SeriesLabelStyle(Chart chart, VisualRenderContext context, ChartSeries series, VisualThemeColors colors) =>
         series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
         }));
 
     // Only automatic captions of a series' own points share a unit; authored labels and histogram gaps keep their text.

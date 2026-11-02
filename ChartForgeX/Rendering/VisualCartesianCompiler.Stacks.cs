@@ -24,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
             if (total.Value == 0) continue;
             var text = ChartNumericFormatter.FormatValue(chart.Options, total.Value);
             var style = chart.Options.DataLabelStyle.Resolve(new TextStyle {
-                Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+                Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
             });
             captions.Add(new VerticalStackCaption(total, text, style, builder.MeasureText(text, style)));
         }

@@ -14,7 +14,15 @@ All built-in sans presets, including Report, Editorial, Candy and the dashboard 
 
 This is a visible change: glyph widths, line breaks, fitted label counts and content-sized diagram dimensions can differ. Inspect compact and wide output in both modes before accepting new visual baselines. Existing prepared artifacts retain their captured typography; prepare them again to adopt the new face. Numeric hosts should use `font-variant-numeric: tabular-nums`. See [product typography](typography.md) for font delivery, pinned OFL provenance, supported weights and fallback-script limitations.
 
-The shared ramp maps chart titles to the 16-pixel `subtitle` step and plot subtitles to 13-pixel `small`; axis ticks, legends and data labels use 12-pixel `caption`. Center values use 20-pixel `title`, tile labels 14-pixel `body` and tile details 13-pixel `small`. Scalar values remain 34 pixels and tile values 22 pixels because they are distinct numeric presentation roles. See the [role mapping](typography.md#chart-roles-in-the-shared-type-ramp) for the rationale and explicit-size precedence.
+Graphite uses the shared chart type scale: titles are 17 pixels wide and 15 compact; subtitles 13/12; ticks and data labels 12/11; legends 12.5/12. Compact means narrower than 480 logical pixels. Panel titles use 15/14 pixels, and centre values follow the radius-based 20–40 pixel clamp. Chart text below 10 logical pixels is hidden rather than painted as tiny text. See the [role mapping](typography.md#chart-roles-in-the-shared-type-ramp) for weights, the remaining roles and explicit-size precedence.
+
+### Categorical palette v2
+
+The default categorical palette has ten slots: blue, teal, orange, violet, magenta, red, gold, green, cyan and charcoal. Orange is slot 3, and the sixth slot is red rather than another blue. Pie and donut colours follow value rank rather than source position; point-colour overrides still follow their source observations. Excess slices aggregate into a separate neutral grey Other. Unscaled hierarchy children inherit their parent's hue with lightness variation; an explicit colour scale continues to encode its supplied colour observations.
+
+Automatic series colours stay distinct when the base palette is exhausted or identity hashes collide. Additional series use shade extensions and report `palette.extended` so crowded charts can be split or aggregated. Identity collisions resolve in identifier order: adding or removing a colliding identifier can recolour a series. Assign explicit colours when a linked application needs a fixed mapping. Explicit paint and semantic state colours keep their configured meaning.
+
+Shared SVG categorical bindings use `--hfx-color-chart-series-1..10` and `--hfx-color-chart-other`. These data fills are separate from the UI series ink roles, whose text and control contrast requirements remain in effect. Use the generated contract and `SvgColorVariables.SharedRoles()` together when migrating a host.
 
 ## Layout and authoring changes
 

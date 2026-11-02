@@ -30,7 +30,7 @@ public sealed partial class VisualDesignTokens {
     /// <exception cref="ArgumentException"><paramref name="variableName"/> returned a name that is not a valid custom property name.</exception>
     public SvgColorVariables ToSvgColorVariables(Func<string, string?>? variableName = null) {
         var name = variableName ?? DefaultSvgVariableName;
-        var variables = new SvgColorVariables().WithPaletteSlots(_palette.Length);
+        var variables = new SvgColorVariables().WithPaletteSlots(_palette);
         void Add(string path, ChartColor color, int? paletteIndex = null) {
             var variable = name(path);
             var role = RoleOf(path);
@@ -58,6 +58,7 @@ public sealed partial class VisualDesignTokens {
         if (Muted.HasValue) Add("text.muted", Muted.Value);
         if (Grid.HasValue) Add("guide.grid", Grid.Value);
         if (Axis.HasValue) Add("guide.axis", Axis.Value);
+        if (Other.HasValue) Add("chart.other", Other.Value);
         AddList("series", _palette);
         AddPair("severity.critical", Status.Critical);
         AddPair("severity.high", Status.High);
@@ -122,6 +123,7 @@ public sealed partial class VisualDesignTokens {
         if (path.StartsWith("series.", StringComparison.Ordinal)) return SvgColorRole.Series;
         if (path == "guide.grid") return SvgColorRole.Grid;
         if (path == "guide.axis") return SvgColorRole.Axis;
+        if (path == "chart.other") return SvgColorRole.Status;
         if (path.StartsWith("ramps.sequential.", StringComparison.Ordinal)) return SvgColorRole.SequentialRamp;
         if (path.StartsWith("ramps.diverging.", StringComparison.Ordinal)) return SvgColorRole.DivergingRamp;
         if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal) || path.StartsWith("status.", StringComparison.Ordinal)) return SvgColorRole.Status;

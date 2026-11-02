@@ -247,7 +247,7 @@ internal static partial class VisualRadialCompiler {
         return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabelConnectorOpacity));
     }
 
-    private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double? total, int seriesIndex) {
+    private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double outerRadius, double? total, int seriesIndex) {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var value = chart.Options.DonutCenterValue ?? (total.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.Value) : OverflowValueText);
         var overflowCaption = chart.Options.DonutCenterValue == null && !total.HasValue;
@@ -257,10 +257,9 @@ internal static partial class VisualRadialCompiler {
         var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
         builder.AddRegion(new VisualSemanticRegion("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center-value", "donut-total-label", bounds, value));
         builder.AddRegion(new VisualSemanticRegion("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center-caption", "donut-title", bounds, label));
-        var valueStyle = Style(chart, context, seriesIndex, -1, colors.Foreground, Math.Min(context.Theme.Typography.CenterValueSize, inner * 0.44), 700);
-        var labelStyle = Style(chart, context, seriesIndex, -1, colors.MutedForeground, Math.Min(context.Theme.Typography.DataLabelSize, inner * 0.25));
-        valueStyle.FontSize = Math.Min(valueStyle.FontSize, inner * 0.44);
-        labelStyle.FontSize = Math.Min(labelStyle.FontSize, inner * 0.25);
+        var typography = context.Theme.Typography;
+        var valueStyle = Style(chart, context, seriesIndex, -1, colors.Foreground, typography.CenterSize(outerRadius), typography.CenterValueWeight);
+        var labelStyle = Style(chart, context, seriesIndex, -1, colors.MutedForeground, typography.CenterCaptionSize);
         valueStyle.Alignment = labelStyle.Alignment = TextAlignment.Center;
         var width = inner * 1.6;
         if (overflowCaption) {
@@ -276,11 +275,11 @@ internal static partial class VisualRadialCompiler {
             }
         }
         // A truncated exponent would change the apparent magnitude. Keep overflow bounds complete or omit them.
-        var fittedValue = overflowCaption ? displayValue : Fit(displayValue, valueStyle, width, builder);
+        var fittedValue = overflowCaption ? displayValue : builder.MeasureText(displayValue, valueStyle).Width <= width ? displayValue : string.Empty;
         var fittedLabel = Fit(label, labelStyle, width, builder);
         var valueHeight = builder.MeasureText(fittedValue, valueStyle).Height;
         var labelHeight = builder.MeasureText(fittedLabel, labelStyle).Height;
-        var gap = Math.Min(context.Theme.Spacing, inner * 0.1);
+        var gap = typography.CenterCaptionGap;
         var top = cy - (valueHeight + gap + labelHeight) / 2;
         using (builder.PushGroup("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center", "donut-center", new Dictionary<string, string> {
             ["data-cfx-center-value"] = value, ["data-cfx-center-caption"] = label, ["aria-label"] = value + "\n" + label

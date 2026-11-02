@@ -121,7 +121,10 @@ public sealed partial class VisualTheme {
 /// <summary>Immutable semantic color roles for one theme mode.</summary>
 public sealed partial class VisualThemeColors {
     private readonly VisualDesignTokens _tokens;
-    internal VisualThemeColors(VisualDesignTokens tokens) { _tokens = tokens.Clone(); Palette = Array.AsReadOnly(_tokens.Palette); }
+    private readonly CategoricalColorSequence _categorical;
+    internal VisualThemeColors(VisualDesignTokens tokens) { _tokens = tokens.Clone(); Palette = Array.AsReadOnly(_tokens.Palette); _categorical = new CategoricalColorSequence(Palette); }
+    internal ChartColor CategoricalColor(int index) => _categorical.At(index);
+    internal double ChildLightnessOffset => _tokens.ChildLightnessOffset;
     internal VisualDesignTokens ToTokens() => _tokens.Clone();
     /// <summary>Gets explicit tooltip/focus roles, or roles derived from this theme's own palette.</summary>
     public VisualChromeTokens Chrome => _tokens.Chrome ?? new VisualChromeTokens(ElevatedSurface, Foreground,
@@ -150,10 +153,11 @@ public sealed partial class VisualThemeColors {
     /// the plot surface.
     /// </summary>
     /// <remarks>Aggregate slices strengthen this fill when needed to reach 3:1 contrast against the plot.</remarks>
-    public ChartColor Other => _tokens.Neutral ?? ChartForgeX.Rendering.ChartColorMath.Blend(_tokens.Surface, _tokens.MutedForeground, OtherShare);
+    public ChartColor Other => _tokens.Other ?? _tokens.Neutral ?? ChartForgeX.Rendering.ChartColorMath.Blend(_tokens.Surface, _tokens.MutedForeground, OtherShare);
     internal const double OtherShare = 0.45;
     /// <summary>The Other paint: the authored neutral role, or a <c>color-mix()</c> of the text and surface roles.</summary>
-    internal SvgPaint OtherPaint => _tokens.Neutral.HasValue ? SvgPaint.Of(_tokens.Neutral.Value, SvgColorRole.Status)
+    internal SvgPaint OtherPaint => _tokens.Other.HasValue ? SvgPaint.Of(_tokens.Other.Value, SvgColorRole.Status)
+        : _tokens.Neutral.HasValue ? SvgPaint.Of(_tokens.Neutral.Value, SvgColorRole.Status)
         : SvgPaint.Mix(Other, _tokens.Surface, SvgColorRole.Surface, _tokens.MutedForeground, SvgColorRole.Text, OtherShare);
     /// <summary>Gets the middle neutral data surface.</summary>
     public ChartColor Neutral2 => _tokens.Neutral2 ?? _tokens.Border;
@@ -192,7 +196,7 @@ public sealed partial class VisualThemeColors {
 }
 
 /// <summary>The shared logical typography scale; the default follows the chart look specification.</summary>
-public sealed class VisualTypography {
+public sealed partial class VisualTypography {
     /// <summary>Creates typography with the existing chart-role sizes and default tile sizes.</summary>
     public VisualTypography(string family, double titleSize, double subtitleSize, double axisSize,
         double legendSize, double dataLabelSize, double scalarValueSize, double centerValueSize,
@@ -216,7 +220,7 @@ public sealed class VisualTypography {
         TileDetailSize = Positive(tileDetailSize, nameof(tileDetailSize));
     }
     /// <summary>Gets the fallback family stack.</summary>
-    public string Family { get; }
+    public string Family { get; private set; }
     /// <summary>Gets the monospace fallback family stack.</summary>
     public string MonospaceFamily { get; }
     /// <summary>Gets the independent axis title size.</summary>
@@ -224,8 +228,18 @@ public sealed class VisualTypography {
     /// <summary>Creates a font request for the normal or monospace family.</summary>
     public FontSpec ToFontSpec(bool monospace = false) => new() { Family = monospace ? MonospaceFamily : Family };
     /// <summary>Creates an independent scale with a different proportional family.</summary>
-    public VisualTypography WithFamily(string family) => new(family, TitleSize, SubtitleSize, AxisSize, LegendSize,
-        DataLabelSize, ScalarValueSize, CenterValueSize, AxisTitleSize, MonospaceFamily, TileLabelSize, TileValueSize, TileDetailSize);
+    public VisualTypography WithFamily(string family) {
+        if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("A font family is required.", nameof(family));
+        var wide = WideScale ?? this;
+        var copy = (VisualTypography)wide.MemberwiseClone();
+        copy.Family = family;
+        if (wide.CompactScale != null) {
+            copy.CompactScale = (VisualTypography)wide.CompactScale.MemberwiseClone();
+            copy.CompactScale.Family = family;
+            copy.CompactScale.WideScale = copy;
+        }
+        return WideScale != null ? copy.CompactScale! : copy;
+    }
     /// <summary>Gets the title size.</summary>
     public double TitleSize { get; }
     /// <summary>Gets the subtitle size.</summary>

@@ -30,18 +30,22 @@ Numeric text uses tabular numerals where the face supports them. Hosts should us
 
 ## Chart roles in the shared type ramp
 
-Chart typography maps each role by its purpose within a plot. A chart title is a plot heading, so it uses the shared `subtitle` step rather than a report-level title. The default token reference is 16 pixels per rem:
+Graphite reads the chart-specific roles in the shared token source's `typography.chart` block. Compact means a logical viewport narrower than 480 pixels; sizes resolve before text measurement and scale with the export scale.
 
-| Chart role | Shared token role | Size in pixels |
+| Chart role | Wide / compact | Weight |
 | --- | --- | ---: |
-| Plot title | `subtitle` | 16 |
-| Plot subtitle | `small` | 13 |
-| Axis ticks, legend entries and data labels | `caption` | 12 |
-| Center value | `title` | 20 |
-| Tile label | `body` | 14 |
-| Tile detail | `small` | 13 |
+| Plot title | 17 / 15 px | 600 |
+| Plot subtitle | 13 / 12 px | 400 |
+| Panel title | 15 / 14 px | 600 |
+| Axis title | 12 / 11 px | 500 |
+| Tick | 12 / 11 px | 400 |
+| Legend | 12.5 / 12 px | 400; values 500 |
+| Data label | 12 / 11 px | 500 |
+| Centre value | `clamp(20, 0.16 * radius, 40)` px | 700 |
 
-Scalar values retain their distinct 34-pixel numeric presentation and tile values retain 22 pixels. These are numeric display roles, not report headings. This mapping keeps the shared ramp while avoiding an incidental increase of chart titles and subtitles to 20 and 16 pixels. Explicit authored sizes retain precedence.
+Centre captions use 12 pixels with a 4-pixel gap. Scalar values retain their authored numeric presentation and tile values retain 22 pixels. Report headings and body text continue to use the general type ramp; a plot title does not inherit a report heading's size.
+
+The chart text floor is 10 logical pixels. Text that cannot stay at that size is hidden; complete values and titles remain in semantic metadata. Explicit sizes above the floor retain precedence. A custom `VisualTypography` keeps its authored scale; changing a shared scale's font family retains its wide and compact roles. Shared host properties use the `--hfx-chart-type-*` prefix, including `--hfx-chart-type-title-size`, `--hfx-chart-type-title-compact-size` and `--hfx-chart-type-minimum-size`.
 
 ## Font sources and coverage
 

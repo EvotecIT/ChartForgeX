@@ -11,7 +11,7 @@ internal static partial class VisualMapCompiler {
     private static TextStyle MapDataStyle(Chart chart, VisualRenderContext context, int index, ChartColor? color = null, ChartSeries? series = null) {
         series ??= chart.Series[0];
         var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = color ?? context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = color ?? context.Theme.Resolve(context.ThemeMode).Foreground
         }));
         return index >= 0 && index < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[index] != null
             ? series.PointDataLabelStyles[index]!.Resolve(style) : style;

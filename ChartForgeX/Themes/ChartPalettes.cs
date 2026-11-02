@@ -21,10 +21,10 @@ public static class ChartPalettes {
 
     /// <summary>
     /// Gets the embedded token contract's categorical order for light surfaces
-    /// (the shared <c>--hfx-color-series-1..6</c> roles). Status colours are not part of it.
+    /// (the shared <c>--hfx-color-chart-series-1..10</c> roles). Status colours are not part of it.
     /// </summary>
-    /// <remarks>A seventh category is never a generated hue: part-to-whole charts fold it into a neutral Other, and
-    /// other charts report <c>palette.reused</c> when a slot repeats.</remarks>
+    /// <remarks>Part-to-whole charts fold excess categories into neutral Other. Other charts use distinct shade extensions
+    /// beyond the base palette and report <c>palette.extended</c>.</remarks>
     public static ChartColor[] Categorical => VisualDesignTokens.CanonicalPalette(dark: false);
 
     /// <summary>Gets the default categorical order for dark surfaces, slot for slot with <see cref="Categorical"/>.</summary>

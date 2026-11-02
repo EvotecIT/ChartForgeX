@@ -159,7 +159,7 @@ internal static partial class VisualPolarCompiler {
 
     private static TextStyle DataStyle(Chart chart, VisualRenderContext context, ChartSeries series, int point) {
         var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
         }));
         return point >= 0 && point < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[point] != null ? series.PointDataLabelStyles[point]!.Resolve(style) : style;
     }

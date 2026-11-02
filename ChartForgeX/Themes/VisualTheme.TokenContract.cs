@@ -24,6 +24,8 @@ public sealed partial class VisualTheme {
         var family = Required(type, "family", "typography").AsObject("typography.family");
         var ramp = Required(type, "ramp", "typography").AsObject("typography.ramp");
         var reference = OptionalNumber(type, "referencePixels", "typography", 16);
+        if (type.TryGetValue("chart", out var chart) && !chart.IsNull) return ReadChartTypography(
+            Required(family, "sans", "typography.family").AsString("sans"), Required(family, "mono", "typography.family").AsString("mono"), chart, reference);
         double Size(string name) {
             var step = Required(ramp, name, "typography.ramp").AsObject(name);
             var size = Required(step, "size", name).AsString(name + ".size");
