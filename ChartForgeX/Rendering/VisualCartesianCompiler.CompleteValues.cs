@@ -61,7 +61,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (chart.Options.ShowStackTotals) {
             var style = chart.Options.DataLabelStyle.Resolve(new TextStyle {
-                Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+                Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
             });
             builder.MeasureText(ChartNumericFormatter.FormatValue(chart.Options, 0), style);
             builder.MeasureText("Mg", style); builder.TextAscent(style);

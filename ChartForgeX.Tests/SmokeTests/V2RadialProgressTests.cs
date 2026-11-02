@@ -76,9 +76,8 @@ public sealed class V2RadialProgressTests {
         var paintedCaption = Assert.Single(caption.Text.Lines).Text;
         Assert.Equal("Completion", paintedCaption);
         var typography = new VisualRenderContext().Theme.Typography;
-        var outer = scene.Nodes.OfType<VisualSceneSlice>().Max(mark => mark.Outer);
-        Assert.Equal(Math.Max(20, Math.Min(40, .16 * outer)), value.Text.Size, 6);
-        Assert.Equal(typography.CenterCaptionSize, caption.Text.Size);
+        Assert.Equal(typography.CenterValueSize, value.Text.Size);
+        Assert.Equal(typography.DataLabelSize, caption.Text.Size);
         Assert.True(value.Baseline - value.Text.Ascent + value.Text.Metrics.Height <= caption.Baseline - caption.Text.Ascent);
         var radius = layered ? scene.Nodes.OfType<VisualSceneSlice>().Where(mark => mark.Role == "layered-radial-layer").Min(mark => mark.Inner)
             : Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), mark => mark.Role == "progress-ring-center").Rx;

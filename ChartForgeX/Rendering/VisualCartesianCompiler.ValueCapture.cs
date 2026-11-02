@@ -40,7 +40,7 @@ internal static partial class VisualCartesianCompiler {
             var paintedReadouts = labels.CaptureReadoutFacts(axis);
             string Readout(double value) => paintedReadouts.TryGetValue(value, out var painted) ? painted : fallbackReadout(value);
             var capturedMap = new ChartMapper(plot, nativeRange.Copy(), chart.Options.XAxis.Clone(), capturedAxis);
-            var slot = source.Kind == ChartSeriesKind.Bar ? ResolveBarLayout(chart, context, plot, coordinates, nativeMap, stacks, index) : (0d, 0d, 0d);
+            var slot = source.Kind == ChartSeriesKind.Bar ? ResolveBarLayout(chart, context, plot, coordinates, nativeMap, stacks, index) : (0d, 0d);
             var style = SeriesLabelStyle(chart, context, source, colors);
             var points = new CartesianValuePoint[source.RenderPoints.Count];
             for (var point = 0; point < points.Length; point++) {

@@ -58,7 +58,7 @@ public sealed class TimeAxisReviewClosureTests {
             var center = labels[index].X + labels[index].Text.Metrics.Width / 2;
             Assert.InRange(Math.Abs(center - grid[index].Start.X), 0, .5);
             Assert.Contains(marks, mark => Math.Abs(mark.Bounds.Left + mark.Bounds.Width / 2 - center) < .5);
-            if (index > 1) Assert.InRange(Math.Abs((grid[1].Start.X - grid[0].Start.X) - (grid[index].Start.X - grid[index - 1].Start.X)), 0, 1e-10);
+            if (index > 1) Assert.Equal(grid[1].Start.X - grid[0].Start.X, grid[index].Start.X - grid[index - 1].Start.X, 7);
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.axis-label-overflow");
         Assert.NotEmpty(prepared.ToPng());

@@ -433,7 +433,7 @@ public sealed class StateTimelineTests {
         var plot = new ChartRect(10, 10, 500, 100);
         Assert.Equal(plot.Left, model.X(model.Min, plot), 6);
         Assert.Equal(plot.Right, model.X(model.Max, plot), 6);
-        Assert.DoesNotContain("NaN", SmokeTests.NumericMarkup(chart.ToSvg()), StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", chart.ToSvg(), StringComparison.Ordinal);
         Assert.NotEmpty(chart.ToPng());
     }
 

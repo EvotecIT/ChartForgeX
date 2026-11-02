@@ -32,8 +32,8 @@ public sealed class V2FramePolicyTests {
         Assert.Equal(TextPlacement(convenience), TextPlacement(prepared));
         var title = Assert.Single(prepared.Descendants(), element => element.Name.LocalName == "text" && element.Value == "Assessment results");
         Assert.Equal(24, (double)title.Attribute("x")!);
-        Assert.Equal(17, (double)title.Attribute("font-size")!);
-        Assert.Equal("600", (string?)title.Attribute("font-weight"));
+        Assert.Equal(16, (double)title.Attribute("font-size")!);
+        Assert.Equal("700", (string?)title.Attribute("font-weight"));
     }
 
     [Theory]

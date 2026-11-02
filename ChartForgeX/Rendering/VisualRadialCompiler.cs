@@ -135,7 +135,7 @@ internal static partial class VisualRadialCompiler {
                 else DrawOutsideLabels(chart, context, builder, plot, labels, radius);
             }
             if (ownsCenter && inner > 0 && chart.Options.ShowDonutCenterLabel && series.ResolveDataLabels(chart.Options, defaultVisible: true))
-                DrawCenter(chart, context, builder, cx, cy, inner, radius, total.FiniteTotal, seriesIndex);
+                DrawCenter(chart, context, builder, cx, cy, inner, total.FiniteTotal, seriesIndex);
         }
     }
 

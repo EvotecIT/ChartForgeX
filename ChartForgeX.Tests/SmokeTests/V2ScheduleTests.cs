@@ -17,8 +17,7 @@ public sealed class V2ScheduleTests {
         var chart = Fixture(kind); var context = Context(); var prepared = chart.Prepare(context);
         Assert.Contains(prepared.Regions, region => region.Role == role && region.Bounds.Width > 0);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        var numericMarkup = SmokeTests.NumericMarkup(svg);
-        Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
+        Assert.DoesNotContain("NaN", svg); Assert.DoesNotContain("Infinity", svg);
         chart.Options.GanttToday = 90; chart.Options.Labels.Now = "Changed"; chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, prepared.Size.Width); Assert.Equal(400, prepared.Size.Height);

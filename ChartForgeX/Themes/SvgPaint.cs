@@ -27,7 +27,7 @@ internal readonly partial struct SvgPaint {
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>[PR])(?<body>[0-9][0-9A-F]{8})|(?<kind>T)(?<body>[0-9A-F]{8}[0-9][0-9A-F]{8})|(?<kind>S)(?<body>[0-9A-F]{16}[012])|(?<kind>I)(?<body>[0-9][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-9L][0-9A-F]{8}[0-9L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>[PR])(?<body>[0-7][0-9A-F]{8})|(?<kind>T)(?<body>[0-9A-F]{8}[0-7][0-9A-F]{8})|(?<kind>S)(?<body>[0-9A-F]{16}[012])|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -196,7 +196,7 @@ internal readonly partial struct SvgPaint {
     private static bool RoleDigit(string text, ref int index, bool literal) {
         if (index >= text.Length) return false;
         var c = text[index];
-        if (!(c is >= '0' and <= '9' || literal && c == LiteralOperand)) return false;
+        if (!(c is >= '0' and <= '7' || literal && c == LiteralOperand)) return false;
         index++;
         return true;
     }

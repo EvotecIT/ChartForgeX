@@ -58,9 +58,7 @@ internal static partial class SequencePreparedCompiler {
 
     private static PreparedVisual PrepareNatural(SequenceArtifact model, VisualTheme theme) {
         var measurements = new VisualSceneBuilder(new VisualSize(1, 1), new FontSpec { Family = theme.Typography.Family });
-        // Measure natural lane minima with the wide scale before the final viewport selects its responsive roles.
-        var presentation = new SequencePreparedPresentation(model, new VisualRenderContext(new VisualLayoutOptions(
-            new VisualSize(Math.Max(model.Width, theme.Typography.CompactBreakpoint), 1), 0), theme, model.ThemeMode));
+        var presentation = new SequencePreparedPresentation(model, new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1, 1), 0), theme, model.ThemeMode));
         var policy = presentation.Layout;
         var padding = policy?.CanvasPadding ?? ChartPadding.All(model.Padding);
         var minimumLabelWidth = presentation.MinimumLabelWidth(model, measurements, theme.Typography.DataLabelSize);

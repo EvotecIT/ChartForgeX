@@ -73,9 +73,7 @@ public sealed class MermaidMindMapNativeNotationTests {
         Assert.Equal("common:database", chart.Nodes[3].IconId);
         Assert.Equal("fa fa-database", chart.Nodes[0].Metadata["mermaid.icons"]);
         var xml = XDocument.Parse(result.Artifact.ToSvg());
-        Assert.DoesNotContain(xml.Descendants(), item => item.Name.LocalName is "script" or "foreignObject" or "image");
-        Assert.All(xml.Descendants().Where(item => item.Name.LocalName == "style"), item =>
-            Assert.Equal(ChartForgeX.Typography.ChartFontAssets.ForFamily(ChartForgeX.Themes.ChartFontStacks.ProductSans), item.Value));
+        Assert.DoesNotContain(xml.Descendants(), item => item.Name.LocalName is "script" or "foreignObject" or "image" or "style");
         Assert.DoesNotContain(xml.Descendants().Attributes("class"), item => item.Value.Split(' ').Contains("external"));
         Assert.NotEmpty(result.Artifact.ToPng());
         var strict = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject }); Assert.Null(strict.Artifact);

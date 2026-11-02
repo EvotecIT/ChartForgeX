@@ -25,7 +25,7 @@ public sealed class UseCaseAdvancedActorRecipeTests {
         Assert.DoesNotContain("ChartForgeX.Mermaid", emitted); Assert.DoesNotContain("MermaidRenderer", emitted); Assert.DoesNotContain("{{", emitted);
         var program = ExampleRecipeSource.EmitAdvancedActorSource(variant, mode); var literal = Regex.Match(program, @"var source = (.+);"); Assert.True(literal.Success);
         Assert.Equal(source, JsonSerializer.Deserialize<string>(literal.Groups[1].Value)!.ReplaceLineEndings("\n")); Assert.Contains("MermaidRenderer.Render(source", program); Assert.DoesNotContain("{{", program);
-        Assert.Contains("FontFamily = ChartFontStacks.ProductSans", ExampleRecipeSource.EmitAdvancedActorSource(variant, mode, galleryTypography: true));
+        Assert.Contains("fonts/Carlito-Regular.ttf", ExampleRecipeSource.EmitAdvancedActorSource(variant, mode, galleryTypography: true));
     }
 
     [Theory]

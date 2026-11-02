@@ -130,7 +130,7 @@
   outline: 0;
   background: transparent;
   color: var(--cfx-color-text);
-  font: 680 12px/1.2 var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif);
+  font: 680 12px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 .cfx-graph-search {
@@ -255,7 +255,7 @@
   border-radius: 10px;
   background: transparent;
   color: var(--cfx-color-text-muted);
-  font: 720 12px/1.2 var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif);
+  font: 720 12px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
   white-space: nowrap;
   cursor: pointer;
   transition: color .14s ease, background-color .14s ease, border-color .14s ease, box-shadow .14s ease, transform .14s ease;

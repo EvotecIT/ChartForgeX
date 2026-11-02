@@ -148,9 +148,8 @@ public sealed class SunburstSecondaryLabelTests {
         chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithColor("#ff00ff"));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         chart.Options.Sunburst.SecondaryLabelStyle.WithFontSize(6);
-        var explicitSmall = Prepare(chart);
-        Assert.DoesNotContain(explicitSmall.Scene.Nodes.OfType<VisualSceneText>(), label => label.Id == "series-0-node-secondary-label-0");
-        Assert.Equal("Allocation", Groups(explicitSmall)["all"].Metadata["data-cfx-secondary-label"]);
+        var explicitSmall = Prepare(chart).Scene.Nodes.OfType<VisualSceneText>().Single(label => label.Id == "series-0-node-secondary-label-0");
+        Assert.Equal(6, explicitSmall.Text.Size);
     }
 
     [Fact]

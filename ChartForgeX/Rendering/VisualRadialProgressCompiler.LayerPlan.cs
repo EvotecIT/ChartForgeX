@@ -64,10 +64,8 @@ internal static partial class VisualRadialProgressCompiler {
                 catch (NotSupportedException) { _formatKey = null; }
                 catch (ArgumentException) { _formatKey = null; }
             }
-            var typography = context.Theme.Typography;
-            var outerRadius = _layers.Max(layer => layer.Radius + layer.Stroke / 2);
-            _valueStyle = VisualRadialPrimitives.Style(chart, context, colors.Foreground, typography.CenterSize(outerRadius), typography.CenterValueWeight);
-            _captionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, typography.CenterCaptionSize, typography.TickWeight);
+            _valueStyle = CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, centerRadius, 700);
+            _captionStyle = CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, centerRadius);
             _valueStyle.Alignment = _captionStyle.Alignment = TextAlignment.Center;
             _valueFace = new VisualSceneTextFace(_valueStyle); _captionFace = new VisualSceneTextFace(_captionStyle);
             _readings = Array.AsReadOnly(_layers.Select(layer => new VisualValueReading(layer.ObservationId, layer.Value, layer.Minimum, layer.Maximum)).ToArray());

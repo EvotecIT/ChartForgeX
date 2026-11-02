@@ -22,17 +22,13 @@ internal sealed class NativeBadgePaintPlan {
     }
     internal static NativeBadgePaintPlan Measured(ChartRect allocation, double measuredWidth, double measuredHeight,
         double ascent, double horizontalPadding, double minimumHeight, double radius, double verticalPadding) {
-        var measuredSurfaceWidth = measuredWidth + 2 * horizontalPadding;
-        var width = Math.Min(allocation.Width, measuredSurfaceWidth);
+        var width = Math.Min(allocation.Width, measuredWidth + 2 * horizontalPadding);
         var height = Math.Min(allocation.Height, Math.Max(minimumHeight, measuredHeight + verticalPadding));
         var left = allocation.X + (allocation.Width - width) / 2; var top = allocation.Y;
         var inset = Math.Min(horizontalPadding, width / 2); var textHeight = Math.Min(measuredHeight, height);
-        // Adding then subtracting padding can round a fitting run below its measured
-        // advance and trigger ellipsis. Preserve that advance when the badge fits.
-        var textWidth = measuredSurfaceWidth <= allocation.Width ? measuredWidth : Math.Max(0, width - 2 * inset);
         var textTop = top + (height - textHeight) / 2;
         return new NativeBadgePaintPlan(new ChartRect(left, top, width, height),
-            new ChartRect(left + inset, textTop, textWidth, textHeight),
+            new ChartRect(left + inset, textTop, Math.Max(0, width - 2 * inset), textHeight),
             Math.Min(radius, Math.Min(width, height) / 2), textTop + ascent);
     }
     internal void AppendSurfaceTo(VisualSceneBuilder builder, ChartColor? fill, ChartColor? stroke, double strokeWidth,

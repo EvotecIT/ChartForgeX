@@ -16,14 +16,6 @@ public static partial class VisualArtifactInterchangeMapping {
         foreach (var paint in new[] { source.Background, source.Foreground, source.MutedForeground, source.Card, source.Surface,
             source.Border, source.Accent, source.Healthy, source.Warning, source.Critical, source.Unknown, source.Disabled }) TopologyThemeColor(paint);
         if (source.Definition != null) return source.Definition;
-        var canonical = VisualTheme.Graphite().WithFontFamily(source.FontFamily);
-        var canonicalType = canonical.Typography;
-        var canonicalPaint = MapTheme(new TopologyPaint(canonical, source.Mode ?? VisualThemeMode.Light), canonicalType.TitleSize);
-        if (SameLegacyThemeColors(source, canonicalPaint)
-            && (source.TitleSize ?? canonicalType.TitleSize).Equals(canonicalType.TitleSize)
-            && (source.DataLabelSize ?? canonicalType.DataLabelSize).Equals(canonicalType.DataLabelSize)
-            && (source.SubtitleSize ?? canonicalType.SubtitleSize).Equals(canonicalType.SubtitleSize)
-            && (source.LegendSize ?? canonicalType.LegendSize).Equals(canonicalType.LegendSize)) return canonical;
         var typography = new VisualTypography(family: source.FontFamily,
             titleSize: source.TitleSize ?? VisualTheme.Graphite().Typography.TitleSize,
             dataLabelSize: source.DataLabelSize ?? VisualTheme.Graphite().Typography.DataLabelSize,

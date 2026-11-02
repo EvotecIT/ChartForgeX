@@ -86,11 +86,10 @@ internal static class VisualFrameLayout {
             var font = context.Font; font.Weight = weight;
             return new TextStyle { Font = font, FontSize = size, Color = color, LineHeight = 1 };
         }
-        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, typography.TitleWeight, colors.Foreground);
-        var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, typography.SubtitleWeight, colors.MutedForeground);
-        var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, typography.LegendWeight, colors.Foreground);
-        var legendValueStyle = legendStyle.Clone();
-        if (!context.Frame.HasExplicitLegendWeight) legendValueStyle.Font.Weight = typography.LegendValueWeight;
+        // Design rule 7: title 16/600 primary; subtitle 13 secondary; legends 12 secondary like axis ticks.
+        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 600, colors.Foreground);
+        var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
+        var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.MutedForeground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(paints?.Background ?? SvgPaint.Of(colors.Background, SvgColorRole.Surface)));
         if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors, paints);
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
@@ -288,12 +287,12 @@ internal static class VisualFrameLayout {
                             var anchor = cursor + labelOffset + (legendStyle.Alignment == TextAlignment.Center ? labelWidth / 2 : legendStyle.Alignment == TextAlignment.Right ? labelWidth : 0);
                             builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: paints?.Foreground ?? VisualChartPaint.Text(legendStyle));
                             if (valueWidth > 0) {
-                                var valueStyle = legendValueStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
+                                var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
                                 var numeric = NumericWidths(entry);
                                 var percentageWidth = numeric.Percentage;
                                 var valueRight = cursor + width - 4;
                                 if (percentageWidth > 0) {
-                                    var percentageStyle = legendStyle.Clone(); percentageStyle.Alignment = TextAlignment.Right; percentageStyle.Color = colors.MutedForeground;
+                                    var percentageStyle = valueStyle.Clone(); percentageStyle.Color = colors.MutedForeground;
                                     builder.Text(entry.Percentage!, valueRight, baseline, percentageStyle, role: "legend-percentage", paint: paints?.MutedForeground ?? VisualChartPaint.Text(percentageStyle));
                                     valueRight -= percentageWidth + numeric.Gap;
                                 }
@@ -351,16 +350,16 @@ internal static class VisualFrameLayout {
                     var labelReserve = Math.Min(labelWidth, Math.Max(builder.MeasureText(ShortenedMinimum(OneLine(entry.Label)), legendStyle).Width, textWidth / 3));
                     var valueMaximum = Math.Max(0, textWidth - labelReserve);
                     var value = entry.Value!;
-                    if (builder.MeasureText(value, legendValueStyle).Width > valueMaximum) {
+                    if (builder.MeasureText(value, legendStyle).Width > valueMaximum) {
                         if (overflowValue) {
                             value = string.Empty;
                             foreach (var candidate in new[] { "> 1.79E308", ">1E308" })
-                                if (builder.MeasureText(candidate, legendValueStyle).Width <= valueMaximum) { value = candidate; break; }
+                                if (builder.MeasureText(candidate, legendStyle).Width <= valueMaximum) { value = candidate; break; }
                             builder.AddDiagnostic(new VisualDiagnostic("frame.legend-value-compacted", "An overflow bound was shortened or omitted to fit its legend column; its complete bound remains in semantic metadata."));
-                        } else value = Fit(value, valueMaximum, legendValueStyle);
+                        } else value = Fit(value, valueMaximum, legendStyle);
                     }
                     // Wrapping, row alignment and painting share these resolved text allocations.
-                    widths = (value, builder.MeasureText(value, legendValueStyle).Width, percentageWidth, numericGap);
+                    widths = (value, builder.MeasureText(value, legendStyle).Width, percentageWidth, numericGap);
                     numericWidths.Add(entry, widths);
                 }
                 return widths;

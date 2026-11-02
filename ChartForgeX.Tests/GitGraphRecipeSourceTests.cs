@@ -21,7 +21,7 @@ public sealed class GitGraphRecipeSourceTests {
         Assert.Equal(6, block.Commits.Count); Assert.Equal("joined", block.Commits[^1].SourceCommitId);
         Assert.Equal(variant.EndsWith("-tb", StringComparison.Ordinal) ? GitGraphDirection.TopToBottom : variant.EndsWith("-bt", StringComparison.Ordinal) ? GitGraphDirection.BottomToTop : GitGraphDirection.LeftToRight, block.Direction);
         var exact = ExampleRecipeSource.EmitGitGraph(variant, mode, galleryTypography: true);
-        Assert.DoesNotContain("FontRegistry.Register", exact); Assert.Contains(".WithFontFamily(ChartFontStacks.ProductSans)", exact);
+        Assert.Contains("fonts/Carlito-Regular.ttf", exact); Assert.Contains("fonts/Carlito-Bold.ttf", exact); Assert.Contains(".WithFontFamily(\"CFX Proof Carlito\")", exact);
         Assert.NotEmpty(block.ToPng());
     }
 }

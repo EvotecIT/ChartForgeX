@@ -82,7 +82,7 @@ internal static partial class SmokeTests {
             .AddEdge("left-right", "left", "right", "42 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(svg.Contains("viewBox=\"0 0 500 183\"", StringComparison.Ordinal), "Topology renderer should expand the viewport for manual content and its resolved responsive title.");
+        Assert(svg.Contains("viewBox=\"0 0 500 180\"", StringComparison.Ordinal), "Topology renderer should expand the viewport horizontally when manual content exceeds the original width.");
         var left = TopologySurfaceBounds(svg, "node", "left"); var right = TopologySurfaceBounds(svg, "node", "right");
         Assert(left.X == 20 && left.Y > 20 && left.Width == 120 && left.Height == 64, "Topology renderer should shift negative or title-overlapping manual content into the shared frame content area.");
         Assert(right.X - left.X == 340 && right.Y == left.Y && right.Width == left.Width, "Topology renderer should preserve deterministic spacing while fitting wide manual content.");

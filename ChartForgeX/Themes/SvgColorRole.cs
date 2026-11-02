@@ -29,9 +29,5 @@ public enum SvgColorRole {
     /// <summary>A horizontal plot guide, distinct from neutral fills and ramp colours.</summary>
     Grid,
     /// <summary>A baseline or crosshair colour.</summary>
-    Axis,
-    /// <summary>A step of the theme's automatic sequential ramp.</summary>
-    SequentialRamp = 8,
-    /// <summary>A step of a theme-derived diverging scale, distinct from equal sequential colors.</summary>
-    DivergingRamp = 9
+    Axis
 }

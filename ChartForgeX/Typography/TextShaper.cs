@@ -110,7 +110,6 @@ internal static partial class TextShaper {
             var capture = styledCaptures == null ? capturedClusters : styledCaptures[cluster.Start];
             AssignFace(primary, ref chain, codePoints, cluster, strictPrimary, capture);
             cluster.Face = cluster.Face!.WithLanguage(primary.LanguageTag).WithVariations(primary.Variations);
-            if (primary.TabularNumerals) cluster.Face = cluster.Face.WithTabularNumerals();
             cluster.Face = primary.PaletteContext == null ? cluster.Face.WithColorPalette(primary.ColorPaletteIndex) : cluster.Face.WithPaletteContext(primary.PaletteContext);
             if (capture != null && !capture.IsReplay && cluster.FallbackAttempted)
                 capture.Observe(codePoints, cluster.Start, cluster.Count, cluster.Face!, cluster.Output);

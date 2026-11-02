@@ -13,7 +13,6 @@ internal static partial class VisualArtifactInterchangeJson {
         Boolean(writer, "includeTileSubtitles", caption.IncludeTileSubtitles); Boolean(writer, "wrapNodeLabels", caption.WrapNodeLabels);
         Boolean(writer, "allowMultilineNodeLabels", caption.AllowMultilineNodeLabels); Boolean(writer, "readableDenseLayout", caption.ReadableDenseLayout);
         Number(writer, "maxNodeLabelLines", caption.MaxNodeLabelLines); Number(writer, "maxNodeSubtitleLines", caption.MaxNodeSubtitleLines);
-        if (caption.FitSingleLine.HasValue) Boolean(writer, "fitSingleLine", caption.FitSingleLine.Value);
         TopologyRoutes(writer, caption.Routes);
         writer.EndObject();
     }
@@ -21,6 +20,6 @@ internal static partial class VisualArtifactInterchangeJson {
         var item = OptionalObject(presentation, "topologyCaptions"); if (item == null) return null;
         bool Flag(string name) => OptionalBool(item, name) ?? throw new ArgumentException("Captured caption policy requires boolean " + name + ".");
         return new TopologyCaptionPresentation(Flag("includeNodeLabels"), Flag("includeIconLabels"), Flag("includeTileSubtitles"), Flag("wrapNodeLabels"),
-            Flag("allowMultilineNodeLabels"), Flag("readableDenseLayout"), RequiredInt(item, "maxNodeLabelLines"), RequiredInt(item, "maxNodeSubtitleLines"), ReadTopologyRoutes(item), OptionalBool(item, "fitSingleLine"));
+            Flag("allowMultilineNodeLabels"), Flag("readableDenseLayout"), RequiredInt(item, "maxNodeLabelLines"), RequiredInt(item, "maxNodeSubtitleLines"), ReadTopologyRoutes(item));
     }
 }

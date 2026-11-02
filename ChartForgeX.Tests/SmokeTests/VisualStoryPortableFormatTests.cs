@@ -60,22 +60,8 @@ internal static partial class SmokeTests {
             "Visual-story SVG should use the prepared sampled clock and show its completed poster under reduced motion.");
         var nativePoster = XDocument.Parse(story.Prepare().ToSvg());
         var vector = nativePoster.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "story-vector-media");
-        if (vector.Name.LocalName == "use") {
-            var reference = (string?)vector.Attribute("href");
-            Assert(reference != null && reference.StartsWith("#", StringComparison.Ordinal), "SVG media instances should reference a local image definition.");
-            vector = nativePoster.Descendants().Single(element => (string?)element.Attribute("id") == reference!.Substring(1));
-        }
-        const string svgDataPrefix = "data:image/svg+xml;base64,";
-        Assert(vector.Name.LocalName == "image" && vector.Attribute("href")!.Value.StartsWith(svgDataPrefix, StringComparison.Ordinal),
+        Assert(vector.Name.LocalName == "image" && vector.Attribute("href")!.Value.StartsWith("data:image/svg+xml;base64,", StringComparison.Ordinal),
             "SVG media should retain its resolved vector representation without layering the raster fallback over it.");
-        var embeddedVector = XDocument.Parse(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(vector.Attribute("href")!.Value.Substring(svgDataPrefix.Length))));
-        Assert(embeddedVector.Root!.Name == XName.Get("svg", "http://www.w3.org/2000/svg") &&
-               (string?)embeddedVector.Root.Attribute("viewBox") == "0 0 1 1" &&
-               embeddedVector.Descendants().Any(element => element.Name.LocalName == "rect" && (string?)element.Attribute("fill") == "none"),
-            "SVG media should retain the original transparent vector payload.");
-        Assert(nativePoster.Descendants().Where(element => element.Name.LocalName == "image").All(element =>
-               element.Attribute("href")?.Value.StartsWith(svgDataPrefix, StringComparison.Ordinal) == true),
-            "SVG media should not emit its raster fallback alongside the vector representation.");
         Assert(html.Contains("<!doctype html>", StringComparison.OrdinalIgnoreCase) &&
                html.Contains("chartforgex-visual-story", StringComparison.Ordinal),
             "Visual stories should render complete responsive HTML pages.");

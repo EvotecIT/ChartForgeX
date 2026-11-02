@@ -15,8 +15,8 @@ internal static class ChartColorScaleSurface {
     }
 
     internal static ChartColorScale Default(VisualThemeColors colors) => colors.SequentialRamp.Count >= 2
-        ? ChartColorScale.Sequential(colors.SequentialRamp).WithPaintRole(SvgColorRole.SequentialRamp)
-        : colors.SequentialRamp.Count == 1 ? ChartColorScale.Sequential(colors.SequentialRamp[0], colors.SequentialRamp[0]).WithPaintRole(SvgColorRole.SequentialRamp)
+        ? ChartColorScale.Sequential(colors.SequentialRamp)
+        : colors.SequentialRamp.Count == 1 ? ChartColorScale.Sequential(colors.SequentialRamp[0], colors.SequentialRamp[0])
             : ChartColorScale.Sequential(colors.Surface, colors.Palette[0]);
 
     internal static ChartColorBlend NoData(ChartColorScale? scale, VisualThemeColors colors) => scale?.NoDataColor is ChartColor color

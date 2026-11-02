@@ -176,7 +176,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("aria-live=\"polite\"", StringComparison.Ordinal), "Interactive tooltips should expose polite assistive announcements.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Interactive HTML should not reference external stylesheets.");
         Assert(!html.Contains("@import", StringComparison.OrdinalIgnoreCase), "Interactive HTML should not import external stylesheets.");
-        var withoutSvgNamespace = ResourceMarkup(html);
+        var withoutSvgNamespace = html.Replace("http://www.w3.org/2000/svg", string.Empty);
         Assert(!withoutSvgNamespace.Contains("http://", StringComparison.OrdinalIgnoreCase) && !withoutSvgNamespace.Contains("https://", StringComparison.OrdinalIgnoreCase), "Interactive HTML should remain self-contained.");
 
         var fragment = SampleChart().ToInteractiveHtmlFragment(options => {

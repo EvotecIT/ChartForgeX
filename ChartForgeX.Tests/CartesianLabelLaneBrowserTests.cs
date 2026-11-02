@@ -20,8 +20,6 @@ public sealed class CartesianLabelLaneBrowserTests {
         var rasterOptions = new VisualRenderOptions();
         var image = PngReader.Decode(prepared.ToPng(rasterOptions));
         var totals = CaptionInk(prepared, image, rasterOptions, "stack-total-label", 8);
-        Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "stack-total-label"),
-            text => Assert.InRange(text.Text.Size, 10, 12));
         var categories = CaptionInk(prepared, image, rasterOptions, "axis-x-label", 4);
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
 

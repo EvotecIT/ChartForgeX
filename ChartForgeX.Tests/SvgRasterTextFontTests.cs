@@ -1,7 +1,5 @@
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
-using ChartForgeX.Typography;
-using System.Globalization;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -12,56 +10,6 @@ namespace ChartForgeX.Tests;
 /// family return early on hosts without it.
 /// </summary>
 public sealed class SvgRasterTextFontTests {
-    [Theory]
-    [InlineData("", false)]
-    [InlineData("font-variant-numeric='normal'", false)]
-    [InlineData("font-variant-numeric='proportional-nums'", false)]
-    [InlineData("font-variant-numeric='tabular-nums'", true)]
-    [InlineData("font-variant-numeric='normal' style='font-variant-numeric:tabular-nums'", true)]
-    public void NumericSpacingInheritsFromSvgRootAndPositionsTheFollowingRun(string attributes, bool tabular) {
-        AssertNumericRunPosition(attributes, "", tabular);
-    }
-
-    [Theory]
-    [InlineData("normal", false, 0)]
-    [InlineData("proportional-nums", false, 0)]
-    [InlineData("tabular-nums", true, 0)]
-    [InlineData("initial", false, 0)]
-    [InlineData("inherit", true, 0)]
-    [InlineData("unset", true, 0)]
-    [InlineData("normal", false, 1)]
-    [InlineData("inherit", true, 1)]
-    public void NumericSpacingOnTspanCanResetOrRetainTheInheritedProductStyle(string value, bool tabular, double spacing) {
-        AssertNumericRunPosition("font-variant-numeric='tabular-nums'", "style='font-variant-numeric:" + value + "'", tabular, spacing);
-    }
-
-    private static void AssertNumericRunPosition(string rootAttributes, string spanAttributes, bool tabular, double spacing = 0) {
-        const string digits = "111111";
-        const double size = 28;
-        var face = TypographyFontResolver.ResolveFace("Archivo", 400, false).Font!;
-        Assert.NotNull(face);
-        Assert.NotEqual(face.WithTabularNumerals(false).Measure(digits, size), face.WithTabularNumerals(true).Measure(digits, size));
-        double expectedX = 8 + face.WithTabularNumerals(tabular).Measure(digits, size) + digits.Length * spacing;
-        string prefix = "<svg xmlns='http://www.w3.org/2000/svg' width='320' height='56' ";
-        string inherited = "<g font-family='Archivo' font-size='28'><text x='8' y='40' letter-spacing='"
-            + spacing.ToString("R", CultureInfo.InvariantCulture) + "'><tspan " + spanAttributes + ">" + digits
-            + "</tspan><tspan fill='red'>H</tspan></text></g></svg>";
-        byte[] actual = SvgRasterizer.ToImage(prefix + rootAttributes + ">" + inherited).Pixels;
-        byte[] expected = SvgRasterizer.ToImage(prefix + "><text x='" + expectedX.ToString("R", CultureInfo.InvariantCulture)
-            + "' y='40' font-family='Archivo' font-size='28' fill='red'>H</text></svg>").Pixels;
-        Assert.Contains(expected, value => value != 0);
-        Assert.Equal(RedAlpha(expected), RedAlpha(actual));
-    }
-
-    private static byte[] RedAlpha(byte[] pixels) {
-        var alpha = new byte[pixels.Length / 4];
-        for (int index = 0; index < alpha.Length; index++) {
-            int offset = index * 4;
-            if (pixels[offset] > 0 && pixels[offset + 1] == 0 && pixels[offset + 2] == 0) alpha[index] = pixels[offset + 3];
-        }
-        return alpha;
-    }
-
     [Theory]
     [InlineData("lighter", 100)]
     [InlineData("bolder", 700)]

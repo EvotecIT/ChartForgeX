@@ -19,7 +19,7 @@ internal static partial class VisualCartesianCompiler {
         var spacing = context.Theme.Spacing; var style = CrossingTickStyle(chart, context, colors);
         var metrics = TickMetrics(builder, axis, ticks, style, fallback, labels);
         var available = Math.Max(0, secondary ? track - viewport.Top - spacing : viewport.Bottom - track - spacing);
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
         var desiredTitle = title.Length == 0 ? 0 : builder.MeasureText(title, titleStyle).Height + spacing;
         var groupHeight = category ? CategoryGroupBandSizes(builder, labels, style, spacing, minimum, maximum, plot.Width,
             Math.Max(0, available - metrics.Height - desiredTitle)).Sum() : 0;

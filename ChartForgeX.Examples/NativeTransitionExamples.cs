@@ -60,7 +60,7 @@ internal static class NativeTransitionExamples {
             File.WriteAllText(prefix + ".to.svg", after.PreparedVisual.ToSvg()); File.WriteAllBytes(prefix + ".to.png", after.PreparedVisual.ToPng());
             File.WriteAllText(prefix + ".source.json", JsonSerializer.Serialize(source));
             File.WriteAllText(prefix + ".interactive.html", "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-                + ExampleTypography.EmbeddedStyle + "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "body{margin:16px;font:14px " + ExampleTypography.FontFamily + "}button{font:inherit;padding:8px 12px}</style></head><body>"
+                + ExampleTypography.EmbeddedStyle + "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "body{margin:16px;font:14px sans-serif}button{font:inherit;padding:8px 12px}</style></head><body>"
                 + "<p>" + explanation + "</p><button id=\"play\">Show native presentation</button>" + initial.Html
                 + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + script + "</script></body></html>");
         }

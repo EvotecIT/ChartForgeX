@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Primitives;
-using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
 
@@ -84,10 +83,6 @@ public sealed partial class ChartSeries {
         var pointStyles = Enumerable.Range(0, source.PointStyleCount).Select(source.CopyPointStyle).ToArray();
         model.PointDataLabelStyles.AddRange(RemapObservationOverrides(pointStyles, selected));
         if (ChartSeriesKindTraits.IsPieLikeKind(source.Kind)) {
-            // Filtering retains source ranks; a complete value replay ranks its new readings just like ordinary rendering.
-            model.CategoryPaletteOrdinals = values == null
-                ? selected.Select(index => ChartSeriesColours.CategoryRank(source.Points, index)).ToArray()
-                : Enumerable.Range(0, numeric.Count).Select(index => ChartSeriesColours.CategoryRank(numeric, index)).ToArray();
             model.PointSliceOffsets.AddRange(RemapObservationOverrides(source.SliceOffsets, selected));
             model._pointSliceRadiusRatios.AddRange(RemapObservationOverrides(source.SliceRadiusRatios, selected));
         }

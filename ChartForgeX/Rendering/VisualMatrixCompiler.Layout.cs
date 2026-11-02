@@ -14,7 +14,7 @@ internal static partial class VisualMatrixCompiler {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         var x = chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels;
         var y = chart.Options.ShowAxes && chart.Options.YAxis.Visible;
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground });
         var captions = columns.Select(formatColumn).ToArray();
         var widest = captions
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();

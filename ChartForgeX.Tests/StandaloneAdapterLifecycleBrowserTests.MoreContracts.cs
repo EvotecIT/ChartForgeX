@@ -98,15 +98,6 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             """;
         await using var session = await OpenAsync(html.Replace("<head>", "<head><script>" + probe + "</script>", StringComparison.Ordinal), 900, 720);
         var page = session.Page;
-        await page.EvaluateAsync("""
-            async()=>{
-                await document.fonts.ready;
-                await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-                ChartForgeXGraphExplorer.dispose('measured-badges');
-                badgeMeasurements=0;
-                ChartForgeXGraphExplorer.mount('measured-badges');
-            }
-            """);
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>badgeMeasurements"));
         await page.EvaluateAsync("""
             () => {

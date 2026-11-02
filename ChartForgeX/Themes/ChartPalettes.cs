@@ -20,15 +20,16 @@ public static class ChartPalettes {
     }
 
     /// <summary>
-    /// Gets the embedded token contract's categorical order for light surfaces
-    /// (the shared <c>--hfx-color-chart-series-1..10</c> roles). Status colours are not part of it.
+    /// Gets the default categorical order for light surfaces (the shared <c>--hfx-color-series-1..6</c> roles): blue, teal,
+    /// purple, clay, magenta, green. Validated together for colour-vision deficiency, including the wrap from the last
+    /// slot to the first. Status colours are not part of it.
     /// </summary>
-    /// <remarks>Part-to-whole charts fold excess categories into neutral Other. Other charts use distinct shade extensions
-    /// beyond the base palette and report <c>palette.extended</c>.</remarks>
-    public static ChartColor[] Categorical => VisualDesignTokens.CanonicalPalette(dark: false);
+    /// <remarks>A seventh category is never a generated hue: part-to-whole charts fold it into a neutral Other, and
+    /// other charts report <c>palette.reused</c> when a slot repeats.</remarks>
+    public static ChartColor[] Categorical => FromHex("#2a78d6", "#0f9f8c", "#7b61e8", "#a0522d", "#c24fa8", "#5b7f00");
 
     /// <summary>Gets the default categorical order for dark surfaces, slot for slot with <see cref="Categorical"/>.</summary>
-    public static ChartColor[] CategoricalDark => VisualDesignTokens.CanonicalPalette(dark: true);
+    public static ChartColor[] CategoricalDark => FromHex("#3987e5", "#179c89", "#8a74ee", "#c06a42", "#c9579f", "#6f9120");
 
     /// <summary>
     /// Gets the classic report palette.

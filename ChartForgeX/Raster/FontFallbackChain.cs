@@ -143,11 +143,9 @@ internal sealed class FontFallbackChain {
         if (candidates != null) return candidates;
         var family = _families[index];
         var registered = FontRegistry.Ranked(family, _weight, _italic);
-        var bundled = registered.Count == 0 ? ChartFontAssets.Find(family, _weight, _italic) : null;
-        var faces = registered.Count > 0 ? registered : bundled != null
-            ? new[] { bundled } : InstalledFontCatalog.Ranked(family, _weight, _italic);
+        var faces = registered.Count > 0 ? registered : InstalledFontCatalog.Ranked(family, _weight, _italic);
         candidates = new FaceCandidate[faces.Count];
-        for (var i = 0; i < faces.Count; i++) candidates[i] = new FaceCandidate(faces[i], family, _weight);
+        for (var i = 0; i < faces.Count; i++) candidates[i] = new FaceCandidate(faces[i], family);
         _candidates[index] = candidates;
         return candidates;
     }
@@ -209,12 +207,11 @@ internal sealed class FontFallbackChain {
     private sealed class FaceCandidate {
         private readonly InstalledFontFace _face;
         private readonly string _family;
-        private readonly int _weight;
         private FontCmap? _cmap;
         private TrueTypeFont? _font;
         private bool _loaded;
 
-        public FaceCandidate(InstalledFontFace face, string family, int weight) { _face = face; _family = family; _weight = weight; }
+        public FaceCandidate(InstalledFontFace face, string family) { _face = face; _family = family; }
 
         public bool CoversAll(IReadOnlyList<int> codePoints) {
             if (_face.MemoryFont != null) {
@@ -231,7 +228,6 @@ internal sealed class FontFallbackChain {
                 if (_loaded) return _font;
                 _loaded = true;
                 _font = _face.LoadFont()?.WithSelectedFamily(_family);
-                if (_font != null) _font = TypographyFontResolver.WithRequestedWeight(_font, _weight);
                 return _font;
             }
         }

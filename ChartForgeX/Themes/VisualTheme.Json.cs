@@ -35,17 +35,16 @@ public sealed partial class VisualTheme {
         var effects = root.TryGetValue("effects", out var effectValue) ? effectValue.AsObject("effects") : new Dictionary<string, GeoJsonValue>();
         var light = ReadThemeColors(json, root, "light", VisualThemeMode.Light);
         var dark = ReadThemeColors(json, root, "dark", VisualThemeMode.Dark);
-        var scale = new VisualTypography(Required(typography, "family", "typography").AsString("typography.family"),
+        return new VisualTheme(light, dark,
+            new VisualTypography(Required(typography, "family", "typography").AsString("typography.family"),
                 Number(typography, "titleSize", "typography"), Number(typography, "subtitleSize", "typography"),
                 Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography"),
                 OptionalNumber(typography, "scalarValueSize", "typography", 34), OptionalNumber(typography, "centerValueSize", "typography", 20),
                 OptionalNumber(typography, "axisTitleSize", "typography", Number(typography, "axisSize", "typography")),
-                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : ChartFontStacks.ProductMono,
+                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : "Cascadia Mono, Consolas, monospace",
                 OptionalNumber(typography, "tileLabelSize", "typography", 14),
                 OptionalNumber(typography, "tileValueSize", "typography", 22),
-                OptionalNumber(typography, "tileDetailSize", "typography", 13));
-        if (typography.TryGetValue("chart", out var chartScale)) scale = ReadChartTypography(scale.Family, scale.MonospaceFamily, chartScale, 16);
-        return new VisualTheme(light, dark, scale,
+                OptionalNumber(typography, "tileDetailSize", "typography", 13)),
             Number(geometry, "spacing", "geometry"), Number(geometry, "seriesStrokeWidth", "geometry"), Number(geometry, "markerRadius", "geometry"),
             Number(geometry, "areaOpacity", "geometry"), Number(geometry, "barRadius", "geometry"),
             Number(geometry, "gridStrokeWidth", "geometry"), Number(geometry, "axisStrokeWidth", "geometry"),
@@ -75,7 +74,6 @@ public sealed partial class VisualTheme {
         WriteNumber(writer, "scalarValueSize", Typography.ScalarValueSize); WriteNumber(writer, "centerValueSize", Typography.CenterValueSize);
         WriteNumber(writer, "tileLabelSize", Typography.TileLabelSize); WriteNumber(writer, "tileValueSize", Typography.TileValueSize);
         WriteNumber(writer, "tileDetailSize", Typography.TileDetailSize);
-        WriteChartTypography(writer, Typography);
         writer.EndObject();
         writer.Property("geometry"); writer.StartObject();
         WriteNumber(writer, "spacing", Spacing); WriteNumber(writer, "seriesStrokeWidth", SeriesStrokeWidth); WriteNumber(writer, "markerRadius", MarkerRadius);
@@ -110,28 +108,17 @@ public sealed partial class VisualTheme {
         tokens.Quiet = NullableRole(roles, "quiet", tokens.Quiet); tokens.QuietLine = NullableRole(roles, "quietLine", tokens.QuietLine);
         tokens.Neutral = NullableRole(roles, "neutral", tokens.Neutral); tokens.Neutral2 = NullableRole(roles, "neutral2", tokens.Neutral2);
         tokens.Neutral3 = NullableRole(roles, "neutral3", tokens.Neutral3);
-        tokens.ChildLightnessOffset = OptionalNumber(roles, "childLightnessOffset", mode + ".roles", tokens.ChildLightnessOffset);
-        if (tokens.ChildLightnessOffset < 0 || tokens.ChildLightnessOffset > 1) throw new ArgumentException("Child lightness offset must be between zero and one.");
         return tokens;
     }
 
     private static void WriteThemeColors(VisualArtifactInterchangeJsonWriter writer, string mode, VisualDesignTokens tokens) {
         writer.Property(mode); writer.StartObject();
-        WriteColor(writer, "other", tokens.Other);
         writer.Property("surface"); writer.StartObject();
         WriteColor(writer, "page", tokens.Background); WriteColor(writer, "card", tokens.ElevatedSurface);
         WriteColor(writer, "cardAlt", tokens.Surface); WriteColor(writer, "line", tokens.Border); writer.EndObject();
         writer.Property("text"); writer.StartObject();
         WriteColor(writer, "primary", tokens.Foreground); WriteColor(writer, "secondary", tokens.MutedForeground); writer.EndObject();
-        writer.Property("chrome"); writer.StartObject(); WriteColor(writer, "accent", tokens.SecondaryAccent);
-        if (tokens.Chrome is { } chrome) {
-            WriteColor(writer, "tooltipSurface", chrome.Surface); WriteColor(writer, "tooltipText", chrome.Text);
-            WriteColor(writer, "tooltipMuted", chrome.Muted); WriteColor(writer, "tooltipLine", chrome.Line);
-            WriteColor(writer, "focusRing", chrome.FocusRing);
-            writer.Property("tooltipShadow"); writer.String(chrome.Shadow);
-            WriteNumber(writer, "tooltipRadius", chrome.TooltipRadius); WriteNumber(writer, "controlRadius", chrome.ControlRadius);
-        }
-        writer.EndObject();
+        writer.Property("chrome"); writer.StartObject(); WriteColor(writer, "accent", tokens.SecondaryAccent); writer.EndObject();
         writer.Property("accent"); writer.StartObject(); WriteColor(writer, "base", tokens.Accent); writer.EndObject();
         writer.Property("series"); WriteColors(writer, tokens.Palette);
         writer.Property("severity"); writer.StartObject();
@@ -155,7 +142,6 @@ public sealed partial class VisualTheme {
         WriteColor(writer, "muted", tokens.Muted); WriteColor(writer, "grid", tokens.Grid); WriteColor(writer, "axis", tokens.Axis);
         WriteColor(writer, "info", tokens.Info); WriteColor(writer, "quiet", tokens.Quiet); WriteColor(writer, "quietLine", tokens.QuietLine);
         WriteColor(writer, "neutral", tokens.Neutral); WriteColor(writer, "neutral2", tokens.Neutral2); WriteColor(writer, "neutral3", tokens.Neutral3);
-        WriteNumber(writer, "childLightnessOffset", tokens.ChildLightnessOffset);
         writer.EndObject(); writer.EndObject();
     }
 

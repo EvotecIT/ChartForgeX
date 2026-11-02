@@ -8,8 +8,9 @@ public static partial class ExampleRecipeSource {
         if (variant == "compact") source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);
         return Template("RecipeUseCaseSourceProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{SOURCE_TEXT}}"] = JsonSerializer.Serialize(source), ["{{WIDTH}}"] = variant == "compact" ? "390" : "900", ["{{MODE}}"] = mode.ToString(),
-            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
-            ["{{FONT_FAMILY}}"] = galleryTypography ? "ChartFontStacks.ProductSans" : "null"
+            ["{{FONT_SETUP}}"] = galleryTypography
+                ? "// Optional exact gallery typography; copy the gallery fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
+            ["{{FONT_FAMILY}}"] = galleryTypography ? JsonSerializer.Serialize("CFX Proof Carlito") : "null"
         });
     }
 }

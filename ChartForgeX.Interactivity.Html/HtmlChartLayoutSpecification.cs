@@ -23,7 +23,7 @@ internal static class HtmlChartLayoutSpecification {
         if (HtmlRadialLayoutSpecification.Supports(chart)) context = HtmlRadialLayoutSpecification.SourceContext(chart, context);
         var prepared = chart.Prepare(context);
         height = (int)Math.Ceiling(prepared.Size.Height);
-        var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles().WithoutProductFonts();
+        var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles();
         svg = HtmlCompactSvg.Compact(prepared.ToSvg(options), printWidth);
         // A declared plot band stretches with the container while gutters before it stay fixed and gutters after it move
         // with the right edge. Drawings without a plot band stay centred; only their heading keeps its left inset.

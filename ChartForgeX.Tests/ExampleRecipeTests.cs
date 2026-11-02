@@ -125,8 +125,8 @@ public sealed partial class ExampleRecipeTests {
         var reproduction = ExampleRecipeSource.Emit(recipe, "wide", "Orders", "North and South", VisualThemeMode.Dark,
             360, 360, galleryTypography: true);
         Assert.DoesNotContain("fonts/", ordinary);
-        Assert.DoesNotContain("FontRegistry.Register", reproduction);
-        Assert.Contains("FontSpec.FromFamily(ChartFontStacks.ProductSans)", reproduction);
+        Assert.Contains("FontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);", reproduction);
+        Assert.Contains("FontSpec.FromFamily(\"CFX Proof Carlito\")", reproduction);
         Assert.Contains("var mode = VisualThemeMode.Dark;", reproduction);
         Assert.Contains("new VisualSize(360, 360)", reproduction);
         Assert.Contains("public static class BarRecipe", reproduction);

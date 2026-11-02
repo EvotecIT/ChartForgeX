@@ -159,10 +159,6 @@ public sealed partial class PreparedVisual {
     public VisualAccessibility Accessibility => _accessibility.Clone();
     /// <summary>Exports script-free SVG without repeating layout.</summary>
     public string ToSvg() => ExportSvg(_svgIdPrefix.Value);
-    /// <summary>Host HTML supplies the product font assets once outside its prepared SVGs.</summary>
-    internal string ToSvgWithoutProductFonts() => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
-        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _svgIdPrefix.Value,
-        (_defaultSvgOptions ?? new VisualSvgOptions()).WithoutProductFonts(), _capturePngText);
     /// <summary>Exports SVG with a host-owned ID namespace, allowing identical prepared visuals in one document.</summary>
     /// <param name="idPrefix">A unique host prefix beginning with an ASCII letter and containing only letters, digits, hyphens, underscores and periods.</param>
     /// <remarks>DOM IDs are scoped; source identities in semantic data attributes and regions remain unchanged.</remarks>

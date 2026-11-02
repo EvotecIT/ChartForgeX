@@ -104,8 +104,7 @@ internal static partial class VisualHierarchyCompiler {
                     paint: new VisualScenePaintBinding(ChartRelationshipPaint.Paint(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
                 if (showLabels) Label(chart, context, builder, caption, b, color, node.Index, "tree-node-label",
-                    color.A == 255 ? null : captionFrame.Over(color, ChartRelationshipPaint.Paint(series, color, node.Index)), center: true,
-                    maximumLines: int.MaxValue);
+                    color.A == 255 ? null : captionFrame.Over(color, ChartRelationshipPaint.Paint(series, color, node.Index)), center: true);
             }
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, caption + ": level " + N(node.Depth)));
         }

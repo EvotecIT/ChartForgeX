@@ -355,13 +355,10 @@ internal static partial class SvgRasterRenderer {
     // The same family, weight, and slant matching as FontSpec text, so SVG rasterized here and text
     // drawn through ImageComposition or VisualCanvas pick the same installed or registered face.
     // Without a font-family the stack is plain sans-serif, the face unstyled SVG text always used.
-    private static ResolvedTypeface SvgTextFace(SvgRasterStyle style) {
-        var face = TypographyFontResolver.WithPaletteContext(TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(LabelLayerFont == null
+    private static ResolvedTypeface SvgTextFace(SvgRasterStyle style) =>
+        TypographyFontResolver.WithPaletteContext(TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(LabelLayerFont == null
             ? TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, IsItalic(style.FontStyle))
             : new ResolvedTypeface(LabelLayerFont, style.FontWeight >= 600, IsItalic(style.FontStyle)), style.OpenTypeLanguageTag), style.Variations), style.PaletteContext);
-        // The chart resolver enables tabular figures; imported SVG retains its own inherited numeric style.
-        return new ResolvedTypeface(face.Font?.WithTabularNumerals(style.TabularNumerals), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
-    }
 
     private static bool IsItalic(string value) =>
         value.IndexOf("italic", StringComparison.OrdinalIgnoreCase) >= 0 || value.IndexOf("oblique", StringComparison.OrdinalIgnoreCase) >= 0;

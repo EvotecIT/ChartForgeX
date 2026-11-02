@@ -61,7 +61,6 @@ public sealed partial class VisualDesignTokens {
             Maintenance = Pair(state, "maintenance", name + ".state")
         };
         var tokens = new VisualDesignTokens {
-            Chrome = ReadChrome(root, chrome, name + ".chrome"),
             Background = Color(surface, "page", name + ".surface"),
             Surface = Color(surface, "cardAlt", name + ".surface"),
             ElevatedSurface = Color(surface, "card", name + ".surface"),
@@ -75,18 +74,11 @@ public sealed partial class VisualDesignTokens {
             Negative = status.Critical.Fill,
             Disabled = status.Neutral.Fill,
             Palette = Series(set, name + ".series"),
-            Other = set.TryGetValue("other", out var other) && !other.IsNull ? Hex(other.AsString(name + ".other"), name + ".other") : null,
             Status = status,
             SequentialRamp = SequentialRampOrNull(set, name),
             DivergingRamp = DivergingRampOrNull(set, name)
         };
         var graphite = OptionalMember(set, "graphite", name + ".graphite");
-        var paletteRules = OptionalMember(root, "palette", "palette");
-        if (paletteRules != null && paletteRules.TryGetValue("childLightnessOffset", out var lightness)) {
-            var offset = lightness.AsNumber("palette.childLightnessOffset");
-            if (double.IsNaN(offset) || double.IsInfinity(offset) || offset < 0 || offset > 1) throw new ArgumentException("Child lightness offset must be between zero and one.");
-            tokens.ChildLightnessOffset = offset;
-        }
         if (graphite != null) {
             tokens.Muted = Color(graphite, "muted", name + ".graphite");
             tokens.Grid = Color(graphite, "grid", name + ".graphite");

@@ -123,7 +123,7 @@
         label.setAttribute('x', '22'); label.setAttribute('y', index ? '48' : '30');
         label.setAttribute('textLength', String(Math.min(Math.max(1, width - 44), line.length * (index ? 6 : 7))));
         label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
-        label.setAttribute('style', `fill:#fff;font:${index ? '11' : '600 13'}px ${graphNodeFontFamily(root)}`);
+        label.setAttribute('style', `fill:#fff;font:${index ? '11' : '600 13'}px Segoe UI,Arial,sans-serif`);
         label.textContent = line;
         group.appendChild(label);
       });

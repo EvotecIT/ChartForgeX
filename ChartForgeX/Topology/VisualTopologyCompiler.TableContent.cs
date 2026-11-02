@@ -10,7 +10,7 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private NativeTableData TableData(TopologyNode node, ChartRect bounds, double size, double scale = 1) {
-        var typography = ShapeContentTypography(node); var ratio = size / typography.DataLabelSize;
+        var typography = _context.Theme.Typography; var ratio = size / typography.DataLabelSize;
         var family = node.TextStyle?.FontFamily ?? _context.Font.Family;
         var theme = _context.Theme.WithTypography(new VisualTypography(family, typography.TitleSize * ratio,
             typography.SubtitleSize * ratio, typography.AxisSize * ratio, typography.LegendSize * ratio,
@@ -26,10 +26,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
     // Captured table interiors use the retained geometry scale. Explicit captured role fonts are already absolute.
     private double ShapeContentSpacingScale(TopologyNode node) => node.TableContent?.CapturedPresentationScale ?? 1;
-    private VisualTypography ShapeContentTypography(TopologyNode node) => node.TableContent != null && _source.UsesPreparedSceneCoordinates
-        ? _source.Theme.Typography : _context.Theme.Typography;
-    private double ShapeContentFontSize(TopologyNode node) => TextPolicySize(node.TextStyle?.FontSize == null
-        ? ShapeContentTypography(node).DataLabelSize : _context.Theme.Typography.DataLabelSize)
+    private double ShapeContentFontSize(TopologyNode node) => TextPolicySize(_context.Theme.Typography.DataLabelSize)
         * (node.TableContent != null && node.TextStyle?.FontSize == null ? node.TableContent.CapturedPresentationScale : 1);
 
     private double TableHeight(TopologyNode node, double size) {

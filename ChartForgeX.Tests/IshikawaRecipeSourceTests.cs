@@ -15,8 +15,8 @@ public sealed class IshikawaRecipeSourceTests {
         Assert.Contains("artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;", program); Assert.DoesNotContain("{{", program); Assert.DoesNotContain("ChartForgeX.Mermaid", program); Assert.DoesNotContain("FontRegistry.Register", program);
         Assert.Equal(28, FishboneNaturalLayoutTests.Facts(block).Count); Assert.Contains(".WithNaturalSize(", program); Assert.NotEmpty(block.ToPng());
         var exact = ExampleRecipeSource.EmitIshikawa(variant, mode, galleryTypography: true);
-        Assert.DoesNotContain("FontRegistry.Register", exact);
-        Assert.Contains(".WithFontFamily(ChartFontStacks.ProductSans)", exact);
+        Assert.Contains("fonts/Carlito-Regular.ttf", exact); Assert.Contains("fonts/Carlito-Bold.ttf", exact);
+        Assert.Contains(".WithFontFamily(\"CFX Proof Carlito\")", exact);
         var root = TestRepository.Root; Assert.Equal(File.ReadAllText(Path.Combine(root, "tests", "mermaid-conformance", "fixtures", "ishikawa-native-depth.mmd")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX.Examples", "Assets", "Mermaid", "ishikawa-native-depth.mmd")));
     }

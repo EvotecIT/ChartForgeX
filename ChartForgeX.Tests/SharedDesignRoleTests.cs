@@ -18,8 +18,8 @@ public sealed class SharedDesignRoleTests {
     private readonly ITestOutputHelper _output;
     public SharedDesignRoleTests(ITestOutputHelper output) => _output = output;
 
-    private static readonly string[] LightOrder = { "#2A78D6", "#0F9F8C", "#D9711F", "#8055C4", "#C24FA8", "#CC4048", "#A97800", "#37813E", "#00739B", "#5F5F5F" };
-    private static readonly string[] DarkOrder = { "#4A90EA", "#22B39E", "#EE8A3A", "#AD86EB", "#E479C4", "#E15F55", "#E8B83E", "#73BE79", "#55BED9", "#B1B1B1" };
+    private static readonly string[] LightOrder = { "#2A78D6", "#0F9F8C", "#7B61E8", "#A0522D", "#C24FA8", "#5B7F00" };
+    private static readonly string[] DarkOrder = { "#3987E5", "#179C89", "#8A74EE", "#C06A42", "#C9579F", "#6F9120" };
 
     [Fact]
     public void DefaultCategoricalOrder_IsTheValidatedOrderInBothModes_AndHoldsNoStatusColour() {
@@ -39,8 +39,8 @@ public sealed class SharedDesignRoleTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light, "#737373")]
-    [InlineData(VisualThemeMode.Dark, "#929292")]
+    [InlineData(VisualThemeMode.Light, "#ABAEB2")]
+    [InlineData(VisualThemeMode.Dark, "#595B61")]
     public void OtherSlice_IsNeutralGrayAndLast_EvenWithSourceOrder(VisualThemeMode mode, string gray) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         Assert.Equal(gray, colors.Other.ToHex());
@@ -55,26 +55,26 @@ public sealed class SharedDesignRoleTests {
             var svg = chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
             var fill = XDocument.Parse(svg).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "pie-slice"
                 && (string?)e.Attribute("data-cfx-source-id") == "series-0-point-other").Attribute("fill")!.Value;
-            Assert.Contains("var(--hfx-color-chart-other,", fill, StringComparison.Ordinal);
-
+            Assert.Contains("var(--hfx-color-text-secondary,", fill, StringComparison.Ordinal);
+            Assert.Contains("var(--hfx-color-surface-card-alt,", fill, StringComparison.Ordinal);
             Assert.DoesNotContain(prepared.Diagnostics, d => d.Code == "palette.reused");
         }
     }
 
     [Fact]
-    public void EleventhAutomaticSeries_ExtendsThePaletteWithoutRepeatingPaint() {
+    public void SeventhAutomaticSeries_ReportsPaletteReuse_InsteadOfAGeneratedHue() {
         var chart = Chart.Create();
-        for (var i = 0; i < 11; i++) chart.AddLine("S" + i, new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) });
+        for (var i = 0; i < 7; i++) chart.AddLine("S" + i, new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) });
         var prepared = chart.Prepare(new VisualRenderContext());
-        var reuse = Assert.Single(prepared.Diagnostics, d => d.Code == "palette.extended");
+        var reuse = Assert.Single(prepared.Diagnostics, d => d.Code == "palette.reused");
         Assert.Equal(ChartForgeX.Diagnostics.VisualDiagnosticSeverity.Information, reuse.Severity);
         var six = Chart.Create();
-        for (var i = 0; i < 10; i++) six.AddLine("S" + i, new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) });
-        Assert.DoesNotContain(six.Prepare(new VisualRenderContext()).Diagnostics, d => d.Code == "palette.extended");
+        for (var i = 0; i < 6; i++) six.AddLine("S" + i, new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) });
+        Assert.DoesNotContain(six.Prepare(new VisualRenderContext()).Diagnostics, d => d.Code == "palette.reused");
     }
 
     [Theory]
-    [InlineData("series.1", "--hfx-color-chart-series-1")]
+    [InlineData("series.1", "--hfx-color-series-1")]
     [InlineData("surface.card", "--hfx-color-surface-card")]
     [InlineData("surface.cardAlt", "--hfx-color-surface-card-alt")]
     [InlineData("surface.line", "--hfx-color-surface-line")]
@@ -90,8 +90,8 @@ public sealed class SharedDesignRoleTests {
     public void SharedRoles_WriteHfxPropertiesWithTheThemeAsFallback_AndFontsInheritThePage() {
         var chart = Chart.Create().AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2)).WithTitle("Roles");
         var svg = chart.Prepare(new VisualRenderContext()).ToSvg(new VisualSvgOptions("roles").WithSharedDesignRoles());
-        Assert.Contains("var(--hfx-color-chart-series-1, #2A78D6)", svg, StringComparison.Ordinal);
-        Assert.Contains("var(--hfx-color-chart-series-2, #0F9F8C)", svg, StringComparison.Ordinal);
+        Assert.Contains("var(--hfx-color-series-1, #2A78D6)", svg, StringComparison.Ordinal);
+        Assert.Contains("var(--hfx-color-series-2, #0F9F8C)", svg, StringComparison.Ordinal);
         Assert.Contains("var(--hfx-color-text-primary, ", svg, StringComparison.Ordinal);
         Assert.Contains("font-family=\"var(--hfx-font-sans, inherit)\"", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("font-size=\"inherit\"", svg, StringComparison.Ordinal);
@@ -101,7 +101,7 @@ public sealed class SharedDesignRoleTests {
     }
 
     [Fact]
-    public void RepeatedCustomSlotsGetDistinctAutomaticPaint_AndARampColourKeepsItsSeriesRole() {
+    public void EqualHexInTwoSlots_KeepsEachSlotsProperty_AndASeriesEqualToARampStepKeepsItsSeriesRole() {
         var twin = ChartColor.FromHex("#336699");
         var tokens = VisualDesignTokens.GraphiteLight();
         tokens.Palette = new[] { twin, ChartColor.FromHex("#0F9F8C"), twin };
@@ -111,14 +111,13 @@ public sealed class SharedDesignRoleTests {
         // Bars and legend swatches draw series in order; by colour alone the third would name slot 1.
         var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") is "bar" or "legend-swatch")
             .Select(e => (string)e.Attribute("fill")!).ToArray();
-        Assert.Contains("var(--hfx-color-chart-series-1, #336699)", fills);
-        Assert.Contains("var(--hfx-color-chart-series-2, #0F9F8C)", fills);
-        Assert.Contains(fills, fill => fill.Contains("color-mix(", StringComparison.Ordinal) && fill.Contains("var(--hfx-color-chart-series-3, #336699)", StringComparison.Ordinal));
+        Assert.Contains("var(--hfx-color-series-1, #336699)", fills);
+        Assert.Contains("var(--hfx-color-series-2, #0F9F8C)", fills);
+        Assert.Contains("var(--hfx-color-series-3, #336699)", fills);
         Assert.Equal(fills.Count(fill => fill.Contains("series-1,", StringComparison.Ordinal)), fills.Count(fill => fill.Contains("series-3,", StringComparison.Ordinal)));
-        // A caller can use a ramp step as a series colour without losing the series role.
-        var rampTheme = VisualTheme.Graphite().WithPalette(VisualTheme.Graphite().Resolve(VisualThemeMode.Light).SequentialRamp[2]);
-        var graphite = Chart.Create().WithTheme(rampTheme).AddBar("A", Points(1, 2)).WithSvgColorVariables(SvgColorVariables.SharedRoles(rampTheme)).ToSvg();
-        Assert.Contains("var(--hfx-color-chart-series-1, " + rampTheme.Resolve(VisualThemeMode.Light).Palette[0].ToHex() + ")", graphite, StringComparison.Ordinal);
+        // Graphite light series 1 equals sequential step 3: the bar still names the series role, the ramp keeps its own.
+        var graphite = Chart.Create().AddBar("A", Points(1, 2)).WithSvgColorVariables(SvgColorVariables.SharedRoles()).ToSvg();
+        Assert.Contains("var(--hfx-color-series-1, #2A78D6)", graphite, StringComparison.Ordinal);
         Assert.DoesNotContain("--hfx-ramp-sequential-3", graphite, StringComparison.Ordinal);
     }
 

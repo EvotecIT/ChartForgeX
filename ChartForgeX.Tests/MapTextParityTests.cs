@@ -14,7 +14,7 @@ public sealed class MapTextParityTests {
         var route = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "dotted-map-connector-label")
             .Descendants().Single(element => element.Name.LocalName == "text");
         Assert.Equal(family, (string?)route.Attribute("font-family"));
-        Assert.Equal("500", (string?)route.Attribute("font-weight"));
+        Assert.Equal("400", (string?)route.Attribute("font-weight"));
         Assert.Equal(Map("Arial, sans-serif").ToRgbaImage().Pixels, chart.ToRgbaImage().Pixels);
     }
 

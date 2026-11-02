@@ -82,20 +82,6 @@ public static partial class ChartExtensions {
     /// <returns>SVG markup.</returns>
     public static string ToSvg(this Chart chart, string idScope) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope ?? throw new ArgumentNullException(nameof(idScope))), chart.Options.SvgColorVariables));
 
-    /// <summary>Renders a chart with an explicit SVG export policy and optional host ID scope.</summary>
-    /// <param name="chart">The chart to render.</param>
-    /// <param name="options">The SVG policy, including any host color variables. The supplied policy is not mutated.</param>
-    /// <param name="idScope">An external host scope, converted to a deterministic SVG namespace; null retains the policy's namespace.</param>
-    /// <returns>SVG markup.</returns>
-    /// <remarks>For host-owned fonts, pass <see cref="VisualSvgOptions.WithoutProductFonts"/> and register
-    /// matching <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/> once in the host document.</remarks>
-    public static string ToSvg(this Chart chart, VisualSvgOptions options, string? idScope) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        var request = VisualExportRequest.ForChart(chart);
-        var scoped = idScope == null ? options : options.WithIdPrefix(VisualSvgOptions.NamespaceFromExternalId(idScope));
-        return chart.Prepare(request.Context).ToSvg(scoped);
-    }
-
     /// <summary>
     /// Renders a chart to a standalone HTML fragment containing inline SVG.
     /// </summary>

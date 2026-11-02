@@ -80,7 +80,7 @@ public sealed class SankeyVisualDefaultsTests {
         var source = Assert.Single(labels, label => label.Id == "series-0-node-label-Received");
         Assert.Equal(2, source.Text.Lines.Count); Assert.Equal(13, source.Text.Size); Assert.Equal(authored, source.Color);
         Assert.True(source.Text.Style.Underline); Assert.Equal(TextAlignment.Right, source.Alignment);
-        Assert.All(labels.Where(label => label != source), label => { Assert.Equal(11, label.Text.Size); Assert.Equal(TextAlignment.Left, label.Alignment); });
+        Assert.All(labels.Where(label => label != source), label => { Assert.Equal(12, label.Text.Size); Assert.Equal(TextAlignment.Left, label.Alignment); });
         Assert.Equal(5, prepared.Regions.Count(region => region.Role == "sankey-node"));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "sankey.label-overflow");
         // Outlined by default: no caption boxes, and every caption stays inside the padded frame.
@@ -99,7 +99,7 @@ public sealed class SankeyVisualDefaultsTests {
         Assert.Contains(prepared.Regions, region => region.Role == "sankey-node" && region.Label == name + " 100");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "sankey.label-overflow");
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "sankey-node-label"),
-            text => Assert.Equal(11, text.Text.Size));
+            text => Assert.Equal(12, text.Text.Size));
     }
 
     private static Chart Flow() => Chart.Create().AddSankey("Requests", new[] { new ChartNode("Automatic", "Automatic"), new ChartNode("Completed", "Completed"), new ChartNode("Manual", "Manual") }, new[] {

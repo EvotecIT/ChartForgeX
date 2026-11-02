@@ -48,12 +48,12 @@ public sealed class MermaidGalleryTypographyTests {
                     Assert.Equal(expected, actual);
                     Assert.Equal(first.Artifacts[name].Png, second.Artifacts[name].Png);
                     if (svg.Descendants().Any(element => element.Name.LocalName == "text"))
-                        Assert.Contains(svg.Descendants().Attributes("font-family"), attribute => attribute.Value.Split(',')[0].Trim().Trim('\'', '"') == "Archivo");
+                        Assert.Contains(svg.Descendants().Attributes("font-family"), attribute => attribute.Value.Split(',')[0].Trim().Trim('\'', '"') == "CFX Proof Carlito");
                     else
                         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-native-text-ink") == "true"
                             && element.Descendants().Any(child => child.Name.LocalName == "use"));
                     Assert.Contains("@font-face", html, StringComparison.Ordinal);
-                    Assert.Contains("data:font/woff2;base64,", html, StringComparison.Ordinal);
+                    Assert.Contains("data:font/ttf;base64,", html, StringComparison.Ordinal);
                 }
             }
         } finally {
@@ -116,9 +116,7 @@ public sealed class MermaidGalleryTypographyTests {
         foreach (var family in new[] { "Calibri", "Carlito", "Segoe UI", "Arial", "Inter", "system-ui", "sans-serif" })
             foreach (var weight in new[] { 400, 600, 700 }) FontRegistry.Register(family, path, weight);
         const string control = "classDiagram\ndirection RL\nService --> Store : writes\nnote for Service \"Requests: Service --> Store\"\n";
-        var rendered = MermaidRenderer.Render(control, new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { FontFamily = "Arial" }
-        });
+        var rendered = MermaidRenderer.Render(control);
         Assert.False(rendered.HasErrors);
         var unpinnedWidth = double.Parse(XDocument.Parse(rendered.Artifact!.ToSvg()).Root!.Attribute("width")!.Value, CultureInfo.InvariantCulture);
 

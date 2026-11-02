@@ -70,9 +70,8 @@ internal static partial class VisualRadialProgressCompiler {
             var format = _percentage ? ChartValueFormat.Percentages(_format!, values.Concat(new[] { values.Average() }).Select(number => number / 100)) : _format;
             var value = readings == null ? _ordinaryAverage : format!.Format(_percentage ? values.Average() / 100 : values.Average());
             if (_authored.Length == 1 && _authored[0] != null) value = _authored[0]!;
-            var typography = _context.Theme.Typography;
-            var style = _text.Style(_colors.Foreground, typography.CenterSize(_outer), typography.CenterValueWeight);
-            var captionStyle = _text.Style(_colors.MutedForeground, typography.CenterCaptionSize, typography.TickWeight);
+            var style = _text.Style(_colors.Foreground, _context.Theme.Typography.CenterValueSize, 700);
+            var captionStyle = _text.Style(_colors.MutedForeground, _context.Theme.Typography.DataLabelSize);
             var requested = _showCenter ? RequestedCenterRadius(builder, _context, value, _caption, style, captionStyle,
                 captured ? _text.Face(style) : null, captured ? _text.Face(captionStyle) : null) : 0;
             var layout = ProgressRingLayout.Create(_outer, values.Length, _strokeScale, requested);
@@ -103,6 +102,8 @@ internal static partial class VisualRadialProgressCompiler {
             builder.Ellipse(_cx, _cy, layout.CenterRadius, layout.CenterRadius, _colors.Surface, _colors.Border, role: "progress-ring-center",
                 paint: new VisualScenePaintBinding(SvgPaint.Of(_colors.Surface, SvgColorRole.Surface), SvgPaint.Of(_colors.Border, SvgColorRole.Surface)));
             if (!_showCenter) return;
+            style = _text.Style(_colors.Foreground, Math.Min(_context.Theme.Typography.CenterValueSize, Math.Max(.1, layout.CenterRadius * CenterFontSizePerRadius)), 700);
+            captionStyle = _text.Style(_colors.MutedForeground, Math.Min(_context.Theme.Typography.DataLabelSize, Math.Max(.1, layout.CenterRadius * CenterFontSizePerRadius)));
             Center(builder, _context, _cx, _cy, layout.CenterRadius, value, _caption, style, captionStyle, "progress-ring",
                 captured ? _text.Face(style) : null, captured ? _text.Face(captionStyle) : null);
         }

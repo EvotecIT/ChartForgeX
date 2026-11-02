@@ -28,9 +28,9 @@ internal static class VisualRadialPrimitives {
         builder.Ellipse(cx + Math.Cos(start + sweep) * radius, cy + Math.Sin(start + sweep) * radius, width / 2, width / 2, color, role: role + "-cap", paint: paint.HasValue ? VisualChartPaint.Fill(paint.Value) : null);
     }
 
-    internal static TextStyle Style(Chart chart, VisualRenderContext context, ChartColor color, double size, int? weight = null, int point = -1, bool ticks = false) {
+    internal static TextStyle Style(Chart chart, VisualRenderContext context, ChartColor color, double size, int weight = 400, int point = -1, bool ticks = false) {
         var fallback = new TextStyle { Font = context.Font, Color = color, FontSize = size };
-        fallback.Font.Weight = weight ?? (ticks ? context.Theme.Typography.TickWeight : context.Theme.Typography.DataLabelWeight);
+        fallback.Font.Weight = weight;
         if (ticks) return chart.Options.TickLabelStyle.Resolve(fallback);
         var style = chart.Series[0].DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(fallback));
         if (point >= 0 && point < chart.Series[0].PointDataLabelStyles.Count && chart.Series[0].PointDataLabelStyles[point] != null)

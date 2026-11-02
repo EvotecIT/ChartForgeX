@@ -24,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
             if (total.Value == 0) continue;
             var text = ChartNumericFormatter.FormatValue(chart.Options, total.Value);
             var style = chart.Options.DataLabelStyle.Resolve(new TextStyle {
-                Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+                Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
             });
             captions.Add(new VerticalStackCaption(total, text, style, builder.MeasureText(text, style)));
         }
@@ -65,21 +65,6 @@ internal static partial class VisualCartesianCompiler {
             var anchor = new ChartPoint(center, mapper.Y(value));
             var text = caption.Text;
             var style = caption.Style;
-            var metrics = caption.Metrics;
-            var availableWidth = Math.Max(0, layout.CaptionWidth - 2);
-            if (!chart.Options.DataLabelStyle.FontSize.HasValue && style.EffectiveFontSize <= VisualTextFitting.MaximumOrdinaryFontSize
-                && metrics.Width > availableWidth) {
-                // Adjacent stack groups share a caption row. Fit automatic totals to their real stride,
-                // keeping the ordinary readability floor and any explicitly authored size intact.
-                var fitted = style.Clone();
-                var minimum = Math.Min(style.FontSize, VisualTextFitting.MinimumOrdinaryFontSize * style.FontSize / style.EffectiveFontSize);
-                fitted.FontSize = ChartTextFitting.FitFontSize(minimum, style.FontSize, size => {
-                    fitted.FontSize = size;
-                    return builder.MeasureText(text, fitted).Width <= availableWidth;
-                });
-                var fittedMetrics = builder.MeasureText(text, fitted);
-                if (fittedMetrics.Width <= availableWidth) { style = fitted; metrics = fittedMetrics; }
-            }
             var displayed = TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture);
             var id = "stack-total-" + total.Axis.ToString().ToLowerInvariant() + "-" + Number(ordinal++);
             builder.AddRegion(new VisualSemanticRegion(id, "stack-total", new ChartRect(anchor.X, anchor.Y, 0, 0), displayed));
@@ -92,7 +77,7 @@ internal static partial class VisualCartesianCompiler {
                 new LabelCandidate(0, positive ? -context.Theme.Spacing : context.Theme.Spacing, .5, positive ? 1 : 0),
                 new LabelCandidate(right - anchor.X + context.Theme.Spacing, 0, 0, positive ? 0 : 1),
                 new LabelCandidate(left - anchor.X - context.Theme.Spacing, 0, 1, positive ? 0 : 1)
-            }, priority: 1) { AssociatedMarkId = id, MeasuredSize = metrics, Fallback = LabelFallbackRule.Drop });
+            }, priority: 1) { AssociatedMarkId = id, MeasuredSize = caption.Metrics, Fallback = LabelFallbackRule.Drop });
         }
     }
 }

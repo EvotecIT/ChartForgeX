@@ -139,7 +139,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
         var marks = scene.Nodes.OfType<VisualSceneSlice>().Where(mark => mark.Role == "donut-slice").ToArray();
         Assert.Equal(new[] { "series-0-point-1", "series-0-point-2", "series-0-point-0" }, marks.Select(mark => mark.Id));
         Assert.Equal(-Math.PI / 2, marks[0].Start, 8);
-        Assert.Equal(new[] { colors.Palette[0], colors.Palette[1], authored }, marks.Select(mark => mark.Fill!.Value));
+        Assert.Equal(new[] { colors.Palette[1], colors.Palette[2], authored }, marks.Select(mark => mark.Fill!.Value));
         Assert.NotEqual(marks[0].Cx, marks[2].Cx);
         Assert.Equal(points, chart.Series[0].Points);
         var legend = VisualRadialCompiler.LegendEntries(chart, colors);

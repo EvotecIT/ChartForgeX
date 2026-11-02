@@ -20,33 +20,26 @@ ChartForgeX reads the shared design roles CanopyX and HtmlForgeX already use, wi
 | Text, secondary (ticks, legends) | `--hfx-color-text-secondary` | host | host |
 | Accent, focus | `--hfx-color-accent-base`; focus uses the host's `--hfx-color-focus-ring` | host | host |
 | Font | `--hfx-font-sans` | inherit | inherit |
-| Chart series 1–10 | `--hfx-color-chart-series-1..10` | see below | see below |
-| Aggregated Other | `--hfx-color-chart-other` | `#737373` | `#929292` |
+| Series 1–6 | `--hfx-color-series-1..6` | see below | see below |
 | Sequential ramp | `--hfx-ramp-sequential-1..5` | light → dark | its own dark steps |
-| Diverging | `--hfx-ramp-diverging-*` | orange ↔ gray ↔ blue | same roles |
+| Diverging | `--hfx-ramp-diverging-*` | red ↔ gray ↔ blue | same roles |
 | Status | `--hfx-color-severity-*`, `--hfx-color-outcome-*`, `--hfx-color-state-*` (fill and ink), and `--hfx-color-status-positive/warning/negative/disabled` | reserved | reserved |
 
-**Categorical order.** The shared v2 token source supplies ten ordered chart fills. Orange occupies slot 3, red replaces the second blue in slot 6, and gold replaces the muddy olive. UI series inks keep their separate contrast requirements and variables.
+**Categorical order (validated).** Today series 1 and 6 are both blue, and in dark mode they are indistinguishable (normal-vision ΔE 3.5, a hard fail). The new order keeps the first three slots, replaces the second blue with clay, and is the only arrangement tested that passes every check in both modes, including the wrap from the last slot back to the first (donuts):
 
 | Slot | Light | Dark |
 |---|---|---|
-| 1 blue | `#2a78d6` | `#4a90ea` |
-| 2 teal | `#0f9f8c` | `#22b39e` |
-| 3 orange | `#d9711f` | `#ee8a3a` |
-| 4 violet | `#8055c4` | `#ad86eb` |
-| 5 magenta | `#c24fa8` | `#e479c4` |
-| 6 red | `#cc4048` | `#f47479` |
-| 7 gold | `#a97800` | `#e8b83e` |
-| 8 green | `#37813e` | `#73be79` |
-| 9 cyan | `#1685a3` | `#55bed9` |
-| 10 charcoal | `#5f5f5f` | `#b1b1b1` |
-| Other | `#737373` | `#929292` |
+| 1 blue | `#2a78d6` | `#3987e5` |
+| 2 teal | `#0f9f8c` | `#179c89` |
+| 3 purple | `#7b61e8` | `#8a74ee` |
+| 4 clay (new) | `#a0522d` | `#c06a42` |
+| 5 magenta (was 4) | `#c24fa8` | `#c9579f` |
+| 6 green (was 5) | `#5b7f00` | `#6f9120` |
+| Other | `--hfx-color-text-secondary` over the plot surface, strengthened from 45% when needed for 3:1 contrast | same |
 
-Every base fill meets 3:1 against the Graphite card and plot surfaces in both modes. Labels choose black or white against the actual cell fill; each base fill has an ink choice above 4.5:1. These contrast checks do not establish universal colour-vision distinction: retain labels, keys and other encodings when colour conveys identity.
+Validated with the dataviz palette validator: lightness band, chroma floor, adjacent CVD separation (worst ΔE 10.6 light / 12.6 dark), normal-vision floor (≥15.9), contrast ≥3:1 on both surfaces. A 7th series is never generated: it folds into "Other" (always gray, always last) or the chart becomes small multiples. Pie and donut fold automatically (at most `MaximumPieSlices`, 6 by default, the last being Other). Other families do not regroup data: when more series or slices take automatic colours than the palette has slots, preparation reports an informational `palette.reused` diagnostic, and the host groups the rest into Other, colours them explicitly, or switches to small multiples.
 
-Automatic series colours are distinct within a chart. Beyond ten base slots, the allocator derives distinct shades and reports `palette.extended`; this does not promise an unlimited number of hue families. Explicit colours remain explicit. Pie and donut show at most `MaximumPieSlices` (6 by default), rank categories by descending value, and fold the rest into neutral Other, always last. Hierarchical child segments inherit their parent's hue through a bounded lightness offset.
-
-In code: `VisualSvgOptions.WithSharedDesignRoles(theme, mode)` (or `SvgColorVariables.SharedRoles(theme, mode)` with `Chart.WithSvgColorVariables`) writes these roles with the theme's values as fallbacks and `var(--hfx-font-sans, inherit)` for text. CanopyX also defines the shorter aliases `--hfx-color-text` and `--hfx-color-accent`; ChartForgeX writes the canonical names both hosts define. Series paints retain their chart slot through `--hfx-color-chart-series-n`; additional shades retain the corresponding host binding. [Shared design roles](embedding.md#shared-design-roles) has an example.
+In code: `VisualSvgOptions.WithSharedDesignRoles(theme, mode)` (or `SvgColorVariables.SharedRoles(theme, mode)` with `Chart.WithSvgColorVariables`) writes these roles with the theme's values as fallbacks and `var(--hfx-font-sans, inherit)` for text. CanopyX also defines the shorter aliases `--hfx-color-text` and `--hfx-color-accent`; ChartForgeX writes the canonical names both hosts define. Series paints keep their slot, so two slots with the same colour still name their own `--hfx-color-series-n`. [Shared design roles](embedding.md#shared-design-roles) has an example.
 
 Rules: colour follows the entity, never its rank (a filter never repaints survivors); status colours appear only on status-encoded data and always with a label or icon (no amber totals, no red bullet values); text never wears a series colour.
 
@@ -60,7 +53,7 @@ Ranked by impact from the critique.
 4. **Bars and columns.** Band fill ≤ 62%, thickness ≤ 24px on dense charts; 4px radius on the data end only, square at the baseline; 2px surface-colour gap between stacked segments and touching bars. Never a stroke around a mark.
 5. **Lines and points.** Lines 2px, round joins. Markers ≥ 8px with a 2px surface ring. No lone dot on the last point unless it's labelled.
 6. **Areas.** Series hue at ~12% (light) / ~18% (dark) under a 2px line.
-7. **Type scale.** Archivo is shared by charts and hosts, with bundled native and browser faces. Wide/compact titles use 17/15px at 600; subtitles 13/12px at 400; ticks 12/11px at 400; legends 12.5/12px at 400, with values at 500. Compact means below 480 logical pixels. Axis titles and data labels use 12/11px at 500; text below the 10px floor is hidden with complete semantic content retained. Numeric axes, labels and tables use tabular figures. Use sentence or title case, never all-caps ticks, and one number format per chart. See [product typography](v2/typography.md#chart-roles-in-the-shared-type-ramp) for the full role scale and explicit-size precedence.
+7. **Type scale.** Title 16/600; subtitle 13/400 secondary; axis ticks and legends 12/400 secondary, tabular numbers on axes and tables; sentence or title case, never all-caps ticks. Fonts inherit from the page. One number format per chart; values never show more precision than the data.
 8. **Direct labels before legends.** Label line ends, slope ends and the one bar the story is about; a legend for ≥2 series, never repeating row labels. Labels that don't fit move outside the mark or into the tooltip; nothing is clipped.
 9. **Sequential and missing data.** Sequential ramps start near the surface; the legend has a title and units; missing data has one library-wide look (hatched 45°, secondary ink) that is visibly different from zero.
 10. **Density by row count.** Bullet, progress, Gantt, state and strip rows get a fixed 28–40px slot; chart height follows row count instead of stretching to the canvas. Group headers sit 8px above their first row.
@@ -74,7 +67,7 @@ In code, each rule has one owner that every family uses, so a new family inherit
 | 3 Outer padding | `ChartRange.ApplyCategoryPadding` gives lines, areas and strips over named categories half-band padding; marker padding includes the 2px ring. |
 | 4 Bars | `ChartMarkSurface.BandFill`, `BarCorners`/`VisualCorners` (data-end radius on a scene rectangle, drawn the same in SVG and PNG), `StackSegmentBounds` (2px surface gap), `MaximumThickness` (stacks at most 24px unless authored). |
 | 5–6 Lines, markers, areas | Theme defaults (2px line, 8px marker), the marker surface ring in `VisualMarkerScene`, `VisualTheme.AreaWash(mode)`; no automatic last-point dot unless labelled. |
-| 7 Type | The embedded `typography.chart` roles resolve before measurement; Archivo and tabular figures match browser/native text. Explicit sizes retain precedence above the 10px floor. Once one category caption wraps, every two-word caption wraps the same way. |
+| 7 Type | Typography defaults (16/13/12/12), title weight 600, secondary legend ink, `tabular-nums` on axis ticks; once one category caption wraps, every two-word caption wraps the same way. |
 | 8 Labels | `ChartLegendVisibility.RepeatsRowLabels` / `UsesDirectSeriesLabels`, slope end labels, dumbbell Before/After legend (`ChartDumbbellOptions.StartLabel`/`EndLabel`). |
 | 9 Missing data | `ChartMissingData` paints the one hatched no-data look (heatmap, calendar, treemap, legend keys); sequential heatmaps span their observed range. |
 | 10 Density, status | `ChartRowDensity` (28–40px rows, rows stack from the top) for bullet, progress, Gantt, timeline and state timeline; totals, gauge arcs, bullet values and neutral flow nodes no longer wear status colours. |

@@ -35,7 +35,7 @@ public sealed class TreeLabelReadabilityTests {
         if (height == 700) Assert.Equal(22, labels.Length);
         else Assert.True(labels.Length >= 4, "The root and all three group captions have independent vertical space.");
         foreach (var label in labels) {
-            Assert.Equal(width < 480 ? 11 : 12, label.Text.Size);
+            Assert.Equal(12, label.Text.Size);
             var bounds = TextBounds(label);
             Assert.Single(prepared.Regions, region => region.Role == "tree-node" && LabelPlacementService.Contains(region.Bounds, bounds));
         }
@@ -50,14 +50,14 @@ public sealed class TreeLabelReadabilityTests {
         var ink = ChartColor.FromHex("#9B164B"); var fill = ChartColor.FromHex("#27A5B1");
         chart.Series[0].WithPointColor(0, fill)
             .ConfigurePointDataLabelStyle(0, style => style.WithFontSize(14).WithColor(ink))
-            .ConfigurePointDataLabelStyle(1, style => style.WithFontSize(10));
+            .ConfigurePointDataLabelStyle(1, style => style.WithFontSize(8));
         var prepared = chart.Prepare(context); var document = XDocument.Parse(prepared.ToSvg());
         var targets = Targets(document); var root = targets.Single(element => (string?)element.Attribute("data-cfx-node") == "root");
         var group = targets.Single(element => (string?)element.Attribute("data-cfx-node") == "G0");
         var rootText = Assert.Single(Captions(prepared), text => LabelPlacementService.Contains(Region(prepared, root).Bounds, TextBounds(text)));
         var groupText = Assert.Single(Captions(prepared), text => LabelPlacementService.Contains(Region(prepared, group).Bounds, TextBounds(text)));
         Assert.Equal(14, rootText.Text.Size); Assert.Equal(ink, rootText.Color);
-        Assert.Equal(10, groupText.Text.Size);
+        Assert.Equal(8, groupText.Text.Size);
         Assert.Equal(fill.ToCss(), (string?)root.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "tree-node-mark").Attribute("fill"));
 
         chart.WithDataLabels(false);

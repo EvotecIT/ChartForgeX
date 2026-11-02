@@ -86,7 +86,7 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     [Theory]
     [InlineData(false, 12, ChartLabelDensity.Auto)]
     [InlineData(true, 12, ChartLabelDensity.Auto)]
-    [InlineData(false, 10, ChartLabelDensity.Auto)]
+    [InlineData(false, 6, ChartLabelDensity.Auto)]
     [InlineData(false, 12, ChartLabelDensity.Dense)]
     public void ReversalAndExplicitOrdinaryFontKeepTheirCategoryAnchors(bool reversed, double fontSize, ChartLabelDensity density) {
         var chart = Create(ChartSeriesKind.Bar, 390).WithXAxisLabelDensity(density).ConfigureXAxis(axis => axis.Reversed = reversed)

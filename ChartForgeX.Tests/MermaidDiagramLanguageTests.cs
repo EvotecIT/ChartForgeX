@@ -72,7 +72,7 @@ public sealed class MermaidDiagramLanguageTests {
         // Compact layouts can paint a card at a larger fitted size than it was grown at; the grid width must still fit.
         var source = File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Mermaid", "er-native-captions.mmd"));
         var options = new MermaidRenderOptions { EntityRelationship = new MermaidTopologyRenderOptions { Width = width, Height = 620 },
-            Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite(), FontFamily = ChartFontStacks.ProductSans } };
+            Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite(), FontFamily = "Carlito, sans-serif" } };
         var result = MermaidRenderer.RenderParsed(new MermaidParser().Parse(source), options);
         Assert.False(result.HasErrors, string.Join("; ", result.Diagnostics.Select(item => item.Message)));
         Assert.NotEmpty(Role(XDocument.Parse(result.Artifact!.ToSvg()), "table-header-cell"));

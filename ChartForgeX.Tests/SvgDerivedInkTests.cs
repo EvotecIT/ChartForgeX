@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
@@ -9,36 +8,6 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks that one continuous-fill SVG can obtain readable ink from either host theme.</summary>
 public sealed class SvgDerivedInkTests {
-    [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void DivergingCellLabelsContrastWithActualFillsInEitherHostTheme(VisualThemeMode sourceMode) {
-        var theme = VisualTheme.Graphite();
-        Chart ChartFor(VisualThemeMode mode) => Chart.Create().WithSize(960, 240).WithTheme(theme, mode).WithDataLabels()
-            .WithHeatmapColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0))
-            .AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
-        XElement[] Cells(string svg) => XDocument.Parse(svg).Descendants()
-            .Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell").ToArray();
-        var bound = ChartFor(sourceMode).WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, sourceMode)).ToSvg();
-        var boundCells = Cells(bound);
-        Assert.Equal(7, boundCells.Length);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
-            var nativeCells = Cells(ChartFor(mode).ToSvg());
-            var variables = SvgColorVariables.SharedRoles(theme, mode).GetVariablesForSvg(bound).ToDictionary(variable => variable.Name);
-            Assert.Equal(7, nativeCells.Length);
-            for (var index = 0; index < nativeCells.Length; index++) {
-                var fill = ChartColor.Parse(nativeCells[index].Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell-shape").Attribute("fill")!.Value);
-                var nativeInk = ChartColor.Parse(nativeCells[index].Descendants().Single(element => element.Name.LocalName == "text").Attribute("fill")!.Value);
-                var paint = boundCells[index].Descendants().Single(element => element.Name.LocalName == "text").Attribute("fill")!.Value;
-                Assert.StartsWith("var(--cfx-derived-ink-", paint, StringComparison.Ordinal);
-                var reboundInk = variables[paint.Substring(4, paint.IndexOf(',') - 4)].Color;
-                Assert.Equal(nativeInk, reboundInk);
-                Assert.True(ChartColorMath.ContrastRatio(fill, nativeInk) >= 4.5, mode + " cell " + (index - 3));
-                if (mode == VisualThemeMode.Dark && index == 2) Assert.Equal(ChartColor.White, nativeInk);
-            }
-        }
-    }
-
     [Theory]
     [InlineData(.14)]
     [InlineData(.53)]

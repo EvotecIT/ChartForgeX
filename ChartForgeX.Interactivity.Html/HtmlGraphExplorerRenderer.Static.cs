@@ -46,7 +46,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var clusterMembership = BuildClusterMembership(scene, clusters);
         var markerId = SafeId(scene.Id) + "-static-arrow";
         writer.Append("<style>");
-        writer.Append(Text(HtmlGraphExplorerAssets.Style));
+        writer.Append(HtmlGraphExplorerAssets.Style);
         writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-theme-dark");
         writer.Append("\"");
@@ -66,7 +66,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteNodes(writer, scene, positions, clusterMembership, emptyIds, false, false, labeledNodeIds);
         writer.Append("</g>");
         if (stage != null) {
-            writer.Append("<text x=\"480\" y=\"542\" text-anchor=\"middle\" font-family=\"" + Text(ChartForgeX.Themes.ChartFontStacks.ProductSans) + "\" font-size=\"12\" style=\"fill:var(--cfx-color-text-muted,#475569)\">");
+            writer.Append("<text x=\"480\" y=\"542\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" style=\"fill:var(--cfx-color-text-muted,#475569)\">");
             var shownNodes = scene.Nodes.Count(node => !node.Hidden);
             var shownEdges = scene.Edges.Count(edge => !edge.Style.Hidden);
             writer.Append(shownNodes).Append(" nodes · ").Append(shownEdges).Append(" relationships shown; ");

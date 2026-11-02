@@ -11,16 +11,14 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     private const double LabelInsetLimit = 8;
 
-    /// <summary>Requests complete name rows within the existing body cap; peer spacing still bounds the actual body.</summary>
+    /// <summary>Requests only the complete name rows that fit the width; peer spacing still bounds the actual body.</summary>
     private static double LabelBodyHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, int pointIndex, double width) {
         var style = LabelStyle(chart, context, context.Theme.Resolve(context.ThemeMode).Foreground, pointIndex);
         var inset = Math.Min(LabelInsetLimit, width / 5);
         var text = HierarchyCaption(chart.Series[0], pointIndex, chart.Series[0].Nodes[pointIndex].Label);
-        var maximumLines = Math.Max(1, (int)Math.Floor(ChartVisualPrimitives.TreeNodeMaxHeight
-            / builder.MeasureText("M", style).LineHeight));
-        var displayed = ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, Math.Max(0, width - inset * 2), maximumLines,
+        var displayed = ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, Math.Max(0, width - inset * 2), 3,
             (value, _) => builder.MeasureText(value, style).Width, out var lines) ? string.Join("\n", lines) : "M";
-        return Math.Min(ChartVisualPrimitives.TreeNodeMaxHeight, builder.MeasureText(displayed, style).Height + LabelInsetLimit * 2);
+        return builder.MeasureText(displayed, style).Height + LabelInsetLimit * 2;
     }
 
     /// <summary>The body width the widest unbreakable caption word needs, including the label inset on both sides.</summary>
@@ -49,10 +47,9 @@ internal static partial class VisualHierarchyCompiler {
         if (width < 6) { Omit(); return; }
         if (!ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, width, count,
             (value, _) => builder.MeasureText(value, style).Width, out var lines)) {
-            // Centered captions use the padding left after their measured rows, rather than
-            // rejecting a complete row to preserve a fixed minimum inset inside the capped body.
-            var compactHeight = center ? bounds.Height : bounds.Height - Math.Min(2, inset) * 2;
-            var compactCount = Math.Min(maximumLines, (int)Math.Floor((compactHeight + .000001) / metrics.LineHeight));
+            // The body cap or peer spacing can leave slightly less than a padded row. Yield vertical
+            // padding before losing a complete caption; the centered text still clears the mark.
+            var compactCount = Math.Min(maximumLines, (int)Math.Floor((bounds.Height - Math.Min(2, inset) * 2 + .000001) / metrics.LineHeight));
             if (compactCount > count && ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, width, compactCount,
                 (value, _) => builder.MeasureText(value, style).Width, out lines)) count = compactCount;
             else {

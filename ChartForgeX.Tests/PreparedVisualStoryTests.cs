@@ -2,55 +2,11 @@ using ChartForgeX.Themes;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
-using System.Text;
-using System.Xml.Linq;
-using ChartForgeX.Accessibility;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedVisualStoryTests {
-    [Fact]
-    public void AnimatedSvgSharesCompleteRepeatedFramesWithoutLosingSampledInstances() {
-        var story = VisualStory.Create("Repeated font-bearing frames").WithSize(480, 320)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily("Archivo"));
-        story.Scene("result", "Result", 2).Panel("result", new VisualStoryTextSurface("Ready to publish"));
-        story.Outcome("ready", "Ready", "result");
-        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 1));
-        var svg = prepared.ToAnimatedSvg(new VisualStoryFrameOptions(2), "shared-frames");
-        var document = XDocument.Parse(svg);
-        XNamespace ns = "http://www.w3.org/2000/svg";
-        var frames = document.Root!.Elements(ns + "g").Where(element => element.Attribute("data-cfx-frame-time") != null).ToArray();
-        Assert.Equal(6, frames.Length);
-        Assert.All(frames, frame => Assert.Equal(ns + "use", Assert.Single(frame.Elements()).Name));
-        var resources = document.Descendants(ns + "image").ToDictionary(element => (string)element.Attribute("id")!);
-        Assert.InRange(resources.Count, 1, frames.Length - 1);
-        Assert.All(resources.Values, image => Assert.Equal(ns + "defs", image.Parent!.Name));
-        foreach (var frame in frames) {
-            Assert.Equal("result", (string?)frame.Attribute("data-cfx-scene"));
-            Assert.Equal("Result", (string?)frame.Attribute("data-cfx-scene-title"));
-            var reference = Assert.Single(frame.Elements());
-            Assert.Equal(ns + "use", reference.Name);
-            var href = (string)reference.Attribute("href")!;
-            Assert.StartsWith("#" + (string)document.Root.Attribute("id")!, href, StringComparison.Ordinal);
-            var image = resources[href.Substring(1)];
-            Assert.Equal("480", (string?)image.Attribute("width"));
-            Assert.Equal("320", (string?)image.Attribute("height"));
-            var payload = (string)image.Attribute("href")!;
-            const string prefix = "data:image/svg+xml;base64,";
-            Assert.StartsWith(prefix, payload, StringComparison.Ordinal);
-            var timestamp = frame == frames[^1] ? prepared.ContentDuration : TimeSpan.FromSeconds(double.Parse(
-                (string)frame.Attribute("data-cfx-frame-time")!, System.Globalization.CultureInfo.InvariantCulture));
-            var expected = prepared.PrepareFrame(timestamp).ToSvg(new VisualAccessibility { IsDecorative = true }, "story-frame");
-            Assert.Contains("@font-face", expected, StringComparison.Ordinal);
-            Assert.Contains("data:font/woff2;base64,", expected, StringComparison.Ordinal);
-            Assert.Equal(expected, Encoding.UTF8.GetString(Convert.FromBase64String(payload.Substring(prefix.Length))));
-        }
-        Assert.Contains("cfx-story-frame-last", (string)frames[^1].Attribute("class")!, StringComparison.Ordinal);
-        Assert.Contains("@media (prefers-reduced-motion:reduce)", svg, StringComparison.Ordinal);
-        Assert.Contains("@media print", svg, StringComparison.Ordinal);
-    }
-
     [Fact]
     public void ReusedSourceSurfacesAccountForTheCompletePreparedTranscript() {
         var surface = new VisualStorySourceSurface(StorySourceText.Create(new string('A', 2 * 1024 * 1024)));

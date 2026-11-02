@@ -6,7 +6,7 @@ public static class MermaidUseCaseJsonSourceExample {
         var compact = variant == "compact"; if (compact) source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);
         var result = ChartForgeX.Mermaid.MermaidRenderer.Render(source, new ChartForgeX.Mermaid.MermaidRenderOptions {
             WarningPolicy = ChartForgeX.Mermaid.MermaidWarningPolicy.Reject,
-            UseCase = new ChartForgeX.Mermaid.MermaidFlowchartRenderOptions { Width = compact ? 390 : 1000, Height = compact ? 1000 : 680, Padding = compact ? 24 : 32,
+            UseCase = new ChartForgeX.Mermaid.MermaidFlowchartRenderOptions { Width = compact ? 390 : 1000, Height = compact ? 1000 : 680,
                 Presentation = new ChartForgeX.Mermaid.MermaidPresentationOptions { FontFamily = fontFamily, ThemeMode = mode,
                     // A phone-width column keeps the table readable at its natural size and scrolls instead of shrinking strokes below 0.75 px.
                     TopologySizing = compact ? ChartForgeX.Mermaid.MermaidTopologySizing.Natural : ChartForgeX.Mermaid.MermaidTopologySizing.FixedViewport } } });

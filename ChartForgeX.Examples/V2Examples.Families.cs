@@ -166,7 +166,7 @@ public static partial class V2Examples {
             // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
             var natural = topology.WithTitle(title).WithSubtitle(subtitle)
                 .WithTheme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
-            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), natural.ToSvg());
+            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleTypography.EmbedInSvg(natural.ToSvg()));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), natural.ToPng());
             WriteThumbnail(output, model, id, title, family, mode, legend);
             width = (int)Math.Ceiling(natural.NaturalSize!.Value.Width);

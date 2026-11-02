@@ -275,8 +275,8 @@ public static class ConsumerRenderingExamples {
             timeline.AddGanttLane("Service " + index.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 new[] { new ChartGanttLaneItem(timelineStart, timelineStart.AddHours(4), "low") });
         SaveExample("timeline-dense-labels", timeline.ToSvg(), timeline.ToPng());
-        File.WriteAllText(Path.Combine(output, "index.html"), ExampleTypography.EmbedInHost("<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><link rel=icon href=\"data:,\"><title>Consumer rendering cases</title><style>body{font-size:16px;background:#ccc}article{margin:30px}img{max-width:48%;vertical-align:top}</style></head><body>" +
-            string.Join("", generatedNames.OrderBy(name => name, StringComparer.Ordinal).Select(name => "<article><h2>" + name + "</h2><img src='" + name + ".svg'><img src='" + name + ".png'></article>")) + "</body></html>"));
+        File.WriteAllText(Path.Combine(output, "index.html"), "<!doctype html><meta charset=utf-8><link rel=icon href=\"data:,\"><title>Consumer rendering cases</title><style>body{font:16px sans-serif;background:#ccc}article{margin:30px}img{max-width:48%;vertical-align:top}</style>" +
+            string.Join("", generatedNames.OrderBy(name => name, StringComparer.Ordinal).Select(name => "<article><h2>" + name + "</h2><img src='" + name + ".svg'><img src='" + name + ".png'></article>")));
     }
     private static void Save(string output, string name, string svg, byte[] png) {
         File.WriteAllText(Path.Combine(output, name + ".svg"), svg);

@@ -21,7 +21,7 @@ public sealed class AutomaticPointCaptionWrappingTests {
         var caption = Assert.Single(Captions(prepared));
         Assert.Equal(2, caption.Text.Lines.Count);
         Assert.Equal(Caption, string.Join(" ", caption.Text.Lines.Select(line => line.Text)));
-        Assert.Equal(11, caption.Text.Size);
+        Assert.Equal(12, caption.Text.Size);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
         Assert.True(caption.X >= plot.Left && caption.X + caption.Text.Metrics.Width <= plot.Right);

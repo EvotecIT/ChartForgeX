@@ -87,7 +87,7 @@ public sealed class FrameHeadingFittingTests {
         var title = Assert.Single(headings, element => element.Value == "Oversized heading");
         Assert.True((double)title.Attribute("font-size")! < 256);
         var authoredTitleRequest = Assert.Single(title.Ancestors(), element => element.Attribute("data-cfx-authored-font-request") != null);
-        Assert.Equal(request.Context.Font.Family + "|600|normal|256|", (string?)authoredTitleRequest.Attribute("data-cfx-authored-font-request"));
+        Assert.Equal(request.Context.Font.Family + "|700|normal|256|", (string?)authoredTitleRequest.Attribute("data-cfx-authored-font-request"));
         var subtitle = Assert.Single(headings, element => element.Value == "Short subtitle");
         Assert.Equal(request.Context.Theme.Typography.SubtitleSize, (double)subtitle.Attribute("font-size")!, 7);
     }

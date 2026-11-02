@@ -36,8 +36,7 @@ public sealed class MermaidRailroadNativeRenderingTests {
         var xml = XDocument.Parse(svg); var image = RasterImageDecoder.Decode(png);
         Assert.Equal(Number(xml.Root!, "width"), image.Width); Assert.Equal(Number(xml.Root!, "height"), image.Height);
         Assert.Equal(image.Width, artifact.NaturalSize!.Value.Width); Assert.Equal(image.Height, artifact.NaturalSize.Value.Height);
-        Assert.True(image.Width >= width);
-        Assert.Contains(BrowserProofFonts.Family, xml.Descendants().Attributes("font-family").Select(attribute => attribute.Value));
+        Assert.True(image.Width >= width); Assert.Contains(BrowserProofFonts.Family, svg, StringComparison.Ordinal);
         Assert.Equal(2, xml.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "railroad-rule"));
         Assert.DoesNotContain(xml.Descendants(), node => node.Name.LocalName is "script" or "foreignObject");
         Save(dialect, dark, width, svg, png);

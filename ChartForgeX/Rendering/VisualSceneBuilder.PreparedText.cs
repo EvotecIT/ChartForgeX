@@ -17,7 +17,6 @@ internal sealed partial class VisualSceneBuilder {
         if (text == null) throw new ArgumentNullException(nameof(text));
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
         if (!Enum.IsDefined(typeof(TextAlignment), alignment)) throw new ArgumentOutOfRangeException(nameof(alignment));
-        if (text.Style.EffectiveFontSize < MinimumTextSize) return;
         _nodes.Add(new VisualSceneText(text, x, baseline, color, alignment, role, id, paint));
         if (includeDecorations) {
             var style = text.Style.Clone(); style.Alignment = alignment; style.Color = color;

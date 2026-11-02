@@ -12,9 +12,6 @@ public sealed partial class VisualDesignTokens {
     private VisualStatusTokens _status = new();
     private ChartColor[]? _sequentialRamp;
 
-    /// <summary>Gets or sets optional tooltip and focus roles; null derives them from this palette.</summary>
-    public VisualChromeTokens? Chrome { get; set; }
-
     /// <summary>Gets or sets the page or canvas background color.</summary>
     public ChartColor Background { get; set; } = ChartColor.FromHex("#FFFFFF");
     /// <summary>Gets or sets the recessed surface color.</summary>
@@ -90,9 +87,6 @@ public sealed partial class VisualDesignTokens {
         PlotBorder = copy.PlotBorder; Muted = copy.Muted; Grid = copy.Grid; Axis = copy.Axis;
         Info = copy.Info; Quiet = copy.Quiet; QuietLine = copy.QuietLine;
         Neutral = copy.Neutral; Neutral2 = copy.Neutral2; Neutral3 = copy.Neutral3;
-        Other = copy.Other;
-        ChildLightnessOffset = copy.ChildLightnessOffset;
-        Chrome = copy.Chrome;
     }
 
     /// <summary>Creates an independent copy.</summary>
@@ -113,9 +107,6 @@ public sealed partial class VisualDesignTokens {
         Status = Status.Clone(),
         SequentialRamp = SequentialRamp,
         DivergingRamp = DivergingRamp,
-        Chrome = Chrome,
-        Other = Other,
-        ChildLightnessOffset = ChildLightnessOffset,
         PlotBorder = PlotBorder, Muted = Muted, Grid = Grid, Axis = Axis,
         Info = Info, Quiet = Quiet, QuietLine = QuietLine, Neutral = Neutral, Neutral2 = Neutral2, Neutral3 = Neutral3
     };

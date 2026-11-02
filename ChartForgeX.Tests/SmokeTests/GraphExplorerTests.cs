@@ -349,8 +349,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains(".cfx-graph-stage", StringComparison.Ordinal) && html.Contains(".cfx-graph-svg", StringComparison.Ordinal) && html.Split(new[] { "aspect-ratio: 12 / 7" }, StringSplitOptions.None).Length >= 3 && !html.Contains("min-height:420px", StringComparison.Ordinal), "Graph explorer CSS should preserve one SVG scene aspect ratio across the stage and SVG surface so pointer mapping does not drift under narrow embeds.");
         Assert(!html.Contains("rel=\"stylesheet\"", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should not reference external stylesheets.");
         Assert(!html.Contains("@import", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should not import external stylesheets.");
-        var resourceMarkup = ResourceMarkup(html);
-        Assert(!resourceMarkup.Contains("http://", StringComparison.OrdinalIgnoreCase) && !resourceMarkup.Contains("https://", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should remain self-contained.");
+        Assert(!html.Contains("http://", StringComparison.OrdinalIgnoreCase) && !html.Contains("https://", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should remain self-contained.");
 
         var fragment = scene.ToGraphExplorerHtmlFragment(options => options.ScriptNonce = "fragment-nonce");
         Assert(fragment.Contains("data-cfx-graph-assets=\"true\"", StringComparison.Ordinal), "Graph explorer fragments should include embeddable CSS assets.");

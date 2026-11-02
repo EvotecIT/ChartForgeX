@@ -1,137 +1,22 @@
 {
-  "contractVersion": 2,
-  "version": "1.6.0",
-  "name": "Evotec palette v2 (Graphite)",
-  "decision": "Palette and typography review, 2026-11-02",
-  "source": "HtmlForgeX HtmlForgeX/Resources/Tokens/evotec.tokens.json 1.6.0 (generated, do not edit)",
+  "name": "Evotec palette v1 (Graphite)",
+  "decision": "D14, owner, 2026-09-26",
+  "source": "HtmlForgeX HtmlForgeX/Resources/Tokens/evotec.tokens.json 1.1.0 (generated, do not edit)",
   "notes": [
-    "Semantic roles and status follow the selected design style. Chart data fills use the shared categorical palette; text and control inks retain their independent contrast requirements."
+    "Severity has a fill (marks, bars, dots) and an ink (text on surfaces and tinted chips). Every ink is at least 4.5:1 on the card surface and on a 13% tint of its fill.",
+    "Outcome 'fail' has no colour of its own: a failed result is coloured by its severity.",
+    "Operational state maps onto the same hues: up=outcome.pass, degraded=severity.medium, down=severity.critical, recovering=severity.low, maintenance=state.maintenance, notObservable and unknown=outcome.neutral with hatching.",
+    "Series colours are used in this fixed order and never for status. The design language (docs/design-language.md) replaced the second blue in slot 6 with clay in slot 4. Past six series, part-to-whole charts fold the rest into a neutral Other (text.secondary at 45% over the card surface, always last); other charts switch to small multiples. Validated against the Graphite card surfaces: worst adjacent CVD delta E 10.6 (light, surface #ffffff) and 12.6 (dark, surface #16181c); worst adjacent normal-vision delta E 15.9 (light) and 16.1 (dark); lightness band, chroma and 3:1 contrast pass in both modes.",
+    "Ramps (optional in consumers): arrays run from weakest to strongest magnitude. 'sequential' is one hue (blue) for magnitude and counts, with no status meaning. 'diverging' has a negative arm (red), a neutral midpoint and a positive arm (blue), each arm weakest to strongest. Every ramp passed the ordinal checks (monotone lightness, adjacent delta L >= 0.06, weakest step >= 2:1 on the card surface, single hue) in its mode."
   ],
-  "typography": {
-    "family": {
-      "sans": "Archivo, \u0022Segoe UI Variable Text\u0022, \u0022Segoe UI\u0022, system-ui, -apple-system, sans-serif",
-      "display": "Archivo, \u0022Segoe UI Variable Text\u0022, \u0022Segoe UI\u0022, system-ui, -apple-system, sans-serif",
-      "mono": "\u0022JetBrains Mono\u0022, \u0022Cascadia Mono\u0022, Consolas, monospace"
-    },
-    "numeric": "tabular-nums",
-    "ramp": {
-      "caption": {
-        "size": "0.75rem",
-        "lineHeight": "1.35",
-        "weight": "500"
-      },
-      "small": {
-        "size": "0.8125rem",
-        "lineHeight": "1.4",
-        "weight": "400"
-      },
-      "body": {
-        "size": "0.875rem",
-        "lineHeight": "1.5",
-        "weight": "400"
-      },
-      "subtitle": {
-        "size": "1rem",
-        "lineHeight": "1.4",
-        "weight": "600"
-      },
-      "title": {
-        "size": "1.25rem",
-        "lineHeight": "1.3",
-        "weight": "600"
-      },
-      "display": {
-        "size": "1.75rem",
-        "lineHeight": "1.2",
-        "weight": "650"
-      },
-      "heading": {
-        "size": "0.9375rem",
-        "lineHeight": "1.4",
-        "weight": "600"
-      }
-    },
-    "chart": {
-      "minimumSize": "10px",
-      "compactBreakpoint": "480px",
-      "title": {
-        "size": "17px",
-        "compactSize": "15px",
-        "weight": "600"
-      },
-      "subtitle": {
-        "size": "13px",
-        "compactSize": "12px",
-        "weight": "400"
-      },
-      "panelTitle": {
-        "size": "15px",
-        "compactSize": "14px",
-        "weight": "600"
-      },
-      "axisTitle": {
-        "size": "12px",
-        "compactSize": "11px",
-        "weight": "500"
-      },
-      "tick": {
-        "size": "12px",
-        "compactSize": "11px",
-        "weight": "400"
-      },
-      "legend": {
-        "size": "12.5px",
-        "compactSize": "12px",
-        "weight": "400",
-        "valueWeight": "500"
-      },
-      "dataLabel": {
-        "size": "12px",
-        "compactSize": "11px",
-        "weight": "500"
-      },
-      "centerValue": {
-        "minimumSize": "20px",
-        "maximumSize": "40px",
-        "radiusFactor": "0.16",
-        "weight": "700",
-        "captionSize": "12px",
-        "captionGap": "4px"
-      }
-    },
-    "referencePixels": 16
-  },
-  "palette": {
-    "paletteVersion": 2,
-    "rankOrder": "descending",
-    "childLightnessOffset": 0.1
-  },
-  "radius": {
-    "none": "0",
-    "2xs": "2px",
-    "xs": "3px",
-    "sm": "4px",
-    "md": "6px",
-    "lg": "10px",
-    "pill": "999px",
-    "control": "6px",
-    "container": "10px",
-    "overlay": "10px"
-  },
   "light": {
-    "elevation": {
-      "0": "none",
-      "1": "0 1px 2px rgba(22, 24, 28, .06)",
-      "2": "0 1px 2px rgba(22, 24, 28, .05), 0 6px 18px -10px rgba(22, 24, 28, .20)",
-      "3": "0 2px 4px rgba(22, 24, 28, .06), 0 18px 40px -16px rgba(22, 24, 28, .30)"
-    },
-    "surface": { "page": "#f2f3f4", "card": "#ffffff", "cardAlt": "#f7f8f9", "line": "#e2e4e7", "lineStrong": "#cdd0d5" },
+    "surface": { "page": "#f2f3f4", "card": "#ffffff", "cardAlt": "#f8f9fa", "line": "#e2e4e7", "lineStrong": "#cdd0d5" },
     "text": { "primary": "#16181c", "secondary": "#4d525b", "muted": "#626770" },
-    "chrome": { "background": "#ffffff", "text": "#16181c", "textMuted": "#626770", "accent": "#11776f", "tooltipSurface": "#ffffff", "tooltipText": "#16181c", "tooltipMuted": "#626770", "tooltipLine": "#cdd0d5", "focusRing": "#02726a", "tooltipShadow": "0 1px 2px rgba(22, 24, 28, .05), 0 6px 18px -10px rgba(22, 24, 28, .20)" },
-    "accent": { "base": "#11776f", "soft": "#e7f1f1" },
+    "chrome": { "background": "#16181c", "text": "#f2f3f5", "textMuted": "#a3a8b1", "accent": "#37c9b8" },
+    "accent": { "base": "#11776f", "soft": "#d6f0ec" },
     "severity": {
       "critical": { "fill": "#d4302f", "ink": "#b8292a" },
-      "high": { "fill": "#dd5a17", "ink": "#b4480f" },
+      "high": { "fill": "#dd5a17", "ink": "#b64a13" },
       "medium": { "fill": "#c78404", "ink": "#8c5c05" },
       "low": { "fill": "#0c8aa8", "ink": "#0a728b" },
       "info": { "fill": "#2f6bd9", "ink": "#2b5fc0" }
@@ -141,24 +26,17 @@
       "neutral": { "fill": "#7c818a", "ink": "#5b6069" }
     },
     "state": { "maintenance": { "fill": "#6b5bd2", "ink": "#5a4bc0" } },
-    "series": ["#2a78d6", "#0f9f8c", "#d9711f", "#8055c4", "#c24fa8", "#cc4048", "#a97800", "#37813e", "#00739b", "#5f5f5f"],
-    "other": "#737373",
+    "series": ["#2a78d6", "#0f9f8c", "#7b61e8", "#a0522d", "#c24fa8", "#5b7f00"],
     "ramps": {
-      "sequential": ["#9ab8dc", "#5598e7", "#2171ce", "#1c5cab", "#104281"],
-      "diverging": { "negative": ["#d7ad87", "#eaa363", "#d9711f"], "neutral": "#eceef0", "positive": ["#9ab8dc", "#2171ce", "#1c5cab"] }
+      "sequential": ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"],
+      "diverging": { "negative": ["#f0a39d", "#e0645b", "#b8292a"], "neutral": "#eceef0", "positive": ["#86b6ef", "#3f8be3", "#1c5cab"] }
     }
   },
   "dark": {
-    "elevation": {
-      "0": "none",
-      "1": "0 1px 2px rgba(0, 0, 0, .40)",
-      "2": "0 1px 2px rgba(0, 0, 0, .40), 0 10px 26px -14px rgba(0, 0, 0, .70)",
-      "3": "0 2px 6px rgba(0, 0, 0, .45), 0 20px 44px -16px rgba(0, 0, 0, .80)"
-    },
     "surface": { "page": "#0c0d10", "card": "#16181c", "cardAlt": "#111317", "line": "#272a30", "lineStrong": "#363a42" },
-    "text": { "primary": "#f2f3f5", "secondary": "#b0b4bc", "muted": "#8f949d" },
-    "chrome": { "background": "#07080a", "text": "#f2f3f5", "textMuted": "#9095a0", "accent": "#37c9b8", "tooltipSurface": "#16181c", "tooltipText": "#f2f3f5", "tooltipMuted": "#8f949d", "tooltipLine": "#363a42", "focusRing": "#37c9b8", "tooltipShadow": "0 1px 2px rgba(0, 0, 0, .40), 0 10px 26px -14px rgba(0, 0, 0, .70)" },
-    "accent": { "base": "#37c9b8", "soft": "#1b3435" },
+    "text": { "primary": "#f2f3f5", "secondary": "#b0b4bc", "muted": "#8a8f98" },
+    "chrome": { "background": "#07080a", "text": "#f2f3f5", "textMuted": "#9095a0", "accent": "#37c9b8" },
+    "accent": { "base": "#37c9b8", "soft": "#10302d" },
     "severity": {
       "critical": { "fill": "#f47171", "ink": "#f47171" },
       "high": { "fill": "#f7924f", "ink": "#f7924f" },
@@ -171,11 +49,10 @@
       "neutral": { "fill": "#8a8f98", "ink": "#a0a5ae" }
     },
     "state": { "maintenance": { "fill": "#a497f2", "ink": "#a497f2" } },
-    "series": ["#4a90ea", "#22b39e", "#ee8a3a", "#ad86eb", "#e479c4", "#e15f55", "#e8b83e", "#73be79", "#55bed9", "#b1b1b1"],
-    "other": "#929292",
+    "series": ["#3987e5", "#179c89", "#8a74ee", "#c06a42", "#c9579f", "#6f9120"],
     "ramps": {
-      "sequential": ["#324c6e", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
-      "diverging": { "negative": ["#6a442a", "#9b5c29", "#ee8a3a"], "neutral": "#2b2e34", "positive": ["#324c6e", "#509efe", "#9ec5f4"] }
+      "sequential": ["#184f95", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
+      "diverging": { "negative": ["#8f2f2c", "#d4504b", "#f7a09b"], "neutral": "#2b2e34", "positive": ["#1d4f8f", "#3f8be3", "#9ec5f4"] }
     }
   }
 }

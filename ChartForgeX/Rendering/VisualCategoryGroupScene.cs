@@ -30,10 +30,11 @@ internal static class VisualCategoryGroupScene {
                     ChartScaleTransform.Normalize(value, minimum, maximum, axis) * trackLength, out var start, out var end)) continue;
                 var source = span.Run.Path[depth];
                 if (horizontal) {
-                    var display = FitCategoryGroupCaption(builder, source, style, perTierBudget, spacing, out _);
+                    var width = Math.Max(0, perTierBudget - spacing);
+                    var display = FitCategoryGroupCaption(builder, source, style, width, out _);
                     extent = Math.Max(extent, builder.MeasureText(display, style).Width + spacing);
                 } else {
-                    var display = FitCategoryGroupCaption(builder, source, style, Math.Max(0, end - start), spacing, out _);
+                    var display = FitCategoryGroupCaption(builder, source, style, Math.Max(0, end - start - spacing), out _);
                     // A later gutter refit can turn a complete multiword caption into two lines.
                     // Reserve that bounded possibility once instead of clipping its ordinary type.
                     var measured = source.IndexOf('\n') < 0 && source.IndexOf('\r') < 0 && source.Trim().IndexOf(' ') > 0
@@ -84,7 +85,8 @@ internal static class VisualCategoryGroupScene {
                     ? new ChartRect(tier.Left, start, tier.Width, end - start)
                     : new ChartRect(start, tier.Top, end - start, tier.Height);
                 var source = span.Run.Path[depth];
-                var display = FitCategoryGroupCaption(builder, source, style, bounds.Width, spacing, out var clipped);
+                var display = FitCategoryGroupCaption(builder, source, style,
+                    Math.Max(0, bounds.Width - spacing), out var clipped);
                 entries.Add((span, id, bounds, display, clipped));
             }
             // Shortening must not manufacture identical visible names for different siblings.
@@ -142,11 +144,8 @@ internal static class VisualCategoryGroupScene {
         return metadata;
     }
 
-    private static string FitCategoryGroupCaption(VisualSceneBuilder builder, string source, TextStyle style, double width, double padding, out bool shortened) {
-        // Compare the same padded extent that Measure reserves; subtracting padding first
-        // can round a fully fitting caption below its measured width and shorten it.
-        if (builder.MeasureText(source, style).Width + padding <= width) { shortened = false; return source; }
-        width = Math.Max(0, width - padding);
+    private static string FitCategoryGroupCaption(VisualSceneBuilder builder, string source, TextStyle style, double width, out bool shortened) {
+        if (builder.MeasureText(source, style).Width <= width) { shortened = false; return source; }
         if (source.IndexOf('\n') < 0 && source.IndexOf('\r') < 0)
             return VisualAxisText.FitWrappedCategory(builder, source, style, width, out shortened);
         var lines = source.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');

@@ -593,6 +593,6 @@ internal static partial class SmokeTests {
     private static void SingleSliceDonutRendersFullRing() {
         var svg = Chart.Create().WithSize(360, 240).WithXLabels("All").AddDonut("Total", Points(100)).ToSvg();
         Assert(svg.Contains(" A ", StringComparison.Ordinal), "Single-slice donut should render arc commands.");
-        Assert(!NumericMarkup(svg).Contains("NaN", StringComparison.Ordinal), "Single-slice donut should not contain invalid numeric values.");
+        Assert(!svg.Contains("NaN", StringComparison.Ordinal), "Single-slice donut should not contain invalid numeric values.");
     }
 }

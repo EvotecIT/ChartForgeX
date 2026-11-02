@@ -36,7 +36,7 @@ internal static partial class TopologyVisualExamples {
         sb.AppendLine("<!doctype html>");
         sb.AppendLine("<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
         sb.AppendLine("<title>ChartForgeX Topology Visual Coverage</title>");
-        sb.AppendLine("<style>body{margin:0;background:#f8fafc;color:#0f172a;padding:24px}main{max-width:1280px;margin:0 auto}h1{font-size:24px;margin:0 0 8px}.lead{color:#475569;margin:0 0 20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}.card{background:white;border:1px solid #dbe3ef;border-radius:10px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.06)}.card h2{font-size:15px;margin:0 0 8px}.kind{font-size:11px;font-weight:700;text-transform:uppercase;color:#2563eb}.notes{font-size:12px;color:#475569;min-height:48px}.links{display:flex;gap:10px;flex-wrap:wrap}.links a{font-size:12px;color:#2563eb;text-decoration:none;font-weight:700}.preview{display:block;width:100%;height:auto;border:1px solid #e2e8f0;border-radius:8px;margin:10px 0;background:white}</style>");
+        sb.AppendLine("<style>body{margin:0;background:#f8fafc;color:#0f172a;font-family:Inter,Segoe UI,system-ui,sans-serif;padding:24px}main{max-width:1280px;margin:0 auto}h1{font-size:24px;margin:0 0 8px}.lead{color:#475569;margin:0 0 20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}.card{background:white;border:1px solid #dbe3ef;border-radius:10px;padding:14px;box-shadow:0 12px 28px rgba(15,23,42,.06)}.card h2{font-size:15px;margin:0 0 8px}.kind{font-size:11px;font-weight:700;text-transform:uppercase;color:#2563eb}.notes{font-size:12px;color:#475569;min-height:48px}.links{display:flex;gap:10px;flex-wrap:wrap}.links a{font-size:12px;color:#2563eb;text-decoration:none;font-weight:700}.preview{display:block;width:100%;height:auto;border:1px solid #e2e8f0;border-radius:8px;margin:10px 0;background:white}</style>");
         sb.AppendLine("</head><body><main>");
         sb.AppendLine("<h1>ChartForgeX Topology Visual Coverage</h1>");
         sb.AppendLine("<p class=\"lead\">Generated SVG, HTML, and PNG artifacts for topology and map-based visuals. Topology HTML pages include lightweight selection events; SVG and map outputs stay host-ready through stable metadata hooks for HtmlForgeX.</p>");
@@ -53,7 +53,7 @@ internal static partial class TopologyVisualExamples {
 
         sb.AppendLine("</div>");
         sb.AppendLine("</main></body></html>");
-        File.WriteAllText(Path.Combine(target, "visual-coverage.html"), ExampleTypography.EmbedInHost(sb.ToString()), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(target, "visual-coverage.html"), sb.ToString(), Encoding.UTF8);
     }
 
     private static string EscapeHtml(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");

@@ -67,20 +67,12 @@ internal static class VisualAxisText {
 
     /// <summary>Keeps a bounded named-category gutter useful when even a balanced line is too wide.</summary>
     internal static string FitWrappedCategory(VisualSceneBuilder builder, string text, TextStyle style, double width, out bool shortened) {
-        var measured = builder.MeasureText(text, style);
-        // Subtracting the measured gutter's padding can lose a few ulps. Use the
-        // placement owner's containment rule before changing a fitting caption.
-        if (LabelPlacementService.Contains(new ChartRect(0, 0, width, measured.Height),
-            new ChartRect(0, 0, measured.Width, measured.Height))) {
-            shortened = false;
-            return text;
-        }
         var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
             (value, _) => builder.MeasureText(value, style).Width);
         // A wrapped line that reserved this column must fit it again under the same containment rule; the
         // column is the line's width plus padding minus padding, which can come back a few ulps short.
-        var displayed = lines.Select(line => LabelPlacementService.Contains(new ChartRect(0, 0, width, measured.Height),
-                new ChartRect(0, 0, builder.MeasureText(line, style).Width, measured.Height)) ? line
+        var displayed = lines.Select(line => builder.MeasureText(line, style) is var size && LabelPlacementService.Contains(new ChartRect(0, 0, width, size.Height),
+                new ChartRect(0, 0, size.Width, size.Height)) ? line
             : ChartTextFitting.FitEnd(line, width, value => builder.MeasureText(value, style).Width, "…", ChartTextFitting.MinimumEllipsizedTextElements)).ToArray();
         shortened = lines.Where((line, index) => line != displayed[index]).Any();
         // A line too narrow for the shortened-text minimum hides the whole caption rather than half of it.

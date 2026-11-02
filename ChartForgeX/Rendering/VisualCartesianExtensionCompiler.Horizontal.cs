@@ -114,7 +114,7 @@ internal static partial class VisualCartesianCompiler {
         }
         var valueMetrics = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache) : default;
         var bottom = chart.Options.XAxis.Visible ? valueMetrics.Height + spacing : 0;
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
         var xTitle = XAxisTitle(chart);
         if (chart.Options.XAxis.Visible && xTitle.Length > 0) bottom += builder.MeasureText(xTitle, titleStyle).Height + spacing;
         var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
@@ -170,7 +170,7 @@ internal static partial class VisualCartesianCompiler {
             var title = XAxisTitle(chart);
             var available = Math.Max(0, viewport.Bottom - plot.Bottom - spacing);
             var titleHeight = title.Length == 0 ? 0 : builder.MeasureText(title,
-                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground })).Height + spacing;
+                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
             titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, available);
             var bounds = new ChartRect(viewport.Left, plot.Bottom + spacing, viewport.Width, Math.Max(0, Math.Min(tickHeight, available - titleHeight)));
             DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache, plot.Width);

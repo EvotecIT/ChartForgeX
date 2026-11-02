@@ -128,8 +128,7 @@ public sealed class ConcentricRadialBandTests {
         var overflow = Rings(); overflow.Series[1].Points[0] = new ChartPoint(1, 1e308); overflow.Series[1].Points[1] = new ChartPoint(2, 1e308);
         var overflowing = overflow.Prepare(Context());
         Assert.Contains(overflowing.Scene.Diagnostics, item => item.Code == "radial.total-overflow");
-        var numericMarkup = SmokeTests.NumericMarkup(overflowing.ToSvg());
-        Assert.DoesNotContain("NaN", numericMarkup, StringComparison.Ordinal); Assert.DoesNotContain("Infinity", numericMarkup, StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", overflowing.ToSvg(), StringComparison.Ordinal); Assert.DoesNotContain("Infinity", overflowing.ToSvg(), StringComparison.Ordinal);
         Assert.All(overflowing.Scene.Nodes.OfType<VisualSceneSlice>(), slice => Assert.InRange(slice.Sweep, 0, Math.PI * 2));
     }
 

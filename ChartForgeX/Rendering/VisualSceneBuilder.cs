@@ -17,8 +17,6 @@ internal sealed partial class VisualSceneBuilder {
     private readonly List<VisualDiagnostic> _diagnostics = new();
     private readonly List<VisualSemanticRegion> _regions = new();
     internal ChartDataProjection? DataProjection { get; set; }
-    // Chart preparation sets this logical-size floor; document/diagram scenes retain their authored text sizes.
-    internal double MinimumTextSize { get; set; }
 
     private readonly VisualSceneTextCapture? _textCapture;
     internal VisualSceneBuilder(VisualSize size, FontSpec font) : this(size, font, null) { }
@@ -104,8 +102,6 @@ internal sealed partial class VisualSceneBuilder {
         ChartGuards.Finite(strokeWidth, nameof(strokeWidth));
         if (strokeWidth < 0) throw new ArgumentOutOfRangeException(nameof(strokeWidth));
         if (!Enum.IsDefined(typeof(TextAlignment), alignment)) throw new ArgumentOutOfRangeException(nameof(alignment));
-        VisualSize.Positive(size, nameof(size));
-        if (size < MinimumTextSize) return;
         _nodes.Add(new VisualSceneText(Face(weight).Prepare(text, size), x, baseline, color, alignment, role, id, paint, stroke, strokeWidth, strokePaint));
     }
 
@@ -116,8 +112,6 @@ internal sealed partial class VisualSceneBuilder {
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
         ChartGuards.Finite(strokeWidth, nameof(strokeWidth));
         if (strokeWidth < 0) throw new ArgumentOutOfRangeException(nameof(strokeWidth));
-        VisualSize.Positive(style.EffectiveFontSize, nameof(style));
-        if (style.EffectiveFontSize < MinimumTextSize) return;
         var prepared = StyleFace(style).Prepare(text, style.EffectiveFontSize);
         baseline += VisualSceneTextFace.BaselineOffset(style);
         var actualColor = color ?? style.Color;

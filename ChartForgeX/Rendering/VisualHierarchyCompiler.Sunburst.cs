@@ -25,6 +25,10 @@ internal static partial class VisualHierarchyCompiler {
             var blend = surface.Blend(node.Index, node.Depth == 0 ? 0 : node.Index + node.Depth - 1);
             var color = blend.Color; var paint = blend.Paint;
             var state = ChartRelationshipPaint.State(series, node.Index);
+            if (surface.Scale == null && node.Depth == 0 && !ChartRelationshipPaint.HasExplicitColor(series, node.Index) && state == ChartSeriesState.None) {
+                var source = color; color = ChartColorMath.Blend(colors.Surface, source, .28);
+                paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, ChartRelationshipPaint.Role(series, node.Index), .28);
+            }
             var formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
             var full = node.Index < series.PreparedLabels.Count && series.PreparedLabels[node.Index] != null ? series.PreparedLabels[node.Index]! : node.Label;
             var secondary = chart.Options.Sunburst.SecondaryLabelFormatter?.Invoke(new ChartSunburstLabelContext(item, node.Value, formatted));

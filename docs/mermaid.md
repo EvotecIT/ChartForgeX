@@ -92,7 +92,7 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 ```csharp
 var options = new MermaidRenderOptions {
     Presentation = new MermaidPresentationOptions {
-        FontFamily = ChartFontStacks.ProductSans,
+        FontFamily = "Carlito",
         FontSize = 16,
         ThemeMode = VisualThemeMode.Dark,
         TopologySizing = MermaidTopologySizing.Natural
@@ -1545,7 +1545,7 @@ graph.SavePng("history.png");
 graph.SaveHtml("history.html");
 ```
 
-The compiled `GitGraphDepthRecipe` and its complete `.csharp.txt` programs use this ordinary Core-only block boundary. Default programs use the bundled Archivo face. The optional gallery-typography program requests `ChartFontStacks.ProductSans` explicitly; standalone SVG carries its browser font, and `ChartFontAssets.StyleSheet` supplies the same faces for additional host text. See [font delivery and coverage](v2/typography.md). The native design is a deterministic static graph, not an upstream pixel-identity promise. Dense captions use the existing measured fitting/collision owner; the complete source model remains available when a caption cannot be displayed.
+The compiled `GitGraphDepthRecipe` and its complete `.csharp.txt` programs use this ordinary Core-only block boundary. Exact gallery typography is an explicit optional program using the gallery's shipped Carlito regular/bold faces. Default programs use normal native font resolution. The native design is a deterministic static graph, not an upstream pixel-identity promise. Dense captions use the existing measured fitting/collision owner; the complete source model remains available when a caption cannot be displayed.
 
 ## Block Diagrams
 

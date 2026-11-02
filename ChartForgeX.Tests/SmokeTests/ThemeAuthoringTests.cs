@@ -49,14 +49,6 @@ internal static partial class SmokeTests {
         var grid = ChartGrid.Create().WithTitle("Themed grid").WithTheme(theme)
             .Add(Chart.Create().AddLine("Values", Points(1, 2, 3)));
         Assert(grid.ToSvg().Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "The grid theme should supply shared panel typography.");
-        foreach (var preset in new[] {
-            VisualTheme.Report(), VisualTheme.Executive(), VisualTheme.Product(), VisualTheme.PeopleInfographic(),
-            VisualTheme.Editorial(), VisualTheme.Accessible(), VisualTheme.Colorblind(), VisualTheme.Aurora(),
-            VisualTheme.Candy(), VisualTheme.TransparentOverlay(), VisualTheme.Minimal(), VisualTheme.Dashboard(),
-            VisualTheme.SaasDashboard(), VisualTheme.RestaurantDashboard()
-        }) Assert(preset.Typography.Family.StartsWith("Archivo,", StringComparison.Ordinal),
-            "Named sans themes should use the shared Archivo font stack.");
-
         foreach (var preset in new[] { VisualTheme.Executive(), VisualTheme.Product(), VisualTheme.PeopleInfographic(), VisualTheme.Editorial(), VisualTheme.Accessible() }) {
             var colors = preset.Resolve(VisualThemeMode.Light);
             Assert(colors.Palette.Count >= 8 && preset.Typography.Family.Length > 0, "Named themes should include useful palettes and font stacks.");
@@ -64,11 +56,9 @@ internal static partial class SmokeTests {
             Assert(preset.CardRadius <= 24, "Named themes should retain deliberately authored surface geometry.");
         }
 
-        Assert(VisualTheme.Terminal().Typography.Family.StartsWith("\"JetBrains Mono\",", StringComparison.Ordinal),
-            "The Terminal preset should use the shared JetBrains Mono font stack.");
         var productSvg = Chart.Create().WithTheme(VisualTheme.Product()).AddBar("Adoption", Points(42, 58, 71)).ToSvg();
-        Assert(productSvg.Contains("font-family=\"Archivo,", StringComparison.Ordinal) && productSvg.Contains("#0EA5E9", StringComparison.Ordinal),
-            "The Product theme should render the shared font and its authored palette.");
+        Assert(productSvg.Contains(ChartFontStacks.Geometric, StringComparison.Ordinal) && productSvg.Contains("#0EA5E9", StringComparison.Ordinal),
+            "The Product theme should render its authored font and palette.");
         var peopleSvg = Chart.Create().WithTheme(VisualTheme.PeopleInfographic()).AddDonut("Audience", Points(60, 40)).ToSvg();
         Assert(peopleSvg.Contains("#06B6D4", StringComparison.Ordinal) && peopleSvg.Contains("#DB2777", StringComparison.Ordinal),
             "The PeopleInfographic theme should render its cyan and magenta palette.");

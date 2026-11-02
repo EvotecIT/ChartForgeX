@@ -54,7 +54,7 @@ public sealed class GaugeHorizontalExplicitScaleTests {
         var captions = ScaleTexts(prepared);
         Assert.Equal(new[] { "Minimum", "Midpoint", "Maximum" }, captions.Select(Text));
         AssertSeparated(captions);
-        Assert.All(captions, caption => Assert.Equal(11, caption.Text.Size));
+        Assert.All(captions, caption => Assert.Equal(chart.Options.Theme.Typography.AxisSize, caption.Text.Size));
         Assert.Equal(new[] { "Minimum", "Midpoint", "Maximum" }, SvgScaleText(prepared).Select(text => text.Caption));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "gauge.label-overflow" or "radial.text-overflow");
         var png = PngReader.Decode(prepared.ToPng());

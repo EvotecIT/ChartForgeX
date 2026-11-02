@@ -31,7 +31,7 @@ public sealed class BulletNumericCaptionTests {
                 : text.Role == "bullet-target-label" ? new[] { "/ " + Format(9500.125) }
                 : new[] { 0d, 2500, 5000, 7500, 10000 }.Select(Format);
             Assert.Contains(displayed, complete);
-            Assert.True(text.Text.Size >= (width < 480 ? 11 : 12), "Ordinary bullet numbers must not shrink below their responsive role to fit a dense row.");
+            Assert.True(text.Text.Size >= 12, "Ordinary bullet numbers must not shrink to fit a dense row.");
         }
         var axis = numeric.Where(node => node.Role == "bullet-axis-label").OrderBy(node => node.X).ToArray();
         Assert.Contains(axis, text => string.Join(" ", text.Text.Lines.Select(line => line.Text)) == Format(0));

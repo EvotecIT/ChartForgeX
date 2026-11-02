@@ -89,17 +89,9 @@ public sealed partial class HtmlOwnedFontDeliveryTests : IDisposable {
         Assert.Contains("new Uint8Array(borrowed)", script, StringComparison.Ordinal); Assert.Contains("font-src 'self'", File.ReadAllText(Path.Combine(TestRepository.Root, "Website", "site.json")), StringComparison.Ordinal);
     }
     [Fact]
-    public void OwnedFontBytesStayInNormalHtmlWhileInitialFadeKeepsTheUnchangedOneMiBPresentationBudget() {
-        using var source = typeof(ChartFontAssets).Assembly.GetManifestResourceStream("ChartForgeX.Typography.Fonts.Archivo.ttf")!;
-        using var memory = new MemoryStream(); source.CopyTo(memory);
-        var bytes = memory.ToArray();
-        // Keep the valid sfnt tables and outlines while deliberately exercising a root over the presentation budget.
-        // The smaller product font no longer crosses that budget incidentally.
-        Array.Resize(ref bytes, 1024 * 1024);
-        const string family = "CFX Large Owned Face";
-        FontRegistry.Register(family, bytes);
+    public void ShippedFontBytesStayInNormalHtmlWhileInitialFadeKeepsTheUnchangedOneMiBPresentationBudget() {
         var renderer = new HtmlInteractiveChartRenderer();
-        var section = renderer.PrepareSection(Model(family), configure: options => options.Interaction.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures.Export));
+        var section = renderer.PrepareSection(Model(), configure: options => options.Interaction.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures.Export));
         Capture("large-font-transition", section);
         var payload = renderer.PrepareNativeTransitionJson(section, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 2));
         Save("large-font-transition.json", payload); Save("large-font-transition.observation.html", section.TransitionHtml);

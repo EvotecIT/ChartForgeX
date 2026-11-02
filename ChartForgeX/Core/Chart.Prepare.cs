@@ -79,12 +79,10 @@ public sealed partial class Chart : IVisualRenderable {
             sourceFrame.HasExplicitLegend ? sourceFrame.ShowLegend : ChartLegendVisibility.ForPreparedContent(this, entries.Count, colorScales),
             sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.LegendPosition,
             sourceFrame.ShowSurface, sourceFrame.TransparentBackground,
-            RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, context.Theme.Typography.TitleWeight),
+            RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, 700),
             RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
             RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
-            sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle) {
-            HasExplicitLegendWeight = sourceFrame.HasExplicitLegendWeight || Options.LegendStyle.FontWeight != null
-        };
+            sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
         if (!sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition && family != VisualChartFamily.Map)
             frame = frame.WithAutomaticLegendPlacement();
         var captureHierarchy = Series.Count == 1 && Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst;
@@ -95,7 +93,7 @@ public sealed partial class Chart : IVisualRenderable {
         var captureCompleteCartesian = family == VisualChartFamily.Cartesian && viewport == null && VisualCartesianCompiler.NeedsCompleteCartesianValues(this);
         var textCapture = context.NativeTextCapture ?? (family == VisualChartFamily.Radial || captureHierarchy || captureCompleteCartesian || captureBubble || captureRange || captureError || captureFinancial ? new VisualSceneTextCapture() : null);
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithRequestsOf(context);
-        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture) { MinimumTextSize = context.Theme.Typography.MinimumTextSize };
+        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition
             ? VisualMapCompiler.ResolveTileLegendInset(this, context, builder, entries, colorScales.Map) : null;

@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 /// <summary>Named categories retain useful captions within a bounded horizontal chart gutter.</summary>
 public sealed class HorizontalCategoryCaptionTests {
     [Theory]
-    [InlineData(10)]
+    [InlineData(8)]
     [InlineData(12)]
     public void CompactLongCategoriesKeepReadableCaptionsAndCompleteFacts(double fontSize) {
         var xs = new[] { 1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23 };

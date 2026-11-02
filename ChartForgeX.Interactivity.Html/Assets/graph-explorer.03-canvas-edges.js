@@ -20,7 +20,7 @@
   const drawCanvasEdgeLabel = (context, root, edge, paint, palette) => {
     if (!paint.labels) return;
     const label = edgeLabelPoint(paint.rendered, paint.control, paint.labelObstacles);
-    context.font = `11px ${graphNodeFontFamily(root)}`;
+    context.font = '11px Segoe UI, Arial, sans-serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.lineWidth = 4;

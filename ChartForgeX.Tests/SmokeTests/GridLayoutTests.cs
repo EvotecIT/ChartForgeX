@@ -53,7 +53,7 @@ internal static partial class SmokeTests {
             .WithTitle("styled grid header")
             .WithSubtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
             .ConfigureTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
-            .ConfigureSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(16).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
+            .ConfigureSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(15).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
             .WithPanelSize(260, 160)
             .Add(Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3)));
         var svg = grid.ToSvg();
@@ -67,7 +67,7 @@ internal static partial class SmokeTests {
             "Prepared headings should paint both wavy strike geometry and dotted underline geometry in every backend.");
         var headingText = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "frame-heading").ToArray();
         Assert(headingText.Any(node => Math.Abs(node.Text.Size - 32 * .65) < .001)
-            && headingText.Any(node => Math.Abs(node.Text.Size - 16 * .65) < .001)
+            && headingText.Any(node => Math.Abs(node.Text.Size - 15 * .65) < .001)
             && headingText.All(node => node.Text.Style.Baseline == TextBaseline.Normal),
             "Prepared headings should materialize script sizing and position once, without retaining a second backend baseline shift.");
         Assert(string.Join(" ", headings.Select(element => element.Value)).Contains("STYLED GRID HEADER", StringComparison.Ordinal),

@@ -28,11 +28,6 @@
       root.__cfxGraphBadgeMeasurements?.clear();
       delete root.__cfxGraphEdgeMesh;
       if (lifetime.active && root.isConnected) {
-        if (root.__cfxGraphPrintFonts || root.ownerDocument.defaultView.matchMedia('print').matches) {
-          (root.__cfxGraphPrintFonts ||= { dirty: false }).dirty = true;
-          root.__cfxGraphScreenPaintPending = true;
-          return;
-        }
         applyLayout(root, root.__cfxGraphState || graphState(root));
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched && graphStageHasLayout(root)) fitViewport(root);
       }

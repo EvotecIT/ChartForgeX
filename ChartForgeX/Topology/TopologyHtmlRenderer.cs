@@ -13,6 +13,7 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public sealed partial class TopologyHtmlRenderer {
     private const string DefaultCssClassPrefix = "cfx-topology";
+    private readonly TopologySvgRenderer _svg = new();
 
     /// <summary>
     /// Renders an embeddable HTML fragment.
@@ -96,7 +97,6 @@ public sealed partial class TopologyHtmlRenderer {
         if (includeAssets) {
             writer.StartElement("style")
                 .Attribute("data-cfx-topology-assets", "true")
-                .RawTrusted(ChartForgeX.Typography.ChartFontAssets.StyleSheet)
                 .RawTrusted(StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background, includePageShell: false))
                 .EndElement();
         }
@@ -183,9 +183,9 @@ public sealed partial class TopologyHtmlRenderer {
 
     private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
         var nativeOptions = EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls);
-        var prepared = chart.Prepare(nativeOptions);
-        if (options.EnableHtmlInteractions && options.EnableHtmlExportControls) prepared = prepared.ForInteractivePngExport();
-        return prepared.Visual.ToSvgWithoutProductFonts();
+        return options.EnableHtmlInteractions && options.EnableHtmlExportControls
+            ? chart.Prepare(nativeOptions).ForInteractivePngExport().ToSvg()
+            : _svg.Render(chart, nativeOptions);
     }
 
     private static TopologyRenderOptions EmbeddedSvgOptions(TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
@@ -217,11 +217,12 @@ public sealed partial class TopologyHtmlRenderer {
         options ??= new TopologyRenderOptions();
         var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
+        var cssPrefix = CssClassPrefix(options);
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", string.IsNullOrWhiteSpace(chart.Accessibility.Language) ? "en" : chart.Accessibility.Language).EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildPageStyle(options, theme));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "document", preparedSvg, preparedWidth)).Line();
@@ -237,13 +238,6 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="theme">Optional topology theme whose font family should be used.</param>
     /// <returns>CSS ready to register once in a host document.</returns>
     /// <param name="mode">The explicit palette mode for the host surface.</param>
-    /// <remarks>This is style-only CSS. Also register <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/>
-    /// once when using bundled fonts, unless the host already supplies them. Explicitly registered families require matching host-provided browser CSS.</remarks>
-    /// <example><code>
-    /// var css = ChartFontAssets.StyleSheet + TopologyHtmlRenderer.BuildFragmentStyle(options, theme);
-    /// var fragment = renderer.RenderFragmentWithoutAssets(chart, options);
-    /// // Register css once outside the asset-free fragments.
-    /// </code></example>
     public static string BuildFragmentStyle(TopologyRenderOptions? options = null, VisualTheme? theme = null, VisualThemeMode mode = VisualThemeMode.Light) {
         options ??= new TopologyRenderOptions();
         var paint = new TopologyPaint(theme ?? VisualTheme.Graphite(), mode, options.SvgColorVariables);
@@ -399,7 +393,7 @@ public sealed partial class TopologyHtmlRenderer {
     }
 
     internal static string BuildPageStyle(TopologyRenderOptions options, TopologyPaint theme) {
-        return ChartForgeX.Typography.ChartFontAssets.StyleSheet + StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily), theme.Background);
+        return StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily), theme.Background);
     }
 
     internal static string GetCssClassPrefix(TopologyRenderOptions options) => CssClassPrefix(options);

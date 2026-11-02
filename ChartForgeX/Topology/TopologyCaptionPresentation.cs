@@ -5,15 +5,12 @@ namespace ChartForgeX.Topology;
 
 /// <summary>Immutable capture of the existing qualified caption flags, without adding native authoring options.</summary>
 internal sealed class TopologyCaptionPresentation {
-    internal TopologyCaptionPresentation(bool labels, bool icons, bool subtitles, bool wrap, bool multiline, bool readable, int titleLines, int subtitleLines, TopologyRoutePresentation? routes = null, bool? fitSingleLine = null) {
-        Routes = routes; FitSingleLine = fitSingleLine;
+    internal TopologyCaptionPresentation(bool labels, bool icons, bool subtitles, bool wrap, bool multiline, bool readable, int titleLines, int subtitleLines, TopologyRoutePresentation? routes = null) {
+        Routes = routes;
         IncludeNodeLabels = labels; IncludeIconLabels = icons; IncludeTileSubtitles = subtitles; WrapNodeLabels = wrap;
         AllowMultilineNodeLabels = multiline; ReadableDenseLayout = readable; MaxNodeLabelLines = titleLines; MaxNodeSubtitleLines = subtitleLines;
     }
     internal TopologyRoutePresentation? Routes { get; }
-    internal bool? FitSingleLine { get; }
-    internal static bool ResolveSingleLineFitting(TopologyRenderOptions options) =>
-        !options.WrapNodeLabels && (options.CapturedSingleLineFitting ?? options.FitContentToViewport);
     internal bool IncludeNodeLabels { get; }
     internal bool IncludeIconLabels { get; }
     internal bool IncludeTileSubtitles { get; }
@@ -34,13 +31,12 @@ internal sealed class TopologyCaptionPresentation {
         if (edges != null) foreach (var edge in edges) { hasEdges = true; if (edge.PreparedEdgePlan != null) qualifiedEdges = true; }
         var routes = hasEdges ? TopologyRoutePresentation.Capture(options) : null;
         qualifiedEdges |= routes != null;
-        if ((!qualified && !qualifiedEdges) || Matches(options, new TopologyRenderOptions()) && routes == null && !options.CapturedSingleLineFitting.HasValue) return null;
+        if ((!qualified && !qualifiedEdges) || Matches(options, new TopologyRenderOptions()) && routes == null) return null;
         return new TopologyCaptionPresentation(options.IncludeNodeLabels, options.IncludeIconLabels, options.IncludeTileSubtitles,
-            options.WrapNodeLabels, options.AllowMultilineNodeLabels, options.ReadableDenseLayout, options.MaxNodeLabelLines, options.MaxNodeSubtitleLines, routes, ResolveSingleLineFitting(options));
+            options.WrapNodeLabels, options.AllowMultilineNodeLabels, options.ReadableDenseLayout, options.MaxNodeLabelLines, options.MaxNodeSubtitleLines, routes);
     }
     internal void Apply(TopologyRenderOptions options) {
         Routes?.Apply(options);
-        options.CapturedSingleLineFitting = FitSingleLine;
         options.IncludeNodeLabels = IncludeNodeLabels; options.IncludeIconLabels = IncludeIconLabels; options.IncludeTileSubtitles = IncludeTileSubtitles;
         options.WrapNodeLabels = WrapNodeLabels; options.AllowMultilineNodeLabels = AllowMultilineNodeLabels; options.ReadableDenseLayout = ReadableDenseLayout;
         options.MaxNodeLabelLines = MaxNodeLabelLines; options.MaxNodeSubtitleLines = MaxNodeSubtitleLines;
@@ -57,6 +53,5 @@ internal sealed class TopologyCaptionPresentation {
         && first.IncludeIconLabels == second.IncludeIconLabels && first.IncludeTileSubtitles == second.IncludeTileSubtitles
         && first.WrapNodeLabels == second.WrapNodeLabels && first.AllowMultilineNodeLabels == second.AllowMultilineNodeLabels
         && first.ReadableDenseLayout == second.ReadableDenseLayout && first.MaxNodeLabelLines == second.MaxNodeLabelLines
-        && first.MaxNodeSubtitleLines == second.MaxNodeSubtitleLines
-        && ResolveSingleLineFitting(first) == ResolveSingleLineFitting(second);
+        && first.MaxNodeSubtitleLines == second.MaxNodeSubtitleLines;
 }

@@ -239,9 +239,10 @@ public sealed class MarkupArchitectureParserTests {
             foreach (var path in paths) {
                 var svg = System.Xml.Linq.XDocument.Load(path);
                 var style = Assert.Single(svg.Root!.Elements(svg.Root.Name.Namespace + "style"));
-                Assert.Contains("font-family:'Archivo'", style.Value, StringComparison.Ordinal);
-                Assert.Contains("font-weight:100 900", style.Value, StringComparison.Ordinal);
-                Assert.Equal(1, style.Value.Split("data:font/woff2;base64,", StringSplitOptions.None).Length - 1);
+                Assert.Contains("font-family:'CFX Proof Carlito'", style.Value, StringComparison.Ordinal);
+                Assert.Contains("font-weight:400", style.Value, StringComparison.Ordinal);
+                Assert.Contains("font-weight:700", style.Value, StringComparison.Ordinal);
+                Assert.Equal(2, style.Value.Split("data:font/ttf;base64,", StringSplitOptions.None).Length - 1);
                 Assert.True(File.Exists(Path.ChangeExtension(path, ".png")));
             }
         } finally {
