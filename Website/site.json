@@ -124,7 +124,8 @@
       "Include": [
         "api-conventions.md",
         "chart-combinations.md",
-        "migration.md"
+        "migration.md",
+        "typography.md"
       ],
       "Seo": {
         "Templates": {
