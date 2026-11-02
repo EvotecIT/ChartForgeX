@@ -100,7 +100,9 @@ public static partial class GalleryWriter {
                 var face = TypographyFontResolver.WithVariations(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, style.FontStyle != "normal"), style.Variations);
                 // Font-size fitting changes the paint request, not the identity of the resolved face.
                 if (face.Font == null) faces.Add(request + "|bitmap");
-                else if (face.Path == null || !File.Exists(face.Path)) unavailable = true;
+                // A bundled product face has no file; its family and captured identity are stable across hosts.
+                else if (face.Path == null) faces.Add(request + "|bundled|" + face.Font.SelectedFamily + "|" + face.Font.CollectionIndex + "|" + face.Font.Variations.Key + "|" + face.SynthesizeBold + "|" + face.SynthesizeItalic);
+                else if (!File.Exists(face.Path)) unavailable = true;
                 else {
                     try {
                         faces.Add(request + "|" + Hash(File.ReadAllBytes(face.Path)) + "|" + face.Font.CollectionIndex + "|" + face.Font.SelectedFamily + "|" + face.Font.Variations.Key + "|" + face.SynthesizeBold + "|" + face.SynthesizeItalic);
