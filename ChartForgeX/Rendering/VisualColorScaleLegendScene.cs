@@ -53,9 +53,11 @@ internal static partial class VisualColorScaleLegendScene {
 
     /// <summary>Whether the no-data entry moves beside the key heading because it would otherwise cost a row of its own.</summary>
     private static bool BandMissingInHeading(VisualSceneBuilder builder, IReadOnlyList<string> captions, ChartLabels labels, TextStyle style,
-        double gap, double width, double headingHeight, string? heading) {
+        double gap, double width, double headingHeight, string? heading, double availableHeight) {
         var row = builder.MeasureText("Mg", style).Height;
         if (heading == null || headingHeight + .000001 < row) return false;
+        var full = BandFlow(BandItems(builder, captions, labels, style, gap, true), gap, width);
+        if (BandFlowHeight(full, row, gap) <= availableHeight + .000001) return false;
         var rows = BandFlow(BandItems(builder, captions, labels, style, gap, false), gap, width).Max(item => item.Row);
         var withMissing = BandFlow(BandItems(builder, captions, labels, style, gap, true), gap, width).Max(item => item.Row);
         var missingWidth = row + builder.MeasureText(labels.NoData, style).Width + gap / 2;
@@ -81,7 +83,7 @@ internal static partial class VisualColorScaleLegendScene {
         if (!hasDomain) return headingHeight + (inlineMissing ? 0 : Math.Max(0, Math.Min(maximum, row + gap)));
         var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
         if (captions != null) {
-            var flowMissing = missing && !inlineMissing && !BandMissingInHeading(builder, captions, labels, style, gap, width, headingHeight, heading);
+            var flowMissing = missing && !inlineMissing && !BandMissingInHeading(builder, captions, labels, style, gap, width, headingHeight, heading, maximum);
             return headingHeight + Math.Max(0, Math.Min(maximum, BandFlowHeight(BandFlow(BandItems(builder, captions, labels, style, gap, flowMissing), gap, width), row, gap)));
         }
         var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, width, min, max, formatValues, legendStyle);
@@ -113,7 +115,7 @@ internal static partial class VisualColorScaleLegendScene {
         var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !missingBounds.HasValue ? row + gap : 0);
         // A band key places its no-data entry in its own flow, so it never moves to the heading lane or a grid cell.
         var headingMissing = captions != null && hasDomain && missing && !missingBounds.HasValue
-            && BandMissingInHeading(builder, captions, labels, style, gap, bounds.Width, headingHeight, heading);
+            && BandMissingInHeading(builder, captions, labels, style, gap, bounds.Width, headingHeight, heading, bounds.Height);
         var missingPlacement = captions == null ? plan.Missing
             : headingMissing ? new LegacyMissingPlacement(row + builder.MeasureText(labels.NoData, style).Width + gap / 2) : default;
         var missingHeadingWidth = missingPlacement.HeadingWidth;

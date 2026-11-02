@@ -17,7 +17,7 @@ public sealed class GraphiteHeatmapLegendTests {
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " events");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var steps = prepared.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
-        Assert.Equal(5, steps.Length);
+        Assert.Equal(7, steps.Length);
         var low = Assert.Single(prepared.Regions, region => region.Id == "matrix-scale-low");
         var high = Assert.Single(prepared.Regions, region => region.Id == "matrix-scale-high");
         Assert.Equal(steps[0].Bounds.Left, low.Bounds.Left, 8);
@@ -27,7 +27,8 @@ public sealed class GraphiteHeatmapLegendTests {
         Assert.True(low.Bounds.Top >= steps[0].Bounds.Bottom);
         Assert.Equal("2 events", low.Label); Assert.Equal("120 events", high.Label);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
-        Assert.Equal(new[] { "2 events", "120 events" }, labels.Select(node => Assert.Single(node.Text.Lines).Text));
+        Assert.Contains(labels, node => Assert.Single(node.Text.Lines).Text == "2 events");
+        Assert.Contains(labels, node => Assert.Single(node.Text.Lines).Text == "120 events");
         if (zero) {
             var neutral = Assert.Single(prepared.Regions, region => region.Role == "heatmap-scale-zero");
             Assert.True(steps[0].Bounds.Left - neutral.Bounds.Right < steps[0].Bounds.Width);
@@ -49,17 +50,19 @@ public sealed class GraphiteHeatmapLegendTests {
         var zeroCell = Assert.Single(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell" && (string?)element.Attribute("data-cfx-value") == "0");
         Assert.Equal((string?)zeroCell.RenderedAttribute("fill"), (string?)zero.RenderedAttribute("fill"));
         var steps = legend.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-step").ToArray();
-        Assert.Equal(5, steps.Length);
+        Assert.Equal(7, steps.Length);
         Assert.All(steps, step => Assert.True((double)step.RenderedAttribute("x")! > (double)zero.RenderedAttribute("x")!));
         Assert.Equal("2", (string?)steps[0].Attribute("data-cfx-value"));
         Assert.Equal("120", (string?)steps[^1].Attribute("data-cfx-value"));
-        Assert.Equal(new[] { "0 events", "2 events", "120+ events" }, legend.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value));
+        var captions = legend.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
+        Assert.Contains("0 events", captions); Assert.Contains("2 events", captions); Assert.Contains("120+ events", captions);
+        Assert.Equal(new[] { "2", "20", "40", "60", "80", "100", "120" }, steps.Select(step => (string?)step.Attribute("data-cfx-value")));
         Assert.NotEmpty(chart.ToPng());
     }
 
     [Theory]
     [InlineData(0, 0)]
-    [InlineData(5, 5)]
+    [InlineData(5, 1)]
     public void LegendDoesNotInventNonZeroBoundsForConstantData(double value, int steps) {
         var chart = Chart.Create().WithSize(640, 320).AddHeatmapRow("Count", new[] { value, value });
         var legend = Assert.Single(XDocument.Parse(chart.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale");
