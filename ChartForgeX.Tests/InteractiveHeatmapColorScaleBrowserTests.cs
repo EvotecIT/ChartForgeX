@@ -12,6 +12,63 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects raw-value pointer and keyboard readouts when canonical numeric colors replace legacy intensity levels.</summary>
 public sealed class InteractiveHeatmapColorScaleBrowserTests {
+    [BrowserFact]
+    public async Task ThemeRampsKeepTheirOwnFillsAndContrastingInkAcrossHostThemeSwitches() {
+        if (!Enabled) return;
+        var theme = VisualTheme.Graphite();
+        Chart Ramp(bool diverging, VisualThemeMode mode) {
+            var chart = Chart.Create().WithSize(600, 200).WithTheme(theme, mode).WithDataLabels();
+            if (diverging) chart.WithHeatmapColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0))
+                .AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
+            else chart.AddHeatmapRow("Intensity", new double?[] { 0, 1, 2, 3, 4 });
+            return chart;
+        }
+        var light = SvgColorVariables.SharedRoles(theme, VisualThemeMode.Light);
+        var dark = SvgColorVariables.SharedRoles(theme, VisualThemeMode.Dark);
+        var live = string.Concat(new[] { true, false }.Select(diverging =>
+            Ramp(diverging, VisualThemeMode.Light).ToSvg(new VisualSvgOptions(colorVariables: light), diverging ? "diverging" : "sequential")));
+        string Properties(SvgColorVariables variables) => string.Join(";", variables.GetVariablesForSvg(live).Select(variable => variable.Name + ":" + variable.Color.ToCss()));
+        var html = "<!doctype html><html><head><style>#live{" + Properties(light) + "}html.dark #live{" + Properties(dark) + "}</style></head><body>"
+            + "<div id='live'>" + live + "</div><div id='light'>" + Ramp(true, VisualThemeMode.Light).ToSvg("static-light-diverging")
+            + Ramp(false, VisualThemeMode.Light).ToSvg("static-light-sequential") + "</div><div id='dark'>"
+            + Ramp(true, VisualThemeMode.Dark).ToSvg("static-dark-diverging") + Ramp(false, VisualThemeMode.Dark).ToSvg("static-dark-sequential") + "</div></body></html>";
+        await using var session = await OpenAsync(html, 1260, 900);
+        var page = session.Page;
+        var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
+        await page.EvaluateAsync("() => document.fonts.ready");
+        async Task<string[]> Colors(string id) => await page.EvaluateAsync<string[]>("""
+            id => {
+                const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1;
+                const ctx = canvas.getContext('2d');
+                const color = node => {
+                    ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = getComputedStyle(node).fill; ctx.fillRect(0, 0, 1, 1);
+                    return Array.from(ctx.getImageData(0, 0, 1, 1).data).join(',');
+                };
+                return [...document.querySelectorAll('#' + id + ' [data-cfx-role="heatmap-cell"]')]
+                    .flatMap(cell => [color(cell.querySelector('[data-cfx-role="heatmap-cell-shape"]')), color(cell.querySelector('text'))]);
+            }
+            """, id);
+        var expectedLight = await Colors("light"); var expectedDark = await Colors("dark");
+        Assert.Equal(24, expectedLight.Length);
+        Assert.Equal(expectedLight, await Colors("live"));
+        await page.EvaluateAsync("() => document.documentElement.classList.add('dark')");
+        var actualDark = await Colors("live");
+        Assert.Equal("80,158,254,255", expectedDark[10]);
+        Assert.Equal("158,197,244,255", expectedDark[12]);
+        Assert.Equal("0,0,0,255", expectedDark[13]);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            await File.WriteAllTextAsync(Path.Combine(captures, "ramp-identity.html"), html);
+            await File.WriteAllTextAsync(Path.Combine(captures, "ramp-identity.runtime.json"), JsonSerializer.Serialize(new { expectedLight, expectedDark, actualDark }));
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "ramp-identity.browser.png"), FullPage = true });
+        }
+        Assert.Equal(expectedDark, actualDark);
+        await page.EvaluateAsync("() => document.documentElement.classList.remove('dark')");
+        Assert.Equal(expectedLight, await Colors("live"));
+        Assert.Empty(errors); AssertNoConsoleErrors(session);
+    }
+
     [BrowserTheory]
     [InlineData(ChartSeriesKind.Heatmap, 360, false, true)]
     [InlineData(ChartSeriesKind.Heatmap, 800, true, true)]

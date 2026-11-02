@@ -58,6 +58,7 @@ public sealed partial class SvgColorVariables {
     private readonly Dictionary<int, SvgColorVariable> _text = new();
     private readonly Dictionary<long, SvgColorVariable> _byRole = new();
     private readonly Dictionary<long, SvgColorVariable> _markInk = new();
+    private readonly HashSet<long> _literalRamps = new();
 
     /// <summary>Gets the variables in the order they were added.</summary>
     public IReadOnlyList<SvgColorVariable> Variables => _variables.AsReadOnly();
@@ -85,6 +86,15 @@ public sealed partial class SvgColorVariables {
         return this;
     }
 
+    /// <summary>Registers one theme-ramp declaration while retaining first-Ramp matching for authored scales.</summary>
+    internal void AddRamp(string? name, ChartColor color, SvgColorRole role) {
+        var key = Rgb(color.R, color.G, color.B);
+        if (name == null) { _literalRamps.Add(RoleKey(role, key)); return; }
+        Add(name, color, role);
+        var legacy = RoleKey(SvgColorRole.Ramp, key);
+        if (!_byRole.ContainsKey(legacy)) _byRole[legacy] = _variables[_variables.Count - 1];
+    }
+
     /// <summary>Creates an independent copy.</summary>
     public SvgColorVariables Clone() {
         var copy = new SvgColorVariables();
@@ -93,6 +103,7 @@ public sealed partial class SvgColorVariables {
         foreach (var entry in _text) copy._text.Add(entry.Key, entry.Value);
         foreach (var entry in _byRole) copy._byRole.Add(entry.Key, entry.Value);
         foreach (var entry in _markInk) copy._markInk.Add(entry.Key, entry.Value);
+        copy._literalRamps.UnionWith(_literalRamps);
         foreach (var entry in _themeTokens) copy._themeTokens.Add(entry.Key, entry.Value);
         copy._paletteSlots = _paletteSlots == null ? null : (SvgColorVariable?[])_paletteSlots.Clone();
         return copy;
@@ -105,7 +116,7 @@ public sealed partial class SvgColorVariables {
     /// <param name="name">The CSS custom property for the ink, for example <c>--cfx-series-1-ink</c>.</param>
     /// <param name="fill">The opaque mark colour in this theme.</param>
     /// <param name="ink">The contrasting text colour in this theme.</param>
-    /// <param name="fillRole">The role of the filled mark.</param>
+    /// <param name="fillRole">The role of the filled mark. <see cref="SvgColorRole.Ramp"/> also overrides both theme-ramp families.</param>
     /// <returns>The same instance.</returns>
     /// <exception cref="ArgumentException">The property name is invalid.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The role is not defined.</exception>
@@ -114,13 +125,20 @@ public sealed partial class SvgColorVariables {
         if (!Enum.IsDefined(typeof(SvgColorRole), fillRole)) throw new ArgumentOutOfRangeException(nameof(fillRole));
         var variable = new SvgColorVariable(name, ink, SvgColorRole.Text);
         _variables.Add(variable);
-        _markInk[RoleKey(fillRole, Rgb(fill.R, fill.G, fill.B))] = variable;
+        var key = Rgb(fill.R, fill.G, fill.B);
+        _markInk[RoleKey(fillRole, key)] = variable;
+        if (fillRole == SvgColorRole.Ramp) {
+            _markInk[RoleKey(SvgColorRole.SequentialRamp, key)] = variable;
+            _markInk[RoleKey(SvgColorRole.DivergingRamp, key)] = variable;
+        }
         return this;
     }
 
     internal bool TryInk(ChartColor fill, SvgColorRole role, out string paint) {
         paint = string.Empty;
-        return _markInk.TryGetValue(RoleKey(role, Rgb(fill.R, fill.G, fill.B)), out var variable) && TryWrite(variable, 1, out paint);
+        var key = Rgb(fill.R, fill.G, fill.B);
+        return (_markInk.TryGetValue(RoleKey(role, key), out var variable) || role == SvgColorRole.Ramp &&
+            _markInk.TryGetValue(RoleKey(SvgColorRole.SequentialRamp, key), out variable)) && TryWrite(variable, 1, out paint);
     }
 
     /// <summary>
@@ -259,6 +277,11 @@ public sealed partial class SvgColorVariables {
 
     internal bool TryVariable(ChartColor color, SvgColorRole role, out SvgColorVariable variable) {
         var key = Rgb(color.R, color.G, color.B);
+        if (role is SvgColorRole.SequentialRamp or SvgColorRole.DivergingRamp) {
+            if (_byRole.TryGetValue(RoleKey(role, key), out variable)) return true;
+            if (_literalRamps.Contains(RoleKey(role, key))) return false;
+            role = SvgColorRole.Ramp;
+        }
         if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out variable)) &&
             !(role == SvgColorRole.Text ? _text : _any).TryGetValue(key, out variable)) return false;
         return true;
