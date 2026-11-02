@@ -95,7 +95,10 @@
                 pendingFonts.reveal(); pendingFonts.resume();
               }
             });
-            pendingFonts.reveal = lifetime.own(() => observer.disconnect());
+            pendingFonts.reveal = lifetime.own(() => {
+              observer.disconnect();
+              delete pendingFonts.reveal;
+            });
             observer.observe(root.querySelector('.cfx-graph-stage'));
           }
           return;

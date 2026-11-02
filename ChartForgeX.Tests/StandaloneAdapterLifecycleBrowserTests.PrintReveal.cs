@@ -58,6 +58,27 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         Assert.False(await page.Locator(".cfx-graph-explorer").IsVisibleAsync());
         Assert.Equal(original, await GraphCommittedStateAsync(page));
         if (disposeBeforeReveal) await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.dispose(retainedGraph)");
+        else await page.EvaluateAsync("""
+            async()=>{
+                const frames=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+                const sample=phase=>({phase,hidden:retainedGraph.hidden,pendingFonts:!!retainedGraph.__cfxGraphPrintFonts,
+                    revealHandle:!!retainedGraph.__cfxGraphPrintFonts?.reveal});
+                await document.fonts.ready;await frames();
+                window.graphPrintRepeatedReveal=[sample('hidden-exit')];
+                // A real host panel hides again in this delivery, before the
+                // adapter's queued screen-resume frame can run.
+                await new Promise(resolve=>{
+                    const observer=new ResizeObserver(entries=>{
+                        if(!entries.some(entry=>entry.contentRect.width>0))return;
+                        observer.disconnect();retainedGraph.hidden=true;
+                        graphPrintRepeatedReveal.push(sample('rehidden-before-resume'));resolve();
+                    });
+                    observer.observe(retainedGraph.querySelector('.cfx-graph-stage'));
+                    retainedGraph.hidden=false;
+                });
+                await frames();graphPrintRepeatedReveal.push(sample('hidden-after-resume'));
+            }
+            """);
         await page.EvaluateAsync("()=>retainedGraph.hidden=false");
         var revealed = await ReadGraphPrintScreenPaintAsync(page, name + "-revealed", disposeBeforeReveal ? dimmed : null);
         Assert.Equal(originalSize, await GraphPrintRevealStageSizeAsync(page));
@@ -73,6 +94,27 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         } else {
             Assert.All(revealed.GetProperty("samples").EnumerateArray(), sample => Assert.True(sample.GetProperty("solidPixels").GetInt32() > 0,
                 "A same-size reveal must paint the committed full-opacity marks after hidden print exit: " + revealed.GetRawText()));
+            var fontResume = await page.EvaluateAsync<JsonElement>("""
+                async()=>{
+                    await document.fonts.ready;
+                    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+                    let paints=0;const paint=CanvasRenderingContext2D.prototype.fillText;
+                    CanvasRenderingContext2D.prototype.fillText=function(text,...args){
+                        if(text==='Service 0')paints++;return paint.call(this,text,...args);
+                    };
+                    try{
+                        document.fonts.dispatchEvent(new Event('loadingdone'));
+                        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+                        return {transitions:graphPrintRepeatedReveal,hidden:retainedGraph.hidden,
+                            pendingFonts:!!retainedGraph.__cfxGraphPrintFonts,paints};
+                    }finally{CanvasRenderingContext2D.prototype.fillText=paint;}
+                }
+                """);
+            await WriteReceiptAsync(name + "-repeated-reveal-font", fontResume);
+            if (backend == HtmlGraphRenderBackend.Canvas)
+                Assert.True(fontResume.GetProperty("paints").GetInt32() > 0,
+                    "Font invalidation must repaint visible text after repeated layout loss: " + fontResume.GetRawText());
+            Assert.False(fontResume.GetProperty("pendingFonts").GetBoolean(), fontResume.GetRawText());
             await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.dispose(retainedGraph)");
         }
         await AssertReleasedAsync(page, name + "-released");
