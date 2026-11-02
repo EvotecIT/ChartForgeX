@@ -15,8 +15,16 @@ internal static partial class VisualRadialCompiler {
         internal double Vertical { get; }
         internal double Extent { get; }
         internal double Radius(ChartRect plot, double spacing) =>
-            Math.Max(0, (Math.Min(plot.Width * Horizontal, plot.Height * Vertical) / 2 - spacing) / Extent);
+            Math.Max(0, (Math.Min(Math.Min(plot.Width * Horizontal, WideWidth(plot)), plot.Height * Vertical) / 2 - spacing) / Extent);
     }
+
+    /// <summary>A plot wider than this aspect ratio limits the radial diameter to <see cref="WideDiameterShare"/> of its width.</summary>
+    internal const double WideAspect = 1.4;
+
+    /// <summary>The share of a wide plot's width a radial chart may span, so it does not dominate a landscape canvas.</summary>
+    internal const double WideDiameterShare = .6;
+
+    private static double WideWidth(ChartRect plot) => plot.Width > plot.Height * WideAspect ? plot.Width * WideDiameterShare : double.PositiveInfinity;
 
     private static FrameSizing Sizing(ChartDataLabelPlacement placement, double extent) => new(
         placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right ? .57 : 1,

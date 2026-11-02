@@ -102,7 +102,7 @@ internal static class VisualStateSceneTools {
         // A complete word-preserving reflow is lossless only when it is still drawn.
         if (omitted || fit != displayed || displayedText != null && !SameWords(text, displayed))
             builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
-        if (omitted) return;
+        if (omitted || fit.Length == 0) return;
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - height) / 2 + builder.TextAscent(style);

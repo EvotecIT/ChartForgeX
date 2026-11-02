@@ -166,7 +166,7 @@ public sealed class TextFallbackTests : IDisposable {
         var kept = trimmed.Lines[0].Text.TrimEnd('\u2026');
         Assert.Equal(0, kept.Length % 2);
         // The measured suffix leaves room for one complete rocket, never half of the next surrogate pair.
-        Assert.Equal("\uD83D\uDE80…", ChartForgeX.Rendering.ChartTextFitting.TrimEnd("\uD83D\uDE80\uD83D\uDE80\uD83D\uDE80", 20, 45, (value, size) => value.Length * size * 0.5));
+        Assert.Equal("\uD83D\uDE80…", ChartForgeX.Rendering.ChartTextFitting.FitEnd("\uD83D\uDE80\uD83D\uDE80\uD83D\uDE80", 45, value => value.Length * 20 * 0.5, "…"));
     }
 
     [Fact]

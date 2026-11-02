@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
@@ -144,7 +145,7 @@ internal static class VisualFrameLayout {
             double LegendWidthScale(TextStyle candidate) {
                 var scale = 1d;
                 foreach (var entry in entries) {
-                    var fixedWidth = 28d + (string.IsNullOrEmpty(entry.Value) ? 0 : gap)
+                    var fixedWidth = Overhead(entry) + (string.IsNullOrEmpty(entry.Value) ? 0 : gap)
                         + (string.IsNullOrEmpty(entry.Percentage) ? 0 : gap * 2 / 3);
                     var textWidth = builder.MeasureText(OneLine(entry.Label), candidate).Width
                         + builder.MeasureText(entry.Value ?? string.Empty, candidate).Width
@@ -164,13 +165,39 @@ internal static class VisualFrameLayout {
                 var widthScale = LegendWidthScale(legendStyle);
                 legendStyle.FontSize = Math.Max(Math.Min(12, legendStyle.FontSize), legendStyle.FontSize * widthScale);
             }
-            var rows = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
-            foreach (var entry in entries) {
-                var width = LegendWidth(entry, 28);
-                if (row.Count > 0 && (side || used + gap + width > legendWidth)) { rows.Add(row); row = new(); used = 0; }
-                row.Add(entry); used += (row.Count > 1 ? gap : 0) + width;
+            var columnWidth = 0d; var groupedValueList = false;
+            List<List<VisualLegendEntry>> PlanRows() {
+                var planned = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
+                foreach (var entry in entries) {
+                    var width = EntryWidth(entry, false);
+                    if (row.Count > 0 && (side || used + gap + width > legendWidth)) { planned.Add(row); row = new(); used = 0; }
+                    row.Add(entry); used += (row.Count > 1 ? gap : 0) + width;
+                }
+                if (row.Count > 0) planned.Add(row);
+                return planned;
             }
-            if (row.Count > 0) rows.Add(row);
+            var rows = PlanRows();
+            // Legend v2: an automatic legend keeps at most two wrapped rows. A wide frame moves a longer legend, and a
+            // part-to-whole value list beside a wide plot, to the right; a compact frame lists the entries in two columns.
+            if (context.Frame.AutomaticLegendPlacement && !side && context.Frame.LegendMaximumRows == null && entries.Count > 1) {
+                var partToWhole = entries.All(entry => !string.IsNullOrEmpty(entry.Value));
+                var wideFrame = size.Width >= LegendCompactFrameWidth;
+                var widePlot = bottom - top > 0 && (right - left) / (bottom - top) > LegendSideAspect;
+                if (wideFrame && (rows.Count > LegendMaximumAutomaticRows || partToWhole && widePlot)) {
+                    position = ChartLegendPosition.Right; side = true; above = false;
+                    var natural = entries.Max(entry => LegendWidth(entry, Overhead(entry), double.PositiveInfinity));
+                    legendWidth = Math.Min(natural, (right - left) * LegendSideMaximumShare);
+                    available = Math.Max(0, bottom - top);
+                    // One column: every entry spans it, so values and percentages align.
+                    columnWidth = legendWidth;
+                    numericWidths = null;
+                    groupedValueList = partToWhole;
+                    rows = PlanRows();
+                } else if (!wideFrame && (rows.Count > LegendMaximumAutomaticRows || partToWhole && rows.Count > 1)) {
+                    columnWidth = Math.Max(0, (legendWidth - gap) / 2);
+                    rows = PlanRows();
+                }
+            }
             var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
             var legendGap = Math.Min(gap, Math.Max(0, available - lineHeight));
             var legendTitle = context.Frame.LegendTitle;
@@ -194,6 +221,19 @@ internal static class VisualFrameLayout {
             if (height > 0) legendHeight = height + legendGap;
             var x = position == ChartLegendPosition.Right ? right - legendWidth : left;
             var y = side || above ? top : bottom - height;
+            // A part-to-whole value list beside its pie reads as one group: a square plot and the list, a fixed gap apart,
+            // centred together in the frame, with the list centred vertically against the pie.
+            var groupLeft = 0d; var groupPlot = 0d;
+            if (groupedValueList && height > 0) {
+                var plotHeight = Math.Max(0, bottom - top);
+                var groupGap = Math.Max(0, LegendValueListGap - gap);
+                groupPlot = Math.Max(0, Math.Min(plotHeight, right - left - legendWidth - groupGap));
+                // The pie paints inside its plot by the theme spacing, so centre what is visible: pie edge to list edge.
+                var visibleWidth = groupPlot - gap + groupGap + legendWidth;
+                groupLeft = Math.Max(left, left + (right - left - visibleWidth) / 2 - gap);
+                x = groupLeft + groupPlot + groupGap;
+                y = top + Math.Max(0, (plotHeight - height) / 2);
+            }
             using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {
                 if (!string.IsNullOrWhiteSpace(legendTitle)) {
                     var titleBounds = new ChartRect(x, y, titleHeight > 0 ? legendWidth : 0, titleHeight > 0 ? titleLineHeight : 0);
@@ -208,16 +248,17 @@ internal static class VisualFrameLayout {
                 }
                 for (var r = 0; r < visible; r++) {
                     var rowWidth = 0d;
-                    foreach (var entry in rows[r]) rowWidth += LegendWidth(entry, ReferenceEquals(entry, overflow) ? 0 : 28) + gap;
+                    foreach (var entry in rows[r]) rowWidth += EntryWidth(entry, ReferenceEquals(entry, overflow)) + gap;
                     rowWidth = Math.Max(0, rowWidth - gap);
                     var alignRight = position is ChartLegendPosition.TopRight or ChartLegendPosition.BottomRight;
                     var alignCenter = position is ChartLegendPosition.Top or ChartLegendPosition.Bottom;
                     var cursor = x + (alignRight ? legendWidth - rowWidth : alignCenter ? (legendWidth - rowWidth) / 2 : 0);
                     foreach (var entry in rows[r]) {
                         var isSummary = ReferenceEquals(entry, overflow);
-                        var width = LegendWidth(entry, isSummary ? 0 : 28);
+                        var width = EntryWidth(entry, isSummary);
                         var baseline = y + titleHeight + r * lineHeight + builder.TextAscent(legendStyle);
-                        var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, 10, 10);
+                        var glyph = Glyph(entry);
+                        var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, glyph == LegendGlyph.Line ? LegendLineWidth : LegendSwatchSize, LegendSwatchSize);
                         using (builder.PushGroup("legend-" + entry.Id, "legend-entry", entry.SceneMetadata())) {
                             if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
                             if (entry.Marker != null) entry.Marker(builder, swatch, context);
@@ -225,10 +266,12 @@ internal static class VisualFrameLayout {
                                 using (builder.PushGroup("legend-" + entry.Id + "-swatch", "state-legend-swatch",
                                     VisualStateSceneTools.StateMetadata(entry.PinStateColors, entry.State)))
                                     VisualStateSceneTools.StateRect(builder, swatch, entry.State, colors, ChartStateCategoryLegend.SwatchRadius, "legend-swatch");
-                            } else if (entry.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine)
-                                builder.Line(swatch.Left, swatch.Top + 5, swatch.Right, swatch.Top + 5, entry.Color, context.Theme.SeriesStrokeWidth, role: "legend-swatch", paint: VisualChartPaint.Stroke(entry.Paint ?? SvgPaint.Literal(entry.Color)));
+                            } else if (glyph == LegendGlyph.Line)
+                                builder.Line(swatch.Left, swatch.Top + swatch.Height / 2, swatch.Right, swatch.Top + swatch.Height / 2, entry.Color, LegendLineStroke, role: "legend-swatch", paint: VisualChartPaint.Stroke(entry.Paint ?? SvgPaint.Literal(entry.Color)));
+                            else if (glyph == LegendGlyph.Dot)
+                                builder.Ellipse(swatch.Left + swatch.Width / 2, swatch.Top + swatch.Height / 2, LegendDotDiameter / 2, LegendDotDiameter / 2, entry.Color, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                             else {
-                                builder.Rect(swatch, entry.Color, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
+                                builder.Rect(swatch, entry.Color, radius: LegendSwatchRadius, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                                 DrawLegendPattern(builder, swatch, entry.Pattern, context);
                             }
                             }
@@ -238,9 +281,10 @@ internal static class VisualFrameLayout {
                             if (isSummary && builder.MeasureText(fullLabel, legendStyle).Width > width)
                                 fullLabel = "+ " + omitted.ToString(CultureInfo.InvariantCulture) + " more";
                             var valueWidth = ValueWidth(entry);
-                            var labelWidth = Math.Max(0, width - (isSummary ? 0 : 22) - (valueWidth > 0 ? valueWidth + gap : 0));
+                            var labelOffset = isSummary ? 0 : swatch.Width + LegendLabelGap;
+                            var labelWidth = Math.Max(0, width - (isSummary ? 0 : labelOffset + LegendTrailingSlack) - (valueWidth > 0 ? valueWidth + gap : 0));
                             var label = Fit(fullLabel, labelWidth, legendStyle);
-                            var anchor = cursor + (isSummary ? 0 : 18) + (legendStyle.Alignment == TextAlignment.Center ? labelWidth / 2 : legendStyle.Alignment == TextAlignment.Right ? labelWidth : 0);
+                            var anchor = cursor + labelOffset + (legendStyle.Alignment == TextAlignment.Center ? labelWidth / 2 : legendStyle.Alignment == TextAlignment.Right ? labelWidth : 0);
                             builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: paints?.Foreground ?? VisualChartPaint.Text(legendStyle));
                             if (valueWidth > 0) {
                                 var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
@@ -269,16 +313,21 @@ internal static class VisualFrameLayout {
                 }
             }
             if (height > 0) {
-                if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + legendGap; else right -= legendWidth + legendGap; }
+                if (groupedValueList) { left = groupLeft; right = groupLeft + groupPlot; }
+                else if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + legendGap; else right -= legendWidth + legendGap; }
                 else if (above) top += height + legendGap; else bottom -= height + legendGap;
             }
-            double LegendWidth(VisualLegendEntry entry, double overhead) {
+            double LegendWidth(VisualLegendEntry entry, double overhead, double? limit = null) {
+                var bound = limit ?? legendWidth;
                 var valueWidth = ValueWidth(entry);
                 if (valueWidth > 0) valueWidth += gap;
-                var label = OneLine(entry.Label); var availableWidth = Math.Max(0, legendWidth - overhead - valueWidth);
+                var label = OneLine(entry.Label); var availableWidth = Math.Max(0, bound - overhead - valueWidth);
                 var length = ChartTextFitting.PrefixLength(label, availableWidth, text => builder.MeasureText(text, legendStyle).Width);
-                return length == label.Length ? Math.Min(legendWidth, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : legendWidth;
+                return length == label.Length ? Math.Min(bound, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : bound;
             }
+            // A two-column list gives every entry the same column so names, values and percentages line up.
+            double EntryWidth(VisualLegendEntry entry, bool summary) =>
+                summary ? LegendWidth(entry, 0) : columnWidth > 0 ? columnWidth : LegendWidth(entry, Overhead(entry));
             double ValueWidth(VisualLegendEntry entry) {
                 if (string.IsNullOrEmpty(entry.Value)) return 0;
                 var widths = NumericWidths(entry);
@@ -294,11 +343,11 @@ internal static class VisualFrameLayout {
                     // face can consume a small advance-only gap, so keep a full line of clearance.
                     var numericGap = overflowValue ? Math.Max(gap * 2 / 3, legendStyle.EffectiveFontSize * 1.5) : gap * 2 / 3;
                     var percentageWidth = string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width;
-                    var textWidth = Math.Max(0, legendWidth - 28 - gap - percentageWidth - (percentageWidth > 0 ? numericGap : 0));
+                    var textWidth = Math.Max(0, (columnWidth > 0 ? columnWidth : legendWidth) - Overhead(entry) - gap - percentageWidth - (percentageWidth > 0 ? numericGap : 0));
                     var labelWidth = builder.MeasureText(OneLine(entry.Label), legendStyle).Width;
                     // Reserve a readable label before fitting the value. A long authored numeric caption
                     // must not erase the category or paint through its separately allocated column.
-                    var labelReserve = Math.Min(labelWidth, Math.Max(builder.MeasureText("…", legendStyle).Width, textWidth / 3));
+                    var labelReserve = Math.Min(labelWidth, Math.Max(builder.MeasureText(ShortenedMinimum(OneLine(entry.Label)), legendStyle).Width, textWidth / 3));
                     var valueMaximum = Math.Max(0, textWidth - labelReserve);
                     var value = entry.Value!;
                     if (builder.MeasureText(value, legendStyle).Width > valueMaximum) {
@@ -353,7 +402,7 @@ internal static class VisualFrameLayout {
             if (remainder.Length > 0 || paragraphs.Count > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.heading-overflow", "The heading exceeds the available frame space."));
         }
         string Fit(string text, double width, TextStyle style, bool ellipsis = true) {
-            var fitted = ChartTextFitting.FitEnd(text, width, value => builder.MeasureText(value, style).Width, ellipsis ? "…" : "");
+            var fitted = ChartTextFitting.FitEnd(text, width, value => builder.MeasureText(value, style).Width, ellipsis ? "…" : "", ChartTextFitting.MinimumEllipsizedTextElements);
             if (fitted == text) return text;
             if (ellipsis) {
                 builder.AddDiagnostic(new VisualDiagnostic("frame.text-truncated", "Frame text was shortened; its complete value remains in semantic metadata."));
@@ -376,4 +425,44 @@ internal static class VisualFrameLayout {
     }
 
     private static string OneLine(string text) => text.Replace('\r', ' ').Replace('\n', ' ');
+
+    /// <summary>The shortest displayed form of a label that still identifies it: its first six text elements and an ellipsis.</summary>
+    private static string ShortenedMinimum(string label) {
+        var end = 0;
+        for (var count = 0; end < label.Length && count < ChartTextFitting.MinimumEllipsizedTextElements; count++) end = TextElementBoundary.Next(label, end);
+        return end >= label.Length ? label : label.Substring(0, end) + "…";
+    }
+
+    /// <summary>Legend v2 glyphs match their mark: a short line for stroked series, a dot for point clouds, a rounded square for filled marks.</summary>
+    internal enum LegendGlyph { Square, Line, Dot }
+
+    internal const double LegendSwatchSize = 10;
+    internal const double LegendSwatchRadius = 2;
+    internal const double LegendLineWidth = 14;
+    internal const double LegendLineStroke = 2;
+    internal const double LegendDotDiameter = 8;
+    internal const double LegendLineMarkerDiameter = 6;
+    internal const double LegendLabelGap = 6;
+    private const double LegendTrailingSlack = 4;
+    private const double LegendTrailingSpace = 10;
+    /// <summary>An automatic top or bottom legend keeps at most this many wrapped rows before it moves or forms columns.</summary>
+    internal const int LegendMaximumAutomaticRows = 2;
+    /// <summary>Frames narrower than this are compact: their legend forms two columns instead of moving beside the plot.</summary>
+    internal const double LegendCompactFrameWidth = 480;
+    /// <summary>A part-to-whole value list moves beside a plot wider than this aspect ratio.</summary>
+    internal const double LegendSideAspect = 1.4;
+    private const double LegendSideMaximumShare = .36;
+    /// <summary>The visible gap between a pie and its value list; the pie's own inset (the theme spacing) counts toward it.</summary>
+    internal const double LegendValueListGap = 32;
+
+    internal static LegendGlyph Glyph(VisualLegendEntry entry) => entry.State != null ? LegendGlyph.Square : entry.Kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine or ChartSeriesKind.Slope
+            or ChartSeriesKind.Radar or ChartSeriesKind.Polar => LegendGlyph.Line,
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => LegendGlyph.Dot,
+        _ => LegendGlyph.Square
+    };
+
+    /// <summary>The fixed width an entry needs besides its text: glyph, glyph-to-label gap and trailing space.</summary>
+    private static double Overhead(VisualLegendEntry entry) =>
+        (Glyph(entry) == LegendGlyph.Line ? LegendLineWidth : LegendSwatchSize) + LegendLabelGap + LegendTrailingSpace;
 }

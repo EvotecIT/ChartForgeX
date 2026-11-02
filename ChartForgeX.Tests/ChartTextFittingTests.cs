@@ -26,8 +26,11 @@ public sealed class ChartTextFittingTests {
     [Fact]
     public void CanonicalEllipsisRetainsFittingValuesAndMeasuredSuffixBudget() {
         Assert.Equal("whole", ChartTextFitting.TrimEnd("whole", 12, 5, (text, _) => text.Length));
-        Assert.Equal("long…", ChartTextFitting.TrimEnd("long value", 12, 5, (text, _) => text.Length));
-        Assert.Equal("l…", ChartTextFitting.TrimEnd("long value", 12, 2, (text, _) => text.Length));
+        Assert.Equal("long v…", ChartTextFitting.TrimEnd("long value", 12, 7, (text, _) => text.Length));
+        // Chart text keeps at least six characters before its ellipsis, or is hidden.
+        Assert.Equal("", ChartTextFitting.TrimEnd("long value", 12, 5, (text, _) => text.Length));
+        Assert.Equal("long…", ChartTextFitting.FitEnd("long value", 5, text => text.Length, "…"));
+        Assert.Equal("l…", ChartTextFitting.FitEnd("long value", 2, text => text.Length, "…"));
         Assert.Equal("", ChartTextFitting.TrimEnd("long value", 12, .5, (text, _) => text.Length));
     }
 }

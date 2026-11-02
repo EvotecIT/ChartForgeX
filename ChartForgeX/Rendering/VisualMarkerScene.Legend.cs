@@ -61,7 +61,9 @@ internal static partial class VisualMarkerScene {
                 stroke = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity);
                 strokePaint = paint.WithOpacity(stroke.Value, ChartVisualPrimitives.BubbleStrokeOpacity);
             }
-            Draw(builder, series, point, x, y, Math.Min(bounds.Width, bounds.Height) * .4, markerFill, markerPaint,
+            // Legend v2: a stroked series shows its line with a 6 px dot; a point series shows an 8 px dot.
+            var radius = line ? Math.Min(bounds.Height * .3, VisualFrameLayout.LegendLineMarkerDiameter / 2) : Math.Min(bounds.Width, bounds.Height) * .4;
+            Draw(builder, series, point, x, y, radius, markerFill, markerPaint,
                 "legend-swatch", stroke, strokeWidth > 0 ? strokeWidth : 1, strokePaint, pattern,
                 ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "legend-pattern",
                 quantitativeOutline: QuantitativeOutline(series, colors), markerOptions: markers);

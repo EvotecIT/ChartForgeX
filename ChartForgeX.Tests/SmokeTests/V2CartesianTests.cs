@@ -98,7 +98,9 @@ public sealed class V2CartesianTests {
         Assert.Equal(title, Assert.Single(scene.Regions, region => region.Role == "axis-x-title").Label);
         var visible = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role is "axis-x-label" or "axis-x-title").ToArray();
         if (dropped) Assert.Empty(visible);
-        else Assert.Contains(visible, text => text.Text.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)));
+        // A shortened caption keeps at least six characters before its ellipsis; a narrower one is hidden.
+        else Assert.All(visible.SelectMany(text => text.Text.Lines).Where(line => line.Text.EndsWith("…", StringComparison.Ordinal)),
+            line => Assert.True(ChartTextFitting.KeepsShortenedMinimum(line.Text.TrimEnd('…'))));
         var svg = VisualSceneSvgRenderer.Render(scene);
         chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Prepared export must not format again."));
         chart.WithXAxis("Changed after preparation");
@@ -155,11 +157,11 @@ public sealed class V2CartesianTests {
         var stacked = Compile(chart).Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bar").ToArray();
         Assert.Equal(stacked[0].Bounds.Left, stacked[2].Bounds.Left, 10);
         Assert.Equal(stacked[1].Bounds.Left, stacked[3].Bounds.Left, 10);
-        // Stacked segments meet across a 2px surface gap; each gives up half of it at the shared boundary (design rule 4).
-        Assert.Equal(stacked[2].Bounds.Bottom + ChartMarkSurface.SurfaceGap, stacked[0].Bounds.Top, 10);
-        Assert.Equal(stacked[1].Bounds.Bottom + ChartMarkSurface.SurfaceGap, stacked[3].Bounds.Top, 10);
-        Assert.Equal(4d / 6, (stacked[0].Bounds.Height + 1) / (stacked[2].Bounds.Height + 1), 10);
-        Assert.Equal(3d / 7, (stacked[1].Bounds.Height + 1) / (stacked[3].Bounds.Height + 1), 10);
+        // Stacked segments meet across a 1px surface separator; each gives up half of it at the shared boundary (design rule 4).
+        Assert.Equal(stacked[2].Bounds.Bottom + ChartMarkSurface.StackSeparator, stacked[0].Bounds.Top, 10);
+        Assert.Equal(stacked[1].Bounds.Bottom + ChartMarkSurface.StackSeparator, stacked[3].Bounds.Top, 10);
+        Assert.Equal(4d / 6, (stacked[0].Bounds.Height + .5) / (stacked[2].Bounds.Height + .5), 10);
+        Assert.Equal(3d / 7, (stacked[1].Bounds.Height + .5) / (stacked[3].Bounds.Height + .5), 10);
     }
 
     [Fact]

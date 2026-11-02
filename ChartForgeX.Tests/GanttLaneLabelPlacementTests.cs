@@ -48,7 +48,8 @@ public sealed class GanttLaneLabelPlacementTests {
         var groups = prepared.Regions.Where(region => region.Role == "gantt-lane-group").ToArray();
         var footprints = NumericRadialAxisTextTests.Footprints(prepared.Scene);
         var captions = footprints.Where(item => item.Text.Role == "data-label").ToArray();
-        Assert.NotEmpty(captions);
+        // A 45px bar cannot hold six 12px characters and an ellipsis, so those captions are hidden; every other pose paints some.
+        if (width > 390 || fontSize < 12) Assert.NotEmpty(captions);
         foreach (var caption in captions) {
             Assert.Equal(fontSize, caption.Text.Text.Style.FontSize);
             Assert.True(LabelPlacementService.Contains(plot, caption.Bounds), "A painted item caption must fit the schedule plot.");
@@ -67,7 +68,7 @@ public sealed class GanttLaneLabelPlacementTests {
         }
         var image = PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(width, image.Width); Assert.Equal(width == 390 ? 360 : 440, image.Height);
-        if (mode == VisualThemeMode.Light && (width == 390 && fontSize == 12 || width == 760 && fontSize == 8)) {
+        if (mode == VisualThemeMode.Light && (width == 390 && fontSize == 8 || width == 760 && fontSize == 8)) {
             var caption = captions[0];
             Assert.True(HasNativeInk(prepared, image, caption.Bounds, caption.Text), "A retained packed caption must paint native raster ink.");
         }
@@ -106,7 +107,7 @@ public sealed class GanttLaneLabelPlacementTests {
     [InlineData(true, false, null, 8)]
     public void PackedCaptionVisibilityHonorsChartDefaultsAndSeriesOverridesWithoutHiddenBandGrowth(
         bool? chartVisible, bool? firstSeriesVisible, bool? secondSeriesVisible, int expectedCaptions) {
-        var chart = DenseChart(390, 12, VisualThemeMode.Light);
+        var chart = DenseChart(390, 8, VisualThemeMode.Light);
         chart.Options.ShowDataLabels = chartVisible;
         chart.Series[0].ShowDataLabels = firstSeriesVisible; chart.Series[1].ShowDataLabels = secondSeriesVisible;
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
@@ -129,7 +130,7 @@ public sealed class GanttLaneLabelPlacementTests {
         Assert.Equal(16, prepared.Regions.Count(region => region.Role == "gantt-lane-item"));
         if (expectedCaptions == 0) {
             Assert.DoesNotContain(prepared.Regions, region => region.Role == "data-label");
-            var unlabelled = DenseChart(390, 12, VisualThemeMode.Light);
+            var unlabelled = DenseChart(390, 8, VisualThemeMode.Light);
             foreach (var series in unlabelled.Series) for (var point = 0; point < series.GanttLaneItems.Count; point++) {
                 var item = series.GanttLaneItems[point];
                 series.UpdateGanttLaneItem(point, new ChartGanttLaneItem(item.Start, item.End, item.Category, detail: item.Detail));

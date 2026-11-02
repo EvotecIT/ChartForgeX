@@ -21,6 +21,17 @@ internal static partial class VisualHierarchyCompiler {
         return builder.MeasureText(displayed, style).Height + LabelInsetLimit * 2;
     }
 
+    /// <summary>The body width the widest unbreakable caption word needs, including the label inset on both sides.</summary>
+    private static double LabelWordWidth(Chart chart, VisualRenderContext context, VisualSceneBuilder builder) {
+        var series = chart.Series[0]; var widest = 0d;
+        for (var index = 0; index < series.Nodes.Count; index++) {
+            var style = LabelStyle(chart, context, context.Theme.Resolve(context.ThemeMode).Foreground, index);
+            foreach (var word in HierarchyCaption(series, index, series.Nodes[index].Label).Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                widest = Math.Max(widest, builder.MeasureText(word, style).Width);
+        }
+        return widest > 0 ? Math.Ceiling(widest + LabelInsetLimit * 2 + 1) : 0;
+    }
+
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
         ChartColor fill, int pointIndex, string role, HierarchyCaptionSurface? surface, bool center = false, SvgPaint? fillPaint = null, double insetLimit = LabelInsetLimit, int maximumLines = 3) {
         var style = LabelStyle(chart, context, fill, pointIndex);

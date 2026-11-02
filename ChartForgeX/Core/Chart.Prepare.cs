@@ -83,6 +83,8 @@ public sealed partial class Chart : IVisualRenderable {
             RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
             RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
             sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
+        if (!sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition && family != VisualChartFamily.Map)
+            frame = frame.WithAutomaticLegendPlacement();
         var captureHierarchy = Series.Count == 1 && Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst;
         var captureBubble = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind == ChartSeriesKind.Bubble);
         var captureRange = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea);

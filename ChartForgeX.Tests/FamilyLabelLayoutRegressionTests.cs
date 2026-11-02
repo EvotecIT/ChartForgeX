@@ -62,7 +62,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
     [InlineData(400, 280, VisualThemeMode.Dark)]
     [InlineData(800, 440, VisualThemeMode.Light)]
     [InlineData(800, 440, VisualThemeMode.Dark)]
-    public void FunnelCaptionUsesOutsideRailWhenItCannotFitCompletelyInsideItsBar(int width, int height, VisualThemeMode mode) {
+    public void FunnelCaptionStaysInsideItsBarOnTwoLinesBeforeUsingTheOutsideRail(int width, int height, VisualThemeMode mode) {
         var prepared = Prepare(FunnelRecipe.Create(), width, height, mode);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"family-funnel-{width}-{height}-{mode}");
         var final = Texts(prepared, "funnel-label").Last();
@@ -73,11 +73,12 @@ public sealed class FamilyLabelLayoutRegressionTests {
         Assert.Equal("34.2% retained\n44.6% drop-off", ratio.Label);
         var ratioText = Texts(prepared, "funnel-ratio").Last();
         Assert.Equal(ratio.Label, string.Join("\n", ratioText.Text.Lines.Select(line => line.Text)));
-        if (width < 400) {
-            Assert.True(label.Left >= stage.Right, "A short final bar uses its empty outside rail.");
-            Assert.True(label.Bottom <= ratio.Bounds.Top || label.Right <= ratio.Bounds.Left);
-        } else Assert.True(label.Left >= stage.Left && label.Right <= stage.Right, "A wide stage retains its inside caption.");
-        Assert.All(new[] { final, ratioText }, text => Assert.Equal(13.5, text.Text.Size));
+        Assert.True(label.Left >= stage.Left && label.Right <= stage.Right, "The caption stays inside its own stage.");
+        // A short final bar wraps its caption at the word break instead of spilling beside the ratio column.
+        if (width < 400) Assert.Equal(new[] { "Completed:", "41" }, final.Text.Lines.Select(line => line.Text));
+        Assert.Equal(13.5, final.Text.Size);
+        // Every ratio shares one column, so the final ratio has the same size as the others.
+        Assert.Single(Texts(prepared, "funnel-ratio").Select(text => text.Text.Size).Distinct());
         AssertExportedCaptions(prepared, "funnel-label", new[] { "Received: 120", "Qualified: 95", "Reviewed: 74", "Completed: 41" });
         AssertPainted(prepared, new[] { final, ratioText });
     }

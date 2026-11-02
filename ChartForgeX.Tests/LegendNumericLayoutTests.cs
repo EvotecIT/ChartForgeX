@@ -43,7 +43,10 @@ public sealed class LegendNumericLayoutTests {
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "legend-label" or "legend-value"), node => {
             Assert.Equal(16, node.Text.Size);
             Assert.Equal("serif", node.Text.Style.Font.Family);
-            Assert.NotEmpty(Assert.Single(node.Text.Lines).Text);
+            var text = Assert.Single(node.Text.Lines).Text;
+            // The category keeps its readable reserve; a value too long for the rest is hidden rather than cut to a stub.
+            if (node.Role == "legend-label") Assert.NotEmpty(text);
+            else Assert.True(text.Length == 0 || !text.EndsWith("…", StringComparison.Ordinal) || ChartTextFitting.KeepsShortenedMinimum(text.TrimEnd('…')));
         });
         Assert.All(prepared.Regions.Where(region => region.Role == "legend"), region => Assert.Contains(authored, region.Label));
         Assert.All(XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "legend-entry"),

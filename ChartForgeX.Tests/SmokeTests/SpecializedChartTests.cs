@@ -454,8 +454,9 @@ internal static partial class SmokeTests {
             .AddFunnel("Funnel", Points(96, 72)).WithDataLabels();
         AssertFamilyTextFitsReservedRegion(PreparedFamily(funnel), "funnel-label", longLabel);
 
+        // Room for a shortened caption that keeps six characters before its ellipsis.
         var gauge = Chart.Create()
-            .WithSize(260, 180)
+            .WithSize(420, 260)
             .WithValueFormatter(_ => longLabel)
             .AddGauge(longLabel, 87);
         AssertFamilyTextFitsReservedRegion(PreparedFamily(gauge), "gauge-label", longLabel);

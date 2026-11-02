@@ -67,7 +67,8 @@ internal static partial class VisualHierarchyCompiler {
         var series = chart.Series[0]; var showLabels = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var model = ChartTreeLayout.Build(chart, plot, fitViewport: true,
             requestedNodeHeight: showLabels ? (index, width) => LabelBodyHeight(chart, context, builder, index, width) : (Func<int, double, double>?)null,
-            nodeStrokeWidth: context.Theme.AxisStrokeWidth, nodeGap: Math.Max(1, context.Theme.Spacing / 4));
+            nodeStrokeWidth: context.Theme.AxisStrokeWidth, nodeGap: Math.Max(1, context.Theme.Spacing / 4),
+            requestedNodeWidth: showLabels ? LabelWordWidth(chart, context, builder) : 0);
         foreach (var link in model.Links) {
             var source = model.Nodes[link.Parent]; var target = model.Nodes[link.Child];
             double x1 = source.X + model.NodeWidth, y1 = source.Y + source.Height / 2, x2 = target.X, y2 = target.Y + target.Height / 2;

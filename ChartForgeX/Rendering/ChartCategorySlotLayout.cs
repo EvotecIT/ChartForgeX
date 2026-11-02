@@ -29,7 +29,7 @@ internal readonly struct ChartCategorySlotLayout {
         var minimumFootprint = measuredFootprint?.Invoke(minimumThickness) ?? minimumThickness * footprintRatio + footprintPadding;
         // Sparkline sample slots keep their dense legacy share; charts use the design band fill.
         var occupied = pitch * BandShare(sampleSlots);
-        var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
+        var gap = count > 1 ? Math.Min(ChartMarkSurface.SurfaceGap, occupied / (count * 4)) : 0;
         var cell = (occupied - gap * (count - 1)) / count;
         if (requireMinimumFootprint && minimumFootprint > cell) {
             // A mark whose minimum painted footprint needs more of a crowded band may use up to the legacy share before failing.

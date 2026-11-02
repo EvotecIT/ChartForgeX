@@ -97,7 +97,7 @@ internal static partial class VisualCartesianCompiler {
                 }
                 if (_lines.TryGetValue(index, out var lineSeries)) {
                     var source = (VisualScenePath)_template[index]; var series = _policy.Series[lineSeries];
-                    output.Add(new VisualScenePath(ChartPathBuilder.FromPoints(native[lineSeries], series.Interpolation, series.Step), source.Close,
+                    output.Add(new VisualScenePath(ChartPathBuilder.FromPoints(native[lineSeries], series.Interpolation, series.Step, false, (_policy.Plot.Left, _policy.Plot.Right)), source.Close,
                         source.Fill, source.Stroke, source.StrokeWidth, source.Role, source.Id, source.Dash?.ToArray(), source.Cap, source.Join, source.Paint, source.DashOffset, source.Opacity));
                 } else output.Add(_template[index]);
             }

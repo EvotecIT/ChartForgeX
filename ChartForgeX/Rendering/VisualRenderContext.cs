@@ -100,9 +100,22 @@ public sealed partial class VisualFrame {
     /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
     public double LegendMaximumHeightFraction { get; }
     internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle) {
+        AutomaticLegendPlacement = AutomaticLegendPlacement
+    };
     internal VisualFrame WithLegendTitle(string? legendTitle) => new(Title, Subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle) {
+        AutomaticLegendPlacement = AutomaticLegendPlacement
+    };
+
+    /// <summary>Whether neither the host nor the model placed the legend, so the frame may move a long legend beside the plot or into columns.</summary>
+    internal bool AutomaticLegendPlacement { get; private set; }
+
+    /// <summary>Marks a producer-resolved default position as automatic legend placement.</summary>
+    internal VisualFrame WithAutomaticLegendPlacement() => new(Title, Subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle) {
+        AutomaticLegendPlacement = true
+    };
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>

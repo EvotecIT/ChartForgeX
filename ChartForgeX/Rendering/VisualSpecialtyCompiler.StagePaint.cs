@@ -19,13 +19,13 @@ internal static partial class VisualSpecialtyCompiler {
             VisualChartPaint.Series(series, source, index, explicitOverride: point.HasValue || policy?.Color != null).WithOpacity(color, opacity));
     }
 
-    private static void StagePartition(Chart chart, VisualSceneBuilder builder, ChartPath path, int index, ChartColor color,
+    private static void StagePartition(Chart chart, VisualSceneBuilder builder, ChartPath path, int index, ChartColor color, SvgPaint fillPaint,
         string role, ChartStrokeStyle? outline, double phase) {
         var series = chart.Series[0];
         var stroke = StageOutline(series, index, color, outline);
         builder.Path(path, color, stroke.Color, stroke.Width, role: role, close: true, dash: stroke.Dash,
             cap: VisualStrokeCap.Butt, paint: new VisualScenePaintBinding(
-                fill: VisualChartPaint.Series(series, color, index), stroke: stroke.Paint), dashOffset: phase);
+                fill: fillPaint, stroke: stroke.Paint), dashOffset: phase);
         Pattern(chart, builder, index, path, color);
     }
 
@@ -36,19 +36,19 @@ internal static partial class VisualSpecialtyCompiler {
     }
 
     private static (ChartColor Color, SvgPaint Paint) FunnelConnectionFill(Chart chart, int fromIndex,
-        ChartColor inherited, ChartFunnelForm form, ChartFunnelConnectorStyle? style) {
+        ChartColor inherited, ChartFunnelForm form, ChartFunnelConnectorStyle? style, SvgPaint inheritedPaint) {
         var source = style?.Fill ?? inherited;
         var opacity = style?.FillOpacity ?? (form == ChartFunnelForm.Cone ? .3 : .18);
         var fill = ChartColorMath.WithOpacity(source, opacity);
-        return (fill, VisualChartPaint.Series(chart.Series[0], source, fromIndex,
-            explicitOverride: style?.Fill.HasValue == true).WithOpacity(fill, opacity));
+        var paint = style?.Fill.HasValue == true ? VisualChartPaint.Series(chart.Series[0], source, fromIndex, explicitOverride: true) : inheritedPaint;
+        return (fill, paint.WithOpacity(fill, opacity));
     }
 
     private static void StyledFunnelConnection(Chart chart, VisualSceneBuilder builder, ChartFunnelConnectionLayout connection,
-        ChartColor inherited, ChartFunnelForm form, ChartFunnelConnectorStyle style) {
+        ChartColor inherited, SvgPaint inheritedPaint, ChartFunnelForm form, ChartFunnelConnectorStyle style) {
         if (!style.Visible) return;
         var series = chart.Series[0]; var source = style.Fill ?? inherited;
-        var fill = FunnelConnectionFill(chart, connection.FromIndex, inherited, form, style);
+        var fill = FunnelConnectionFill(chart, connection.FromIndex, inherited, form, style, inheritedPaint);
         var outline = style.OutlineStroke; var strokeSource = outline?.Color ?? source;
         var stroke = outline == null ? (ChartColor?)null : ChartColorMath.WithOpacity(strokeSource, outline.Opacity);
         builder.Path(connection.Path, fill.Color, stroke, outline?.Width ?? 1,

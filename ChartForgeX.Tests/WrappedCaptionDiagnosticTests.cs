@@ -30,7 +30,7 @@ public sealed class WrappedCaptionDiagnosticTests {
 
     [Theory]
     [InlineData("North America services", "North America\nservices", 260, 100, false, true)]
-    [InlineData("North America services", "North America\nservices", 40, 100, true, true)]
+    [InlineData("North America services", "North America\nservices", 40, 100, true, false)]
     [InlineData("North America services", "North America", 260, 100, true, true)]
     [InlineData("North America services", "services North America", 260, 100, true, true)]
     [InlineData("North America services", "North America\nservices", 260, 12, true, false)]
@@ -49,7 +49,7 @@ public sealed class WrappedCaptionDiagnosticTests {
         if (!drawn) { Assert.Empty(scene.Nodes.OfType<VisualSceneText>()); return; }
         var caption = Assert.Single(scene.Nodes.OfType<VisualSceneText>());
         if (!overflow) Assert.Equal(displayed, string.Join("\n", caption.Text.Lines.Select(line => line.Text)));
-        else if (width == 40) Assert.Contains("…", string.Join("\n", caption.Text.Lines.Select(line => line.Text)));
+
     }
 
     [Theory]

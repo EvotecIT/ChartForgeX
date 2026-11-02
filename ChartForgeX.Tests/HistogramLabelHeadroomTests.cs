@@ -22,7 +22,8 @@ public sealed class HistogramLabelHeadroomTests {
         var prepared = chart.Prepare(Context(mode));
         ScatterBubbleColorRenderingTests.Capture(prepared, "histogram-complete-counts-" + mode + "-" + (maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "auto"));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
-        Assert.Equal(new[] { "3 obs", "3 obs", "0 obs", "3 obs" }, labels.Select(node => Assert.Single(node.Text.Lines).Text));
+        // The empty bin draws nothing, so the recipe gives it no caption.
+        Assert.Equal(new[] { "3 obs", "3 obs", "3 obs" }, labels.Select(node => Assert.Single(node.Text.Lines).Text));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
         var firstBin = Assert.Single(prepared.Regions, region => region.Id == "series-0-point-0");

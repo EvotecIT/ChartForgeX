@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
@@ -41,6 +42,28 @@ internal static class ChartSeriesColours {
     private static int CategorySourceOrdinal(ChartSeries series, int point) => series.IsVisibilityPreparation
         && ChartSeriesKindTraits.IsPieLikeKind(series.Kind) && point >= 0 && point < series.SourcePointIndices.Count ? series.SourcePointIndices[point] : point;
 
+    /// <summary>The share of white each successive funnel or pyramid stage blends into the series colour (about 12% lightness on a mid-tone).</summary>
+    internal const double StageWhiteStep = .24;
+
+    /// <summary>The most white a stage sequence blends in, so the last stage of a long sequence keeps a visible fill.</summary>
+    internal const double StageWhiteRange = .6;
+
+    /// <summary>
+    /// The share of white a funnel or pyramid stage blends into its automatic series colour, or zero when the stage keeps it:
+    /// the first stage, explicit point, series or state paint. The share depends only on the stage order, so light and dark
+    /// drawings tint their own series colour by the same amount.
+    /// </summary>
+    internal static double StageShare(ChartSeries series, int point, int count) =>
+        point <= 0 || count < 2 || PointOverride(series, point).HasValue || series.Color.HasValue || series.StateRole != ChartSeriesState.None
+            ? 0 : point * Math.Min(StageWhiteStep, StageWhiteRange / (count - 1));
+
+    /// <summary>Ordered stages (funnel, pyramid) share one hue: the automatic series colour, lightened per stage by <see cref="StageShare"/>.</summary>
+    internal static ChartColor Stage(ChartSeries series, int point, int count, VisualThemeColors colors) {
+        if (PointOverride(series, point) is { } authored) return authored;
+        var source = Resolve(series, 0, colors);
+        var share = StageShare(series, point, count);
+        return share > 0 ? ChartColorMath.Blend(source, ChartColor.White.WithAlpha(source.A), share) : source;
+    }
     internal static ChartColor State(ChartSeriesState state, VisualThemeColors colors, ChartColor fallback) {
         if (state == ChartSeriesState.None) return fallback;
         var status = colors.Status;
@@ -49,7 +72,9 @@ internal static class ChartSeriesColours {
             ChartSeriesState.Warning => status.Medium.Fill,
             ChartSeriesState.Info => status.Info.Fill,
             ChartSeriesState.Neutral => status.Neutral.Fill,
-            ChartSeriesState.Success or ChartSeriesState.Quiet => status.Pass.Fill,
+            ChartSeriesState.Success => status.Pass.Fill,
+            // Quiet is the healthy state that should recede: its own theme role, not the success green.
+            ChartSeriesState.Quiet => colors.Quiet,
             _ => fallback
         };
     }

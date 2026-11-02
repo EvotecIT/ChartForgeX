@@ -137,8 +137,10 @@ public sealed partial class LabelPlacementService {
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
-                for (var count = elements.Length - 1; count > 0 && result == null; count--) {
-                    var shorter = text.Substring(0, elements[count]).TrimEnd() + "…";
+                for (var count = elements.Length - 1; count >= ChartTextFitting.MinimumEllipsizedTextElements && result == null; count--) {
+                    var prefix = text.Substring(0, elements[count]);
+                    if (!ChartTextFitting.KeepsShortenedMinimum(prefix)) continue;
+                    var shorter = prefix.TrimEnd() + "…";
                     result = TryPlace(request, shorter, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels, ellipsized: true);
                 }
             }

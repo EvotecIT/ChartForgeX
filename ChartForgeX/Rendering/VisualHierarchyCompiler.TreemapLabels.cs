@@ -66,7 +66,8 @@ internal static partial class VisualHierarchyCompiler {
             if (rows < 1 || width < 6) return false;
             var layout = builder.LayoutText(name, width, style, maximumLines: rows, trimming: TextTrimming.Ellipsis);
             var displayed = string.Join("\n", layout.Lines.Select(line => line.Text));
-            if (string.IsNullOrWhiteSpace(displayed) || displayed == "…" || layout.Metrics.Width > width + .000001 || layout.Metrics.Height > height + .000001) return false;
+            if (string.IsNullOrWhiteSpace(displayed) || layout.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)
+                && !ChartTextFitting.KeepsShortenedMinimum(line.Text.TrimEnd('…'))) || layout.Metrics.Width > width + .000001 || layout.Metrics.Height > height + .000001) return false;
             Paint(displayed, bounds.Left + inset, bounds.Top + verticalInset, rotated: false, includeValue: false);
             if (layout.Trimmed) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A treemap primary caption was shortened at a whole text-element boundary; complete text remains in source semantics."));
             return true;

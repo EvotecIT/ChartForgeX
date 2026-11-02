@@ -5,13 +5,22 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualGaugeCompiler {
+    /// <summary>Automatic status bands are context, not the measurement: they paint muted at this share of their opacity.</summary>
+    internal const double AutomaticBandOpacity = .6;
+
+    // A healthy band is quiet; only warning and danger bands carry a loud status colour.
+    private static ChartColor BandSource(VisualThemeColors colors, ChartGaugeBand band) => band.Color
+        ?? (band.State == ChartSeriesState.Success ? colors.Quiet : VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent));
+
+    private static double BandOpacity(ChartGaugeBand band) => band.Color.HasValue ? band.Opacity : band.Opacity * AutomaticBandOpacity;
+
     private static ChartColor BandColor(VisualThemeColors colors, ChartGaugeBand band) =>
-        ChartColorMath.WithOpacity(band.Color ?? VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent), band.Opacity);
+        ChartColorMath.WithOpacity(BandSource(colors, band), BandOpacity(band));
 
     private static SvgPaint BandPaint(VisualThemeColors colors, ChartGaugeBand band) {
-        var source = band.Color ?? VisualRadialPrimitives.StateColor(colors, band.State, colors.Accent);
-        var paint = SvgPaint.Of(source, band.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status);
-        return band.Opacity == 1 ? paint : paint.WithOpacity(BandColor(colors, band), band.Opacity);
+        var paint = SvgPaint.Of(BandSource(colors, band), band.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status);
+        var opacity = BandOpacity(band);
+        return opacity == 1 ? paint : paint.WithOpacity(BandColor(colors, band), opacity);
     }
 
     private static SvgPaint NeedlePaint(GaugePaintContext chart, GaugeData data) => chart.Options.NeedleColor.HasValue
