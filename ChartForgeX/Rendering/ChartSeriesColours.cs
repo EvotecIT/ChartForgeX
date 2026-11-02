@@ -71,7 +71,9 @@ internal static class ChartSeriesColours {
             ChartSeriesState.Warning => status.Medium.Fill,
             ChartSeriesState.Info => status.Info.Fill,
             ChartSeriesState.Neutral => status.Neutral.Fill,
-            ChartSeriesState.Success or ChartSeriesState.Quiet => status.Pass.Fill,
+            ChartSeriesState.Success => status.Pass.Fill,
+            // Quiet is the healthy state that should recede: its own theme role, not the success green.
+            ChartSeriesState.Quiet => colors.Quiet,
             _ => fallback
         };
     }
