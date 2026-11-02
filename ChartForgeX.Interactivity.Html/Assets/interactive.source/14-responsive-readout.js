@@ -36,8 +36,10 @@
       const scale = svg.clientWidth / (svg.viewBox.baseVal?.width || svg.clientWidth);
       const bottom = Math.max(...headings.map(node => { const box = node.getBBox(); return box.y + box.height; }),
         ...Array.from(svg.querySelectorAll('[data-cfx-role="legend-native"]'), node => node._cfxNativeRegion ? node._cfxNativeRegion.y + node._cfxNativeRegion.height : -Infinity));
-      const plotTop = root._cfxDataProjection?.plotBounds?.y;
-      const crop = Math.min(bottom + 4, Number.isFinite(plotTop) ? plotTop - 16 : bottom) - (svg.viewBox.baseVal?.y || 0);
+      // Never clip drawn data or axis text, whatever the family's layout.
+      const content = Math.min(...Array.from(svg.querySelectorAll('[data-cfx-role="series"],[data-cfx-role^="axis-"],[data-cfx-browser-axis]'), node => {
+        const box = node.getBBox(); return box.width || box.height ? box.y : Infinity; }));
+      const crop = Math.min(bottom + 4, content - 4) - (svg.viewBox.baseVal?.y || 0);
       if (!(scale > 0) || !(crop > 0)) return;
       // The stylesheet clips the drawing's band on a whole pixel; the drawing element itself is never restyled.
       frameNode.dataset.cfxHeadingCrop = 'true'; frameNode.style.setProperty('--cfx-heading-crop', Math.round(crop * scale) + 'px');

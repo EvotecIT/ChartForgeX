@@ -185,7 +185,8 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.All(ticks, tick => {
             var value = tick.GetProperty("value").GetDouble();
             Assert.InRange(value, minimum - .000001, maximum + .000001);
-            Assert.Equal(value, double.Parse(tick.GetProperty("text").GetString()!, System.Globalization.CultureInfo.CurrentCulture), 5);
+            // The browser formats with its own locale; accept either decimal separator.
+            Assert.Equal(value, double.Parse(tick.GetProperty("text").GetString()!.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture), 5);
             Assert.True(tick.GetProperty("width").GetDouble() > 0);
         });
     }
