@@ -31,7 +31,7 @@ public static class HtmlSequenceNavigation {
                 .Attribute("style","margin-left:"+F(b.Left)+"px;margin-top:"+F(b.Bottom)+"px;max-width:"+F(prepared.Size.Width-b.Left)+"px").EndStartElement();
             writer.StartElement("summary").Text(item.Node.Label+" links").EndElement();
             writer.StartElement("nav").Attribute("aria-label",item.Node.Label+" links").EndStartElement();
-            foreach(var link in item.Node.Sequence!.NavigationLinks)writer.StartElement("a").Attribute("href",link.Href).Text(link.Label).EndElement();
+            foreach(var link in item.Node.Sequence!.NavigationLinks)writer.StartElement("a").Attribute("href",link.Href).Attribute("tabindex","0").Text(link.Label).EndElement();
             writer.EndElement().EndElement();
         }
         writer.EndElement();return VisualArtifactRendering.WrapSvgPage(title,writer.Build(),language,sizing:VisualArtifactHtmlSizing.PreserveSize);
