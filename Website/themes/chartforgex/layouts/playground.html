@@ -24,17 +24,13 @@
       <button type="button" role="tab" class="cfx-pg__lang" data-language="{{ l.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" style="--key: var(--cfx-s{{ if l.id == "mermaid" }}4{{ else }}2{{ end }})"><span class="cfx-key" aria-hidden="true"></span>{{ l.label }}</button>
       {{~ end ~}}
     </div>
-    <label class="cfx-pg__samples">
+    <label class="cfx-pg__samples cfx-pg__select">
       <span class="cfx-visually-hidden">Sample</span>
       <select data-pg-samples disabled>
         <option value="">Samples load with the engine</option>
       </select>
     </label>
     <div class="cfx-pg__actions">
-      <div class="cfx-pg__seg cfx-seg" role="group" aria-label="Preview theme">
-        <button type="button" data-pg-theme="light" aria-pressed="false"><span class="cfx-key cfx-key--light" aria-hidden="true"></span>Light</button>
-        <button type="button" data-pg-theme="dark" aria-pressed="false"><span class="cfx-key cfx-key--dark" aria-hidden="true"></span>Dark</button>
-      </div>
       <button type="button" class="cfx-pg__btn" data-pg-share>Copy link</button>
       <button type="button" class="cfx-pg__btn" data-pg-download="svg" disabled>SVG</button>
       <button type="button" class="cfx-pg__btn cfx-pg__btn--primary" data-pg-download="png" disabled>PNG</button>
@@ -47,7 +43,7 @@
         <div class="cfx-pg__gutter" aria-hidden="true" data-pg-gutter></div>
         <div class="cfx-pg__field">
           <div class="cfx-pg__mark" aria-hidden="true" data-pg-mark hidden></div>
-          <textarea data-pg-source spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="Diagram source" aria-describedby="cfx-pg-keys">{{ pg.initial }}</textarea>
+          <textarea data-pg-source spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="Source" aria-describedby="cfx-pg-keys">{{ pg.initial }}</textarea>
         </div>
       </div>
       <div class="cfx-pg__foot">
@@ -58,11 +54,53 @@
     </section>
 
     <section class="cfx-pg__preview" aria-label="Preview" data-pg-preview-theme="light">
-      <div class="cfx-pg__zoom" role="group" aria-label="Zoom">
-        <button type="button" data-pg-zoom="fit" aria-pressed="true">Fit</button>
-        <button type="button" data-pg-zoom="1" aria-pressed="false">100%</button>
-        <button type="button" data-pg-zoom="out" aria-label="Zoom out">&minus;</button>
-        <button type="button" data-pg-zoom="in" aria-label="Zoom in">+</button>
+      <div class="cfx-pg__tools">
+        <div class="cfx-pg__opts" role="group" aria-label="Preview options">
+          <div class="cfx-pg__opt">
+            <span class="cfx-pg__opt-label" id="cfx-pg-opt-theme">Theme</span>
+            <div class="cfx-pg__seg cfx-seg" role="group" aria-labelledby="cfx-pg-opt-theme">
+              <button type="button" data-pg-theme="light" aria-pressed="false"><span class="cfx-key cfx-key--light" aria-hidden="true"></span>Light</button>
+              <button type="button" data-pg-theme="dark" aria-pressed="false"><span class="cfx-key cfx-key--dark" aria-hidden="true"></span>Dark</button>
+            </div>
+          </div>
+          <label class="cfx-pg__opt cfx-pg__select" data-pg-opt="type" hidden>
+            <span class="cfx-pg__opt-label">Type</span>
+            <select data-pg-type></select>
+          </label>
+          <div class="cfx-pg__opt" data-pg-opt="stack" hidden>
+            <span class="cfx-pg__opt-label" id="cfx-pg-opt-stack">Series</span>
+            <div class="cfx-pg__seg cfx-seg" role="group" aria-labelledby="cfx-pg-opt-stack">
+              <button type="button" data-pg-stack="overlap" aria-pressed="false" style="--key: var(--cfx-s1)"><span class="cfx-key" aria-hidden="true"></span>Overlap</button>
+              <button type="button" data-pg-stack="stacked" aria-pressed="false" style="--key: var(--cfx-s2)"><span class="cfx-key" aria-hidden="true"></span>Stacked</button>
+            </div>
+          </div>
+          <div class="cfx-pg__opt" data-pg-opt="size" hidden>
+            <span class="cfx-pg__opt-label" id="cfx-pg-opt-size">Size</span>
+            <div class="cfx-pg__seg cfx-seg" role="group" aria-labelledby="cfx-pg-opt-size">
+              <button type="button" data-pg-size="compact" aria-pressed="false" style="--key: var(--cfx-s3)"><span class="cfx-key" aria-hidden="true"></span>Compact</button>
+              <button type="button" data-pg-size="" aria-pressed="false" style="--key: var(--cfx-s1)"><span class="cfx-key" aria-hidden="true"></span>Standard</button>
+              <button type="button" data-pg-size="wide" aria-pressed="false" style="--key: var(--cfx-s2)"><span class="cfx-key" aria-hidden="true"></span>Wide</button>
+            </div>
+          </div>
+          <label class="cfx-pg__opt cfx-pg__select" data-pg-opt="legend" hidden>
+            <span class="cfx-pg__opt-label">Legend</span>
+            <select data-pg-legend>
+              <option value="">Automatic</option>
+              <option value="Top">Top</option>
+              <option value="Bottom">Bottom</option>
+              <option value="Right">Right</option>
+              <option value="Left">Left</option>
+              <option value="off">Hidden</option>
+            </select>
+          </label>
+          <div class="cfx-pg__opt" data-pg-opt="labels" hidden>
+            <span class="cfx-pg__opt-label" id="cfx-pg-opt-labels">Values</span>
+            <div class="cfx-pg__seg cfx-seg" role="group" aria-labelledby="cfx-pg-opt-labels">
+              <button type="button" data-pg-labels="false" aria-pressed="false" style="--key: var(--cfx-s1)"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Off</button>
+              <button type="button" data-pg-labels="true" aria-pressed="false" style="--key: var(--cfx-s1)"><span class="cfx-key" aria-hidden="true"></span>On</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="cfx-pg__stage" data-pg-stage tabindex="0" aria-label="Rendered output">
         <div class="cfx-pg__boot" data-pg-boot>
@@ -72,7 +110,15 @@
         </div>
         <div class="cfx-pg__canvas" data-pg-canvas hidden></div>
       </div>
-      <div class="cfx-pg__status" role="status" aria-live="polite" data-pg-status></div>
+      <div class="cfx-pg__statusbar">
+        <div class="cfx-pg__status" role="status" aria-live="polite" data-pg-status></div>
+        <div class="cfx-pg__zoom" role="group" aria-label="Zoom">
+          <button type="button" data-pg-zoom="fit" aria-pressed="true">Fit</button>
+          <button type="button" data-pg-zoom="1" aria-pressed="false">100%</button>
+          <button type="button" data-pg-zoom="out" aria-label="Zoom out">&minus;</button>
+          <button type="button" data-pg-zoom="in" aria-label="Zoom in">+</button>
+        </div>
+      </div>
     </section>
   </div>
 
