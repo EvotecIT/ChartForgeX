@@ -72,7 +72,8 @@ internal sealed class ChartHierarchySurface {
     private void InheritOne(int index) {
         var parent = _parents[index];
         InheritedTone tone;
-        if (parent < 0 && _series.Kind == ChartSeriesKind.Sunburst)
+        if (parent < 0 && _series.Kind == ChartSeriesKind.Sunburst
+            && !_series.NodeStates.ContainsKey(_series.HierarchyItems[index].Id))
             tone = new InheritedTone(_colors.Neutral2, SvgPaint.Of(_colors.Neutral2, SvgColorRole.Surface));
         else if (parent < 0 || _series.Kind == ChartSeriesKind.Sunburst && _parents[parent] < 0) {
             var ordinal = _siblingOrdinals[index]; var color = _colors.CategoricalColor(ordinal);
