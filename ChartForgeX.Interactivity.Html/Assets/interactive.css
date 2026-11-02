@@ -34,11 +34,11 @@ body {
 
 .cfx-interactive-chart {
   /* Chrome roles: remap control geometry onto host tokens here, in one place. */
-  --cfx-tooltip-radius: 8px;
-  --cfx-control-radius: 6px;
-  --cfx-chip-radius: 999px;
-  --cfx-swatch-radius: 2px;
-  --cfx-axis-label-radius: 4px;
+  --cfx-tooltip-radius: var(--hfx-radius-overlay, 10px);
+  --cfx-control-radius: var(--hfx-radius-control, 6px);
+  --cfx-chip-radius: var(--hfx-radius-pill, 999px);
+  --cfx-swatch-radius: var(--hfx-radius-2xs, 2px);
+  --cfx-axis-label-radius: var(--hfx-radius-sm, 4px);
   --cfx-toolbar-control-size: 28px;
   --cfx-toolbar-control-size-coarse: 36px;
   --cfx-toolbar-icon-size: 16px;
@@ -378,7 +378,7 @@ body {
   background: var(--cfx-tooltip-surface);
   box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
-  font: 400 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  font: 400 var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   padding: 10px 12px;
   overflow-wrap: anywhere;
   pointer-events: none;
