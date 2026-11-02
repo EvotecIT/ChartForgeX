@@ -241,7 +241,7 @@ public static partial class GalleryWriter {
             comparisonModes = new[] { "side-by-side", "center-wipe", "preset-wipe" },
             charts = pairs.Select(pair => new {
                 name = pair.Name,
-                layout = new { heightMode = pair.Layout.HeightMode, frameFontRequest = pair.Layout.FrameFontRequest, frameFontFingerprint = pair.Layout.FrameFontFingerprint },
+                layout = new { heightMode = pair.Layout.HeightMode, widthMode = pair.Layout.WidthMode, frameFontRequest = pair.Layout.FrameFontRequest, frameFontFingerprint = pair.Layout.FrameFontFingerprint },
                 dimensionsMatch = pair.HasMatchingDimensions,
                 warnings = pair.Warnings,
                 svg = new {

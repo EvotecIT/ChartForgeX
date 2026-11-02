@@ -76,9 +76,11 @@ public sealed class GalleryBaselineProvenanceTests {
     [InlineData("advanced-topology", "missing", false, false, false)]
     [InlineData("advanced-topology", "request-changed", false, false, false)]
     [InlineData("fixed-canvas", "different", false, false, false)]
-    [InlineData("advanced-topology", "different", true, false, false)]
+    [InlineData("advanced-topology", "different", true, false, true)]
+    [InlineData("advanced-topology", "same", true, false, false)]
+    [InlineData("advanced-topology", "different", true, true, false)]
     [InlineData("advanced-topology", "different", false, true, false)]
-    public void NaturalHeightRequiresChangedResolvedFrameFontAndExactWidthAndAllocation(string name, string fontState, bool changedWidth, bool extraPixel, bool matches) {
+    public void NaturalFrameRequiresChangedResolvedFontAndExactRasterAllocation(string name, string fontState, bool changedWidth, bool extraPixel, bool matches) {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-font-baseline-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
@@ -94,7 +96,7 @@ public sealed class GalleryBaselineProvenanceTests {
             using var generated = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));
             var actual = generated.RootElement.GetProperty("charts")[0];
             var layout = actual.GetProperty("layout");
-            // A deliberately different resolved face permits only a natural height difference.
+            // A different resolved face permits natural height, and width only for content-fitted topology frames.
             var fingerprint = fontState == "same" ? layout.GetProperty("frameFontFingerprint").GetString() : fontState == "missing" ? "" : "OTHER-FONT-BYTES";
             var request = layout.GetProperty("frameFontRequest").GetString() + (fontState == "request-changed" ? "changed" : "");
             var expected = new {

@@ -70,7 +70,8 @@ public static partial class GalleryWriter {
         "visual-topology-shared-trunks",
     };
 
-    private readonly record struct LayoutProvenance(string HeightMode, string FrameFontRequest, string FrameFontFingerprint);
+    // This topology export fits both canvas dimensions to measured content.
+    private readonly record struct LayoutProvenance(string HeightMode, string FrameFontRequest, string FrameFontFingerprint, string WidthMode = "fixed");
 
     private static LayoutProvenance ReadLayoutProvenance(string name, string svgPath) {
         if (!NaturalHeightExamples.Contains(name)) return new("fixed", "", "");
@@ -82,7 +83,7 @@ public static partial class GalleryWriter {
         var unavailable = false;
         // Only the outer frame controls natural height; nested panels have their own fixed viewports.
         Inspect(document.Root, SvgRasterStyle.Default, false);
-        return new("natural", string.Join("\n", requests), unavailable || faces.Count == 0 ? "" : Hash(Encoding.UTF8.GetBytes(string.Join("\n", faces))));
+        return new("natural", string.Join("\n", requests), unavailable || faces.Count == 0 ? "" : Hash(Encoding.UTF8.GetBytes(string.Join("\n", faces))), name == "advanced-topology" ? "natural" : "fixed");
 
         void Inspect(SvgRasterElement element, SvgRasterStyle parent, bool heading, string? authoredRequest = null) {
             if (element.Name is "defs" or "style" or "title" or "desc" || element.Get("data-cfx-role") == "panel" || element.Name == "svg" && ancestors.Count > 0) return;
