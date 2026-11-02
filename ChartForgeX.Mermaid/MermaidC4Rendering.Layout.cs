@@ -12,7 +12,9 @@ public static partial class MermaidC4Rendering {
     /// a balanced aspect instead of one tall or one wide strip.
     /// </summary>
     private static void OrientBoundaries(TopologyChart chart, MermaidC4Document document, TopologyLayoutDirection chain) {
-        if (chart.LayoutMode != TopologyLayoutMode.Layered || document.Boundaries.Count == 0) return;
+        // Directional relationships (Rel_U/D/L/R) already state the intended arrangement.
+        if (chart.LayoutMode != TopologyLayoutMode.Layered || document.Boundaries.Count == 0
+            || document.Relationships.Any(link => link.Kind is "relu" or "relup" or "reld" or "reldown" or "rell" or "relleft" or "relr" or "relright")) return;
         var oriented = false;
         var parents = document.Boundaries.ToDictionary(boundary => boundary.Id, boundary => boundary.ParentId, StringComparer.Ordinal);
         foreach (var group in chart.Groups) {
