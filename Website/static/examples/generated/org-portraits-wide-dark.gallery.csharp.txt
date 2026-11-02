@@ -13,15 +13,14 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+// Native PNG and standalone SVG use bundled Archivo.
+// Add ChartFontAssets.StyleSheet once for other text on a host page.
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = OrgPortraitsRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(900, 480)), theme, mode,
-    new VisualFrame("People in the example studio", "Embedded fictional portrait artwork follows the native hierarchy and crop policy", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("People in the example studio", "Embedded fictional portrait artwork follows the native hierarchy and crop policy", showLegend: null, showSurface: false), FontSpec.FromFamily(ChartFontStacks.ProductSans));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());

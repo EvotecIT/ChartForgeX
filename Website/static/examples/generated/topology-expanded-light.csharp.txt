@@ -24,7 +24,7 @@ if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.Fi
     return;
 }
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(1057, 505)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(1057, 508)), theme, mode,
     new VisualFrame("Service request topology", "Groups, status, details and routed links", showLegend: true, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

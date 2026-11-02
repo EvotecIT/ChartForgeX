@@ -14,7 +14,7 @@ using ChartForgeX.VisualArtifacts;
 
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 14, legendSize: 14, dataLabelSize: 14));
-var font = FontSpec.FromFamily("system-ui, sans-serif");
+var font = FontSpec.FromFamily("Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif");
 var frame = new VisualFrame("", "", showLegend: false, transparentBackground: true);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 96), 0), theme, mode, frame, font);
 var scale = ServerRenderedRecipe.SharedScale();

@@ -733,8 +733,8 @@
     "/examples/generated/enhance/canopyx-ui-menu.29b983c01571b5c3.css",
     "/examples/generated/enhance/canopyx-ui-overlays.83acc4346a232940.js",
     "/examples/generated/enhance/canopyx-ui-overlays.bc49b6f13527aecd.css",
-    "/examples/generated/enhance/cfx-enhance.19ced771f953.js",
     "/examples/generated/enhance/cfx-enhance.5bc648f468b2.css",
+    "/examples/generated/enhance/cfx-enhance.cb8f9161fcc0.js",
     "/examples/generated/enhance/enhance-page.css",
     "/examples/generated/enhance/enhance-page.js",
     "/examples/generated/enhance/enhance-story.html",
@@ -6504,8 +6504,8 @@
     "/examples/generated/independent-progress-wide-light.svg",
     "/examples/generated/independent-progress-wide-light.thumbnail.png",
     "/examples/generated/independent-progress-wide-light.thumbnail.svg",
-    "/examples/generated/interactive/cfx-interactive.8ef92505b4d2.css",
-    "/examples/generated/interactive/cfx-interactive.34a79feb95a8.js",
+    "/examples/generated/interactive/cfx-interactive.4c6ef83986da.css",
+    "/examples/generated/interactive/cfx-interactive.5ddddf5c1ca4.js",
     "/examples/generated/interactive/cfx-native-text.4dbb7b4e18ea.js",
     "/examples/generated/manifest.json",
     "/examples/generated/mixed-schedule-compact-dark.csharp.txt",
@@ -11094,7 +11094,7 @@
           "image": "/examples/generated/family-gauge-precision-light.svg",
           "darkImage": "/examples/generated/family-gauge-precision-dark.svg",
           "width": 800,
-          "height": 213,
+          "height": 211,
           "source": "/examples/generated/family-gauge-precision-light.csharp.txt",
           "darkSource": "/examples/generated/family-gauge-precision-dark.csharp.txt"
         },
@@ -11316,7 +11316,7 @@
       "category": "indicators",
       "title": "Reviewed work against its targets",
       "width": 800,
-      "height": 189,
+      "height": 188,
       "kinds": [
         "Bullet"
       ],
@@ -11340,7 +11340,7 @@
           "image": "/examples/generated/family-bullet-compact-light.svg",
           "darkImage": "/examples/generated/family-bullet-compact-dark.svg",
           "width": 360,
-          "height": 189,
+          "height": 184,
           "source": "/examples/generated/family-bullet-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-bullet-compact-dark.csharp.txt"
         },
@@ -11350,7 +11350,7 @@
           "image": "/examples/generated/independent-bullet-wide-light.svg",
           "darkImage": "/examples/generated/independent-bullet-wide-dark.svg",
           "width": 760,
-          "height": 208,
+          "height": 207,
           "source": "/examples/generated/independent-bullet-wide-light.csharp.txt",
           "darkSource": "/examples/generated/independent-bullet-wide-dark.csharp.txt"
         },
@@ -11632,7 +11632,7 @@
       "category": "schedule",
       "title": "Project activities in March 2026",
       "width": 800,
-      "height": 234,
+      "height": 232,
       "kinds": [
         "Timeline"
       ],
@@ -11680,7 +11680,7 @@
           "image": "/examples/generated/family-timeline-compact-light.svg",
           "darkImage": "/examples/generated/family-timeline-compact-dark.svg",
           "width": 360,
-          "height": 234,
+          "height": 227,
           "source": "/examples/generated/family-timeline-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-timeline-compact-dark.csharp.txt"
         }
@@ -11692,7 +11692,7 @@
       "category": "schedule",
       "title": "Project delivery in March 2026",
       "width": 800,
-      "height": 266,
+      "height": 264,
       "kinds": [
         "Gantt"
       ],
@@ -11740,7 +11740,7 @@
           "image": "/examples/generated/family-gantt-compact-light.svg",
           "darkImage": "/examples/generated/family-gantt-compact-dark.svg",
           "width": 360,
-          "height": 266,
+          "height": 259,
           "source": "/examples/generated/family-gantt-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-gantt-compact-dark.csharp.txt"
         },
@@ -11750,7 +11750,7 @@
           "image": "/examples/generated/mixed-schedule-reversed-light.svg",
           "darkImage": "/examples/generated/mixed-schedule-reversed-dark.svg",
           "width": 900,
-          "height": 447,
+          "height": 444,
           "source": "/examples/generated/mixed-schedule-reversed-light.csharp.txt",
           "darkSource": "/examples/generated/mixed-schedule-reversed-dark.csharp.txt"
         },
@@ -11770,7 +11770,7 @@
           "image": "/examples/generated/mixed-schedule-wide-light.svg",
           "darkImage": "/examples/generated/mixed-schedule-wide-dark.svg",
           "width": 900,
-          "height": 447,
+          "height": 444,
           "source": "/examples/generated/mixed-schedule-wide-light.csharp.txt",
           "darkSource": "/examples/generated/mixed-schedule-wide-dark.csharp.txt"
         },
@@ -11780,7 +11780,7 @@
           "image": "/examples/generated/embedding-support-schedule-light.svg",
           "darkImage": "/examples/generated/embedding-support-schedule-dark.svg",
           "width": 800,
-          "height": 283,
+          "height": 279,
           "source": "/examples/generated/embedding-support-schedule-light.csharp.txt",
           "darkSource": "/examples/generated/embedding-support-schedule-dark.csharp.txt"
         },
@@ -11790,7 +11790,7 @@
           "image": "/examples/generated/mixed-schedule-time-light.svg",
           "darkImage": "/examples/generated/mixed-schedule-time-dark.svg",
           "width": 900,
-          "height": 447,
+          "height": 444,
           "source": "/examples/generated/mixed-schedule-time-light.csharp.txt",
           "darkSource": "/examples/generated/mixed-schedule-time-dark.csharp.txt"
         }
@@ -12512,7 +12512,7 @@
       "category": "proportion",
       "title": "Completed assessments by team",
       "width": 800,
-      "height": 175,
+      "height": 177,
       "kinds": [
         "Pictorial"
       ],
@@ -12560,7 +12560,7 @@
           "image": "/examples/generated/pictorial-artwork-bottom-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-bottom-dark.svg",
           "width": 900,
-          "height": 194,
+          "height": 195,
           "source": "/examples/generated/pictorial-artwork-bottom-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-bottom-dark.csharp.txt"
         },
@@ -12570,7 +12570,7 @@
           "image": "/examples/generated/family-pictorial-compact-light.svg",
           "darkImage": "/examples/generated/family-pictorial-compact-dark.svg",
           "width": 360,
-          "height": 175,
+          "height": 174,
           "source": "/examples/generated/family-pictorial-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-pictorial-compact-dark.csharp.txt"
         },
@@ -12580,7 +12580,7 @@
           "image": "/examples/generated/pictorial-artwork-contour-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-contour-dark.svg",
           "width": 900,
-          "height": 194,
+          "height": 195,
           "source": "/examples/generated/pictorial-artwork-contour-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-contour-dark.csharp.txt"
         },
@@ -12590,7 +12590,7 @@
           "image": "/examples/generated/pictorial-artwork-image-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-image-dark.svg",
           "width": 900,
-          "height": 194,
+          "height": 195,
           "source": "/examples/generated/pictorial-artwork-image-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-image-dark.csharp.txt"
         },
@@ -12600,7 +12600,7 @@
           "image": "/examples/generated/pictorial-artwork-right-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-right-dark.svg",
           "width": 900,
-          "height": 194,
+          "height": 195,
           "source": "/examples/generated/pictorial-artwork-right-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-right-dark.csharp.txt"
         },
@@ -12610,7 +12610,7 @@
           "image": "/examples/generated/pictorial-artwork-wide-light.svg",
           "darkImage": "/examples/generated/pictorial-artwork-wide-dark.svg",
           "width": 900,
-          "height": 194,
+          "height": 195,
           "source": "/examples/generated/pictorial-artwork-wide-light.csharp.txt",
           "darkSource": "/examples/generated/pictorial-artwork-wide-dark.csharp.txt"
         }
@@ -12622,7 +12622,7 @@
       "category": "indicators",
       "title": "Progress through delivery stages",
       "width": 800,
-      "height": 175,
+      "height": 177,
       "kinds": [
         "ProgressBar"
       ],
@@ -12670,7 +12670,7 @@
           "image": "/examples/generated/family-progress-bar-compact-light.svg",
           "darkImage": "/examples/generated/family-progress-bar-compact-dark.svg",
           "width": 360,
-          "height": 175,
+          "height": 174,
           "source": "/examples/generated/family-progress-bar-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-progress-bar-compact-dark.csharp.txt"
         },
@@ -12680,7 +12680,7 @@
           "image": "/examples/generated/independent-progress-wide-light.svg",
           "darkImage": "/examples/generated/independent-progress-wide-dark.svg",
           "width": 760,
-          "height": 194,
+          "height": 195,
           "source": "/examples/generated/independent-progress-wide-light.csharp.txt",
           "darkSource": "/examples/generated/independent-progress-wide-dark.csharp.txt"
         }
@@ -13071,7 +13071,7 @@
           "image": "/examples/generated/family-state-timeline-compact-light.svg",
           "darkImage": "/examples/generated/family-state-timeline-compact-dark.svg",
           "width": 360,
-          "height": 258,
+          "height": 250,
           "source": "/examples/generated/family-state-timeline-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-state-timeline-compact-dark.csharp.txt"
         },
@@ -13081,7 +13081,7 @@
           "image": "/examples/generated/family-state-timeline-wide-light.svg",
           "darkImage": "/examples/generated/family-state-timeline-wide-dark.svg",
           "width": 800,
-          "height": 258,
+          "height": 256,
           "source": "/examples/generated/family-state-timeline-wide-light.csharp.txt",
           "darkSource": "/examples/generated/family-state-timeline-wide-dark.csharp.txt"
         }
@@ -13093,7 +13093,7 @@
       "category": "schedule",
       "title": "Incidents and recovery in parallel",
       "width": 800,
-      "height": 320,
+      "height": 316,
       "kinds": [
         "GanttLane"
       ],
@@ -13141,7 +13141,7 @@
           "image": "/examples/generated/family-gantt-lane-compact-light.svg",
           "darkImage": "/examples/generated/family-gantt-lane-compact-dark.svg",
           "width": 360,
-          "height": 320,
+          "height": 309,
           "source": "/examples/generated/family-gantt-lane-compact-light.csharp.txt",
           "darkSource": "/examples/generated/family-gantt-lane-compact-dark.csharp.txt"
         }
@@ -13718,7 +13718,7 @@
       "category": "relationships",
       "title": "Service request topology",
       "width": 1057,
-      "height": 505,
+      "height": 508,
       "kinds": [],
       "optionsType": "TopologyChart",
       "configure": null,
