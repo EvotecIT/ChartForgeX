@@ -6469,8 +6469,8 @@
     "independent-progress-wide-light.svg",
     "independent-progress-wide-light.thumbnail.png",
     "independent-progress-wide-light.thumbnail.svg",
-    "interactive/cfx-interactive.4c6ef83986da.css",
     "interactive/cfx-interactive.5ddddf5c1ca4.js",
+    "interactive/cfx-interactive.8ef92505b4d2.css",
     "interactive/cfx-native-text.4dbb7b4e18ea.js",
     "manifest.json",
     "mixed-schedule-compact-dark.csharp.txt",
@@ -12110,8 +12110,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -12146,8 +12150,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -12908,8 +12916,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -12944,8 +12956,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "palette.reused"
+      ],
+      "diagnosticMessages": [
+        "9 series use automatic colours but the palette has 6 slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples."
+      ],
       "semanticRegions": 22
     },
     {
@@ -13380,7 +13396,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 23
     },
     {
       "id": "family-bubble-wide-dark",
@@ -13814,7 +13830,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 23
     },
     {
       "id": "family-error-bar-wide-light",
@@ -14934,7 +14950,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-compact-independent-boundaries-light",
@@ -15222,7 +15238,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 22
     },
     {
       "id": "family-range-area-compact-independent-boundaries-dark",
@@ -15616,13 +15632,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "frame.text-truncated"
-      ],
-      "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata."
-      ],
-      "semanticRegions": 40
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 43
     },
     {
       "id": "family-bar-wide-dark",
@@ -15836,13 +15848,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "frame.text-truncated"
-      ],
-      "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata."
-      ],
-      "semanticRegions": 40
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 43
     },
     {
       "id": "family-lollipop-wide-light",
@@ -18444,8 +18452,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 11
     },
     {
@@ -18808,8 +18820,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 11
     },
     {
@@ -18953,11 +18969,9 @@
         "html"
       ],
       "diagnostics": [
-        "frame.text-truncated",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
       "semanticRegions": 40
@@ -19103,11 +19117,9 @@
         "html"
       ],
       "diagnostics": [
-        "frame.text-truncated",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
       "semanticRegions": 40
@@ -19182,7 +19194,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 49
+      "semanticRegions": 50
     },
     {
       "id": "family-heatmap-color-scale-light",
@@ -19398,7 +19410,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-gradient-color-legend-light",
@@ -19470,7 +19482,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 39
     },
     {
       "id": "family-heatmap-swatch-color-legend-light",
@@ -19542,7 +19554,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-availability-light",
@@ -19690,7 +19702,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 49
+      "semanticRegions": 50
     },
     {
       "id": "family-heatmap-color-scale-dark",
@@ -19906,7 +19918,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-gradient-color-legend-dark",
@@ -19978,7 +19990,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 39
     },
     {
       "id": "family-heatmap-swatch-color-legend-dark",
@@ -20050,7 +20062,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-availability-dark",
@@ -20162,7 +20174,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-compact-light",
@@ -20306,7 +20318,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 37
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-compact-dark",
@@ -20486,7 +20498,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 144
     },
     {
       "id": "family-calendar-heatmap-color-scale-light",
@@ -20558,7 +20570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 152
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-color-dimension-light",
@@ -20630,7 +20642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 152
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-wide-dark",
@@ -20702,7 +20714,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 144
     },
     {
       "id": "family-calendar-heatmap-color-scale-dark",
@@ -20774,7 +20786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 152
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-color-dimension-dark",
@@ -20846,7 +20858,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 152
+      "semanticRegions": 148
     },
     {
       "id": "family-dotted-map-wide-light",
@@ -21320,11 +21332,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21404,12 +21414,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -21488,11 +21494,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21572,12 +21576,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -21656,11 +21656,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -21740,12 +21738,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -21998,11 +21992,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22234,11 +22226,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22318,12 +22308,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -22402,11 +22388,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22486,12 +22470,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -22570,11 +22550,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -22654,12 +22632,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 109
     },
     {
@@ -22912,11 +22886,9 @@
         "map.label-overflow",
         "map.label-overflow",
         "map.label-overflow",
-        "map.label-overflow",
         "map.label-overflow"
       ],
       "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
@@ -23338,8 +23310,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 192,
-      "naturalAspect": 3.9583333333333335,
+      "height": 194,
+      "naturalAspect": 3.917525773195876,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-dense-scale-light.csharp.txt",
@@ -23378,8 +23350,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 187,
-      "naturalAspect": 2.085561497326203,
+      "height": 194,
+      "naturalAspect": 2.0103092783505154,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-dense-scale-light.csharp.txt",
@@ -23418,8 +23390,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 211,
-      "naturalAspect": 3.7914691943127963,
+      "height": 213,
+      "naturalAspect": 3.755868544600939,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-precision-light.csharp.txt",
@@ -23454,8 +23426,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 220,
-      "naturalAspect": 1.6363636363636365,
+      "height": 230,
+      "naturalAspect": 1.565217391304348,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-precision-light.csharp.txt",
@@ -23778,8 +23750,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 192,
-      "naturalAspect": 3.9583333333333335,
+      "height": 194,
+      "naturalAspect": 3.917525773195876,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-dense-scale-dark.csharp.txt",
@@ -23818,8 +23790,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 187,
-      "naturalAspect": 2.085561497326203,
+      "height": 194,
+      "naturalAspect": 2.0103092783505154,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-dense-scale-dark.csharp.txt",
@@ -23858,8 +23830,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 211,
-      "naturalAspect": 3.7914691943127963,
+      "height": 213,
+      "naturalAspect": 3.755868544600939,
       "compact": false,
       "interactive": null,
       "source": "family-gauge-precision-dark.csharp.txt",
@@ -23894,8 +23866,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 220,
-      "naturalAspect": 1.6363636363636365,
+      "height": 230,
+      "naturalAspect": 1.565217391304348,
       "compact": true,
       "interactive": null,
       "source": "family-gauge-compact-precision-dark.csharp.txt",
@@ -24488,12 +24460,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 8
     },
     {
@@ -24564,12 +24532,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 8
     },
     {
@@ -24586,8 +24550,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 188,
-      "naturalAspect": 4.25531914893617,
+      "height": 189,
+      "naturalAspect": 4.232804232804233,
       "compact": false,
       "interactive": "family-bullet-wide-light.interactive.html",
       "source": "family-bullet-wide-light.csharp.txt",
@@ -24604,12 +24568,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 13
     },
     {
@@ -24626,8 +24586,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 184,
-      "naturalAspect": 1.9565217391304348,
+      "height": 189,
+      "naturalAspect": 1.9047619047619047,
       "compact": true,
       "interactive": null,
       "source": "family-bullet-compact-light.csharp.txt",
@@ -24662,8 +24622,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 428,
-      "naturalAspect": 1.7757009345794392,
+      "height": 429,
+      "naturalAspect": 1.7715617715617715,
       "compact": false,
       "interactive": null,
       "source": "family-bullet-dense-light.csharp.txt",
@@ -24748,8 +24708,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 188,
-      "naturalAspect": 4.25531914893617,
+      "height": 189,
+      "naturalAspect": 4.232804232804233,
       "compact": false,
       "interactive": "family-bullet-wide-dark.interactive.html",
       "source": "family-bullet-wide-dark.csharp.txt",
@@ -24766,12 +24726,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "radial.text-overflow"
-      ],
-      "diagnosticMessages": [
-        "Radial text was shortened; the complete value remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 13
     },
     {
@@ -24788,8 +24744,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 184,
-      "naturalAspect": 1.9565217391304348,
+      "height": 189,
+      "naturalAspect": 1.9047619047619047,
       "compact": true,
       "interactive": null,
       "source": "family-bullet-compact-dark.csharp.txt",
@@ -24824,8 +24780,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 428,
-      "naturalAspect": 1.7757009345794392,
+      "height": 429,
+      "naturalAspect": 1.7715617715617715,
       "compact": false,
       "interactive": null,
       "source": "family-bullet-dense-dark.csharp.txt",
@@ -25108,8 +25064,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 22
     },
     {
@@ -25180,8 +25140,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 26
     },
     {
@@ -25544,8 +25508,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 22
     },
     {
@@ -25616,8 +25584,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
       "semanticRegions": 26
     },
     {
@@ -26356,16 +26328,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 14
     },
     {
@@ -26580,16 +26544,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 14
     },
     {
@@ -26678,8 +26634,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 232,
-      "naturalAspect": 3.4482758620689653,
+      "height": 234,
+      "naturalAspect": 3.4188034188034186,
       "compact": false,
       "interactive": "family-timeline-wide-light.interactive.html",
       "source": "family-timeline-wide-light.csharp.txt",
@@ -26714,8 +26670,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 227,
-      "naturalAspect": 1.5859030837004404,
+      "height": 234,
+      "naturalAspect": 1.5384615384615385,
       "compact": true,
       "interactive": null,
       "source": "family-timeline-compact-light.csharp.txt",
@@ -26750,8 +26706,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 232,
-      "naturalAspect": 3.4482758620689653,
+      "height": 234,
+      "naturalAspect": 3.4188034188034186,
       "compact": false,
       "interactive": "family-timeline-wide-dark.interactive.html",
       "source": "family-timeline-wide-dark.csharp.txt",
@@ -26786,8 +26742,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 227,
-      "naturalAspect": 1.5859030837004404,
+      "height": 234,
+      "naturalAspect": 1.5384615384615385,
       "compact": true,
       "interactive": null,
       "source": "family-timeline-compact-dark.csharp.txt",
@@ -26822,8 +26778,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 264,
-      "naturalAspect": 3.0303030303030303,
+      "height": 266,
+      "naturalAspect": 3.007518796992481,
       "compact": false,
       "interactive": "family-gantt-wide-light.interactive.html",
       "source": "family-gantt-wide-light.csharp.txt",
@@ -26858,8 +26814,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 259,
-      "naturalAspect": 1.38996138996139,
+      "height": 266,
+      "naturalAspect": 1.3533834586466165,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-compact-light.csharp.txt",
@@ -26878,7 +26834,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 16
     },
     {
       "id": "family-gantt-wide-dark",
@@ -26894,8 +26850,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 264,
-      "naturalAspect": 3.0303030303030303,
+      "height": 266,
+      "naturalAspect": 3.007518796992481,
       "compact": false,
       "interactive": "family-gantt-wide-dark.interactive.html",
       "source": "family-gantt-wide-dark.csharp.txt",
@@ -26930,8 +26886,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 259,
-      "naturalAspect": 1.38996138996139,
+      "height": 266,
+      "naturalAspect": 1.3533834586466165,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-compact-dark.csharp.txt",
@@ -26950,7 +26906,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 16
     },
     {
       "id": "family-sankey-wide-light",
@@ -27021,11 +26977,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 19
@@ -27487,11 +27441,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 19
@@ -28342,13 +28294,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28430,13 +28386,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28682,13 +28642,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28770,13 +28734,17 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -28848,12 +28816,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "frame.text-truncated"
-      ],
-      "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 12
     },
     {
@@ -28996,12 +28960,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "frame.text-truncated"
-      ],
-      "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 12
     },
     {
@@ -29145,11 +29105,9 @@
         "html"
       ],
       "diagnostics": [
-        "frame.text-truncated",
         "frame.text-truncated"
       ],
       "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata."
       ],
       "semanticRegions": 14
@@ -29388,15 +29346,9 @@
         "frame.text-truncated",
         "frame.text-truncated",
         "frame.text-truncated",
-        "frame.text-truncated",
-        "frame.text-truncated",
-        "frame.text-truncated",
         "frame.text-truncated"
       ],
       "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata.",
-        "Frame text was shortened; its complete value remains in semantic metadata.",
-        "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata.",
@@ -29475,11 +29427,9 @@
         "html"
       ],
       "diagnostics": [
-        "frame.text-truncated",
         "frame.text-truncated"
       ],
       "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata."
       ],
       "semanticRegions": 14
@@ -29718,15 +29668,9 @@
         "frame.text-truncated",
         "frame.text-truncated",
         "frame.text-truncated",
-        "frame.text-truncated",
-        "frame.text-truncated",
-        "frame.text-truncated",
         "frame.text-truncated"
       ],
       "diagnosticMessages": [
-        "Frame text was shortened; its complete value remains in semantic metadata.",
-        "Frame text was shortened; its complete value remains in semantic metadata.",
-        "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata.",
         "Frame text was shortened; its complete value remains in semantic metadata.",
@@ -30815,9 +30759,11 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
@@ -30892,8 +30838,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
+      ],
       "semanticRegions": 13
     },
     {
@@ -31081,9 +31031,11 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
         "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
@@ -31158,8 +31110,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
+      ],
       "semanticRegions": 13
     },
     {
@@ -31290,8 +31246,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 177,
-      "naturalAspect": 4.519774011299435,
+      "height": 175,
+      "naturalAspect": 4.571428571428571,
       "compact": false,
       "interactive": "family-pictorial-wide-light.interactive.html",
       "source": "family-pictorial-wide-light.csharp.txt",
@@ -31326,8 +31282,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 174,
-      "naturalAspect": 2.0689655172413794,
+      "height": 175,
+      "naturalAspect": 2.057142857142857,
       "compact": true,
       "interactive": null,
       "source": "family-pictorial-compact-light.csharp.txt",
@@ -31362,8 +31318,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 177,
-      "naturalAspect": 4.519774011299435,
+      "height": 175,
+      "naturalAspect": 4.571428571428571,
       "compact": false,
       "interactive": "family-pictorial-wide-dark.interactive.html",
       "source": "family-pictorial-wide-dark.csharp.txt",
@@ -31398,8 +31354,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 174,
-      "naturalAspect": 2.0689655172413794,
+      "height": 175,
+      "naturalAspect": 2.057142857142857,
       "compact": true,
       "interactive": null,
       "source": "family-pictorial-compact-dark.csharp.txt",
@@ -31434,8 +31390,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 177,
-      "naturalAspect": 4.519774011299435,
+      "height": 175,
+      "naturalAspect": 4.571428571428571,
       "compact": false,
       "interactive": "family-progress-bar-wide-light.interactive.html",
       "source": "family-progress-bar-wide-light.csharp.txt",
@@ -31470,8 +31426,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 174,
-      "naturalAspect": 2.0689655172413794,
+      "height": 175,
+      "naturalAspect": 2.057142857142857,
       "compact": true,
       "interactive": null,
       "source": "family-progress-bar-compact-light.csharp.txt",
@@ -31506,8 +31462,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 177,
-      "naturalAspect": 4.519774011299435,
+      "height": 175,
+      "naturalAspect": 4.571428571428571,
       "compact": false,
       "interactive": "family-progress-bar-wide-dark.interactive.html",
       "source": "family-progress-bar-wide-dark.csharp.txt",
@@ -31542,8 +31498,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 174,
-      "naturalAspect": 2.0689655172413794,
+      "height": 175,
+      "naturalAspect": 2.057142857142857,
       "compact": true,
       "interactive": null,
       "source": "family-progress-bar-compact-dark.csharp.txt",
@@ -33918,8 +33874,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 256,
-      "naturalAspect": 3.125,
+      "height": 258,
+      "naturalAspect": 3.10077519379845,
       "compact": false,
       "interactive": "family-state-timeline-wide-light.interactive.html",
       "source": "family-state-timeline-wide-light.csharp.txt",
@@ -33954,8 +33910,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 250,
-      "naturalAspect": 1.44,
+      "height": 258,
+      "naturalAspect": 1.3953488372093024,
       "compact": true,
       "interactive": null,
       "source": "family-state-timeline-compact-light.csharp.txt",
@@ -34062,8 +34018,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 256,
-      "naturalAspect": 3.125,
+      "height": 258,
+      "naturalAspect": 3.10077519379845,
       "compact": false,
       "interactive": "family-state-timeline-wide-dark.interactive.html",
       "source": "family-state-timeline-wide-dark.csharp.txt",
@@ -34098,8 +34054,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 250,
-      "naturalAspect": 1.44,
+      "height": 258,
+      "naturalAspect": 1.3953488372093024,
       "compact": true,
       "interactive": null,
       "source": "family-state-timeline-compact-dark.csharp.txt",
@@ -34206,8 +34162,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 316,
-      "naturalAspect": 2.5316455696202533,
+      "height": 320,
+      "naturalAspect": 2.5,
       "compact": false,
       "interactive": "family-gantt-lane-wide-light.interactive.html",
       "source": "family-gantt-lane-wide-light.csharp.txt",
@@ -34242,8 +34198,8 @@
       ],
       "theme": "light",
       "width": 360,
-      "height": 309,
-      "naturalAspect": 1.1650485436893203,
+      "height": 320,
+      "naturalAspect": 1.125,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-lane-compact-light.csharp.txt",
@@ -34278,8 +34234,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 316,
-      "naturalAspect": 2.5316455696202533,
+      "height": 320,
+      "naturalAspect": 2.5,
       "compact": false,
       "interactive": "family-gantt-lane-wide-dark.interactive.html",
       "source": "family-gantt-lane-wide-dark.csharp.txt",
@@ -34314,8 +34270,8 @@
       ],
       "theme": "dark",
       "width": 360,
-      "height": 309,
-      "naturalAspect": 1.1650485436893203,
+      "height": 320,
+      "naturalAspect": 1.125,
       "compact": true,
       "interactive": null,
       "source": "family-gantt-lane-compact-dark.csharp.txt",
@@ -34898,9 +34854,13 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35133,9 +35093,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35388,9 +35350,13 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35623,9 +35589,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -35929,11 +35897,9 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -36369,11 +36335,9 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -39586,8 +39550,8 @@
       "seriesKinds": [],
       "theme": "light",
       "width": 1057,
-      "height": 508,
-      "naturalAspect": 2.0807086614173227,
+      "height": 505,
+      "naturalAspect": 2.093069306930693,
       "compact": false,
       "interactive": null,
       "source": "topology-expanded-light.csharp.txt",
@@ -39734,8 +39698,8 @@
       "seriesKinds": [],
       "theme": "dark",
       "width": 1057,
-      "height": 508,
-      "naturalAspect": 2.0807086614173227,
+      "height": 505,
+      "naturalAspect": 2.093069306930693,
       "compact": false,
       "interactive": null,
       "source": "topology-expanded-dark.csharp.txt",
@@ -39978,8 +39942,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 107
     },
     {
@@ -40164,8 +40132,12 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
+      ],
       "semanticRegions": 107
     },
     {
@@ -41104,7 +41076,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 35
     },
     {
       "id": "financial-layers-compact-light",
@@ -41400,7 +41372,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 35
     },
     {
       "id": "financial-layers-compact-dark",
@@ -41853,9 +41825,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "light",
-      "width": 1391,
-      "height": 377,
-      "naturalAspect": 3.689655172413793,
+      "width": 1382,
+      "height": 376,
+      "naturalAspect": 3.675531914893617,
       "compact": false,
       "interactive": null,
       "source": "usecase-advanced-actors-wide-light.csharp.txt",
@@ -41929,9 +41901,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "light",
-      "width": 690,
-      "height": 966,
-      "naturalAspect": 0.7142857142857143,
+      "width": 698,
+      "height": 970,
+      "naturalAspect": 0.7195876288659794,
       "compact": true,
       "interactive": null,
       "source": "usecase-advanced-actors-compact-light.csharp.txt",
@@ -42042,8 +42014,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": "mixed-schedule-wide-light.interactive.html",
       "source": "mixed-schedule-wide-light.csharp.txt",
@@ -42078,8 +42050,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-light.csharp.txt",
@@ -42120,8 +42092,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-reversed-light.csharp.txt",
@@ -42156,8 +42128,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-reversed-light.csharp.txt",
@@ -42198,8 +42170,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-light.csharp.txt",
@@ -42234,8 +42206,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-light.csharp.txt",
@@ -42276,8 +42248,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-reversed-light.csharp.txt",
@@ -42312,8 +42284,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-reversed-light.csharp.txt",
@@ -42640,13 +42612,9 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
-        "radial.label-overflow",
-        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -42740,13 +42708,9 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
-        "radial.label-overflow",
-        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -42932,11 +42896,9 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
-        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -43358,21 +43320,9 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
@@ -43446,30 +43396,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 22
     },
     {
@@ -44196,8 +44124,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": "pictorial-artwork-wide-light.interactive.html",
       "source": "pictorial-artwork-wide-light.csharp.txt",
@@ -44232,8 +44160,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 207,
-      "naturalAspect": 1.8840579710144927,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "pictorial-artwork-compact-light.csharp.txt",
@@ -44268,8 +44196,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-right-light.csharp.txt",
@@ -44304,8 +44232,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-bottom-light.csharp.txt",
@@ -44340,8 +44268,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-top-light.csharp.txt",
@@ -44376,8 +44304,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-image-light.csharp.txt",
@@ -44412,8 +44340,8 @@
       ],
       "theme": "light",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-contour-light.csharp.txt",
@@ -44468,9 +44396,11 @@
       ],
       "diagnostics": [
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
@@ -44602,9 +44532,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -44748,8 +44680,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 195,
-      "naturalAspect": 3.8974358974358974,
+      "height": 194,
+      "naturalAspect": 3.917525773195876,
       "compact": false,
       "interactive": "independent-progress-wide-light.interactive.html",
       "source": "independent-progress-wide-light.csharp.txt",
@@ -44854,8 +44786,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 207,
-      "naturalAspect": 1.8840579710144927,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "independent-progress-compact-light.csharp.txt",
@@ -44928,8 +44860,8 @@
       ],
       "theme": "light",
       "width": 760,
-      "height": 207,
-      "naturalAspect": 3.6714975845410627,
+      "height": 208,
+      "naturalAspect": 3.6538461538461537,
       "compact": false,
       "interactive": "independent-bullet-wide-light.interactive.html",
       "source": "independent-bullet-wide-light.csharp.txt",
@@ -44974,8 +44906,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 218,
-      "naturalAspect": 1.7889908256880733,
+      "height": 225,
+      "naturalAspect": 1.7333333333333334,
       "compact": true,
       "interactive": null,
       "source": "independent-bullet-compact-light.csharp.txt",
@@ -45415,9 +45347,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "dark",
-      "width": 1391,
-      "height": 377,
-      "naturalAspect": 3.689655172413793,
+      "width": 1382,
+      "height": 376,
+      "naturalAspect": 3.675531914893617,
       "compact": false,
       "interactive": null,
       "source": "usecase-advanced-actors-wide-dark.csharp.txt",
@@ -45491,9 +45423,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "dark",
-      "width": 690,
-      "height": 966,
-      "naturalAspect": 0.7142857142857143,
+      "width": 698,
+      "height": 970,
+      "naturalAspect": 0.7195876288659794,
       "compact": true,
       "interactive": null,
       "source": "usecase-advanced-actors-compact-dark.csharp.txt",
@@ -45604,8 +45536,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": "mixed-schedule-wide-dark.interactive.html",
       "source": "mixed-schedule-wide-dark.csharp.txt",
@@ -45640,8 +45572,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-dark.csharp.txt",
@@ -45682,8 +45614,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-reversed-dark.csharp.txt",
@@ -45718,8 +45650,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-reversed-dark.csharp.txt",
@@ -45760,8 +45692,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-dark.csharp.txt",
@@ -45796,8 +45728,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-dark.csharp.txt",
@@ -45838,8 +45770,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 444,
-      "naturalAspect": 2.027027027027027,
+      "height": 447,
+      "naturalAspect": 2.0134228187919465,
       "compact": false,
       "interactive": null,
       "source": "mixed-schedule-time-reversed-dark.csharp.txt",
@@ -45874,8 +45806,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 469,
-      "naturalAspect": 0.8315565031982942,
+      "height": 482,
+      "naturalAspect": 0.8091286307053942,
       "compact": true,
       "interactive": null,
       "source": "mixed-schedule-compact-time-reversed-dark.csharp.txt",
@@ -46202,13 +46134,9 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
-        "radial.label-overflow",
-        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -46302,13 +46230,9 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
-        "radial.label-overflow",
-        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -46494,11 +46418,9 @@
       ],
       "diagnostics": [
         "radial.label-overflow",
-        "radial.label-overflow",
         "radial.label-overflow"
       ],
       "diagnosticMessages": [
-        "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available.",
         "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."
       ],
@@ -46920,21 +46842,9 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
@@ -47008,30 +46918,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 22
     },
     {
@@ -47758,8 +47646,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": "pictorial-artwork-wide-dark.interactive.html",
       "source": "pictorial-artwork-wide-dark.csharp.txt",
@@ -47794,8 +47682,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 207,
-      "naturalAspect": 1.8840579710144927,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "pictorial-artwork-compact-dark.csharp.txt",
@@ -47830,8 +47718,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-right-dark.csharp.txt",
@@ -47866,8 +47754,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-bottom-dark.csharp.txt",
@@ -47902,8 +47790,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-top-dark.csharp.txt",
@@ -47938,8 +47826,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-image-dark.csharp.txt",
@@ -47974,8 +47862,8 @@
       ],
       "theme": "dark",
       "width": 900,
-      "height": 195,
-      "naturalAspect": 4.615384615384615,
+      "height": 194,
+      "naturalAspect": 4.639175257731959,
       "compact": false,
       "interactive": null,
       "source": "pictorial-artwork-contour-dark.csharp.txt",
@@ -48030,9 +47918,11 @@
       ],
       "diagnostics": [
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
@@ -48164,9 +48054,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -48310,8 +48202,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 195,
-      "naturalAspect": 3.8974358974358974,
+      "height": 194,
+      "naturalAspect": 3.917525773195876,
       "compact": false,
       "interactive": "independent-progress-wide-dark.interactive.html",
       "source": "independent-progress-wide-dark.csharp.txt",
@@ -48416,8 +48308,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 207,
-      "naturalAspect": 1.8840579710144927,
+      "height": 211,
+      "naturalAspect": 1.8483412322274881,
       "compact": true,
       "interactive": null,
       "source": "independent-progress-compact-dark.csharp.txt",
@@ -48490,8 +48382,8 @@
       ],
       "theme": "dark",
       "width": 760,
-      "height": 207,
-      "naturalAspect": 3.6714975845410627,
+      "height": 208,
+      "naturalAspect": 3.6538461538461537,
       "compact": false,
       "interactive": "independent-bullet-wide-dark.interactive.html",
       "source": "independent-bullet-wide-dark.csharp.txt",
@@ -48536,8 +48428,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 218,
-      "naturalAspect": 1.7889908256880733,
+      "height": 225,
+      "naturalAspect": 1.7333333333333334,
       "compact": true,
       "interactive": null,
       "source": "independent-bullet-compact-dark.csharp.txt",
@@ -50226,8 +50118,8 @@
       ],
       "theme": "light",
       "width": 800,
-      "height": 279,
-      "naturalAspect": 2.867383512544803,
+      "height": 283,
+      "naturalAspect": 2.8268551236749118,
       "compact": false,
       "interactive": null,
       "source": "embedding-support-schedule-light.csharp.txt",
@@ -50334,8 +50226,8 @@
       ],
       "theme": "light",
       "width": 390,
-      "height": 271,
-      "naturalAspect": 1.4391143911439115,
+      "height": 283,
+      "naturalAspect": 1.3780918727915195,
       "compact": true,
       "interactive": null,
       "source": "embedding-compact-support-schedule-light.csharp.txt",
@@ -50442,8 +50334,8 @@
       ],
       "theme": "dark",
       "width": 800,
-      "height": 279,
-      "naturalAspect": 2.867383512544803,
+      "height": 283,
+      "naturalAspect": 2.8268551236749118,
       "compact": false,
       "interactive": null,
       "source": "embedding-support-schedule-dark.csharp.txt",
@@ -50550,8 +50442,8 @@
       ],
       "theme": "dark",
       "width": 390,
-      "height": 271,
-      "naturalAspect": 1.4391143911439115,
+      "height": 283,
+      "naturalAspect": 1.3780918727915195,
       "compact": true,
       "interactive": null,
       "source": "embedding-compact-support-schedule-dark.csharp.txt",

@@ -12,11 +12,11 @@ using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 
-// Native PNG and standalone SVG use bundled Archivo.
-// Add ChartFontAssets.StyleSheet once for other text on a host page.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 14, legendSize: 14, dataLabelSize: 14));
-var font = FontSpec.FromFamily("Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif");
+var font = FontSpec.FromFamily("CFX Proof Carlito");
 var frame = new VisualFrame("", "", showLegend: false, transparentBackground: true);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 96), 0), theme, mode, frame, font);
 var scale = ServerRenderedRecipe.SharedScale();

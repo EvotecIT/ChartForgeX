@@ -13,14 +13,15 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-// Native PNG and standalone SVG use bundled Archivo.
-// Add ChartFontAssets.StyleSheet once for other text on a host page.
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HeatmapHierarchicalAxesRecipe.Create("states-compact", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(390, 560)), theme, mode,
-    new VisualFrame("Service states by region and work window", "Columns bind to raw coordinates; row groups bind to one-based source slots", showLegend: null, showSurface: false), FontSpec.FromFamily(ChartFontStacks.ProductSans));
+    new VisualFrame("Service states by region and work window", "Columns bind to raw coordinates; row groups bind to one-based source slots", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());

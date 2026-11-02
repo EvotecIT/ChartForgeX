@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = BulletRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 184)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 189)), theme, mode,
     new VisualFrame("Reviewed work against its targets", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

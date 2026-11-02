@@ -24,7 +24,7 @@ if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.Fi
     return;
 }
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(690, 966)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(698, 970)), theme, mode,
     new VisualFrame("Finite native actor forms", "Hollow, business, silhouette and retained native icon participants share measured captions and routes", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

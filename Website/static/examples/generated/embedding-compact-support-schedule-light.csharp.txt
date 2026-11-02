@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ServerRenderedRecipe.Create("compact-support-schedule", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(390, 271)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(390, 283)), theme, mode,
     new VisualFrame("Open-ended release support", "An open fading task and an independently current row", showLegend: false, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
