@@ -39,7 +39,9 @@ public sealed class ChartSeriesTooltipBrowserTests {
                 Assert.Equal(0, await tip.Locator("dt[data-cfx-tooltip-series='2']").CountAsync());
             }
             await MoveToAsync(page, Point(0, 1));
-            Assert.False(await tip.IsVisibleAsync());
+            // An empty authored tooltip hides the readout; the shared chrome fades it out before display ends.
+            await tip.WaitForAsync(new Microsoft.Playwright.LocatorWaitForOptions { State = Microsoft.Playwright.WaitForSelectorState.Hidden, Timeout = 2000 });
+            Assert.Equal("", await tip.GetAttributeAsync("hidden"));
             await MoveAwayAsync(page);
             await FocusWithKeyboardAsync(page, page.Locator(Point(0, 0)));
             Assert.Contains(Caption, await tip.InnerTextAsync());
@@ -58,7 +60,7 @@ public sealed class ChartSeriesTooltipBrowserTests {
         Assert.Equal(0, await enhancedTip.Locator("img").CountAsync());
         Assert.False(await enhancedPage.EvaluateAsync<bool>("() => !!window.__tooltipInjected"));
         await MoveToAsync(enhancedPage, EnhancedPoint(0, 1));
-        Assert.False(await enhancedTip.IsVisibleAsync());
+        await enhancedTip.WaitForAsync(new Microsoft.Playwright.LocatorWaitForOptions { State = Microsoft.Playwright.WaitForSelectorState.Hidden, Timeout = 2000 });
 
         await enhancedPage.EvaluateAsync("""
             () => CfxEnhance.tooltip(() => true, (marks, content) => ({

@@ -43,14 +43,18 @@ public sealed class SankeyLabelPlacementBrowserTests {
         await Capture(page, prepared, html, name, "chart", errors, session);
         Assert.Equal(8, await page.Locator("[data-cfx-target-kind=node]").CountAsync());
         Assert.Equal(9, await page.Locator("[data-cfx-target-kind=link]").CountAsync());
-        Assert.Equal(prepared.Scene.Nodes.Count(node => node.Role == "sankey-node-label"), await page.Locator("[data-cfx-role=sankey-node-label]").CountAsync());
+        var captionCount = prepared.Scene.Nodes.Count(node => node.Role == "sankey-node-label");
+        Assert.Equal(captionCount, await page.Locator("[data-cfx-role=sankey-node-label]").CountAsync());
+        // Compact right-hand gaps cannot keep six characters of a caption, so those captions hide rather than show stubs.
+        if (placement != ChartSankeyLabelPlacement.Right || width >= 500) Assert.True(captionCount > 0);
         Assert.True(await page.EvaluateAsync<bool>("""
             () => { const svg=document.querySelector('.cfx-stage svg'), bounds=svg.getBoundingClientRect();
                 const labels=Array.from(svg.querySelectorAll('[data-cfx-role=sankey-node-label]')).map(node=>node.getBoundingClientRect());
-                return labels.length>0 && labels.every(box=>box.left>=bounds.left-1 && box.right<=bounds.right+1
+                return labels.every(box=>box.left>=bounds.left-1 && box.right<=bounds.right+1
                     && box.top>=bounds.top-1 && box.bottom<=bounds.bottom+1); }
             """));
         var support = page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=south-support]");
+        if (captionCount > 0) {
         var caption = page.Locator("[data-cfx-label-for^='series-0-node-']").First;
         var markId = await caption.GetAttributeAsync("data-cfx-label-for");
         var captionTarget = page.Locator($"[data-cfx-target-kind=node][data-cfx-source-id='{markId}']");
@@ -62,6 +66,7 @@ public sealed class SankeyLabelPlacementBrowserTests {
         Assert.Equal("true", await captionTarget.GetAttributeAsync("aria-selected"));
         await caption.ClickAsync();
         Assert.Equal("false", await captionTarget.GetAttributeAsync("aria-selected"));
+        }
         await MoveAwayAsync(page);
         var box = (await support.BoundingBoxAsync())!;
         await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);

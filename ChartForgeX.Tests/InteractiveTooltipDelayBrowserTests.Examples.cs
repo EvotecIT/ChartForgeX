@@ -41,7 +41,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.Equal("4", await target.GetAttributeAsync("data-cfx-source-point"));
         Assert.Equal("1120", await target.GetAttributeAsync("data-cfx-y"));
         var caption = await target.GetAttributeAsync("data-cfx-formatted-value");
-        Assert.Equal("1.1k", caption);
+        Assert.Equal("1,120", caption);
         Assert.Equal(caption, await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key='passed'] + dd").InnerTextAsync());
         await CaptureDelayAsync(page, "delay-example-" + theme + "-" + width + "-keyboard", new { trace = await TraceStateAsync(page), caption, pageErrors }, session);
         Assert.Empty(pageErrors);

@@ -58,7 +58,8 @@ public sealed partial class CartesianFillObservationBrowserTests {
         var points = position == ChartStepPosition.Start
             ? new[] { new ChartPoint(0, 8), new ChartPoint(1, 2), new ChartPoint(2, 2) }
             : new[] { new ChartPoint(0, 2), new ChartPoint(1, 2), new ChartPoint(2, 8) };
-        var chart = Frame();
+        // A terminal observation on the plot edge keeps a bare stem; one inside the plot closes its outer tread.
+        var chart = position == ChartStepPosition.Start ? Frame().WithXAxisBounds(0, 2.2) : Frame().WithXAxisBounds(-.2, 2);
         if (kind == ChartSeriesKind.StepArea) chart.AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, points));
         else if (kind == ChartSeriesKind.StackedArea) chart.AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StackedArea, points));
         else chart.AddSeries(ChartSeries.CreateArea(new ChartSeriesId("observed"), "Observed", points));
@@ -135,7 +136,8 @@ public sealed partial class CartesianFillObservationBrowserTests {
     [InlineData(7.8, false)]
     public async Task ScalarStepFillUsesOnlyTheOriginalLocalFootprint(double heldValue, bool available) {
         if (!Enabled) return;
-        var chart = Frame().AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] {
+        // On the plot edge the first observation has no closed outer tread, so only its held footprint can paint.
+        var chart = Frame().WithXAxisBounds(0, 2.2).AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] {
             new ChartPoint(0, 8), new ChartPoint(1, heldValue), new ChartPoint(2, heldValue)
         }));
         Configure(chart, ChartStepPosition.Start);
@@ -179,7 +181,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         if (kind == ChartSeriesKind.RangeArea) chart = Range(kind, new[] {
             new ChartRangeBand(0, overlap ? 0 : 1, overlap ? 10 : 2), new ChartRangeBand(1, 7, 8), new ChartRangeBand(2, 7, 8)
         });
-        else chart = Frame().AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] { new ChartPoint(0, overlap ? 2 : 8), new ChartPoint(1, 2), new ChartPoint(2, 2) }));
+        else chart = Frame().WithXAxisBounds(0, 2.2).AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] { new ChartPoint(0, overlap ? 2 : 8), new ChartPoint(1, 2), new ChartPoint(2, 2) }));
         Configure(chart, ChartStepPosition.Start);
         chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
         await AssertAvailabilityAsync(chart, 0, overlap, $"{kind}-hatch-{overlap}", patternOnly: true);
