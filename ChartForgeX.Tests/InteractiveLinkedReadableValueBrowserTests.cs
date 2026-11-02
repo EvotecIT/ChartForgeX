@@ -69,7 +69,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
                 const faces = [...document.fonts].filter(face => face.status === 'loaded');
                 const root=document.querySelector('[data-cfx-chart-id=linked-time]'),svg=root.querySelector('.cfx-stage svg');
                 // The painted caption is either native glyph ink or ordinary text, whichever the export owns.
-                const text=svg.querySelector('[data-cfx-native-text-ink][data-cfx-caption="2026-03-05"]')||[...svg.querySelectorAll('text')].find(node=>node.textContent==='2026-03-05');
+                const text=svg.querySelector('[data-cfx-native-text-ink][data-cfx-ink-line="2026-03-05"]')||[...svg.querySelectorAll('text')].find(node=>node.textContent==='2026-03-05');
                 if(!faces.length||!text)return false;
                 const clip=text.closest('[clip-path]'),id=clip.getAttribute('clip-path').slice(5,-1);
                 const rect=svg.querySelector('#'+CSS.escape(id)+' rect'),box=text.getBBox();

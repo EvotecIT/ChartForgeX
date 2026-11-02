@@ -258,9 +258,11 @@ internal static partial class VisualSceneSvgRenderer {
         var prepared = node.Text; var style = prepared.Style;
         writer.StartElement("g"); Semantics(writer, node, prefix, index);
         WritePageFontAttributes(writer, options);
+        // Wrapped lines are one phrase; the accessible name keeps the word break as a space.
+        var spoken = string.Join(" ", prepared.Lines.Select(line => line.Text));
         if (textImages?.ForNode(node) is {} capturedImage) {
             var caption = string.Join("\n", prepared.Lines.Select(line => line.Text));
-            if (explorable) writer.Attribute("role", "graphics-symbol").Attribute("aria-label", caption);
+            if (explorable) writer.Attribute("role", "graphics-symbol").Attribute("aria-label", spoken);
             writer.Attribute("data-cfx-caption", caption).EndStartElement();
             writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
                 .Attribute("data-cfx-native-raster-text-ink", "true").Attribute("font-size", prepared.Size).EndStartElement();
@@ -272,6 +274,7 @@ internal static partial class VisualSceneSvgRenderer {
             writer.EndElement();
             writer.EndElement(); return;
         }
+        if (explorable && prepared.Lines.Count > 1) writer.Attribute("aria-label", spoken);
         writer.EndStartElement();
         for (var i = 0; i < prepared.Lines.Count; i++) {
             var line = prepared.Lines[i];
@@ -281,7 +284,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (nativeInk && pngText != null && pngText.TryCapture(node, line, i, true, out var glyphs)) {
                 capturedInk = true;
                 writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
-                    .Attribute("data-cfx-caption", line.Text).Attribute("font-size", prepared.Size)
+                    .Attribute("data-cfx-ink-line", line.Text).Attribute("font-size", prepared.Size)
                     .Attribute("fill", ResolvePaint(node.Color, node.Paint, options)).Attribute("fill-rule", "nonzero");
                 if (delivered != null) writer.Attribute("data-cfx-owned-font-native", delivered.Alias);
                 if (node.Stroke.HasValue && node.StrokeWidth > 0) writer.Attribute("stroke", ResolvePaint(node.Stroke, node.StrokePaint, options))

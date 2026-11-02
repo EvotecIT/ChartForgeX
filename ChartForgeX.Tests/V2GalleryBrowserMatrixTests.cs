@@ -156,7 +156,7 @@ public sealed class V2GalleryBrowserMatrixTests {
                         let visibleText = 0;
                         for (const text of svg.querySelectorAll('text,[data-cfx-native-text-ink]')) {
                             const nativeInk = text.hasAttribute('data-cfx-native-text-ink');
-                            const caption = text.closest('[data-cfx-caption]')?.getAttribute('data-cfx-caption') || text.textContent;
+                            const caption = text.getAttribute('data-cfx-ink-line') || text.closest('[data-cfx-caption]')?.getAttribute('data-cfx-caption') || text.textContent;
                             if (!caption.trim()) continue;
                             const style = getComputedStyle(text);
                             if (style.display === 'none' || style.visibility === 'hidden' || opacity(text) === 0) continue;
