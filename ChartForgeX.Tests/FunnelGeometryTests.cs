@@ -10,6 +10,39 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects proportional funnel encoding, ordered source stages and actual shared static exports.</summary>
 public sealed class FunnelGeometryTests {
+    [Theory]
+    [InlineData(ChartStageLabelContent.Combined)]
+    [InlineData(ChartStageLabelContent.Separate)]
+    public void NarrowConeKeepsReadableValuesAndOmitsFirstDropOffCaption(ChartStageLabelContent content) {
+        var chart = Funnel(new[] { 1000d, 410, 162.36, 14, 2 }, ChartFunnelForm.Cone, ChartOrientation.Vertical)
+            .WithSize(800, 440).WithDataLabels().WithLegend(false).WithXLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
+            .ConfigureFunnel(options => options.LabelContent = content);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), node =>
+            node.Id == "series-0-point-0-dropoff-label" || node.Text.Lines.Any(line => line.Text.Contains("No previous baseline", StringComparison.Ordinal)));
+        var role = content == ChartStageLabelContent.Separate ? "funnel-value-label" : "funnel-label";
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role).ToArray();
+        Assert.Equal(5, labels.Length);
+        var values = new[] { "1,000", "410", "162", "14", "2" };
+        var categories = new[] { "Visits", "Qualified", "Reviewed", "Won", "Renewed" };
+        Assert.Equal(values.Select((value, index) => content == ChartStageLabelContent.Combined ? categories[index] + ": " + value : value),
+            labels.Select(label => string.Join("", label.Text.Lines.Select(line => line.Text))));
+        foreach (var label in labels) {
+            var region = Assert.Single(prepared.Regions, region => region.Id == label.Id);
+            var ink = new ChartRect(label.LineLeft(label.Text.Lines[0]), label.Baseline - label.Text.Ascent, label.Text.Metrics.Width, label.Text.Metrics.Height);
+            Assert.True(LabelPlacementService.Contains(region.Bounds, ink));
+            Assert.True(label.Text.Size >= 10);
+        }
+        if (content == ChartStageLabelContent.Separate) {
+            var leaders = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "data-label-connector").ToArray();
+            Assert.NotEmpty(leaders);
+            Assert.All(leaders, path => Assert.Equal(2, path.Commands.Count));
+            chart.WithDataLabelConnectorStyle(ChartDataLabelConnectorStyle.Elbow);
+            Assert.Contains(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualScenePath>(),
+                path => path.Role == "data-label-connector" && path.Commands.Count == 4);
+        }
+        Assert.NotEmpty(prepared.ToPng());
+    }
     [Fact]
     public void OptionsDefaultToVerticalStageBarsAndRejectUnknownSelectors() {
         var chart = Chart.Create();
@@ -164,7 +197,7 @@ public sealed class FunnelGeometryTests {
             Assert.True(label.Baseline - label.Text.Ascent + label.Text.Metrics.Height <= bounds.Bottom + .000001);
         }
         Assert.Contains(prepared.Regions, region => region.Role == "funnel-label" && region.Label == "Received: 100");
-        Assert.Contains(prepared.Regions, region => region.Role == "funnel-ratio" && region.Label == "75% retained\n25% drop-off");
+        Assert.Contains(prepared.Regions, region => region.Role == "funnel-ratio" && region.Label == "75.0% retained\n25.0% drop-off");
         if (form == ChartFunnelForm.Cone && orientation == ChartOrientation.Horizontal) {
             var firstLabel = Assert.Single(prepared.Regions, region => region.Id == labels[0].Id).Bounds;
             var secondRatio = Assert.Single(prepared.Regions, region => region.Id == ratios[0].Id).Bounds;

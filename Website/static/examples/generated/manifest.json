@@ -13324,7 +13324,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 25
     },
     {
       "id": "family-bubble-options-light",
@@ -13396,7 +13396,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 23
     },
     {
       "id": "family-bubble-wide-dark",
@@ -13758,7 +13758,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 25
     },
     {
       "id": "family-bubble-options-dark",
@@ -13830,7 +13830,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 23
     },
     {
       "id": "family-error-bar-wide-light",
@@ -16722,7 +16722,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 56
+      "semanticRegions": 54
     },
     {
       "id": "family-range-bar-dense-horizontal-light",
@@ -16802,7 +16802,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 56
+      "semanticRegions": 54
     },
     {
       "id": "family-range-bar-sparse-catalog-light",
@@ -16838,7 +16838,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-bar-compact-sparse-catalog-light",
@@ -16874,7 +16874,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 11
     },
     {
       "id": "family-range-bar-options-light",
@@ -17026,7 +17026,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-endpoint-labels-light",
@@ -17170,7 +17170,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-independent-endpoint-labels-light",
@@ -17330,7 +17330,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-wide-dark",
@@ -17482,7 +17482,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 56
+      "semanticRegions": 54
     },
     {
       "id": "family-range-bar-dense-horizontal-dark",
@@ -17562,7 +17562,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 56
+      "semanticRegions": 54
     },
     {
       "id": "family-range-bar-sparse-catalog-dark",
@@ -17598,7 +17598,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-bar-compact-sparse-catalog-dark",
@@ -17634,7 +17634,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 11
     },
     {
       "id": "family-range-bar-options-dark",
@@ -17786,7 +17786,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-endpoint-labels-dark",
@@ -17930,7 +17930,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-independent-endpoint-labels-dark",
@@ -18090,7 +18090,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-wide-light",
@@ -18898,7 +18898,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 17
     },
     {
       "id": "family-horizontal-bar-options-light",
@@ -19046,7 +19046,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 17
     },
     {
       "id": "family-horizontal-bar-options-dark",
@@ -19158,7 +19158,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 58
+      "semanticRegions": 65
     },
     {
       "id": "family-heatmap-compact-light",
@@ -19194,7 +19194,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 44
+      "semanticRegions": 50
     },
     {
       "id": "family-heatmap-color-scale-light",
@@ -19230,7 +19230,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-compact-color-scale-light",
@@ -19266,7 +19266,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-positioned-color-scale-light",
@@ -19302,7 +19302,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 48
     },
     {
       "id": "family-heatmap-compact-positioned-color-scale-light",
@@ -19338,7 +19338,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 46
     },
     {
       "id": "family-heatmap-color-dimension-light",
@@ -19374,7 +19374,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 48
     },
     {
       "id": "family-heatmap-compact-color-dimension-light",
@@ -19410,7 +19410,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-gradient-color-legend-light",
@@ -19446,7 +19446,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 43
     },
     {
       "id": "family-heatmap-compact-gradient-color-legend-light",
@@ -19482,7 +19482,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 39
     },
     {
       "id": "family-heatmap-swatch-color-legend-light",
@@ -19518,7 +19518,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 48
     },
     {
       "id": "family-heatmap-compact-swatch-color-legend-light",
@@ -19554,7 +19554,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-availability-light",
@@ -19590,7 +19590,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 172
+      "semanticRegions": 173
     },
     {
       "id": "family-heatmap-compact-availability-light",
@@ -19630,7 +19630,7 @@
       "diagnosticMessages": [
         "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."
       ],
-      "semanticRegions": 172
+      "semanticRegions": 173
     },
     {
       "id": "family-heatmap-wide-dark",
@@ -19666,7 +19666,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 58
+      "semanticRegions": 65
     },
     {
       "id": "family-heatmap-compact-dark",
@@ -19702,7 +19702,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 44
+      "semanticRegions": 50
     },
     {
       "id": "family-heatmap-color-scale-dark",
@@ -19738,7 +19738,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-compact-color-scale-dark",
@@ -19774,7 +19774,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-positioned-color-scale-dark",
@@ -19810,7 +19810,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 48
     },
     {
       "id": "family-heatmap-compact-positioned-color-scale-dark",
@@ -19846,7 +19846,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 42
+      "semanticRegions": 46
     },
     {
       "id": "family-heatmap-color-dimension-dark",
@@ -19882,7 +19882,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 48
     },
     {
       "id": "family-heatmap-compact-color-dimension-dark",
@@ -19918,7 +19918,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-gradient-color-legend-dark",
@@ -19954,7 +19954,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 43
     },
     {
       "id": "family-heatmap-compact-gradient-color-legend-dark",
@@ -19990,7 +19990,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 39
     },
     {
       "id": "family-heatmap-swatch-color-legend-dark",
@@ -20026,7 +20026,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 43
+      "semanticRegions": 48
     },
     {
       "id": "family-heatmap-compact-swatch-color-legend-dark",
@@ -20062,7 +20062,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 44
     },
     {
       "id": "family-heatmap-availability-dark",
@@ -20098,7 +20098,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 172
+      "semanticRegions": 173
     },
     {
       "id": "family-heatmap-compact-availability-dark",
@@ -20138,7 +20138,7 @@
       "diagnosticMessages": [
         "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."
       ],
-      "semanticRegions": 172
+      "semanticRegions": 173
     },
     {
       "id": "family-hexbin-heatmap-wide-light",
@@ -20174,7 +20174,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-compact-light",
@@ -20210,7 +20210,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 37
     },
     {
       "id": "family-hexbin-heatmap-color-scale-light",
@@ -20246,7 +20246,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-hexbin-heatmap-compact-color-scale-light",
@@ -20282,7 +20282,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-hexbin-heatmap-wide-dark",
@@ -20318,7 +20318,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-compact-dark",
@@ -20354,7 +20354,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 31
+      "semanticRegions": 37
     },
     {
       "id": "family-hexbin-heatmap-color-scale-dark",
@@ -20390,7 +20390,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-hexbin-heatmap-compact-color-scale-dark",
@@ -20426,7 +20426,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-calendar-heatmap-wide-light",
@@ -20534,7 +20534,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-scale-light",
@@ -20570,7 +20570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 143
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-color-dimension-light",
@@ -20606,7 +20606,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-dimension-light",
@@ -20642,7 +20642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 144
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-wide-dark",
@@ -20750,7 +20750,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 147
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-scale-dark",
@@ -20786,7 +20786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 143
+      "semanticRegions": 148
     },
     {
       "id": "family-calendar-heatmap-color-dimension-dark",
@@ -20822,7 +20822,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 148
+      "semanticRegions": 154
     },
     {
       "id": "family-calendar-heatmap-compact-color-dimension-dark",
@@ -20858,7 +20858,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 144
+      "semanticRegions": 148
     },
     {
       "id": "family-dotted-map-wide-light",
@@ -23374,7 +23374,7 @@
       "diagnosticMessages": [
         "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
       ],
-      "semanticRegions": 16
+      "semanticRegions": 24
     },
     {
       "id": "family-gauge-precision-light",
@@ -23814,7 +23814,7 @@
       "diagnosticMessages": [
         "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
       ],
-      "semanticRegions": 16
+      "semanticRegions": 24
     },
     {
       "id": "family-gauge-precision-dark",
@@ -24682,12 +24682,7 @@
         "radial.text-overflow",
         "radial.text-overflow",
         "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "bullet.label-overflow",
-        "bullet.label-overflow"
+        "radial.text-overflow"
       ],
       "diagnosticMessages": [
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
@@ -24695,12 +24690,7 @@
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions.",
-        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions."
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
       ],
       "semanticRegions": 37
     },
@@ -24850,12 +24840,7 @@
         "radial.text-overflow",
         "radial.text-overflow",
         "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "radial.text-overflow",
-        "bullet.label-overflow",
-        "bullet.label-overflow"
+        "radial.text-overflow"
       ],
       "diagnosticMessages": [
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
@@ -24863,12 +24848,7 @@
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
         "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
-        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions.",
-        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions."
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."
       ],
       "semanticRegions": 37
     },
@@ -25054,7 +25034,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-compact-portable-horizontal-light",
@@ -25282,7 +25262,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-compact-horizontal-light",
@@ -25506,7 +25486,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-compact-portable-horizontal-dark",
@@ -25734,7 +25714,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 26
     },
     {
       "id": "family-waterfall-compact-horizontal-dark",
@@ -31552,13 +31532,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "word-cloud.overflow"
-      ],
-      "diagnosticMessages": [
-        "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
-      ],
-      "semanticRegions": 52
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 72
     },
     {
       "id": "family-word-cloud-compact-light",
@@ -31592,13 +31568,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "word-cloud.overflow"
-      ],
-      "diagnosticMessages": [
-        "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
-      ],
-      "semanticRegions": 30
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 40
     },
     {
       "id": "family-word-cloud-wide-dark",
@@ -31632,13 +31604,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "word-cloud.overflow"
-      ],
-      "diagnosticMessages": [
-        "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
-      ],
-      "semanticRegions": 52
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 72
     },
     {
       "id": "family-word-cloud-compact-dark",
@@ -31672,13 +31640,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "word-cloud.overflow"
-      ],
-      "diagnosticMessages": [
-        "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."
-      ],
-      "semanticRegions": 30
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 40
     },
     {
       "id": "family-ohlc-wide-light",
@@ -37191,7 +37155,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 27
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -37228,7 +37192,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 26
     },
     {
       "id": "family-difference-area-step-start-light",
@@ -37697,7 +37661,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 27
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -37734,7 +37698,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 26
     },
     {
       "id": "family-difference-area-step-start-dark",
@@ -38718,7 +38682,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "combination-mixed-radial-light",
@@ -38954,7 +38918,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "combination-updated-mixed-radial-light",
@@ -39190,7 +39154,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "combination-mixed-radial-dark",
@@ -39426,7 +39390,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "combination-updated-mixed-radial-dark",
@@ -39918,23 +39882,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 29
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
     },
     {
       "id": "family-dashboard-wide-light",
@@ -40122,23 +40072,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 29
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
     },
     {
       "id": "family-dashboard-wide-dark",
@@ -43266,17 +43202,13 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-light",
@@ -43312,21 +43244,13 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-cone-light",
@@ -43360,15 +43284,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-cone-light",
@@ -43402,19 +43320,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-horizontal-light",
@@ -43456,7 +43364,7 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-horizontal-light",
@@ -43500,8 +43408,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -43514,11 +43420,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-cone-horizontal-light",
@@ -43554,7 +43458,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-cone-horizontal-light",
@@ -43596,8 +43500,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -43608,11 +43510,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "pyramid-presentation-wide-light",
@@ -45054,7 +44954,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 46
     },
     {
       "id": "heatmap-hierarchical-axes-compact-light",
@@ -45090,7 +44990,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 44
     },
     {
       "id": "heatmap-hierarchical-axes-states-wide-light",
@@ -46754,17 +46654,13 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-dark",
@@ -46800,21 +46696,13 @@
       ],
       "diagnostics": [
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-cone-dark",
@@ -46848,15 +46736,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-cone-dark",
@@ -46890,19 +46772,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-horizontal-dark",
@@ -46944,7 +46816,7 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-horizontal-dark",
@@ -46988,8 +46860,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -47002,11 +46872,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-cone-horizontal-dark",
@@ -47042,7 +46910,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "funnel-presentation-compact-cone-horizontal-dark",
@@ -47084,8 +46952,6 @@
         "funnel.label-hidden",
         "text.overflow",
         "funnel.label-hidden",
-        "text.overflow",
-        "funnel.label-hidden",
         "text.overflow"
       ],
       "diagnosticMessages": [
@@ -47096,11 +46962,9 @@
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
-        "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "A funnel label did not fit at a readable size; complete text remains in descriptive regions.",
         "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 22
     },
     {
       "id": "pyramid-presentation-wide-dark",
@@ -48542,7 +48406,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 46
     },
     {
       "id": "heatmap-hierarchical-axes-compact-dark",
@@ -48578,7 +48442,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 44
     },
     {
       "id": "heatmap-hierarchical-axes-states-wide-dark",

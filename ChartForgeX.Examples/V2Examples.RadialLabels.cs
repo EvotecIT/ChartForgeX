@@ -18,7 +18,7 @@ public static partial class V2Examples {
                     var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
                         VisualTheme.Graphite(), mode, new VisualFrame("Four equal shares", "Labels " + placement.ToString().ToLowerInvariant(), showLegend: false), FontSpec.FromFamily(ProofFont));
                     var prepared = chart.Prepare(context);
-                    var svg = prepared.ToSvg(id);
+                    var svg = ExampleArtifactWriter.Svg(prepared, id);
                     if (prepared.Diagnostics.Any(diagnostic => diagnostic.Code == "radial.label-overflow") ||
                         XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "data-label") != 4)
                         throw new InvalidOperationException("The symmetric radial proof lost a label: " + id);

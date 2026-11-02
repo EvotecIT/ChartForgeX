@@ -112,7 +112,7 @@ internal static partial class VisualGaugeCompiler {
         var requestedValues = scaleValues.Where(number => ExplicitScaleLabel(options, number) == null).Concat(retainedValues);
         // One caption per requested numeric fact keeps a shared value/target/tick consistent and resolves callbacks once.
         var distinctValues = requestedValues.Distinct().ToArray();
-        var formatted = distinctValues.Length == 0 ? Array.Empty<string>() : ChartNumericFormatter.FormatScaleValues(format, distinctValues);
+        var formatted = distinctValues.Length == 0 ? Array.Empty<string>() : ChartNumericFormatter.FormatScaleValues(format, distinctValues, scaleValues);
         var captions = new Dictionary<double, string>();
         for (var index = 0; index < distinctValues.Length; index++) captions[distinctValues[index]] = formatted[index];
         var scaleCaptions = scaleValues.Select(number => ExplicitScaleLabel(options, number) ?? captions[number]).ToArray();

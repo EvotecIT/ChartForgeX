@@ -60,7 +60,7 @@ public static class BarRecipe {
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("last-year"), "2025", lastYear.Select((value, index) => new ChartPoint(index + 1, value))))
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "2026", thisYear.Select((value, index) => new ChartPoint(index + 1, value))));
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 
     private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";

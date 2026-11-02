@@ -33,7 +33,7 @@ public static class ScatterColorScaleRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
     public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
-        return NumericColorScale(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return NumericColorScale(mode);
     }
 
     private static Chart NumericColorScale(VisualThemeMode mode) {

@@ -14,8 +14,7 @@ public static class RangeBandRecipe {
                     index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9 + 4, index == 16))));
         if (variant == "sparse") return Chart.Create().WithXLabels("08:00", "10:00")
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range",
-                Enumerable.Range(1, 2).Select(index => new ChartRangeBand(index, 20 + index * 2, 40 + index * 4))))
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+                Enumerable.Range(1, 2).Select(index => new ChartRangeBand(index, 20 + index * 2, 40 + index * 4))));
         // Hourly server-room temperature: the expected band follows the daily cycle and the reading leaves it once.
         var hours = variant.StartsWith("compact", StringComparison.Ordinal) ? 12 : 24;
         var step = 24 / hours;
@@ -26,7 +25,6 @@ public static class RangeBandRecipe {
             middle.Select((value, index) => new ChartPoint(index + 1,
                 Math.Round(value + Math.Sin(index * 2.3) * .8 + (index * step is >= 14 and <= 16 ? 2.6 : 0), 1))));
         return Chart.Create().WithXLabels(Enumerable.Range(0, hours).Select(index => (index * step).ToString("00", CultureInfo.InvariantCulture) + ":00").ToArray())
-            .WithYAxis("Temperature (°C)").AddSeries(expected).AddSeries(observed)
-            .WithValueFormat(ChartValueFormat.Number("0.0", CultureInfo.InvariantCulture));
+            .WithYAxis("Temperature (°C)").AddSeries(expected).AddSeries(observed);
     }
 }

@@ -58,6 +58,6 @@ public static class SankeyRecipe {
                 .WithNodeState("review", ChartSeriesState.Warning)
                 .WithNodeState("rejected", ChartSeriesState.Danger);
         }
-        return Chart.Create().AddSeries(requests).WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        return Chart.Create().AddSeries(requests);
     }
 }

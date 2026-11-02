@@ -22,7 +22,7 @@ internal static partial class VisualMapCompiler {
         var (color, paint) = DottedPaint(data.Series, null, colors);
         foreach (var cluster in data.Clusters) {
             var id = data.Prefix + "-map-cluster-" + cluster.Key;
-            var count = cluster.Sources.Length; var text = count.ToString(CultureInfo.InvariantCulture);
+            var count = cluster.Sources.Length; var text = ChartNumericFormatter.FormatValue(chart.Options, count);
             var full = chart.Options.Labels.SampleCount + ": " + text + "; "
                 + string.Join("; ", cluster.Sources.Select(source => data.Series.MapPoints[source].Label));
             var radius = policy.Radius;
@@ -31,7 +31,7 @@ internal static partial class VisualMapCompiler {
                 ["data-cfx-series"] = N(data.Index), ["data-cfx-point"] = "-1", ["data-cfx-derived"] = "map-grid-cluster",
                 ["data-cfx-derived-identity"] = "map-grid-cluster:" + cluster.Key,
                 ["data-cfx-source-points"] = string.Join(",", cluster.Sources.Select(source => N(source))), ["data-cfx-source-count"] = N(count),
-                ["data-cfx-value"] = text, ["data-cfx-formatted-value"] = text, ["data-cfx-label-value"] = chart.Options.Labels.SampleCount,
+                ["data-cfx-value"] = N(count), ["data-cfx-formatted-value"] = text, ["data-cfx-label-value"] = chart.Options.Labels.SampleCount,
                 ["data-cfx-label"] = full, ["data-cfx-visible"] = "true", ["data-cfx-cluster-grid"] = cluster.Key,
                 ["data-cfx-cluster-cell-size"] = N(policy.CellSize), ["data-cfx-cluster-radius"] = N(radius),
                 ["data-cfx-cluster-center-x"] = N(cluster.Center.X), ["data-cfx-cluster-center-y"] = N(cluster.Center.Y), ["aria-label"] = full

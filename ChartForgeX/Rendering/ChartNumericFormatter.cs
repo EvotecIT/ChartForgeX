@@ -11,27 +11,34 @@ internal static class ChartNumericFormatter {
         (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat.Format(value);
 
     /// <summary>
-    /// Picks one compact unit for a series' automatic value captions, so a series doesn't mix "9,800" with "12.5k".
-    /// Returns null when the chart has an authored format or no caption would be compact.
+    /// Picks one compact unit for automatic captions, with optional shared precision for count-like stages.
+    /// Returns null when an authored format owns the captions or no refinement is needed.
     /// </summary>
-    internal static Func<double, string>? SeriesCaptionFormat(ChartOptions options, IEnumerable<double> values) {
+    internal static Func<double, string>? SeriesCaptionFormat(ChartOptions options, IEnumerable<double> values, bool sharePrecision = false) {
         var format = (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat;
+        return SeriesCaptionFormat(format, values, sharePrecision);
+    }
+    private static Func<double, string>? SeriesCaptionFormat(ChartValueFormat format, IEnumerable<double> values, bool sharePrecision = false) {
         if (!ReferenceEquals(format, ChartValueFormat.ExistingValue)) return null;
         var finite = new List<double>();
         foreach (var value in values) if (!double.IsNaN(value) && !double.IsInfinity(value)) finite.Add(value);
         var largest = 0d;
         foreach (var value in finite) largest = Math.Max(largest, Math.Abs(value));
+        if (sharePrecision) {
+            if (finite.Count < 2 || largest == 0) return null;
+            // Three significant places at the chart's largest observation give counts one
+            // common precision. Preserve small positive observations instead of rounding them to zero.
+            var decimals = Math.Max(0, Math.Min(6, 2 - (int)Math.Floor(Math.Log10(largest))));
+            while (decimals < 6 && finite.Exists(value => value != 0 && Math.Round(value, decimals) == 0)) decimals++;
+            var precision = ChartValueFormat.ForTickStep(Math.Pow(10, -decimals), 0);
+            return value => value != 0 && Math.Round(value, decimals) == 0 ? format.Format(value) : precision.Format(value);
+        }
         if (largest < 10000) return null;
         var (divisor, suffix) = largest >= 1e9 ? (1e9, "B") : largest >= 1e6 ? (1e6, "M") : (1e3, "k");
-        // A value below one unit would round too far (149 as "0.1k", 999 as "1.0k"); it keeps its own caption
-        // and doesn't decide whether the compact ones need a decimal.
-        var decimals = false;
-        foreach (var value in finite) if (Math.Abs(value) >= divisor && Math.Round(value / divisor, 1) != Math.Round(value / divisor)) decimals = true;
-        var pattern = decimals ? "0.0" : "0";
         return value => {
             var scaled = Math.Round(value / divisor, 1);
             if (Math.Abs(value) < divisor || Math.Abs(scaled) >= 10000) return format.Format(value);
-            return scaled.ToString(pattern, CultureInfo.InvariantCulture) + suffix;
+            return scaled.ToString("0.#", format.Culture) + suffix;
         };
     }
 
@@ -46,10 +53,19 @@ internal static class ChartNumericFormatter {
     internal static string[] FormatScaleValues(ChartOptions options, IReadOnlyList<double> values) => FormatScaleValues(options.ValueFormat, values);
 
     /// <summary>Formats a scale with one captured policy even when a callback changes its originating chart.</summary>
-    internal static string[] FormatScaleValues(ChartValueFormat format, IReadOnlyList<double> values) {
+    internal static string[] FormatScaleValues(ChartValueFormat format, IReadOnlyList<double> values, IReadOnlyList<double>? ticks = null) {
         var captions = new string[values.Count];
-        for (var index = 0; index < values.Count; index++) captions[index] = format.Format(values[index]);
-        if (ReferenceEquals(format, ChartValueFormat.ExistingValue)) RefineDefaults(values, captions, format.Format(0));
+        var shared = SeriesCaptionFormat(format, values);
+        for (var index = 0; index < values.Count; index++) captions[index] = shared?.Invoke(values[index]) ?? format.Format(values[index]);
+        if (ReferenceEquals(format, ChartValueFormat.ExistingValue)) {
+            RefineDefaults(values, captions, format.Format(0));
+            if (ticks != null && ticks.Count > 0) {
+                var tickCaptions = FormatCompactScaleValues(ticks);
+                var exactTicks = new Dictionary<double, string>();
+                for (var index = 0; index < ticks.Count; index++) exactTicks[ticks[index]] = tickCaptions[index];
+                for (var index = 0; index < values.Count; index++) if (exactTicks.TryGetValue(values[index], out var text)) captions[index] = text;
+            }
+        }
         return captions;
     }
 
@@ -62,9 +78,13 @@ internal static class ChartNumericFormatter {
         var zero = FormatCompact(0);
         var tolerance = TickStep(values) * .01;
         if (!AllWithin(values, captions, tolerance)) {
-            for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);
+            var stepFormat = ChartValueFormat.ForTickStep(TickStep(values), values.Count > 0 ? values[0] : 0);
+            for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero
+                : Math.Abs(values[index]) < .001 ? ChartValueFormat.FormatSignificant(values[index]) : stepFormat.Format(values[index]);
             if (!AllWithin(values, captions, tolerance))
-                for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : values[index].ToString("R", CultureInfo.InvariantCulture);
+                for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);
+            if (!AllWithin(values, captions, tolerance))
+                for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.ExactNumber(values[index]);
         }
         RefineDefaults(values, captions, zero);
         return captions;
@@ -94,18 +114,15 @@ internal static class ChartNumericFormatter {
         else if (caption.EndsWith("B", StringComparison.Ordinal)) { unit = 1e9m; number = caption.Substring(0, caption.Length - 1); }
         // The round-trip text keeps every digit of the tick; a direct decimal conversion would round it to 15 digits.
         if (!decimal.TryParse(value.ToString("R", CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out var exact)
-            || !decimal.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var shown)) {
+            || !decimal.TryParse(number, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var shown)) {
             // Beyond decimal's range, compare the doubles themselves.
-            return double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out var approximate)
+            return double.TryParse(number, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var approximate)
                 && Math.Abs(approximate * (double)unit - value) <= tolerance;
         }
         try { return Math.Abs(shown * unit - exact) <= (decimal)tolerance; }
         catch (OverflowException) { return false; }
     }
-    internal static string FormatCompactAxisValue(double value) {
-        var caption = FormatCompact(value); var zero = FormatCompact(0);
-        return RefineCompactAxisValue(value, caption, zero);
-    }
+    internal static string FormatCompactAxisValue(double value) => FormatCompactScaleValues(new[] { value })[0];
 
     internal static string RefineCompactAxisValue(double value, string caption, string zero) =>
         value == 0 ? zero : NeedsPrecision(value, caption, zero) ? ChartValueFormat.FormatSignificant(value) : caption;
@@ -114,9 +131,7 @@ internal static class ChartNumericFormatter {
     internal static void RefineDefaults(IReadOnlyList<double> values, string[] captions, string zero) {
         for (var index = 0; index < values.Count; index++) if (values[index] == 0) captions[index] = zero;
         if (!Ambiguous(values, captions, zero)) return;
-        for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);
-        if (!Ambiguous(values, captions, "0")) return;
-        for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : values[index].ToString("R", CultureInfo.InvariantCulture);
+        for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.ExactNumber(values[index]);
     }
 
     private static bool Ambiguous(IReadOnlyList<double> values, string[] captions, string zero) {

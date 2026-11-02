@@ -63,6 +63,6 @@ public static class LineRecipe {
             chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("email"), "Email",
                 weeks.Select(week => new ChartPoint(week, Math.Round(760 - week * 38 + Math.Cos(week * 1.4) * 40)))));
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

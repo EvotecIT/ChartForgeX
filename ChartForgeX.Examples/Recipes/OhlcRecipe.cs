@@ -34,6 +34,6 @@ public static class OhlcRecipe {
             var prices = ChartSeries.CreateOhlc(new ChartSeriesId("market-price"), "Market price", values);
             chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(prices);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

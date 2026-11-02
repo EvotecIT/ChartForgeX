@@ -150,7 +150,7 @@ internal static partial class VisualScalarProgressCompiler {
         internal void CaptureCaptions(BulletPaintContext chart) {
             var reading = Reading; var series = Series;
             var facts = Ticks.Concat(new[] { reading.Value, reading.Target }).Distinct().ToArray();
-            var captions = ChartNumericFormatter.FormatScaleValues(Axis.ValueFormat ?? chart.Format, facts);
+            var captions = ChartNumericFormatter.FormatScaleValues(Axis.ValueFormat ?? chart.Format, facts, Ticks);
             var cache = new Dictionary<double, string>(); for (var item = 0; item < facts.Length; item++) cache.Add(facts[item], captions[item]);
             TickText = Ticks.Select(value => ChartAxisValueFormatter.FindExplicitLabel(Axis.Labels, value) ?? cache[value]).ToArray();
             ValueText = series.AuthoredLabel != null ? series.AuthoredLabel : cache[reading.Value]; TargetText = cache[reading.Target];

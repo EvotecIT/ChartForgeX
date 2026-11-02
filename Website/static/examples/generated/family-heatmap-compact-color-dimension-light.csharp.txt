@@ -40,7 +40,7 @@ public static class HeatmapColorDimensionRecipe {
             .AddHeatmapRow("Secondary", values.Skip(6), id: new ChartSeriesId("secondary-measurements"))
             .WithHeatmapColorScale(TemperatureScale().WithNoDataColor(colors.Border))
             .ConfigureHeatmapColorDimension(options => {
-                options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
+                options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
                 options.LegendStyle = gradient ? ChartColorLegendStyle.Gradient : swatches ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
             }).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithDataLabels();
     }

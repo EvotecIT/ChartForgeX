@@ -34,7 +34,6 @@ public static class SlopeRecipe {
         var teamA = new ChartSeries(new ChartSeriesId("team-a"), "Team A", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 28), new ChartPoint(2, 64) });
         var teamB = new ChartSeries(new ChartSeriesId("team-b"), "Team B", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 52), new ChartPoint(2, 43) });
         var teamC = new ChartSeries(new ChartSeriesId("team-c"), "Team C", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 38), new ChartPoint(2, 57) });
-        return Chart.Create().WithXLabels("Before", "After").AddSeries(teamA).AddSeries(teamB).AddSeries(teamC)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("Before", "After").AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
     }
 }

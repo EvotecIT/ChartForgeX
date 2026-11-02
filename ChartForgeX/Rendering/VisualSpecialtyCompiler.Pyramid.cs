@@ -48,6 +48,7 @@ internal static partial class VisualSpecialtyCompiler {
             ["data-cfx-reversed"] = options.Reversed ? "true" : "false",
             ["data-cfx-aspect-ratio"] = options.AspectRatio.HasValue ? N(options.AspectRatio.Value) : "auto"
         });
+        var percentages = ChartValueFormat.Percentages(chart.Options.ValueFormat, layout.Stages.Select(stage => stage.ValueFraction));
         foreach (var stage in layout.Stages) {
             var index = stage.SourceIndex; var color = Color(series, index, colors);
             var belowPrecision = series.RenderPoints[index].Y > 0 && !stage.HasGeometry;
@@ -61,7 +62,7 @@ internal static partial class VisualSpecialtyCompiler {
                 ["data-cfx-normalized-end"] = N(stage.End)
             };
             var summary = PyramidLabel(chart, index) + ", " + encoding + " encoding, "
-                + (layout.Total > 0 ? stage.ValueFraction.ToString("0.#%", CultureInfo.InvariantCulture) + " of total" : "no positive total");
+                + (layout.Total > 0 ? percentages.Format(stage.ValueFraction) + " of total" : "no positive total");
             using (Point(chart, builder, index, "pyramid-stage", stage.Bounds, summary, metadata)) {
                 if (stage.HasGeometry) {
                     if (options.PartitionOutline != null || index < series.PointStrokeColors.Count && series.PointStrokeColors[index].HasValue)

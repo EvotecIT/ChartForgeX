@@ -13,7 +13,7 @@ public static class CalendarHeatmapColorDimensionRecipe {
             .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
                 .WithLabels("Cool", null, "Warm").WithNoDataColor(colors.Border))
             .ConfigureHeatmapColorDimension(options => {
-                options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
+                options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Auto;
             });
     }

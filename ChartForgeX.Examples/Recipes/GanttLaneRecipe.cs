@@ -14,7 +14,6 @@ public static class GanttLaneRecipe {
         return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
             new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
-            .WithGanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithGanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary);
     }
 }

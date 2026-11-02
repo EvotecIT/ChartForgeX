@@ -7,7 +7,6 @@ public static class HexbinHeatmapRecipe {
             .AddHexbinHeatmapRow("Primary", new double?[] { 92, 70, 56, null, 84, 41 }, id: new ChartSeriesId("primary-measurements"))
             .AddHexbinHeatmapRow("Secondary", new double?[] { 76, 84, 46, 70, 90, 62 }, id: new ChartSeriesId("secondary-measurements"))
             .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
     }
 }

@@ -175,30 +175,39 @@ void Run(string name, ExampleRecipe recipe, string variant, VisualThemeMode mode
         : name == "topology" ? compact ? 360 : variant == "shapes" ? 720 : 600 : name == "flow" ? 600 : compact ? 360 : 440;
     try {
         var model = recipe.Create(variant, mode);
+        // Diagram recipes author explicit space for their participants, routes and notes.
+        // Qualify that viewport rather than replacing it with the generic chart frame.
+        if (model is ChartForgeX.Topology.TopologyChart topology) { width = (int)Math.Ceiling(topology.Viewport.Width); height = (int)Math.Ceiling(topology.Viewport.Height); }
+        else if (model is ChartForgeX.VisualArtifacts.SequenceArtifact sequence) { width = (int)Math.Ceiling(sequence.Width); height = (int)Math.Ceiling(sequence.Height); }
         if (expectedKind.HasValue && (model is not Chart chart || !chart.Series.Any(series => series.Kind == expectedKind.Value)))
             throw new InvalidOperationException("The recipe did not create its advertised chart family.");
         var sourceSeries = model is Chart source ? source.Series.Select(series =>
             new RecipeSeries(series.Id.Value, series.Name, series.Kind.ToString(), series.SourcePointCount)).ToArray() : Array.Empty<RecipeSeries>();
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
             new VisualFrame(name, showSurface: variant == "surface"));
-        var prepared = name.EndsWith("viewport", StringComparison.Ordinal) && model is Chart viewportChart
+        // The downloadable program deliberately uses natural topology preparation
+        // when fitting is disabled; the compiled proof must exercise that same contract.
+        var natural = model is TopologyChart { DefaultRenderOptions.FitContentToViewport: false } naturalTopology ? naturalTopology.Prepare() : null;
+        var prepared = natural != null ? null : name.EndsWith("viewport", StringComparison.Ordinal) && model is Chart viewportChart
             ? viewportChart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))) : model.Prepare(context);
-        var svg = prepared.ToSvg();
+        var logicalWidth = natural?.Width ?? width; var logicalHeight = natural?.Height ?? height;
+        width = (int)Math.Ceiling(logicalWidth); height = (int)Math.Ceiling(logicalHeight);
+        var svg = natural?.ToSvg() ?? prepared!.ToSvg();
         var root = XDocument.Parse(svg).Root ?? throw new InvalidOperationException("The recipe produced no SVG root.");
-        if ((string?)root.Attribute("width") != width.ToString(CultureInfo.InvariantCulture)
-            || (string?)root.Attribute("height") != height.ToString(CultureInfo.InvariantCulture))
+        if (Math.Abs(double.Parse(root.Attribute("width")!.Value, CultureInfo.InvariantCulture) - logicalWidth) > .001
+            || Math.Abs(double.Parse(root.Attribute("height")!.Value, CultureInfo.InvariantCulture) - logicalHeight) > .001)
             throw new InvalidOperationException("The recipe changed its requested SVG dimensions.");
         if (expectedKind.HasValue) {
             var keys = root.DescendantsAndSelf().Attributes("data-cfx-series-key").Select(attribute => attribute.Value).ToHashSet(StringComparer.Ordinal);
             foreach (var series in sourceSeries.Where(series => series.SourceObservations > 0))
                 if (!keys.Contains(series.Id)) throw new InvalidOperationException("Export lost authored series identity: " + series.Id);
         }
-        var png = prepared.ToPng();
+        var png = natural?.ToPng() ?? prepared!.ToPng();
         if (png.Length < 24 || ReadInt32(png, 16) != width || ReadInt32(png, 20) != height)
             throw new InvalidOperationException("The recipe changed its requested PNG dimensions.");
         File.WriteAllText(Path.Combine(output, id + ".svg"), svg);
         File.WriteAllBytes(Path.Combine(output, id + ".png"), png);
-        results.Add(new(id, recipe.Factory, variant, mode.ToString(), width, height, true, prepared.Regions.Count, sourceSeries, null));
+        results.Add(new(id, recipe.Factory, variant, mode.ToString(), width, height, true, prepared?.Regions.Count ?? 0, sourceSeries, null));
     } catch (Exception error) {
         results.Add(new(id, recipe.Factory, variant, mode.ToString(), width, height, false, 0, Array.Empty<RecipeSeries>(), error.Message));
     }

@@ -205,6 +205,8 @@ public sealed class ScriptFreeFluidSvgTests {
         double? captionWidth = null;
         foreach (var width in new[] { 400, 800, 390 }) {
             await session.Page.SetViewportSizeAsync(width, 220);
+            // WebKit can acknowledge the viewport before painting its resized SVG clip.
+            await session.Page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
             var measured = await session.Page.EvaluateAsync<JsonElement>("""
                 () => {
                     const root=document.querySelector('main>svg');

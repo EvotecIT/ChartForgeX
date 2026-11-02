@@ -66,7 +66,7 @@ public sealed class CaptionLayoutRegressionTests {
         var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "progress-ring-title");
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "progress-ring-value");
         Assert.Equal("Completion", Assert.Single(caption.Text.Lines).Text);
-        Assert.Equal("34.83", Assert.Single(value.Text.Lines).Text);
+        Assert.Equal("34.8%", Assert.Single(value.Text.Lines).Text);
         Assert.Equal(13.5, caption.Text.Size);
         Assert.Equal("Completion", Assert.Single(prepared.Regions, region => region.Id == "series-0-center-caption").Label);
         Assert.True(value.Baseline - value.Text.Ascent + value.Text.Metrics.Height <= caption.Baseline - caption.Text.Ascent);

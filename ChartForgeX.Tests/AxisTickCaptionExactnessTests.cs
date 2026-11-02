@@ -6,8 +6,8 @@ namespace ChartForgeX.Tests;
 /// <summary>A default value axis never labels a gridline with a number it doesn't sit on, at the precision its step needs.</summary>
 public sealed class AxisTickCaptionExactnessTests {
     [Fact]
-    public void FormatCompactScaleValues_QuarterThousandTicks_UsePlainNumbersInsteadOfRoundedCompactOnes() {
-        Assert.Equal(new[] { "0", "250", "500", "750", "1000", "1250" },
+    public void FormatCompactScaleValues_QuarterThousandTicks_UseGroupedNumbersInsteadOfRoundedCompactOnes() {
+        Assert.Equal(new[] { "0", "250", "500", "750", "1,000", "1,250" },
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 0d, 250, 500, 750, 1000, 1250 }));
     }
 
@@ -19,9 +19,9 @@ public sealed class AxisTickCaptionExactnessTests {
 
     [Fact]
     public void FormatCompactScaleValues_FineStepNearACompactUnit_ShowsEveryTickAsItself() {
-        Assert.Equal(new[] { "12250", "12255", "12260" },
+        Assert.Equal(new[] { "12,250", "12,255", "12,260" },
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 12250d, 12255, 12260 }));
-        Assert.Equal(new[] { "1000", "1000.5", "1001" },
+        Assert.Equal(new[] { "1,000", "1,000.5", "1,001" },
             ChartNumericFormatter.FormatCompactScaleValues(new[] { 1000d, 1000.5, 1001 }));
     }
 
@@ -32,9 +32,9 @@ public sealed class AxisTickCaptionExactnessTests {
     }
 
     [Theory]
-    [InlineData(1000000000001d, "1000000000001")]
-    [InlineData(2000000000000001d, "2000000000000001")]
-    [InlineData(9000000000000001d, "9000000000000001")]
+    [InlineData(1000000000001d, "1,000,000,000,001")]
+    [InlineData(2000000000000001d, "2,000,000,000,000,001")]
+    [InlineData(9000000000000001d, "9,000,000,000,000,001")]
     public void AxisCaption_SingleLargeNonRoundTick_ReadsBackAsItself(double tick, string expected) {
         var ticks = new[] { tick };
         var format = ChartAxisValueFormatter.Create(new ChartForgeX.Core.ChartAxis(), ticks);
@@ -56,7 +56,7 @@ public sealed class AxisTickCaptionExactnessTests {
     public void AxisCaption_SingleTickJustAboveARoundValue_ReadsBackExactly(double tick) {
         var caption = ChartAxisValueFormatter.Create(new ChartForgeX.Core.ChartAxis(), new[] { tick })(tick);
         var unit = caption.EndsWith("k", StringComparison.Ordinal) ? 1e3m : caption.EndsWith("M", StringComparison.Ordinal) ? 1e6m : caption.EndsWith("B", StringComparison.Ordinal) ? 1e9m : 1m;
-        var number = decimal.Parse(unit == 1m ? caption : caption.Substring(0, caption.Length - 1), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+        var number = decimal.Parse(unit == 1m ? caption : caption.Substring(0, caption.Length - 1), System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands, System.Globalization.CultureInfo.InvariantCulture);
 
         Assert.Equal(decimal.Parse(tick.ToString("R", System.Globalization.CultureInfo.InvariantCulture), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture), number * unit);
     }

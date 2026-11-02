@@ -120,13 +120,15 @@ internal static class VisualStateSceneTools {
         return ChartPathBuilder.RoundedRectangle(bounds, radius);
     }
 
-    internal static void Connector(VisualSceneBuilder builder, ChartOptions options, ChartPoint start, ChartPoint end, ChartColor fallback) {
+    internal static void Connector(VisualSceneBuilder builder, ChartOptions options, ChartPoint start, ChartPoint end, ChartColor fallback,
+        ChartDataLabelConnectorStyle? defaultStyle = null) {
+        var style = options.HasDataLabelConnectorStyle ? options.DataLabelConnectorStyle : defaultStyle ?? options.DataLabelConnectorStyle;
         var middle = start.X + (end.X - start.X) / 2;
         var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(start.X, start.Y) };
-        if (options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Curve)
+        if (style == ChartDataLabelConnectorStyle.Curve)
             commands.Add(ChartPathCommand.CubicTo(middle, start.Y, middle, end.Y, end.X, end.Y));
         else {
-            if (options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Elbow) {
+            if (style == ChartDataLabelConnectorStyle.Elbow) {
                 commands.Add(ChartPathCommand.LineTo(middle, start.Y)); commands.Add(ChartPathCommand.LineTo(middle, end.Y));
             }
             commands.Add(ChartPathCommand.LineTo(end.X, end.Y));

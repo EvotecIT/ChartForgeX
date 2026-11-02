@@ -187,9 +187,12 @@ internal static partial class VisualGaugeCompiler {
         }
         bool Fits(TextStyle style) {
             var start = ClearTop(value, style, radius * 1.4);
-            var height = chart.Measure(builder, value, style).Height;
+            var valueMetrics = chart.Measure(builder, value, style);
+            var height = valueMetrics.Height;
             var captionStart = Math.Max(start + height + gap / 3, ClearTop(caption, captionStyle, radius * 1.5));
-            return height <= maximumHeight + .000001 && captionStart + captionHeight <= bottom + .000001;
+            return valueMetrics.Width <= radius * 1.4 + .000001
+                && chart.Measure(builder, caption, captionStyle).Width <= radius * 1.5 + .000001
+                && height <= maximumHeight + .000001 && captionStart + captionHeight <= bottom + .000001;
         }
         var result = Style(maximumHeight);
         if (!Fits(result)) {

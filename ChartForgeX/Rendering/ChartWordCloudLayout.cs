@@ -56,32 +56,46 @@ internal static class ChartWordCloudLayout {
             Math.Max(0, plot.Width - edgePadding * 2),
             Math.Max(0, plot.Height - edgePadding * 2));
         if (safePlot.Width <= 0 || safePlot.Height <= 0) return new List<ChartWordCloudTerm>();
-        var placed = new List<ChartWordCloudTerm>();
-        var bounds = new List<ChartRect>();
-        foreach (var item in values) {
-            var text = WordLabel(chart, item.Point.X, item.Index);
-            var ratio = max <= min ? 1 : (item.Point.Y - min) / (max - min);
-            var preferredFontSize = minFontSize + Math.Sqrt(Math.Max(0, ratio)) * (maxFontSize - minFontSize);
-            var angle = angles[item.Index % angles.Length];
-            for (var scale = 1.0; scale >= 0.42; scale -= 0.08) {
-                var fontSize = Math.Max(minFontSize, preferredFontSize * scale);
-                var metrics = measure?.Invoke(item.Index, text, fontSize);
-                var width = metrics?.Width ?? EstimateWidth(text, fontSize);
-                var height = metrics?.Height ?? fontSize * 1.16;
-                var collisionPadding = 8.0 / density;
-                var collisionWidth = RotatedWidth(width, height, angle) + collisionPadding;
-                var collisionHeight = RotatedHeight(width, height, angle) + collisionPadding;
-                if (!TryPlace(safePlot, bounds, collisionWidth, collisionHeight, density, out var x, out var y)) {
-                    if (fontSize <= minFontSize) break;
-                    continue;
-                }
-                placed.Add(new ChartWordCloudTerm(item.Index, text, item.Point.Y, x, y, width, height, fontSize, angle));
-                bounds.Add(new ChartRect(x - collisionWidth / 2, y - collisionHeight / 2, collisionWidth, collisionHeight));
-                break;
-            }
+        var best = new List<ChartWordCloudTerm>();
+        // Greedy placement can let the first few words consume the canvas. Retry
+        // the whole cloud at a smaller common scale, retaining the fullest layout.
+        for (var pass = 0; pass <= 6; pass++) {
+            var candidate = Place(Math.Pow(.85, pass), out var allAtMinimum);
+            if (candidate.Count > best.Count) best = candidate;
+            if (best.Count == values.Length || allAtMinimum) break;
         }
+        return best;
 
-        return placed;
+        List<ChartWordCloudTerm> Place(double cloudScale, out bool allAtMinimum) {
+            allAtMinimum = true;
+            var placed = new List<ChartWordCloudTerm>();
+            var bounds = new List<ChartRect>();
+            foreach (var item in values) {
+                var text = WordLabel(chart, item.Point.X, item.Index);
+                var ratio = max <= min ? 1 : (item.Point.Y - min) / (max - min);
+                var preferredFontSize = Math.Max(minFontSize, (minFontSize + Math.Sqrt(Math.Max(0, ratio)) * (maxFontSize - minFontSize)) * cloudScale);
+                allAtMinimum &= preferredFontSize <= minFontSize;
+                var angle = angles[item.Index % angles.Length];
+                for (var sizeAttempt = 0; sizeAttempt <= 8; sizeAttempt++) {
+                    var fontSize = sizeAttempt == 8 ? minFontSize : Math.Max(minFontSize, preferredFontSize * (1 - sizeAttempt * .08));
+                    var metrics = measure?.Invoke(item.Index, text, fontSize);
+                    var width = metrics?.Width ?? EstimateWidth(text, fontSize);
+                    var height = metrics?.Height ?? fontSize * 1.16;
+                    var collisionPadding = 8.0 / density;
+                    var collisionWidth = RotatedWidth(width, height, angle) + collisionPadding;
+                    var collisionHeight = RotatedHeight(width, height, angle) + collisionPadding;
+                    if (!TryPlace(safePlot, bounds, collisionWidth, collisionHeight, density, out var x, out var y)) {
+                        if (fontSize <= minFontSize) break;
+                        continue;
+                    }
+                    placed.Add(new ChartWordCloudTerm(item.Index, text, item.Point.Y, x, y, width, height, fontSize, angle));
+                    bounds.Add(new ChartRect(x - collisionWidth / 2, y - collisionHeight / 2, collisionWidth, collisionHeight));
+                    break;
+                }
+            }
+
+            return placed;
+        }
     }
 
     public static double EdgePadding(ChartRect plot) =>
@@ -95,12 +109,16 @@ internal static class ChartWordCloudLayout {
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height / 2;
         var attempts = (int)Math.Round(4200 * density);
-        var radiusStep = 3.0 / Math.Sqrt(density);
+        // Search the full rectangular canvas, including its corners. A fixed circular
+        // radius leaves the long sides of landscape clouds unreachable.
+        var radiusX = Math.Max(0, (plot.Width - width) / 2);
+        var radiusY = Math.Max(0, (plot.Height - height) / 2);
+        if (width > plot.Width || height > plot.Height) { x = y = 0; return false; }
         for (var attempt = 0; attempt < attempts; attempt++) {
             var angle = attempt * 0.52;
-            var radius = Math.Sqrt(attempt) * radiusStep;
-            x = cx + Math.Cos(angle) * radius;
-            y = cy + Math.Sin(angle) * radius;
+            var radius = Math.Sqrt(2d * attempt / (attempts - 1));
+            x = cx + Math.Cos(angle) * radius * radiusX;
+            y = cy + Math.Sin(angle) * radius * radiusY;
             var rect = new ChartRect(x - width / 2, y - height / 2, width, height);
             if (rect.Left < plot.Left || rect.Right > plot.Right || rect.Top < plot.Top || rect.Bottom > plot.Bottom) continue;
             var intersects = false;

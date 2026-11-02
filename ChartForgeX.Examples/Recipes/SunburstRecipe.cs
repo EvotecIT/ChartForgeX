@@ -35,6 +35,6 @@ public static class SunburstRecipe {
             allocation.WithNodeState("engineering-support", ChartSeriesState.Warning);
             allocation.WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        return chart;
     }
 }

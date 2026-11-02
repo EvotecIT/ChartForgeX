@@ -75,7 +75,7 @@ internal sealed partial class VisualSceneBuilder {
             // A dimensionless factor must not inherit a measurement axis's units or culture.
             if (Number("data-cfx-iqr-multiplier", out var multiplier))
                 metadata["data-cfx-formatted-iqr-multiplier"] = ChartNumericFormatter.FormatCoordinate(multiplier);
-            if (group.Role == "point" && (BoxPlotReadoutDescription(series, metadata) ?? FormattedPointDescription(series.Name, metadata, chart.Options.ValueUnit)) is { } description) {
+            if (group.Role == "point" && (BoxPlotReadoutDescription(series, metadata) ?? FormattedPointDescription(series.Name, metadata, chart.Options.ValueUnit, chart.Options.ValueFormat.Culture)) is { } description) {
                 metadata["aria-label"] = description;
                 if (regionIndices == null) {
                     regionIndices = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -95,7 +95,7 @@ internal sealed partial class VisualSceneBuilder {
     // Time-axis point names were built from raw coordinates ("dc-03: 56.5 (46316.0035, 56.5)"), which announces OLE dates.
     // Rebuild that exact raw form from the captured display text: "dc-03, 2026-10-27 20:20 UTC, 56.5 ms". An authored or
     // compacted caption keeps the exact value beside it. Numeric axes keep their exact round-trip coordinates.
-    internal static string? FormattedPointDescription(string seriesName, IReadOnlyDictionary<string, string> metadata, string? unit) {
+    internal static string? FormattedPointDescription(string seriesName, IReadOnlyDictionary<string, string> metadata, string? unit, CultureInfo culture) {
         if (!metadata.TryGetValue("aria-label", out var current) || !metadata.TryGetValue("data-cfx-x", out var rawX)
             || !metadata.TryGetValue("data-cfx-y", out var rawY)
             || !double.TryParse(rawX, NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
@@ -121,8 +121,8 @@ internal sealed partial class VisualSceneBuilder {
         if (numeric && formatted != exactWithUnit) amount += " (" + exactWithUnit + ")";
         var head = metadata.TryGetValue("data-cfx-display-label", out var display) && display.Length > 0 ? display
             : metadata.TryGetValue("data-cfx-formatted-x", out var formattedX) ? formattedX : ChartNumericFormatter.FormatCoordinate(x);
-        var categorical = !double.TryParse(head, NumberStyles.Float, CultureInfo.CurrentCulture, out _)
-            && !double.TryParse(head, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
+        var categorical = !double.TryParse(head, NumberStyles.Float | NumberStyles.AllowThousands, culture, out _)
+            && !double.TryParse(head, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out _);
         return (categorical ? head + ", " + seriesName + ": " + amount : seriesName + ": x " + ChartNumericFormatter.FormatCoordinate(x) + ", y " + amount) + facts;
     }
     private static string RangeLabel(string start, string end) => start.Length == 0 && end.Length == 0 ? string.Empty : start + " – " + end;

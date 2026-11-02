@@ -42,6 +42,6 @@ public static class ConeFunnelRecipe {
                 options.Form = ChartFunnelForm.Cone;
                 // Stage names and retention sit beside the cone, so narrow stages keep their full captions.
                 options.LabelContent = ChartStageLabelContent.Separate;
-            }).WithValueFormat(ChartValueFormat.Number("#,0", CultureInfo.InvariantCulture));
+            });
     }
 }

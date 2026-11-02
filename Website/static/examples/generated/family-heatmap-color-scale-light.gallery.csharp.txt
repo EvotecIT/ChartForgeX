@@ -41,7 +41,6 @@ public static class HeatmapColorScaleRecipe {
         return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").WithDataLabels()
             .AddHeatmapRow("Primary", new double?[] { -20, -10, 0, null, 10, 20 }, id: new ChartSeriesId("primary-measurements"))
             .AddHeatmapRow("Secondary", new double?[] { -15, 0, 5, 15, null, 25 }, id: new ChartSeriesId("secondary-measurements"))
-            .WithHeatmapColorScale(scale.WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target"))
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithHeatmapColorScale(scale.WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target"));
     }
 }

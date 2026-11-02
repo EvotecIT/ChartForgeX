@@ -12,6 +12,6 @@ public static class TreeRecipe {
             new ChartTreeLink("operations", "operations-support", 40)
         };
         var teams = ChartSeries.CreateTree(new ChartSeriesId("teams"), "Teams", nodes, links);
-        return Chart.Create().WithDataLabels().AddSeries(teams).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithDataLabels().AddSeries(teams);
     }
 }

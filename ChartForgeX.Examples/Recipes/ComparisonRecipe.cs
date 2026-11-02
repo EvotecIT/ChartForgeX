@@ -17,8 +17,7 @@ public static class ComparisonRecipe {
             observed.WithColor(selected[0]); expected.WithColor(selected[1]); capacity.WithColor(selected[2]);
         }
         return Chart.Create().WithXLabels(Enumerable.Range(1, count).Select(index => "Day " + index).ToArray())
-            .AddSeries(capacity).AddSeries(expected).AddSeries(observed)
-            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+            .AddSeries(capacity).AddSeries(expected).AddSeries(observed);
     }
 
     private static IEnumerable<ChartPoint> Points(int count, string variant, int series, bool allowBreaks = true) {

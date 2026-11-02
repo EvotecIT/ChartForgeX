@@ -34,7 +34,6 @@ public static class StepLineRecipe {
         var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
         var queued = new ChartSeries(new ChartSeriesId("queued"), "Queued", ChartSeriesKind.StepLine, points);
-        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(queued)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(queued);
     }
 }

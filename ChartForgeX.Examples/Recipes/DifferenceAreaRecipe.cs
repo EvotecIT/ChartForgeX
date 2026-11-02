@@ -14,7 +14,7 @@ public static class DifferenceAreaRecipe {
                 .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
                 .ConfigureMarkers(markers => markers.Radius = 3);
             return Chart.Create().WithTitle("Smooth actual and held forecast").WithXAxis("Observation").WithYAxis("Completed requests")
-                .AddSeries(smoothComparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+                .AddSeries(smoothComparison);
         }
         if (variant is "singleton" or "compact-singleton") return Chart.Create().WithTitle("One observed comparison")
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", new[] { new ChartDifferencePoint(0, 0, 7) })
@@ -59,6 +59,6 @@ public static class DifferenceAreaRecipe {
             comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis("Completed requests");
         }
-        return chart.AddSeries(comparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart.AddSeries(comparison);
     }
 }

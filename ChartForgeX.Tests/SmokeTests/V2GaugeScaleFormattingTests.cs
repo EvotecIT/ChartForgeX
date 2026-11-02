@@ -30,7 +30,7 @@ public sealed class V2GaugeScaleFormattingTests {
         var captions = ScaleCaptions(prepared);
         Assert.Equal(form == ChartGaugeForm.Linear ? 5 : 2, captions.Length);
         Assert.Equal(captions.Length, captions.Distinct(StringComparer.Ordinal).Count());
-        var displayed = captions.Select(caption => double.Parse(caption, NumberStyles.Float, CultureInfo.InvariantCulture)).ToArray();
+        var displayed = captions.Select(caption => double.Parse(caption, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture)).ToArray();
         Assert.Equal(minimum, displayed[0]); Assert.Equal(maximum, displayed[^1]);
         Assert.True(displayed.Zip(displayed.Skip(1), (left, right) => left < right).All(increasing => increasing));
         var svgCaptions = XDocument.Parse(prepared.ToSvg()).Descendants()
@@ -237,7 +237,7 @@ public sealed class V2GaugeScaleFormattingTests {
         chart.Series[0].DataLabelStyle.FontSize = 40;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role is "gauge-label" or "gauge-title");
-        Assert.Contains(prepared.Regions, region => region.Role == "gauge-label" && region.Label == "1000005");
+        Assert.Contains(prepared.Regions, region => region.Role == "gauge-label" && region.Label == "1,000,005");
         Assert.Contains(prepared.Regions, region => region.Role == "gauge-title" && region.Label == "Tolerance");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
         Assert.NotEmpty(prepared.ToPng());

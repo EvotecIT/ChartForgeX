@@ -9,8 +9,7 @@ public static class RadialColumnRecipe {
         var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn, Points(320, 410, 260, 360));
         var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
             .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
-            .AddSeries(requests).AddSeries(followUps).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .AddSeries(requests).AddSeries(followUps).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
         if (variant is "options" or "compact-options") {
             requests.WithStackGroup("work").WithNormalization(100);
             followUps.WithStackGroup("work").WithNormalization(100).WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
@@ -34,8 +33,7 @@ public static class RadialColumnRecipe {
         var chart = Chart.Create().WithXLabels(Enumerable.Range(1, 20).Select(index => "Region " + index + " request volume").ToArray())
             .WithRadialGeometry(new ChartRadialGeometryOptions(-75, 195, .2, .25, .1))
             .WithYAxisBounds(0, 1500).WithDataLabels(false).WithXAxis("All region captions; overlaps are intentional")
-            .ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All).AddSeries(requests)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All).AddSeries(requests);
         chart.Options.YAxis.Visible = false;
         return chart;
     }

@@ -17,9 +17,9 @@ public sealed class ChartLinkedReadableValueContractsTests {
         var chart = Chart.Create().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
             .AddScatter("Samples", new[] { new ChartPoint(x, y) });
         var point = Mark(chart.Prepare(new VisualRenderContext()).ToSvg());
-        Assert.Equal("0.03", point.Attribute("data-cfx-display-label")!.Value);
-        Assert.Equal("0.03", point.Attribute("data-cfx-formatted-x")!.Value);
-        Assert.Equal("0.12", point.Attribute("data-cfx-formatted-value")!.Value);
+        Assert.Equal("0.025", point.Attribute("data-cfx-display-label")!.Value);
+        Assert.Equal("0.025", point.Attribute("data-cfx-formatted-x")!.Value);
+        Assert.Equal("0.123", point.Attribute("data-cfx-formatted-value")!.Value);
         Assert.Equal(x, double.Parse(point.Attribute("data-cfx-x")!.Value, CultureInfo.InvariantCulture));
         Assert.Equal(y, double.Parse(point.Attribute("data-cfx-y")!.Value, CultureInfo.InvariantCulture));
     }

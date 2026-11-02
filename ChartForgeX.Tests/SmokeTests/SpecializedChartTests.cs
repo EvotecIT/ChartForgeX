@@ -366,7 +366,12 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-column-label\"") == 3, "Heatmaps should expose column label markers.");
         Assert(svg.Contains("data-cfx-role=\"heatmap-x-axis-title\"", StringComparison.Ordinal), "Heatmaps should mark the x-axis title.");
         Assert(svg.Contains("data-cfx-role=\"heatmap-y-axis-title\"", StringComparison.Ordinal), "Heatmaps should mark the y-axis title.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-scale-label\"") == 2, "Heatmap scales should expose min and max labels.");
+        var scaleLabels = System.Xml.Linq.XDocument.Parse(svg).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-label").ToArray();
+        Assert(scaleLabels.Any(label => (string?)label.Attribute("data-cfx-source-id") == "matrix-scale-low" && label.Value == "20%") &&
+            scaleLabels.Any(label => (string?)label.Attribute("data-cfx-source-id") == "matrix-scale-high" && label.Value == "100%"),
+            "Heatmap scales should retain formatted min and max labels.");
+        Assert(scaleLabels.Length > 2, "Heatmap scales should expose intermediate labels when space allows.");
         Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Semantic heatmaps should expose positive cell status.");
         Assert(svg.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Semantic heatmaps should expose warning cell status.");
         Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Semantic heatmaps should expose negative cell status.");

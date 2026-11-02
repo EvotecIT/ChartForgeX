@@ -16,7 +16,7 @@ public static partial class V2Examples {
                 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
                     VisualTheme.Graphite(), mode, new VisualFrame(title, "Product-neutral diagram semantics", showLegend: false), FontSpec.FromFamily(ProofFont));
                 var prepared = model.Prepare(context);
-                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));
                 File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                 WriteThumbnail(output, model, id, title, family, mode, legend: false);
                 WriteRecipe(output, id, recipe, "feasibility", title, "Product-neutral diagram semantics", mode, 640, 400, false, family == "topology" ? "Topology" : "Sequence");

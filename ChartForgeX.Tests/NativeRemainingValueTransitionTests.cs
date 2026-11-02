@@ -11,6 +11,20 @@ namespace ChartForgeX.Tests;
 
 [Collection(nameof(FontRegistryCollection))]
 public sealed class NativeRemainingValueTransitionTests {
+    [Fact]
+    public void DefaultRingTransitionsChoosePercentagePrecisionForEachNativeFrame() {
+        var renderer = new HtmlInteractiveChartRenderer(); var font = BrowserProofFonts.Family;
+        HtmlChartSection Section(double value) => renderer.PrepareSection(Model("rings", 390, true, value, font)
+            .WithValueFormat(Chart.Create().Options.ValueFormat));
+        var from = Section(10); var to = Section(13); var expected = Section(11.5).PreparedVisual;
+        var frames = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3);
+        Assert.Same(from.PreparedVisual, frames[0]); Assert.Same(to.PreparedVisual, frames[2]);
+        Assert.Contains(expected.Regions, region => region.Role == "progress-ring-value" && region.Label == "40.5%");
+        Assert.Equal(expected.ToSvg("default-ring"), frames[1].ToSvg("default-ring"));
+        Assert.Equal(expected.ToPng(), frames[1].ToPng());
+        NativeValueIdentityProof.AssertEqual(expected, frames[1], "default-ring-percentage");
+    }
+
     public static IEnumerable<object[]> Families() => RemainingValueTransitionDefaultControls.Families.Select(kind => new object[] { kind });
     [Theory]
     [MemberData(nameof(Families))]

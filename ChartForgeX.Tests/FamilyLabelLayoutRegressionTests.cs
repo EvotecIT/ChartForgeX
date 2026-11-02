@@ -202,7 +202,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
         }
         var prepared = Prepare(chart, 400, 280);
         ScatterBubbleColorRenderingTests.Capture(prepared, "family-map-caption-" + (precisionRefinement ? "precision" : "relative"));
-        var expected = precisionRefinement ? new[] { "Less · 100000000000001", "More · 100000100000001" }
+        var expected = precisionRefinement ? new[] { "Less · 100,000,000,000,001", "More · 100,000,100,000,001" }
             : new[] { "Less · No recorded observations", "More · 91" };
         Assert.Equal(expected, Texts(prepared, "map-scale-label").Select(text => Assert.Single(text.Text.Lines).Text));
         var missing = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "map-scale-no-data").Bounds;

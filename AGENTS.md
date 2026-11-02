@@ -32,7 +32,7 @@ ChartForgeX is a dependency-free rendering engine. Keep changes generic, testabl
 
 ## Validation
 
-Before adding or changing tests, follow the shared test authoring gate at `$CODEX_HOME/skills/test-audit/SKILL.md#authoring-gate` and contract-focused proof guidance at `$CODEX_HOME/skills/contract-focused-tests/SKILL.md`. Use `$CODEX_HOME/skills/test-audit/CAMPAIGN.md` for deliberate pruning. Expand `CODEX_HOME` to the configured profile directory (default `~/.codex`) before opening these shared resource paths.
+Before adding or changing tests, read the shared [test-audit authoring gate](skills/test-audit/SKILL.md#authoring-gate) and [contract-focused test guidance](skills/contract-focused-tests/SKILL.md). Use the [campaign guide](skills/test-audit/CAMPAIGN.md) for deliberate pruning. Resolve these paths against `CODEX_HOME` (default `~/.codex`).
 
 Use the repository quality loop before trusting visual or packaging changes:
 

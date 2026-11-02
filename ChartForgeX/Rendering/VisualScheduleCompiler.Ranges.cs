@@ -109,8 +109,7 @@ internal static partial class VisualScheduleCompiler {
             var obstacles = new List<LabelObstacle>();
             if (frame == null) Axis(chart, context, builder, viewport, layout, ticks, Project, Format,
                 minimum: gantt ? min : null, maximum: gantt ? max : null, calendarAnchor: gantt ? items.Min(item => item.Start) : null);
-            // Surface fills own the antialiased boundary where a connector touches its mark.
-            if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max, frame?.MarkSurfaces);
+            var completionFormat = ChartValueFormat.Percentages(chart.Options.ValueFormat, items.Where(item => item.Gantt).Select(item => item.Progress));
             foreach (var item in items) {
                 if (item.Marker || frame != null) continue;
                 var center = ScheduleRowCenter(chart, plot, (item.Row + .5) * slot);
@@ -125,7 +124,7 @@ internal static partial class VisualScheduleCompiler {
                 var id = VisualStateSceneTools.SourceId(item.Index, 0);
                 if (visible) obstacles.Add(new LabelObstacle(id, bounds));
                 var duration = chart.Options.ValueFormatter?.Invoke(item.End - item.Start) ?? ChartStateTimelineModel.FormatDuration(item.End - item.Start);
-                var completion = (item.Progress * 100).ToString("0.#", chart.Options.ValueFormat.Culture) + "%";
+                var completion = completionFormat.Format(item.Progress);
                 var openEnded = item.Gantt && series.GanttItems[0].IsOpenEnded;
                 var summary = series.Name + ": " + Format(item.Start) + " – " + (openEnded ? chart.Options.Labels.Ongoing : Format(item.End))
                     + ", " + (item.Gantt ? completion : duration);
@@ -184,6 +183,8 @@ internal static partial class VisualScheduleCompiler {
             }
             Markers(chart, context, builder, plot, items, Project, Format, min, max, colors, obstacles, predecessors);
             if (frame == null && gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
+            // Links are foreground annotations: successor fills must not cover their arrowheads; surface fills still own the antialiased contact edge.
+            if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max, frame?.MarkSurfaces);
         }
         builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
     }

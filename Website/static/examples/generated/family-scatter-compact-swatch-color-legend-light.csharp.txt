@@ -43,7 +43,7 @@ public static class ScatterColorDimensionRecipe {
             new ChartPoint((index + 1) * 16, minutes[index]).WithColorValue(value)));
         recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border)).ConfigureColorDimension(options => {
             options.Name = "Temperature";
-            options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
+            options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
             options.LegendStyle = gradient ? ChartColorLegendStyle.Gradient : swatches ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
         });
         return NumericAxes().ConfigureLabels(labels => labels.NoData = "Not sampled")

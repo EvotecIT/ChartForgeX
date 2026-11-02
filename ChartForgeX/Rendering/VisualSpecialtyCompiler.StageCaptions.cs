@@ -12,6 +12,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSpecialtyCompiler {
     /// <summary>Owns independent caption requests; geometry remains in the existing Funnel/Pyramid layouts.</summary>
     private sealed class StageCaptions {
+        private const double RailGap = LabelPlacementService.DefaultGap + 1;
         internal readonly List<StageCaption> Items = new();
         private readonly Dictionary<int, List<StageCaption>> _byStage = new();
         private readonly double _gap;
@@ -29,16 +30,17 @@ internal static partial class VisualSpecialtyCompiler {
             Horizontal = (funnel ? chart.Options.Funnel.Orientation : chart.Options.Pyramid.Orientation) == ChartOrientation.Horizontal;
             Frame = plot;
             _gap = context.Theme.Spacing / 4;
+            var percentages = funnel ? FunnelPercentageFormat(chart) : null;
             for (var index = 0; index < series.RenderPoints.Count; index++) {
                 var raw = series.RenderPoints[index].Y;
                 Add(index, "category", Category(chart, index), funnel ? chart.Options.Funnel.CategoryLabel : chart.Options.Pyramid.CategoryLabel, false);
-                Add(index, "value", VisualStateSceneTools.Value(chart, series, index, raw), funnel ? chart.Options.Funnel.ValueLabel : chart.Options.Pyramid.ValueLabel, true);
+                Add(index, "value", funnel ? FunnelValue(chart, index) : VisualStateSceneTools.Value(chart, series, index, raw), funnel ? chart.Options.Funnel.ValueLabel : chart.Options.Pyramid.ValueLabel, true);
                 if (!funnel) continue;
                 var retention = series.RenderPoints[0].Y > 0 ? raw / series.RenderPoints[0].Y : (double?)null;
                 var previous = index > 0 ? series.RenderPoints[index - 1].Y : 0;
                 var drop = index > 0 && previous > 0 ? (previous - raw) / previous : (double?)null;
-                Add(index, "retention", retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline", chart.Options.Funnel.RetentionLabel, false);
-                Add(index, "dropoff", drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline", chart.Options.Funnel.DropOffLabel, false);
+                Add(index, "retention", retention.HasValue ? percentages!.FormatFraction(retention.Value) + " retained" : "No initial baseline", chart.Options.Funnel.RetentionLabel, false);
+                if (index > 0) Add(index, "dropoff", drop.HasValue ? percentages!.FormatFraction(drop.Value) + " drop-off" : "No previous baseline", chart.Options.Funnel.DropOffLabel, false);
             }
             var leading = 0d; var trailing = 0d;
             foreach (var item in Items) {
@@ -58,7 +60,7 @@ internal static partial class VisualSpecialtyCompiler {
                 if (!policy.Visible) return;
                 var inherited = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
                 var placement = policy.Placement ?? inherited;
-                if (placement == ChartDataLabelPlacement.Auto) placement = inside ? ChartDataLabelPlacement.Inside
+                if (placement == ChartDataLabelPlacement.Auto) placement = inside && !_cone ? ChartDataLabelPlacement.Inside
                     : Horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 if (placement == ChartDataLabelPlacement.Outside) placement = Horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 var contained = placement is ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center;
@@ -103,6 +105,7 @@ internal static partial class VisualSpecialtyCompiler {
             var requests = new List<LabelPlacementRequest>();
             var obstacles = new List<LabelObstacle>();
             var bySide = Items.GroupBy(item => (item.Index, item.Placement)).ToDictionary(group => group.Key, group => group.ToArray());
+            var railOffsets = ConeRailOffsets(builder, stages, bySide, out var pairedRows);
             foreach (var stage in stages) if (stage.HasPaint) obstacles.Add(new LabelObstacle(Id(stage.Index), new LabelMarkShape(
                 VisualSceneGeometry.Flatten(new VisualScenePath(stage.Path, stage.Filled, null, null, 0, null, null), 1),
                 stage.Filled, stage.StrokeWidth)));
@@ -111,12 +114,21 @@ internal static partial class VisualSpecialtyCompiler {
                 var peers = bySide[(item.Index, side)];
                 var size = builder.MeasureText(item.Text, item.Style); var gap = _gap;
                 var inside = side is ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center;
+                // Separate rows share a rail; mark clearance must not consume each row's label gap.
+                var peerGap = _cone && !inside ? Math.Min(gap, RailGap) : gap;
                 var alongX = side is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
                 var anchor = stage.Anchor(side);
                 var extents = peers.Select(peer => builder.MeasureText(peer.Text, peer.Style))
                     .Select(metrics => alongX ? metrics.Width : metrics.Height).ToArray();
                 var rank = Array.IndexOf(peers, item);
-                var offset = -(extents.Sum() + gap * (peers.Length - 1)) / 2 + extents.Take(rank).Sum() + gap * rank + extents[rank] / 2;
+                var paired = pairedRows.Contains((item.Index, side));
+                if (paired) {
+                    extents = new[] { Math.Max(extents[0], extents[1]) }.Concat(extents.Skip(2)).ToArray();
+                    rank = Math.Max(0, rank - 1);
+                }
+                var offset = -(extents.Sum() + peerGap * (extents.Length - 1)) / 2 + extents.Take(rank).Sum() + peerGap * rank + extents[rank] / 2;
+                var packed = railOffsets.TryGetValue((item.Index, side), out var railOffset);
+                if (packed) offset += railOffset;
                 LabelCandidate candidate; ChartRect bounds = Frame;
                 if (inside) {
                     anchor = new ChartPoint(stage.Inside.Left + stage.Inside.Width / 2, stage.Inside.Top + stage.Inside.Height / 2);
@@ -134,16 +146,29 @@ internal static partial class VisualSpecialtyCompiler {
                     candidate = new LabelCandidate(offset, gap, .5, 0);
                     if (Horizontal) bounds = new ChartRect(Frame.Left, Plot.Bottom, Frame.Width, Math.Max(0, Frame.Bottom - Plot.Bottom));
                 }
-                // Outside candidates start at the actual mark edge, with the reserved rail as a measured fallback.
+                // Complete cone groups use the measured rail; other candidates start at the actual mark edge.
                 var candidates = new List<LabelCandidate> { candidate };
                 if (!inside && (Horizontal ? side is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below : side is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right)) {
                     var x = Horizontal ? stage.Bounds.Left + stage.Bounds.Width / 2 + offset : bounds.Left + bounds.Width / 2;
                     var y = Horizontal ? bounds.Top + bounds.Height / 2 : stage.Bounds.Top + stage.Bounds.Height / 2 + offset;
-                    candidates.Add(new LabelCandidate(x - anchor.X, y - anchor.Y, .5, .5));
+                    if (packed) {
+                        var rail = Horizontal
+                            ? new LabelCandidate(offset, (side == ChartDataLabelPlacement.Above ? bounds.Bottom - gap : bounds.Top + gap) - anchor.Y,
+                                .5, side == ChartDataLabelPlacement.Above ? 1 : 0)
+                            : paired
+                                ? new LabelCandidate((item.Component == "value" ? bounds.Right - gap : bounds.Left + gap) - anchor.X,
+                                    offset, item.Component == "value" ? 1 : 0, .5)
+                                : new LabelCandidate((side == ChartDataLabelPlacement.Left ? bounds.Right - gap : bounds.Left + gap) - anchor.X,
+                                    offset, side == ChartDataLabelPlacement.Left ? 1 : 0, .5);
+                        candidates.Insert(0, rail);
+                        if (Array.IndexOf(peers, item) == 0 && stage.HasPaint) item.RailLeaderEnd = Horizontal
+                            ? new ChartPoint(anchor.X + railOffset, side == ChartDataLabelPlacement.Above ? bounds.Bottom - gap / 2 : bounds.Top + gap / 2)
+                            : new ChartPoint(side == ChartDataLabelPlacement.Left ? bounds.Right - gap / 2 : bounds.Left + gap / 2, anchor.Y + railOffset);
+                    } else candidates.Add(new LabelCandidate(x - anchor.X, y - anchor.Y, .5, .5));
                 }
                 requests.Add(new LabelPlacementRequest(item.Text, anchor, item.Style, candidates) {
                     AssociatedMarkId = Id(item.Index), Bounds = bounds, Fallback = LabelFallbackRule.Drop,
-                    MeasuredSize = size, HasLeaderLine = !inside && stage.HasPaint, LeaderOnFirstCandidate = true
+                    MeasuredSize = size, HasLeaderLine = !inside && stage.HasPaint && !packed, LeaderOnFirstCandidate = true
                 });
             }
             var results = new LabelPlacementService().Place(requests, Frame, obstacles, LabelPlacementService.DefaultGap,
@@ -162,12 +187,60 @@ internal static partial class VisualSpecialtyCompiler {
             }
         }
 
+        private Dictionary<(int, ChartDataLabelPlacement), double> ConeRailOffsets(VisualSceneBuilder builder,
+            IReadOnlyList<StageCaptionFrame> stages, Dictionary<(int Index, ChartDataLabelPlacement Placement), StageCaption[]> groups,
+            out HashSet<(int, ChartDataLabelPlacement)> pairedRows) {
+            var result = new Dictionary<(int, ChartDataLabelPlacement), double>();
+            pairedRows = new HashSet<(int, ChartDataLabelPlacement)>();
+            if (!_cone) return result;
+            var gap = RailGap;
+            var peerGap = Math.Min(_gap, gap);
+            var start = Horizontal ? Frame.Left : Frame.Top;
+            var end = Horizontal ? Frame.Right : Frame.Bottom;
+            double Axis(ChartPoint point) => Horizontal ? point.X : point.Y;
+            foreach (var side in groups.Where(pair => Horizontal
+                ? pair.Key.Placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below
+                : pair.Key.Placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right).GroupBy(pair => pair.Key.Placement)) {
+                var rows = side.OrderBy(pair => Axis(stages[pair.Key.Index].Anchor(pair.Key.Placement))).ToArray();
+                var metrics = rows.Select(pair => pair.Value.Select(item => builder.MeasureText(item.Text, item.Style)).ToArray()).ToArray();
+                var lengths = metrics.Select(row => row.Sum(size => Horizontal ? size.Width : size.Height) + peerGap * (row.Length - 1)).ToArray();
+                var paired = new bool[rows.Length];
+                if (!Horizontal && lengths.Sum() + gap * (rows.Length - 1) > end - start) {
+                    var width = side.Key == ChartDataLabelPlacement.Left ? Plot.Left - Frame.Left : Frame.Right - Plot.Right;
+                    for (var index = 0; index < rows.Length; index++) {
+                        var peers = rows[index].Value; var sizes = metrics[index];
+                        if (peers.Length < 2 || peers[0].Component != "category" || peers[1].Component != "value"
+                            || sizes[0].Width + sizes[1].Width + gap > width - _gap * 2) continue;
+                        paired[index] = true;
+                        lengths[index] = Math.Max(sizes[0].Height, sizes[1].Height) + sizes.Skip(2).Sum(size => size.Height) + peerGap * (sizes.Length - 2);
+                    }
+                }
+                if (lengths.Sum() + gap * (rows.Length - 1) > end - start) continue;
+                var tops = new double[rows.Length];
+                for (var index = 0; index < rows.Length; index++)
+                    tops[index] = Math.Max(index == 0 ? start : tops[index - 1] + lengths[index - 1] + gap,
+                        Axis(stages[rows[index].Key.Index].Anchor(side.Key)) - lengths[index] / 2);
+                for (var index = rows.Length - 1; index >= 0; index--)
+                    tops[index] = Math.Min(tops[index], (index == rows.Length - 1 ? end : tops[index + 1] - gap) - lengths[index]);
+                for (var index = 0; index < rows.Length; index++) {
+                    result[rows[index].Key] = tops[index] + lengths[index] / 2 - Axis(stages[rows[index].Key.Index].Anchor(side.Key));
+                    if (paired[index]) pairedRows.Add(rows[index].Key);
+                }
+            }
+            return result;
+        }
+
         internal void Draw(Chart chart, VisualSceneBuilder builder, int index, string family, VisualThemeColors colors) {
             if (!_byStage.TryGetValue(index, out var captions)) return;
+            foreach (var item in captions.Where(item => item.RailLeaderEnd.HasValue))
+                if (captions.Any(peer => peer.Placement == item.Placement && !peer.Placed!.IsDropped))
+                    VisualStateSceneTools.Connector(builder, chart.Options, item.Placed!.Request.Anchor, item.RailLeaderEnd!.Value,
+                        colors.MutedForeground, ChartDataLabelConnectorStyle.Straight);
             foreach (var item in captions) {
                 var placed = item.Placed!; var id = Id(index) + "-" + item.Component + "-label";
                 var bounds = placed.IsDropped ? new ChartRect(placed.Request.Anchor.X, placed.Request.Anchor.Y, 0, 0) : placed.Bounds;
-                if (placed.HasLeaderLine) VisualStateSceneTools.Connector(builder, chart.Options, placed.Request.Anchor, placed.LeaderEnd, colors.MutedForeground);
+                if (placed.HasLeaderLine) VisualStateSceneTools.Connector(builder, chart.Options, placed.Request.Anchor, placed.LeaderEnd, colors.MutedForeground,
+                    _cone ? ChartDataLabelConnectorStyle.Straight : null);
                 StageText(builder, item.Text, bounds, item.Style, family + "-" + item.Component + "-label", id,
                     TextAlignment.Left, item.Paint, family, halo: item.Halo, haloPaint: item.HaloPaint);
             }
@@ -188,6 +261,7 @@ internal static partial class VisualSpecialtyCompiler {
         internal SvgPaint? HaloPaint { get; set; }
         internal ChartDataLabelPlacement Placement { get; }
         internal PlacedLabel? Placed { get; set; }
+        internal ChartPoint? RailLeaderEnd { get; set; }
     }
 
     private sealed class StageCaptionFrame {

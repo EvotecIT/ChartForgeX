@@ -2,6 +2,16 @@
 
 These are the rules charts follow without configuration. Authored settings (explicit tick counts, label density, value formats, colours) always win.
 
+## Numbers
+
+Every chart family uses the shared numeric display policy. Automatic values use invariant English formatting, group thousands below 10,000, and trim up to three fractional digits: `2,611.111`, rather than `2611.1110`. Larger captions use compact units such as `12.5k`. A series keeps one compact unit and omits unnecessary trailing zeros. Very small values retain significant digits instead of rounding to zero.
+
+Numeric ticks keep the precision their step needs. When compact rounding would move a caption away from its actual tick, the scale uses grouped numbers such as `1,000`, `1,000.5`, `1,001`. Integer ticks have no decimal padding. Raw coordinates and source values retain round-trip precision separately from display captions.
+
+Shares always carry `%`. Pie/donut shares, funnel ratios, pyramid shares and Gantt completion use one percentage precision per chart. Default progress rings show their 0–100 readings and average as percentages.
+
+`WithValueFormat(ChartValueFormat.Number("0.0000", culture))` deliberately selects fixed precision and a culture; it remains authoritative. Custom callbacks and explicit point labels also keep their authored output. Use a percentage format such as `"0.00%"` to choose derived-share precision. An authored raw-value format keeps its own unit while derived shares retain `%` and use the same culture.
+
 ## Tick density
 
 Automatic numeric axes choose their tick step from the axis length, then keep the densest nice step whose measured captions fit:

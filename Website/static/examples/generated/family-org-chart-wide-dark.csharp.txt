@@ -36,7 +36,7 @@ public static class OrgChartRecipe {
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
         chart.AddTeam("company", "Northwind Services", new[] {
             // Wide charts keep each team in one row; compact ones stack every team under its manager.
-            Person("avery", "Avery Quinn", "Managing director", policy: compact ? TopologyHierarchyLayoutPolicy.Vertical : TopologyHierarchyLayoutPolicy.Standard),
+            Person("avery", "Avery Quinn", "Managing director", policy: compact ? TopologyHierarchyLayoutPolicy.Vertical : null),
             Person("jordan", "Jordan Vale", "Engineering", "avery"),
             Person("morgan", "Morgan Reed", "Operations", "avery"),
             Person("casey", "Casey Lund", "Customer success", "avery"),

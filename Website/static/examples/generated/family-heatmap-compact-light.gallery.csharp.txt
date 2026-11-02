@@ -37,8 +37,7 @@ public static class HeatmapRecipe {
             .AddHeatmapRow("Primary", new double?[] { 92, null, null, 70, null, 41 }, id: new ChartSeriesId("primary-measurements"))
             .AddHeatmapRow("Secondary", new double?[] { null, 84, null, null, 90, null }, id: new ChartSeriesId("secondary-measurements"))
             .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
 
         var areas = new[] { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" };
         var sites = variant == "wide"

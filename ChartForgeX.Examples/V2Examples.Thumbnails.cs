@@ -46,7 +46,7 @@ public static partial class V2Examples {
             artifact.Accessibility.Description = "A compact overview. Open the example for the complete diagram, variants and source.";
         if (family == "state-timeline" && id.Contains("-availability-"))
             artifact.Accessibility.Description = "A compact overview of the first three targets. Open the example for all nine targets, variants and source.";
-        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), artifact.ToSvg());
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), ExampleArtifactWriter.Svg(prepared, id + "-thumbnail", artifact.Accessibility));
         File.WriteAllBytes(Path.Combine(output, id + ".thumbnail.png"), prepared.ToPng());
     }
 

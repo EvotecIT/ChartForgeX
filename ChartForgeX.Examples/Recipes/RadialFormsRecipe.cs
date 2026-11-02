@@ -34,6 +34,6 @@ public static class RadialFormsRecipe {
     }
 
     private static Chart Frame(int width, VisualThemeMode mode) => Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), mode)
-        .WithLegend().WithDataLabels(false).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        .WithLegend().WithDataLabels(false);
     private static string Degrees(double radians) => (radians * 180 / Math.PI).ToString("0", CultureInfo.InvariantCulture) + "°";
 }
