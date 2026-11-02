@@ -122,7 +122,9 @@ internal static class ChartNumericFormatter {
         try { return Math.Abs(shown * unit - exact) <= (decimal)tolerance; }
         catch (OverflowException) { return false; }
     }
-    internal static string FormatCompactAxisValue(double value) => FormatCompactScaleValues(new[] { value })[0];
+    // A lone value has no neighbouring tick to disambiguate, so it uses the bounded default precision
+    // instead of the exact-digit fallback a scale needs when its own captions collide.
+    internal static string FormatCompactAxisValue(double value) => ChartValueFormat.ExistingValue.Format(value);
 
     internal static string RefineCompactAxisValue(double value, string caption, string zero) =>
         value == 0 ? zero : NeedsPrecision(value, caption, zero) ? ChartValueFormat.FormatSignificant(value) : caption;
