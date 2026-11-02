@@ -213,7 +213,7 @@ public sealed partial class VisualTypography {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("A font family is required.", nameof(family));
         if (string.IsNullOrWhiteSpace(monospaceFamily)) throw new ArgumentException("A monospace family is required.", nameof(monospaceFamily));
         MonospaceFamily = monospaceFamily; AxisTitleSize = Positive(axisTitleSize ?? axisSize, nameof(axisTitleSize));
-        Family = family; TitleSize = Positive(titleSize, nameof(titleSize)); SubtitleSize = Positive(subtitleSize, nameof(subtitleSize));
+        _family = family; TitleSize = Positive(titleSize, nameof(titleSize)); SubtitleSize = Positive(subtitleSize, nameof(subtitleSize));
         AxisSize = Positive(axisSize, nameof(axisSize)); LegendSize = Positive(legendSize, nameof(legendSize)); DataLabelSize = Positive(dataLabelSize, nameof(dataLabelSize));
         ScalarValueSize = Positive(scalarValueSize, nameof(scalarValueSize)); CenterValueSize = Positive(centerValueSize, nameof(centerValueSize));
         CenterMinimumSize = CenterMaximumSize = CenterValueSize;
@@ -222,7 +222,8 @@ public sealed partial class VisualTypography {
         TileDetailSize = Positive(tileDetailSize, nameof(tileDetailSize));
     }
     /// <summary>Gets the fallback family stack.</summary>
-    public string Family { get; private set; }
+    public string Family => _family;
+    private string _family;
     /// <summary>Gets the monospace fallback family stack.</summary>
     public string MonospaceFamily { get; }
     /// <summary>Gets the independent axis title size.</summary>
@@ -234,10 +235,10 @@ public sealed partial class VisualTypography {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("A font family is required.", nameof(family));
         var wide = WideScale ?? this;
         var copy = (VisualTypography)wide.MemberwiseClone();
-        copy.Family = family;
+        copy._family = family;
         if (wide.CompactScale != null) {
             copy.CompactScale = (VisualTypography)wide.CompactScale.MemberwiseClone();
-            copy.CompactScale.Family = family;
+            copy.CompactScale._family = family;
             copy.CompactScale.WideScale = copy;
         }
         return WideScale != null ? copy.CompactScale! : copy;
