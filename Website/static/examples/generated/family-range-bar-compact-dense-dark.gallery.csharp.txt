@@ -64,7 +64,7 @@ public static class RangeBarRecipe {
             var range = ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Range", intervals);
             chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(range);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 
     private static Chart GroupedIntervals(string variant) {

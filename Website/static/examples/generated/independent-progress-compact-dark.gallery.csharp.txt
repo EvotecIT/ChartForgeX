@@ -40,7 +40,6 @@ public static class IndependentProgressRecipe {
             .WithObservationId(1, new ChartObservationId("verified"))
             .WithObservationId(2, new ChartObservationId("temperature"));
         return Chart.Create().WithSize(variant == "compact" ? 390 : 760, 340).WithTitle("Progress in each row's units")
-            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(rows)
-            .WithValueFormat(ChartValueFormat.Number("0.##"));
+            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(rows);
     }
 }

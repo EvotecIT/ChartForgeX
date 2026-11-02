@@ -49,7 +49,6 @@ public static class QuadrantChartRecipe {
             .AddPlotRegion(new(colors.Status.Pass.Fill, xMaximum: 5, yMinimum: 5, label: "Quick wins", opacity: .14))
             .AddPlotRegion(new(colors.Palette.First(), xMinimum: 5, yMinimum: 5, label: "Major projects", opacity: .12))
             .AddPlotRegion(new(colors.Status.Medium.Fill, xMaximum: 5, yMaximum: 5, label: "Fill-ins", opacity: .12))
-            .AddPlotRegion(new(colors.Status.Critical.Fill, xMinimum: 5, yMaximum: 5, label: "Thankless tasks", opacity: .1))
-            .WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
+            .AddPlotRegion(new(colors.Status.Critical.Fill, xMinimum: 5, yMaximum: 5, label: "Thankless tasks", opacity: .1));
     }
 }

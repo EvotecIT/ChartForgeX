@@ -63,7 +63,7 @@ public static class StackedAreaRecipe {
             var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.StackedArea, Observations(variant, -10));
             chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(requests).AddSeries(followUps);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 
     private static ChartPoint[] Observations(string variant, double offset) =>

@@ -34,8 +34,7 @@ public static class BubbleMarkerOptionsRecipe {
     public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("options" or "compact-options" or "custom-markers" or "compact-custom-markers"))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        return MarkerOptions(variant.EndsWith("custom-markers", StringComparison.Ordinal), mode)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return MarkerOptions(variant.EndsWith("custom-markers", StringComparison.Ordinal), mode);
     }
 
     private static Chart MarkerOptions(bool custom, VisualThemeMode mode) {

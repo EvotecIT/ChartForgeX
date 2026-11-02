@@ -40,7 +40,6 @@ public static class TrendLineRecipe {
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
         var observations = ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observations", points);
         var trend = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-trend"), "Least-squares trend", points);
-        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(observations).AddSeries(trend)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(observations).AddSeries(trend);
     }
 }

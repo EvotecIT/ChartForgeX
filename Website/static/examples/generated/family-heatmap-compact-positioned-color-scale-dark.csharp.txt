@@ -37,8 +37,7 @@ public static class HeatmapPositionedColorScaleRecipe {
             .AddHeatmapRow("Secondary", values.Skip(6), id: new ChartSeriesId("secondary-measurements"))
             .WithHeatmapColorScale(TemperatureScale().WithNoDataColor(colors.Border))
             .WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels()
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels();
     }
 
     private static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {

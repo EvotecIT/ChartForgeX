@@ -35,8 +35,7 @@ public static class ProgressRingRecipe {
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var completion = new ChartSeries(new ChartSeriesId("completion"), "Completion", ChartSeriesKind.ProgressRing, points);
         var chart = Chart.Create().WithXLabels("Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete")
-            .AddSeries(completion).WithProgressRingCenterLabel()
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .AddSeries(completion).WithProgressRingCenterLabel();
         if (variant == "options") chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
         return chart;
     }

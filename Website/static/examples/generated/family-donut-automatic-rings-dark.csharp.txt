@@ -32,8 +32,7 @@ public static class AutomaticRadialBandsRecipe {
         if (variant is not ("automatic-rings" or "compact-automatic-rings")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support")
             .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .04)).WithDonutCenterLabel(false)
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
         var values = new[] { new[] { 50d, 30, 20 }, new[] { 90d, 45, 15 }, new[] { 110d, 66, 44 } };
         for (var index = 0; index < values.Length; index++) {
             var series = new ChartSeries(new ChartSeriesId("period-" + index), "Period " + (index + 1), ChartSeriesKind.Donut,

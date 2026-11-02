@@ -43,7 +43,6 @@ public static class ConcentricPieRecipe {
         // The legend retains each period's values; keep these small concentric holes free of center text.
         return Chart.Create().WithXLabels("Subscriptions", "Consulting").WithDataLabels()
             .WithPieSliceLabelContent(ChartPieSliceLabelContent.Percent).WithDonutCenterLabel(false)
-            .AddSeries(prior).AddSeries(current)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .AddSeries(prior).AddSeries(current);
     }
 }

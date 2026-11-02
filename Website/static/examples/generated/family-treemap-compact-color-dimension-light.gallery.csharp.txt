@@ -57,7 +57,7 @@ public static class TreemapColorDimensionRecipe {
                 options.GroupPadding = 6;
                 options.ColorScale = scale;
                 options.ColorDimension.Name = "Temperature";
-                options.ColorDimension.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+                options.ColorDimension.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", System.Globalization.CultureInfo.InvariantCulture);
                 options.ColorDimension.LegendStyle = ChartColorLegendStyle.Auto;
             });
     }
