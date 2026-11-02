@@ -77,6 +77,7 @@ public sealed partial class MarkupChartParser {
 
     private static int FindFirstNonNumericCell(List<string> cells) {
         for (var index = 0; index < cells.Count; index++) {
+            if (string.IsNullOrWhiteSpace(cells[index])) continue;
             if (!double.TryParse(cells[index], NumberStyles.Float, CultureInfo.InvariantCulture, out _)) return index;
         }
 

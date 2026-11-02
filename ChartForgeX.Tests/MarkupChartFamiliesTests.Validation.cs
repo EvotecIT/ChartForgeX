@@ -7,6 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class MarkupChartFamiliesTests {
     private static readonly IReadOnlyDictionary<string, (string Source, int Line)> InvalidRows =
         new Dictionary<string, (string, int)> {
+            ["numeric-table-blank-fallback-label"] = ("type heatmap\n| Actual | Budget |\n|   | 2 |", 3),
             ["numeric-table-extra-cell"] = ("type gauge\n| label | value |\n| Reading | 10 | 20 |", 3),
             ["series-table-extra-cell"] = ("type heatmap\n| label | Actual | Budget |\n| Reading | 10 | 20 | 30 |", 3),
             ["typed-table-extra-cell"] = ("type treemap\nitems:\n| id | label | value |\n| a | Leaf | 2 | 3 |\nend", 4),
