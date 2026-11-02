@@ -79,7 +79,7 @@ public sealed partial class TopologyDenseGridContainmentTests {
             File.WriteAllBytes(name + ".native.png", png);
             File.WriteAllText(name + ".facts.json", facts.ToJson());
         }
-        AssertPanels(facts, expectedCardWidth, allowMeasuredCardGrowth: family == "eventmodeling");
+        AssertPanels(facts, expectedCardWidth, allowMeasuredCardGrowth: true);
     }
 
     [Fact]
@@ -107,8 +107,8 @@ public sealed partial class TopologyDenseGridContainmentTests {
     private static void AssertPanels(VisualArtifactInterchangeEnvelope facts, double expectedCardWidth, bool allowMeasuredCardGrowth = false) {
         var groups = facts.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
         foreach (var node in facts.Nodes) {
-            // Event Modeling now lays out complete typed data cards through measured swimlanes.
-            // Its authored 144px width is a minimum; native grids and Kanban keep exact-width controls.
+            // Adapter cards grow to fit complete captions; authored widths are minima.
+            // Native grid fixtures retain the exact-width control.
             if (allowMeasuredCardGrowth) Assert.True(node.Width!.Value >= expectedCardWidth);
             else Assert.Equal(expectedCardWidth, node.Width);
             var shell = groups[node.GroupId!];
