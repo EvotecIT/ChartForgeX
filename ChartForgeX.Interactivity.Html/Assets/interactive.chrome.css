@@ -5,7 +5,7 @@
   width: 220px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto;
   padding: 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
-  font: var(--hfx-type-body-size, 14px)/var(--hfx-type-body-line, 1.5) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  font: var(--hfx-type-body-size, 14px)/var(--hfx-type-body-line-height, 1.5) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
 }
 .cfx-chart-context-menu button {
@@ -79,7 +79,7 @@
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
-  box-shadow: none; font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  box-shadow: none; font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__range { color: var(--cfx-tooltip-muted); }
@@ -99,7 +99,7 @@
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
   border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   box-shadow: var(--cfx-tooltip-shadow); padding: 8px 12px;
-  font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--cfx-tooltip-line); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title--series:last-child { padding-bottom: 0; border-bottom: 0; }
@@ -286,7 +286,7 @@
   display: grid; gap: 10px; width: 100%; max-width: var(--cfx-native-width); margin: 10px auto 0;
   padding: 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); box-sizing: border-box;
-  font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-x-navigation[hidden] { display: none !important; }
 .cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-x-navigation { max-width: none; }
