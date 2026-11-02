@@ -1,3 +1,4 @@
+using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Themes;
 
@@ -18,6 +19,9 @@ public static partial class V2Examples {
             // The gallery shows these pages in narrow frames: scale the whole chart and keep the toolbar small.
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Toolbar = HtmlChartToolbarLayout.Compact;
+            if (id.StartsWith("family-line-wide-", StringComparison.Ordinal))
+                options.Interaction.Features = ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom
+                    | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush;
             options.ExternalAssets = new HtmlAssetReferences(InteractiveAssetFolder + "/");
         }));
     }
