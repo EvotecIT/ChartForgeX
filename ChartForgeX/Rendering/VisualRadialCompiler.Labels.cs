@@ -259,7 +259,7 @@ internal static partial class VisualRadialCompiler {
         builder.AddRegion(new VisualSemanticRegion("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center-caption", "donut-title", bounds, label));
         var typography = context.Theme.Typography;
         var valueStyle = Style(chart, context, seriesIndex, -1, colors.Foreground, typography.CenterSize(outerRadius), typography.CenterValueWeight);
-        var labelStyle = Style(chart, context, seriesIndex, -1, colors.MutedForeground, typography.CenterCaptionSize);
+        var labelStyle = Style(chart, context, seriesIndex, -1, colors.MutedForeground, typography.CenterCaptionSize, typography.TickWeight);
         valueStyle.Alignment = labelStyle.Alignment = TextAlignment.Center;
         var width = inner * 1.6;
         if (overflowCaption) {

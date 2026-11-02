@@ -216,6 +216,8 @@ public sealed partial class VisualTypography {
         Family = family; TitleSize = Positive(titleSize, nameof(titleSize)); SubtitleSize = Positive(subtitleSize, nameof(subtitleSize));
         AxisSize = Positive(axisSize, nameof(axisSize)); LegendSize = Positive(legendSize, nameof(legendSize)); DataLabelSize = Positive(dataLabelSize, nameof(dataLabelSize));
         ScalarValueSize = Positive(scalarValueSize, nameof(scalarValueSize)); CenterValueSize = Positive(centerValueSize, nameof(centerValueSize));
+        CenterMinimumSize = CenterMaximumSize = CenterValueSize;
+        CenterCaptionSize = DataLabelSize;
         TileLabelSize = Positive(tileLabelSize, nameof(tileLabelSize)); TileValueSize = Positive(tileValueSize, nameof(tileValueSize));
         TileDetailSize = Positive(tileDetailSize, nameof(tileDetailSize));
     }
