@@ -41,6 +41,12 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         ChartColor Color(int[] value) => ChartColor.FromRgba((byte)value[0], (byte)value[1], (byte)value[2], (byte)value[3]);
         Assert.True(ChartColorMath.ContrastRatio(Color(channels[0]), Color(channels[1])) >= 4.5,
             "Forced-palette readouts retain readable text against their actual surface.");
+        var textPaint = await page.Locator(".cfx-tooltip").EvaluateAsync<string[]>(
+            "tip=>[...tip.querySelectorAll('.cfx-tooltip__title,.cfx-tooltip__secondary,dt,dd')].filter(node=>node.textContent.trim()).map(node=>getComputedStyle(node).color)");
+        Assert.NotEmpty(textPaint);
+        var textChannels = await ResolveCssColorsAsync(page, textPaint);
+        Assert.All(textChannels, text => Assert.True(ChartColorMath.ContrastRatio(Color(text), Color(channels[1])) >= 4.5,
+            "Every visible tooltip heading, label and value remains readable in the forced palette."));
         await CaptureEnvironmentAsync(page, "screen-" + dark);
         await page.EvaluateAsync("""
             ()=>{

@@ -369,7 +369,14 @@
   .cfx-interactive-chart :is(button, summary, [role="button"]):focus-visible,
   .cfx-chart-context-menu button:focus-visible { outline-color: Highlight; }
   .cfx-interactive-chart [data-cfx-focus-ink], .cfx-interactive-chart [data-cfx-state-ink] { stroke: Highlight; }
-  .cfx-tooltip, .cfx-crosshair__axis-value { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .cfx-tooltip, .cfx-crosshair__axis-value, .cfx-chart-context-menu {
+    --cfx-tooltip-surface: Canvas;
+    --cfx-tooltip-text: CanvasText;
+    --cfx-tooltip-muted: CanvasText;
+    --cfx-tooltip-line: CanvasText;
+    --cfx-tooltip-shadow: none;
+    border-color: CanvasText; background: Canvas; color: CanvasText; box-shadow: none;
+  }
 }
 
 /* The axis readouts replace the old pointer pill. */
