@@ -145,7 +145,7 @@
     "other": "#737373",
     "ramps": {
       "sequential": ["#9ab8dc", "#5598e7", "#2171ce", "#1c5cab", "#104281"],
-      "diverging": { "negative": ["#f5cfad", "#eaa363", "#d9711f"], "neutral": "#eceef0", "positive": ["#9ab8dc", "#2171ce", "#1c5cab"] }
+      "diverging": { "negative": ["#d7ad87", "#eaa363", "#d9711f"], "neutral": "#eceef0", "positive": ["#9ab8dc", "#2171ce", "#1c5cab"] }
     }
   },
   "dark": {
@@ -175,7 +175,7 @@
     "other": "#929292",
     "ramps": {
       "sequential": ["#324c6e", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
-      "diverging": { "negative": ["#5a3823", "#9b5c29", "#ee8a3a"], "neutral": "#2b2e34", "positive": ["#324c6e", "#509efe", "#9ec5f4"] }
+      "diverging": { "negative": ["#6a442a", "#9b5c29", "#ee8a3a"], "neutral": "#2b2e34", "positive": ["#324c6e", "#509efe", "#9ec5f4"] }
     }
   }
 }
