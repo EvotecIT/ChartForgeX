@@ -200,10 +200,10 @@ internal static partial class VisualMatrixCompiler {
         var floor = zero && nonZero.Length > 0 ? nonZero.Min() : min;
         var zeroLabel = zero ? presentation.Value(0) : string.Empty;
         var zeroWidth = zero ? Math.Min(bounds.Width * .3, builder.MeasureText(zeroLabel, style).Width + context.Theme.Spacing) : 0;
-        if (nonZero.Length == 0) zeroWidth = bounds.Width;
         // Missing cells get their own hatched key (design rule 9), distinct from the zero swatch and the weakest step.
         var noData = missing ? chart.Options.Labels.NoData : string.Empty;
         var missingWidth = missing ? Math.Min(bounds.Width * .3, Math.Max(12, builder.MeasureText(noData, style).Width) + context.Theme.Spacing) : 0;
+        if (nonZero.Length == 0) zeroWidth = Math.Max(0, bounds.Width - missingWidth);
         var steps = VisualColorScaleLegendScene.NumericTicks(floor, max);
         var captions = presentation.ScaleValues(steps);
         var rampWidth = nonZero.Length > 0 ? Math.Max(0, bounds.Width - zeroWidth - missingWidth) : 0;

@@ -8,6 +8,17 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class HeatmapNiceKeyTests {
+    [Fact]
+    public void ZeroAndMissingEntriesStayInsideThePlotWidth() {
+        var chart = Chart.Create().WithSize(390, 300).AddHeatmapRow("Events", new double?[] { 0, null });
+        RoundedRadialSeriesTests.UseFixtureFont(chart);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var right = prepared.Regions.Single(region => region.Role == "matrix-plot").Bounds.Right;
+        var missing = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "heatmap-scale-missing-label");
+        Assert.True(missing.LineLeft(missing.Text.Lines[0]) + missing.Text.Metrics.Width <= right + .001,
+            "The complete missing-data caption must fit beside the zero entry within the plot width.");
+    }
+
     [Theory]
     [InlineData(390, VisualThemeMode.Light)]
     [InlineData(390, VisualThemeMode.Dark)]
