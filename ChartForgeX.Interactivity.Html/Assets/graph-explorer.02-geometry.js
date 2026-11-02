@@ -48,14 +48,15 @@
   let graphNodeMeasureContext = null;
   const graphBadgeGeometry = (node, root = node.root || node.el?.closest?.('.cfx-graph-explorer')) => {
     const text = String(node.badge || attr(node.el, 'data-node-badge') || '');
+    const font = `800 7px ${graphNodeFontFamily(root)}`, cacheKey = `${font}\n${text}`;
     const cache = root ? root.__cfxGraphBadgeMeasurements ||= new Map() : null;
-    let width = cache?.get(text);
+    let width = cache?.get(cacheKey);
     if (width === undefined) {
       width = graphEstimatedCardTextWidth(text) * 7 / 12.5;
       if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
         graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
         if (graphNodeMeasureContext) {
-          graphNodeMeasureContext.font = '800 7px Inter, "Segoe UI", Arial, sans-serif';
+          graphNodeMeasureContext.font = font;
           const metrics = graphNodeMeasureContext.measureText(text);
           const ink = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
           width = Math.max(metrics.width, Number.isFinite(ink) ? ink : 0);
@@ -63,7 +64,7 @@
       }
       if (cache) {
         if (cache.size >= 512) cache.delete(cache.keys().next().value);
-        cache.set(text, width);
+        cache.set(cacheKey, width);
       }
     }
     return { text, width: Math.max(16, width + 8), height: 16,

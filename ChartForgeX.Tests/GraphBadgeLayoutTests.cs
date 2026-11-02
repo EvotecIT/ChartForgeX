@@ -56,12 +56,17 @@ public sealed class GraphBadgeLayoutTests {
 
     [BrowserTheory]
     [InlineData(HtmlGraphRenderBackend.Svg, false)]
+    [InlineData(HtmlGraphRenderBackend.Canvas, false)]
     [InlineData(HtmlGraphRenderBackend.Canvas, true)]
     public async Task LiveUpdatesAndReconstructedExportsKeepCompleteBadges(HtmlGraphRenderBackend backend, bool dark) {
         if (!Enabled) return;
         var graph = GraphScene.Create("badge-live", "Service counts")
-            .AddNode("root", "Service", node => { node.Fixed = true; node.X = 480; node.Y = 280; node.Size = 20; node.BadgeText = "+2000"; });
-        graph.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export | GraphSceneFeatures.IncrementalUpdates;
+            .AddNode("root", "Service", node => { node.Fixed = true; node.X = 480; node.Y = 280; node.Size = 20; node.BadgeText = "+2000"; node.IconText = "A"; })
+            .AddNode("target", "Preference", node => { node.Fixed = true; node.X = 700; node.Y = 280; })
+            .AddNode("member", "Member", node => { node.Fixed = true; node.X = 200; node.Y = 150; })
+            .AddEdge("route", "root", "target", "replication")
+            .AddCluster("region", "Region", new[] { "member" }, cluster => cluster.Collapsed = true);
+        graph.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Clustering;
         if (backend == HtmlGraphRenderBackend.Canvas) {
             graph.Options.Features |= GraphSceneFeatures.LevelOfDetail;
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
@@ -69,15 +74,34 @@ public sealed class GraphBadgeLayoutTests {
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
             options.PersistThemePreference = false;
-        }), 1000, 720);
+        }), 1000, 720, configurePageAsync: page => page.EvaluateAsync("""
+            () => {
+              window.graphFontPaints=[]; window.graphFontMeasures=[];
+              const paint=CanvasRenderingContext2D.prototype.fillText, measure=CanvasRenderingContext2D.prototype.measureText;
+              CanvasRenderingContext2D.prototype.fillText=function(text,...args){
+                graphFontPaints.push({text:String(text),font:this.font,loaded:document.fonts.check(this.font,String(text))});
+                return paint.call(this,text,...args);
+              };
+              CanvasRenderingContext2D.prototype.measureText=function(text){
+                graphFontMeasures.push({text:String(text),font:this.font,loaded:document.fonts.check(this.font,String(text))});
+                return measure.call(this,text);
+              };
+            }
+            """));
         var page = session.Page;
         await page.WaitForFunctionAsync("() => document.querySelector('.cfx-graph-explorer').dataset.cfxGraphRendererActive !== undefined");
+        if (backend == HtmlGraphRenderBackend.Canvas) {
+            // No update, input or physics tick may be needed to replace a font-loading first paint.
+            await page.EvaluateAsync("async()=>{await document.fonts.ready;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}");
+            Assert.NotEqual("running", await page.Locator(".cfx-graph-explorer").GetAttributeAsync("data-cfx-graph-physics-state"));
+            await AssertCanvasFontsAsync(page, "Archivo", "+2000");
+        }
         await page.EvaluateAsync("""
             () => {
               window.badgePaint=[]; const paint=CanvasRenderingContext2D.prototype.fillText;
               CanvasRenderingContext2D.prototype.fillText=function(text,...args){badgePaint.push(String(text));return paint.call(this,text,...args);};
               document.querySelector('.cfx-graph-explorer').addEventListener('cfxgraphexport',event=>{window.badgeExport=event.detail.content;event.preventDefault();});
-              ChartForgeXGraphExplorer.update('badge-live',{upsertNodes:[{id:'root',label:'Service',x:480,y:280,size:20,fixed:true,badge:'+1234567890'}],fit:true});
+              ChartForgeXGraphExplorer.update('badge-live',{upsertNodes:[{id:'root',label:'Service',x:480,y:280,size:20,fixed:true,icon:'A',badge:'+1234567890'}],fit:true});
             }
             """);
         if (backend == HtmlGraphRenderBackend.Canvas)
@@ -97,12 +121,44 @@ public sealed class GraphBadgeLayoutTests {
         var retained = await page.EvaluateAsync<JsonElement>("() => ChartForgeXGraphExplorer.get('badge-live').nodes[0]");
         Assert.Equal("root", retained.GetProperty("id").GetString());
         Assert.Equal("+1234567890", retained.GetProperty("badge").GetString());
+        if (backend == HtmlGraphRenderBackend.Canvas) {
+            await page.EvaluateAsync("""
+                ()=>{const root=document.querySelector('.cfx-graph-explorer');root.style.setProperty('--hfx-font-sans','Georgia');
+                  graphFontPaints=[];graphFontMeasures=[];ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'root',label:'Service',x:480,y:280,size:20,fixed:true,icon:'A',badge:'+1234567890'}]});}
+                """);
+            await AssertCanvasFontsAsync(page, "Georgia", "+1234567890");
+        }
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {
             Directory.CreateDirectory(capture);
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, "graph-badge-" + backend + ".png"), FullPage = true });
         }
         AssertNoConsoleErrors(session);
+    }
+
+    private static async Task AssertCanvasFontsAsync(IPage page, string family, string badge) {
+        var facts = await page.EvaluateAsync<JsonElement>("""
+            badge=>({theme:document.querySelector('.cfx-graph-explorer').dataset.cfxGraphThemeActive,
+              firstPaint:graphFontPaints[0],unloadedPaints:graphFontPaints.filter(paint=>!paint.loaded).length,
+              paints:['Service','Preference','A','replication','Region','1 object',badge].map(text=>
+              graphFontPaints.findLast(paint=>paint.text===text)||{text,font:'missing',loaded:false}),
+              measure:graphFontMeasures.findLast(measure=>measure.text===badge)||{font:'missing',loaded:false}})
+            """, badge);
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            var name = "graph-font-" + facts.GetProperty("theme").GetString() + "-" + family;
+            await File.WriteAllTextAsync(Path.Combine(capture, name + ".json"), facts.GetRawText());
+            await page.ScreenshotAsync(new() { Path = Path.Combine(capture, name + ".png"), FullPage = true });
+        }
+        foreach (var paint in facts.GetProperty("paints").EnumerateArray()) {
+            Assert.Contains(family, paint.GetProperty("font").GetString());
+            Assert.True(paint.GetProperty("loaded").GetBoolean(), facts.GetRawText());
+        }
+        var measured = facts.GetProperty("measure");
+        Assert.Contains(family, measured.GetProperty("font").GetString());
+        Assert.True(measured.GetProperty("loaded").GetBoolean(), facts.GetRawText());
+        Assert.Equal(measured.GetProperty("font").GetString(), facts.GetProperty("paints").EnumerateArray().Last().GetProperty("font").GetString());
     }
 
     private static void AssertPaddedBadge(XElement root, string expected) {
