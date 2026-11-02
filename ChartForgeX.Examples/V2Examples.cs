@@ -29,9 +29,11 @@ public static partial class V2Examples {
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                     WriteThumbnail(output, chart, id, title, family, mode, legend: true);
                     WriteRecipe(output, id, ExampleRecipes.Named(family == "cartesian" ? "comparison" : "findings"), variant, title, Subtitle(variant), mode, width, height, null, surface: variant == "surface");
+                    var interactive = variant == "wide";
+                    if (interactive) WriteInteractive(output, Create(family, variant, mode), id, title, Subtitle(variant), mode, width, height, null);
                     artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
                         prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
-                        DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), Compact: variant == "compact"));
+                        DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), Compact: variant == "compact", HtmlAdapter: interactive));
                 }
             }
         }
@@ -71,7 +73,7 @@ public static partial class V2Examples {
 
     private static string Subtitle(string variant) => variant switch {
         "empty" => "No observations received", "zero" => "All observations are zero", "missing" => "Days three and four have no observation",
-        "dense" => "Twenty-four categories at a fixed size", _ => "One prepared scene for SVG and native PNG"
+        "dense" => "Twenty-four categories at a fixed size", _ => "Observed checks against the forecast and available capacity"
     };
 
     private static string Literal(string value) => System.Text.Json.JsonSerializer.Serialize(value);

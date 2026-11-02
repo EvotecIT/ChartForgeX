@@ -19,6 +19,9 @@ public static partial class V2Examples {
             "sequence" => SimpleSequenceRecipe.Create(),
             "topology" => ThumbnailTopology(),
             "flow" => ThumbnailFlow(),
+            "org-chart" => ThumbnailOrgChart(),
+            "dashboard" => ThumbnailDashboard(mode),
+            "state-timeline" when id.Contains("-availability-") => ThumbnailAvailability(mode),
             "chart-grid" => ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248)
                 .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddLine("Requests", new[] { new ChartPoint(1, 28), new ChartPoint(2, 42), new ChartPoint(3, 35) }))
                 .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddBar("Capacity", new[] { new ChartPoint(1, 52), new ChartPoint(2, 64), new ChartPoint(3, 58) })),
@@ -30,18 +33,46 @@ public static partial class V2Examples {
         // The twelve-column state map needs this content width for complete 13.5 px codes and their hexagon clearance.
         var padding = family == "tile-map" ? 14 : 16;
         var prepared = previewModel.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(ThumbnailWidth, ThumbnailHeight), padding),
-            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" ? false : legend),
+            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" or "dashboard" ? false : legend),
             FontSpec.FromFamily(ProofFont)));
         var kind = family switch {
             "topology" => VisualArtifactKind.Topology, "flow" => VisualArtifactKind.Flow,
-            "sequence" => VisualArtifactKind.Sequence, "chart-grid" => VisualArtifactKind.ChartGrid, _ => VisualArtifactKind.Chart
+            "sequence" => VisualArtifactKind.Sequence, "chart-grid" => VisualArtifactKind.ChartGrid,
+            _ => previewModel is TopologyChart ? VisualArtifactKind.Topology : previewModel is ChartGrid ? VisualArtifactKind.ChartGrid : VisualArtifactKind.Chart
         };
         var artifact = prepared.ToArtifact(id + "-thumbnail", kind);
         artifact.Accessibility.Name = title;
-        if (family is "topology" or "flow" or "sequence" or "chart-grid")
+        if (family is "topology" or "flow" or "sequence" or "chart-grid" or "org-chart" or "dashboard")
             artifact.Accessibility.Description = "A compact overview. Open the example for the complete diagram, variants and source.";
+        if (family == "state-timeline" && id.Contains("-availability-"))
+            artifact.Accessibility.Description = "A compact overview of the first three targets. Open the example for all nine targets, variants and source.";
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), artifact.ToSvg());
         File.WriteAllBytes(Path.Combine(output, id + ".thumbnail.png"), prepared.ToPng());
+    }
+
+    private static Chart ThumbnailAvailability(VisualThemeMode mode) {
+        var chart = AvailabilityLanesRecipe.Create(mode: mode);
+        foreach (var series in chart.Series.Skip(3).ToArray()) chart.RemoveSeries(series);
+        return chart;
+    }
+
+    private static TopologyChart ThumbnailOrgChart() {
+        var chart = TopologyChart.Create().WithLegend(null);
+        chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
+        return chart.AddTeam("company", "Northwind Services", new[] {
+            new TopologyTeamMember("avery", "Avery Quinn", "Managing director"),
+            new TopologyTeamMember("jordan", "Jordan Vale", "Engineering") { ParentId = "avery" },
+            new TopologyTeamMember("morgan", "Morgan Reed", "Operations") { ParentId = "avery" }
+        }, new TopologyTeamOptions { IncludeTeamNode = false });
+    }
+
+    private static ChartGrid ThumbnailDashboard(VisualThemeMode mode) {
+        var preview = ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248);
+        foreach (var chart in OperationsDashboardRecipe.Create(mode: mode).Charts.Take(2)) {
+            chart.Options.ShowDonutCenterLabel = false;
+            preview.Add(chart.WithTitle("").WithSubtitle("").WithLegend(false));
+        }
+        return preview;
     }
 
     private static TopologyChart ThumbnailTopology() {

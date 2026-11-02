@@ -301,6 +301,7 @@
       {
         "Match": "/gallery/**",
         "Bundles": [
+          "pages",
           "gallery"
         ]
       },

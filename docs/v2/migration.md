@@ -1,16 +1,16 @@
 ---
-description: "Migrate ChartForgeX consumers to the current preparation, data-editing, annotation and presentation contracts without compatibility shims."
+description: "Upgrade to the current ChartForgeX packages: what changed in preparation, data editing, annotations and presentation, and what to change in your code."
 ---
 
 # ChartForgeX consumer migration
+
+Upgrading an existing project? Move every ChartForgeX package to the same version, build, and then work through the changes below. Each one names what changed and what to write instead. The newest changes come first.
 
 Automatic Swimlane layouts now honor existing `TopologyGroup.LayoutDirection` when it differs from the inherited direction. Such diagrams use the existing recursive native group composer: the local region follows its authored direction and preserves membership/containment, while process ranks are no longer globally aligned across every responsibility. Leave the direction null, or equal to its inherited/global direction, to retain the incumbent shared-rank lane path. Source links from a member to outside the group retain the existing parent-direction inheritance; a shell-to-shell handoff does not erase a local direction.
 
 `TopologyRenderOptions.LayeredNodeSpacing` and `LayeredRankSpacing` now apply to automatic Swimlane layouts as well as Layered layouts; null retains the old Swimlane 24/96 spacing constants. The new nullable `SwimlaneIgnoreCrossLaneRankConstraints` changes ranking only when true, through the existing native rank owner, and preserves real edges/ports and authored rank minima. It is host render policy, not a new portable editable-layout protocol. Use the source-owned `swimlane-native-layout-depth.mmd` and complete downloadable program for a before/after consumer example.
 
-This guide records the breaking-release target and the observed consumer contracts. Charts, grids, topology, flow and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps inspected calls to their destination, migration recipe and acceptance fixture. Its `owner_implementation` and `owner_evidence` columns distinguish available source and owner fixtures from downstream qualification. A row with `status=planned` still requires consumer migration or qualification; an implemented owner path does not close that gate. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
-
-Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
+Charts, grids, topology, flow and sequence diagrams all render through the same native scene, so most changes below apply to every model. The [capability ledger](consumer-capabilities.csv) maps calls seen in real projects to their replacement and an example; it covers those calls, not every member of ChartForgeX.
 
 The unified authoring API uses the coordinated 3.0.0 package family. Upgrade the ChartForgeX packages used by a consumer together, then migrate the calls below. The earlier 2.0.0 packages introduced the separate Visuals and Stories assemblies; they do not contain the later theme, observation and series-identity changes.
 
@@ -772,7 +772,7 @@ Color intake alone does not establish universal status-treatment rendering. Hatc
 
 ## Earlier v2 qualification and delivery boundaries
 
-These results describe the earlier coordinated v2 candidates. They do not qualify the later unified-authoring migration; current delivery gates and consumer work are maintained in [TODO.md](../../TODO.md#consumer-and-release-qualification).
+These results describe the earlier coordinated v2 candidates. They do not cover the later unified-authoring migration described above.
 
 - [x] Compile and inspect the Phase 1 shared-frame/theme/direct-scene and adapter-shaped owner fixtures. The [executable gallery producer](../../ChartForgeX.Examples/V2Examples.cs), [diagram fixtures](../../ChartForgeX.Examples/V2Examples.Diagrams.cs), [review gallery](../../Website/static/examples/generated/catalog.html) and [artifact handoff tests](../../ChartForgeX.Tests/PreparedVisualArtifactTests.cs) provide the implemented examples. This qualifies the owner proof, not downstream consumers.
 - [x] Close the [integrated public type/member ledger](api-ledger.md): 773 public types and 7,678 records across the six existing runtime assemblies. Its planned API fates guide later removals and package extraction; they do not claim those migrations are implemented.

@@ -1,3 +1,4 @@
+#region Setup
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,6 +23,7 @@ var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
 File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
 
 /// <summary>Builds an ordered intake funnel with independent captions and native connection paint.</summary>
 public static class FunnelPresentationRecipe {

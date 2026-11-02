@@ -92,20 +92,20 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
 <table>
   <tr>
     <td width="50%">
-      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-wide-light.html"><img src="Website/static/examples/generated/family-bar-wide-light.thumbnail.png" alt="Completed orders by region" width="100%" /></a>
+      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-issuers-light.html"><img src="Website/static/examples/generated/family-bar-issuers-light.thumbnail.png" alt="Certificates issued per month" width="100%" /></a>
       <br />
-      <strong>Completed orders by region</strong><br />Bar
+      <strong>Certificates issued per month</strong><br />Bar
       <br />
-      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-wide-dark.html">Dark HTML</a> /
-      <a href="Website/static/examples/generated/family-bar-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-bar-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-bar-wide-light.csharp.txt">C#</a>
+      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-issuers-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-issuers-dark.html">Dark HTML</a> /
+      <a href="Website/static/examples/generated/family-bar-issuers-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-bar-issuers-light.png">PNG</a> / <a href="Website/static/examples/generated/family-bar-issuers-light.csharp.txt">C#</a>
     </td>
     <td width="50%">
-      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-light.html"><img src="Website/static/examples/generated/family-line-wide-light.thumbnail.png" alt="Weekly request volume" width="100%" /></a>
+      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-latency-week-light.html"><img src="Website/static/examples/generated/family-line-latency-week-light.thumbnail.png" alt="Domain controller round-trip time" width="100%" /></a>
       <br />
-      <strong>Weekly request volume</strong><br />Line
+      <strong>Domain controller round-trip time</strong><br />Line
       <br />
-      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-dark.html">Dark HTML</a> /
-      <a href="Website/static/examples/generated/family-line-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-line-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-line-wide-light.csharp.txt">C#</a>
+      <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-latency-week-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-latency-week-dark.html">Dark HTML</a> /
+      <a href="Website/static/examples/generated/family-line-latency-week-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-line-latency-week-light.png">PNG</a> / <a href="Website/static/examples/generated/family-line-latency-week-light.csharp.txt">C#</a>
     </td>
   </tr>
   <tr>
@@ -368,39 +368,7 @@ Keep the ChartForgeX packages on the same coordinated version. Existing users ca
 
 ## Development and quality checks
 
-For code changes, run:
-
-```powershell
-dotnet test ./ChartForgeX.sln -c Release
-```
-
-For the repository quality loop, run:
-
-```powershell
-./Build.ps1 -Configuration Release
-```
-
-The quality loop builds and tests the solution, checks the pinned Mermaid reference corpus, runs the AOT smoke, generates examples, checks visual-health baselines, and packs and inspects packages. `-QualifyPackages` additionally builds and runs isolated consumers of the packed packages.
-
-For slow native test runs, add `-TestDiagnosticsDirectory <output-directory>`. This records named test timings, warnings identifying tests still running after 30 seconds, a final TRX report, and incremental VSTest logs that remain available if the process times out. It preserves the existing 900-second command limit and test scheduling. CI retains these files in the `chartforgex-native-results-<OS>` artifacts, including after a failed run.
-
-The [website gallery](https://chartforgex.com/gallery/) is the public showcase. `ChartForgeX.Examples` supplies its executable recipes and also runs offline SVG/PNG comparisons and browser fixtures. `ChartForgeX.Examples.Snippets` compiles those recipes against the core library without referencing the examples executable. See [Contributing](CONTRIBUTING.md#examples-and-website) when changing a recipe or its presentation.
-
-The Windows CI quality job enables this gate and retains its reports. Core, Visuals and Stories execute net472 consumers on the runner's installed .NET Framework. All five consumer lanes execute net8.0 and net10.0, while netstandard2.0 has compile proof.
-
-The downstream lane loads public OfficeIMO.ChartForgeX and HtmlForgeX.ChartForgeX adapter packages with the candidate ChartForgeX packages and saves real Office files and report HTML. Running [package qualification](Build/Test-PackageQualification.ps1) with `HFX_TEST_ENABLE_PLAYWRIGHT=1` also exercises packed chart selection, graph editor add/undo/redo and downstream HTML at compact and wide sizes through HtmlTinkerX. Native Office appearance, other installed hosts and private consumers need their own acceptance.
-
-Use a supported Node.js runtime for the Mermaid reference checks. CI selects Node 24, starting at 24.15.0; the npm restore enforces dependency engine requirements.
-
-For rendered browser and interaction checks, run the same required lane used by CI:
-
-```powershell
-./Build/Test-BrowserQuality.ps1 -OutputRoot (Join-Path ([IO.Path]::GetTempPath()) 'chartforgex-browser-quality')
-```
-
-It generates and serves a fresh gallery, opens Chromium through HtmlTinkerX, and retains test results, screenshots, and console evidence in the chosen output directory. Required browser checks fail if setup is missing or tests are skipped; the ordinary test loop reports optional browser checks as skipped when they are disabled. Numerical visual-health baselines and browser contracts cover different failure modes, so inspect the charts as well.
-
-Inspect the generated gallery before intentionally changing visual baselines. [Contributing](CONTRIBUTING.md) describes the development workflow; [TODO.md](TODO.md) records active priorities and completion criteria.
+Contributions are welcome. [Contributing](CONTRIBUTING.md) explains how to build and test the solution, run the rendering and browser checks, and refresh the gallery when a change affects visible output.
 
 ## Reference and support
 

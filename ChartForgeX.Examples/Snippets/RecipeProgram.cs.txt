@@ -1,3 +1,4 @@
+#region Setup
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,5 +23,6 @@ var prepared = model.Prepare(context{{VIEWPORT}});
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
 File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.{{ARTIFACT_KIND}}).ToHtmlPage());
+#endregion
 
 {{SOURCE}}

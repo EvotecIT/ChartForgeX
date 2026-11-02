@@ -19,11 +19,19 @@ public static class BarRecipe {
             chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == "compact-options");
             chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
         }
-        else {
-            var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+        else if (variant == "sparse") {
+            var points = Enumerable.Range(1, 6).Where(index => index is 1 or 3 or 6)
                 .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
             chart.WithXLabels("North", "South", "East", "West", "Central", "Online")
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", points));
+        }
+        else {
+            // Completed orders per region, this year against last year.
+            var lastYear = new[] { 1240d, 980, 1460, 1720, 860, 2140 };
+            var thisYear = new[] { 1380d, 1050, 1390, 1940, 1010, 2710 };
+            chart.WithXLabels("North", "South", "East", "West", "Central", "Online").WithYAxis("Orders")
+                .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("last-year"), "2025", lastYear.Select((value, index) => new ChartPoint(index + 1, value))))
+                .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "2026", thisYear.Select((value, index) => new ChartPoint(index + 1, value))));
         }
         return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
     }
