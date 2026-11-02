@@ -77,8 +77,11 @@ internal static class VisualAxisText {
         }
         var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
             (value, _) => builder.MeasureText(value, style).Width);
-        var displayed = lines.Select(line => ChartTextFitting.FitEnd(line, width,
-            value => builder.MeasureText(value, style).Width, "…", ChartTextFitting.MinimumEllipsizedTextElements)).ToArray();
+        // A wrapped line that reserved this column must fit it again under the same containment rule; the
+        // column is the line's width plus padding minus padding, which can come back a few ulps short.
+        var displayed = lines.Select(line => LabelPlacementService.Contains(new ChartRect(0, 0, width, measured.Height),
+                new ChartRect(0, 0, builder.MeasureText(line, style).Width, measured.Height)) ? line
+            : ChartTextFitting.FitEnd(line, width, value => builder.MeasureText(value, style).Width, "…", ChartTextFitting.MinimumEllipsizedTextElements)).ToArray();
         shortened = lines.Where((line, index) => line != displayed[index]).Any();
         // A line too narrow for the shortened-text minimum hides the whole caption rather than half of it.
         return displayed.Any(line => line.Length == 0) ? string.Empty : string.Join("\n", displayed);
