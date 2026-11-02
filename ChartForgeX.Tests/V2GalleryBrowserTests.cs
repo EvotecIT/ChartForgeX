@@ -80,7 +80,10 @@ public sealed class V2GalleryBrowserTests {
         await page.Locator("[data-gallery-search]").FillAsync("heatmap");
         var visibleFamilies = await page.Locator("[data-gallery-family]:visible").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.galleryFamily)");
         Assert.NotEmpty(visibleFamilies);
-        Assert.All(visibleFamilies, family => Assert.Contains("heatmap", family, StringComparison.Ordinal));
+        Assert.Contains("heatmap", visibleFamilies);
+        Assert.Contains("dashboard", visibleFamilies);
+        var visibleSearchText = await page.Locator("[data-gallery-family]:visible").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.search)");
+        Assert.All(visibleSearchText, text => Assert.Contains("heatmap", text, StringComparison.OrdinalIgnoreCase));
         await page.Locator("[data-gallery-group=matrices-maps]").ClickAsync();
         Assert.True(await page.Locator("[data-gallery-family]:visible").CountAsync() > 0);
         await page.Locator("[data-gallery-search]").FillAsync("no-such-example");

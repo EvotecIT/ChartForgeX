@@ -1,8 +1,10 @@
 ---
-description: "Follow the public ChartForgeX contracts for preparation, configuration, data transactions, identity, annotations, themes and export ownership."
+description: "Learn how ChartForgeX names its methods and where options, data, themes and output live, so every chart and diagram reads the same way."
 ---
 
 # V2 public API conventions
+
+Every ChartForgeX model uses the same verbs: `With*` sets an option, `Add*` adds data, `Configure*` edits a group of options through a callback, `Prepare` lays the visual out for a size and theme, `To*` returns SVG, PNG or HTML, and `Save*` writes a file. Learn them on one chart and they apply to every chart family, chart grid and diagram. The rest of this page gives the detailed rules, for when you need to know exactly what a call keeps or replaces.
 
 These rules govern the shared prepared-rendering contracts and their model entry points. All chart families and chart grids compile through the native scene, alongside topology, flow and sequence diagrams. Model convenience exports resolve a request and use the same preparation route. Static composition belongs to `ChartForgeX.Visuals`; animation belongs to `ChartForgeX.Stories`. The [API ledger](api-ledger.md) records naming and ownership changes; this document does not claim that every existing public member conforms already.
 

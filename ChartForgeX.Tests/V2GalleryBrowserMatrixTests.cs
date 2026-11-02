@@ -45,7 +45,9 @@ public sealed class V2GalleryBrowserMatrixTests {
                 const nativeKinds = new Set(expectedKinds);
                 if (manifest.artifacts.some(item => !Array.isArray(item.seriesKinds) || item.seriesKinds.some(kind => !nativeKinds.has(kind))))
                     defects.push('Per-artifact native series kinds must not contain diagram-family tags.');
-                const artifacts = manifest.artifacts.filter(item => (item.id.startsWith('family-') || item.family === 'histogram')
+                const nativeFamilies = new Set(expected.families.map(item => item.family));
+                const artifacts = manifest.artifacts.filter(item => nativeFamilies.has(item.family)
+                    && (item.id.startsWith('family-') || item.family === 'histogram')
                     && ['light', 'dark'].includes(item.theme));
                 const standard = artifacts.filter(item => item.id.startsWith('family-') && ['wide', 'compact'].includes(item.variant));
                 if (standard.length !== expected.families.length * 4)
