@@ -33,6 +33,16 @@ body {
 }
 
 .cfx-interactive-chart {
+  /* Chrome roles: remap control geometry onto host tokens here, in one place. */
+  --cfx-tooltip-radius: 8px;
+  --cfx-control-radius: 6px;
+  --cfx-chip-radius: 999px;
+  --cfx-swatch-radius: 2px;
+  --cfx-axis-label-radius: 4px;
+  --cfx-toolbar-control-size: 28px;
+  --cfx-toolbar-control-size-coarse: 36px;
+  --cfx-toolbar-icon-size: 16px;
+  --cfx-toolbar-inset: 8px;
   --cfx-focus-ring: var(--cfx-host-accent, var(--hfx-color-focus-ring, var(--cfx-default-host-accent)));
   container: cfx-chart / inline-size;
   contain-intrinsic-inline-size: var(--cfx-intrinsic-width, 640px);
@@ -105,7 +115,8 @@ body {
 
 .cfx-interactive-chart .cfx-toolbar {
   position: absolute;
-  inset: 8px 8px auto auto;
+  inset: var(--cfx-toolbar-inset) auto auto;
+  inset-inline-end: var(--cfx-toolbar-inset);
   z-index: 15;
   gap: 2px;
   max-width: calc(100% - 16px);
@@ -122,9 +133,6 @@ body {
 
 .cfx-interactive-chart[data-cfx-toolbar="compact"]:not([data-cfx-responsive-layout="fit"]):not([data-cfx-responsive-layout="adaptive"]) {
   width: min(100%, var(--cfx-native-width, var(--cfx-intrinsic-width)));
-}
-.cfx-interactive-chart[data-cfx-toolbar="compact"][data-cfx-responsive-layout="adaptive"] .cfx-toolbar {
-  right: max(8px, calc((100% - var(--cfx-native-width)) / 2 + 8px));
 }
 
 .cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar {
@@ -924,6 +932,8 @@ body {
   font: 600 11px/16px var(--cfx-tooltip-font); font-variant-numeric: tabular-nums;
   text-overflow: ellipsis; white-space: nowrap;
 }
+/* Browser ticks replace raster native labels without a text template; keep the axis label colour role. */
+.cfx-interactive-chart [data-cfx-browser-axis] text[fill="currentColor"] { fill: var(--cfx-tooltip-muted); }
 .cfx-crosshair__axis-value[hidden],
 .cfx-interactive-chart[data-cfx-crosshair-label="false"] :is(.cfx-crosshair__label, .cfx-crosshair__axis-value) { display: none; }
 .cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }
@@ -1181,6 +1191,8 @@ body {
 @media (forced-colors: active) {
   .cfx-interactive-chart :is(button, summary, [role="button"]):focus-visible,
   .cfx-chart-context-menu button:focus-visible { outline-color: Highlight; }
+  .cfx-interactive-chart .cfx-toolbar { border-color: CanvasText; box-shadow: none; }
+  .cfx-interactive-chart .cfx-toolbar .cfx-tool[aria-pressed="true"] { border-color: Highlight; color: Highlight; }
   .cfx-interactive-chart [data-cfx-focus-ink], .cfx-interactive-chart [data-cfx-state-ink] { stroke: Highlight; }
   .cfx-tooltip, .cfx-crosshair__axis-value, .cfx-chart-context-menu {
     --cfx-tooltip-surface: Canvas;
@@ -1196,7 +1208,8 @@ body {
 .cfx-crosshair__label { display: none; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-prepared-chart])[data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-point-interaction-target):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
 
-.cfx-interactive-chart[data-cfx-toolbar="compact"]:has(> .cfx-toolbar):has(.cfx-hierarchy-breadcrumb, .cfx-responsive-legend[style*="display: flex"], .cfx-responsive-heading[style*="display: block"], .cfx-scenarios:not(:empty), .cfx-scenario-panel:not([hidden])) { padding-block-start: calc(var(--cfx-toolbar-height, 28px) + 16px); }
+/* HTML chrome above the plot moves below the floating toolbar so the two never overlap. */
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-frame:has(> .cfx-toolbar):has(> :is(.cfx-hierarchy-breadcrumb, .cfx-responsive-legend[style*="display: flex"], .cfx-responsive-heading[style*="display: block"])) { padding-block-start: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset)); }
 .cfx-interactive-chart :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) .cfx-hovered :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
   stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring)); stroke-width: 2px; vector-effect: non-scaling-stroke;
 }
@@ -1226,14 +1239,20 @@ body {
 
 /* Shared chrome layout, responsive controls and motion. */
 
+/* The toolbar stays visible while it reports state: an active mode or a zoomed window. */
 .cfx-interactive-chart:hover .cfx-toolbar,
-.cfx-interactive-chart:focus-within .cfx-toolbar { opacity: 1; pointer-events: auto; }
+.cfx-interactive-chart:focus-within .cfx-toolbar,
+.cfx-interactive-chart:is([data-cfx-mode="pan"], [data-cfx-mode="brush"]) .cfx-toolbar,
+.cfx-interactive-chart .cfx-toolbar:has(> [data-cfx-zoom-reset]:not([hidden])) { opacity: 1; pointer-events: auto; }
 .cfx-interactive-chart .cfx-toolbar .cfx-tool {
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  flex: 0 0 auto; min-width: 28px; min-height: 28px; padding: 4px 6px; border-color: transparent;
+  flex: 0 0 auto; min-width: var(--cfx-toolbar-control-size); min-height: var(--cfx-toolbar-control-size); padding: 4px 6px; border-color: transparent;
   border-radius: var(--cfx-control-radius); font-weight: 600; line-height: 18px;
 }
-.cfx-toolbar .cfx-tool > svg { width: 16px; height: 16px; flex: 0 0 16px; }
+.cfx-interactive-chart .cfx-toolbar .cfx-tool--icon { width: var(--cfx-toolbar-control-size); padding: 0; }
+.cfx-interactive-chart .cfx-toolbar .cfx-tool[hidden] { display: none; }
+.cfx-interactive-chart .cfx-toolbar [data-cfx-zoom-reset] { transition: opacity 120ms ease-out; }
+.cfx-toolbar .cfx-tool > svg { width: var(--cfx-toolbar-icon-size); height: var(--cfx-toolbar-icon-size); flex: 0 0 var(--cfx-toolbar-icon-size); pointer-events: none; }
 .cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar .cfx-tool {
   flex: 1 1 auto; min-height: 34px; padding: 6px 10px; border-color: var(--cfx-tooltip-line);
 }
@@ -1250,7 +1269,9 @@ body {
 .cfx-interactive-chart .cfx-tool[aria-pressed="true"]:not(.cfx-responsive-legend__item) {
   background: color-mix(in srgb, var(--cfx-host-accent, var(--cfx-default-host-accent)) 12%, var(--cfx-tooltip-surface));
   color: var(--cfx-tooltip-text);
-}
+}.cfx-interactive-chart .cfx-toolbar .cfx-tool:hover:not([aria-pressed="true"]) { color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart .cfx-toolbar .cfx-tool--icon[aria-pressed="true"] { color: var(--cfx-host-accent, var(--cfx-default-host-accent)); }
+
 .cfx-tooltip__close {
   position: absolute; inset: 4px 4px auto auto; display: grid; place-items: center;
   width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--cfx-control-radius);
@@ -1270,10 +1291,12 @@ body {
 @starting-style {
   .cfx-tooltip:not([hidden]) { opacity: 0; translate: 0 2px; }
   .cfx-reset:not([hidden]) { opacity: 0; }
+  .cfx-toolbar [data-cfx-zoom-reset]:not([hidden]) { opacity: 0; }
 }
 @media (pointer: coarse) {
   .cfx-interactive-chart .cfx-toolbar { opacity: 1; pointer-events: auto; }
-  .cfx-interactive-chart .cfx-toolbar .cfx-tool { min-width: 36px; min-height: 36px; }
+  .cfx-interactive-chart .cfx-toolbar .cfx-tool { min-width: var(--cfx-toolbar-control-size-coarse); min-height: var(--cfx-toolbar-control-size-coarse); }
+  .cfx-interactive-chart .cfx-toolbar .cfx-tool--icon { width: var(--cfx-toolbar-control-size-coarse); }
   .cfx-interactive-chart :is(.cfx-reset, .cfx-compare-chip, .cfx-compare-page, .cfx-compare-clear, .cfx-scenario, .cfx-legend-overflow__toggle) { min-height: 44px; }
   .cfx-compare-tray { min-height: 58px; }
 }
