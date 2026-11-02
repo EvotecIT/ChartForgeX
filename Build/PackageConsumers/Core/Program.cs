@@ -89,7 +89,7 @@ internal static partial class Program {
         var canonical = VisualTheme.Graphite();
         var dark = canonical.Resolve(VisualThemeMode.Dark);
         PackageAssertions.Require(dark.Background.Equals(ChartColor.FromHex("#0c0d10"))
-            && dark.ElevatedSurface.Equals(ChartColor.FromHex("#16181c")) && dark.Palette[0].Equals(ChartColor.FromHex("#509efe")),
+            && dark.ElevatedSurface.Equals(ChartColor.FromHex("#16181c")) && dark.Palette[0].Equals(ChartColor.FromHex("#4a90ea")),
             "The packed canonical dark palette does not match the shared theme resource.");
         var original = canonical.ToJson();
         VisualThemeBuilder? retained = null;
