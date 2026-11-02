@@ -24,10 +24,13 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         await page.Locator(Point(0, 1)).FocusAsync();
         Assert.True(await page.Locator(Point(0, 1)).EvaluateAsync<bool>("n => n === document.activeElement"));
         Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        // The readout eases in and is re-placed once its content is measured; compare settled positions.
+        await SettleTooltipAsync(page);
         var focused = await BoxAsync(page, ".cfx-tooltip");
         var native = await BoxAsync(page, Point(0, 1));
         var beforeText = await ReadoutTextAsync(page);
         await page.Keyboard.PressAsync(key);
+        await SettleTooltipAsync(page);
         var pinned = await BoxAsync(page, ".cfx-tooltip");
         var events = await EventsAsync(page);
         await CaptureAsync(session, "overlay-keyboard-" + Variant(graphite, layout, width, 1, false) + "-" + key, new { focused, native, pinned, beforeText, events });
@@ -40,6 +43,8 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         Assert.Equal("reading-source:1", selection.GetProperty("detail").GetProperty("target").GetProperty("targetId").GetString());
         AssertNoConsoleErrors(session);
     }
+
+    private static Task SettleTooltipAsync(Microsoft.Playwright.IPage page) => page.Locator(".cfx-tooltip").EvaluateAsync("async tip => { let last = \"\"; for (let stable = 0; stable < 3;) { await new Promise(requestAnimationFrame); await Promise.all(tip.getAnimations().map(animation => animation.finished)); const box = tip.getBoundingClientRect(), key = box.x + \",\" + box.y; stable = key === last ? stable + 1 : 0; last = key; } }");
 
     private static Task<string> ReadoutTextAsync(Microsoft.Playwright.IPage page) => page.Locator(".cfx-tooltip").EvaluateAsync<string>(
         "tip => [...tip.querySelectorAll('.cfx-tooltip__title,.cfx-tooltip__secondary,dt,dd')].map(node=>node.textContent).join('\\n')");
