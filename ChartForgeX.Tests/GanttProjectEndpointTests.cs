@@ -245,7 +245,8 @@ public sealed class GanttProjectEndpointTests {
 
     private static Chart PlanChart(int width, VisualThemeMode mode, string interval) => new MermaidParser()
         .ParseGantt(string.Format(CultureInfo.InvariantCulture, Plan, interval)).Document!.ToChart().WithSize(width, 300)
-        .WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(BrowserProofFonts.Family).WithPngFont(Font()).ConfigureGridStyle(style => style.ShowVerticalLines = true);
+        .WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(BrowserProofFonts.Family).WithPngFont(Font())
+        .ConfigureTickLabelStyle(style => style.FontSize = 12).ConfigureGridStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(text => text.Role == "schedule-tick-label").ToArray();
