@@ -22,11 +22,11 @@ public sealed class StageIndependentCaptionTests {
             ChartForgeX.Typography.FontSpec.FromFile(chart.Options.PngFontPath!)));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role?.StartsWith("funnel-", StringComparison.Ordinal) == true && node.Role.EndsWith("-label", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(19, labels.Length);
-        Assert.Equal(names, labels.Where(node => node.Role == "funnel-category-label").Select(node => Assert.Single(node.Text.Lines).Text));
-        Assert.Equal(new[] { "12,400", "5,270", "2,130", "860", "610" },
-            labels.Where(node => node.Role == "funnel-value-label").Select(node => Assert.Single(node.Text.Lines).Text));
-        Assert.Equal(4, labels.Count(node => node.Role == "funnel-dropoff-label"));
+        // The vertical cone rail reads as two lines per stage: name and value, then both ratios.
+        Assert.Equal(9, labels.Length);
+        Assert.Equal(names.Zip(new[] { "12,400", "5,270", "2,130", "860", "610" }, (name, value) => name + "  " + value),
+            labels.Where(node => node.Role == "funnel-category-label").Select(node => Assert.Single(node.Text.Lines).Text));
+        Assert.Equal(4, labels.Count(node => node.Role == "funnel-ratio-label"));
         Assert.All(labels, node => Assert.Equal(fontSize, node.Text.Size));
         var bounds = labels.Select(node => prepared.Regions.Single(region => region.Id == node.Id).Bounds).ToArray();
         for (var first = 0; first < bounds.Length; first++) {

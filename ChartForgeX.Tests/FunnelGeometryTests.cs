@@ -20,12 +20,13 @@ public sealed class FunnelGeometryTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), node =>
             node.Id == "series-0-point-0-dropoff-label" || node.Text.Lines.Any(line => line.Text.Contains("No previous baseline", StringComparison.Ordinal)));
-        var role = content == ChartStageLabelContent.Separate ? "funnel-value-label" : "funnel-label";
+        // A separate vertical cone rail pairs each name with its value on one line.
+        var role = content == ChartStageLabelContent.Separate ? "funnel-category-label" : "funnel-label";
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role).ToArray();
         Assert.Equal(5, labels.Length);
         var values = new[] { "1,000", "410", "162", "14", "2" };
         var categories = new[] { "Visits", "Qualified", "Reviewed", "Won", "Renewed" };
-        Assert.Equal(values.Select((value, index) => content == ChartStageLabelContent.Combined ? categories[index] + ": " + value : value),
+        Assert.Equal(values.Select((value, index) => content == ChartStageLabelContent.Combined ? categories[index] + ": " + value : categories[index] + "  " + value),
             labels.Select(label => string.Join("", label.Text.Lines.Select(line => line.Text))));
         foreach (var label in labels) {
             var region = Assert.Single(prepared.Regions, region => region.Id == label.Id);

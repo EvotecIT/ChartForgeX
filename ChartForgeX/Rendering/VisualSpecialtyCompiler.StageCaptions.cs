@@ -31,8 +31,27 @@ internal static partial class VisualSpecialtyCompiler {
             Frame = plot;
             _gap = context.Theme.Spacing / 4;
             var percentages = funnel ? FunnelPercentageFormat(chart) : null;
+            var options = chart.Options.Funnel;
+            // A vertical cone's rail reads as two lines per stage: name and value, then both ratios in the
+            // secondary colour. Authored per-component placement or typography keeps the separate rows.
+            var compactRail = _cone && !Horizontal && options.CategoryLabel.Visible && options.ValueLabel.Visible
+                && options.CategoryLabel.Placement == null && options.ValueLabel.Placement == null
+                && options.RetentionLabel.Placement == null && options.DropOffLabel.Placement == null
+                && !options.CategoryLabel.Style.HasOverrides && !options.ValueLabel.Style.HasOverrides;
             for (var index = 0; index < series.RenderPoints.Count; index++) {
                 var raw = series.RenderPoints[index].Y;
+                if (compactRail) {
+                    Add(index, "category", Category(chart, index) + "  " + FunnelValue(chart, index), options.CategoryLabel, false);
+                    if (index == 0 || !options.RetentionLabel.Visible && !options.DropOffLabel.Visible) continue;
+                    var kept = series.RenderPoints[0].Y > 0 ? raw / series.RenderPoints[0].Y : (double?)null;
+                    var before = series.RenderPoints[index - 1].Y;
+                    var lost = before > 0 ? (before - raw) / before : (double?)null;
+                    var parts = new List<string>();
+                    if (options.RetentionLabel.Visible) parts.Add(kept.HasValue ? percentages!.FormatFraction(kept.Value) + " retained" : "No initial baseline");
+                    if (options.DropOffLabel.Visible) parts.Add(lost.HasValue ? percentages!.FormatFraction(lost.Value) + " drop-off" : "No previous baseline");
+                    Add(index, "ratio", string.Join(" · ", parts), options.RetentionLabel, false, secondary: true);
+                    continue;
+                }
                 Add(index, "category", Category(chart, index), funnel ? chart.Options.Funnel.CategoryLabel : chart.Options.Pyramid.CategoryLabel, false);
                 Add(index, "value", funnel ? FunnelValue(chart, index) : VisualStateSceneTools.Value(chart, series, index, raw), funnel ? chart.Options.Funnel.ValueLabel : chart.Options.Pyramid.ValueLabel, true);
                 if (!funnel) continue;
@@ -56,7 +75,7 @@ internal static partial class VisualSpecialtyCompiler {
             Plot = Horizontal ? new ChartRect(plot.Left, plot.Top + leading, plot.Width, Math.Max(0, plot.Height - leading - trailing))
                 : new ChartRect(plot.Left + leading, plot.Top, Math.Max(0, plot.Width - leading - trailing), plot.Height);
 
-            void Add(int index, string component, string text, ChartValueLabelOptions policy, bool inside) {
+            void Add(int index, string component, string text, ChartValueLabelOptions policy, bool inside, bool secondary = false) {
                 if (!policy.Visible) return;
                 var inherited = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
                 var placement = policy.Placement ?? inherited;
@@ -65,7 +84,7 @@ internal static partial class VisualSpecialtyCompiler {
                 if (placement == ChartDataLabelPlacement.Outside) placement = Horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 var contained = placement is ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center;
                 var color = Color(series, index, colors);
-                var style = policy.Style.Resolve(Style(chart, context, index, contained ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground));
+                var style = policy.Style.Resolve(Style(chart, context, index, contained ? ChartColorMath.AccessibleTextOnBackground(color) : secondary ? colors.MutedForeground : colors.Foreground));
                 var automaticContained = contained && !policy.Style.Color.HasValue && !VisualChartPaint.ExplicitDataLabelColor(chart, index);
                 var paint = !automaticContained ? VisualChartPaint.Text(style) : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(series, index));
                 var caption = new StageCaption(index, component, text, style, paint, placement, automaticContained);
