@@ -29,7 +29,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.readableSelection = event.detail.target)");
         await page.Locator(Point(0, 0)).FocusAsync();
         Assert.Equal(expected, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(expected, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "X" }).Locator("+ dd").InnerTextAsync());
+        Assert.Equal(0, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasTextRegex = new System.Text.RegularExpressions.Regex("^X$") }).CountAsync());
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.readableSelection");
         Assert.Equal(expected, selected.GetProperty("label").GetString());
@@ -50,7 +50,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), 1100, 650);
         await session.Page.Locator(Point(0, 0)).FocusAsync();
         Assert.Equal(expected, await session.Page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(expected, await session.Page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "X" }).Locator("+ dd").InnerTextAsync());
+        Assert.Equal(0, await session.Page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasTextRegex = new System.Text.RegularExpressions.Regex("^X$") }).CountAsync());
         Assert.False(await session.Page.Locator(".cfx-tooltip").IsHiddenAsync());
         await CaptureAsync(session.Page, "zoned-point-authored-" + empty);
         AssertNoConsoleErrors(session);
@@ -77,7 +77,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
             }
             """), "The self-contained linked example must load its native font and keep the complete final date inside its text clip.");
         await page.EvaluateAsync("() => ChartForgeXCharts.get(document.querySelector('[data-cfx-chart-id=linked-time]')).select({observationIds:['api-2','worker-2']})");
-        Assert.Equal(new[] { "API · 2026-03-04", "Worker · 2026-03-04" }, await page.Locator("[data-cfx-chart-id=linked-time] .cfx-compare-chip").AllTextContentsAsync());
+        Assert.Equal(new[] { "API · 2026-03-04 · 27", "Worker · 2026-03-04 · 15" }, await page.Locator("[data-cfx-chart-id=linked-time] .cfx-compare-chip").AllTextContentsAsync());
         await CaptureAsync(page, "linked-compare-series-" + width);
         AssertNoConsoleErrors(session);
     }
@@ -98,9 +98,9 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.readableSelection = event.detail.target)");
         var point = page.Locator(Point(0, 0));
         await point.FocusAsync();
-        Assert.Equal("66.09", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal(mode == HtmlChartTooltipMode.Single ? "Observation 66.09" : "66.09", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         var value = mode == HtmlChartTooltipMode.SharedX ? page.Locator(".cfx-tooltip dd").First
-            : page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd");
+            : page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd");
         Assert.Equal("2.61", await value.InnerTextAsync());
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.readableSelection");

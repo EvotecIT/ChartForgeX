@@ -43,7 +43,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         await page.Locator(Point(0, 1)).FocusAsync();
         Assert.Equal(new[] { "Current", "Baseline" }, (await RowsAsync(page)).Select(row => row[0]).ToArray());
         var restoredPaint = await page.Locator(Point(1, 1) + " [data-cfx-role='bar']").EvaluateAsync<string>("node => getComputedStyle(document.getElementById(node.getAttribute('fill').slice(5, -1)).querySelector('stop')).stopColor");
-        Assert.Equal(restoredPaint, await page.Locator("dt[data-cfx-tooltip-series='1'] .cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(page, "rgb(from " + restoredPaint + " r g b / 1)", await page.Locator("dt[data-cfx-tooltip-series='1'] .cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.True(await page.Locator(Point(0, 2)).EvaluateAsync<bool>("node => node === document.activeElement"));
         AssertNoConsoleErrors(session);
@@ -88,12 +88,15 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         var chart = Frame(dark, "Decorative observations").AsDecorative()
             .AddScatter("Current", new[] { new ChartPoint(1, 7), new ChartPoint(2, 5) })
             .AddScatter("Baseline", new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) });
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
+            options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
+        }), width, 560);
         var page = session.Page;
         await MoveToAsync(page, Point(0, 0));
         var rows = await RowsAsync(page);
         await RecordAsync(page, "tooltip-decorative-" + (dark ? "dark" : "light") + "-" + width, new { rows });
-        Assert.Equal("true", await page.Locator("svg").GetAttributeAsync("aria-hidden"));
+        Assert.Equal("true", await page.Locator(".cfx-stage > svg").GetAttributeAsync("aria-hidden"));
         Assert.Equal(new[] { "Current", "Baseline" }, rows.Select(row => row[0]).ToArray());
         Assert.Equal(new[] { "7", "2" }, rows.Select(row => row[1]).ToArray());
         AssertNoConsoleErrors(session);
@@ -107,7 +110,10 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         var chart = Frame(dark, "Restored mark visibility")
             .AddScatter("Current", new[] { new ChartPoint(1, 7), new ChartPoint(2, 5) })
             .AddScatter("Baseline", new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) });
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
+            options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
+        }), width, 560);
         var page = session.Page;
         var mark = Point(1, 0) + " [data-cfx-role='marker']";
         var ancestor = Point(1, 0);
@@ -198,7 +204,10 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
             var offset = series;
             chart.AddScatter("Series " + series, Enumerable.Range(0, observations).Select(index => new ChartPoint(index + 1, 10 + offset * 10 + index % 7)));
         }
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Features = ChartInteractionFeatures.Tooltips));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Features = ChartInteractionFeatures.Tooltips;
+            options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
+        }));
         var page = session.Page;
         var measurement = await page.Locator(Point(0, observations / 2)).EvaluateAsync<StyleMeasurement>("""
             node => {

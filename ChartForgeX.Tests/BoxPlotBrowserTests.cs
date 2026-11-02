@@ -36,12 +36,12 @@ public sealed class BoxPlotBrowserTests {
         await page.EvaluateAsync("() => { window.boxSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.boxSelections.push(event.detail.target)); }");
         var first = Point(0, 1); var neighbor = Point(1, 1);
         await MoveToAsync(page, first + " [data-cfx-role='boxplot-body']");
-        Assert.Equal(new[] { "Series", "Expected", "Kategoria", "Express delivery", "Minimum lokalne", "5", "Dolny kwartyl", "10", "Mediana", "15", "Górny kwartyl", "25", "Maksimum", "35" }, await RowsAsync(page));
+        Assert.Equal(new[] { "Kategoria", "Express delivery", "Minimum lokalne", "5", "Dolny kwartyl", "10", "Mediana", "15", "Górny kwartyl", "25", "Maksimum", "35" }, await RowsAsync(page));
         var customHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
         Assert.Equal("Expected: Promised distribution", customHeading);
         await MoveToAsync(page, neighbor + " [data-cfx-role='boxplot-body']");
         var rawRows = await RowsAsync(page);
-        Assert.Equal(new[] { "Series", "Observed", "Kategoria", "Express delivery", "Minimum lokalne", "8", "Dolny kwartyl", "12", "Mediana", "22", "Górny kwartyl", "30", "Maksimum", "42" }, rawRows);
+        Assert.Equal(new[] { "Kategoria", "Express delivery", "Minimum lokalne", "8", "Dolny kwartyl", "12", "Mediana", "22", "Górny kwartyl", "30", "Maksimum", "42" }, rawRows);
         var defaultHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
         Assert.Equal("Observed: Express delivery", defaultHeading);
         var rawAria = await page.Locator(neighbor).GetAttributeAsync("aria-label");
@@ -68,7 +68,7 @@ public sealed class BoxPlotBrowserTests {
         await page.Locator(Legend(1)).ClickAsync();
         Assert.Equal(1, await page.Locator("g[data-cfx-role='series'][data-cfx-series='1'].cfx-series-muted").CountAsync());
         await page.Locator(first).FocusAsync();
-        Assert.Equal("Expected", (await RowsAsync(page))[1]);
+        Assert.Equal("Expected: Promised distribution", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         if (!string.IsNullOrWhiteSpace(directory)) {
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "box-plot-neighbors.png") });
             await File.WriteAllTextAsync(Path.Combine(directory, "box-plot-neighbors.json"), JsonSerializer.Serialize(new {
@@ -95,7 +95,7 @@ public sealed class BoxPlotBrowserTests {
         Assert.Equal(distributionRows, await RowsAsync(page));
         var point = page.Locator(Point(0, 0));
         await point.FocusAsync();
-        Assert.Equal(new[] { "Series", "Distribution" }.Concat(distributionRows), await RowsAsync(page));
+        Assert.Equal(distributionRows, await RowsAsync(page));
         Assert.Equal("Distribution: Raw input", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
         Assert.Equal("4", await point.GetAttributeAsync("data-cfx-source-count"));

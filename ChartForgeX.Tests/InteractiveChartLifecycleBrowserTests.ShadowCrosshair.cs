@@ -43,6 +43,15 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
         await page.WaitForFunctionAsync("()=>shadowSyncEvents.some(event=>event.action==='crosshair')", null,
             new PageWaitForFunctionOptions { Timeout = 5000 });
+        await SettlePresentationAsync(page);
+        // The moved source is outside the document roots covered by the shared helper, including in closed shadow trees.
+        await page.EvaluateAsync("""
+            async () => {
+                const animations=shadowSyncSource.getAnimations({subtree:true});
+                await Promise.all(animations.filter(animation=>animation.playState==='running'&&animation.effect?.getComputedTiming().endTime<=1000)
+                    .map(animation=>animation.finished.catch(()=>{})));
+            }
+            """);
         var state = await page.EvaluateAsync<JsonElement>("""
             () => {
                 const read=root=>({mode:root.dataset.cfxHoverMode,
@@ -57,7 +66,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.All(crosshairs, item => Assert.Equal("series", item.GetProperty("mode").GetString()));
         Assert.Equal("series", state.GetProperty("peer").GetProperty("mode").GetString());
         foreach (var chart in new[] { "source", "peer" })
-            Assert.Equal(new[] { "0.3", "1", "0.3" }, state.GetProperty(chart).GetProperty("opacity").EnumerateArray().Select(item => item.GetString()));
+            Assert.Equal(new[] { "0.4", "1", "0.4" }, state.GetProperty(chart).GetProperty("opacity").EnumerateArray().Select(item => item.GetString()));
         Assert.Empty(state.GetProperty("echoes").EnumerateArray());
         AssertNoConsoleErrors(session);
     }

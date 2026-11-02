@@ -64,7 +64,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var page = session.Page;
         await BindLinkedEventsAsync(page);
         Assert.True(await page.EvaluateAsync<bool>("()=>ChartForgeXCharts.get(chartController.root)===chartController&&ChartForgeXCharts.get(document.body)===null"));
-        var proof = await page.EvaluateAsync<JsonElement>("""
+        var commands = await page.EvaluateAsync<JsonElement>("""
             ()=>{
                 const root=chartController.root, counts=[];
                 root.addEventListener('cfxsync',()=>window.linkedSync=(window.linkedSync||0)+1);
@@ -80,7 +80,14 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 chartController.select({categories:['South']});
                 const selected=chartController.getSelection(); selected[0].category='mutated';
                 root.dispatchEvent(new CustomEvent('cfx-highlight',{detail:{match:{observationIds:['north']},dim:true,source:'grid'}}));
-                return {counts,mismatchedRange,source:chartController.getSelection()[0].category,
+                return {counts,mismatchedRange};
+            }
+            """);
+        await SettlePresentationAsync(page);
+        var proof = await page.EvaluateAsync<JsonElement>("""
+            commands=>{
+                const root=chartController.root;
+                return {...JSON.parse(commands),source:chartController.getSelection()[0].category,
                     highlighted:[...root.querySelectorAll('[data-cfx-highlighted=true]')].map(node=>node.dataset.cfxObservationId),
                     selection:chartController.getSelection().map(target=>target.observationId),
                     dimmed:getComputedStyle(root.querySelector('[data-cfx-observation-id=west]')).opacity,
@@ -88,7 +95,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                     highlightedOpacity:getComputedStyle(root.querySelector('[data-cfx-observation-id=north]')).opacity,
                     announcement:root.querySelector('[data-cfx-live]').textContent,events:linkedEvents.length,sync:window.linkedSync||0};
             }
-            """);
+            """, commands.GetRawText());
         Assert.Equal(new[] { 1, 2, 3, 2, 3, 1 }, proof.GetProperty("counts").EnumerateArray().Select(item => item.GetInt32()));
         Assert.Equal("South", proof.GetProperty("source").GetString());
         Assert.Equal(0, proof.GetProperty("mismatchedRange").GetInt32());

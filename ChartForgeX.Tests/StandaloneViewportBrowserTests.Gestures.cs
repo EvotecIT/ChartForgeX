@@ -68,6 +68,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         var page = session.Page;
         await MountAsync(page);
         var initial = await SceneAsync(page);
+        await MoveToAsync(page, ".cfx-stage");
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         AssertWindow((await ViewportAsync(page)).GetProperty("x"), 1.2, 10.8);
         await AssertTicksAsync(page, "x", 1.2, 10.8);

@@ -15,11 +15,12 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed partial class NativePhysicalViewportBrowserTests {
     [BrowserTheory]
-    [InlineData(false, 390, VisualThemeMode.Dark)]
-    [InlineData(true, 900, VisualThemeMode.Light)]
-    public async Task SecondaryPhysicalWindowsKeepPrimaryAxesBookmarksExportsAndAcceptedBasis(bool horizontal, int width, VisualThemeMode mode) {
+    [InlineData(false, 390, VisualThemeMode.Dark, false)]
+    [InlineData(true, 900, VisualThemeMode.Light, false)]
+    [InlineData(false, 390, VisualThemeMode.Dark, true)]
+    public async Task SecondaryPhysicalWindowsKeepPrimaryAxesBookmarksExportsAndAcceptedBasis(bool horizontal, int width, VisualThemeMode mode, bool secondaryOnly) {
         if (!Enabled) return;
-        var host = new Host(horizontal, width, mode);
+        var host = new Host(horizontal, width, mode, secondaryOnly);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 1000);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.ExposeFunctionAsync("physicalPrepare", (JsonElement request) => host.Prepare(request));
@@ -101,11 +102,11 @@ public sealed partial class NativePhysicalViewportBrowserTests {
     }
 
     private sealed class Host {
-        private readonly bool _horizontal; private readonly int _width; private readonly VisualThemeMode _mode;
+        private readonly bool _horizontal; private readonly int _width; private readonly VisualThemeMode _mode; private readonly bool _secondaryOnly;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, HtmlChartSection> _sections = new();
-        internal Host(bool horizontal, int width, VisualThemeMode mode) {
-            _horizontal = horizontal; _width = width; _mode = mode;
+        internal Host(bool horizontal, int width, VisualThemeMode mode, bool secondaryOnly = false) {
+            _horizontal = horizontal; _width = width; _mode = mode; _secondaryOnly = secondaryOnly;
             _sections.Add("initial", _renderer.PrepareSection(Model(), configure: Configure));
         }
         internal string Page => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
@@ -144,7 +145,9 @@ public sealed partial class NativePhysicalViewportBrowserTests {
                 new[] { new ChartPoint(1, 100), new ChartPoint(2, 500), new ChartPoint(3, 900) }).UseSecondaryValueAxis();
             for (var item = 0; item < 3; item++) secondary.WithObservationId(item, new ChartObservationId("secondary-" + item));
             var chart = Chart.Create().WithSize(_width, 440).WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), _mode)
-                .WithLegend(false).AddSeries(primary).AddSeries(secondary);
+                .WithLegend(false);
+            if (!_secondaryOnly) chart.AddSeries(primary);
+            chart.AddSeries(secondary);
             if (_horizontal) { chart.Options.LineOrientation = ChartOrientation.Horizontal; chart.WithXAxisBounds(0,100).WithYAxisBounds(0,4).WithSecondaryXAxisBounds(0,1000); }
             else chart.WithXAxisBounds(0,4).WithYAxisBounds(0,100).WithSecondaryYAxisBounds(0,1000);
             return chart;

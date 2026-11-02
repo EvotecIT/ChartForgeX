@@ -7,16 +7,21 @@
   };
   const standaloneViewport = root => {
     const lifetime = chartLifetimes.get(root);
-    if (!lifetime || lifetime.disposed || nativePreparationBinding(root, 'viewport')) return null;
-    const svg = root.querySelector('.cfx-stage svg'), metadata = capturedCartesianMetadata(root);
-    if (!svg || !metadata.dataProjection?.x || !metadata.dataProjection?.y || metadata.orientation === 'horizontal'
-      || !metadata.series?.length || metadata.series.some(row => !['line', 'stepline', 'area', 'steparea', 'bar', 'scatter', 'candlestick', 'ohlc'].includes(row.kind))) return null;
+    if (!lifetime || lifetime.disposed || Object.values(lifetime.preparationConnections).some(Boolean)) return null;
+    if (!hasFeature(root, 'Zoom') && !hasFeature(root, 'LegendToggles')) return null;
+    const svg = root.querySelector('.cfx-stage svg');
     if (root._cfxStandaloneViewport?.svg === svg) return root._cfxStandaloneViewport;
+    const metadata = capturedCartesianMetadata(root);
+    if (!svg || !metadata.dataProjection?.x || !metadata.dataProjection?.y || metadata.orientation === 'horizontal'
+      || metadata.dataProjection.x.scale !== 'linear' || metadata.dataProjection.y.scale !== 'linear'
+      || metadata.secondaryXProjection || metadata.secondaryYProjection
+      || !metadata.series?.length || metadata.series.some(row => !['line', 'stepline', 'area', 'steparea', 'bar', 'scatter', 'candlestick', 'ohlc'].includes(row.kind))) return null;
     const view = { svg, source: copyHostValue(metadata), windows: {}, geometry: [], labels: [], axes: [], points: [], frames: [] };
     const plot = metadata.dataProjection.plotBounds;
     const ns = 'http://www.w3.org/2000/svg';
     const clip = document.createElementNS(ns, 'clipPath'), rect = document.createElementNS(ns, 'rect');
     clip.id = (svg.querySelector('[id]')?.id || 'cfx') + '-browser-plot';
+    clip.setAttribute('clipPathUnits', 'userSpaceOnUse');
     for (const [key, value] of Object.entries(plot)) rect.setAttribute(key, value);
     clip.appendChild(rect); svg.querySelector('defs')?.appendChild(clip);
     if (!clip.parentNode) { const defs = document.createElementNS(ns, 'defs'); defs.appendChild(clip); svg.prepend(defs); view.defs = defs; }
@@ -24,10 +29,7 @@
     const series = svg.querySelectorAll('[data-cfx-role="series"]');
     series.forEach(owner => {
       // An outer clip remains in plot coordinates while individual marks reproject.
-      const frame = document.createElementNS(ns, 'g');
-      frame.setAttribute('clip-path', 'url(#' + clip.id + ')');
-      owner.before(frame); frame.appendChild(owner);
-      view.frames.push(frame);
+      view.frames.push({ owner, clip: owner.getAttribute('clip-path') });
       owner.querySelectorAll('path,line,rect,circle,ellipse,polygon,polyline,image').forEach(node => {
         if (node.closest('defs,[data-cfx-native-text-ink]') || node.closest('[data-cfx-caption]') || node.closest('g')?.querySelector('text') && node.closest('[data-cfx-role$="label"]')) return;
         const point = node.closest('[data-cfx-point]');
@@ -44,9 +46,7 @@
       const box = node.getBBox();
       view.labels.push({ node, x: box.x + box.width / 2, y: box.y + box.height / 2, transform: node.getAttribute('transform'), visibility: standaloneStyle(node, 'visibility') });
       if (!node.closest('[data-cfx-role="series"]')) {
-        const frame = document.createElementNS(ns, 'g'); frame.setAttribute('clip-path', 'url(#' + clip.id + ')');
-        node.before(frame); frame.appendChild(node);
-        view.frames.push(frame);
+        view.frames.push({ owner: node, clip: node.getAttribute('clip-path') });
       }
     });
     svg.querySelectorAll('[data-cfx-point][data-cfx-x]').forEach(node => {
@@ -62,13 +62,17 @@
       view.axes.push({ name, nodes, display: new Map(nodes.map(node => [node, standaloneStyle(node, 'display')])), layer: null });
     }
     root._cfxStandaloneViewport = view;
+    root.dataset.cfxStandaloneProjection = 'true';
     return view;
   };
   const standaloneAxis = (root, name) => {
     const view = standaloneViewport(root);
     if (!view) return null;
     const captured = view.source[name + 'Projection'] || view.source.dataProjection[name];
-    const source = captured && { ...view.source.dataProjection[name], ...captured };
+    const scene = view.source.dataProjection[name];
+    const source = captured && scene && { ...scene, ...captured,
+      fullMinimum: scene.minimum, fullMaximum: scene.maximum,
+      transformedFullMinimum: scene.transformedMinimum, transformedFullMaximum: scene.transformedMaximum };
     if (!source) return null;
     const window = view.windows[name];
     return window ? { ...source, ...window, transformedMinimum: transformedAxisBound(source, window.minimum, false),
@@ -139,28 +143,38 @@
     return values;
   };
   const paintStandaloneAxes = (root, view) => {
+    if (view.printing) return;
     const plot = view.source.dataProjection.plotBounds, ns = view.svg.namespaceURI;
+    const scale = view.svg.getBoundingClientRect().width / view.svg.viewBox.baseVal.width || 1;
+    const compact = root.getBoundingClientRect().width < 560;
     for (const axis of view.axes) {
       const projection = standaloneAxis(root, axis.name);
       if (!projection || !axis.nodes.length) continue;
-      if (!view.windows[axis.name]) {
-        axis.nodes.forEach(node => restoreStandaloneStyle(node, 'display', axis.display.get(node))); axis.layer?.remove(); axis.layer = null; continue;
+      if (!view.windows[axis.name] && !compact) {
+        axis.nodes.forEach(node => restoreStandaloneStyle(node, 'display', axis.display.get(node))); axis.layer?.remove(); axis.grid?.remove(); axis.layer = null; axis.grid = null; continue;
       }
       axis.nodes.forEach(node => node.style.display = 'none');
       axis.layer?.remove();
+      axis.grid?.remove();
       const layer = document.createElementNS(ns, 'g'); axis.layer = layer;
       layer.dataset.cfxBrowserAxis = axis.name; layer.setAttribute('pointer-events', 'none'); view.svg.appendChild(layer);
+      const grid = document.createElementNS(ns, 'g'); axis.grid = grid;
+      grid.dataset.cfxBrowserGrid = axis.name; grid.setAttribute('pointer-events', 'none');
+      let plotLayer = view.svg.querySelector('[data-cfx-role="series"]');
+      while (plotLayer?.parentNode && plotLayer.parentNode !== view.svg) plotLayer = plotLayer.parentNode;
+      view.svg.insertBefore(grid, plotLayer || null);
       const vertical = axis.name !== 'x', secondary = axis.name === 'secondaryY';
       const template = axis.nodes.find(node => node.querySelector('text'))?.querySelector('text');
       const box = template?.getBBox(), style = template && getComputedStyle(template);
-      const size = Number(template?.getAttribute('font-size')) || 12;
-      const ticks = standaloneTicks(projection, Math.max(2, Math.floor((vertical ? plot.height : plot.width) / (vertical ? size * 3 : 90))),
+      const size = Math.max(Number(template?.getAttribute('font-size')) || 12, compact ? 12 / scale : 0);
+      const ticks = standaloneTicks(projection, Math.max(2, Math.floor((vertical ? plot.height : plot.width) / (vertical ? size * 3 : compact ? 80 / scale : 90))),
         !vertical && view.source.categoryLabels?.length ? view.source.categoryLabels : null);
       for (const tick of ticks) {
         const position = standaloneCoordinate(projection, tick.value, plot, vertical);
         const text = template ? template.cloneNode(false) : document.createElementNS(ns, 'text');
         text.removeAttribute('display'); text.removeAttribute('transform'); text.removeAttribute('data-cfx-owned-font-text'); text.removeAttribute('data-cfx-png-glyphs');
         text.setAttribute('font-size', size); text.setAttribute('fill', style?.fill || 'currentColor');
+        text.setAttribute('font-family', getComputedStyle(root).getPropertyValue('--cfx-tooltip-font') || style?.fontFamily || 'inherit');
         text.setAttribute('x', vertical ? secondary ? plot.x + plot.width + 8 : plot.x - 8 : position);
         text.setAttribute('y', vertical ? position : plot.y + plot.height + 8 + (box?.height || size));
         text.setAttribute('text-anchor', vertical ? secondary ? 'start' : 'end' : 'middle');
@@ -172,13 +186,23 @@
           line.style.removeProperty('display'); line.removeAttribute('id');
           for (const [key, value] of Object.entries(vertical ? { x1: plot.x, x2: plot.x + plot.width, y1: position, y2: position }
             : { x1: position, x2: position, y1: plot.y, y2: plot.y + plot.height })) line.setAttribute(key, value);
-          layer.prepend(line);
+          grid.appendChild(line);
         }
       }
     }
   };
   const paintStandaloneViewport = root => {
     const view = standaloneViewport(root); if (!view) return false;
+    if (view.printing) return true;
+    if (!Object.keys(view.windows).length) {
+      restoreStandaloneGeometry(view);
+      setStandaloneClip(view, false);
+      root.dataset.cfxPreparedChart = JSON.stringify(view.source); root._cfxDataProjection = view.source.dataProjection;
+      paintStandaloneAxes(root, view); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
+      hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
+      return true;
+    }
+    setStandaloneClip(view, true);
     const plot = view.source.dataProjection.plotBounds;
     const x = standaloneMap(view.source.dataProjection.x, standaloneAxis(root, 'x'), plot, false);
     const maps = {};
@@ -213,9 +237,11 @@
     hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
     return true;
   };
-  const requestStandaloneWindow = (root, windows, sync = true, accepted) => {
+  const requestStandaloneWindow = (root, windows, sync = true, accepted, emit = true) => {
+    if (chartLifetimes.get(root)?.preparationPending) return false;
     const view = standaloneViewport(root); if (!view || !windows || typeof windows !== 'object') return false;
-    const names = Object.keys(windows);
+    if (windows.valueDomain !== undefined && windows.valueDomain !== (view.source.valueDomain || 'fullData')) return false;
+    const names = Object.keys(windows).filter(name => name !== 'valueDomain');
     if (!names.length || names.some(name => !['x', 'y', 'secondaryY'].includes(name) || !validSourceAxisWindow(windows[name], standaloneAxis(root, name)))) return false;
     for (const name of names) {
       const axis = standaloneAxis(root, name), requested = windows[name];
@@ -230,7 +256,7 @@
       if (view.windows[name].minimum === source.minimum && view.windows[name].maximum === source.maximum) delete view.windows[name];
     }
     paintStandaloneViewport(root); accepted?.();
-    emitHostEvent(root, 'cfxviewport', { viewport: nativeViewportWindows(root), standalone: true });
+    if (emit) emitHostEvent(root, 'cfxviewport', { viewport: nativeViewportWindows(root), standalone: true });
     if (sync) emitSync(root, { action: 'viewport', state: getState(root), viewport: nativeViewportWindows(root, true), xWindow: nativeXWindow(root), yWindow: nativeYWindow(root) });
     return true;
   };
@@ -266,11 +292,11 @@
     const view = root._cfxStandaloneViewport; if (!view) return false;
     view.windows = {}; paintStandaloneViewport(root); return true;
   };
-  const releaseStandaloneViewport = root => {
-    const view = root._cfxStandaloneViewport; if (!view) return;
+  const restoreStandaloneGeometry = view => {
     for (const entry of view.geometry) {
       for (const name of ['d', 'points', 'x', 'x1', 'x2', 'cx', 'y', 'y1', 'y2', 'cy', 'width', 'height'])
         if (entry.attrs[name] !== undefined) entry.node.setAttribute(name, entry.attrs[name]);
+      if (entry.attrs.transform === undefined) entry.node.removeAttribute('transform'); else entry.node.setAttribute('transform', entry.attrs.transform);
       restoreStandaloneStyle(entry.node, 'visibility', entry.visibility);
     }
     for (const entry of view.labels) {
@@ -283,12 +309,24 @@
       restoreStandaloneStyle(point.node, 'visibility', point.visibility);
     }
     for (const axis of view.axes) {
-      axis.layer?.remove(); axis.nodes.forEach(node => restoreStandaloneStyle(node, 'display', axis.display.get(node)));
+      axis.layer?.remove(); axis.grid?.remove(); axis.nodes.forEach(node => restoreStandaloneStyle(node, 'display', axis.display.get(node)));
     }
-    view.frames.forEach(frame => frame.replaceWith(...frame.childNodes)); view.clip.remove();
+  };
+  const setStandaloneClip = (view, active) => {
+    view.frames.forEach(({ owner, clip }) => {
+      if (active) owner.setAttribute('clip-path', 'url(#' + view.clip.id + ')');
+      else if (clip === null) owner.removeAttribute('clip-path');
+      else owner.setAttribute('clip-path', clip);
+    });
+  };
+  const releaseStandaloneViewport = root => {
+    const view = root._cfxStandaloneViewport; if (!view) return;
+    restoreStandaloneGeometry(view);
+    setStandaloneClip(view, false); view.clip.remove();
     if (view.defs && !view.defs.hasChildNodes()) view.defs.remove();
     root.dataset.cfxPreparedChart = JSON.stringify(view.source); root._cfxDataProjection = view.source.dataProjection;
     delete root._cfxStandaloneViewport;
+    root.removeAttribute('data-cfx-standalone-projection');
   };
   const rescaleStandaloneSeries = root => {
     const view = standaloneViewport(root); if (!view || nativeLegendConnected(root)) return;
@@ -324,6 +362,24 @@
     return windows;
   };
   const bindStandaloneGestures = root => {
+    const media = window.matchMedia?.('print');
+    let printed = null;
+    const print = active => {
+      const view = root._cfxStandaloneViewport;
+      if (active && view && !view.printing) {
+        printed = view; view.printing = true; restoreStandaloneGeometry(view);
+        setStandaloneClip(view, false);
+      } else if (!active && printed) {
+        const previous = printed; printed = null; previous.printing = false;
+        if (view === previous) {
+          paintStandaloneViewport(root);
+        }
+      }
+    };
+    listenChart(root, window, 'beforeprint', () => print(true));
+    listenChart(root, window, 'afterprint', () => print(false));
+    if (media?.addEventListener) listenChart(root, media, 'change', event => print(event.matches));
+    ownChartWork(root, () => { if (printed) printed.printing = false; printed = null; });
     if (!hasFeature(root, 'Zoom') || !standaloneViewport(root)) return;
     const stage = root.querySelector('.cfx-stage'), pointers = new Map();
     const touchAction = stage.style.touchAction; stage.style.touchAction = 'none';

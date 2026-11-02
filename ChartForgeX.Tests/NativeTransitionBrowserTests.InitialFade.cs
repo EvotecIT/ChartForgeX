@@ -31,10 +31,17 @@ public sealed partial class NativeTransitionBrowserTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 350; options.Adaptive.NarrowHeight = 420;
         });
         var payload = renderer.PrepareNativeTransitionJson(final, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 3));
-        await using var session = await BrowserProofFonts.OpenAsync(Page(final), width + 24, 680); var page = session.Page; await ReadyAndPauseAsync(page);
+        // Keep the complete compact chrome inside the capture viewport: FullPage's
+        // temporary resize intentionally settles a native presentation.
+        await using var session = await BrowserProofFonts.OpenAsync(Page(final), width + 24, 900); var page = session.Page; await ReadyAndPauseAsync(page);
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         await page.EvaluateAsync("()=>{window.nativeChart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));window.fadeEvents=[];for(const name of ['cfxupdated','cfxprogresschange'])nativeChart.root.addEventListener(name,event=>fadeEvents.push({name,detail:event.detail}));window.fadeRevision=nativeChart.sceneRevision;window.fadeTargets=nativeChart.resolveTargets().length;}");
         await page.EvaluateAsync("payload=>nativeChart.presentInitial(payload,{sceneRevision:nativeChart.sceneRevision,motion:{duration:1000}})", payload); await page.Clock.RunForAsync(550);
+        if (kind == ChartSeriesKind.Pie) {
+            Assert.True(await page.Locator(".cfx-responsive-legend").IsVisibleAsync());
+            Assert.Equal(6, await page.Locator(".cfx-responsive-legend [data-cfx-role=legend-item]").CountAsync());
+            Assert.Equal(0, await page.Locator(".cfx-native-motion-frame [data-cfx-role=legend-entry]:visible,.cfx-native-motion-frame [data-cfx-role=legend-item]:visible").CountAsync());
+        }
         var observed = await page.EvaluateAsync<JsonElement>("()=>({revision:nativeChart.sceneRevision,targets:nativeChart.resolveTargets().length,events:fadeEvents,frame:document.querySelector('.cfx-native-motion-frame')?.outerHTML,opacity:document.querySelector('.cfx-native-motion-frame svg>[data-cfx-role=\"native-transition-opacity\"]')?.getAttribute('opacity'),originalRevision:fadeRevision,originalTargets:fadeTargets})");
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); var prefix = Path.Combine(output, "native-initial-fade-browser-" + kind + "-" + width + "-" + dark);
@@ -52,6 +59,7 @@ public sealed partial class NativeTransitionBrowserTests {
         await ReduceAndFlushMotionAsync(page); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         await page.EvaluateAsync("payload=>nativeChart.presentInitial(payload,{sceneRevision:nativeChart.sceneRevision,motion:{duration:1000}})", payload);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync()); var file = await download.PathAsync() ?? throw new InvalidOperationException("The accepted final native SVG was not exported.");
         Assert.DoesNotContain("native-transition-opacity", await File.ReadAllTextAsync(file)); Assert.Equal(0, await page.Locator(".cfx-native-motion-frame").CountAsync());
         var stale = await page.EvaluateAsync<string>("payload=>{try{nativeChart.presentInitial(payload,{sceneRevision:'stale'});return 'accepted'}catch(error){return error.message}}", payload); Assert.Contains("sceneRevision", stale);

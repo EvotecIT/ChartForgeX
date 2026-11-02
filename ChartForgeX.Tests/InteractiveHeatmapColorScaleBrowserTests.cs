@@ -75,9 +75,9 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
             Assert.Equal("Observed, 2026-01-06: No data", missingLabel);
             await MoveAwayAsync(page); await missing.FocusAsync();
             await CaptureMissingAsync("missing-focus");
-            await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === label && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === 'X' && term.nextElementSibling.textContent === '2026-01-06'); }", missingLabel);
+            await page.WaitForFunctionAsync("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === '2026-01-06' && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === 'Value' && term.nextElementSibling.textContent === 'No data'); }");
             var missingTerms = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
-            Assert.DoesNotContain("Value", missingTerms); Assert.DoesNotContain("Y", missingTerms);
+            Assert.Contains("Value", missingTerms); Assert.DoesNotContain("Y", missingTerms); Assert.DoesNotContain("X", missingTerms);
             Assert.DoesNotContain("Level", missingTerms); Assert.DoesNotContain("Status", missingTerms); Assert.DoesNotContain("Color", missingTerms);
             Assert.Null(await missing.GetAttributeAsync("data-cfx-value"));
             Assert.Null(await missing.GetAttributeAsync("data-cfx-point"));

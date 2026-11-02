@@ -1,6 +1,9 @@
   // Saved pages have no native preparation connection or mutable host controller.
   const emitSync = () => {};
   const syncResetControl = () => {};
+  // Core has no native connection; legend hover must not link host visibility transport.
+  const legendEntryShown = (root, node) => node.dataset.cfxMuted !== 'true'
+    && (!root.dataset.cfxIsolatedSeries || node.dataset.cfxIsolated === 'true');
   const readerRuntimeKey = Symbol.for('ChartForgeX.chartRuntime');
   const mountCoreChart = root => {
     if (root.dataset.cfxRuntimeBound === 'true') return;

@@ -8,5 +8,7 @@ public enum HtmlChartTooltipMode {
     /// Shows one visible observation per series at the target's numeric x coordinate, retaining source values.
     /// Targets without comparable numeric x/y data use a single-target tooltip.
     /// </summary>
-    SharedX
+    SharedX,
+    /// <summary>Uses shared category readouts for line, area, bar and radar charts, and detailed single-target readouts for other families.</summary>
+    Auto
 }

@@ -25,6 +25,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }), width, 760);
         var page = session.Page;
         const string selector = "g[data-cfx-role=gantt-lane-item]";

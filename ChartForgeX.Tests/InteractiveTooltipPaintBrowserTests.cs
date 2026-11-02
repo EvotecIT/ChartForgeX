@@ -44,7 +44,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', e => window.textSelection = e.detail.target)");
         await target.FocusAsync();
         Assert.False(await target.EvaluateAsync<bool>("node => node.matches(':focus-visible')"));
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync(), "Programmatic focus after pointer input does not impersonate keyboard input.");
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"), "Programmatic focus after pointer input does not impersonate keyboard input.");
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.Equal(scrollLeft, await page.Locator(".cfx-stage").EvaluateAsync<double>("node => node.scrollLeft"));
         await target.BlurAsync();
         await TabToNativeTargetAsync(page, target);
@@ -110,7 +111,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await MoveAwayAsync(page);
         await target.FocusAsync();
         Assert.Equal(await target.GetAttributeAsync("data-cfx-target-id"), await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await page.Keyboard.PressAsync("Space");
         Assert.Null(await target.GetAttributeAsync("aria-selected"));
         Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
@@ -118,7 +120,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await target.Locator("text").EvaluateAsync("n => n.style.setProperty('fill', '#176eaf', 'important')");
         await target.EvaluateAsync("n => n.style.opacity = '0'");
         await target.FocusAsync();
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await target.BlurAsync();
         await target.EvaluateAsync("n => n.style.removeProperty('opacity')");
         await target.FocusAsync();
@@ -154,7 +157,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Contains("Unpainted interval", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Locator(selector + " rect").EvaluateAsync("n => n.style.opacity = '0'");
         await MoveToAsync(page, selector, offsetX: 1);
-        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip => tip.hidden"));
+        await Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         await page.Mouse.DownAsync(); await page.Mouse.UpAsync();
         Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         AssertNoConsoleErrors(session);

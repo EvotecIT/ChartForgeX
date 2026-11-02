@@ -10,6 +10,10 @@ function fixture() {
     classList: { contains: value => classes.has(value), toggle: (value, enabled) => enabled ? classes.add(value) : classes.delete(value),
       remove: (...values) => values.forEach(value => classes.delete(value)) }, getAttribute: () => null };
   const root = { dataset: { cfxChartId: 'receiver', cfxHovering: 'true' }, reveals: ['present'],
+    toggleAttribute(name, enabled) {
+      const key = name.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+      if (enabled) this.dataset[key] = ''; else delete this.dataset[key];
+    },
     removeAttribute(name) { delete this.dataset[name.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase())]; },
     querySelectorAll(selector) {
       if (selector.includes('legend-item')) return [];

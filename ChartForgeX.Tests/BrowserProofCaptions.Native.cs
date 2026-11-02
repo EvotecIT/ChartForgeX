@@ -21,8 +21,15 @@ internal static partial class BrowserProofCaptions {
                 const ink = visible(captured);
                 return ink.length ? ink : visible([owner, ...owner.querySelectorAll('text')].filter(element => element.localName === 'text'));
               };
-              window.cfxCaptionText = node => node.hasAttribute('data-cfx-caption') ? window.cfxReferenceLabelText(node) : window.cfxReferenceCaptionText(node);
+              const htmlLabel = node => node instanceof HTMLButtonElement ? node.querySelector(':scope > .cfx-responsive-legend__label')
+                : node.matches('.cfx-responsive-legend__label,.cfx-responsive-legend__value') ? node : null;
+              const htmlText = node => {const label=htmlLabel(node);return label&&!label.querySelector('[data-cfx-native-text-ink]')?label:null;};
+              window.cfxCaptionText = node => htmlText(node) ? window.cfxReferenceLabelText(htmlText(node))
+                : node.hasAttribute('data-cfx-caption') ? window.cfxReferenceLabelText(node) : window.cfxReferenceCaptionText(node);
               window.cfxCaptionBox = node => {
+                const label=htmlText(node);
+                if(label){const range=document.createRange();range.selectNodeContents(label);const box=range.getBoundingClientRect();
+                  if(!(box.width>0&&box.height>0))throw Error('HTML legend caption has no painted bounds');return box.toJSON();}
                 const boxes = roots(node).flatMap(element => {
                   const shapes=element.localName==='text'?[element]:[...element.querySelectorAll('use,path,image[data-cfx-image-alpha-bounds]')];
                   return shapes.filter(shape=>!shape.closest('[data-cfx-state-outline],[data-cfx-highlight-outline]')).map(shape=>{
@@ -48,6 +55,11 @@ internal static partial class BrowserProofCaptions {
                 return {x,y,left:x,top:y,right,bottom,width:right-x,height:bottom-y};
               };
               window.cfxCaptionPoint = (node, last = false) => {
+                const label=htmlText(node);
+                if(label){const range=document.createRange();range.selectNodeContents(label);const boxes=[...range.getClientRects()];
+                  if(last)boxes.reverse();for(const box of boxes){const x=box.left+box.width*(last ? .75 : .25),y=box.top+box.height/2;
+                    const hit=node.getRootNode().elementFromPoint(x,y);if(box.width>0&&box.height>0&&hit&&node.contains(hit))return{x,y};}
+                  throw Error('No actual HTML legend caption point can receive the real pointer');}
                 for (const root of (last ? roots(node).reverse() : roots(node))) {
                   const glyphs = root.localName === 'text' ? [root] : [...root.querySelectorAll('use,path,image[data-cfx-image-alpha-bounds]')];
                   if (last) glyphs.reverse();

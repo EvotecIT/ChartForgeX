@@ -88,7 +88,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             var size = await page.Locator(".cfx-stage svg").GetAttributeAsync("viewBox");
             Assert.Equal(narrow ? "0 0 360 360" : "0 0 640 360", size);
             Assert.True(await page.Locator(".cfx-stage").EvaluateAsync<bool>("stage=>stage.scrollWidth<=stage.clientWidth+1"));
-            Assert.True(await page.Locator(Root).EvaluateAsync<bool>("root=>Math.abs(root.querySelector('.cfx-toolbar').getBoundingClientRect().right-root.querySelector('.cfx-frame').getBoundingClientRect().right)<1"));
+            Assert.True(await page.Locator(Root).EvaluateAsync<bool>("root=>Math.abs(root.querySelector('.cfx-frame').getBoundingClientRect().right-root.querySelector('.cfx-toolbar').getBoundingClientRect().right-8)<1"));
             await CaptureAsync(page, "hosting-adaptive-" + (dark ? "dark" : "light") + "-" + transition);
         }
         Assert.Equal(4, await page.EvaluateAsync<int>("()=>layoutEvents.length"));
@@ -119,6 +119,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var band = await page.Locator(".cfx-toolbar .cfx-tool").First.EvaluateAsync<JsonElement>("button=>({height:button.getBoundingClientRect().height,grow:getComputedStyle(button).flexGrow})");
         Assert.Equal("1", band.GetProperty("grow").GetString());
         await UpdateAsync(page, Section(HtmlChartToolbarLayout.Compact));
+        await page.Locator(Root).HoverAsync();
         var compact = await page.Locator(".cfx-toolbar .cfx-tool").First.EvaluateAsync<JsonElement>("button=>({height:button.getBoundingClientRect().height,grow:getComputedStyle(button).flexGrow})");
         Assert.Equal("0", compact.GetProperty("grow").GetString());
         Assert.Equal(28, compact.GetProperty("height").GetDouble());
@@ -126,12 +127,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var background = chart.Options.ResolvedTheme.Background;
         Assert.Equal($"rgb({background.R}, {background.G}, {background.B})", await page.Locator(Root).EvaluateAsync<string>("root=>getComputedStyle(root).backgroundColor"));
         Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator("body").EvaluateAsync<string>("body=>getComputedStyle(body).backgroundColor"));
-        Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator(".cfx-toolbar").EvaluateAsync<string>("toolbar=>getComputedStyle(toolbar).backgroundColor"));
+        var surface = chart.Options.ResolvedTheme.CardBackground;
+        Assert.Equal($"rgb({surface.R}, {surface.G}, {surface.B})", await page.Locator(".cfx-toolbar").EvaluateAsync<string>("toolbar=>getComputedStyle(toolbar).backgroundColor"));
         await CaptureAsync(page, "hosting-compact-toolbar-" + (dark ? "dark" : "light"));
         chart.WithTransparentBackground();
         await UpdateAsync(page, Section(HtmlChartToolbarLayout.Compact));
         Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator(Root).EvaluateAsync<string>("root=>getComputedStyle(root).backgroundColor"));
-        var surface = chart.Options.ResolvedTheme.CardBackground;
         Assert.Equal($"rgb({surface.R}, {surface.G}, {surface.B})", await page.Locator(".cfx-toolbar .cfx-tool").First.EvaluateAsync<string>("button=>getComputedStyle(button).backgroundColor"));
         await CaptureAsync(page, "hosting-compact-transparent-" + (dark ? "dark" : "light"));
         chart.WithTransparentBackground(false);
@@ -219,6 +220,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             """);
         await page.SetViewportSizeAsync(390, 800);
         await page.WaitForFunctionAsync("()=>chartController.root.dataset.cfxAdaptiveDrawing==='narrow'");
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("()=>adaptiveNativeChanges.length===1");
         Assert.Equal("narrow", Assert.Single(drawings));
@@ -227,6 +229,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal(9, response.PreparedVisual.XProjection.Maximum, 8);
         await page.SetViewportSizeAsync(1440, 800);
         await page.WaitForFunctionAsync("()=>chartController.root.dataset.cfxAdaptiveDrawing==='wide'");
+        await page.Locator(Root).HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await page.WaitForFunctionAsync("()=>adaptiveNativeChanges.length===2");
         Assert.Equal(new[] { "narrow", "wide" }, drawings);

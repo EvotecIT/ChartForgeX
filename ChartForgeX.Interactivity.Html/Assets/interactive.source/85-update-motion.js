@@ -1,6 +1,6 @@
 
   const captureChartUpdateMotion = value => {
-    if (value === undefined || value === null) return Object.freeze({ duration: 0 });
+    if (value === undefined || value === null) return Object.freeze({ duration: 200 });
     if (typeof value !== 'object' || !Number.isFinite(value.duration) || value.duration < 0 || value.duration > 1000)
       throw new TypeError('motion.duration: finite 0..1000 ms required.');
     return Object.freeze({ duration: value.duration });

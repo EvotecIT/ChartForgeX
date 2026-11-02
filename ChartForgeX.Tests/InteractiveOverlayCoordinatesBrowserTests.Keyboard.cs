@@ -26,18 +26,21 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         var focused = await BoxAsync(page, ".cfx-tooltip");
         var native = await BoxAsync(page, Point(0, 1));
-        var beforeText = await TooltipTextAsync(page);
+        var beforeText = await ReadoutTextAsync(page);
         await page.Keyboard.PressAsync(key);
         var pinned = await BoxAsync(page, ".cfx-tooltip");
         var events = await EventsAsync(page);
         await CaptureAsync(session, "overlay-keyboard-" + Variant(graphite, layout, width, 1, false) + "-" + key, new { focused, native, pinned, beforeText, events });
         Assert.InRange(pinned.X - focused.X, -1, 1);
         Assert.InRange(pinned.Y - focused.Y, -1, 1);
-        Assert.Equal(beforeText, await TooltipTextAsync(page));
+        Assert.Equal(beforeText, await ReadoutTextAsync(page));
         Assert.Equal("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         Assert.Equal("true", await page.Locator(Point(0, 1)).GetAttributeAsync("aria-selected"));
         var selection = Assert.Single(events.EnumerateArray(), e => e.GetProperty("name").GetString() == "cfxselect");
         Assert.Equal("reading-source:1", selection.GetProperty("detail").GetProperty("target").GetProperty("targetId").GetString());
         AssertNoConsoleErrors(session);
     }
+
+    private static Task<string> ReadoutTextAsync(Microsoft.Playwright.IPage page) => page.Locator(".cfx-tooltip").EvaluateAsync<string>(
+        "tip => [...tip.querySelectorAll('.cfx-tooltip__title,.cfx-tooltip__secondary,dt,dd')].map(node=>node.textContent).join('\\n')");
 }

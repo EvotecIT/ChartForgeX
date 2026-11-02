@@ -24,7 +24,7 @@
     if (node.dataset.cfxVisible === 'false') return false;
     if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
 
-    if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
+    if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted,.cfx-series-isolated-out')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     if (pointerTargetPaint(node)) return true;
@@ -84,7 +84,7 @@
     });
     return ordered;
   };
-  const placeKeyboardLegendAfterData = (root, data, legends) => {
+  const placeKeyboardLegendBeforeData = (root, data, legends) => {
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg || !data.length) return;
     const branches = new Set();
@@ -94,7 +94,10 @@
 
       if (branch.parentElement === svg && !branches.has(branch) && !data.some((mark) => branch.contains(mark))) branches.add(branch);
     });
-    branches.forEach((branch) => svg.appendChild(branch));
+    const firstData = Array.from(svg.children).find(branch => data.some(mark => branch.contains(mark)));
+    if (firstData) branches.forEach(branch => svg.insertBefore(branch, firstData));
+    const stage = root.querySelector('.cfx-stage'), toolbar = root.querySelector('.cfx-toolbar');
+    if (stage && toolbar) (stage.closest('.cfx-frame') || stage).after(toolbar);
   };
   const refreshKeyboardNavigation = (root, focused, passive = false) => {
     refreshRootBranchHighlightAvailability(root);
@@ -113,7 +116,7 @@
     if (state.data.includes(focused)) state.activeData = focused;
     if (state.legends.includes(focused)) state.activeLegend = focused;
     if (!state.legendOrderPrepared && state.data.length && state.legends.length) {
-      placeKeyboardLegendAfterData(root, state.data, state.legends);
+      placeKeyboardLegendBeforeData(root, state.data, state.legends);
       state.legendOrderPrepared = true;
     }
     state.owned.forEach((node) => node.setAttribute('tabindex', '-1'));
@@ -274,7 +277,7 @@
     } finally { if (passive && !recovering) delete root._cfxRecoveringFocus; }
   };
   const focusAdjacentTarget = (root, node, key) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return false;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(key)) return false;
     resumePointerReadout(root);
     const state = refreshKeyboardNavigation(root, node);
     if (!state) return false;
@@ -286,6 +289,7 @@
     let next = node;
     if (key === 'Home') next = targets[0];
     else if (key === 'End') next = targets[targets.length - 1];
+    else if (key === 'PageUp' || key === 'PageDown') next = targets[clamp(current + (key === 'PageUp' ? -10 : 10), 0, targets.length - 1)];
     else if (!legend && (group.series !== null || state.groups.length > 1) && (key === 'ArrowUp' || key === 'ArrowDown')) {
 
       const groups = state.groups;

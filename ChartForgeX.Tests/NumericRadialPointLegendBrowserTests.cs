@@ -18,8 +18,11 @@ public sealed class NumericRadialPointLegendBrowserTests {
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithSize(dark ? 360 : 760, dark ? 360 : 480);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), dark ? 390 : 800, 560);
         var page = session.Page; var legend = page.Locator(Legend(0)).First;
-        await BrowserProofCaptions.MoveAsync(page, legend); var tooltip = await TooltipTextAsync(page);
-        var labels = await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']"));
+        if (await legend.EvaluateAsync<bool>("node => node instanceof HTMLButtonElement"))
+            await legend.Locator(":scope > .cfx-responsive-legend__label").HoverAsync();
+        else await BrowserProofCaptions.MoveAsync(page, legend);
+        var tooltip = await TooltipTextAsync(page);
+        var labels = await ActiveLegendLabelsAsync(page.Locator("[data-cfx-role='legend-item']"));
         await legend.FocusAsync(); await page.Keyboard.PressAsync("Space");
         var muted = await page.Locator(".cfx-series-muted").CountAsync();
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
@@ -31,5 +34,20 @@ public sealed class NumericRadialPointLegendBrowserTests {
         }
         Assert.Contains("Group 1 pass 1", labels); Assert.Contains("Group 1 pass 1", tooltip); Assert.True(muted > 0);
         Assert.All(calls.Values, count => Assert.Equal(1, count)); AssertNoConsoleErrors(session);
+    }
+
+    private static async Task<string[]> ActiveLegendLabelsAsync(ILocator entries) {
+        var labels = new List<string>();
+        foreach (var item in await entries.AllAsync()) {
+            Assert.True(await item.IsVisibleAsync());
+            var html = await item.EvaluateAsync<bool>("node => node instanceof HTMLButtonElement");
+            var caption = item.Locator(html ? ":scope > .cfx-responsive-legend__label" : "[data-cfx-role='legend-label']");
+            Assert.Equal(1, await caption.CountAsync());
+            Assert.True(await caption.IsVisibleAsync());
+            var text = await BrowserProofCaptions.TextAsync(caption);
+            Assert.False(string.IsNullOrWhiteSpace(text));
+            labels.Add(text);
+        }
+        return labels.ToArray();
     }
 }

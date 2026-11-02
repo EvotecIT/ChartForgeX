@@ -116,6 +116,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var page = session.Page;
         var pageErrors = new List<string>();
         page.PageError += (_, error) => pageErrors.Add(error);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await SettleCameraAsync(page);
         var clockStart = DateTime.UtcNow;

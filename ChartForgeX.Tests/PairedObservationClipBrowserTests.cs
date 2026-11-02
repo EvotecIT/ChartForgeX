@@ -262,6 +262,7 @@ public sealed class PairedObservationClipBrowserTests {
             """);
         Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
         await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
         Assert.NotEqual("true", await point.GetAttributeAsync("aria-selected"));

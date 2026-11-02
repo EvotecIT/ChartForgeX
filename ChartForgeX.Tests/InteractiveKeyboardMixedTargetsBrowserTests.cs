@@ -24,6 +24,10 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         await page.EvaluateAsync("() => { window.mixedNavigation=[]; const root=document.querySelector('.cfx-interactive-chart'); root.addEventListener('cfxnavigate', event=>window.mixedNavigation.push(event.detail)); }");
         await page.Locator("#before-chart").FocusAsync();
         await page.Keyboard.PressAsync("Tab");
+        await AssertFocusedAsync(page.Locator(Legend(0)));
+        await page.Keyboard.PressAsync("End");
+        await AssertFocusedAsync(page.Locator(Legend(1)));
+        await page.Keyboard.PressAsync("Tab");
         await AssertFocusedAsync(page.Locator(Point(0, 0)));
         await page.Keyboard.PressAsync("ArrowRight");
         await page.Keyboard.PressAsync("ArrowDown");
@@ -49,12 +53,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         Assert.Equal(1, await page.Locator(LegendStop).CountAsync());
 
         await page.Keyboard.PressAsync("Tab");
-        await AssertFocusedAsync(page.Locator(Legend(0)));
-        await page.Keyboard.PressAsync("End");
-        await AssertFocusedAsync(page.Locator(Legend(1)));
-        await page.Keyboard.PressAsync("Tab");
         await AssertFocusedAsync(page.Locator("#after-chart"));
-        await page.Keyboard.PressAsync("Shift+Tab");
         await page.Keyboard.PressAsync("Shift+Tab");
         await AssertFocusedAsync(page.Locator(Annotation(1)));
         await page.Keyboard.PressAsync("Space");
@@ -105,10 +104,10 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         await AssertFocusedAsync(page.Locator(Annotation(0)));
         await page.Keyboard.PressAsync("End");
         await CaptureAsync(page, "muted-data-annotations.png");
-        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Shift+Tab");
         await AssertFocusedAsync(page.Locator(Legend(0)));
         await page.Keyboard.PressAsync("Space");
-        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Tab");
         await AssertFocusedAsync(page.Locator(Annotation(1)));
         await page.Keyboard.PressAsync("ArrowUp");
         await AssertFocusedAsync(page.Locator(Point(0, 1)));

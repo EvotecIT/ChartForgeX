@@ -235,6 +235,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         // A separately painted caption cannot promote an observation whose native ink is hidden.
         await page.Locator(Point(0, 1)).EvaluateAsync("node=>node.style.opacity='0'");
         await BrowserProofCaptions.MoveAsync(page, page.Locator(caption));
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".cfx-tooltip")).ToBeHiddenAsync(new() { Timeout = 1000 });
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.DoesNotContain("cfx-hovered", await page.Locator(Point(0, 1)).GetAttributeAsync("class") ?? "");
         AssertNoConsoleErrors(session);

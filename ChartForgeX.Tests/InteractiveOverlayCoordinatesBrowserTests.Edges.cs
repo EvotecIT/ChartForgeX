@@ -73,9 +73,9 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             var guideHidden = await page.Locator(".cfx-crosshair").IsHiddenAsync();
             var target = await page.Locator(Root).GetAttributeAsync("data-cfx-crosshair");
             await CaptureAsync(session, "overlay-edge-" + variant + "-outside", new { pointer, tooltip, guideHidden, target });
-            Assert.Equal("10.01", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-            Assert.Equal("Boundary", await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key='boundary-source']").InnerTextAsync());
-            Assert.Equal("2", await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key='boundary-source'] + dd").InnerTextAsync());
+            Assert.Contains("Outside plot", await page.Locator(".cfx-tooltip__title").InnerTextAsync(), StringComparison.Ordinal);
+            Assert.Contains("2", await page.Locator(".cfx-tooltip__meta dd").AllTextContentsAsync());
+            Assert.True(await page.Locator(Point(0, 5)).EvaluateAsync<bool>("node => node.classList.contains('cfx-hovered')"));
             Assert.True(guideHidden);
             Assert.Null(target);
         }

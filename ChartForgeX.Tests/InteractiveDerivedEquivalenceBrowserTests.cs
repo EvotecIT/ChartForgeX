@@ -49,6 +49,7 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
         Assert.Equal(firstId, await roots.Nth(1).Locator("[data-cfx-role='legend-item'][data-cfx-point='1']").GetAttributeAsync("data-cfx-target-id"));
         Assert.Contains("cfx-hover-series", await roots.Nth(1).Locator("[data-cfx-role='legend-item'][data-cfx-point='1']").GetAttributeAsync("class"));
         Assert.DoesNotContain("cfx-hover-series", await roots.Nth(1).Locator("[data-cfx-role='legend-item'][data-cfx-point='0']").GetAttributeAsync("class"));
+        await SettlePresentationAsync(page);
         Assert.True(await roots.Nth(1).Locator(Point(0, 1)).EvaluateAsync<bool>("node => { for (let current = node; current; current = current.parentElement) if (Number(getComputedStyle(current).opacity) < .99) return false; return true; }"));
         Assert.True(await roots.Nth(1).Locator(Point(0, 2)).EvaluateAsync<bool>("node => { let opacity = 1; for (let current = node; current; current = current.parentElement) opacity *= Number(getComputedStyle(current).opacity); return opacity < .5; }"));
         foreach (var peer in new[] { 2, 3, 4 })

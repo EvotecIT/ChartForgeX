@@ -54,7 +54,7 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         Assert.Equal(0, await page.Locator(".cfx-tooltip__secondary b").CountAsync());
         Assert.Equal(inclusive ? "80" : "60", await engineering.GetAttributeAsync("data-cfx-value"));
         Assert.Equal("12", await engineering.GetAttributeAsync("data-cfx-color-value"));
-        await engineering.FocusAsync(); await page.Keyboard.PressAsync("Enter");
+        await engineering.FocusAsync(); await page.Keyboard.PressAsync("Space");
         using (var target = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.selectedTarget)"))) {
             Assert.Equal("node", target.RootElement.GetProperty("targetKind").GetString());
             Assert.Equal("engineering", target.RootElement.GetProperty("targetId").GetString());
@@ -69,6 +69,9 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         Assert.DoesNotContain("Delivery", rows);
         await Capture(page, prepared, html, width, dark, radius, "readout", errors, session.ConsoleLog.Select(entry => entry.Type + ": " + entry.Text));
         await engineering.FocusAsync(); await page.Keyboard.PressAsync("Enter");
+        Assert.Equal("engineering", await page.Locator("svg[data-cfx-standalone-hierarchy]").GetAttributeAsync("data-cfx-standalone-hierarchy"));
+        await page.Locator(".cfx-hierarchy-breadcrumb").GetByRole(AriaRole.Button, new() { Name = "All", Exact = true }).ClickAsync();
+        Assert.True(await engineering.IsVisibleAsync());
         await page.EvaluateAsync("() => document.activeElement?.blur()"); await MoveAwayAsync(page);
         var secondaryCaption = page.Locator("[data-cfx-role=sunburst-secondary-label]").First;
         var captionHit = await SecondaryCaptionHit(secondaryCaption);

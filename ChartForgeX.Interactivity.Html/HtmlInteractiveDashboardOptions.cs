@@ -83,8 +83,8 @@ public sealed class HtmlInteractiveDashboardOptions {
     /// <summary>Gets the narrow drawing and container breakpoint shared by every adaptive dashboard chart.</summary>
     public HtmlChartAdaptiveLayoutOptions Adaptive { get; } = new HtmlChartAdaptiveLayoutOptions();
 
-    /// <summary>Gets or sets the toolbar presentation shared by every chart. The default is the framed band.</summary>
-    public HtmlChartToolbarLayout Toolbar { get; set; } = HtmlChartToolbarLayout.Band;
+    /// <summary>Gets or sets the toolbar presentation shared by every chart. The default is the floating compact toolbar.</summary>
+    public HtmlChartToolbarLayout Toolbar { get; set; } = HtmlChartToolbarLayout.Compact;
 
     /// <summary>
     /// Gets the tooltip content, acquisition, timing and position options shared by every dashboard chart.

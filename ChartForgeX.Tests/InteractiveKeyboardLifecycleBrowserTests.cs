@@ -25,16 +25,16 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         Assert.Equal(0, await page.Locator(DataStop + "[data-cfx-series='1']").CountAsync());
 
         // Tab entry must update immediately when the active series is muted, before an arrow refreshes the component.
-        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Tab");
         await AssertActivePointAsync(page, 0, 0);
         await page.Keyboard.PressAsync("ArrowDown");
         await AssertActivePointAsync(page, 2, 0);
-        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Shift+Tab");
         Assert.True(await page.Locator(Legend(1)).EvaluateAsync<bool>("node => node === document.activeElement"));
         await CaptureAsync(page, "keyboard-muted-legend-" + (dark ? "dark" : "light") + ".png");
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("false", await page.Locator(Legend(1)).GetAttributeAsync("data-cfx-muted"));
-        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Tab");
         await page.Keyboard.PressAsync("ArrowUp");
         await AssertActivePointAsync(page, 1, 0);
 
@@ -55,7 +55,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
     [InlineData(false, 700, 460)]
     [Trait("BrowserSuite", "Compatibility")]
     [InlineData(true, 340, 560)]
-    public async Task RevealedHostEntersDataThenLegendAndRestoresEachComponentAfterAnotherReveal(bool dark, int width, int height) {
+    public async Task RevealedHostEntersLegendThenDataAndRestoresEachComponentAfterAnotherReveal(bool dark, int width, int height) {
         if (!Enabled) return;
         var chart = StatusLines(dark);
         if (width < 400) chart.WithSize(900, 420);
@@ -66,17 +66,17 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         await WaitForComponentStopsAsync(page, 2);
 
         await page.Keyboard.PressAsync("Tab");
-        await AssertActivePointAsync(page, 0, 0);
-        await page.Keyboard.PressAsync("End");
-        await AssertActivePointAsync(page, 0, 6);
-        await CaptureAsync(page, "keyboard-reveal-data-" + (dark ? "compact-dark" : "wide-light") + ".png");
-        await page.Keyboard.PressAsync("Tab");
         Assert.True(await page.Locator(Legend(0)).EvaluateAsync<bool>("node => node === document.activeElement"));
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.True(await page.Locator(Legend(1)).EvaluateAsync<bool>("node => node === document.activeElement"));
         await CaptureAsync(page, "keyboard-reveal-legend-" + (dark ? "compact-dark" : "wide-light") + ".png");
         await page.Keyboard.PressAsync("Tab");
-        await CaptureAsync(page, "keyboard-reveal-after-legend-tab-" + (dark ? "compact-dark" : "wide-light") + ".png");
+        await AssertActivePointAsync(page, 0, 0);
+        await page.Keyboard.PressAsync("End");
+        await AssertActivePointAsync(page, 0, 6);
+        await CaptureAsync(page, "keyboard-reveal-data-" + (dark ? "compact-dark" : "wide-light") + ".png");
+        await page.Keyboard.PressAsync("Tab");
+        await CaptureAsync(page, "keyboard-reveal-after-data-tab-" + (dark ? "compact-dark" : "wide-light") + ".png");
         Assert.True(await page.Locator("#after-chart").EvaluateAsync<bool>("node => node === document.activeElement"));
 
         await page.Locator("#chart-host").EvaluateAsync("node => node.hidden = true");
@@ -84,9 +84,9 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         await page.Locator("#show-chart").ClickAsync();
         await WaitForComponentStopsAsync(page, 2);
         await page.Keyboard.PressAsync("Tab");
-        await AssertActivePointAsync(page, 0, 6);
-        await page.Keyboard.PressAsync("Tab");
         Assert.True(await page.Locator(Legend(1)).EvaluateAsync<bool>("node => node === document.activeElement"));
+        await page.Keyboard.PressAsync("Tab");
+        await AssertActivePointAsync(page, 0, 6);
         AssertNoConsoleErrors(session);
     }
 

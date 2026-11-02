@@ -13,7 +13,11 @@
     };
     const open = (x, y) => {
       const actions = Array.from(root.querySelectorAll('[data-cfx-reset],.cfx-toolbar [data-cfx-export]'));
-      if (!actions.some(action => !action.disabled && !action.hidden)) return false;
+      const extras = [...(hasFeature(root, 'Export') ? ['csv', 'json'].flatMap(format => [
+        { id: format, label: 'Download ' + format.toUpperCase(), action: () => exportChartData(root, format) },
+        { id: 'copy-' + format, label: 'Copy ' + format.toUpperCase(), action: () => copyChartData(root, format) }
+      ]) : []), ...(chartLifetimes.get(root)?.contextMenuItems || [])];
+      if (!actions.some(action => !action.disabled && !action.hidden) && !extras.some(item => !item.disabled)) return false;
       close();
       const tree = root.getRootNode(), style = view.getComputedStyle(root);
       returnFocus = tree.activeElement || root;
@@ -24,7 +28,8 @@
       menu.className = 'cfx-chart-context-menu'; menu.setAttribute('role', 'menu');
       menu.setAttribute('aria-label', uiText(root, 'ChartControls', 'Chart controls'));
       menu.dir = style.direction; menu.lang = root.lang;
-      for (const name of ['--cfx-tooltip-surface', '--cfx-tooltip-text', '--cfx-tooltip-line', '--cfx-tooltip-font'])
+      for (const name of ['--cfx-tooltip-surface', '--cfx-tooltip-text', '--cfx-tooltip-line', '--cfx-tooltip-font',
+        '--cfx-tooltip-shadow', '--cfx-tooltip-radius', '--cfx-control-radius', '--cfx-focus-ring', '--cfx-default-host-accent'])
         menu.style.setProperty(name, style.getPropertyValue(name));
       menu.style.visibility = 'hidden';
       const items = actions.map(action => {
@@ -37,6 +42,14 @@
           close(true); if (enabled) action.click();
         }));
         return item;
+      });
+      extras.forEach(action => {
+        const item = document.createElement('button'); item.type = 'button'; item.setAttribute('role', 'menuitem');
+        item.textContent = action.label; item.disabled = action.disabled === true; item.dataset.cfxContextAction = action.id;
+        menu.appendChild(item); items.push(item);
+        cleanups.push(listenChart(root, item, 'click', () => {
+          close(true); action.action({ root, chartId: root.dataset.cfxChartId, selection: selectedTargets(root), data: chartDataRows(root) });
+        }));
       });
       (tree instanceof ShadowRoot ? tree : root.ownerDocument.body).appendChild(menu);
       const bounds = menu.getBoundingClientRect(), gap = 8;

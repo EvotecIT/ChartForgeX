@@ -8,8 +8,10 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class StandaloneViewportBrowserTests {
-    [BrowserFact]
-    public async Task SynchronizedResetRestoresBothPeerSourceWindowsAndClearsItsResetControl() {
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SynchronizedResetRestoresBothPeerSourceWindowsAndClearsItsResetControl(bool visibleCategories) {
         if (!Enabled) return;
         Chart Data() => Chart.Create().WithSize(680, 340).WithXAxisBounds(0, 12).WithYAxisBounds(0, 100)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings",
@@ -17,8 +19,21 @@ public sealed partial class StandaloneViewportBrowserTests {
         var html = new[] { Data(), Data() }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.GroupName = "linked-windows";
-            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.SynchronizedCharts);
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.StateBookmarks);
         });
+        if (visibleCategories) {
+            var renderer = new HtmlInteractiveChartRenderer();
+            var viewport = new ChartCartesianViewport(x: new ChartAxisWindow(0, 12), valueDomain: ChartValueDomain.VisibleCategories);
+            var sections = Enumerable.Range(0, 2).Select(index => renderer.PrepareSection(Data(), viewport, options => {
+                options.IdScope = "policy-peer-" + index;
+                options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
+                options.Interaction.GroupName = "linked-windows";
+                options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.StateBookmarks);
+            }).Html);
+            html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+                + "</style></head><body>" + string.Concat(sections) + "<script>"
+                + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        }
         await using var session = await OpenAsync(html, 980, 1400);
         var page = session.Page;
         await page.EvaluateAsync("""
@@ -29,12 +44,31 @@ public sealed partial class StandaloneViewportBrowserTests {
             """);
         Assert.Equal(2, await page.EvaluateAsync<double>("()=>peer.getXWindow().minimum"));
         Assert.Equal(20, await page.EvaluateAsync<double>("()=>peer.getYWindow().minimum"));
+        Assert.True(await page.EvaluateAsync<bool>("""
+            visibleCategories=>{
+                const before=JSON.stringify(controller.getViewport());
+                try {controller.setViewport({x:{minimum:3,maximum:9},valueDomain:visibleCategories?'fullData':'visibleCategories'});}
+                catch(error){return error instanceof TypeError&&JSON.stringify(controller.getViewport())===before;}
+                return false;
+            }
+            """, visibleCategories));
+        await page.EvaluateAsync("""
+            ()=>{controller.root.dispatchEvent(new CustomEvent('cfx-capture-state',{detail:{sync:false}}));
+                window.windowBookmark=JSON.parse(controller.root.dataset.cfxInteractionSnapshot)}
+            """);
+        if (visibleCategories)
+            Assert.Equal("visibleCategories", await page.EvaluateAsync<string>("()=>windowBookmark.nativeViewport.valueDomain"));
         await page.Locator(Root).First.Locator("[data-cfx-reset]").ClickAsync();
         Assert.Equal(0, await page.EvaluateAsync<double>("()=>peer.getXWindow().minimum"));
         Assert.Equal(12, await page.EvaluateAsync<double>("()=>peer.getXWindow().maximum"));
         Assert.Equal(0, await page.EvaluateAsync<double>("()=>peer.getYWindow().minimum"));
         Assert.Equal(100, await page.EvaluateAsync<double>("()=>peer.getYWindow().maximum"));
         Assert.True(await page.Locator(Root).Nth(1).Locator("[data-cfx-reset]").IsHiddenAsync());
+        await page.EvaluateAsync("()=>controller.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:windowBookmark,sync:true}}))");
+        Assert.Equal(2, await page.EvaluateAsync<double>("()=>controller.getXWindow().minimum"));
+        Assert.Equal(20, await page.EvaluateAsync<double>("()=>controller.getYWindow().minimum"));
+        Assert.Equal(2, await page.EvaluateAsync<double>("()=>peer.getXWindow().minimum"));
+        Assert.Equal(20, await page.EvaluateAsync<double>("()=>peer.getYWindow().minimum"));
         AssertNoConsoleErrors(session);
     }
 

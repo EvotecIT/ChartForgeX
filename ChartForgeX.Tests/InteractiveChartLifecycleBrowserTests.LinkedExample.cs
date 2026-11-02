@@ -24,6 +24,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             }
             """);
         const string timeSelector = "[data-cfx-chart-id=linked-time]";
+        await page.Locator(timeSelector).HoverAsync();
         await page.Locator(timeSelector + " [data-cfx-mode-button=brush]").ClickAsync();
         var positions = await page.Locator(timeSelector).EvaluateAsync<JsonElement>("""
             root => {

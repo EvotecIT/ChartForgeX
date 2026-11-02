@@ -37,7 +37,7 @@ public sealed class DottedMapPointLegendBrowserTests {
             """);
 
         Assert.Equal(new[] { "North", "South", "Offscreen" },
-            await BrowserProofCaptions.TextsAsync(page.Locator("[data-cfx-role='legend-label']")));
+            await ActiveLegendLabelsAsync(page.Locator("[data-cfx-role='legend-item']")));
         foreach (var id in new[] { "north", "south", "offscreen" }) {
             var legend = page.Locator(Key(id));
             Assert.Equal(1, await legend.CountAsync());
@@ -139,7 +139,8 @@ public sealed class DottedMapPointLegendBrowserTests {
         Assert.Equal("0", await page.Locator(Mark("south")).GetAttributeAsync("data-cfx-value"));
         await MoveToAsync(page, Key("north"));
         await CaptureAsync(page, false, 380, "unweighted-key-readout", chart);
-        Assert.Equal("North", await TooltipTextAsync(page));
+        Assert.Equal("North", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("Locations", await page.Locator(".cfx-tooltip__secondary").InnerTextAsync());
         Assert.Equal(0, await page.Locator(".cfx-tooltip__meta").CountAsync());
         await MoveToAsync(page, Key("south"));
         Assert.Equal("South", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
@@ -147,6 +148,21 @@ public sealed class DottedMapPointLegendBrowserTests {
         await CaptureAsync(page, false, 380, "zero-weight-key-readout");
         Assert.Empty(pageErrors);
         AssertNoConsoleErrors(session);
+    }
+
+    private static async Task<string[]> ActiveLegendLabelsAsync(ILocator entries) {
+        var labels = new List<string>();
+        foreach (var item in await entries.AllAsync()) {
+            Assert.True(await item.IsVisibleAsync());
+            var html = await item.EvaluateAsync<bool>("node => node instanceof HTMLButtonElement");
+            var caption = item.Locator(html ? ":scope > .cfx-responsive-legend__label" : "[data-cfx-role='legend-label']");
+            Assert.Equal(1, await caption.CountAsync());
+            Assert.True(await caption.IsVisibleAsync());
+            var text = await BrowserProofCaptions.TextAsync(caption);
+            Assert.False(string.IsNullOrWhiteSpace(text));
+            labels.Add(text);
+        }
+        return labels.ToArray();
     }
 
     // Passive diagnostic for the first actual pointer admission; original hover/assertions stay unchanged.

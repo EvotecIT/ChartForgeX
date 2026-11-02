@@ -144,6 +144,8 @@ public sealed class CompoundReadoutFeedbackTests {
         var rawValue = await point.GetAttributeAsync(IsBoxPlot(family) ? "data-cfx-median" : "data-cfx-open");
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.compoundSelection = event.detail.target)");
         await point.FocusAsync();
+        var heading = IsBoxPlot(family) ? "Compound: Próbka" : "Compound · Próbka";
+        Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         var keyboardRows = await TooltipRowsAsync(page);
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.compoundSelection");
@@ -159,16 +161,18 @@ public sealed class CompoundReadoutFeedbackTests {
         var markRole = IsBoxPlot(family) ? "boxplot-body" : family == "candlestick" ? "candlestick-body" : "ohlc-stem";
         await MoveToAsync(page, Point(0, 0) + " [data-cfx-role='" + markRole + "']");
         var pointerRows = await TooltipRowsAsync(page);
+        Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(keyboardRows, pointerRows);
-        var expected = new List<string> { "Series", "Compound", IsBoxPlot(family) ? "Kategoria" : "X", "Próbka" };
+        var expected = IsBoxPlot(family) ? new List<string> { "Kategoria", "Próbka" } : new List<string>();
         foreach (var member in Members(family)) {
             expected.Add(MemberLabel(member.Name));
             expected.Add(AxisCaption(family, member.Value));
             Assert.Equal(member.Value, double.Parse((await point.GetAttributeAsync("data-cfx-" + member.Name))!, CultureInfo.InvariantCulture));
         }
+        if (!IsBoxPlot(family)) expected.AddRange(new[] { "Change", "+2.2", "Change (%)", "+107.32%" });
         Assert.Equal(expected, keyboardRows);
         await CaptureAsync(page, family, "pointer", new { pointerRows, selected, errors });
-        var legendRows = expected.Skip(IsBoxPlot(family) ? 2 : 4).ToArray();
+        var legendRows = expected.ToArray();
         await page.Locator("[data-cfx-role='legend-item'][data-cfx-point='0']").FocusAsync();
         Assert.Equal(legendRows, await TooltipRowsAsync(page));
         await CaptureAsync(page, family, "legend", new { legendRows, selected, errors });

@@ -86,8 +86,8 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets the native narrow drawing and container breakpoint used by <see cref="HtmlChartResponsiveLayout.Adaptive"/>.</summary>
     public HtmlChartAdaptiveLayoutOptions Adaptive { get; } = new HtmlChartAdaptiveLayoutOptions();
 
-    /// <summary>Gets or sets the toolbar presentation. The default is the framed <see cref="HtmlChartToolbarLayout.Band"/>.</summary>
-    public HtmlChartToolbarLayout Toolbar { get; set; } = HtmlChartToolbarLayout.Band;
+    /// <summary>Gets or sets the toolbar presentation. The default is the floating <see cref="HtmlChartToolbarLayout.Compact"/>.</summary>
+    public HtmlChartToolbarLayout Toolbar { get; set; } = HtmlChartToolbarLayout.Compact;
 
     /// <summary>
     /// Gets the tooltip content, acquisition, timing and position options.

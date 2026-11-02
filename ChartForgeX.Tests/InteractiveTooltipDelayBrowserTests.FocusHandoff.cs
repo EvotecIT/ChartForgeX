@@ -38,11 +38,13 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await page.Keyboard.PressAsync("Space");
         await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
         Assert.True(await page.EvaluateAsync<bool>("() => window.hostedChart.querySelector('[data-cfx-role=legend-item][data-cfx-series=\"0\"]').dataset.cfxMuted === 'true'"));
-        Assert.False(await HostedTipHiddenAsync(page));
+        Assert.True(await HostedTipHiddenAsync(page));
         var recovered = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-focused-shadow-legend-handoff-" + delay, recovered, session);
         await page.Keyboard.PressAsync("Space");
         await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+        Assert.True(await HostedTipHiddenAsync(page));
+        await page.EvaluateAsync("() => { const legend=window.hostedChart.querySelector('[data-cfx-role=legend-item][data-cfx-series=\"0\"]');legend.blur();legend.focus(); }");
         Assert.Equal(focusedText, (await HostReceiptAsync(page)).GetProperty("text").GetString());
         await page.EvaluateAsync("() => window.hostedChart.querySelector('[data-cfx-role=legend-item][data-cfx-series=\"0\"]').blur()");
         Assert.True(await HostedTipHiddenAsync(page));

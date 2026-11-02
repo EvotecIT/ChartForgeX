@@ -63,6 +63,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         return chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         });
     }
 
@@ -100,14 +101,27 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     private static Task<JsonElement> PlacementClipFactsAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
-        () => {
+        async () => {
             const root = positionFocusChart, node = root.querySelector('g[data-cfx-role="point"][data-cfx-point="0"]');
             const tip = root.querySelector('.cfx-tooltip'), tree = root.getRootNode();
+            await Promise.all(tip.getAnimations()
+                .filter(animation=>animation.playState==='running'&&animation.effect?.getComputedTiming().endTime<=1000)
+                .map(animation=>animation.finished.catch(()=>{})));
             const rect = node => { const r = node.getBoundingClientRect(); return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}; };
             const clip = node => { const r = rect(node), sx = r.width/node.offsetWidth, sy = r.height/node.offsetHeight;
                 return {left:r.left+node.clientLeft*sx,right:r.left+(node.clientLeft+node.clientWidth)*sx,
                     top:r.top+node.clientTop*sy,bottom:r.top+(node.clientTop+node.clientHeight)*sy}; };
-            const source = rect(node), card = rect(tip), sourceHit = tree.elementFromPoint((source.left+source.right)/2,(source.top+source.bottom)/2);
+            const source = rect(node), card = rect(tip), mark = node.querySelector('[data-cfx-role="marker"]'), sourceInk = rect(mark);
+            // A clipped marker can retain native ink even when its group centre is outside the host.
+            let left=Math.max(0,sourceInk.left),right=Math.min(innerWidth,sourceInk.right);
+            let top=Math.max(0,sourceInk.top),bottom=Math.min(innerHeight,sourceInk.bottom);
+            for(const host of [placementOuter,placementInner]) {
+                const bounds=clip(host),style=getComputedStyle(host);
+                if(style.overflowX!=='visible'){left=Math.max(left,bounds.left);right=Math.min(right,bounds.right);}
+                if(style.overflowY!=='visible'){top=Math.max(top,bounds.top);bottom=Math.min(bottom,bounds.bottom);}
+            }
+            const sourceHitPoint=right>left&&bottom>top?{x:(left+right)/2,y:(top+bottom)/2}:null;
+            const sourceHit=sourceHitPoint?tree.elementFromPoint(sourceHitPoint.x,sourceHitPoint.y):null;
             const originalPointerEvents = tip.style.pointerEvents;
             tip.style.pointerEvents = 'auto';
             const cardPaintedHits = [[card.left+8,card.top+8],[card.right-8,card.top+8],[card.left+8,card.bottom-8],[card.right-8,card.bottom-8]]
@@ -120,9 +134,9 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                     filter:style.filter,contain:style.contain,willChange:style.willChange,contentVisibility:style.contentVisibility,
                     overflow:style.overflow,offsetParent:ancestor.offsetParent?.id});
             }
-            return {source,card,outerClip:clip(placementOuter),innerClip:clip(placementInner),cardPaintedHits,
+            return {source,sourceInk,sourceHitPoint,sourceHitRole:sourceHit?.dataset.cfxRole,card,outerClip:clip(placementOuter),innerClip:clip(placementInner),cardPaintedHits,
                 hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true',text:tip.innerText,
-                sourcePaintedHit:node.contains(sourceHit),offsetParent:tip.offsetParent?.id,ancestors};
+                sourcePaintedHit:mark.contains(sourceHit),offsetParent:tip.offsetParent?.id,ancestors};
         }
         """);
 }

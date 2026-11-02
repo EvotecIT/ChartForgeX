@@ -1,7 +1,8 @@
 
-  const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall', 'differencearea']);
+  const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall', 'differencearea', 'radar']);
+  const automaticSharedKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'slope', 'trendline', 'radar']);
   const sharedXObservation = (data) => sharedXSeriesKinds.has((data.cfxKind || '').toLowerCase()) && !data.cfxDerived;
-  const sharedXValue = (data) => (data.cfxKind || '').toLowerCase() === 'differencearea' ? data.cfxFirst : data.cfxY;
+  const sharedXValue = (data) => (data.cfxKind || '').toLowerCase() === 'differencearea' ? data.cfxFirst : data.cfxY ?? data.cfxValue;
   const renderSharedXTip = (tip, node, root) => {
     const data = node.dataset || {};
     const svg = node.closest('svg');
@@ -19,43 +20,45 @@
       const index = candidate.cfxSeries;
       points.set(index, { point, index, key: seriesKey(point), source: sourcePointIndex(point), name: seriesLabel(point),
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
-        value: Number(sharedXValue(candidate)), rawValue: sharedXValue(candidate), colour: paint.colour || paintColour(point, styles) });
+        value: Number(sharedXValue(candidate)), rawValue: sharedXValue(candidate), colour: tooltipSolidColour(point, paint.colour || paintColour(point, styles)),
+        active: candidate.cfxSeries === data.cfxSeries, end: Number(candidate.cfxStackEnd), group: candidate.cfxStackGroup });
     };
 
     addObservation(node);
     svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]').forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
-    const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
+    const stacked = data.cfxStackTotal !== undefined;
+    const rows = Array.from(points.values()).sort((a, b) => {
+      if (stacked && a.group === b.group && Number.isFinite(a.end) && Number.isFinite(b.end)) {
+        const ab = a.point.getBoundingClientRect?.(), bb = b.point.getBoundingClientRect?.();
+        const horizontal = root._cfxDataProjection?.horizontal;
+        const delta = ab && bb ? horizontal ? bb.right - ab.right : ab.top - bb.top : 0;
+        return delta || b.end - a.end;
+      }
+      return stacked ? Number(a.index) - Number(b.index) : (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value;
+    });
     if (!rows.length) return false;
-    tip.replaceChildren();
-    const header = document.createElement('div');
-    header.className = 'cfx-tooltip__title'; header.textContent = categoryReadoutText(node, capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X')))); tip.appendChild(header);
-    const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
+    const title = categoryReadoutText(node, data.cfxCategoryLabel ?? capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X'))));
+    const content = [];
     rows.forEach((row) => {
-      const name = document.createElement('dt'); const value = document.createElement('dd');
-      name.dataset.cfxTooltipSeries = row.index; name.dataset.cfxTooltipSeriesKey = row.key;
-      name.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint; name.dataset.cfxTooltipSourcePoint = row.source;
+      if (row.point.dataset.cfxWaterfallKind) {
+        waterfallTooltipRows(row.point).forEach(fact => content.push({ ...row, ...fact,
+          name: rows.length > 1 ? row.name + ' · ' + fact.name : fact.name }));
+        return;
+      }
       const difference = differenceTooltipRows(row.point);
-      name.textContent = row.name + (difference ? ' · ' + difference[0].name : '');
-      value.textContent = difference ? difference[0].value : capturedText(row.point.dataset, 'cfxFormattedValue', numericDisplayText(row.rawValue));
-      const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
-      if (row.colour) swatch.style.backgroundColor = row.colour;
-      swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
-      if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
-      list.append(name, value);
+      content.push({ ...row, name: row.name + (difference ? ' · ' + difference[0].name : ''),
+        value: difference ? difference[0].value : tooltipValueText(row.point) });
       const dimensions = dimensionTooltipRows(row.point);
       if (difference) dimensions.unshift({ ...difference[1], dimension: 'second' });
       dimensions.forEach((dimension) => {
-        const term = document.createElement('dt'), measurement = document.createElement('dd');
-        term.dataset.cfxTooltipDimension = dimension.dimension;
-        term.dataset.cfxTooltipObservation = row.key;
-        term.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint;
-        term.dataset.cfxTooltipSourcePoint = row.source;
-        term.textContent = row.name + ' · ' + dimension.name; measurement.textContent = dimension.value;
-        if (row.state === 'quiet' || row.state === 'success') { term.className = 'cfx-tooltip__quiet'; measurement.className = 'cfx-tooltip__quiet'; }
-        list.append(term, measurement);
+        content.push({ ...row, ...dimension, name: row.name + ' · ' + dimension.name, secondary: true });
       });
     });
-    tip.appendChild(list);
-    return true;
+    if (stacked) {
+      const group = data.cfxStackGroup, groupRows = rows.filter(row => row.group === group);
+      const total = groupRows.reduce((sum, row) => sum + row.value, 0);
+      if (Number.isFinite(total)) content.push({ name: rowName(node, 'total', 'Total'), value: tooltipNumberText(node, total), total: true, secondary: true });
+    }
+    return renderTooltipContent(tip, title, content, node);
   };

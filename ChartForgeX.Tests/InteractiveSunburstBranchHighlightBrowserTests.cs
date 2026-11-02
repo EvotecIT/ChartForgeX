@@ -78,7 +78,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         await MoveToNative(page, Node("operations-support"));
         await WaitState(page, "operations-support", "item");
         Assert.Equal("1", (await PaintOpacities(page, "engineering-support")).Single());
-        Assert.Contains("drop-shadow", await page.Locator(Node("engineering-support") + " > [data-cfx-highlight-paint]").EvaluateAsync<string>("node => getComputedStyle(node).filter"), StringComparison.Ordinal);
+        Assert.Equal("none", await page.Locator(Node("engineering-support") + " > [data-cfx-highlight-paint]").EvaluateAsync<string>("node => getComputedStyle(node).filter"));
         Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
         if (width == 360 && dark && !graphite || width == 800 && !dark && graphite)
             await Capture(session, html, $"branch-selected-pinned-{width}-{(dark ? "dark-report" : "light-graphite")}{composition}");
@@ -342,6 +342,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         await MoveToNative(session.Page, Node("operations-support"));
         await session.Page.WaitForFunctionAsync("() => { const tip=document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.innerText.includes('Support'); }");
         // A settled visible readout must not repeatedly observe and write its own native-paint suspension.
+        await SettlePresentationAsync(session.Page);
         await session.Page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
         var settled = await session.Page.EvaluateAsync<int>("() => window.highlightMutationCount");
         await session.Page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 100))");

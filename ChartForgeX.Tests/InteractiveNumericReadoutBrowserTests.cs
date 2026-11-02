@@ -24,6 +24,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         // Readouts share the axis captions, and an axis no longer rounds 0.025 to a value it isn't (0.03).
         var expectedX = new[] { "0.025", "1E-10", "0.1" };
         var expectedY = new[] { "5.15", "-1E-12", "0.1" };
+        var expectedDisplayY = new[] { "5.15", "-1E-12", "0.10" };
         var expectedTitles = new[] { "0.025", "1E-10", "0.1" };
         var compact = mode == HtmlChartTooltipMode.SharedX;
         var chart = Chart.Create().WithSize(compact ? 316 : 596, 338).WithLegend(false)
@@ -52,7 +53,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
             var pointer = await ReadoutAsync(page, mode);
             if (index == 0) await CaptureAsync(page, "numeric-" + mode + "-pointer", new { rawX, rawY, pointer, Errors = errors, ConsoleErrors = ErrorCount(session) });
             Assert.Equal(keyboard, pointer);
-            Assert.Equal(new[] { mode == HtmlChartTooltipMode.SharedX ? expectedTitles[index] : expectedX[index], expectedY[index] }, keyboard);
+            Assert.Equal(new[] { mode == HtmlChartTooltipMode.SharedX ? expectedTitles[index] : expectedX[index], expectedDisplayY[index] }, keyboard);
             Assert.Equal(rawX, await point.GetAttributeAsync("data-cfx-x"));
             Assert.Equal(rawY, await point.GetAttributeAsync("data-cfx-y"));
             Assert.Equal("observed:" + index, await point.GetAttributeAsync("data-cfx-target-id"));
@@ -100,7 +101,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         var chart = Chart.Create().WithSize(596, 338).WithLegend(false)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", new[] { new ChartPoint(.025, 5.15), new ChartPoint(.10000000000000002, 8) }))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("peer"), "Peer", new[] { new ChartPoint(.025, 2), new ChartPoint(.10000000000000003, 3) }));
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX));
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var equal = page.Locator(Point(0, 0)); await equal.FocusAsync();
         Assert.Equal(new[] { "Observed", "Peer" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
@@ -125,7 +126,8 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         shared => {
           const tip = document.querySelector('.cfx-tooltip');
           const field = name => Array.from(tip.querySelectorAll('dt')).find(term => term.textContent === name)?.nextElementSibling.textContent;
-          return shared ? [tip.querySelector('.cfx-tooltip__title').textContent, tip.querySelector('dd').textContent] : [field('X'), field('Y')];
+          const title = tip.querySelector('.cfx-tooltip__title').textContent;
+          return shared ? [title, tip.querySelector('dd').textContent] : [title.replace(/^Observation /, ''), field('Value')];
         }
         """, mode == HtmlChartTooltipMode.SharedX);
 

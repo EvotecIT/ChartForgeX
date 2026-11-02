@@ -1,14 +1,15 @@
 
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
   const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
+  const legendSvg = item => item.closest('svg') || item.closest('.cfx-interactive-chart')?.querySelector('.cfx-stage svg');
   const legendSeriesValues = (item) => {
     const data = item.dataset || {};
-    const svg = item.closest('svg');
+    const svg = legendSvg(item);
     if (!svg || data.cfxSeries === undefined) return [];
     const values = new Map();
     svg.querySelectorAll('[data-cfx-series][data-cfx-point]').forEach((mark) => {
       const markData = mark.dataset || {};
-      if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
+      if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"],[data-cfx-role="legend-native"]')) return;
       const rawValue = markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue;
       if (rawValue === undefined || rawValue === '') return;
       const value = Number(rawValue);
@@ -41,7 +42,7 @@
     if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
     const reference = legendTarget(item);
     const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
-    const svg = item.closest('svg');
+    const svg = legendSvg(item);
     const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
     const rangeBarRows = mark && rangeBarTooltipRows(mark);
     if (rangeBarRows) return rangeBarRows.concat(dimensionTooltipRows(mark));

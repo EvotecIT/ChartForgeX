@@ -55,12 +55,23 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left,y:b.top,width:b.width,height:b.height};};
             const dock=root.querySelector('[data-cfx-compare-tray]');
             return {tip:rect(tip),node:rect(node),stage:rect(root.querySelector('.cfx-stage')),viewport:{width:innerWidth,height:innerHeight},
-                dock:dock&&!dock.hidden?rect(dock):null,hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true',text:tip.innerText,css:{left:tip.style.left,top:tip.style.top}};
+                dock:dock&&!dock.hidden?rect(dock):null,hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true',
+                text:[...tip.children].filter(child=>!child.matches('.cfx-tooltip__close')).map(child=>child.innerText).join('\n'),css:{left:tip.style.left,top:tip.style.top}};
         }
         """, new { selector, hosted });
 
     private static async Task<JsonElement> AssertPositionAsync(IPage page, HtmlChartTooltipAnchor anchor, HtmlChartTooltipPlacement[] placements,
-        double gap = 14, double offsetX = 0, double offsetY = 0, double[]? pointer = null, string selector = Reading, bool hosted = false) {
+        double gap = 12, double offsetX = 0, double offsetY = 0, double[]? pointer = null, string selector = Reading, bool hosted = false) {
+        await page.EvaluateAsync("""
+            async ({selector,hosted}) => {
+                const node=(hosted?window.positionFocusChart:document).querySelector(selector);
+                const tip=node.closest('.cfx-interactive-chart').querySelector('.cfx-tooltip');
+                await Promise.all(tip.getAnimations()
+                    .filter(animation=>animation.effect?.getComputedTiming().endTime<=1000)
+                    .map(animation=>animation.finished.catch(()=>{})));
+                await new Promise(requestAnimationFrame);
+            }
+            """, new { selector, hosted });
         var geometry = await GeometryAsync(page, selector, hosted);
         Assert.False(geometry.GetProperty("hidden").GetBoolean());
         var tip = ScreenRect.Read(geometry.GetProperty("tip"));

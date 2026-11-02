@@ -38,7 +38,11 @@ public sealed class BubbleSizeScaleBrowserTests {
         var target = page.Locator(Point(1, 2));
         Assert.Equal("200", await target.GetAttributeAsync("data-cfx-size"));
         Assert.Equal("24", await target.Locator("[data-cfx-role='bubble']").GetAttributeAsync("rx"));
+        var bubble = target.Locator("[data-cfx-role='bubble']");
+        var radiusBeforeHover = await bubble.EvaluateAsync<string>("node => getComputedStyle(node).getPropertyValue('r')");
         await MoveToAsync(page, Point(1, 2));
+        Assert.Contains("cfx-hovered", await target.GetAttributeAsync("class"));
+        Assert.Equal(radiusBeforeHover, await bubble.EvaluateAsync<string>("node => getComputedStyle(node).getPropertyValue('r')"));
         var pointerReadout = await TooltipTextAsync(page);
         var pointerCaptures = Environment.GetEnvironmentVariable("CFX_BUBBLE_CAPTURE_DIRECTORY")
             ?? Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
@@ -57,7 +61,7 @@ public sealed class BubbleSizeScaleBrowserTests {
             }, new JsonSerializerOptions { WriteIndented = true }));
         }
         Assert.Contains("200", pointerReadout, StringComparison.Ordinal);
-        Assert.Equal("35", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd").InnerTextAsync());
+        Assert.Equal("35 minutes", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Time" }).Locator("+ dd").InnerTextAsync());
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.bubbleSelection = event.detail.target)");
         await target.FocusAsync();
         await page.Keyboard.PressAsync("Space");

@@ -143,9 +143,8 @@ public sealed class EnhanceRuntimeBrowserTests {
         var before = await page.EvaluateAsync<int>("() => echo");
         await page.EvaluateAsync("() => grid.host.dispatchEvent(new CustomEvent('canopyx:linkchange', { detail: { view: 'records', action: 'select', scope: 'select', keys: ['update-2-0', 'note-2-0'], values: {}, label: '' } }))");
         Assert.Equal(2, await page.Locator("#activity-host .cfx-e-linked").CountAsync());
-        // Selected and linked marks share the static look: a primary-ink outline over a surface halo, never accent or a
-        // series colour; every other mark dims to 35%.
-        Assert.Equal("3 rgb(22, 24, 28) 3 rgb(255, 255, 255) 5 0.35", await page.EvaluateAsync<string>("""
+        // Selected and linked marks keep their source paint; other marks use the shared 40% dimming.
+        Assert.Equal("3 none 3 none 5 0.4", await page.EvaluateAsync<string>("""
             () => { const s = document.querySelector('#activity-host svg'), look = c => [...s.querySelectorAll(c)];
               const stroke = c => [...new Set(look(c).map(e => getComputedStyle(e).stroke))].join('|');
               const dim = [...new Set(look('.cfx-e-dim').map(e => getComputedStyle(e).opacity))].join('|');

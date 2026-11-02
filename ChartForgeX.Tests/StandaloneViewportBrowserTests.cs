@@ -133,7 +133,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         });
     }
 
-    private static Task MountAsync(IPage page) => page.EvaluateAsync("()=>{window.controller=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart'));}");
+    private static Task MountAsync(IPage page) => page.EvaluateAsync("async()=>{window.controller=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart'));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}");
     private static Task<JsonElement> ViewportAsync(IPage page) => page.EvaluateAsync<JsonElement>("()=>controller.getViewport()");
 
     private static async Task CaptureAsync(IPage page, string name) {
@@ -141,6 +141,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         if (string.IsNullOrWhiteSpace(directory)) return;
         if (!Path.IsPathRooted(directory)) throw new InvalidOperationException("CFX_BROWSER_CAPTURE_DIRECTORY must be absolute.");
         Directory.CreateDirectory(directory);
+        await page.EvaluateAsync("async()=>{await Promise.all(document.getAnimations().filter(animation=>animation.playState==='running'&&animation.effect?.getComputedTiming().endTime<=1000).map(animation=>animation.finished.catch(()=>{})));await new Promise(requestAnimationFrame);}");
         await page.ScreenshotAsync(new PageScreenshotOptions {
             Path = Path.Combine(directory, "standalone-" + Engine.ToString().ToLowerInvariant() + "-" + name + ".png")
         });
@@ -182,8 +183,8 @@ public sealed partial class StandaloneViewportBrowserTests {
         if (kind is ChartSeriesKind.Line or ChartSeriesKind.Area or ChartSeriesKind.Scatter) {
             var expectedY = plot.GetProperty("y").GetDouble() + (1 - (34 - yMin) / (yMax - yMin)) * plot.GetProperty("height").GetDouble();
             Assert.InRange(scene.GetProperty("markY").GetDouble(), expectedY - .02, expectedY + .02);
-            Assert.Equal(initial.GetProperty("markerWidth").GetDouble(), scene.GetProperty("markerWidth").GetDouble(), 2);
-            Assert.Equal(initial.GetProperty("markerHeight").GetDouble(), scene.GetProperty("markerHeight").GetDouble(), 2);
+            Assert.InRange(scene.GetProperty("markerWidth").GetDouble(), initial.GetProperty("markerWidth").GetDouble() - .02, initial.GetProperty("markerWidth").GetDouble() + .02);
+            Assert.InRange(scene.GetProperty("markerHeight").GetDouble(), initial.GetProperty("markerHeight").GetDouble() - .02, initial.GetProperty("markerHeight").GetDouble() + .02);
         }
         Assert.True(scene.GetProperty("clipMatchesPlot").GetBoolean(), "Data ink needs a fixed clip at the plot bounds.");
         AssertViewportScale(initial, scene);

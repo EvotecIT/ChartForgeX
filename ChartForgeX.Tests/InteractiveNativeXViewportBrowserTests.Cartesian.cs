@@ -27,12 +27,13 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal("false", await page.Locator(First).GetAttributeAsync("data-cfx-visible"));
         Assert.Equal(0, await page.Locator(First + " [data-cfx-browser-hit-area]").CountAsync());
         Assert.True(await page.EvaluateAsync<bool>("()=>nativeCallbackFrozen.every(Boolean)&&Object.isFrozen(nativeRequests[0].sourceViewport.y)"));
+        await page.Locator(Root).HoverAsync(new LocatorHoverOptions { Position = new Position { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await WaitForChangesAsync(page, 2);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()"), 26, 74);
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), axes == "x,y" ? 2.8 : 0, axes == "x,y" ? 9.2 : 12);
         var pointer = await page.EvaluateAsync<JsonElement>("""
             ()=>{const plot=JSON.parse(chartController.root.dataset.cfxPreparedChart).yProjection.plotBounds,
-                matrix=chartController.root.querySelector('svg').getScreenCTM(),point=new DOMPoint(plot.x+plot.width*.5,plot.y+plot.height*.25).matrixTransform(matrix);
+                matrix=chartController.root.querySelector('.cfx-stage svg').getScreenCTM(),point=new DOMPoint(plot.x+plot.width*.5,plot.y+plot.height*.25).matrixTransform(matrix);
                 chartController.root.querySelector('.cfx-stage').addEventListener('wheel',event=>window.yWheelClient=event.clientY,{once:true});
                 return{x:point.x,y:point.y,top:new DOMPoint(plot.x,plot.y).matrixTransform(matrix).y,bottom:new DOMPoint(plot.x,plot.y+plot.height).matrixTransform(matrix).y};}
             """);

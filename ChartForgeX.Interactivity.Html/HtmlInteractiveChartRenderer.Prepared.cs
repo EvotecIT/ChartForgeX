@@ -118,6 +118,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         AppendCapturedAxis(json, "yProjection", prepared.YProjection);
         AppendCapturedAxis(json, "secondaryXProjection", prepared.SecondaryXProjection);
         AppendCapturedAxis(json, "secondaryYProjection", prepared.SecondaryYProjection);
+        AppendTooltipMetadata(json, chart);
         return json.Append('}').ToString();
     }
 

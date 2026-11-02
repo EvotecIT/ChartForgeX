@@ -7,6 +7,7 @@
   const hierarchyConnected = () => false;
   const polarViewportConnected = () => false;
   const cancelNativePreparation = () => {};
+  const bindAnnotationEditor = () => {};
   const requestNativePreparation = () => false;
   const readerRuntimeKey = Symbol.for('ChartForgeX.chartRuntime');
   const mountStandaloneChart = root => {

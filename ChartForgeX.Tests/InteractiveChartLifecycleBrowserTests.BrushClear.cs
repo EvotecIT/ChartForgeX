@@ -84,6 +84,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task LinkedSelectionKeepsHostHeightAndToolbarBandAligned(bool dark, int width, bool compare) {
         if (!Enabled) return;
         await using var session = await OpenAsync(Readings(dark).ToInteractiveHtmlPage(options => {
+            options.Toolbar = HtmlChartToolbarLayout.Band;
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Brush);
             if (!compare) options.Interaction.Disable(ChartInteractionFeatures.CompareMarkers);
         }), width, 800);

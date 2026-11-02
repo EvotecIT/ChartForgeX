@@ -8,7 +8,7 @@ public enum HtmlChartTooltipPlacement {
     TopRight,
     /// <summary>Centres the tooltip to the right of the anchor.</summary>
     Right,
-    /// <summary>Places the tooltip below and to the right of the anchor. This is the default.</summary>
+    /// <summary>Places the tooltip below and to the right of the anchor.</summary>
     BottomRight,
     /// <summary>Centres the tooltip below the anchor.</summary>
     Bottom,

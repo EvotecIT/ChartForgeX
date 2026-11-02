@@ -37,6 +37,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await InstallListenerProbeAsync(page);
         await page.SetContentAsync(Observations(false).ToInteractiveHtmlPage(options => {
             options.Tooltip.Position.Anchor = anchor;
+            options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.Range = HtmlChartTooltipRange.Exact;
             // The position lifetime must work without the keyboard owner's separate paint observer.

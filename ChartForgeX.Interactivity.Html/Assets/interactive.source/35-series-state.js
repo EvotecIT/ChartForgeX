@@ -55,6 +55,7 @@
   };
   const setSeriesMuted = (root, target, muted) => {
     if (muted && nativeLegendConnected(root)) return;
+    clearLegendReadout(root);
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       if (!matchesLocalSeriesTarget(node, target)) return;
       const role = node.dataset ? node.dataset.cfxRole || '' : '';
@@ -65,6 +66,7 @@
       node.classList.toggle('cfx-series-muted', muted);
       pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
+    syncLegendButtons(root);
     refreshKeyboardNavigation(root);
     rescaleStandaloneSeries(root);
     syncSelectionAppearance(root);
@@ -73,6 +75,22 @@
   };
   const setSeriesIsolation = (root, target, isolated) => {
     if (isolated && nativeLegendConnected(root)) return;
+    clearLegendReadout(root);
+    if (isolated && !root._cfxIsolationMutes) {
+      root._cfxIsolationMutes = new Map(Array.from(root.querySelectorAll('[data-cfx-series],.cfx-series-muted'), node =>
+        [node, { muted: node.classList.contains('cfx-series-muted'), legend: node.dataset.cfxMuted }]));
+      root._cfxIsolationMutes.forEach((value, node) => {
+        node.classList.remove('cfx-series-muted');
+        if (node.dataset.cfxMuted !== undefined) node.dataset.cfxMuted = 'false';
+      });
+    }
+    if (!isolated && root._cfxIsolationMutes) {
+      root._cfxIsolationMutes.forEach((value, node) => {
+        node.classList.toggle('cfx-series-muted', value.muted);
+        if (value.legend === undefined) delete node.dataset.cfxMuted; else node.dataset.cfxMuted = value.legend;
+      });
+      delete root._cfxIsolationMutes;
+    }
     const item = target && target.targetKind ? referencedTargetNode(root, target) : null;
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       const data = node.dataset || {};
@@ -101,6 +119,8 @@
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
+    syncLegendButtons(root);
+    refreshKeyboardNavigation(root);
     rescaleStandaloneSeries(root);
     syncSelectionAppearance(root);
     syncLegendOverflow(root);
@@ -113,17 +133,19 @@
     if (target.series === undefined) return;
     const isolated = root.dataset.cfxIsolatedSeries !== seriesTargetToken(target);
     setSeriesIsolation(root, target, isolated);
+    announceChartTarget(root, item, isolated ? uiText(root, 'Isolated', 'isolated') : uiText(root, 'Restored', 'restored'));
     emitHostEvent(root, 'cfxseriesfocus', { ...target, isolated });
     if (sync !== false) emitSync(root, { action: 'series-focus', target, isolated });
   };
   const toggleSeries = (root, item) => {
     if (!hasFeature(root, 'LegendToggles')) return;
-    if (nativeLegendConnected(root)) { requestNativeSeriesVisibility(root, item); return; }
+    if (nativeLegendConnected(root)) { clearLegendReadout(root); requestNativeSeriesVisibility(root, item); return; }
     const target = seriesTarget(item);
     if (target.series === undefined) return;
     if (root.dataset.cfxIsolatedSeries) setSeriesIsolation(root, null, false);
     const muted = item.dataset.cfxMuted !== 'true';
     setSeriesMuted(root, target, muted);
+    announceChartTarget(root, item, muted ? uiText(root, 'Hidden', 'hidden') : uiText(root, 'Shown', 'shown'));
     emitHostEvent(root, 'cfxseries', { ...target, muted });
     emitSync(root, { action: 'series', target, muted });
   };

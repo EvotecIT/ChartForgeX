@@ -17,6 +17,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task ReadableToolbarFollowsTheVisibleNativeCardWithoutAGutterOffset(bool dark, int width) {
         if (!Enabled) return;
         await using var session = await OpenAsync(Readings(dark).ToInteractiveHtmlPage(options => {
+            options.Toolbar = HtmlChartToolbarLayout.Band;
             options.Interaction.Enable(ChartInteractionFeatures.Brush | ChartInteractionFeatures.Zoom);
         }), width, 800);
         var page = session.Page;
@@ -77,7 +78,15 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Keyboard.PressAsync("Space");
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>chartController.getSelection().length"));
         Assert.Equal(2, await page.EvaluateAsync<int>("()=>lifecycleSelections.length"));
-        await page.Mouse.ClickAsync(x, (float)(y + Math.Max(12, box.Height * 3)));
+        var fillInteriorY = await page.Locator(point).EvaluateAsync<double>("""
+            node=>{
+                const root=node.closest('.cfx-interactive-chart'),svg=node.ownerSVGElement,p=root._cfxDataProjection.plotBounds,
+                    bottom=new DOMPoint(p.x,p.y+p.height).matrixTransform(svg.getScreenCTM()),r=node._cfxNativeRegion,
+                    anchor=new DOMPoint(r.x+r.width/2,r.y+r.height/2).matrixTransform(svg.getScreenCTM());
+                return (anchor.y+bottom.y)/2;
+            }
+            """);
+        await page.Mouse.ClickAsync(x, (float)fillInteriorY);
         Assert.Equal("worker-covered", await page.EvaluateAsync<string>("()=>chartController.getSelection()[0]?.observationId"));
         Assert.Equal(3, await page.EvaluateAsync<int>("()=>lifecycleSelections.length"));
         await page.EvaluateAsync("()=>chartController.clearSelection()");
@@ -85,10 +94,19 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Mouse.ClickAsync(x, (float)(coveringPoint.Y - Math.Max(12, coveringPoint.Height * 3)));
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>chartController.getSelection().length"));
         Assert.Equal(3, await page.EvaluateAsync<int>("()=>lifecycleSelections.length"));
-        // Public mute makes the painted fact unavailable even while its dimmed fill remains the native hit.
+        // Standalone mute removes the fact and rescales the remaining value domain.
         await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=worker]").ClickAsync();
         Assert.Equal("true", await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=worker]").GetAttributeAsync("data-cfx-muted"));
-        await page.Mouse.ClickAsync(x, y);
+        var remaining = await BoxAsync(page, point);
+        var rescaledInteriorY = await page.Locator(point).EvaluateAsync<double>("""
+            node=>{
+                const p=node.closest('.cfx-interactive-chart')._cfxDataProjection.plotBounds,
+                    bottom=new DOMPoint(p.x,p.y+p.height).matrixTransform(node.ownerSVGElement.getScreenCTM()),
+                    bounds=node.getBoundingClientRect();
+                return (bounds.top+bounds.height/2+bottom.y)/2;
+            }
+            """);
+        await page.Mouse.ClickAsync((float)(remaining.X + remaining.Width / 2), (float)rescaledInteriorY);
         var mutedState = await page.EvaluateAsync<JsonElement>("""
             p=>{
                 const native=document.elementFromPoint(p[0],p[1]),owner=native.closest('[data-cfx-role=series]'),style=getComputedStyle(native);
@@ -98,10 +116,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             }
             """, new double[] { x, y });
         await CaptureAsync(page, "covered-fill-muted-series-" + kind + "-" + dark + "-" + width + "-" + tooltips, mutedState);
-        Assert.Equal("worker", mutedState.GetProperty("nativeSeries").GetString());
-        Assert.Contains("cfx-series-muted", mutedState.GetProperty("ownerClass").GetString());
-        Assert.Equal(0, mutedState.GetProperty("selection").GetArrayLength());
-        Assert.Equal(3, mutedState.GetProperty("events").GetArrayLength());
+        Assert.Equal("hidden", await page.Locator("[data-cfx-observation-id='worker-covered']").EvaluateAsync<string>("node=>getComputedStyle(node).visibility"));
+        var selected = Assert.Single(mutedState.GetProperty("selection").EnumerateArray());
+        Assert.Equal("api-covered", selected.GetProperty("observationId").GetString());
+        Assert.Equal(4, mutedState.GetProperty("events").GetArrayLength());
         AssertNoConsoleErrors(session);
     }
 

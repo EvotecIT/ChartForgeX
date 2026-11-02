@@ -48,6 +48,7 @@
     if (connection !== null && typeof connection !== 'function') throw new TypeError('Native callback: function|null required.');
     cancelNativePreparation(lifetime); releaseProgressCadence(lifetime);
     resetAnnotationEditor(root);
+    if (connection) releaseStandaloneViewport(root);
     if (lifetime.preparationSession && lifetime.preparationSession !== settings.session) {
       for (const key of Object.keys(lifetime.preparationConnections))
         if (lifetime.preparationConnections[key]?.session === lifetime.preparationSession) delete lifetime.preparationConnections[key];
@@ -129,7 +130,7 @@
     // Keep pending through validation.
     if (nativeKind) lifetime.preparationPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
-    releaseChartLifetime(root);
+    releaseChartLifetime(root, true);
     installChartSection(root, next);
     // Retain root/connections.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();

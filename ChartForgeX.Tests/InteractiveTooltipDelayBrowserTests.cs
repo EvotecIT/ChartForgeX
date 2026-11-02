@@ -37,6 +37,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(dark).ToInteractiveHtmlPage(options => {
             ConfigureDelay(options, range);
+            options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
             options.ResponsiveLayout = layout;
             if (!guide) options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         }), width, 760);
@@ -60,6 +61,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.Equal(1, trace.GetProperty("shown").GetArrayLength());
         var rows = await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key]").AllTextContentsAsync();
         Assert.Equal(new[] { "Reading", "Companion" }, rows);
+        await SettlePresentationAsync(page);
         Assert.True(await page.EvaluateAsync<bool>("() => { const tip=document.querySelector('.cfx-tooltip'), p=window.delayTrace.pointer; return Math.abs(parseFloat(tip.style.left)-Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,p[0]+14)))<.01 && document.documentElement.scrollWidth<=innerWidth; }"));
         await CaptureDelayAsync(page, "delay-stable-" + layout + "-" + width + "-" + (dark ? "dark" : "light"), trace);
         AssertNoConsoleErrors(session);
@@ -85,7 +87,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.True(await TipHiddenAsync(page));
         await page.Clock.RunForAsync(1);
         Assert.False(await TipHiddenAsync(page));
-        Assert.Equal("6", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd").InnerTextAsync());
+        Assert.Equal("6", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         await MoveAwayAsync(page);
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
@@ -131,7 +133,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.False(await TipHiddenAsync(page));
         await page.Clock.RunForAsync(Delay + 60);
         Assert.Equal(pinned, await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-pinned-target"));
-        Assert.Equal("6", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd").InnerTextAsync());
+        Assert.Equal("6", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         await CaptureDelayAsync(page, "delay-immediate-" + (keyboard ? "keyboard" : "pointer-pin"), await TraceStateAsync(page));
         AssertNoConsoleErrors(session);
     }

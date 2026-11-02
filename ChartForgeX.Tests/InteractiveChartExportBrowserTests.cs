@@ -46,11 +46,13 @@ public sealed class InteractiveChartExportBrowserTests {
             .EvaluateAsync("(node,isolated)=>node.dispatchEvent(new MouseEvent('click',{bubbles:true,shiftKey:isolated}))", isolated);
         Assert.Equal("true", await page.Locator(Focus).GetAttributeAsync("aria-selected"));
         Assert.Equal(0, await page.Locator(".cfx-hovered,.cfx-trail").CountAsync());
+        await SettlePresentationAsync(page);
         var expected = await PersistentPaintAsync(page);
         await FocusWithKeyboardAsync(page, page.Locator(Focus));
         await MoveToAsync(page, Focus);
         Assert.True(await page.Locator(Root).EvaluateAsync<bool>("root=>!!root.querySelector('.cfx-hovered')&&!!root.querySelector('.cfx-trail')"));
         await page.Locator("[data-cfx-zoom=in]").EvaluateAsync("button=>button.click()");
+        await SettlePresentationAsync(page);
         var before = await ExportSourceStateAsync(page);
 
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").EvaluateAsync("button=>button.click()"));
@@ -77,6 +79,15 @@ public sealed class InteractiveChartExportBrowserTests {
             Assert.Equal("rgb(22, 163, 74)", actual.GetProperty("focus").GetProperty("fill").GetString());
             Assert.Equal("true", await artifactPage.Locator(Focus).GetAttributeAsync("aria-selected"));
             Assert.Equal("none", await artifactPage.Locator("svg").EvaluateAsync<string>("node=>getComputedStyle(node).transform"));
+            var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(captures)) {
+                Directory.CreateDirectory(captures);
+                var name = "persistent-export-" + (isolated ? "isolated" : "muted");
+                await svgDownload.SaveAsAsync(Path.Combine(captures, name + ".svg"));
+                await pngDownload.SaveAsAsync(Path.Combine(captures, name + ".png"));
+                await artifactPage.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".artifact.png"), FullPage = true });
+                await File.WriteAllTextAsync(Path.Combine(captures, name + ".json"), JsonSerializer.Serialize(new { expected, actual }));
+            }
             var pixels = await artifactPage.EvaluateAsync<JsonElement>("""
                 async ({svg,png})=>{
                     const load=src=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src;});
@@ -97,13 +108,8 @@ public sealed class InteractiveChartExportBrowserTests {
             Assert.Equal(420, pixels.GetProperty("height").GetInt32());
             Assert.Equal(pixels.GetProperty("svg").GetRawText(), pixels.GetProperty("png").GetRawText());
             Assert.Equal(new[] { 22, 163, 74, 255 }, pixels.GetProperty("png")[0].EnumerateArray().Select(value => value.GetInt32()));
-            var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
             if (!string.IsNullOrWhiteSpace(captures)) {
-                Directory.CreateDirectory(captures);
                 var name = "persistent-export-" + (isolated ? "isolated" : "muted");
-                await svgDownload.SaveAsAsync(Path.Combine(captures, name + ".svg"));
-                await pngDownload.SaveAsAsync(Path.Combine(captures, name + ".png"));
-                await artifactPage.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".artifact.png"), FullPage = true });
                 await File.WriteAllTextAsync(Path.Combine(captures, name + ".json"), JsonSerializer.Serialize(new { expected, actual, pixels }));
             }
         } finally { await artifactPage.CloseAsync(); }
@@ -149,6 +155,8 @@ public sealed class InteractiveChartExportBrowserTests {
         } finally { await artifactPage.CloseAsync(); }
         AssertNoConsoleErrors(session);
     }
+
+    private static Task SettlePresentationAsync(IPage page) => page.EvaluateAsync("async()=>{await Promise.all(document.getAnimations().filter(animation=>animation.effect?.getComputedTiming().endTime<=1000).map(animation=>animation.finished.catch(()=>{})));await new Promise(requestAnimationFrame);}");
 
     private static Task<JsonElement> PersistentPaintAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
         ()=>Object.fromEntries(['focus','muted','other'].map(key=>{

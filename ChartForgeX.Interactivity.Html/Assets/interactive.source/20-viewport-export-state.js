@@ -26,6 +26,7 @@
   };
 
   const viewChanged = (root) => {
+      if (root._cfxStandaloneHierarchy?.rootId != null) return true;
     if (root._cfxStandaloneViewport && Object.keys(root._cfxStandaloneViewport.windows).length) return true;
     if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (polarViewportConnected(root) && nativePolarViewportChanged(root)) return true;
@@ -110,6 +111,7 @@
   };
   const resetViewport = (root) => {
     suspendPointerReadout(root);
+    if (root._cfxStandaloneHierarchy?.rootId != null) navigateStandaloneHierarchy(root, null);
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     clearBrush(root);
     applyMode(root, '');

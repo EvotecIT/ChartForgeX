@@ -24,6 +24,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         await page.EmulateMediaAsync(new() { ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
         await page.EvaluateAsync("()=>document.documentElement.style.zoom='1.5'");
         Assert.True(await page.EvaluateAsync<bool>("()=>matchMedia('(forced-colors:active)').matches&&matchMedia('(prefers-reduced-motion:reduce)').matches"));
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         Assert.Equal("0s", await page.Locator(".cfx-stage svg").EvaluateAsync<string>("node=>getComputedStyle(node).transitionDuration"));
         await page.Locator("[data-cfx-reset]").ClickAsync();

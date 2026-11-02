@@ -142,7 +142,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.NotEmpty(await page.Locator("[data-cfx-role=line]").GetAttributeAsync("d") ?? string.Empty);
         var plot = window.PreparedVisual.XProjection!.PlotBounds;
         await page.EvaluateAsync("""
-            ({x,y})=>{const svg=chartController.root.querySelector('svg'),point=new DOMPoint(x,y).matrixTransform(svg.getScreenCTM());
+            ({x,y})=>{const svg=chartController.root.querySelector('.cfx-stage svg'),point=new DOMPoint(x,y).matrixTransform(svg.getScreenCTM());
                 window.emptyWindowPointer={x:point.x,y:point.y};}
             """, new { x = plot.Left + plot.Width / 2, y = plot.Top + plot.Height / 2 });
         var pointer = await page.EvaluateAsync<JsonElement>("()=>emptyWindowPointer");
@@ -331,8 +331,12 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         return await page.EvaluateAsync<JsonElement>("""
         () => {const root=chartController.root;return {
             revision:chartController.sceneRevision,projection:JSON.parse(root.dataset.cfxPreparedChart).xProjection,
-            xLabels:[...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>window.cfxCaptionText(node)),
-            yLabels:[...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>window.cfxCaptionText(node))
+            xLabels:root.querySelector('[data-cfx-browser-axis=x]')
+                ? [...root.querySelectorAll('[data-cfx-browser-axis=x] text')].map(node=>node.textContent)
+                : [...root.querySelectorAll('[data-cfx-role=axis-x-label]')].map(node=>window.cfxCaptionText(node)),
+            yLabels:root.querySelector('[data-cfx-browser-axis=y]')
+                ? [...root.querySelectorAll('[data-cfx-browser-axis=y] text')].map(node=>node.textContent)
+                : [...root.querySelectorAll('[data-cfx-role=axis-y-label]')].map(node=>window.cfxCaptionText(node))
         };}
         """);
     }

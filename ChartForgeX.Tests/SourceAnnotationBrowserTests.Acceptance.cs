@@ -54,6 +54,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         var host = new AnnotationHost(width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, width + 24, 1000);
         var page = session.Page; await ConnectAnnotations(page, host);
+        await SettlePresentationAsync(page);
         await page.EvaluateAsync("""
             ()=>{window.pendingEdits=[];
                 drawings.connectNative((request,signal)=>new Promise(resolve=>pendingEdits.push({request,signal,resolve})),{basis:'initial',axes:null});
@@ -69,12 +70,20 @@ public sealed partial class SourceAnnotationBrowserTests {
                 section.querySelector('template[data-cfx-adaptive-narrow]').content.querySelector('[data-cfx-annotation-id=note]').dataset.cfxLabel='Stale';
                 pendingEdits[0].resolve({html:section.outerHTML,basis:reply.token});}
             """);
-        await page.WaitForFunctionAsync("()=>annotationErrors.length===1");
-        Assert.True(await page.EvaluateAsync<bool>("""
-            ()=>annotationChanges.length===0&&drawings.sceneRevision===beforeAnnotationRevision
-                &&drawings.root.querySelector('.cfx-stage svg').outerHTML===beforeAnnotationSvg
-                &&!editor.getState().canUndo&&!editor.getState().canRedo
-            """));
+        await page.WaitForFunctionAsync("()=>annotationErrors.length>=1");
+        var rejected = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const svg=drawings.root.querySelector('.cfx-stage svg').outerHTML;
+                let difference=0;while(difference<svg.length&&svg[difference]===beforeAnnotationSvg[difference])difference++;
+                return{errors:annotationErrors.length,changes:annotationChanges.length,
+                    sameRevision:drawings.sceneRevision===beforeAnnotationRevision,sameSvg:svg===beforeAnnotationSvg,
+                    ...editor.getState(),difference,before:beforeAnnotationSvg.slice(difference,difference+180),after:svg.slice(difference,difference+180)};}
+            """);
+        Assert.Equal(1, rejected.GetProperty("errors").GetInt32());
+        Assert.Equal(0, rejected.GetProperty("changes").GetInt32());
+        Assert.True(rejected.GetProperty("sameRevision").GetBoolean(), rejected.GetRawText());
+        Assert.True(rejected.GetProperty("sameSvg").GetBoolean(), rejected.GetRawText());
+        Assert.False(rejected.GetProperty("canUndo").GetBoolean());
+        Assert.False(rejected.GetProperty("canRedo").GetBoolean());
         await page.EvaluateAsync("()=>drawings.applyAnnotationChange(annotationChange)");
         await page.WaitForFunctionAsync("()=>pendingEdits.length===2");
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>pendingEdits[1].request.basis"));

@@ -31,7 +31,7 @@ public sealed class BoxPlotStatisticLabelBrowserTests {
         await page.EvaluateAsync("() => { window.statisticSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => statisticSelections.push(event.detail.target)); }");
         var selector = "[data-cfx-role='data-label-source'][data-cfx-label-for='series-0-point-0']";
         Assert.Equal(5, await page.Locator(selector).CountAsync());
-        var expectedRows = new[] { "Series", "Delivery", "Category", "Service A", "Minimum", "-30", "Q1", "-10", "Median", "10", "Q3", "30", "Maximum", "50" };
+        var expectedRows = new[] { "Category", "Service A", "Minimum", "-30", "Q1", "-10", "Median", "10", "Q3", "30", "Maximum", "50" };
         var names = new[] { "minimum", "q1", "median", "q3", "maximum" };
         for (var member = 0; member < names.Length; member++) {
             var caption = page.Locator(selector).Nth(member);

@@ -54,6 +54,8 @@ internal static partial class InteractiveChartBrowser {
             if (waitForOwnedFonts && await session.Page.EvaluateAsync<bool>("()=>isSecureContext&&typeof FontFace==='function'&&!!document.querySelector('.cfx-stage [data-cfx-owned-font-text]')"))
                 await session.Page.WaitForFunctionAsync("()=>[...document.querySelectorAll('.cfx-stage [data-cfx-owned-font-text]')].every(node=>!node.hasAttribute('display'))");
             await BrowserProofCaptions.InstallNativeAsync(session.Page);
+            if (configurePage is null && configurePageAsync is null)
+                await SettlePresentationAsync(session.Page);
             return session;
         } catch {
             await session.DisposeAsync();
@@ -95,8 +97,13 @@ internal static partial class InteractiveChartBrowser {
 
     internal static string Point(int series, int point) => PointTarget + "[data-cfx-series=\"" + series + "\"][data-cfx-point=\"" + point + "\"]";
 
-    internal static Task<string[]> OpacitiesAsync(IPage page, string selector) =>
-        page.EvaluateAsync<string[]>("selector => Array.from(document.querySelectorAll(selector)).map(node => getComputedStyle(node).opacity)", selector);
+    /// <summary>Waits for finite chart presentation before reading final paint, preserving paused and unbounded host animations.</summary>
+    internal static Task SettlePresentationAsync(IPage page) => page.EvaluateAsync("async()=>{const animations=[...document.querySelectorAll('.cfx-interactive-chart')].flatMap(root=>root.getAnimations({subtree:true}));await Promise.all(animations.filter(animation=>animation.playState==='running'&&animation.effect?.getComputedTiming().endTime<=1000).map(animation=>animation.finished.catch(()=>{})));}");
+
+    internal static async Task<string[]> OpacitiesAsync(IPage page, string selector) {
+        await SettlePresentationAsync(page);
+        return await page.EvaluateAsync<string[]>("selector => Array.from(document.querySelectorAll(selector)).map(node => getComputedStyle(node).opacity)", selector);
+    }
 
     internal static Task<string> TooltipTextAsync(IPage page) =>
         page.EvaluateAsync<string>("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden ? tip.innerText : ''; }");
@@ -113,6 +120,7 @@ internal static partial class InteractiveChartBrowser {
     internal static async Task MoveAwayAsync(IPage page) {
         var size = page.ViewportSize ?? throw new InvalidOperationException("Viewport size is unavailable.");
         await page.Mouse.MoveAsync(size.Width - 4, size.Height - 4, new MouseMoveOptions { Steps = 2 });
+        await SettlePresentationAsync(page);
     }
 
     internal static void AssertNoConsoleErrors(HtmlBrowserSession session) {
