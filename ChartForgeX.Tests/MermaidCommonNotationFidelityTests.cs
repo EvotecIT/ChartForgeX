@@ -129,8 +129,8 @@ public sealed partial class MermaidCommonNotationFidelityTests {
         Assert.Equal(new[] { "Customer account", "Orders" }, document.Entities.Select(node => node.Label));
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         Assert.Equal("Customer account", chart.Nodes[0].Label);
-        Assert.Equal("string id  PK, FK  External customer key", chart.Nodes[0].Details[0].Text);
-        Assert.Equal("string? display_name", chart.Nodes[0].Details[1].Text);
+        Assert.Equal(new[] { "string", "id", "PK, FK", "External customer key" }, chart.Nodes[0].TableContent!.Rows[0].Cells.Select(cell => cell.DisplayText));
+        Assert.Equal(new[] { "string?", "display_name", "", "" }, chart.Nodes[0].TableContent!.Rows[1].Cells.Select(cell => cell.DisplayText));
         Assert.Equal("C", Assert.Single(chart.Edges).SourceNodeId);
         Assert.Equal("places order", chart.Edges[0].Label);
         Assert.Contains("Customer account", result.Artifact.ToSvg());

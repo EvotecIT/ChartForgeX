@@ -89,8 +89,8 @@ public sealed class MermaidWebsiteSampleTests {
         if (attachment == "waypoint") edge.Waypoints.Add(new ChartForgeX.Primitives.ChartPoint(100, 300));
 
         var prepared = TopologyLayoutEngine.Prepare(chart).Edges.Single(item => item.Id == edge.Id);
-        Assert.Equal(attachment is "source" or "named" ? TopologyEdgePort.Left : TopologyEdgePort.Auto, prepared.SourcePort);
-        Assert.Equal(edge.TargetPort, prepared.TargetPort);
+        Assert.Equal(attachment is "source" or "named" ? TopologyEdgePort.Left : attachment == "waypoint" ? TopologyEdgePort.Auto : TopologyEdgePort.Bottom, prepared.SourcePort);
+        Assert.Equal(attachment == "target" ? TopologyEdgePort.Right : attachment == "waypoint" ? TopologyEdgePort.Auto : TopologyEdgePort.Top, prepared.TargetPort);
         Assert.Equal(edge.SourcePortId, prepared.SourcePortId);
         Assert.Equal(edge.Waypoints, prepared.Waypoints);
         Assert.False(prepared.Metadata.ContainsKey("layout.route"));
@@ -241,7 +241,7 @@ public sealed class MermaidWebsiteSampleTests {
         var lightSvg = light.ToSvg();
         Assert.NotEqual(darkSvg, lightSvg);
         // The finite dark preset is exactly #333333 (luminance .2), rather than the native Graphite dark canvas.
-        var expectedLight = ChartColor.FromHex("#FFFFFF");
+        var expectedLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background;
         var expectedDark = ChartColor.FromHex("#333333");
         Assert.Equal(expectedLight, ChartColor.Parse(Background(XDocument.Parse(lightSvg))));
         Assert.Equal(expectedDark, ChartColor.Parse(Background(XDocument.Parse(darkSvg))));

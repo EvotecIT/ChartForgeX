@@ -51,6 +51,7 @@ public static partial class MermaidTopologyRendering {
             if (item.ParentId != null) {
                 chart.AddEdge("mindmap-edge-" + item.Id, item.ParentId, item.Id, null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved);
                 var edge = chart.Edges[chart.Edges.Count - 1];
+                edge.LineStyle = TopologyEdgeLineStyle.Solid;
                 edge.PaletteIndex = node.PaletteIndex;
                 edge.Metadata["mermaid.section"] = node.Metadata["mermaid.section"];
             }

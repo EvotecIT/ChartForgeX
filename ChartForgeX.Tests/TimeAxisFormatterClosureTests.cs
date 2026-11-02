@@ -88,7 +88,7 @@ public sealed class TimeAxisFormatterClosureTests {
         Assert.Equal(texts, svgLabels.Select(node => node.Value));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
-        Assert.Equal(width, image.Width); Assert.Equal(360, image.Height);
+        Assert.Equal(width, image.Width); Assert.Equal((int)Math.Ceiling(prepared.Size.Height), image.Height);Assert.InRange(image.Height, 120, 359);
         chart.ConfigureXAxis(axis => axis.TickCount = 4);
         Assert.InRange(Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Length, 2, 4);
     }

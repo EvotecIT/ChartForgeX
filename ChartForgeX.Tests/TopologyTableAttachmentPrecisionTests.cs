@@ -23,10 +23,9 @@ public sealed class TopologyTableAttachmentPrecisionTests {
         var facts = prepared.ToInterchangeEnvelope(); var node = facts.Nodes.Single(item => item.Id == "facts");
         var endpoint = facts.Edges.Single(edge => edge.Id == "arrive").ResolvedRoute[^1];
         Capture(prepared, "table-attachment-" + shape + "-" + side + (named ? "-named" : "-axis"));
-        // Standard native routes retain a seven-unit endpoint gap outside the actual numeric surface.
-        // The exact surface plus that gap, not a serialized 0.### path, is geometry authority.
-        if (side == TopologyEdgePort.Right) Assert.Equal(node.X!.Value + node.Width!.Value + 7, endpoint.X);
-        else Assert.Equal(node.Y!.Value + node.Height!.Value + 7, endpoint.Y);
+        // The exact numeric surface, not a serialized 0.### path, owns endpoint clipping.
+        if (side == TopologyEdgePort.Right) Assert.Equal(node.X!.Value + node.Width!.Value, endpoint.X);
+        else Assert.Equal(node.Y!.Value + node.Height!.Value, endpoint.Y);
         if (named) {
             if (side == TopologyEdgePort.Right) Assert.Equal(node.Y!.Value + node.Height!.Value * .5, endpoint.Y);
             else Assert.Equal(node.X!.Value + node.Width!.Value * .5, endpoint.X);
@@ -49,7 +48,7 @@ public sealed class TopologyTableAttachmentPrecisionTests {
             var facts = ordinary.ToInterchangeEnvelope(); var node = facts.Nodes.Single(item => item.Id == "facts");
             var endpoint = facts.Edges.Single(edge => edge.Id == "arrive").ResolvedRoute[^1];
             var edge = side == TopologyEdgePort.Right ? node.X!.Value + node.Width!.Value : node.Y!.Value + node.Height!.Value;
-            var incumbent = double.Parse(edge.ToString("0.###", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture) + 7;
+            var incumbent = edge;
             Assert.Equal(incumbent, side == TopologyEdgePort.Right ? endpoint.X : endpoint.Y);
             var svg = ordinary.ToSvg(); var png = ordinary.ToPng(); var json = facts.ToJson();
             Capture(ordinary, "ordinary-attachment-" + shape + "-" + side);

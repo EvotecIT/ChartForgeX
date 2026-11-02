@@ -7,7 +7,7 @@ public static partial class VisualArtifactInterchangeMapping {
     internal static VisualArtifactInterchangeTableContent? MapTableContent(TableArtifact? source) {
         if (source == null) return null;
         var target = new VisualArtifactInterchangeTableContent { Id = source.Id, Title = source.Title, Subtitle = source.Subtitle,
-            Capabilities = source.Capabilities, ExportFormats = source.ExportFormats, TotalRowCount = source.TotalRowCount, PresentationScale = source.CapturedPresentationScale };
+            Capabilities = source.Capabilities, ExportFormats = source.ExportFormats, TotalRowCount = source.TotalRowCount, PresentationScale = source.CapturedPresentationScale, ShowGridLines = source.ShowGridLines };
         CopyTableBag(source.Metadata, target.Extensions);
         foreach (var column in source.Columns) {
             if (column == null) throw new ArgumentException("Embedded table columns must not be null.", nameof(source));
@@ -23,6 +23,7 @@ public static partial class VisualArtifactInterchangeMapping {
             for (var i = 0; i < row.Cells.Count; i++) {
                 var cell = row.Cells[i] ?? throw new ArgumentException("Embedded table cells must not be null.", nameof(source));
                 var copy = new VisualArtifactInterchangeTableCell { ColumnId = source.Columns[i].Id, DisplayText = cell.DisplayText,
+                    Content = cell.Content?.IsStructured == true ? cell.Content : null,
                     SearchText = cell.SearchText, SortText = cell.SortText, CopyText = cell.CopyText, ExportText = cell.ExportText, Status = cell.Status };
                 CopyTableBag(cell.Metadata, copy.Extensions); item.Cells.Add(copy);
             }
@@ -35,6 +36,7 @@ public static partial class VisualArtifactInterchangeMapping {
         VisualArtifactInterchangeValidation.TableContent(source);
         var target = TableArtifact.Create(source.Id).WithTitle(source.Title).WithSubtitle(source.Subtitle);
         target.CapturedPresentationScale = source.PresentationScale;
+        target.ShowGridLines = source.ShowGridLines;
         target.Capabilities = source.Capabilities; target.ExportFormats = source.ExportFormats; target.TotalRowCount = source.TotalRowCount;
         CopyTableBag(source.Extensions, target.Metadata);
         foreach (var column in source.Columns) {
@@ -49,6 +51,7 @@ public static partial class VisualArtifactInterchangeMapping {
             CopyTableBag(row.Extensions, item.Metadata);
             for (var i = 0; i < row.Cells.Count; i++) {
                 var cell = row.Cells[i]; var copy = item.Cells[i]; copy.SearchText = cell.SearchText; copy.SortText = cell.SortText;
+                copy.Content = cell.Content;
                 copy.CopyText = cell.CopyText; copy.ExportText = cell.ExportText; copy.Status = cell.Status;
                 CopyTableBag(cell.Extensions, copy.Metadata);
             }

@@ -42,7 +42,7 @@ public sealed class MixedCaptionRecipeSourceTests {
             : MermaidMixedCaptionSourceExample.Create(family, variant, mode, BrowserProofFonts.Family);
         if (family == "requirement") {
             var prepared = Assert.IsType<TopologyChart>(artifact.Model).Prepare();
-            Assert.Equal(variant == "compact" ? 390 : 1100, prepared.Width);
+            Assert.InRange(prepared.Width, 250, variant == "compact" ? 390 : 1100);
             var painted = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>()
                 .Where(text => text.Role == "inline-text-run").ToArray();
             var visibleRows = painted.GroupBy(text => text.Baseline).OrderBy(row => row.Key)

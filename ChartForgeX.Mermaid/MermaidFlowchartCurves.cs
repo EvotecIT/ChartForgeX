@@ -47,7 +47,7 @@ internal static class MermaidFlowchartCurves {
         var source = configuration == null ? (Choice?)null : new Choice(configuration.Value,
             Truthy(configuration.Value, configuration.IsString), configuration.Span, configuration.Span, "configuration");
         var effective = raw?.Truthy == true ? raw.GetValueOrDefault() : defaults?.Truthy == true ? defaults.GetValueOrDefault()
-            : source?.Truthy == true ? source.GetValueOrDefault() : new Choice("basis", true, document.HeaderSpan, document.HeaderSpan, "implicit");
+            : source?.Truthy == true ? source.GetValueOrDefault() : new Choice("rounded", true, document.HeaderSpan, document.HeaderSpan, "implicit");
         var known = TryKind(effective.Name, out var interpolation);
         // The pinned lane layout rewrites only a missing/basis request, before the renderer's unknown-token fallback.
         if (document.Kind == MermaidDiagramKind.Swimlane && known && interpolation == TopologyEdgeInterpolation.Basis)

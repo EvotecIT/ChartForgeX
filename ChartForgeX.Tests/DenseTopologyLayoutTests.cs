@@ -298,7 +298,7 @@ public sealed class DenseTopologyLayoutTests {
         var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
         var points = chart.Prepare(TileOptions).Analyze().Edges.Single().Points;
         Assert.True(points.Count >= 2);
-        Assert.True(points[0].Y > prepared.Nodes.Single(node => node.Id == "a").Y + 40);
+        Assert.Equal(prepared.Nodes.Single(node => node.Id == "a").Y + 40, points[0].Y, 6);
     }
 
     [Fact]

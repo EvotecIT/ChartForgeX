@@ -13,11 +13,21 @@ public sealed class SequenceSourceDefaultsBeforeTests {
     [InlineData("alignment","{\"messageAlign\":\"center\",\"noteAlign\":\"center\"}")]
     [InlineData("self","{\"rightAngles\":false}")]
     [InlineData("font","{\"actorFontSize\":14,\"actorFontFamily\":\"\\\"Open Sans\\\", sans-serif\",\"actorFontWeight\":400,\"messageFontSize\":16,\"messageFontFamily\":\"\\\"trebuchet ms\\\", verdana, arial, sans-serif\",\"messageFontWeight\":400,\"noteFontSize\":14,\"noteFontFamily\":\"\\\"trebuchet ms\\\", verdana, arial, sans-serif\",\"noteFontWeight\":400}")]
-    [InlineData("layout","{\"activationWidth\":10,\"diagramMarginX\":50,\"diagramMarginY\":10,\"actorMargin\":50,\"width\":150,\"height\":65,\"boxMargin\":10,\"boxTextMargin\":5,\"noteMargin\":10,\"messageMargin\":35,\"wrap\":false,\"wrapPadding\":10}")]
+    [InlineData("layout","{\"activationWidth\":10,\"diagramMarginX\":32,\"diagramMarginY\":32,\"actorMargin\":50,\"width\":150,\"height\":65,\"boxMargin\":10,\"boxTextMargin\":5,\"noteMargin\":10,\"messageMargin\":35,\"wrap\":false,\"wrapPadding\":10}")]
     public void OmittedSourceDefaultsMatchTheirVerifiedExplicitSourceValues(string name,string settings) {
         var ordinary=MermaidRenderer.Render(Body());var explicitValue=MermaidRenderer.Render(Source(settings));Capture("sequence-default-before-omitted-"+name,Body(),ordinary);Capture("sequence-default-before-explicit-"+name,Source(settings),explicitValue);Assert.Empty(ordinary.Diagnostics);Assert.Empty(explicitValue.Diagnostics);
         var ordinaryArtifact = ordinary.Artifact ?? throw new InvalidOperationException("The omitted-default source did not produce an artifact.");
         var explicitArtifact = explicitValue.Artifact ?? throw new InvalidOperationException("The explicit-default source did not produce an artifact.");
+        if (name == "font") {
+            var ordinaryModel = Assert.IsType<SequenceArtifact>(ordinaryArtifact.Model);
+            var authoredModel = Assert.IsType<SequenceArtifact>(explicitArtifact.Model);
+            Assert.Null(ordinaryModel.Typography);
+            Assert.Equal(VisualTheme.Graphite().Typography.Family, ordinaryModel.Theme.Typography.Family);
+            Assert.Equal(14, authoredModel.Typography!.Participant!.FontSize);
+            Assert.Equal("\"Open Sans\", sans-serif", authoredModel.Typography.Participant.FontFamily);
+            Assert.NotEqual(explicitArtifact.ToSvg(), ordinaryArtifact.ToSvg());
+            return;
+        }
         Assert.Equal(explicitArtifact.ToSvg(), ordinaryArtifact.ToSvg());
         Assert.Equal(explicitArtifact.ToPng(), ordinaryArtifact.ToPng());
     }

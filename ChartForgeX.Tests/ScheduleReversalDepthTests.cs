@@ -68,7 +68,15 @@ public sealed class ScheduleReversalDepthTests {
         Assert.Equal(task.Right, progress.Bounds.Right, 8); Assert.Equal(task.Width / 2, progress.Bounds.Width, 8);
         var successor = prepared.Scene.Regions.Single(region => region.Id == "series-1-point-0").Bounds;
         var arrow = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
-        Assert.True(arrow.Commands[1].X > successor.Right); Assert.True(arrow.Commands[0].X > arrow.Commands[1].X);
+        var tip = arrow.Commands[1];
+        if (tip.Y < successor.Top) {
+            Assert.Equal(successor.Top, tip.Y + arrow.StrokeWidth / 2, 3);
+            Assert.InRange(tip.X, successor.Left, successor.Right);
+            Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.Y < tip.Y));
+        } else {
+            Assert.Equal(successor.Right, tip.X - arrow.StrokeWidth / 2, 3);
+            Assert.True(arrow.Commands[0].X > tip.X);
+        }
         var actual = prepared.ToRgba(); var scene = prepared.Scene;
         var control = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "gantt-dependency-arrow").ToArray(), scene.Diagnostics, scene.Regions));
         Assert.True(actual.Pixels.Where((value, index) => value != control.Pixels[index]).Count() > 4, "The reversed arrow must paint actual native pixels, not only metadata.");

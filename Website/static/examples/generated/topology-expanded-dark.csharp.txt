@@ -16,8 +16,15 @@ using ChartForgeX.VisualBlocks;
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyRecipe.Create("expanded", mode);
+if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Service request topology").WithSubtitle("Groups, status, details and routed links").WithTheme(theme, mode).ToVisualArtifact();
+    File.WriteAllText("visual.svg", natural.ToSvg());
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(960, 600)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(1057, 505)), theme, mode,
     new VisualFrame("Service request topology", "Groups, status, details and routed links", showLegend: true, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -36,9 +43,10 @@ public static class TopologyRecipe {
 
         var atlas = variant == "shapes";
         var chart = TopologyChart.Create();
+        chart.ThemeMode = mode;
         chart.Id = atlas ? "shape-atlas" : "service-topology";
         chart.DefaultRenderOptions = new TopologyRenderOptions {
-            FitContentToViewport = true,
+            FitContentToViewport = atlas,
             WrapNodeLabels = true,
             IncludeLegend = true,
             IncludeGroupStatusDots = true
@@ -62,17 +70,20 @@ public static class TopologyRecipe {
             return chart;
         }
 
+        chart.WithViewport(variant == "compact" ? 390 : 1100, 620).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(variant == "compact" ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
+
         chart.Groups.Add(new TopologyGroup {
-            Id = "primary", Label = "Primary region", X = 0, Y = 0, Width = 340, Height = 300,
+            Id = "primary", Label = "Primary region",
             Status = TopologyHealthStatus.Healthy
         });
         chart.Groups.Add(new TopologyGroup {
-            Id = "secondary", Label = "Secondary region", X = 390, Y = 0, Width = 340, Height = 300,
+            Id = "secondary", Label = "Secondary region",
             Status = TopologyHealthStatus.Warning
         });
 
         var source = new TopologyNode {
-            Id = "client", Label = "Client service", Subtitle = "Requests", X = 30, Y = 65, Width = 240, Height = 85,
+            Id = "client", Label = "Client service", Subtitle = "Requests", Width = 240, Height = 85,
             Kind = TopologyNodeKind.Server, GroupId = "primary", Status = TopologyHealthStatus.Healthy
         };
         source.Details.Add(new TopologyNodeDetail {
@@ -80,16 +91,16 @@ public static class TopologyRecipe {
         });
         chart.Nodes.Add(source);
         chart.Nodes.Add(new TopologyNode {
-            Id = "cache", Label = "Cache", X = 70, Y = 210, Width = 150, Height = 65,
-            Shape = TopologyNodeShape.Cylinder, GroupId = "primary"
+            Id = "cache", Label = "Cache", Width = 150, Height = 65,
+            Shape = TopologyNodeShape.Cylinder, GroupId = "primary", ShowStatusBadge = false
         });
         chart.Nodes.Add(new TopologyNode {
-            Id = "worker", Label = "Processing service", X = 430, Y = 65, Width = 240, Height = 85,
+            Id = "worker", Label = "Processing service", Width = 240, Height = 85,
             Kind = TopologyNodeKind.Server, GroupId = "secondary", Status = TopologyHealthStatus.Warning
         });
         chart.Nodes.Add(new TopologyNode {
-            Id = "store", Label = "Result store", X = 470, Y = 210, Width = 150, Height = 65,
-            Shape = TopologyNodeShape.Cylinder, GroupId = "secondary"
+            Id = "store", Label = "Result store", Width = 150, Height = 65,
+            Shape = TopologyNodeShape.Cylinder, GroupId = "secondary", ShowStatusBadge = false
         });
 
         chart.Edges.Add(new TopologyEdge {
@@ -102,7 +113,7 @@ public static class TopologyRecipe {
         });
         chart.Edges.Add(new TopologyEdge {
             Id = "persist", SourceNodeId = "worker", TargetNodeId = "store", Label = "Persist",
-            Routing = TopologyEdgeRouting.Orthogonal
+            Routing = TopologyEdgeRouting.Orthogonal, Direction = VisualLinkDirection.Forward
         });
         chart.Legend = TopologyLegend.Create()
             .AddStatus("Available", TopologyHealthStatus.Healthy)

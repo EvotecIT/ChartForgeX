@@ -38,9 +38,11 @@ public sealed class MermaidPolarScheduleTypographyTests {
             foreach (var expected in new[] { "API", "UI", "Store" }) Assert.Contains(labels, element => element.Value == expected);
             Assert.Contains(labels, element => Role(element) == "radar-ring-label");
         } else {
-            Assert.Equal(2, labels.Count(element => Role(element) == "schedule-row-label"));
+            var rows = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-row-label").ToArray();
+            Assert.Equal(2, rows.Length);
             Assert.True(labels.Count(element => Role(element) == "schedule-tick-label") >= 2);
-            foreach (var expected in new[] { "Delivery / Build", "Delivery / Review" }) Assert.Contains(labels, element => element.Value == expected);
+            Assert.Equal(new[] { "Delivery / Build", "Delivery / Review" },
+                rows.Select(row => string.Join(" ", row.Text.Lines.Select(line => line.Text))));
             Assert.Equal(2, labels.Count(element => Role(element) == "data-label"));
         }
         Assert.Equal(authoredTickSize, chart.Options.Theme.Typography.AxisSize);

@@ -39565,9 +39565,9 @@
       "primary": true,
       "seriesKinds": [],
       "theme": "light",
-      "width": 960,
-      "height": 600,
-      "naturalAspect": 1.6,
+      "width": 1057,
+      "height": 505,
+      "naturalAspect": 2.093069306930693,
       "compact": false,
       "interactive": null,
       "source": "topology-expanded-light.csharp.txt",
@@ -39585,16 +39585,10 @@
         "html"
       ],
       "diagnostics": [
-        "topology.shape-content-overflow",
-        "topology.label-height",
-        "topology.shape-content-overflow",
-        "topology.label-height"
+        "example.native-natural-size"
       ],
       "diagnosticMessages": [
-        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
-        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
-        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
-        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+        "Complete authored geometry retains natural size; compact hosts may scroll."
       ],
       "semanticRegions": 17
     },
@@ -39719,9 +39713,9 @@
       "primary": true,
       "seriesKinds": [],
       "theme": "dark",
-      "width": 960,
-      "height": 600,
-      "naturalAspect": 1.6,
+      "width": 1057,
+      "height": 505,
+      "naturalAspect": 2.093069306930693,
       "compact": false,
       "interactive": null,
       "source": "topology-expanded-dark.csharp.txt",
@@ -39739,16 +39733,10 @@
         "html"
       ],
       "diagnostics": [
-        "topology.shape-content-overflow",
-        "topology.label-height",
-        "topology.shape-content-overflow",
-        "topology.label-height"
+        "example.native-natural-size"
       ],
       "diagnosticMessages": [
-        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
-        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
-        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
-        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+        "Complete authored geometry retains natural size; compact hosts may scroll."
       ],
       "semanticRegions": 17
     },
@@ -41881,9 +41869,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "light",
-      "width": 1295,
-      "height": 698,
-      "naturalAspect": 1.8553008595988538,
+      "width": 1382,
+      "height": 376,
+      "naturalAspect": 3.675531914893617,
       "compact": false,
       "interactive": null,
       "source": "usecase-advanced-actors-wide-light.csharp.txt",
@@ -41958,8 +41946,8 @@
       "seriesKinds": [],
       "theme": "light",
       "width": 698,
-      "height": 1160,
-      "naturalAspect": 0.6017241379310345,
+      "height": 970,
+      "naturalAspect": 0.7195876288659794,
       "compact": true,
       "interactive": null,
       "source": "usecase-advanced-actors-compact-light.csharp.txt",
@@ -45369,9 +45357,9 @@
       "primary": false,
       "seriesKinds": [],
       "theme": "dark",
-      "width": 1295,
-      "height": 698,
-      "naturalAspect": 1.8553008595988538,
+      "width": 1382,
+      "height": 376,
+      "naturalAspect": 3.675531914893617,
       "compact": false,
       "interactive": null,
       "source": "usecase-advanced-actors-wide-dark.csharp.txt",
@@ -45446,8 +45434,8 @@
       "seriesKinds": [],
       "theme": "dark",
       "width": 698,
-      "height": 1160,
-      "naturalAspect": 0.6017241379310345,
+      "height": 970,
+      "naturalAspect": 0.7195876288659794,
       "compact": true,
       "interactive": null,
       "source": "usecase-advanced-actors-compact-dark.csharp.txt",

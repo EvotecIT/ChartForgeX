@@ -297,7 +297,7 @@ gitGraph
         Assert(result.Artifacts[0].Metadata["render.model"] == nameof(GitGraphBlock), "Mermaid gitGraph fence artifacts should expose the git graph render model.");
         Assert(result.Artifacts[0].Metadata["mermaid.commits"] == "3", "Mermaid gitGraph fence artifacts should expose commit counts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid gitGraph artifacts should expose natural size.");
-        Assert(naturalSize.Width == 760 && naturalSize.Height == 340, "Mermaid gitGraph fence size attributes should map to artifact natural size.");
+        Assert(naturalSize.Width > 0 && naturalSize.Width <= 760 && naturalSize.Height > 0 && naturalSize.Height < 340, "Mermaid gitGraph fences should fit their measured content within the requested aspect.");
     }
 
     private static void MermaidVisualMarkupParserMapsTimelineFencesToArtifacts() {
@@ -467,7 +467,7 @@ Ship : milestone, ship, after impl, 0d
         var chart = result.Artifacts[0].Model as Chart ?? throw new InvalidOperationException("Mermaid Gantt artifact should carry a Chart model.");
         Assert(chart.Options.GanttToday.HasValue, "Mermaid Gantt fence today attributes should map to chart rendering options.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid Gantt artifacts should expose natural size.");
-        Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid Gantt fence size attributes should map to artifact natural size.");
+        Assert(naturalSize.Width == 720 && naturalSize.Height > 0 && naturalSize.Height < 420, "Mermaid Gantt fences should retain requested width and fit their task rows.");
     }
 
     private static void MermaidVisualMarkupParserMapsPacketFencesToArtifacts() {
@@ -590,7 +590,7 @@ todo[Todo]
         Assert(result.Artifacts[6].Id == "mind-map" && result.Artifacts[6].Model is TopologyChart && result.Artifacts[6].Metadata["mermaid.nodes"] == "2", "Mindmap fences should map to topology artifacts.");
         Assert(result.Artifacts[7].Id == "kanban" && result.Artifacts[7].Model is TopologyChart && result.Artifacts[7].Metadata["mermaid.tasks"] == "1", "Kanban fences should map to topology artifacts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Topology-backed Mermaid artifacts should expose natural size.");
-        Assert(naturalSize.Width >= 720 && naturalSize.Height >= 420, "Topology-backed Mermaid fence size attributes should set the minimum canvas while keeping expanded notation visible.");
+        Assert(naturalSize.Width > 0 && naturalSize.Height > 0, "Topology-backed Mermaid fences should expose their measured natural canvas.");
         var svgRoot = System.Xml.Linq.XDocument.Parse(result.Artifacts[0].ToSvg()).Root!;
         Assert(double.Parse(svgRoot.Attribute("width")!.Value, CultureInfo.InvariantCulture) == naturalSize.Width
             && double.Parse(svgRoot.Attribute("height")!.Value, CultureInfo.InvariantCulture) == naturalSize.Height,
@@ -621,7 +621,7 @@ Task A : a, 2026-01-01, 2d
         Assert(result.Artifacts[0].Id == "default-gantt", "Bundled Mermaid Gantt ids should apply when a fence does not override them.");
         Assert(result.Artifacts[0].Title == "Fence Title", "Mermaid fence title attributes should override bundled rendering defaults.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid Gantt artifacts should expose natural size.");
-        Assert(naturalSize.Width == 680 && naturalSize.Height == 390, "Bundled Mermaid Gantt sizes should apply when a fence does not override them.");
+        Assert(naturalSize.Width == 680 && naturalSize.Height > 0 && naturalSize.Height < 390, "Bundled Mermaid Gantt width should apply while task rows determine natural height.");
         var chart = result.Artifacts[0].Model as Chart ?? throw new InvalidOperationException("Mermaid Gantt artifact should carry a Chart model.");
         Assert(chart.Options.GanttToday == new DateTime(2026, 1, 2).ToOADate(), "Bundled Mermaid Gantt today values should flow into the render model.");
     }

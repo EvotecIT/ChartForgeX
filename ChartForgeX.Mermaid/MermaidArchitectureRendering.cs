@@ -28,7 +28,7 @@ public static class MermaidArchitectureRendering {
                 ? TopologyLayoutMode.Layered : TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
 
         foreach (var group in document.Groups) {
-            chart.AddAutoGroup(group.Id, string.IsNullOrWhiteSpace(group.Title) ? group.Id : group.Title, TopologyHealthStatus.Unknown, subtitle: group.ParentId == null ? null : "in " + group.ParentId, cssClass: "cfx-mermaid-architecture-group", iconId: MermaidArchitectureIcons.NativeId(group.Icon));
+            chart.AddAutoGroup(group.Id, string.IsNullOrWhiteSpace(group.Title) ? group.Id : group.Title, TopologyHealthStatus.Unknown, cssClass: "cfx-mermaid-architecture-group", iconId: MermaidArchitectureIcons.NativeId(group.Icon));
             var topologyGroup = chart.Groups[chart.Groups.Count - 1];
             topologyGroup.ShowLabel = !string.IsNullOrWhiteSpace(group.Title);
             topologyGroup.LayoutPolicy = TopologyGroupLayoutPolicy.Grid;

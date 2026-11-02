@@ -487,7 +487,9 @@ internal static partial class SmokeTests {
             .AddTimelineItem(longLabel, new DateTime(2026, 1, 1), new DateTime(2026, 1, 15))
             .ToSvg();
         Assert(timeline.Contains("data-cfx-role=\"schedule-row-label\"", StringComparison.Ordinal), "Timelines should use the shared fitted schedule row labels.");
-        Assert(timeline.Contains("…</text>", StringComparison.Ordinal), "Timeline row labels should shorten when their reserved regions are constrained.");
+        var timelineLabel = System.Xml.Linq.XDocument.Parse(timeline).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "schedule-row-label");
+        Assert(string.Join(" ", timelineLabel.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value)) == longLabel,
+            "Timeline row labels should retain complete words when wrapping fits their allocated height.");
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {

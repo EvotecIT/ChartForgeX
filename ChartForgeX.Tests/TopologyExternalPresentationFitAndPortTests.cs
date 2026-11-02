@@ -45,7 +45,7 @@ public sealed class TopologyExternalPresentationFitAndPortTests {
         foreach(var node in chart.Nodes){node.ShowStatusBadge=false;node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;}chart.Nodes[0].CornerRadius=authored;chart.Edges[0].SourcePortId="exit";
         chart.WithRenderOptions(new TopologyRenderOptions{IncludeLegend=false,FitContentToViewport=false});var prepared=chart.Prepare();Capture("radius-port-"+authored,prepared);
         var envelope=prepared.ToInterchangeEnvelope();var route=envelope.Edges[0].ResolvedRoute;var source=envelope.Nodes[0];
-        Assert.NotEmpty(route);Assert.Equal(source.X!.Value,route[0].X,6);Assert.Equal(source.Y!.Value+resolved-7,route[0].Y,6);Assert.Equal("exit",envelope.Edges[0].SourcePortId);
+        Assert.NotEmpty(route);Assert.Equal(source.X!.Value,route[0].X,6);Assert.Equal(source.Y!.Value+resolved,route[0].Y,6);Assert.Equal("exit",envelope.Edges[0].SourcePortId);
         Assert.Equal(prepared.ToPng(),VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson()).ToTopologyChart().ToPng());
         var content=TopologyNodeShapeGeometry.CaptionBounds(chart.Nodes[0],0);Assert.True(content.Left>chart.Nodes[0].X);Assert.True(content.Right<chart.Nodes[0].X+chart.Nodes[0].Width);
     }

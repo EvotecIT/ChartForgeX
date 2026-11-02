@@ -29,7 +29,7 @@
         { "title": "Orders schema", "id": "er", "name": "Entity relationship", "purpose": "Entities, their attributes and the cardinality between them.", "source": "playground:mermaid-er" },
         { "title": "Sign-in requirements", "id": "requirement", "name": "Requirement", "purpose": "Requirements and the elements that satisfy or verify them.", "source": "site:requirement" },
         { "title": "Report platform", "id": "architecture", "name": "Architecture", "purpose": "Services, groups and connections on a system map.", "source": "site:architecture" },
-        { "id": "c4", "name": "C4", "purpose": "People, systems, nested boundaries and ordered relationships.", "source": "fixture:c4-nested-native" },
+        { "id": "c4", "name": "C4", "purpose": "People, systems, nested boundaries and ordered relationships.", "source": "site:c4" },
         { "title": "Render pipeline", "id": "block", "name": "Block", "purpose": "Blocks placed on a column grid, joined by links.", "source": "site:block" },
         { "title": "TCP header", "id": "packet", "name": "Packet", "purpose": "Bit ranges of a protocol header, row by row.", "source": "fixture:packet-basic" },
         { "title": "Review workflow", "id": "agentflow", "name": "Agentflow", "purpose": "Nested agent flows with inert connector and metadata facts.", "source": "fixture:agentflow-native-workflow" },

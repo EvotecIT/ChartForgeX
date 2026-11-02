@@ -47,12 +47,12 @@ public sealed class MermaidElevenTopologyPresetRoleTests {
         var result = Render(preset, "\"nodeBorder\":\"#123456\",\"clusterBorder\":\"#234567\",\"nodeTextColor\":\"#345678\",\"edgeLabelBackground\":\"#45678980\"", style: "\nstyle work fill:#56789a,stroke:#6789ab,color:#789abc\nlinkStyle 0 stroke:#89abcd,color:#9abcde");
         Capture(preset + "-precedence", result); Assert.False(result.HasErrors); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var work = Assert.Single(chart.Nodes, node => node.Id == "work"); var done = Assert.Single(chart.Nodes, node => node.Id == "done"); Color("#56789a", work.BackgroundColor); Color("#6789ab", work.BorderColor); Color("#789abc", work.LabelColor); Color("#123456", done.BorderColor); Color("#345678", done.LabelColor); Color("#234567", Assert.Single(chart.Groups).BorderColor);
-        var edge = Assert.Single(chart.Edges); Color("#89abcd", edge.Color); Color("#9abcde", edge.LabelColor); Color("#45678940", edge.LabelBackgroundColor);
+        var edge = Assert.Single(chart.Edges); Color("#89abcd", edge.Color); Color("#9abcde", edge.LabelColor); Color("#45678980", edge.LabelBackgroundColor);
     }
     [Fact]
     public void ExplicitBaseDarkModeDerivesItsLabelBackplateWithoutChangingHostModeOrNodeOverrides() {
         var result = Render("base", "\"secondaryColor\":\"#808080\",\"darkMode\":true,\"nodeBorder\":\"#123456\""); Capture("base-dark-mode", result); Assert.False(result.HasErrors);
-        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Color("#34343480", Assert.Single(chart.Edges).LabelBackgroundColor); Color("#123456", chart.Nodes[0].BorderColor); Assert.Equal(VisualThemeMode.Light, chart.ThemeMode);
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Color("#343434ff", Assert.Single(chart.Edges).LabelBackgroundColor); Color("#123456", chart.Nodes[0].BorderColor); Assert.Equal(VisualThemeMode.Light, chart.ThemeMode);
     }
     private static MermaidRenderOptions Options() => new() { Flowchart = new MermaidFlowchartRenderOptions { Width = 640, Height = 440 }, Swimlane = new MermaidFlowchartRenderOptions { Width = 640, Height = 440 }, Agentflow = new MermaidTopologyRenderOptions { Width = 640, Height = 440 }, Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family } };
     private static MermaidRenderResult Render(string preset, string? roles = null, string family = "flowchart", MermaidRenderOptions? options = null, string style = "") {

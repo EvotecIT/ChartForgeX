@@ -37,6 +37,7 @@ internal static partial class VisualArtifactInterchangeValidation {
                 if (!string.Equals(cell.ColumnId, table.Columns[i].Id, StringComparison.Ordinal))
                     throw new ArgumentException("Embedded cell ColumnId must identify its source-ordered owning column.", nameof(table));
                 Text(cell.DisplayText, "embedded table cell display text"); OptionalText(cell.SearchText, "embedded table search text");
+                ValidateCaptionContent(cell.Content, cell.DisplayText, "embedded table cell runs");
                 OptionalText(cell.SortText, "embedded table sort text"); OptionalText(cell.CopyText, "embedded table copy text");
                 OptionalText(cell.ExportText, "embedded table export text"); TableArtifactGuards.EnumDefined(cell.Status, nameof(table));
                 Extensions(cell.Extensions, "embedded table cell metadata");

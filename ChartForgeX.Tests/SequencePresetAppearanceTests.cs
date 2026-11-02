@@ -18,16 +18,16 @@ public sealed class SequencePresetAppearanceTests {
     public void NamedPresetsMaterializeActualSurfaceAndRetainedTypedPaint(string preset,string expected) {
         var result=Render("\"theme\":\""+preset+"\",\"look\":\"classic\"");SequencePresetFixture.Capture("preset-named-"+preset,result);Assert.Empty(result.Diagnostics);var model=Model(result);Assert.Equal(expected,(model.Participants[0].Fill??model.Paint.ParticipantFill)!.Value.ToCss());var surface=XDocument.Parse(model.ToSvg()).Descendants().First(e=>(string?)e.Attribute("data-cfx-role")=="sequence-participant-box");Assert.Equal(expected,surface.Attribute("fill")!.Value);
     }
-    [Theory] [InlineData(VisualThemeMode.Light,"#FDF4FF","#FFFFFF")] [InlineData(VisualThemeMode.Dark,"#111113","#E0DFDF")]
-    public void OmittedPresetTracksHostModeButAnExplicitNameStaysLiteral(VisualThemeMode mode,string omitted,string darkText) {
-        var host=new MermaidPresentationOptions{ThemeMode=mode};var a=Render("\"look\":\"classic\"",host);var b=Render("\"theme\":\"redux-color\",\"look\":\"classic\"",host);SequencePresetFixture.Capture("preset-omitted-"+mode,a);SequencePresetFixture.Capture("preset-literal-"+mode,b);Assert.Empty(a.Diagnostics);Assert.Empty(b.Diagnostics);Assert.Equal(omitted,(Model(a).Participants[0].Fill??Model(a).Paint.ParticipantFill)!.Value.ToCss());Assert.Equal("#FDF4FF",Model(b).Participants[0].Fill!.Value.ToCss());if(mode==VisualThemeMode.Dark)Assert.Equal(darkText,Model(a).Paint.ParticipantText!.Value.ToCss());
+    [Theory] [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
+    public void OmittedPresetTracksHostModeButAnExplicitNameStaysLiteral(VisualThemeMode mode) {
+        var host=new MermaidPresentationOptions{ThemeMode=mode};var a=Render("\"look\":\"classic\"",host);var b=Render("\"theme\":\"redux-color\",\"look\":\"classic\"",host);SequencePresetFixture.Capture("preset-omitted-"+mode,a);SequencePresetFixture.Capture("preset-literal-"+mode,b);Assert.Empty(a.Diagnostics);Assert.Empty(b.Diagnostics);Assert.Null(Model(a).Participants[0].Fill);Assert.Null(Model(a).Paint.ParticipantFill);Assert.Equal(VisualTheme.Graphite().Resolve(mode).Surface,Model(a).Theme.Resolve(mode).Surface);Assert.Equal("#FDF4FF",Model(b).Participants[0].Fill!.Value.ToCss());Assert.Null(Model(a).Paint.ParticipantText);
     }
     [Fact] public void ExplicitHostThemeSuppressesOnlyPresetDefaultsWhileLiteralRolesAndArraysSurvive() {
         var host=new MermaidPresentationOptions{Theme=VisualTheme.Graphite().Configure(t=>{t.Light.Surface=ChartColor.FromHex("#345678");t.Dark.Surface=ChartColor.FromHex("#345678");}),FontFamily="Arial"};
         var plain=Render("\"theme\":\"redux-color\",\"look\":\"classic\"",host);var literal=Render("\"theme\":\"redux-color\",\"look\":\"classic\",\"themeVariables\":{\"actorBkg\":\"#112233\",\"signalColor\":\"#556677\",\"bkgColorArray\":[\"#445566\"],\"borderColorArray\":[\"#778899\"]} ",host);SequencePresetFixture.Capture("preset-host-theme",plain);SequencePresetFixture.Capture("preset-host-literals",literal);Assert.Empty(plain.Diagnostics);Assert.Empty(literal.Diagnostics);Assert.Null(Model(plain).Paint.ParticipantFill);Assert.Null(Model(plain).Participants[0].Fill);Assert.Equal("#345678",Model(plain).Theme.Resolve(VisualThemeMode.Light).Surface.ToCss());Assert.Equal("#112233",Model(literal).Paint.ParticipantFill!.Value.ToCss());Assert.Equal("#445566",Model(literal).Participants[0].Fill!.Value.ToCss());Assert.Equal("#778899",Model(literal).Participants[1].Border!.Value.ToCss());Assert.Equal("#556677",Model(literal).Paint.MessageLine!.Value.ToCss());
     }
-    [Fact] public void FontOnlyHostRetainsPresetAndFamilyModeOverridesSharedMode() {
-        var result=MermaidRenderer.Render("%%{init:{\"look\":\"classic\"}}%%\n"+SequencePresetFixture.Body,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=VisualThemeMode.Light,FontFamily="Arial"},Sequence=new MermaidSequenceRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=VisualThemeMode.Dark}}});SequencePresetFixture.Capture("preset-family-mode",result);Assert.Empty(result.Diagnostics);Assert.Equal("#111113",Model(result).Paint.ParticipantFill!.Value.ToCss());Assert.Equal(VisualThemeMode.Dark,Model(result).ThemeMode);
+    [Fact] public void FontOnlyHostRetainsThemeTokensAndFamilyModeOverridesSharedMode() {
+        var result=MermaidRenderer.Render("%%{init:{\"look\":\"classic\"}}%%\n"+SequencePresetFixture.Body,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=VisualThemeMode.Light,FontFamily="Arial"},Sequence=new MermaidSequenceRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=VisualThemeMode.Dark}}});SequencePresetFixture.Capture("preset-family-mode",result);Assert.Empty(result.Diagnostics);Assert.Null(Model(result).Paint.ParticipantFill);Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Surface,Model(result).Theme.Resolve(Model(result).ThemeMode).Surface);Assert.Equal(VisualThemeMode.Dark,Model(result).ThemeMode);
     }
     [Fact] public void PaletteIndicesAreOriginalSourceOrderWithIndependentLengthsAndEmptyFallback() {
         const string source="%%{init:{\"theme\":\"redux-color\",\"look\":\"classic\",\"sequence\":{\"hideUnusedParticipants\":true},\"themeVariables\":{\"bkgColorArray\":[\"#110000\",\"#220000\"],\"borderColorArray\":[\"#001100\",\"#002200\",\"#003300\"]}}}%%\nsequenceDiagram\nparticipant U as Unused\nparticipant A as Review\nparticipant B as Archive\nA->>+B: Save\nB-->>-A: Done";var result=MermaidRenderer.Render(source);SequencePresetFixture.Capture("preset-identity-arrays",result);Assert.Empty(result.Diagnostics);var model=Model(result);Assert.Equal(new[]{"U","A","B"},model.Participants.Select(p=>p.Id));Assert.Equal("#220000",model.Participants[1].Fill!.Value.ToCss());Assert.Equal("#003300",model.Participants[2].Border!.Value.ToCss());var prepared=model.Prepare(SequencePresetFixture.Context());Assert.DoesNotContain(prepared.Regions,r=>r.Role=="sequence-participant"&&r.Id=="U");var svg=prepared.ToSvg();Assert.Contains("#220000",svg);Assert.Contains("#003300",svg);var empty=Render("\"theme\":\"redux-color\",\"look\":\"classic\",\"themeVariables\":{\"bkgColorArray\":[],\"borderColorArray\":[]}");Assert.Empty(empty.Diagnostics);Assert.All(Model(empty).Participants,p=>{Assert.Null(p.Fill);Assert.Null(p.Border);});
@@ -44,14 +44,14 @@ public sealed class SequencePresetAppearanceTests {
     }
     [Fact]
     public void CompletedNeoGlyphEffectsAreRetainedWhileKnownUnresolvedPresetStylesPreserveNoPaint() {
-        const string source = "sequenceDiagram\nparticipant A\nparticipant B\nA->>B: Save";
+        const string source = "%%{init:{\"theme\":\"neo\"}}%%\nsequenceDiagram\nparticipant A\nparticipant B\nA->>B: Save";
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
         SequencePresetFixture.Capture("preset-genuine-omitted-glyph-effects", result);
         Assert.Empty(result.Diagnostics);
         var model = Assert.IsType<SequenceArtifact>(result.Artifact!.Model);
         Assert.All(model.Participants, participant => Assert.NotNull(participant.SurfaceShadow));
         Assert.Contains("<image", model.ToSvg());
-        var ordinary = MermaidRenderer.Render(source + "\nNote over A,B: Retain facts",
+        var ordinary = MermaidRenderer.Render(SequencePresetFixture.Body + "\nNote over A,B: Retain facts",
             new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
         Assert.Empty(ordinary.Diagnostics);
         Assert.Null(Assert.IsType<SequenceArtifact>(ordinary.Artifact!.Model).Paint.NoteShadow);

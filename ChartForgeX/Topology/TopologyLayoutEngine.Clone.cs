@@ -133,7 +133,7 @@ internal static partial class TopologyLayoutEngine {
             copy.Ports.Add(portCopy);
         }
         foreach (var detail in node.Details) {
-            var detailCopy = new TopologyNodeDetail { Content = detail.Content, Label = detail.Label, ValueContent = detail.ValueContent, IconId = detail.IconId, Status = detail.Status, Color = detail.Color, TextStyle = detail.TextStyle?.Clone(), BadgeStyle = detail.BadgeStyle?.Clone() };
+            var detailCopy = new TopologyNodeDetail { StartsSection = detail.StartsSection, Content = detail.Content, Label = detail.Label, ValueContent = detail.ValueContent, IconId = detail.IconId, Status = detail.Status, Color = detail.Color, TextStyle = detail.TextStyle?.Clone(), BadgeStyle = detail.BadgeStyle?.Clone() };
             foreach (var item in detail.Metadata) detailCopy.Metadata[item.Key] = item.Value;
             copy.Details.Add(detailCopy);
         }

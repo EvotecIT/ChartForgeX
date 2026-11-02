@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 
@@ -38,8 +39,11 @@ public static partial class MermaidTopologyRendering {
             node.Href = item.Href;
             node.Tooltip = item.Tooltip;
             node.Details.Clear();
-            foreach (var member in item.Members) {
+            var methodsStarted = false;
+            foreach (var member in item.Members.OrderBy(member => member.IsMethod)) {
                 var detail = new TopologyNodeDetail { Content = MermaidInlineCaption.Content(member.DisplayText) };
+                detail.StartsSection = member.IsMethod && !methodsStarted && node.Details.Count > 0;
+                methodsStarted |= member.IsMethod;
                 if (member.IsAbstract || member.IsStatic) detail.TextStyle = new TextStyleOverride { Italic = member.IsAbstract, Underline = member.IsStatic };
                 detail.Metadata["mermaid.member.source"] = member.Text;
                 detail.Metadata["mermaid.member.kind"] = member.IsMethod ? "method" : "attribute";

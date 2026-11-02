@@ -6,6 +6,8 @@ namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Captures an embedded finite table independently of its graph vertex and host providers.</summary>
 public sealed class VisualArtifactInterchangeTableContent {
+    /// <summary>Gets or sets whether native output separates rows and columns with grid lines.</summary>
+    public bool ShowGridLines { get; set; }
     /// <summary>Gets or sets the content identity, scoped to its topology node.</summary>
     public string Id { get; set; } = "";
     /// <summary>Gets or sets the complete table heading.</summary>
@@ -67,6 +69,8 @@ public sealed class VisualArtifactInterchangeTableRow {
 }
 /// <summary>Captures scalar text projections without conflating missing, zero, null or raw source types.</summary>
 public sealed class VisualArtifactInterchangeTableCell {
+    /// <summary>Gets or sets structured native cell text whose plain projection equals DisplayText.</summary>
+    public ChartForgeX.Typography.TextContent? Content { get; set; }
     /// <summary>Gets or sets its owning column identity; list position is not the identity.</summary>
     public string ColumnId { get; set; } = "";
     /// <summary>Gets or sets the complete static display text.</summary>

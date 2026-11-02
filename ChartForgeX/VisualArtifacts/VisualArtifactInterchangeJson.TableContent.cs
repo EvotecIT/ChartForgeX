@@ -9,6 +9,7 @@ internal static partial class VisualArtifactInterchangeJson {
     private static void TableContent(VisualArtifactInterchangeJsonWriter writer, VisualArtifactInterchangeTableContent? table) {
         if (table == null) return;
         writer.Property("tableContent"); writer.StartObject();
+        if (table.ShowGridLines) Boolean(writer, "showGridLines", true);
         String(writer, "id", table.Id); String(writer, "title", table.Title); String(writer, "subtitle", table.Subtitle);
         String(writer, "capabilities", table.Capabilities.ToString()); String(writer, "exportFormats", table.ExportFormats.ToString());
         if (table.TotalRowCount.HasValue) Number(writer, "totalRowCount", (double)table.TotalRowCount.Value);
@@ -26,6 +27,7 @@ internal static partial class VisualArtifactInterchangeJson {
             Extensions(writer, row.Extensions); writer.Property("cells"); writer.StartArray();
             foreach (var cell in row.Cells) {
                 writer.StartObject(); String(writer, "columnId", cell.ColumnId); String(writer, "displayText", cell.DisplayText);
+                CaptionRuns(writer, "textRuns", cell.Content);
                 OptionalString(writer, "searchText", cell.SearchText); OptionalString(writer, "sortText", cell.SortText);
                 OptionalString(writer, "copyText", cell.CopyText); OptionalString(writer, "exportText", cell.ExportText);
                 String(writer, "status", cell.Status.ToString()); Extensions(writer, cell.Extensions); writer.EndObject();
@@ -39,6 +41,7 @@ internal static partial class VisualArtifactInterchangeJson {
         var table = new VisualArtifactInterchangeTableContent { Id = RequiredString(item, "id"), Title = RequiredStringAllowEmpty(item, "title"),
             Subtitle = RequiredStringAllowEmpty(item, "subtitle"), Capabilities = RequiredFlagsEnum<TableArtifactCapabilities>(item, "capabilities"),
             ExportFormats = RequiredFlagsEnum<VisualArtifactExportFormat>(item, "exportFormats"), TotalRowCount = OptionalInt(item, "totalRowCount"), PresentationScale = OptionalNumber(item, "presentationScale") ?? 1 };
+        table.ShowGridLines = OptionalBool(item, "showGridLines") ?? false;
         ReadExtensions(item, table.Extensions);
         foreach (var entry in OptionalArray(item, "columns")) {
             var column = entry.AsObject("embedded table column"); var copy = new VisualArtifactInterchangeTableColumn { Id = RequiredString(column, "id"),
@@ -56,6 +59,7 @@ internal static partial class VisualArtifactInterchangeJson {
                 var cell = cellEntry.AsObject("embedded table cell"); var value = new VisualArtifactInterchangeTableCell { ColumnId = RequiredString(cell, "columnId"),
                     DisplayText = RequiredStringAllowEmpty(cell, "displayText"), SearchText = OptionalString(cell, "searchText"), SortText = OptionalString(cell, "sortText"),
                     CopyText = OptionalString(cell, "copyText"), ExportText = OptionalString(cell, "exportText"), Status = RequiredEnum<VisualStatus>(cell, "status") };
+                value.Content = ReadCaptionRuns(cell, "textRuns");
                 ReadExtensions(cell, value.Extensions); copy.Cells.Add(value);
             }
             table.Rows.Add(copy);

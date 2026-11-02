@@ -95,6 +95,7 @@ internal static partial class TopologyLayoutEngine {
                 else TopologyLayoutNormalizer.Normalize(copy, options);
             }
         }
+        ApplyLayeredFacingPorts(copy);
         SyncHierarchyRouteDiagnostics(copy);
         return copy;
     }

@@ -52,8 +52,8 @@ internal static partial class SmokeTests {
 
         var downStartY = GetAttribute(svg, "data-edge-id=\"top-bottom\"", "data-route-start-y");
         var upStartY = GetAttribute(svg, "data-edge-id=\"bottom-top\"", "data-route-start-y");
-        Assert(Math.Abs(downStartY - (56 + 44 + 7)) < 0.01, "Orthogonal reciprocal routes should keep source endpoints anchored to explicit ports.");
-        Assert(Math.Abs(upStartY - (176 - 7)) < 0.01, "Orthogonal reciprocal routes should not receive a whole-route parallel offset that pulls them off their ports.");
+        Assert(Math.Abs(downStartY - (56 + 44)) < 0.01, "Orthogonal reciprocal routes should keep source endpoints anchored to explicit ports.");
+        Assert(Math.Abs(upStartY - 176) < 0.01, "Orthogonal reciprocal routes should not receive a whole-route parallel offset that pulls them off their ports.");
         Assert(chart.ToPng(options).Length > 64, "Port-anchored reciprocal orthogonal routes should render as PNG.");
     }
 

@@ -7,10 +7,11 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyEdgeRouter {
-    /// <summary>Reconsiders existing corridors only when the final named/fanned/shape endpoints cross a real foreign body.</summary>
+    /// <summary>Reconsiders existing corridors when the final route crosses a real body, optionally including its endpoint owners.</summary>
     internal static List<ChartPoint> RefineBodyClearance(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target,
-        List<ChartPoint> original, double routeLane) {
+        List<ChartPoint> original, double routeLane, bool avoidOwnerReentries = false) {
         if (original.Count < 2) return original;
+        if (avoidOwnerReentries && OwnerReentries(original, source, target) == 0) return original;
         var bodies = new List<RouteBox>();
         var options = chart.RenderOptions ?? new TopologyRenderOptions();
         foreach (var node in chart.Nodes) {
@@ -21,7 +22,7 @@ internal static partial class TopologyEdgeRouter {
             if (node.Width > .000002 && node.Height > .000002)
                 bodies.Add(new RouteBox(node.X + .000001, node.Y + .000001, node.X + node.Width - .000001, node.Y + node.Height - .000001));
         }
-        if (RouteObstacleHits(original, bodies) == 0) return original;
+        if (!avoidOwnerReentries && RouteObstacleHits(original, bodies) == 0) return original;
         var ported = TopologyLayoutEngine.Clone(edge);
         // A named port remains the physical side owner even when its edge's enum is Auto.
         ported.SourcePort = source.Ports.Find(port => port.Id == edge.SourcePortId)?.Side ?? ported.SourcePort;
@@ -30,8 +31,11 @@ internal static partial class TopologyEdgeRouter {
         if (ported.TargetPort == TopologyEdgePort.Auto) ported.TargetPort = BoundarySide(target, original[original.Count - 1]);
         var sourcePoint = ClearanceEndpoint(source, ported.SourcePort, edge.SourcePortId, original[0], bodies);
         var targetPoint = ClearanceEndpoint(target, ported.TargetPort, edge.TargetPortId, original[original.Count - 1], bodies);
-        var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true);
-        var segments = RouteSegments(chart, edge); var sourceCaption = CaptionBox(chart, source); var targetCaption = CaptionBox(chart, target);
+        // Curve repair runs while other curves can still be sampled. Their labels and sampled routes cannot
+        // be queried recursively here; node/caption/header obstacles remain authoritative.
+        var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true, includeLabels: !avoidOwnerReentries);
+        var segments = avoidOwnerReentries ? new List<RouteSegment>() : RouteSegments(chart, edge);
+        var sourceCaption = CaptionBox(chart, source); var targetCaption = CaptionBox(chart, target);
         var candidates = new List<RouteCandidate> { new("existing-final", original) };
         foreach (var corridor in RouteXCandidates(chart, source, target, obstacles, routeLane)) {
             var points = VerticalPortAwareRoute(sourcePoint, targetPoint, corridor.Value, ported, bodies);
@@ -45,7 +49,7 @@ internal static partial class TopologyEdgeRouter {
         return candidates.GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
             .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, segments, edge, candidates.Count,
-                chart.TextMeasurement, options.IncludeEdgeLabels, options.ResolvedEdgeLabelScale))
+                chart.TextMeasurement, options.IncludeEdgeLabels && !avoidOwnerReentries, options.ResolvedEdgeLabelScale))
             .OrderBy(plan => EndpointAttachmentFailures(plan.Points, source, target))
             .ThenBy(plan => ClearancePortFailures(plan.Points, ported))
             .ThenBy(plan => RouteObstacleHits(plan.Points, bodies) + OwnerReentries(plan.Points, source, target))

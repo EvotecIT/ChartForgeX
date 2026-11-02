@@ -30,7 +30,7 @@ public sealed class TopologyDataLabelThemeCausalTests {
         Write(name + ".theme.json", JsonSerializer.Serialize(new { sourceDataLabelSize = chart.Theme.Typography.DataLabelSize,
             restoredDataLabelSize = restored.Theme.Typography.DataLabelSize, graphiteDataLabelSize = VisualTheme.Graphite().Typography.DataLabelSize }));
         Assert.Empty(result.Diagnostics);
-        Assert.Equal(configured ? 14 : 16, chart.Theme.Typography.DataLabelSize);
+        Assert.Equal(configured ? 14 : 13, chart.Theme.Typography.DataLabelSize);
         Assert.Equal(chart.Theme.Typography.DataLabelSize, restored.Theme.Typography.DataLabelSize);
         Assert.Equal(beforePng, afterPng); Assert.Equal(beforeSvg, prepared.ToSvg()); Assert.Equal(beforePng, prepared.ToPng());
     }

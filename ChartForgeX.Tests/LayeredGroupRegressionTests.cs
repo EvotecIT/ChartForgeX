@@ -187,7 +187,7 @@ public sealed class LayeredGroupRegressionTests {
     }
 
     [Fact]
-    public void PackedGroupsRebuildHierarchyBusRoutesAfterMovingTheirNodes() {
+    public void SeparatedGroupsKeepHierarchyRoutesClearAfterAutomaticLayout() {
         var chart = TopologyChart.Create().WithViewport(1000, 700).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("parent-group", "Parent group").AddAutoGroup("child-group", "Child group")
@@ -205,8 +205,10 @@ public sealed class LayeredGroupRegressionTests {
         var groups = prepared.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
 
         Assert.True(groups["parent-group"].Y + groups["parent-group"].Height <= groups["child-group"].Y
-            || groups["child-group"].Y + groups["child-group"].Height <= groups["parent-group"].Y,
-            $"Fixture must force a packing shift: parent={groups["parent-group"].X},{groups["parent-group"].Y},{groups["parent-group"].Width},{groups["parent-group"].Height}; child={groups["child-group"].X},{groups["child-group"].Y},{groups["child-group"].Width},{groups["child-group"].Height}.");
+            || groups["child-group"].Y + groups["child-group"].Height <= groups["parent-group"].Y
+            || groups["parent-group"].X + groups["parent-group"].Width <= groups["child-group"].X
+            || groups["child-group"].X + groups["child-group"].Width <= groups["parent-group"].X,
+            $"Automatic hierarchy group shells must remain separate: parent={groups["parent-group"].X},{groups["parent-group"].Y},{groups["parent-group"].Width},{groups["parent-group"].Height}; child={groups["child-group"].X},{groups["child-group"].Y},{groups["child-group"].Width},{groups["child-group"].Height}.");
         Assert.All(edges, edge => Assert.Equal(0, TopologyEdgeRouter.Diagnose(prepared, edge, nodes).ObstacleHits));
     }
 

@@ -36,7 +36,9 @@ public sealed class MermaidGitGraphDepthTests {
         Assert.Equal(Number(feature, time), Number(main, time)); Assert.Equal(Number(first, lane), Number(main, lane));
         Assert.Equal(direction != "BT", Number(joined, time) > Number(main, time));
         Assert.Equal(7, xml.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "git-commit-edge"));
-        var image = PngReader.Decode(png); Assert.Equal(width, image.Width); Assert.Equal(620, image.Height);
+        var image = PngReader.Decode(png);
+        Assert.Equal(Number(xml.Root!, "width"), image.Width); Assert.Equal(Number(xml.Root!, "height"), image.Height);
+        if (direction == "LR") Assert.True(image.Height < 400, "A small branch set should fit its native lanes without a tall empty frame.");
         Assert.DoesNotContain(xml.Descendants(), node => node.Name.LocalName is "script" or "image" or "foreignObject");
         var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fenced.Diagnostics);
         Assert.Equal(artifact.ToSvg(), Assert.Single(fenced.Artifacts).ToSvg()); Assert.Equal(png, fenced.Artifacts[0].ToPng());

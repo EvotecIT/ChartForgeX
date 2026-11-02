@@ -414,6 +414,7 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         foreach (var detail in node.Details) {
             var mappedDetail = new VisualArtifactInterchangeDetail {
+                StartsSection = detail.StartsSection,
                 Text = detail.Text,
                 Content = detail.Content?.IsStructured == true ? detail.Content : null,
                 ValueContent = detail.ValueContent.IsStructured ? detail.ValueContent : null,

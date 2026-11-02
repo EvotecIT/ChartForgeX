@@ -81,7 +81,7 @@ internal sealed partial class MermaidSequenceSettings {
         }
         // Keep the source's automatic badge sizes and no-host sans default. An explicit
         // host font also owns the numbered role, without adding policy to unnumbered input.
-        var number=hasNumbering && host?.FontFamily is { } family ? new TextStyleOverride { FontFamily=family } : null;
+        var number=hasNumbering ? new TextStyleOverride { FontFamily=host?.FontFamily ?? sequence.Theme.Typography.Family } : null;
         var typography=new SequenceTypography(Merge(_participant),Merge(_message),Merge(_note),Merge(_message),number);
         if(typography.HasOverrides)sequence.Typography=typography;
     }

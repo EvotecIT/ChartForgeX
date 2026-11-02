@@ -59,7 +59,7 @@ public sealed class MermaidReviewRegressionTests {
         var layout = TopologyLayoutEngine.Prepare(chart, options: chart.ResolveRenderOptions(null));
         var nodes = layout.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var points = TopologyRenderPrimitives.EdgePoints(layout, layout.Edges[0], nodes);
-        Assert.InRange(DistanceFromSurface(nodes["User"], incoming ? points[^1] : points[0]), 0.5, 8);
+        Assert.InRange(DistanceFromSurface(nodes["User"], incoming ? points[^1] : points[0]), 0, .1);
     }
 
     [Theory]
@@ -79,8 +79,8 @@ public sealed class MermaidReviewRegressionTests {
             chart.Edges[0].Routing = routing;
             var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
             var points = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges[0], nodes);
-            Assert.InRange(DistanceFromSurface(chart.Nodes[0], points[0]), 0.5, 8);
-            Assert.InRange(DistanceFromSurface(chart.Nodes[1], points[^1]), 0.5, 8);
+            Assert.InRange(DistanceFromSurface(chart.Nodes[0], points[0]), 0, .1);
+            Assert.InRange(DistanceFromSurface(chart.Nodes[1], points[^1]), 0, .1);
             if (routing == TopologyEdgeRouting.Orthogonal) {
                 Assert.True(Math.Abs(points[0].X - points[1].X) < .001 || Math.Abs(points[0].Y - points[1].Y) < .001);
                 Assert.True(Math.Abs(points[^1].X - points[^2].X) < .001 || Math.Abs(points[^1].Y - points[^2].Y) < .001);

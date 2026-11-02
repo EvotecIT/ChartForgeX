@@ -35,6 +35,8 @@ internal static partial class TopologyRenderPrimitives {
         var normalOffset = Math.Max(14 * defaultUnits, Math.Abs(uy) * width / 2 + Math.Abs(ux) * height / 2 + 4 * defaultUnits);
         var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 4 * defaultUnits)).ToList();
+        if (options.IncludeEdgeLabels) obstacles.AddRange(EdgeLabelLayouts(chart, options)
+            .Select(label => LabelBox.FromCenter(label.CenterX, label.CenterY, label.Width, label.Height)));
         if (options.IncludeGroups && options.IncludeGroupLabels)
             obstacles.AddRange(chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
                 .Select(header => LabelBox.FromBounds(header.Left - 4 * defaultUnits, header.Top - 4 * defaultUnits, header.Right + 4 * defaultUnits, header.Bottom + 4 * defaultUnits)));
@@ -53,17 +55,20 @@ internal static partial class TopologyRenderPrimitives {
         var best = endpoint;
         var bestScore = double.PositiveInfinity;
         for (var step = 0; step < 6; step++) {
-            foreach (var side in new[] { 1, -1 }) {
-                var along = (10 + step * 12) * defaultUnits;
-                var candidate = new ChartPoint(endpoint.X + ux * along - uy * normalOffset * side,
-                    endpoint.Y + uy * along + ux * normalOffset * side);
-                var box = LabelBox.FromCenter(candidate.X, candidate.Y, width, height);
-                var clearance = box.Expand(3 * defaultUnits);
-                var crossings = segments.Count(segment => clearance.Intersects(segment.Start, segment.End));
-                var score = OverlapScore(box, obstacles) * 1000 + crossings * 1000 + step * 12 * defaultUnits + (side == 1 ? 0 : 1);
-                if (score >= bestScore) continue;
-                best = candidate;
-                bestScore = score;
+            for (var outward = 0; outward < 3; outward++) {
+                foreach (var side in new[] { 1, -1 }) {
+                    var along = (10 + step * 12) * defaultUnits;
+                    var normal = normalOffset + outward * (height + 4 * defaultUnits);
+                    var candidate = new ChartPoint(endpoint.X + ux * along - uy * normal * side,
+                        endpoint.Y + uy * along + ux * normal * side);
+                    var box = LabelBox.FromCenter(candidate.X, candidate.Y, width, height);
+                    var clearance = box.Expand(3 * defaultUnits);
+                    var crossings = segments.Count(segment => clearance.Intersects(segment.Start, segment.End));
+                    var score = OverlapScore(box, obstacles) * 1000 + crossings * 1000 + step * 12 * defaultUnits + normal - normalOffset + (side == 1 ? 0 : 1);
+                    if (score >= bestScore) continue;
+                    best = candidate;
+                    bestScore = score;
+                }
             }
         }
         return best;

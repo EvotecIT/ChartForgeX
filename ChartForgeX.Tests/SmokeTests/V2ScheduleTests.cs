@@ -107,6 +107,33 @@ public sealed class V2ScheduleTests {
         Assert.Contains("--source", track); Assert.DoesNotContain("--state", track);
     }
 
+    [Theory]
+    [InlineData(VisualThemeMode.Light, ChartBarStyle.Flat)]
+    [InlineData(VisualThemeMode.Dark, ChartBarStyle.Flat)]
+    [InlineData(VisualThemeMode.Light, ChartBarStyle.Solid)]
+    [InlineData(VisualThemeMode.Dark, ChartBarStyle.Solid)]
+    public void GanttTaskBodiesRemainReadableAtEveryCompletion(VisualThemeMode mode, ChartBarStyle style) {
+        var chart = Chart.Create().AddGanttTask("Completed", 1, 3, 1)
+            .AddGanttTask("In progress", 2, 4, .5).AddGanttTask("Planned", 3, 5).WithBarStyle(style);
+        var color = ChartColor.FromHex("#3478E5");
+        foreach (var series in chart.Series) series.PointColors.Add(color);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: mode);
+        var prepared = chart.Prepare(context);
+        var surface = context.Theme.Resolve(mode).Surface;
+        var bodies = prepared.Scene.Nodes.Where(node => node.Role == "gantt-task-shape").ToArray();
+        Assert.Equal(3, bodies.Length);
+        foreach (var body in bodies) {
+            var fills = body is VisualSceneGradient gradient ? gradient.Stops.Select(stop => stop.Color)
+                : new[] { Assert.IsType<VisualSceneRectangle>(body).Fill!.Value };
+            Assert.All(fills, fill => Assert.True(ChartColorMath.ContrastRatio(fill, surface) >= 3,
+                $"{mode}/{style}: task body disappears into its row ({fill})."));
+        }
+        var progress = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "gantt-progress").ToArray();
+        Assert.Equal(2, progress.Length);
+        Assert.All(progress, mark => Assert.NotEqual(color, mark.Fill));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     private static Chart Fixture(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Timeline => Chart.Create().AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
         ChartSeriesKind.Gantt => GanttFixture(),
