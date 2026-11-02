@@ -13,22 +13,21 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+// Native PNG and standalone SVG use bundled Archivo.
+// Add ChartFontAssets.StyleSheet once for other text on a host page.
 var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = UseCaseAdvancedActorsRecipe.Create("wide", mode);
 if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Finite native actor forms").WithSubtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").WithTheme(theme.WithFontFamily("CFX Proof Carlito"), mode).ToVisualArtifact();
+    var natural = topology.WithTitle("Finite native actor forms").WithSubtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").WithTheme(theme.WithFontFamily(ChartFontStacks.ProductSans), mode).ToVisualArtifact();
     File.WriteAllText("visual.svg", natural.ToSvg());
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
     return;
 }
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(1295, 698)), theme, mode,
-    new VisualFrame("Finite native actor forms", "Hollow, business, silhouette and retained native icon participants share measured captions and routes", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualLayoutOptions(new VisualSize(1304, 698)), theme, mode,
+    new VisualFrame("Finite native actor forms", "Hollow, business, silhouette and retained native icon participants share measured captions and routes", showLegend: null, showSurface: false), FontSpec.FromFamily(ChartFontStacks.ProductSans));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());

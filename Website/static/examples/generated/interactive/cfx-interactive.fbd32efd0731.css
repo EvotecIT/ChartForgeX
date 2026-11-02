@@ -10,7 +10,7 @@ body {
   margin: 0;
   background: var(--cfx-host-background, var(--hfx-color-surface-page));
   color: var(--cfx-tooltip-text, var(--hfx-color-text));
-  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans));
+  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 
 .cfx-shell {
@@ -60,7 +60,7 @@ body {
   position: relative;
   background: var(--cfx-tooltip-surface);
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   padding: 12px;
   overflow: hidden;
   touch-action: auto;
@@ -123,9 +123,9 @@ body {
   margin: 0;
   padding: 2px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease-out;
@@ -173,11 +173,11 @@ body {
   min-height: 32px;
   padding: 0 10px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
   cursor: pointer;
-  font: 600 12px/1 var(--cfx-tooltip-font);
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   white-space: nowrap;
   transition: opacity 120ms ease-out;
 }
@@ -205,12 +205,12 @@ body {
 .cfx-tool,
 .cfx-scenario {
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
   font-weight: 600;
   padding: 6px 9px;
 }
@@ -245,7 +245,7 @@ body {
   margin: 0 0 10px;
   padding: 10px 12px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
 }
@@ -263,7 +263,7 @@ body {
 
 .cfx-scenario-panel__meta {
   color: var(--cfx-tooltip-muted);
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
 }
 
 .cfx-scenario-panel__controls,
@@ -286,7 +286,7 @@ body {
   min-height: 24px;
   padding: 3px 8px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
   cursor: pointer;
@@ -374,11 +374,11 @@ body {
   min-width: min(160px, calc(100vw - 16px));
   max-width: min(320px, calc(100vw - 16px));
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
-  font: 400 12px/18px var(--cfx-tooltip-font);
+  font: 400 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   padding: 10px 12px;
   overflow-wrap: anywhere;
   pointer-events: none;
@@ -400,7 +400,7 @@ body {
 .cfx-tooltip__title {
   margin: 0 0 6px;
   color: var(--cfx-tooltip-muted);
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
   font-weight: 600;
   line-height: 16px;
   overflow-wrap: anywhere;
@@ -526,10 +526,10 @@ body {
   max-width: min(210px, calc(100vw - 16px));
   overflow: hidden;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-crosshair-label-surface, var(--cfx-tooltip-text));
   color: var(--cfx-crosshair-label-text, var(--cfx-tooltip-surface));
-  font: 600 11px/16px var(--cfx-tooltip-font);
+  font: 600 11px/16px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
   padding: 2px 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -554,7 +554,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 42%, var(--cfx-tooltip-surface));
   border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
   background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 18%, var(--cfx-tooltip-surface));
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
   font-size: 11px;
   font-weight: 600;
@@ -594,9 +594,9 @@ body {
   scrollbar-width: thin;
   contain: inline-size;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-tooltip-radius);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface);
-  box-shadow: var(--cfx-tooltip-shadow);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
   color: var(--cfx-tooltip-text);
   padding: 6px;
   pointer-events: auto;
@@ -824,24 +824,24 @@ body {
 .cfx-chart-context-menu {
   position: fixed; z-index: 1000; box-sizing: border-box;
   width: 220px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto;
-  padding: 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius);
+  padding: 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
-  font: 14px/1.4 var(--cfx-tooltip-font, var(--hfx-font-sans));
-  box-shadow: var(--cfx-tooltip-shadow);
+  font: var(--hfx-type-body-size, 14px)/var(--hfx-type-body-line-height, 1.5) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
 }
 .cfx-chart-context-menu button {
   display: block; box-sizing: border-box; width: 100%; padding: 8px 10px;
-  border: 0; border-radius: var(--cfx-control-radius); background: transparent; color: inherit;
+  border: 0; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); background: transparent; color: inherit;
   font: inherit; text-align: start; cursor: pointer;
 }
 .cfx-chart-context-menu button:focus-visible {
-  outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: -2px;
+  outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: -2px;
 }
 .cfx-chart-context-menu button:disabled { opacity: .5; cursor: default; }
 
 .cfx-interactive-chart[data-cfx-look="graphite"] {
   background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
-  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans));
+  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-interactive-chart .cfx-toolbar {
   background: var(--cfx-tooltip-surface); border-color: var(--cfx-tooltip-line);
@@ -892,12 +892,12 @@ body {
 .cfx-interactive-chart[data-cfx-responsive-layout="adaptive"] .cfx-frame { width: 100%; max-width: var(--cfx-native-width); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
-  font: 600 12px/1 var(--cfx-tooltip-font, var(--hfx-font-sans));
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
-  box-shadow: var(--cfx-tooltip-shadow); font: 600 12px/18px var(--cfx-tooltip-font, var(--hfx-font-sans));
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none)); font: 600 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__range { color: var(--cfx-tooltip-muted); }
@@ -929,7 +929,7 @@ body {
   padding: 2px 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-axis-label-radius, var(--hfx-radius-sm));
   background: var(--cfx-crosshair-label-surface, var(--cfx-tooltip-text));
   color: var(--cfx-crosshair-label-text, var(--cfx-tooltip-surface));
-  font: 600 11px/16px var(--cfx-tooltip-font); font-variant-numeric: tabular-nums;
+  font: 600 11px/16px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); font-variant-numeric: tabular-nums;
   text-overflow: ellipsis; white-space: nowrap;
 }
 /* Browser ticks replace raster native labels without a text template; keep the axis label colour role. */
@@ -995,11 +995,11 @@ body {
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1; }
 .cfx-interactive-chart :focus:not(:focus-visible) { outline: none; }
-.cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: 2px; }
+.cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 2px; }
 .cfx-interactive-chart[data-cfx-keyboard-focus] .cfx-stage svg :focus-visible { outline: none; }
 .cfx-interactive-chart [data-cfx-keyboard-focus-outline] { pointer-events: none; }
 .cfx-interactive-chart [data-cfx-focus-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: 5px; }
-.cfx-interactive-chart [data-cfx-focus-ink] { stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring)); stroke-width: 2px; }
+.cfx-interactive-chart [data-cfx-focus-ink] { stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)),
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)) { opacity: 1; }
@@ -1071,14 +1071,14 @@ body {
   margin-block: 10px;
   padding: 10px;
   border: 1px solid var(--cfx-tooltip-line);
-  border-radius: var(--cfx-control-radius);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface);
   color: var(--cfx-tooltip-text);
-  font-size: 12px;
+  font-size: var(--hfx-type-caption-size, 12px);
   overflow-wrap: anywhere;
 }
 .cfx-legend-overflow summary { cursor: pointer; font-weight: 600; }
-.cfx-legend-overflow summary:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: 3px; }
+.cfx-legend-overflow summary:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 3px; }
 .cfx-legend-overflow__navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-block: 10px; }
 .cfx-legend-overflow__range { margin-inline-end: auto; color: var(--cfx-tooltip-muted); }
 .cfx-legend-overflow__entries { display: grid; gap: 6px; }
@@ -1090,18 +1090,18 @@ body {
 /* Native range controls live outside the plot and use the same Graphite surface roles. */
 .cfx-x-navigation {
   display: grid; gap: 10px; width: 100%; max-width: var(--cfx-native-width); margin: 10px auto 0;
-  padding: 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius);
+  padding: 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); box-sizing: border-box;
-  font: 13px/1.4 var(--cfx-tooltip-font, var(--hfx-font-sans));
+  font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-x-navigation[hidden] { display: none !important; }
 .cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-x-navigation { max-width: none; }
 .cfx-x-navigation__header, .cfx-x-navigation__presets { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .cfx-x-navigation__header { justify-content: space-between; }
-.cfx-x-navigation__header strong { font-size: 13px; font-weight: 600; }
-.cfx-x-navigation__presets .cfx-tool { min-height: 30px; padding: 5px 10px; font-size: 12px; }
+.cfx-x-navigation__header strong { font-size: var(--hfx-type-small-size, 13px); font-weight: 600; }
+.cfx-x-navigation__presets .cfx-tool { min-height: 30px; padding: 5px 10px; font-size: var(--hfx-type-caption-size, 12px); }
 .cfx-x-navigation__overview {
-  position: relative; overflow: hidden; height: 64px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius);
+  position: relative; overflow: hidden; height: 64px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   touch-action: none; cursor: crosshair;
 }
 .cfx-x-navigation__overview > svg { display: block; width: 100%; height: 100%; opacity: .72; pointer-events: none; }
@@ -1118,7 +1118,7 @@ body {
   width: 100%; height: 20px; min-width: 0; margin: 0; cursor: ew-resize;
   accent-color: var(--cfx-host-accent, var(--cfx-default-host-accent));
 }
-.cfx-x-navigation__range input:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: 3px; }
+.cfx-x-navigation__range input:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 3px; }
 .cfx-x-navigation__range input:disabled { cursor: default; opacity: .45; }
 .cfx-x-navigation__status { min-height: 1.4em; color: var(--cfx-tooltip-muted); }
 @media (max-width: 430px) {
@@ -1152,15 +1152,15 @@ body {
 .cfx-interactive-chart[data-cfx-hovering="true"] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 150ms; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"][data-cfx-hover-unit="point"] [data-cfx-point]:not(.cfx-hover-series):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
-.cfx-interactive-chart [data-cfx-role="legend-item"] { border-radius: var(--cfx-control-radius); }
+.cfx-interactive-chart [data-cfx-role="legend-item"] { border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover { transition-duration: 100ms; }
 .cfx-interactive-chart :is(button, summary, [role="button"]):focus-visible,
-.cfx-chart-context-menu button:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring)); outline-offset: 2px; }
+.cfx-chart-context-menu button:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 2px; }
 .cfx-interactive-chart .cfx-tooltip__close:hover,
 .cfx-chart-context-menu button:hover:not(:disabled) { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, var(--cfx-tooltip-surface)); }
 /* Continuous colour encodes the measurement, so exploration preserves every other cell. */
 .cfx-interactive-chart :is([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i]) .cfx-hovered :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
-  stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring)); stroke-width: 2px; vector-effect: non-scaling-stroke; paint-order: stroke fill;
+  stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; vector-effect: non-scaling-stroke; paint-order: stroke fill;
 }
 .cfx-interactive-chart:not([data-cfx-flow-hover="true"]) .cfx-hovered:not(.cfx-point-interaction-target):not(:where([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i])) > :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
   stroke: color-mix(in srgb, var(--cfx-series-color, var(--cfx-default-host-accent)) 60%, var(--cfx-tooltip-surface));
@@ -1176,7 +1176,7 @@ body {
 .cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] :is([data-cfx-role="legend-swatch"], [data-cfx-role="legend-symbol"], [data-cfx-role="legend-marker"]) {
   fill: none; stroke: var(--cfx-series-color, var(--cfx-tooltip-muted)); stroke-width: 1.5px; vector-effect: non-scaling-stroke;
 }
-.cfx-interactive-chart .cfx-legend-overflow__toggle { min-height: 32px; border-radius: var(--cfx-control-radius); }
+.cfx-interactive-chart .cfx-legend-overflow__toggle { min-height: 32px; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
 .cfx-chart-context-menu button { min-height: 32px; font-weight: 400; }
 @media (pointer: coarse) {
   .cfx-chart-context-menu button, .cfx-legend-overflow summary,
@@ -1211,7 +1211,7 @@ body {
 /* HTML chrome above the plot moves below the floating toolbar so the two never overlap. */
 .cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-frame:has(> .cfx-toolbar):has(> :is(.cfx-hierarchy-breadcrumb, .cfx-responsive-legend[style*="display: flex"], .cfx-responsive-heading[style*="display: block"])) { padding-block-start: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset)); }
 .cfx-interactive-chart :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) .cfx-hovered :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
-  stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring)); stroke-width: 2px; vector-effect: non-scaling-stroke;
+  stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; vector-effect: non-scaling-stroke;
 }
 
 /* Flow exploration retains its connected neighbourhood and suppresses other ribbons. */
@@ -1222,8 +1222,8 @@ body {
 /* Root-branch hierarchies share the categorical dim value; continuous treemaps stay undimmed above. */
 .cfx-interactive-chart:not([data-cfx-highlight-probe]):not([data-cfx-highlight-other-branch-opacity])[data-cfx-hover-mode="root-branch"] [data-cfx-kind="sunburst" i][data-cfx-highlight-state="other-branch"] > [data-cfx-highlight-paint] { opacity: .4; }
 
-.cfx-responsive-legend { margin-block: 4px 8px; font-family: var(--cfx-tooltip-font); }
-.cfx-responsive-legend__item { border-color: transparent; border-radius: var(--cfx-control-radius); }
+.cfx-responsive-legend { margin-block: 4px 8px; font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); }
+.cfx-responsive-legend__item { border-color: transparent; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
 .cfx-responsive-legend__item > span { min-width: 0; overflow-wrap: anywhere; }
 .cfx-responsive-legend__item[data-cfx-muted="true"] > span { opacity: .45; }
 .cfx-responsive-legend__value { margin-inline-start: auto; color: var(--cfx-tooltip-muted); font-variant-numeric: tabular-nums; }
@@ -1231,7 +1231,7 @@ body {
 .cfx-interactive-chart .cfx-responsive-legend__item:hover { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); }
 
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
-  fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius);
+  fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
 }
 .cfx-interactive-chart:has([data-cfx-role="legend-item"]:hover) :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
 
@@ -1247,7 +1247,7 @@ body {
 .cfx-interactive-chart .cfx-toolbar .cfx-tool {
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
   flex: 0 0 auto; min-width: var(--cfx-toolbar-control-size); min-height: var(--cfx-toolbar-control-size); padding: 4px 6px; border-color: transparent;
-  border-radius: var(--cfx-control-radius); font-weight: 600; line-height: 18px;
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); font-weight: 600; line-height: 18px;
 }
 .cfx-interactive-chart .cfx-toolbar .cfx-tool--icon { width: var(--cfx-toolbar-control-size); padding: 0; }
 .cfx-interactive-chart .cfx-toolbar .cfx-tool[hidden] { display: none; }
@@ -1274,7 +1274,7 @@ body {
 
 .cfx-tooltip__close {
   position: absolute; inset: 4px 4px auto auto; display: grid; place-items: center;
-  width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--cfx-control-radius);
+  width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
   background: transparent; color: var(--cfx-tooltip-muted); cursor: pointer; font: inherit;
 }
 .cfx-tooltip__meta :is(dt, dd)[data-cfx-active="true"] {
@@ -1285,9 +1285,9 @@ body {
 }
 .cfx-tooltip__swatch--line { width: 12px; height: 2px; flex-basis: 12px; }
 .cfx-compare-chip, .cfx-compare-page, .cfx-compare-clear {
-  min-height: 32px; font-size: 12px; font-weight: 600;
+  min-height: 32px; font-size: var(--hfx-type-caption-size, 12px); font-weight: 600;
 }
-.cfx-compare-tray__summary, .cfx-compare-tray__range { font-size: 12px; font-weight: 600; }
+.cfx-compare-tray__summary, .cfx-compare-tray__range { font-size: var(--hfx-type-caption-size, 12px); font-weight: 600; }
 @starting-style {
   .cfx-tooltip:not([hidden]) { opacity: 0; translate: 0 2px; }
   .cfx-reset:not([hidden]) { opacity: 0; }
@@ -1310,11 +1310,11 @@ body {
 
 .cfx-hierarchy-breadcrumb {
   display: flex; align-items: center; flex-wrap: wrap; gap: 4px; max-width: 100%;
-  margin-block: 6px; color: var(--cfx-tooltip-muted); font: 400 12px/18px var(--cfx-tooltip-font);
+  margin-block: 6px; color: var(--cfx-tooltip-muted); font: 400 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
 }
 .cfx-hierarchy-breadcrumb .cfx-tool {
   min-height: 32px; max-width: 100%; white-space: normal; overflow-wrap: anywhere;
-  border-radius: var(--cfx-control-radius); font-weight: 600;
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); font-weight: 600;
 }
 svg[data-cfx-standalone-hierarchy] { display: block; max-width: 100%; }
 @media (pointer: coarse) { .cfx-hierarchy-breadcrumb .cfx-tool { min-height: 44px; } }
