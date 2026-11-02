@@ -17,7 +17,10 @@ public sealed class NativeInitialFadeTests {
     [InlineData(ChartSeriesKind.RegionMap)] [InlineData(ChartSeriesKind.Sunburst)] [InlineData(ChartSeriesKind.Sankey)]
     [InlineData(ChartSeriesKind.Chord)] [InlineData(ChartSeriesKind.WordCloud)]
     public void CapturedNativeFamiliesFadeWithoutInventingAnyValueOrGeometryBaseline(ChartSeriesKind kind) {
-        var chart = Assert.IsType<Chart>(ExampleRecipes.ForKind(kind).Create()); var renderer = new HtmlInteractiveChartRenderer();
+        // Exercise opacity capture within its declared payload budget; cloud density has separate placement proof.
+        var chart = Assert.IsType<Chart>(ExampleRecipes.ForKind(kind).Create(kind == ChartSeriesKind.WordCloud ? "compact" : "wide"))
+            .WithFontFamily(BrowserProofFonts.Family);
+        var renderer = new HtmlInteractiveChartRenderer();
         var final = renderer.PrepareSection(chart); var frames = VisualValueCapture.InitialFadeFrames(final.PreparedVisual, 3);
         var payload = renderer.PrepareNativeTransitionJson(final, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 3));
         Capture(final, frames, payload, "initial-fade-" + kind);
