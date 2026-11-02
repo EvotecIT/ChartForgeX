@@ -263,7 +263,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (explorable) writer.Attribute("role", "graphics-symbol").Attribute("aria-label", caption);
             writer.Attribute("data-cfx-caption", caption).EndStartElement();
             writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
-                .Attribute("data-cfx-native-raster-text-ink", "true").EndStartElement();
+                .Attribute("data-cfx-native-raster-text-ink", "true").Attribute("font-size", prepared.Size).EndStartElement();
             writer.StartElement("image").Attribute("x", capturedImage.Bounds.X).Attribute("y", capturedImage.Bounds.Y)
                 .Attribute("width", capturedImage.Bounds.Width).Attribute("height", capturedImage.Bounds.Height)
                 .Attribute("preserveAspectRatio", "none").Attribute("href", capturedImage.Uri);
@@ -281,6 +281,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (nativeInk && pngText != null && pngText.TryCapture(node, line, i, true, out var glyphs)) {
                 capturedInk = true;
                 writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
+                    .Attribute("data-cfx-caption", line.Text).Attribute("font-size", prepared.Size)
                     .Attribute("fill", ResolvePaint(node.Color, node.Paint, options)).Attribute("fill-rule", "nonzero");
                 if (delivered != null) writer.Attribute("data-cfx-owned-font-native", delivered.Alias);
                 if (node.Stroke.HasValue && node.StrokeWidth > 0) writer.Attribute("stroke", ResolvePaint(node.Stroke, node.StrokePaint, options))

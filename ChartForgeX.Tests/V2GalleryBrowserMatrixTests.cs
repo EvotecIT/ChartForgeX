@@ -154,21 +154,24 @@ public sealed class V2GalleryBrowserMatrixTests {
                                 && /(?:NaN|Infinity)/.test(attribute.value)) report(artifact, 'Non-finite SVG geometry');
                         }
                         let visibleText = 0;
-                        for (const text of svg.querySelectorAll('text')) {
-                            if (!text.textContent.trim()) continue;
+                        for (const text of svg.querySelectorAll('text,[data-cfx-native-text-ink]')) {
+                            const nativeInk = text.hasAttribute('data-cfx-native-text-ink');
+                            const caption = text.closest('[data-cfx-caption]')?.getAttribute('data-cfx-caption') || text.textContent;
+                            if (!caption.trim()) continue;
                             const style = getComputedStyle(text);
-                            if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) continue;
+                            if (style.display === 'none' || style.visibility === 'hidden' || opacity(text) === 0) continue;
                             visibleText++;
                             const fontSize = parseFloat(style.fontSize);
-                            if (!Number.isFinite(fontSize) || fontSize < 10) report(artifact, 'Text below 10 native pixels: ' + text.textContent);
-                            if (!style.fontFamily.includes('CFX Proof Carlito') || !document.fonts.check(style.fontWeight + ' ' + fontSize + 'px "CFX Proof Carlito"', text.textContent))
+                            if (!Number.isFinite(fontSize) || fontSize < 10 || (nativeInk && !text.hasAttribute('font-size')))
+                                report(artifact, 'Text below 10 native pixels or missing captured size: ' + caption);
+                            if (!nativeInk && (!style.fontFamily.includes('CFX Proof Carlito') || !document.fonts.check(style.fontWeight + ' ' + fontSize + 'px "CFX Proof Carlito"', text.textContent)))
                                 report(artifact, 'Text uses an unavailable fixture font');
                             const box = text.getBoundingClientRect();
                             if (![box.left, box.top, box.right, box.bottom].every(Number.isFinite) || box.width <= 0 || box.height <= 0)
-                                report(artifact, 'Text has no finite rendered bounds: ' + text.textContent);
+                                report(artifact, 'Text has no finite rendered bounds: ' + caption);
                             // This checks the exported canvas, not overlap among intentional chart marks.
                             if (box.left < bounds.left - 1.5 || box.top < bounds.top - 1.5 || box.right > bounds.right + 1.5 || box.bottom > bounds.bottom + 1.5)
-                                report(artifact, 'Text exceeds its native canvas: ' + text.textContent);
+                                report(artifact, 'Text exceeds its native canvas: ' + caption);
                         }
                         if (!visibleText) report(artifact, 'Example contains no visible text');
 
@@ -181,7 +184,7 @@ public sealed class V2GalleryBrowserMatrixTests {
                         // A decoded PNG must carry the same theme and at least one solid chart
                         // paint from the SVG. Exact antialiasing or browser/raster text pixels differ.
                         const chartPaints = new Set();
-                        for (const node of svg.querySelectorAll('rect,path,circle,ellipse,line,polyline,polygon,text')) {
+                        for (const node of svg.querySelectorAll('rect,path,circle,ellipse,line,polyline,polygon,text,use')) {
                             if (node.closest('defs')) continue;
                             const role = node.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || '';
                             if (!role || /background|frame|legend|axis|grid|label|annotation/.test(role)) continue;

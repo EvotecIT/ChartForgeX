@@ -34,6 +34,13 @@ public sealed class StageIndependentCaptionTests {
             Assert.InRange(bounds[first].Bottom, 0, 480);
             for (var second = first + 1; second < bounds.Length; second++) Assert.False(Overlap(bounds[first], bounds[second]));
         }
+        var leaders = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "data-label-connector").ToArray();
+        Assert.Equal(5, leaders.Length);
+        foreach (var leader in leaders) {
+            Assert.Equal(2, leader.Commands.Count);
+            var stroke = new LabelMarkShape(new[] { leader.Commands.Select(command => new ChartPoint(command.X, command.Y)).ToList() }, false, leader.StrokeWidth);
+            foreach (var box in bounds) Assert.False(stroke.Intersects(box), "A stage leader crosses a painted caption.");
+        }
         Assert.Equal(new[] { "12400", "5270", "2130", "860", "610" }, XDocument.Parse(prepared.ToSvg()).Descendants()
             .Where(node => (string?)node.Attribute("data-cfx-role") == "funnel-stage").Select(node => (string?)node.Attribute("data-cfx-value")));
         Assert.NotEmpty(prepared.ToPng());
