@@ -33,21 +33,21 @@ public sealed class V2GanttDependencyRoutingTests {
             var arrow = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
             var first = route.Commands[0]; var last = route.Commands[route.Commands.Count - 1];
             if (first.Y > sourceBounds.Bottom) {
-                Assert.Equal(sourceBounds.Bottom, first.Y - route.StrokeWidth / 2, 3);
+                Assert.InRange(Math.Abs(sourceBounds.Bottom - (first.Y - route.StrokeWidth / 2)), 0, .001);
                 Assert.InRange(first.X, sourceBounds.Left, sourceBounds.Right);
             } else {
-                Assert.Equal(sourceBounds.Right, first.X - route.StrokeWidth / 2, 3);
+                Assert.InRange(Math.Abs(sourceBounds.Right - (first.X - route.StrokeWidth / 2)), 0, .001);
                 Assert.Equal(sourceBounds.Top + sourceBounds.Height / 2, first.Y, 7);
             }
             if (last.Y < targetBounds.Top) {
-                Assert.Equal(targetBounds.Top, last.Y + arrow.StrokeWidth / 2, 3);
+                Assert.InRange(Math.Abs(targetBounds.Top - (last.Y + arrow.StrokeWidth / 2)), 0, .001);
                 Assert.InRange(last.X, targetBounds.Left, targetBounds.Right);
                 Assert.True(route.Commands[^2].Y < last.Y);
                 Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.Y < last.Y));
                 Assert.All(route.Commands.Zip(route.Commands.Skip(1)), pair => Assert.True(pair.First.X <= pair.Second.X,
                     "An adjacent finish-to-start route must not double back in time."));
             } else {
-                Assert.Equal(targetBounds.Left, last.X + arrow.StrokeWidth / 2, 3);
+                Assert.InRange(Math.Abs(targetBounds.Left - (last.X + arrow.StrokeWidth / 2)), 0, .001);
                 Assert.Equal(targetBounds.Top + targetBounds.Height / 2, last.Y, 7);
                 Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
                 Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
@@ -105,12 +105,12 @@ public sealed class V2GanttDependencyRoutingTests {
             var first = route.Commands[0]; var last = route.Commands[route.Commands.Count - 1];
             Assert.Equal(0, first.X - route.StrokeWidth / 2 - sourceBounds.Right, 3);
             if (last.Y < targetBounds.Top) {
-                Assert.Equal(targetBounds.Top, last.Y + arrow.StrokeWidth / 2, 3);
+                Assert.InRange(Math.Abs(targetBounds.Top - (last.Y + arrow.StrokeWidth / 2)), 0, .001);
                 Assert.InRange(last.X, targetBounds.Left, targetBounds.Right);
                 Assert.True(route.Commands[^2].Y < last.Y);
                 Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.Y < last.Y));
             } else {
-                Assert.Equal(0, targetBounds.Left - last.X - arrow.StrokeWidth / 2, 3);
+                Assert.InRange(Math.Abs(0 - (targetBounds.Left - last.X - arrow.StrokeWidth / 2)), 0, .001);
                 Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
                 Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
             }

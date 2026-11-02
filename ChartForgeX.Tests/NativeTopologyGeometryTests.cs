@@ -180,7 +180,7 @@ public sealed class NativeTopologyGeometryTests {
         } else {
             chart = TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
                 .AddNode("a", "A", 130, 70, width: 80, height: 40)
-                .AddNode("b", "B", 136, 191, width: 80, height: 40)
+                .AddNode("b", "B", 136, 171, width: 80, height: 40)
                 .AddEdge("stair", "a", "b", "LDAP fail", routing: TopologyEdgeRouting.Orthogonal, secondaryLabel: "DNS OK")
                 .WithEdgePorts("stair", TopologyEdgePort.Bottom, TopologyEdgePort.Top);
         }
