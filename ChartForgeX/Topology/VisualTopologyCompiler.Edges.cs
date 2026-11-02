@@ -30,6 +30,8 @@ internal sealed partial class VisualTopologyCompiler {
             color = color.WithOpacity(color.A / 255d * opacity); paintOpacity *= opacity;
         }
         var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth * units) * (_options.UseForceGraphPresentation ? 1 : _scale);
+        // A diagram fitted into a small viewport keeps its default connectors legible.
+        if (!edge.StrokeWidth.HasValue && !_options.UseForceGraphPresentation) width = Math.Max(width, DiagramTheme.MinimumConnectorStrokeWidth * units);
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) { width *= .7; color = color.WithOpacity(color.A / 255d * .5); paintOpacity *= .5; }
         var edgePaint = usePalette ? PalettePaint(edge.PaletteIndex!.Value, color, paintOpacity)

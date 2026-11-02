@@ -12,6 +12,8 @@ internal static class DiagramTheme {
     internal const double GanttProgressTint = .18;
     /// <summary>Connector weight: relationship lines read as one step heavier than 1 px outlines, never as data series.</summary>
     internal const double ConnectorStrokeWidth = 1.5;
+    /// <summary>The thinnest a default connector paints when a fitted diagram scales down.</summary>
+    internal const double MinimumConnectorStrokeWidth = .75;
 
     internal static ChartColor GanttProgressFill(VisualThemeColors colors, ChartColor fill) =>
         ChartColorMath.Blend(fill, colors.Foreground, GanttProgressTint);

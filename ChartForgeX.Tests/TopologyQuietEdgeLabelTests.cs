@@ -87,6 +87,18 @@ public sealed class TopologyQuietEdgeLabelTests {
         Assert.InRange(Width("long"), 190 + 20 - 1, 190 + 20 + 1);
     }
 
+    [Fact]
+    public void DefaultConnectorsStayLegibleWhenAFittedDiagramScalesDown() {
+        var chart = TopologyChart.Create().WithId("fitted-connector").WithTitle("").WithViewport(160, 120, 8).WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), VisualThemeMode.Light);
+        chart.AddNode("a", "Plan", 0, 0, width: 140, height: 80); chart.AddNode("b", "Deliver", 900, 0, width: 140, height: 80);
+        chart.AddEdge("handoff", "a", "b", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
+        chart.Theme = DiagramTheme.Apply(chart.Theme);
+        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true });
+        var line = Role(XDocument.Parse(chart.Prepare().ToSvg()), "topology-edge-line").Single();
+        Assert.True(Number(line, "stroke-width") >= DiagramTheme.MinimumConnectorStrokeWidth - 1e-9, "A scaled-down connector must keep at least 0.75 px.");
+    }
+
     private static TopologyChart Source(bool dark) {
         var chart = TopologyChart.Create().WithId("quiet-label").WithTitle("").WithViewport(760, 400, 24).WithLegend(null)
             .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
