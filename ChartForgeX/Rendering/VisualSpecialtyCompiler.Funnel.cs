@@ -64,13 +64,13 @@ internal static partial class VisualSpecialtyCompiler {
                         cap: VisualStrokeCap.Butt, dash: outline.Dash, dashOffset: chart.Options.Funnel.StageOutlineDashOffset,
                         paint: new VisualScenePaintBinding(stroke: outline.Paint));
                     else builder.Path(line, stroke: color, strokeWidth: stroke, role: "funnel-stage-line", cap: VisualStrokeCap.Butt,
-                        paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, index)));
+                        paint: VisualChartPaint.Stroke(StagePaint(series, index, color, colors)));
                 } else if (raw > 0) {
                     if (chart.Options.Funnel.StageOutline != null || index < series.PointStrokeColors.Count && series.PointStrokeColors[index].HasValue)
-                        StagePartition(chart, builder, stage.Bar, index, color, "funnel-segment", chart.Options.Funnel.StageOutline, chart.Options.Funnel.StageOutlineDashOffset);
+                        StagePartition(chart, builder, stage.Bar, index, color, StagePaint(series, index, color, colors), "funnel-segment", chart.Options.Funnel.StageOutline, chart.Options.Funnel.StageOutlineDashOffset);
                     else {
                         builder.Path(stage.Bar, color, role: "funnel-segment", close: true,
-                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                            paint: VisualChartPaint.Fill(StagePaint(series, index, color, colors)));
                         Pattern(chart, builder, index, stage.Bar, color);
                     }
                 }
@@ -88,7 +88,7 @@ internal static partial class VisualSpecialtyCompiler {
         VisualThemeColors colors, ChartFunnelForm form) {
         var series = chart.Series[0]; var color = Color(series, connection.FromIndex, colors);
         var style = FunnelConnectionStyle(chart, connection.FromIndex);
-        var fill = FunnelConnectionFill(chart, connection.FromIndex, color, form, style);
+        var fill = FunnelConnectionFill(chart, connection.FromIndex, color, form, style, StagePaint(series, connection.FromIndex, color, colors));
         var id = Id(connection.FromIndex) + "-connection";
         var summary = Category(chart, connection.FromIndex) + " to " + Category(chart, connection.ToIndex) + ": "
             + VisualStateSceneTools.Value(chart, series, connection.FromIndex, series.RenderPoints[connection.FromIndex].Y)
@@ -99,7 +99,7 @@ internal static partial class VisualSpecialtyCompiler {
                 ["data-cfx-from-value"] = N(series.RenderPoints[connection.FromIndex].Y),
                 ["data-cfx-to-value"] = N(series.RenderPoints[connection.ToIndex].Y)
             })) {
-            if (style != null) StyledFunnelConnection(chart, builder, connection, color, form, style);
+            if (style != null) StyledFunnelConnection(chart, builder, connection, color, StagePaint(series, connection.FromIndex, color, colors), form, style);
             else {
                 builder.Path(connection.Path, fill.Color, role: form == ChartFunnelForm.Cone ? "funnel-connection-area" : "funnel-dropoff", close: true,
                     paint: VisualChartPaint.Fill(fill.Paint));
@@ -126,6 +126,19 @@ internal static partial class VisualSpecialtyCompiler {
         double Fit(ChartRect box) => Math.Min(box.Width / Math.Max(1, measured.Width), box.Height / Math.Max(1, measured.Height));
         // Try complete outside text before shortening a positive bar's caption. The empty side of a narrow stage
         // can share one rail with its retention rows; neither caption needs to compete for a separate narrow box.
+        var wrappedInside = false;
+        // A caption a little wider than its stage stays inside on two balanced lines ("Completed:" over "41")
+        // before it moves out beside the stage, where it would compete with the ratio column.
+        if (inside && Fit(bounds) < 1) {
+            var wrapped = string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                bounds.Width, (value, _) => builder.MeasureText(value, style).Width));
+            var wrappedSize = builder.MeasureText(wrapped, style);
+            if (wrapped.IndexOf('\n') >= 0 && wrappedSize.Width <= bounds.Width && wrappedSize.Height <= bounds.Height) {
+                displayed = wrapped;
+                measured = wrappedSize;
+                wrappedInside = true;
+            }
+        }
         if (inside && Fit(bounds) < 1) {
             if (Fit(stage.OutsideLabelBounds) >= 1) {
                 bounds = stage.OutsideLabelBounds;
@@ -176,17 +189,19 @@ internal static partial class VisualSpecialtyCompiler {
                 }
             }
         }
-        StageText(builder, railCaption ? text : displayed, bounds, style, "funnel-label", Id(index) + "-label",
+        // The described text stays complete; a wrapped or rail caption only changes what is painted.
+        StageText(builder, railCaption || wrappedInside ? text : displayed, bounds, style, "funnel-label", Id(index) + "-label",
             railCaption ? TextAlignment.Left : TextAlignment.Center,
             VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
                 : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel",
-            displayedText: railCaption ? displayed : null);
+            displayedText: railCaption || wrappedInside ? displayed : null);
         if (index > 0 && metricsBounds.Width > 0 && metricsBounds.Height > 0) {
             var ratioBounds = railCaption
                 ? new ChartRect(metricsBounds.Left, metricsBounds.Top, metricsBounds.Width, 0)
                 : metricsBounds;
+            // The ratio column is a numeric column: right-aligned so its percentages line up.
             StageText(builder, metrics, ratioBounds, metricsStyle,
-                "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
+                "funnel-ratio", Id(index) + "-ratio", railCaption ? TextAlignment.Left : TextAlignment.Right,
                 VisualChartPaint.Text(metricsStyle), "funnel");
         }
     }

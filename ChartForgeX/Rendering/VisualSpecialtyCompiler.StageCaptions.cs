@@ -78,7 +78,8 @@ internal static partial class VisualSpecialtyCompiler {
             foreach (var connection in layout.Connections) {
                 var style = FunnelConnectionStyle(chart, connection.FromIndex);
                 if (style?.Visible == false) continue;
-                var fill = FunnelConnectionFill(chart, connection.FromIndex, Color(series, connection.FromIndex, colors), ChartFunnelForm.Cone, style);
+                var inherited = Color(series, connection.FromIndex, colors);
+                var fill = FunnelConnectionFill(chart, connection.FromIndex, inherited, ChartFunnelForm.Cone, style, StagePaint(series, connection.FromIndex, inherited, colors));
                 var pattern = style?.FillPattern ?? FillPattern(series, connection.FromIndex);
                 _surface.Add(connection.Path, fill.Color, fill.Paint, pattern != ChartFillPattern.None);
                 var outline = style?.OutlineStroke;
@@ -156,7 +157,7 @@ internal static partial class VisualSpecialtyCompiler {
                 // Positive opaque partitions keep their incumbent ink and SVG bytes.
                 if (stage.Filled && stage.HasPaint && color.A == 255) continue;
                 var ink = stage.Filled && stage.HasPaint
-                    ? _surface.Filled(result.Bounds, stage.Path, color, VisualChartPaint.Series(series, color, item.Index), FillPattern(series, item.Index) != ChartFillPattern.None)
+                    ? _surface.Filled(result.Bounds, stage.Path, color, StagePaint(series, item.Index, color, _context.Theme.Resolve(_context.ThemeMode)), FillPattern(series, item.Index) != ChartFillPattern.None)
                     : _surface.Resolve(result.Bounds, !_cone && stage.HasPaint && _context.Theme.Resolve(_context.ThemeMode).Border.A > 0 ? stage : null);
                 item.Style.Color = ink.Color; item.Paint = ink.Paint; item.Halo = ink.Halo; item.HaloPaint = ink.HaloPaint;
             }

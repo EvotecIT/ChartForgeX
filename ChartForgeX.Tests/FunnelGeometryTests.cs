@@ -158,8 +158,11 @@ public sealed class FunnelGeometryTests {
         foreach (var label in labels.Concat(ratios)) {
             Assert.True(label.Text.Size >= 10, "Automatic fitting must preserve a readable logical font size.");
             var bounds = Assert.Single(prepared.Regions, region => region.Id == label.Id).Bounds;
-            Assert.True(label.LineLeft(label.Text.Lines[0]) >= bounds.Left - .000001);
-            Assert.True(label.LineLeft(label.Text.Lines[0]) + label.Text.Metrics.Width <= bounds.Right + .000001);
+            // Ratio columns are right-aligned, so check every line rather than the first line at the widest width.
+            Assert.All(label.Text.Lines, line => {
+                Assert.True(label.LineLeft(line) >= bounds.Left - .000001);
+                Assert.True(label.LineLeft(line) + line.Width <= bounds.Right + .000001);
+            });
             Assert.True(label.Baseline - label.Text.Ascent >= bounds.Top - .000001);
             Assert.True(label.Baseline - label.Text.Ascent + label.Text.Metrics.Height <= bounds.Bottom + .000001);
         }

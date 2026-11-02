@@ -46,8 +46,16 @@ internal static partial class VisualSpecialtyCompiler {
     private static string Id(int index) => "series-0-point-" + index.ToString(CultureInfo.InvariantCulture);
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors) =>
-        index < series.PointColors.Count && series.PointColors[index].HasValue ? series.PointColors[index]!.Value
+        series.Kind is ChartSeriesKind.Funnel or ChartSeriesKind.Pyramid ? ChartSeriesColours.Stage(series, index, series.RenderPoints.Count, colors)
+        : index < series.PointColors.Count && series.PointColors[index].HasValue ? series.PointColors[index]!.Value
             : ChartSeriesColours.Resolve(series, index, colors);
+    /// <summary>A stage tint keeps its series paint: a mix of the series slot with white, so themed SVG shares one drawing.</summary>
+    private static SvgPaint StagePaint(ChartSeries series, int index, ChartColor color, VisualThemeColors colors) {
+        var share = series.Kind is ChartSeriesKind.Funnel or ChartSeriesKind.Pyramid ? ChartSeriesColours.StageShare(series, index, series.RenderPoints.Count) : 0;
+        if (share <= 0) return VisualChartPaint.Series(series, color, index);
+        var source = ChartSeriesColours.Resolve(series, 0, colors);
+        return SvgPaint.Mix(color, VisualChartPaint.Series(series, source, 0), SvgPaint.Literal(ChartColor.White.WithAlpha(source.A)), share);
+    }
     private static ChartFillPattern FillPattern(ChartSeries series, int index) =>
         index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue
             ? series.PointFillPatterns[index]!.Value : series.FillPattern;

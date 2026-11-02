@@ -65,10 +65,10 @@ internal static partial class VisualSpecialtyCompiler {
             using (Point(chart, builder, index, "pyramid-stage", stage.Bounds, summary, metadata)) {
                 if (stage.HasGeometry) {
                     if (options.PartitionOutline != null || index < series.PointStrokeColors.Count && series.PointStrokeColors[index].HasValue)
-                        StagePartition(chart, builder, stage.Segment, index, color, "pyramid-segment", options.PartitionOutline, options.PartitionOutlineDashOffset);
+                        StagePartition(chart, builder, stage.Segment, index, color, StagePaint(series, index, color, colors), "pyramid-segment", options.PartitionOutline, options.PartitionOutlineDashOffset);
                     else {
                         builder.Path(stage.Segment, color, role: "pyramid-segment", close: true,
-                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                            paint: VisualChartPaint.Fill(StagePaint(series, index, color, colors)));
                         Pattern(chart, builder, index, stage.Segment, color);
                     }
                 }
@@ -76,6 +76,11 @@ internal static partial class VisualSpecialtyCompiler {
                 else if (show) PyramidLabel(chart, context, builder, stage, layout.LabelSide, placement, color, colors, captions!);
             }
         }
+        // Partitions read as separate marks: a surface-coloured gap over each shared boundary, unless the author outlines them.
+        if (options.PartitionOutline == null)
+            foreach (var separator in layout.Separators)
+                builder.Line(separator.Start.X, separator.Start.Y, separator.End.X, separator.End.Y, colors.Surface, ChartMarkSurface.SurfaceGap,
+                    role: "pyramid-separator", paint: VisualChartPaint.Stroke(colors.Surface, SvgColorRole.Surface));
         if (collapsed) builder.AddDiagnostic(new VisualDiagnostic("pyramid.precision", "A positive pyramid partition is below floating-point coordinate precision; its complete source value remains represented without an invented minimum size."));
         if (layout.Total == 0) {
             builder.AddDiagnostic(new VisualDiagnostic("pyramid.all-zero", "All pyramid values are zero; source categories remain represented without positive partitions."));
@@ -92,15 +97,12 @@ internal static partial class VisualSpecialtyCompiler {
         IReadOnlyDictionary<int, PyramidCaption> captions) {
         var index = stage.SourceIndex; var text = PyramidLabel(chart, index);
         var insideStyle = Style(chart, context, index, ChartColorMath.AccessibleTextOnBackground(color));
-        var measured = builder.MeasureText(text, insideStyle);
-        var inside = placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center
-            && stage.InsideLabel.Width >= measured.Width && stage.InsideLabel.Height >= measured.Height;
         if (!captions.TryGetValue(index, out var caption)) {
             builder.AddRegion(new VisualSemanticRegion(Id(index) + "-label", "pyramid-label", stage.OutsideLabel, text));
             builder.AddDiagnostic(new VisualDiagnostic("pyramid.label-hidden", "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions."));
             return;
         }
-        var bounds = caption.Bounds;
+        var bounds = caption.Bounds; var inside = caption.Inside;
         var style = inside ? insideStyle : Style(chart, context, index, colors.Foreground);
         if (!inside && stage.HasGeometry) {
             var end = side switch {
