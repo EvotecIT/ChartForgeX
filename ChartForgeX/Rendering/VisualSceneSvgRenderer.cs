@@ -47,6 +47,7 @@ internal static partial class VisualSceneSvgRenderer {
         if (regionLabels != null) foreach (var region in scene.Regions) regionLabels[region.Id] = region.Label;
         var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
         resolvedPrefix = prefix;
+        var images = new VisualSvgImageResources(prefix);
         fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
         string? resourceOwner = null;
         var resourceOwners = maximumCharacters.HasValue ? new Stack<string?>() : null;
@@ -140,7 +141,7 @@ internal static partial class VisualSceneSvgRenderer {
                 if (options?.PatternTiles == true && WritePatternTile(writer, scene, group, prefix, ref i, paintOptions)) continue;
                 if (group.Tooltip != null) writer.StartElement("title").Text(group.Tooltip).EndElement();
                 if (group.ImageResource != null) {
-                    WriteImageResource(writer, group.ImageResource, prefix, i);
+                    WriteImageResource(writer, group.ImageResource, images, prefix, i);
                     SkipImageFallback(scene, ref i);
                     writer.EndElement();
                     if (resourceOwners != null) resourceOwner = resourceOwners.Pop();

@@ -1,6 +1,8 @@
 using System.Xml.Linq;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Stories;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -126,6 +128,41 @@ public sealed class StorySourceTimelineTests {
         Assert.Contains("background:transparent", page);
         Assert.Contains("ready", page);
         Assert.DoesNotContain("@keyframes", page);
+        var head = page.Substring(0, page.IndexOf("</head>", StringComparison.Ordinal));
+        Assert.NotEmpty(ChartFontAssets.StyleSheet);
+        Assert.Contains(ChartFontAssets.StyleSheet, head, StringComparison.Ordinal);
+        Assert.Equal(2, head.Split("@font-face", StringSplitOptions.None).Length - 1);
+        Assert.Contains("SIL OPEN FONT LICENSE", head, StringComparison.Ordinal);
+        Assert.Contains("font:14px var(--hfx-font-sans," + ChartFontStacks.ProductSans + ");font-variant-numeric:tabular-nums", head, StringComparison.Ordinal);
+        Assert.Contains("font:13px var(--hfx-font-mono," + ChartFontStacks.ProductMono + ")", head, StringComparison.Ordinal);
+        XNamespace ns = "http://www.w3.org/2000/svg";
+        XElement Definition(XElement input) => input.Elements(ns + "defs").First().Element(ns + "image")!;
+        XElement Reference(XElement input) => input.Elements(ns + "g").First(element => element.Attribute("data-cfx-frame-time") != null).Element(ns + "use")!;
+        var invalidResources = new (Action<XElement> Mutate, string Reason)[] {
+            (input => Definition(input).AddAfterSelf(new XElement(Definition(input))), "unique identifiers"),
+            (input => input.SetAttributeValue("id", (string)Definition(input).Attribute("id")!), "unique identifiers"),
+            (input => { Definition(input).SetAttributeValue("id", "escaped%2Dtarget"); input.SetAttributeValue("id", "escaped-target"); Reference(input).SetAttributeValue("href", "#escaped%2Dtarget"); }, "safe unique identifiers"),
+            (input => Definition(input).Attribute("id")!.Remove(), "unique identifiers"),
+            (input => Definition(input).Attribute("href")!.Remove(), "embedded frame images"),
+            (input => Definition(input).SetAttributeValue("href", "https://example.invalid/frame.svg"), "embedded images"),
+            (input => Definition(input).SetAttributeValue("href", "#" + (string)Definition(input).Attribute("id")!), "embedded images"),
+            (input => Definition(input).SetAttributeValue("onload", "alert(1)"), "event handlers"),
+            (input => Definition(input).Add(new XElement(ns + "use", new XAttribute("href", "#" + (string)Definition(input).Attribute("id")!))), "embedded frame images"),
+            (input => Definition(input).ReplaceWith(new XElement(ns + "use", new XAttribute("id", "cycle"), new XAttribute("href", "#cycle"))), "embedded frame images"),
+            (input => Reference(input).SetAttributeValue("href", "#missing"), "declared embedded frame image"),
+            (input => Reference(input).SetAttributeValue("href", "#" + (string)input.Attribute("id")!), "declared embedded frame image"),
+            (input => Reference(input).SetAttributeValue("href", "https://example.invalid/frame.svg"), "declared embedded frame image"),
+            (input => Reference(input).SetAttributeValue("href", (string)Definition(input).Attribute("href")!), "declared embedded frame image"),
+            (input => Reference(input).Attribute("href")!.Remove(), "sampled frames"),
+            (input => { var reference = Reference(input); reference.Remove(); input.Add(reference); }, "sampled frames"),
+            (input => { var definitions = Definition(input).Parent!; definitions.Remove(); Reference(input).Parent!.AddFirst(definitions); }, "embedded frame images"),
+            (input => Reference(input).Parent!.SetAttributeValue("href", (string)Definition(input).Attribute("href")!), "only to image elements")
+        };
+        foreach (var invalid in invalidResources) {
+            var altered = new XElement(root); invalid.Mutate(altered);
+            var error = Assert.Throws<ArgumentException>(() => new HtmlMotionPlayerRenderer().RenderPage(altered.ToString()));
+            Assert.Contains(invalid.Reason, error.Message, StringComparison.Ordinal);
+        }
         Assert.Throws<ArgumentException>(() => new HtmlMotionPlayerRenderer().RenderPage(svg.Replace("<g ", "<g onclick=\"alert(1)\" ", StringComparison.Ordinal)));
         var rootEnd = svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal));
         foreach (var active in new[] { "<?probe ><script>window.cfxProbe=1</script>?>", "<![CDATA[</svg><script>window.cfxProbe=1</script>]]>", "<!-- harmless XML-only node -->" })
