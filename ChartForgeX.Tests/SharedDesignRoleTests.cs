@@ -18,8 +18,8 @@ public sealed class SharedDesignRoleTests {
     private readonly ITestOutputHelper _output;
     public SharedDesignRoleTests(ITestOutputHelper output) => _output = output;
 
-    private static readonly string[] LightOrder = { "#2A78D6", "#0F9F8C", "#D9711F", "#8055C4", "#C24FA8", "#CC4048", "#A97800", "#37813E", "#1685A3", "#5F5F5F" };
-    private static readonly string[] DarkOrder = { "#4A90EA", "#22B39E", "#EE8A3A", "#AD86EB", "#E479C4", "#F47479", "#E8B83E", "#73BE79", "#55BED9", "#B1B1B1" };
+    private static readonly string[] LightOrder = { "#2A78D6", "#0F9F8C", "#D9711F", "#8055C4", "#C24FA8", "#CC4048", "#A97800", "#37813E", "#00739B", "#5F5F5F" };
+    private static readonly string[] DarkOrder = { "#4A90EA", "#22B39E", "#EE8A3A", "#AD86EB", "#E479C4", "#E15F55", "#E8B83E", "#73BE79", "#55BED9", "#B1B1B1" };
 
     [Fact]
     public void DefaultCategoricalOrder_IsTheValidatedOrderInBothModes_AndHoldsNoStatusColour() {
