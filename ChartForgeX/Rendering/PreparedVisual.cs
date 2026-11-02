@@ -172,10 +172,13 @@ public sealed partial class PreparedVisual {
     private string ExportSvg(string idPrefix) => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
         _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions, _capturePngText);
     /// <summary>Exports an owning artifact's metadata without altering the prepared snapshot.</summary>
-    internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null, int? maximumCharacters = null) {
+    internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null, int? maximumCharacters = null,
+        VisualSvgTextPresentation? textPresentation = null) {
         if (accessibility == null) throw new ArgumentNullException(nameof(accessibility));
+        var options = textPresentation.HasValue
+            ? (_defaultSvgOptions ?? new VisualSvgOptions()).WithTextPresentation(textPresentation.Value) : _defaultSvgOptions;
         return VisualSceneSvgRenderer.Render(_scene, accessibility.Name, accessibility.Description,
-            accessibility.Language, accessibility.IsDecorative, idPrefix ?? _defaultSvgOptions?.IdPrefix, _defaultSvgOptions, _capturePngText, maximumCharacters);
+            accessibility.Language, accessibility.IsDecorative, idPrefix ?? options?.IdPrefix, options, _capturePngText, maximumCharacters);
     }
     /// <summary>Exports native RGBA pixels without repeating layout or parsing SVG.</summary>
     public RgbaImage ToRgba(VisualRenderOptions? options = null) {

@@ -25,7 +25,7 @@ public static partial class V2Examples {
                         VisualTheme.Graphite(), mode, new VisualFrame(title, Subtitle(variant), showSurface: variant == "surface"), FontSpec.FromFamily(ProofFont));
                     var prepared = chart.Prepare(context);
                     var id = family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
-                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                     WriteThumbnail(output, chart, id, title, family, mode, legend: true);
                     WriteRecipe(output, id, ExampleRecipes.Named(family == "cartesian" ? "comparison" : "findings"), variant, title, Subtitle(variant), mode, width, height, null, surface: variant == "surface");
