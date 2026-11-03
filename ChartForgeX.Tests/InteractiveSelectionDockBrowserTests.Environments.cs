@@ -109,7 +109,11 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
                 const image=await new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.src='data:image/png;base64,'+png});
                 const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
                 const context=canvas.getContext('2d');context.drawImage(image,0,0);
+                if(!CSS.supports('color',stroke))return false;
                 const swatch=document.createElement('canvas').getContext('2d');
+                swatch.fillStyle=stroke;swatch.fillRect(0,0,1,1);
+                if(swatch.getImageData(0,0,1,1).data[3]===0)return false;
+                swatch.clearRect(0,0,1,1);
                 // macOS Highlight can be translucent; screenshots contain its paint over the halo.
                 swatch.fillStyle=backdrop;swatch.fillRect(0,0,1,1);swatch.fillStyle=stroke;swatch.fillRect(0,0,1,1);
                 const expected=swatch.getImageData(0,0,1,1).data,scale=image.naturalWidth/innerWidth;
