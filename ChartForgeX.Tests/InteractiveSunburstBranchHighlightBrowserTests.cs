@@ -49,6 +49,15 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var ink = await NativeInk(page, "engineering-support");
         Assert.NotEqual("none", ink[3]); Assert.True(int.Parse(ink[5], System.Globalization.CultureInfo.InvariantCulture) > 0);
+        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root => root.removeAttribute('data-cfx-highlight-other-branch-opacity')");
+        await MoveToNative(page, Node("engineering-support"));
+        await WaitState(page, "engineering-support", "item");
+        Assert.Equal("0.4", (await PaintOpacities(page, "operations-support")).Single());
+        Assert.Equal(.4, await page.Locator(Node("operations-support") + " > [data-cfx-highlight-paint]").EvaluateAsync<double>("paint => parseFloat(getComputedStyle(paint).getPropertyValue('--cfx-highlight-opacity'))"));
+        if (graphite && !composed)
+            await Capture(session, await page.ContentAsync(), $"branch-default-{width}-{(dark ? "dark" : "light")}");
+        await MoveAwayAsync(page);
+        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root => root.setAttribute('data-cfx-highlight-other-branch-opacity', '0')");
         await MoveToNative(page, Node("engineering-support"));
         await WaitState(page, "engineering-support", "item");
         Assert.Equal(new[] { "1", "0.55", "0.55", "0", "1" }, await PaintOpacities(page, "engineering-support", "platform", "engineering", "operations-support", "all"));
@@ -380,6 +389,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);
+        await SettlePresentationAsync(session.Page);
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = true });
         await File.WriteAllTextAsync(Path.Combine(directory, name + ".html"), html);
         var state = await session.Page.EvaluateAsync<string>("() => JSON.stringify(Array.from(document.querySelectorAll('.cfx-interactive-chart')).map(root => ({ hover:root.dataset.cfxHoverKey, mode:root.dataset.cfxHoverMode, pinned:root.dataset.cfxPinnedTarget, tooltipHidden:root.querySelector('.cfx-tooltip').hidden, probe:root.hasAttribute('data-cfx-highlight-probe') })))");
