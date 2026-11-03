@@ -7,6 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyCellContractTests {
     [Theory]
     [InlineData("groups", 120)]
+    [InlineData("group-labels", 120)]
     [InlineData("hierarchy", 100)]
     [InlineData("priority", 120)]
     [InlineData("priority", 80)]
@@ -26,6 +27,7 @@ public sealed class TopologyCellContractTests {
         var parsed = new MarkupArchitectureParser().Parse("```chartforgex architecture v1\n" + source + "\n```");
         Assert.False(parsed.HasErrors);
         var chart = contract == "width-reserve" ? TopologyCellLayoutTests.Example("ad-replication") : parsed.Document!;
+        if (contract == "group-labels") chart = OfficeGroups();
         if (contract == "same-id") chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
             .AddAutoGroup("g", "Shell").AddAutoNode("g", "Authored node", status: TopologyHealthStatus.Warning)
             .AddAutoNode("b", "Outside").AddAutoNode("a", "Member", groupId: "g")
@@ -73,6 +75,9 @@ public sealed class TopologyCellContractTests {
         var canvas = layout.Paint(paint);
         var cells = Enumerable.Range(0, canvas.Rows).SelectMany(row => Enumerable.Range(0, canvas.Columns).Select(column => canvas.Get(column, row))).ToArray();
         switch (contract) {
+            case "group-labels":
+                Assert.Contains("HTTPS", canvas.ToText(), StringComparison.Ordinal);
+                break;
             case "groups":
                 foreach (var group in layout.Groups) {
                     var members = layout.Nodes.Where(node => node.GroupId == group.Id).ToArray();
@@ -135,6 +140,21 @@ public sealed class TopologyCellContractTests {
                 break;
         }
     }
+
+    private static TopologyChart OfficeGroups() => TopologyChart.Create().WithTitle("Small office")
+        .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight).WithViewport(480, 240, 28)
+        .AddAutoGroup("group-0", "Office LAN").AddAutoGroup("group-1", "DMZ").AddAutoGroup("group-2", "Cloud")
+        .AddAutoNode("12 PCs", "12 PCs", TopologyNodeKind.Endpoint, groupId: "group-0")
+        .AddAutoNode("File server", "File server", TopologyNodeKind.Storage, groupId: "group-0", subtitle: "FS01")
+        .AddAutoNode("Printer", "Printer", TopologyNodeKind.Generic, groupId: "group-0")
+        .AddAutoNode("Web server", "Web server", TopologyNodeKind.Server, groupId: "group-1", subtitle: "WEB01")
+        .AddAutoNode("Microsoft 365", "Microsoft 365", TopologyNodeKind.Cloud, groupId: "group-2")
+        .AddAutoNode("Backup", "Backup", TopologyNodeKind.Storage, groupId: "group-2", subtitle: "Offsite")
+        .AddAutoNode("Firewall", "Firewall", TopologyNodeKind.Gateway, subtitle: "FW01")
+        .AddEdge("link-0", "12 PCs", "Firewall", "HTTPS", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward)
+        .AddEdge("link-1", "File server", "Backup", "nightly", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward)
+        .AddEdge("link-2", "Firewall", "Web server", "443", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward)
+        .AddEdge("link-3", "Firewall", "Microsoft 365", "443", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward);
 
     private const string Manual = """
         direction down

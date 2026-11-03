@@ -27,7 +27,11 @@ public sealed partial class TopologyCellLayout {
                 if (a.Row != b.Row) continue;
                 var left = Math.Min(a.Column, b.Column) + 1;
                 var right = Math.Max(a.Column, b.Column) - 1;
-                for (var start = left; start + width <= right && !placed; start++) foreach (var row in new[] { a.Row - 1, a.Row + 1 }) {
+                // Keep the caption's center over its run. Its ends can extend past a
+                // bend when the adjacent row is clear, instead of dropping the label.
+                foreach (var start in Enumerable.Range(left - width / 2, Math.Max(0, right - left + 1))
+                    .OrderBy(start => Math.Abs(start + width / 2 - (left + right) / 2))) foreach (var row in new[] { a.Row - 1, a.Row + 1 }) {
+                    if (placed) break;
                     if (!CanWrite(canvas, start, row, start + width, false)) continue;
                     WriteText(canvas, start, row, text, start + width, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
                     placed = true; break;
