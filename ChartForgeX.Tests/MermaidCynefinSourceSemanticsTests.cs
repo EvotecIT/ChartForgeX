@@ -63,8 +63,10 @@ public sealed class MermaidCynefinSourceSemanticsTests : IDisposable {
         Assert.Equal((2, 9), (item.Span.Line, item.Span.Column));
     }
 
-    [Fact]
-    public void SharedPinnedFixtureMatchesNativeFactsAndKeepsAllConfusionItemsVisible() {
+    [Theory]
+    [InlineData(null)]
+    [InlineData(11.13)]
+    public void SharedPinnedFixtureMatchesNativeFactsAndKeepsAllConfusionItemsVisible(double? fontSize) {
         var folder = Path.Combine(TestRepository.Root, "ChartForgeX.Tests", "Fixtures", "Mermaid");
         var source = File.ReadAllText(Path.Combine(folder, "cynefin-source-semantics.mmd"));
         var parsed = new MermaidParser().ParseCynefin(source); Assert.Empty(parsed.Diagnostics);
@@ -74,10 +76,13 @@ public sealed class MermaidCynefinSourceSemanticsTests : IDisposable {
         foreach (var domain in facts.GetProperty("domains").EnumerateArray())
             Assert.Equal(domain[1].EnumerateArray().Select(item => item.GetString()), document.Domains[domain[0].GetString()!]);
         Assert.Equal(4, document.Domains["confusion"].Count);
-        var svg = XDocument.Parse(document.ToTopologyChart().ToSvg());
+        var chart = fontSize.HasValue ? document.ToTopologyChart(new MermaidTopologyRenderOptions {
+            Presentation = new MermaidPresentationOptions { FontFamily = "Calibri", FontSize = fontSize }
+        }) : document.ToTopologyChart();
+        var svg = XDocument.Parse(chart.ToSvg());
         var confusion = Assert.Single(svg.Descendants(), item => (string?)item.Attribute("data-node-id") == "confusion" && (string?)item.Attribute("data-cfx-role") == "topology-node");
         Assert.Equal(4, confusion.Descendants().Count(item => (string?)item.Attribute("data-cfx-role") == "topology-detail-badge"));
-        Assert.Contains("Four", confusion.Value, StringComparison.Ordinal);
+        Assert.All(document.Domains["confusion"], item => Assert.Contains(item, confusion.Value, StringComparison.Ordinal));
     }
 
     [Theory]

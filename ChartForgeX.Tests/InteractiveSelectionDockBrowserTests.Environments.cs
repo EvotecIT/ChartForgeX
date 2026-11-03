@@ -12,16 +12,21 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveSelectionDockBrowserTests {
     [BrowserTheory]
     [Trait("BrowserSuite", "Compatibility")]
-    [InlineData(false, 980)]
-    [InlineData(true, 390)]
-    public async Task ForcedPaletteReducedMotionAndHostZoomKeepControlsReadoutsFocusAndPrintUsable(bool dark, int width) {
+    [InlineData(false, 980, false)]
+    [InlineData(true, 390, false)]
+    [InlineData(false, 980, true)]
+    public async Task ForcedPaletteReducedMotionAndHostZoomKeepControlsReadoutsFocusAndPrintUsable(bool dark, int width, bool translucentFocus) {
         if (!Enabled) return;
+        var captureSuffix = dark.ToString() + (translucentFocus ? "-translucent" : "");
         await using var session = await OpenAsync(PagedReadings(dark).ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);
         }), width, 900);
         var page = session.Page;
         await page.EmulateMediaAsync(new() { ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
+        if (translucentFocus) await page.AddStyleTagAsync(new() {
+            Content = ".cfx-interactive-chart [data-cfx-focus-ink]{stroke:rgba(128,188,254,.6)!important;forced-color-adjust:none;}"
+        });
         await page.EvaluateAsync("()=>document.documentElement.style.zoom='1.5'");
         Assert.True(await page.EvaluateAsync<bool>("()=>matchMedia('(forced-colors:active)').matches&&matchMedia('(prefers-reduced-motion:reduce)').matches"));
         await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
@@ -30,7 +35,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         await page.Locator("[data-cfx-reset]").ClickAsync();
         var target = page.Locator("g[data-cfx-observation-id=reading-7]");
         await FocusWithKeyboardAsync(page, target);
-        await CaptureEnvironmentAsync(page, "focus-" + dark);
+        await CaptureEnvironmentAsync(page, "focus-" + captureSuffix);
         await AssertEnvironmentFocusAsync(page, target);
         Assert.Contains("Observation 08", await TooltipTextAsync(page));
         await page.Keyboard.PressAsync("Space");
@@ -47,7 +52,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         var textChannels = await ResolveCssColorsAsync(page, textPaint);
         Assert.All(textChannels, text => Assert.True(ChartColorMath.ContrastRatio(Color(text), Color(channels[1])) >= 4.5,
             "Every visible tooltip heading, label and value remains readable in the forced palette."));
-        await CaptureEnvironmentAsync(page, "screen-" + dark);
+        await CaptureEnvironmentAsync(page, "screen-" + captureSuffix);
         await page.EvaluateAsync("""
             ()=>{
                 const root=document.querySelector('.cfx-interactive-chart');
@@ -58,11 +63,11 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
                     target:event.target.closest('[data-cfx-target-id]')?.dataset.cfxTargetId,hit:document.elementFromPoint(event.clientX,event.clientY)?.outerHTML.slice(0,800)}));
             }
             """);
-        await CaptureEnvironmentAsync(page, "host-focus-" + dark);
+        await CaptureEnvironmentAsync(page, "host-focus-" + captureSuffix);
         await target.ScrollIntoViewIfNeededAsync();
         var position = await target.EvaluateAsync<float[]>("node=>{const box=node.getBoundingClientRect();return[(box.left+box.right)/2,(box.top+box.bottom)/2]}" );
         await page.Mouse.MoveAsync(position[0], position[1], new() { Steps = 4 });
-        await CaptureEnvironmentAsync(page, "pointer-" + dark);
+        await CaptureEnvironmentAsync(page, "pointer-" + captureSuffix);
         Assert.Contains("Observation 08", await TooltipTextAsync(page));
         await page.EmulateMediaAsync(new() { Media = Media.Print, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
         var printed = await page.EvaluateAsync<JsonElement>("""
@@ -76,7 +81,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         Assert.Equal("none", printed.GetProperty("transform").GetString());
         Assert.All(printed.GetProperty("controls").EnumerateArray(), item => Assert.Equal("none", item.GetString()));
         Assert.Equal(1, printed.GetProperty("selection").GetInt32());
-        await CaptureEnvironmentAsync(page, "print-" + dark);
+        await CaptureEnvironmentAsync(page, "print-" + captureSuffix);
         await page.EmulateMediaAsync(new() { Media = Media.Screen, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
         Assert.True(await page.Locator(".cfx-toolbar").IsVisibleAsync());
         Assert.True(await page.Locator("[data-cfx-compare-tray]").IsVisibleAsync());
@@ -88,9 +93,10 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
     private static async Task AssertEnvironmentFocusAsync(IPage page, ILocator target) {
         var actual = await target.EvaluateAsync<JsonElement>("""
             target=>{
-                const ink=target.closest('.cfx-interactive-chart').querySelector('[data-cfx-focus-ink]'),
+                const root=target.closest('.cfx-interactive-chart'),ink=root.querySelector('[data-cfx-focus-ink]'),
                     ring=ink.getBoundingClientRect(),mark=target.getBoundingClientRect();
-                return {ring:ring.toJSON(),mark:mark.toJSON(),stroke:getComputedStyle(ink).stroke,width:getComputedStyle(ink).strokeWidth,
+                return {ring:ring.toJSON(),mark:mark.toJSON(),stroke:getComputedStyle(ink).stroke,
+                    backdrop:getComputedStyle(root.querySelector('[data-cfx-focus-halo]')).stroke,width:getComputedStyle(ink).strokeWidth,
                     contains:(mark.left+mark.right)/2>=ring.left-1&&(mark.left+mark.right)/2<=ring.right+1
                         &&(mark.top+mark.bottom)/2>=ring.top-1&&(mark.top+mark.bottom)/2<=ring.bottom+1};
             }
@@ -99,11 +105,13 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         Assert.Equal("2px", actual.GetProperty("width").GetString());
         var screenshot = await page.ScreenshotAsync();
         var painted = await page.EvaluateAsync<bool>("""
-            async({png,ring,stroke})=>{
+            async({png,ring,stroke,backdrop})=>{
                 const image=await new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.src='data:image/png;base64,'+png});
                 const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
                 const context=canvas.getContext('2d');context.drawImage(image,0,0);
-                const swatch=document.createElement('canvas').getContext('2d');swatch.fillStyle=stroke;swatch.fillRect(0,0,1,1);
+                const swatch=document.createElement('canvas').getContext('2d');
+                // macOS Highlight can be translucent; screenshots contain its paint over the halo.
+                swatch.fillStyle=backdrop;swatch.fillRect(0,0,1,1);swatch.fillStyle=stroke;swatch.fillRect(0,0,1,1);
                 const expected=swatch.getImageData(0,0,1,1).data,scale=image.naturalWidth/innerWidth;
                 // At 150% host zoom a stroke can straddle physical pixels. Sample the rendered perimeter,
                 // retaining a small channel allowance for native antialiasing instead of assuming an opaque centre.
@@ -117,7 +125,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
             """, new { png = Convert.ToBase64String(screenshot), ring = new {
                 left = actual.GetProperty("ring").GetProperty("left").GetDouble(), right = actual.GetProperty("ring").GetProperty("right").GetDouble(),
                 top = actual.GetProperty("ring").GetProperty("top").GetDouble(), bottom = actual.GetProperty("ring").GetProperty("bottom").GetDouble()
-            }, stroke = actual.GetProperty("stroke").GetString() });
+            }, stroke = actual.GetProperty("stroke").GetString(), backdrop = actual.GetProperty("backdrop").GetString() });
         Assert.True(painted, "The screenshot contains the focused mark's visible stroke under host scaling.");
     }
 

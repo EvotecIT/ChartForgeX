@@ -60,6 +60,8 @@ public sealed partial class TopologyHierarchyNativeBrowserTests {
         await page.WaitForFunctionAsync("drawing=>org.root.dataset.cfxAdaptiveDrawing===drawing", width < 600 ? "wide" : "narrow");
         Assert.Equal(4, await page.EvaluateAsync<int>("()=>orgRequests.length")); Assert.Empty(await page.EvaluateAsync<string[]>("()=>org.getHierarchyView().collapsedNodeIds"));
         Assert.True(await page.EvaluateAsync<bool>("()=>{const m=JSON.parse(org.root.dataset.cfxPreparedChart);return m.series.length===0&&!m.xProjection&&!m.yProjection&&m.hierarchy.kind==='topology'&&[...org.root.querySelectorAll('[data-cfx-node]')].every(n=>!n.hasAttribute('data-cfx-series'));}"));
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
+        await SettlePresentationAsync(page);
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svg = XDocument.Load(await svgDownload.PathAsync() ?? throw new InvalidOperationException("No organization SVG export."));
         Assert.Equal(5, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "topology-node"));

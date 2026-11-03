@@ -68,6 +68,8 @@ public sealed class InteractiveHierarchyViewBrowserTests {
         Assert.Equal("services", await Root(page));
         Assert.Equal(5, await page.EvaluateAsync<int>("()=>hierarchyRequests.length"));
         await AssertHierarchyNavigationContrastAsync(page);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
+        await SettlePresentationAsync(page);
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svgPath = await svgDownload.PathAsync() ?? throw new InvalidOperationException("No hierarchy SVG download.");
         var svg = XDocument.Load(svgPath);
