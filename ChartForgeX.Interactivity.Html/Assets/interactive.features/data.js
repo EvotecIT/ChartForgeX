@@ -103,7 +103,8 @@
     menu.setAttribute('aria-label', label('ChartControls', 'Chart controls'));
     menu.dir = style.direction; menu.lang = root.lang;
     for (const name of ['--cfx-tooltip-surface', '--cfx-tooltip-text', '--cfx-tooltip-muted', '--cfx-tooltip-line', '--cfx-tooltip-font',
-      '--cfx-tooltip-shadow', '--cfx-tooltip-radius', '--cfx-control-radius', '--cfx-focus-ring', '--cfx-default-host-accent', '--cfx-host-accent'])
+      '--cfx-tooltip-shadow', '--cfx-tooltip-radius', '--cfx-control-radius', '--cfx-focus-ring', '--cfx-default-host-accent', '--cfx-host-accent',
+      '--hfx-type-body-size', '--hfx-type-body-line-height'])
       menu.style.setProperty(name, style.getPropertyValue(name));
     menu.style.visibility = 'hidden';
     const button = (text, id, disabled) => {
@@ -133,6 +134,12 @@
     menu.style.left = Math.max(gap, Math.min(x, view.innerWidth - bounds.width - gap)) + 'px';
     menu.style.top = Math.max(gap, Math.min(y, view.innerHeight - bounds.height - gap)) + 'px';
     menu.style.visibility = '';
+    // A portal snapshots its island's roles. Dismiss it when that island changes.
+    const theme = new view.MutationObserver(() => closeMenu(root, true));
+    for (let owner = root; owner; owner = owner.assignedSlot || owner.parentElement || owner.getRootNode().host)
+      theme.observe(owner, { attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-hfx-theme', 'data-hfx-style'] });
+    state.cleanups.push(() => theme.disconnect());
+    state.cleanups.push(k.listenChart(root, view.matchMedia('(prefers-color-scheme: dark)'), 'change', () => closeMenu(root, true)));
     const enabled = items.filter(item => !item.disabled);
     state.cleanups.push(k.listenChart(root, menu, 'keydown', event => {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeMenu(root, true); return; }

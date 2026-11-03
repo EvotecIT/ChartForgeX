@@ -87,6 +87,44 @@ public sealed class ChartContextMenuBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PortalledMenuKeepsNestedHostTypographyAndClosesWhenThemeChanges(bool dark, bool slotted) {
+        if (!Enabled) return;
+        var html = SeverityBars(dark).ToInteractiveHtmlPage(options => Options(options, false));
+        await using var session = await OpenAsync(html, 900, 720);
+        var page = session.Page;
+        await page.AddStyleTagAsync(new() { Content = ".cfx-chart-context-menu{font-size:var(--hfx-type-body-size,14px);line-height:var(--hfx-type-body-line-height,1.5)}" });
+        await page.EvaluateAsync("""
+            slotted => {
+                const root = document.querySelector('.cfx-interactive-chart'), host = document.createElement('div');
+                host.style.cssText = '--hfx-type-body-size:18px;--hfx-type-body-line-height:1.75;--hfx-radius-overlay:17px';
+                root.before(host);
+                if (slotted) {
+                    const shadow = host.attachShadow({mode:'open'}), island = document.createElement('div');
+                    island.style.cssText = host.style.cssText; host.style.cssText = '';
+                    island.append(document.createElement('slot')); shadow.append(island);
+                }
+                host.append(root);
+                root.style.setProperty('--cfx-tooltip-radius', 'var(--hfx-radius-overlay)');
+            }
+            """, slotted);
+        await FocusWithKeyboardAsync(page, page.Locator(Point(0, 0)));
+        await page.Keyboard.PressAsync("Shift+F10");
+        var menu = page.Locator(".cfx-chart-context-menu");
+        Assert.True(await menu.IsVisibleAsync());
+        Assert.Equal(new[] { "18px", "31.5px", "17px" }, await menu.EvaluateAsync<string[]>(
+            "node => { const style=getComputedStyle(node); return [style.fontSize,style.lineHeight,style.borderTopLeftRadius]; }"));
+        Assert.True(await menu.EvaluateAsync<bool>("node => node.parentElement === document.body"));
+        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root => (root.assignedSlot?.parentElement || root.parentElement).style.setProperty('--hfx-radius-overlay','21px')");
+        await menu.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+        Assert.True(await page.Locator(".cfx-interactive-chart").EvaluateAsync<bool>("root => root.contains(document.activeElement)"));
+        AssertNoConsoleErrors(session);
+    }
+
     private static void Options(HtmlChartInteractionOptions options, bool rtl) {
         options.IncludeContextMenu = true; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         options.Interaction.Features |= ChartInteractionFeatures.Export; options.Tooltip.PinOnSelect = false;
