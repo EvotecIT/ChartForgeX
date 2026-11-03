@@ -69,8 +69,8 @@ public sealed partial class TopologyCellLayout {
             var reversed = highlighted && options.ReversedEdgeIds.Contains(edge.Id);
             var toTarget = highlighted ? !reversed : edge.Direction == VisualLinkDirection.Forward || edge.Direction == VisualLinkDirection.Bidirectional;
             var toSource = highlighted ? reversed : edge.Direction == VisualLinkDirection.Backward || edge.Direction == VisualLinkDirection.Bidirectional;
-            if (toTarget && ArrowAt(path, fromEnd: true, out var targetArrow, out var targetDirection)) arrows.Add((targetArrow, targetDirection, edge, emphasis));
-            if (toSource && ArrowAt(path, fromEnd: false, out var sourceArrow, out var sourceDirection)) arrows.Add((sourceArrow, sourceDirection, edge, emphasis));
+            if (toTarget && ArrowAt(path, fromEnd: true, edge.TargetNodeId, out var targetArrow, out var targetDirection)) arrows.Add((targetArrow, targetDirection, edge, emphasis));
+            if (toSource && ArrowAt(path, fromEnd: false, edge.SourceNodeId, out var sourceArrow, out var sourceDirection)) arrows.Add((sourceArrow, sourceDirection, edge, emphasis));
         }
 
         var crossings = new HashSet<TopologyCellPoint>();
@@ -81,23 +81,10 @@ public sealed partial class TopologyCellLayout {
         }
 
         foreach (var arrow in arrows.OrderBy(item => item.Emphasis == TopologyCellEmphasis.Dimmed ? 0 : 1)) {
-            canvas.Set(arrow.At.Column, arrow.At.Row, Cell(ArrowGlyph(arrow.Direction, ascii), TopologyCellRole.EdgeArrow, arrow.Edge.Id, arrow.Edge.Status, arrow.Emphasis));
+            canvas.Set(arrow.At.Column, arrow.At.Row, Cell(arrow.Emphasis == TopologyCellEmphasis.Failed ? (ascii ? "x" : "✕") : ArrowGlyph(arrow.Direction, ascii), TopologyCellRole.EdgeArrow, arrow.Edge.Id, arrow.Edge.Status, arrow.Emphasis));
         }
 
-        foreach (var edge in Edges) {
-            if (edge.LabelPosition == null || string.IsNullOrWhiteSpace(edge.Label)) continue;
-            var emphasis = EdgeEmphasis(edge, options, highlighting);
-            var at = edge.LabelPosition.Value;
-            var text = " " + edge.Label!.Trim() + " ";
-            if (edge.LabelOnLine) {
-                var width = TerminalTextWidth.Measure(text);
-                if (LineLabelStart(canvas, edge, at, width, crossings) is int start) WriteText(canvas, start, at.Row, text, start + width, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
-            } else {
-                var fitted = FitCellText(edge.Label!.Trim(), Math.Max(0, Columns - at.Column), ascii);
-                var limit = at.Column + TerminalTextWidth.Measure(fitted);
-                if (fitted.Length > 0 && CanWrite(canvas, at.Column, at.Row, limit, allowEdges: false)) WriteText(canvas, at.Column, at.Row, fitted, limit, TopologyCellRole.EdgeLabel, edge.Id, edge.Status, emphasis);
-            }
-        }
+        PaintCellLabels(canvas, options, ascii, highlighting, crossings);
     }
 
     private void PaintNode(TopologyCellCanvas canvas, TopologyCellNode node, TopologyCellPaintOptions options, bool ascii, bool highlighting) {
@@ -125,11 +112,14 @@ public sealed partial class TopologyCellLayout {
         var start = node.Column + 2 + Math.Max(0, (labelWidth - TerminalTextWidth.Measure(label)) / 2);
         if (node.Height >= 3) WriteText(canvas, start, node.Row + 1, label, node.Column + 2 + labelWidth, TopologyCellRole.NodeLabel, node.Id, status, emphasis);
         if (marker.Length > 0 && node.Height >= 3) canvas.Set(right - 1, node.Row + 1, Cell(marker, TopologyCellRole.NodeStatus, node.Id, status, emphasis));
-        var detail = options.NodeValues.TryGetValue(node.Id, out var value) ? value : node.Subtitle;
-        if (node.Height >= 4 && !string.IsNullOrWhiteSpace(detail)) {
+        WriteDetail(node.Subtitle, node.Row + 2);
+        if (options.NodeValues.TryGetValue(node.Id, out var value)) WriteDetail(value, node.Row + (node.Subtitle == null ? 2 : 3));
+
+        void WriteDetail(string? detail, int row) {
+            if (row >= bottom || string.IsNullOrWhiteSpace(detail)) return;
             var width = Math.Max(1, node.Width - 4);
             var fitted = FitCellText(detail!.Trim(), width, ascii);
-            WriteText(canvas, node.Column + 2 + Math.Max(0, (width - TerminalTextWidth.Measure(fitted)) / 2), node.Row + 2, fitted, node.Column + 2 + width, TopologyCellRole.NodeDetail, node.Id, status, emphasis);
+            WriteText(canvas, node.Column + 2 + Math.Max(0, (width - TerminalTextWidth.Measure(fitted)) / 2), row, fitted, node.Column + 2 + width, TopologyCellRole.NodeDetail, node.Id, status, emphasis);
         }
     }
 
@@ -190,9 +180,9 @@ public sealed partial class TopologyCellLayout {
             int? best = null;
             for (var start = left; start + width - 1 <= right; start++) {
                 var fits = true;
-                for (var column = start; column < start + width && fits; column++) {
+                for (var column = start - 1; column <= start + width && fits; column++) {
                     var cell = canvas.Get(column, at.Row);
-                    fits = cell.Role == TopologyCellRole.Edge && cell.ElementId == edge.Id && !crossings.Contains(new TopologyCellPoint(column, at.Row));
+                    fits = cell.Role == TopologyCellRole.Edge && cell.ElementId == edge.Id && !crossings.Contains(new TopologyCellPoint(column, at.Row)) && (cell.Glyph is "─" or "━" or "┄" or "-" or "=" or ".");
                 }
 
                 if (fits && (best == null || Math.Abs(start + width / 2 - (left + right) / 2) < Math.Abs(best.Value + width / 2 - (left + right) / 2))) best = start;
@@ -206,9 +196,10 @@ public sealed partial class TopologyCellLayout {
 
     private bool InsideNode(TopologyCellPoint cell) => Nodes.Any(node => node.Contains(cell.Column, cell.Row));
 
-    private static bool CanWrite(TopologyCellCanvas canvas, int column, int row, int limit, bool allowEdges) {
+    private bool CanWrite(TopologyCellCanvas canvas, int column, int row, int limit, bool allowEdges) {
         if (row < 0 || row >= canvas.Rows || column < 0 || limit > canvas.Columns) return false;
         for (var c = column; c < limit; c++) {
+            if (Nodes.Any(node => node.Contains(c, row))) return false;
             var role = canvas.Get(c, row).Role;
             if (role == TopologyCellRole.Empty) continue;
             if (allowEdges && role == TopologyCellRole.Edge) continue;
@@ -237,10 +228,11 @@ public sealed partial class TopologyCellLayout {
         return path;
     }
 
-    private bool ArrowAt(List<TopologyCellPoint> path, bool fromEnd, out TopologyCellPoint at, out int direction) {
+    private bool ArrowAt(List<TopologyCellPoint> path, bool fromEnd, string endpointId, out TopologyCellPoint at, out int direction) {
+        var endpointGroup = Nodes.Any(node => node.Id == endpointId) ? null : Groups.FirstOrDefault(group => group.Id == endpointId);
         for (var offset = 0; offset < path.Count; offset++) {
             var index = fromEnd ? path.Count - 1 - offset : offset;
-            if (InsideNode(path[index])) continue;
+            if (InsideNode(path[index]) || endpointGroup?.Contains(path[index].Column, path[index].Row) == true) continue;
             var next = fromEnd ? index + 1 : index - 1;
             if (next < 0 || next >= path.Count) break;
             at = path[index];

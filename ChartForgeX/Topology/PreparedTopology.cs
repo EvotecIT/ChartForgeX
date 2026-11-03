@@ -27,9 +27,13 @@ public sealed class PreparedTopology {
     internal ResolvedTopologyGeometry Geometry => _geometry.Value;
     internal VisualRenderOptions RasterOptions => _rasterOptions;
     internal TopologyChart LayoutChart => _chart;
+    internal TopologyChart? CellLayoutSource { get; }
+    internal string[]? CellAutomaticEdges { get; }
 
-    internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions) {
+    internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions, PreparedTopology? cellSnapshot = null) {
         _chart = compiler.LayoutSnapshot(); _options = compiler.OptionsSnapshot();
+        CellLayoutSource = cellSnapshot == null ? compiler.CellLayoutSourceSnapshot() : cellSnapshot.CellLayoutSource;
+        CellAutomaticEdges = cellSnapshot == null ? compiler.CellAutomaticEdgesSnapshot() : cellSnapshot.CellAutomaticEdges;
         _visual = visual; _geometry = compiler.GeometrySnapshot(_chart, _options);
         _diagnostics = compiler.DiagnosticsSnapshot(_chart, _chart.RenderOptions ?? _options);
         _context = compiler.Context; _rasterOptions = rasterOptions;
@@ -39,7 +43,7 @@ public sealed class PreparedTopology {
     }
 
     private PreparedTopology(PreparedTopology source, PreparedVisual visual) {
-        _chart = source._chart; _options = source._options; _requestedWidth = source._requestedWidth;
+        _chart = source._chart; CellLayoutSource = source.CellLayoutSource; CellAutomaticEdges = source.CellAutomaticEdges; _options = source._options; _requestedWidth = source._requestedWidth;
         _requestedHeight = source._requestedHeight; _visual = visual; _context = source._context;
         _rasterOptions = source._rasterOptions; _title = source._title; _subtitle = source._subtitle;
         _legend = source._legend; _geometry = source._geometry; _diagnostics = source._diagnostics;
@@ -73,7 +77,7 @@ public sealed class PreparedTopology {
         source.Title = _title; source.Subtitle = _subtitle;
         source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
         var compiler = new VisualTopologyCompiler(source, context, _options, resolvedLayout: true);
-        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions);
+        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions, this);
     }
 
     /// <summary>Recompiles the resolved layout with changed paint (colors, emphasis, arrows) without running layout again.</summary>
@@ -83,7 +87,7 @@ public sealed class PreparedTopology {
         source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
         restyle(source);
         var compiler = new VisualTopologyCompiler(source, _context, source.ResolveRenderOptions(options).CloneForRendering(), resolvedLayout: true);
-        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions);
+        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions, this);
     }
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>

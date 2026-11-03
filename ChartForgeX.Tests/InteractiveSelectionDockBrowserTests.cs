@@ -274,17 +274,26 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
 
     private static async Task AssertDockBoundsAsync(IPage page, string selector) {
         var root = page.Locator(selector);
-        var dock = await root.Locator("[data-cfx-compare-tray]").BoundingBoxAsync() ?? throw new InvalidOperationException("No selection dock.");
-        var stage = await root.Locator(".cfx-stage").BoundingBoxAsync() ?? throw new InvalidOperationException("No chart viewport.");
-        Assert.True(dock.Y >= stage.Y + stage.Height, "Selection controls must not cover chart labels, marks or viewport scrollbars.");
-        var box = await root.BoundingBoxAsync() ?? throw new InvalidOperationException("No chart host.");
+        // Responsive headings can move the frame between protocol calls; compare one layout.
+        var boxes = await root.EvaluateAsync<LocatorBoundingBoxResult[]>("""
+            root=>[root.querySelector('[data-cfx-compare-tray]'),root.querySelector('.cfx-stage'),root]
+                .map(node=>node.getBoundingClientRect().toJSON())
+            """);
+        var dock = boxes[0];
+        var stage = boxes[1];
+        var box = boxes[2];
+        Assert.True(dock.Y >= stage.Y + stage.Height, "Selection controls must not cover chart labels, marks or viewport scrollbars. " + JsonSerializer.Serialize(boxes));
         Assert.True(dock.X >= box.X - 1 && dock.X + dock.Width <= box.X + box.Width + 1, "The dock must remain inside its host width.");
         var controls = await root.Locator(".cfx-compare-chip,.cfx-compare-page:enabled,[data-cfx-compare-clear]").AllAsync();
         foreach (var control in controls) {
             // The dock is one stable row; keyboard focus scrolls each complete control into view.
             await control.FocusAsync();
-            dock = await root.Locator("[data-cfx-compare-tray]").BoundingBoxAsync() ?? throw new InvalidOperationException("No selection dock.");
-            var bounds = await control.BoundingBoxAsync() ?? throw new InvalidOperationException("No compare control.");
+            boxes = await control.EvaluateAsync<LocatorBoundingBoxResult[]>("""
+                control=>[control.closest('[data-cfx-compare-tray]'),control]
+                    .map(node=>node.getBoundingClientRect().toJSON())
+                """);
+            dock = boxes[0];
+            var bounds = boxes[1];
             Assert.True(bounds.X >= dock.X - 1 && bounds.X + bounds.Width <= dock.X + dock.Width + 1);
             Assert.True(bounds.Y >= dock.Y && bounds.Y + bounds.Height <= dock.Y + dock.Height + 1);
         }

@@ -174,10 +174,21 @@ When the scenario panel has focus: `n` or Right for the next step, `b` or Left f
 
 ## Terminal drawing
 
-`TopologyCellLayout` maps the prepared layout into terminal cells. Layout runs once in the topology engine; the
-projection only maps that geometry to a character grid, keeping routes orthogonal and nodes wide enough for their
-labels. `Paint` returns a `TopologyCellCanvas` whose cells carry their glyph, role (node border, label, edge, arrow,
-group border, legend), element id, status and emphasis (highlighted, dimmed, focused, failed). `ToText()` gives plain
-text; terminal hosts such as ConsoleMonster map roles and emphasis to their own styles, so they draw the same diagram
-without a second layout engine. `TopologyCellPaintOptions` takes live node values and statuses, a focused node, and the
-active step.
+`TopologyCellLayout` projects a detached prepared topology into terminal cells. Automatic grouped diagrams reuse
+compound ranking with compact region sizes, then route around the cell boxes and group captions. Authored positions,
+waypoints, ports and focused views retain their prepared geometry. Scenario steps and fitted output keep the same
+terminal node and group positions. Group boundaries keep one blank row above and below their content.
+Warning and critical connection labels take priority over healthy labels when space is limited. A failed step ends
+with `✕` (`x` in ASCII), matching the legend.
+
+`Paint` returns a `TopologyCellCanvas` whose cells carry their glyph, role (node border, label, edge, arrow, group
+border, legend), element id, status and emphasis (highlighted, dimmed, focused, failed). `ToText()` gives plain text;
+terminal hosts such as ConsoleMonster map these cells to their own styles. `TopologyCellPaintOptions` takes live node
+values and statuses, a focused node and the active step. Node names, subtitles and live values occupy separate rows;
+`ReservedValueWidth` reserves horizontal room for values before painting. `CompactToFit` can omit subtitles and shorten
+node names while retaining operational edge-label priority. Wide diagrams can remain wider than `MaximumColumns`,
+which is a preferred width rather than a clipping boundary.
+
+Automatic cell routing has bounded grid and search work. If a search cannot complete, a projected route is retained
+only when it still attaches to the final boxes and clears nodes, group borders and captions. Otherwise creation reports
+which edge could not be routed, rather than returning a detached or misleading connection.

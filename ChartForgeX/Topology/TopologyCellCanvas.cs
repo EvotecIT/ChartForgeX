@@ -92,7 +92,7 @@ public sealed class TopologyCellPaintOptions {
     public bool DimOthers { get; set; } = true;
     /// <summary>Gets or sets the focused node id.</summary>
     public string? FocusNodeId { get; set; }
-    /// <summary>Gets live values shown on a node's second line instead of its subtitle.</summary>
+    /// <summary>Gets live values shown on a separate row below the subtitle.</summary>
     public Dictionary<string, string> NodeValues { get; } = new(StringComparer.Ordinal);
     /// <summary>Gets live health statuses that replace the node's own status.</summary>
     public Dictionary<string, TopologyHealthStatus> NodeStatuses { get; } = new(StringComparer.Ordinal);
