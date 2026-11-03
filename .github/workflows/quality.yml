@@ -24,6 +24,7 @@ jobs:
     outputs:
       build: ${{ steps.plan.outputs.build }}
       standalone: ${{ steps.plan.outputs.standalone }}
+      browser_filter: ${{ steps.plan.outputs.browser_filter }}
     steps:
       - name: Checkout complete PR history
         uses: actions/checkout@v7
@@ -42,6 +43,7 @@ jobs:
           const {appendFileSync} = require('node:fs');
           let build = true;
           let standalone = true;
+          let browserFilter = '';
           if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
             const {BASE_SHA: base, HEAD_SHA: head} = process.env;
             if (![base, head].every(sha => /^[0-9a-f]{40}$/.test(sha || ''))) {
@@ -64,11 +66,25 @@ jobs:
               return /^[^/]+\.md$/i.test(path);
             };
             build = paths.length === 0 || !paths.every(documentation);
-            standalone = paths.some(path => /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/(StandaloneViewportBrowserTests[^/]*|InteractiveBundleTests\.cs)$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
+            const browserInput = path => /^ChartForgeX\.Tests\/[^/]*Browser[^/]*\.cs$/.test(path);
+            standalone = paths.some(path => browserInput(path) || /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/InteractiveBundleTests\.cs$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
+            const browserPaths = paths.filter(browserInput);
+            const browserClasses = [...new Set(browserPaths.flatMap(path => {
+              const match = /^ChartForgeX\.Tests\/([A-Za-z_][A-Za-z0-9_]*BrowserTests)(?:\.[A-Za-z0-9_]+)*\.cs$/.exec(path);
+              return match ? [match[1]] : [];
+            }))];
+            const clauses = new Set(['StandaloneViewportBrowserTests', 'InteractiveBundleTests', ...browserClasses]);
+            // Keep Chromium-only rows out of the declared cross-engine compatibility lane.
+            browserFilter = `Category=Browser&BrowserSuite=Compatibility&(${[...clauses].map(name => `FullyQualifiedName~${name}`).join('|')})`;
+            // Unrecognised partial filenames must broaden coverage rather than silently omit tests.
+            if (browserPaths.some(path => !/^ChartForgeX\.Tests\/([A-Za-z_][A-Za-z0-9_]*BrowserTests)(?:\.[A-Za-z0-9_]+)*\.cs$/.test(path))) {
+              browserFilter = 'Category=Browser&BrowserSuite=Compatibility';
+            }
             console.log(`Compared ${paths.length} PR paths; build/test required: ${build}`);
           }
           appendFileSync(process.env.GITHUB_OUTPUT, `build=${build}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, `standalone=${standalone}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `browser_filter=${browserFilter}\n`);
           NODE
 
   quality-gates:
@@ -368,13 +384,15 @@ jobs:
         shell: pwsh
         env:
           FOCUSED_STANDALONE: ${{ github.event_name == 'pull_request' }}
+          CHANGED_BROWSER_FILTER: ${{ needs.changes.outputs.browser_filter }}
         run: |
           $options = @{
               Browser = '${{ matrix.browser }}'
               OutputRoot = Join-Path $env:RUNNER_TEMP 'chartforgex-${{ matrix.browser }}'
           }
           if ($env:FOCUSED_STANDALONE -eq 'true') {
-              $options.Filter = 'Category=Browser&(FullyQualifiedName~StandaloneViewportBrowserTests|FullyQualifiedName~InteractiveBundleTests)'
+              if (-not $env:CHANGED_BROWSER_FILTER) { throw 'Changed-browser coverage filter is missing.' }
+              $options.Filter = $env:CHANGED_BROWSER_FILTER
           }
           ./Build/Test-BrowserCompatibility.ps1 @options
       - name: Retain compatibility evidence

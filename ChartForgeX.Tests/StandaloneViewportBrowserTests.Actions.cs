@@ -58,9 +58,30 @@ public sealed partial class StandaloneViewportBrowserTests {
         var page = session.Page;
         await MountAsync(page);
         var original = await page.Locator(".cfx-stage > svg").GetAttributeAsync("viewBox");
-        var hit = await NativeInteriorPointAsync(page, "[data-cfx-node=engineering]", sunburst ? "[data-cfx-role=sunburst-segment-mark]" : "[data-cfx-role=treemap-group-mark]", 2);
-        await page.Mouse.ClickAsync((float)hit[0], (float)hit[1]);
-        Assert.True(await page.Locator("svg[data-cfx-standalone-hierarchy=engineering]").IsVisibleAsync());
+        var mark = sunburst ? "[data-cfx-role=sunburst-segment-mark]" : "[data-cfx-role=treemap-group-mark]";
+        var branch = page.Locator("[data-cfx-node=engineering]").Locator(mark).First;
+        await branch.ScrollIntoViewIfNeededAsync();
+        var hit = await NativeInteriorPointAsync(page, "[data-cfx-node=engineering]", mark, 2);
+        Assert.Equal("engineering", await page.EvaluateAsync<string>("p=>document.elementFromPoint(p[0],p[1]).closest('[data-cfx-node]')?.dataset.cfxNode", hit));
+        await page.EvaluateAsync("""
+            ()=>{window.cfxActivationTrace=[];for(const kind of ['pointerdown','pointerup','mousedown','mouseup','click','focusin']){
+                document.addEventListener(kind,event=>{const target=event.target,root=document.querySelector('.cfx-interactive-chart');
+                    cfxActivationTrace.push({kind,time:event.timeStamp,now:performance.now(),node:target.closest?.('[data-cfx-node]')?.dataset.cfxNode,
+                        role:target.dataset?.cfxRole,suppress:root._cfxSuppressPlotActivation,prevented:event.defaultPrevented,
+                        active:document.activeElement?.outerHTML.slice(0,200),scroll:[scrollX,scrollY]});},true);}}
+            """);
+        await ClickNativePointAsync(branch, hit);
+        var visible = await page.Locator("svg[data-cfx-standalone-hierarchy=engineering]").IsVisibleAsync();
+        Assert.True(visible, visible ? null : await page.EvaluateAsync<string>("""
+            async()=>{
+                const root=document.querySelector('.cfx-interactive-chart');
+                const snapshot=()=>{const svg=root.querySelector('svg[data-cfx-standalone-hierarchy=engineering]'),box=svg?.getBoundingClientRect();
+                    return {rootId:root._cfxStandaloneHierarchy?.rootId,present:!!svg,box:box&&[box.x,box.y,box.width,box.height],
+                        display:svg&&getComputedStyle(svg).display,visibility:svg&&getComputedStyle(svg).visibility};};
+                const before=snapshot();await new Promise(requestAnimationFrame);
+                return JSON.stringify({trace:cfxActivationTrace,selection:controller.getSelection(),suppress:root._cfxSuppressPlotActivation,before,after:snapshot()});
+            }
+            """));
         Assert.Contains("Engineering", await page.Locator(".cfx-hierarchy-breadcrumb").InnerTextAsync());
         await MoveToAsync(page, "svg[data-cfx-standalone-hierarchy] [data-cfx-node=platform]");
         Assert.Contains("Engineering", await TooltipTextAsync(page));

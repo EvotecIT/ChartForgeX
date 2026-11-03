@@ -68,6 +68,8 @@ public sealed class InteractiveHierarchyViewBrowserTests {
         Assert.Equal("services", await Root(page));
         Assert.Equal(5, await page.EvaluateAsync<int>("()=>hierarchyRequests.length"));
         await AssertHierarchyNavigationContrastAsync(page);
+        await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
+        await SettlePresentationAsync(page);
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svgPath = await svgDownload.PathAsync() ?? throw new InvalidOperationException("No hierarchy SVG download.");
         var svg = XDocument.Load(svgPath);
@@ -152,6 +154,8 @@ public sealed class InteractiveHierarchyViewBrowserTests {
                 hierarchyController.root.addEventListener('cfxhierarchychange',e=>hierarchyChanges.push(e.detail));
             }
             """);
+        var services = page.Locator("[data-cfx-node=services]");
+        await services.ScrollIntoViewIfNeededAsync();
         var positions = await page.EvaluateAsync<double[]>("""
             ()=>{
                 const svg=hierarchyController.root.querySelector('.cfx-stage svg');
@@ -165,7 +169,7 @@ public sealed class InteractiveHierarchyViewBrowserTests {
             }
             """);
         Assert.Equal("services", await page.EvaluateAsync<string>("p=>document.elementFromPoint(p[0],p[1]).closest('[data-cfx-node]')?.dataset.cfxNode", positions));
-        await page.Mouse.ClickAsync((float)positions[0], (float)positions[1]);
+        await ClickNativePointAsync(services, positions);
         await page.WaitForFunctionAsync("()=>!!document.querySelector('svg[data-cfx-standalone-hierarchy=services]')");
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>hierarchySelections.length"));
         await page.Locator(".cfx-hierarchy-breadcrumb").GetByRole(AriaRole.Button, new() { Name = "All", Exact = true }).ClickAsync();
