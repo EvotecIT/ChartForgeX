@@ -95,7 +95,8 @@ public static partial class GalleryWriter {
             authoredRequest = element.Get("data-cfx-authored-font-request") ?? authoredRequest;
             heading |= element.Get("data-cfx-role") is "frame-heading" or "frame-heading-continuation" or "legend-title" or "legend-label";
             if (heading && element.Name == "text") {
-                var request = authoredRequest ?? string.Join("|", style.FontFamily, style.FontWeight.ToString(CultureInfo.InvariantCulture), style.FontStyle, style.FontSize.ToString("R", CultureInfo.InvariantCulture), style.Variations?.Key ?? "");
+                // A painted size can be fitted to the host's measured face, so only an authored request names a size.
+                var request = authoredRequest ?? string.Join("|", style.FontFamily, style.FontWeight.ToString(CultureInfo.InvariantCulture), style.FontStyle, style.Variations?.Key ?? "");
                 requests.Add(request);
                 var face = TypographyFontResolver.WithVariations(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, style.FontStyle != "normal"), style.Variations);
                 // Font-size fitting changes the paint request, not the identity of the resolved face.

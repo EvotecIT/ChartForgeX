@@ -30,7 +30,8 @@ public sealed class GalleryBaselineProvenanceTests {
             var ordinary = Render(120, Path.Combine(output, "ordinary"), 12);
             var legacy = Render(120, Path.Combine(output, "legacy"), 12, stripAuthoredRequest: true);
             Assert.Equal(12, ordinary.PaintedSize);
-            Assert.Equal(family + ", sans-serif|700|normal|12|", legacy.Request);
+            // Without an authored request the painted size may be host-fitted, so it is not part of the request.
+            Assert.Equal(family + ", sans-serif|700|normal|", legacy.Request);
             Assert.NotEqual(ordinary.Fingerprint, legacy.Fingerprint);
         } finally { Directory.Delete(output, true); }
 
