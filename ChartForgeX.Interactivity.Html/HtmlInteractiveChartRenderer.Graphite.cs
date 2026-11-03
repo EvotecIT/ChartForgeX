@@ -32,6 +32,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             + ";--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,var(--hfx-elevation-2," + chrome.Shadow + "))"
             + ";--cfx-tooltip-radius:var(--hfx-radius-overlay," + chrome.TooltipRadius.ToString(CultureInfo.InvariantCulture) + "px)"
             + ";--cfx-control-radius:var(--hfx-radius-control," + chrome.ControlRadius.ToString(CultureInfo.InvariantCulture) + "px)"
+            + ";--cfx-axis-label-radius:min(4px,var(--cfx-control-radius))"
+            + ";--cfx-swatch-radius:min(2px,var(--cfx-control-radius))"
+            + ";--cfx-chip-radius:var(--hfx-radius-pill,999px)"
             + ";--cfx-focus-ring:var(--hfx-color-focus-ring," + chrome.FocusRing.ToCss() + ")"
             + ";--cfx-crosshair-axis:var(--cfx-guide-axis,var(--hfx-color-text-muted," + axis.ToCss() + "))"
             + ";--cfx-default-host-accent:var(--cfx-accent-base,var(--hfx-color-accent," + accent.ToCss() + "))";
