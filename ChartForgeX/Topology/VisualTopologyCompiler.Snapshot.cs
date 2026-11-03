@@ -13,7 +13,7 @@ internal sealed partial class VisualTopologyCompiler {
             entry => (IReadOnlyList<ChartRect>)Array.AsReadOnly(entry.Value.ToArray()), StringComparer.Ordinal));
 
     internal string[]? CellAutomaticEdgesSnapshot() {
-        if (_source.LayoutMode == TopologyLayoutMode.Manual || _source.Alignments.Count > 0
+        if (_source.LayoutMode == TopologyLayoutMode.Manual || _source.Alignments.Count > 0 || _options.View != null || _options.HierarchyView != null
             || _source.Groups.Any(group => group.HasPositionOverride || group.X != 0 || group.Y != 0 || group.Width > 0 || group.Height > 0)
             || _source.Nodes.Any(node => node.HasPositionOverride || node.X != 0 || node.Y != 0)) return null;
         return _source.Edges.Where(edge => edge.Waypoints.Count == 0 && edge.PathGeometry == null

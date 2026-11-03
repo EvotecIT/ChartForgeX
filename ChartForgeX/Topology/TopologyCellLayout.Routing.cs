@@ -23,7 +23,7 @@ public sealed partial class TopologyCellLayout {
             if (route == null) {
                 var projected = edge.Points.ToList();
                 if (CellRouteIsClear(projected, source, target, nodes, groups)) route = projected;
-                else throw new InvalidOperationException("No clear terminal route was found within the search budget for edge '" + edge.Id + "'.");
+                else throw new CellRouteUnavailableException(edge.Id);
             }
             foreach (var point in CellPath(route)) occupied[point] = source.Id;
             var onLine = false;
@@ -31,6 +31,11 @@ public sealed partial class TopologyCellLayout {
             routed.Add(new TopologyCellEdge(model, edge.Dashed, route, labelAt, onLine));
         }
         return FitCellCanvas(title, chart, nodes, groups, routed);
+    }
+
+    private sealed class CellRouteUnavailableException : InvalidOperationException {
+        public CellRouteUnavailableException(string edgeId)
+            : base("No clear terminal route was found within the search budget for edge '" + edgeId + "'.") { }
     }
 
     private static List<TopologyCellPoint>? FindCellRoute(TopologyCellBox source, TopologyCellBox target,

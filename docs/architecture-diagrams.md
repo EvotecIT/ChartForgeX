@@ -176,7 +176,8 @@ When the scenario panel has focus: `n` or Right for the next step, `b` or Left f
 
 `TopologyCellLayout` projects a detached prepared topology into terminal cells. Automatic grouped diagrams reuse
 compound ranking with compact region sizes, then route around the cell boxes and group captions. Authored positions,
-waypoints and ports retain their prepared geometry. Group boundaries keep one blank row above and below their content.
+waypoints, ports and focused views retain their prepared geometry. Scenario steps and fitted output keep the same
+terminal node and group positions. Group boundaries keep one blank row above and below their content.
 Warning and critical connection labels take priority over healthy labels when space is limited. A failed step ends
 with `✕` (`x` in ASCII), matching the legend.
 

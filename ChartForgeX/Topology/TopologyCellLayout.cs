@@ -185,7 +185,9 @@ public sealed partial class TopologyCellLayout {
             Compact(options, subtitles: false, label: Math.Min(12, options.MaximumLabelWidth), edgeLabels: options.IncludeEdgeLabels, minimumPriority: 2),
         };
         foreach (var attempt in attempts) {
-            var candidate = CreateCore(prepared, attempt);
+            TopologyCellLayout candidate;
+            try { candidate = CreateCore(prepared, attempt); }
+            catch (CellRouteUnavailableException) { continue; }
             if (candidate.Columns < layout.Columns) layout = candidate;
             if (layout.Columns <= options.MaximumColumns) break;
         }
@@ -341,6 +343,7 @@ public sealed partial class TopologyCellLayout {
                 var overlapX = a.Left < b.Right && b.Left < a.Right;
                 if (overlapY && a.Right <= b.Left) x.Span(a.Right, b.Left, 6);
                 if (overlapX && a.Bottom <= b.Top) y.Span(a.Bottom, b.Top, 4);
+                if (!overlapX && !overlapY && a.Right < b.Left) x.Span(a.Right, b.Left, 3);
             }
         }
     }

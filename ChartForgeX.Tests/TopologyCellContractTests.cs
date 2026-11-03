@@ -8,6 +8,11 @@ public sealed class TopologyCellContractTests {
     [Theory]
     [InlineData("groups", 120)]
     [InlineData("group-labels", 120)]
+    [InlineData("wide-caption", 120)]
+    [InlineData("resized", 120)]
+    [InlineData("scenario", 120)]
+    [InlineData("diagonal", 120)]
+    [InlineData("view", 120)]
     [InlineData("hierarchy", 100)]
     [InlineData("priority", 120)]
     [InlineData("priority", 80)]
@@ -28,6 +33,10 @@ public sealed class TopologyCellContractTests {
         Assert.False(parsed.HasErrors);
         var chart = contract == "width-reserve" ? TopologyCellLayoutTests.Example("ad-replication") : parsed.Document!;
         if (contract == "group-labels") chart = OfficeGroups();
+        const string wideCaption = "東京東京東京東京東京東京";
+        if (contract == "wide-caption") chart.Groups.Single(group => group.Id == "berlin").Label = wideCaption;
+        if (contract is "diagonal" or "view") chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddAutoNode("a", "First").AddAutoNode("b", "Second");
         if (contract == "same-id") chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
             .AddAutoGroup("g", "Shell").AddAutoNode("g", "Authored node", status: TopologyHealthStatus.Warning)
             .AddAutoNode("b", "Outside").AddAutoNode("a", "Member", groupId: "g")
@@ -43,9 +52,22 @@ public sealed class TopologyCellContractTests {
             chart.Edges[0].SourcePort = TopologyEdgePort.Right; chart.Edges[0].TargetPort = TopologyEdgePort.Left;
             chart.Edges[0].Waypoints.Add(new ChartForgeX.Primitives.ChartPoint(300, 40));
         }
-        var layout = TopologyCellLayout.Create(chart.Prepare(), new() {
+        var prepared = chart.Prepare(contract == "view" ? new TopologyRenderOptions { View = new TopologyView { NodeIds = { "a", "b" } } } : null);
+        var projection = new TopologyCellLayoutOptions {
             MaximumColumns = width, CompactToFit = true, ReservedValueWidth = contract == "default-values" ? 0 : 10
-        });
+        };
+        var baseline = contract is "resized" or "scenario" ? TopologyCellLayout.Create(prepared, projection) : null;
+        if (contract == "resized") prepared = prepared.WithOutputSize(300, 200);
+        if (contract == "scenario") {
+            chart.AddScenario("reply", "Reply", scenario => scenario.AddMessageStep(chart.Edges[0].Id, TopologyScenarioInteraction.Response, "Return", true));
+            prepared = chart.PrepareScenarioStep("reply", 0);
+        }
+        var layout = TopologyCellLayout.Create(prepared, projection);
+        foreach (var first in layout.Nodes) foreach (var second in layout.Nodes) {
+            if (first.Id == second.Id) continue;
+            Assert.True(first.Column + first.Width <= second.Column || second.Column + second.Width <= first.Column
+                || first.Row + first.Height <= second.Row || second.Row + second.Height <= first.Row, first.Id + " overlaps " + second.Id);
+        }
         foreach (var edge in layout.Edges) {
             var path = new List<TopologyCellPoint> { edge.Points[0] };
             for (var index = 1; index < edge.Points.Count; index++) {
@@ -75,6 +97,24 @@ public sealed class TopologyCellContractTests {
         var canvas = layout.Paint(paint);
         var cells = Enumerable.Range(0, canvas.Rows).SelectMany(row => Enumerable.Range(0, canvas.Columns).Select(column => canvas.Get(column, row))).ToArray();
         switch (contract) {
+            case "view":
+                var native = prepared.Analyze().Nodes.OrderBy(node => node.Bounds.Top).ToArray();
+                Assert.True(native[0].Bounds.Bottom < native[1].Bounds.Top);
+                var upper = layout.FindNode(native[0].Id)!; var lower = layout.FindNode(native[1].Id)!;
+                Assert.True(upper.Row + upper.Height < lower.Row);
+                break;
+            case "resized":
+            case "scenario":
+                Assert.Equal(baseline!.Nodes.Select(node => (node.Id, node.Column, node.Row, node.Width, node.Height)),
+                    layout.Nodes.Select(node => (node.Id, node.Column, node.Row, node.Width, node.Height)));
+                Assert.Equal(baseline.Groups.Select(group => (group.Id, group.Column, group.Row, group.Width, group.Height)),
+                    layout.Groups.Select(group => (group.Id, group.Column, group.Row, group.Width, group.Height)));
+                if (contract == "scenario") Assert.Equal(ChartForgeX.Primitives.VisualLinkDirection.Backward,
+                    layout.Edges.Single(edge => edge.Id == chart.Edges[0].Id).Direction);
+                break;
+            case "wide-caption":
+                Assert.Contains(wideCaption, canvas.ToText(), StringComparison.Ordinal);
+                break;
             case "group-labels":
                 Assert.Contains("HTTPS", canvas.ToText(), StringComparison.Ordinal);
                 break;

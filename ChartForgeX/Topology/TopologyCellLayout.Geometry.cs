@@ -21,7 +21,9 @@ public sealed partial class TopologyCellLayout {
         options.IncludeTitle = false; options.IncludeLegend = false;
         options.IncludeGroupLabels = false; options.IncludeEdgeLabels = false; options.FitContentToViewport = false;
         var chart = TopologyLayoutEngine.Prepare(source, null, options, compactCompoundLayout: true);
-        return (chart, TopologyLayoutDiagnostics.AnalyzePrepared(chart, options));
+        // Packing uses the captured source; paint and arrow changes come from the
+        // current prepared scene without becoming new layout input.
+        return (prepared.LayoutChart, TopologyLayoutDiagnostics.AnalyzePrepared(chart, options));
     }
 
     private static List<TopologyCellGroup> FitCellGroups(TopologyChart chart, List<TopologyCellNode> nodes, List<TopologyCellGroup> groups) {
@@ -32,7 +34,7 @@ public sealed partial class TopologyCellLayout {
             if (members.Length == 0) { fitted[group.Id] = group; continue; }
             var left = Math.Max(0, members.Min(box => box.Column) - 2);
             var top = Math.Max(0, members.Min(box => box.Row) - 2);
-            var right = Math.Max(members.Max(box => box.Column + box.Width) + 1, left + group.Label.Length + 6);
+            var right = Math.Max(members.Max(box => box.Column + box.Width) + 1, left + Terminal.TerminalTextWidth.Measure(group.Label) + 6);
             var bottom = members.Max(box => box.Row + box.Height) + 1;
             fitted[group.Id] = new TopologyCellGroup(chart.Groups.First(item => item.Id == group.Id), left, top,
                 right - left + 1, bottom - top + 1, group.Depth);
