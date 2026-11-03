@@ -13,6 +13,7 @@ public sealed class TopologyCellLayoutOptions {
     private int _maximumColumns = 120;
     private int _maximumLabelWidth = 24;
     private int _reservedValueWidth;
+    internal int MinimumLabelPriority { get; set; }
 
     /// <summary>Gets or sets the preferred width in cells. Labels that need more room can make the layout wider.</summary>
     public int MaximumColumns {
@@ -181,6 +182,7 @@ public sealed partial class TopologyCellLayout {
         var attempts = new[] {
             Compact(options, subtitles: false, label: options.MaximumLabelWidth, edgeLabels: options.IncludeEdgeLabels),
             Compact(options, subtitles: false, label: Math.Min(12, options.MaximumLabelWidth), edgeLabels: options.IncludeEdgeLabels),
+            Compact(options, subtitles: false, label: Math.Min(12, options.MaximumLabelWidth), edgeLabels: options.IncludeEdgeLabels, minimumPriority: 2),
         };
         foreach (var attempt in attempts) {
             var candidate = CreateCore(prepared, attempt);
@@ -191,12 +193,13 @@ public sealed partial class TopologyCellLayout {
         return layout;
     }
 
-    private static TopologyCellLayoutOptions Compact(TopologyCellLayoutOptions options, bool subtitles, int label, bool edgeLabels) => new() {
+    private static TopologyCellLayoutOptions Compact(TopologyCellLayoutOptions options, bool subtitles, int label, bool edgeLabels, int minimumPriority = 0) => new() {
         MaximumColumns = options.MaximumColumns,
         MaximumLabelWidth = label,
         IncludeSubtitles = subtitles && options.IncludeSubtitles,
         IncludeEdgeLabels = edgeLabels,
-        ReservedValueWidth = options.ReservedValueWidth
+        ReservedValueWidth = options.ReservedValueWidth,
+        MinimumLabelPriority = minimumPriority
     };
 
     private static TopologyCellLayout CreateCore(PreparedTopology prepared, TopologyCellLayoutOptions options) {
@@ -239,7 +242,7 @@ public sealed partial class TopologyCellLayout {
             var points = Simplify(Elbows(AttachEnds(Simplify(diagnostic.Points), boundsById, diagnostic.SourceNodeId, diagnostic.TargetNodeId)));
             routes[diagnostic.Id] = points;
             foreach (var point in points) { x.Add(point.X); y.Add(point.Y); }
-            if (!options.IncludeEdgeLabels || !edgeModels.TryGetValue(diagnostic.Id, out var edge) || string.IsNullOrWhiteSpace(edge.Label)) continue;
+            if (!edgeModels.TryGetValue(diagnostic.Id, out var edge) || !KeepCellLabel(options, edge)) continue;
             var segment = LongestHorizontalRun(points);
             if (segment < 0) continue;
             labelSegments[diagnostic.Id] = segment;
@@ -265,9 +268,17 @@ public sealed partial class TopologyCellLayout {
             if (first.Top < second.Bottom && second.Top < first.Bottom && first.Right <= second.Left) x.Span(first.Right, second.Left, 5);
         }
         SeparateFromGroups(chart, nodeBounds, groupBounds, Array.Empty<List<ChartPoint>>(), x, y);
-        // Cell constraints, rather than unused SVG canvas space, determine terminal dimensions.
-        var mapX = x.Solve(0);
-        var mapY = y.Solve(0);
+        // Automatic diagrams use only cell constraints. Authored placements and routes
+        // retain the prepared coordinate scale, including bends outside the node extents.
+        var compactGeometry = prepared.CellAutomaticEdges != null && chart.Edges.All(edge => prepared.CellAutomaticEdges.Contains(edge.Id));
+        var scaleX = compactGeometry ? 0 : (options.MaximumColumns - 1) / Math.Max(1, x.Extent);
+        var scaleY = scaleX / 2;
+        var mapX = x.Solve(scaleX);
+        for (var attempt = 0; attempt < 4 && scaleX > 0 && mapX.Size > options.MaximumColumns; attempt++) {
+            scaleX *= options.MaximumColumns / (double)mapX.Size * .95;
+            mapX = x.Solve(scaleX);
+        }
+        var mapY = y.Solve(scaleY);
         var nodes = new List<TopologyCellNode>();
         foreach (var (node, b) in nodeBounds) {
             var (label, subtitle) = texts[node.Id];
@@ -295,7 +306,7 @@ public sealed partial class TopologyCellLayout {
             if (route.Count < 2) continue;
             TopologyCellPoint? labelAt = null;
             var onLine = false;
-            if (options.IncludeEdgeLabels && !string.IsNullOrWhiteSpace(edge.Label)) {
+            if (KeepCellLabel(options, edge)) {
                 if (labelSegments.TryGetValue(diagnostic.Id, out var segment)) {
                     var a = mapped[segment];
                     var range = labelRanges[diagnostic.Id];
@@ -310,7 +321,7 @@ public sealed partial class TopologyCellLayout {
             edges.Add(new TopologyCellEdge(edge, IsDashed(edge), route, labelAt, onLine));
         }
 
-        return RouteCellEdges(prepared.Title, chart, nodes, groups, edges, options, prepared.CellAutomaticEdges);
+        return RouteCellEdges(prepared.Title, chart, nodes, groups, edges, options, prepared.CellAutomaticEdges ?? Array.Empty<string>());
     }
 
     private static void Pad(CellAxis x, CellAxis y, ChartRect outer, ChartRect inner) {
@@ -574,6 +585,8 @@ public sealed partial class TopologyCellLayout {
     private sealed class CellAxis {
         private readonly List<double> _coordinates = new();
         private readonly List<(double From, double To, int Cells)> _spans = new();
+
+        public double Extent => _coordinates.Count == 0 ? 0 : _coordinates.Max() - _coordinates.Min();
 
         public void Add(double value) {
             if (!double.IsNaN(value) && !double.IsInfinity(value)) _coordinates.Add(value);

@@ -9,7 +9,7 @@ public sealed partial class TopologyCellLayout {
         List<TopologyCellGroup> groups, List<TopologyCellEdge> edges, TopologyCellLayoutOptions options, string[] automaticEdges) {
         var columns = Math.Max(1, nodes.Cast<TopologyCellBox>().Concat(groups).Select(box => box.Column + box.Width + 3).DefaultIfEmpty(1).Max());
         var rows = Math.Max(1, nodes.Cast<TopologyCellBox>().Concat(groups).Select(box => box.Row + box.Height + 3).DefaultIfEmpty(1).Max());
-        var boxes = nodes.Cast<TopologyCellBox>().Concat(groups).ToDictionary(box => box.Id, StringComparer.Ordinal);
+        var boxes = nodes.Cast<TopologyCellBox>().Concat(groups).GroupBy(box => box.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         var occupied = new Dictionary<TopologyCellPoint, string>();
         var routed = new List<TopologyCellEdge>();
         foreach (var edge in edges) {
@@ -27,7 +27,7 @@ public sealed partial class TopologyCellLayout {
             }
             foreach (var point in CellPath(route)) occupied[point] = source.Id;
             var onLine = false;
-            var labelAt = options.IncludeEdgeLabels && !string.IsNullOrWhiteSpace(model.Label) ? CellLabelPosition(route, model.Label!, out onLine) : null;
+            var labelAt = KeepCellLabel(options, model) ? CellLabelPosition(route, model.Label!, out onLine) : null;
             routed.Add(new TopologyCellEdge(model, edge.Dashed, route, labelAt, onLine));
         }
         return FitCellCanvas(title, chart, nodes, groups, routed);

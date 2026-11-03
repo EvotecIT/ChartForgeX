@@ -28,7 +28,7 @@ public sealed class PreparedTopology {
     internal VisualRenderOptions RasterOptions => _rasterOptions;
     internal TopologyChart LayoutChart => _chart;
     internal TopologyChart? CellLayoutSource { get; }
-    internal string[] CellAutomaticEdges { get; }
+    internal string[]? CellAutomaticEdges { get; }
 
     internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions) {
         _chart = compiler.LayoutSnapshot(); _options = compiler.OptionsSnapshot();

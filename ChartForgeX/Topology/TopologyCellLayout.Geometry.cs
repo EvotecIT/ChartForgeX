@@ -58,6 +58,9 @@ public sealed partial class TopologyCellLayout {
             points.Max(point => point.Row) + dy + 2, shiftedNodes, shiftedGroups, shiftedEdges);
     }
 
+    private static bool KeepCellLabel(TopologyCellLayoutOptions options, TopologyEdge edge) => options.IncludeEdgeLabels
+        && CellLabelPriority(edge.Status) >= options.MinimumLabelPriority && !string.IsNullOrWhiteSpace(edge.Label);
+
     private static int CellLabelPriority(TopologyHealthStatus status) => status switch {
         TopologyHealthStatus.Critical => 3,
         TopologyHealthStatus.Warning => 2,

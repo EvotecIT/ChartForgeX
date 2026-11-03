@@ -10,11 +10,13 @@ public sealed class TopologyCellContractTests {
     [InlineData("hierarchy", 100)]
     [InlineData("priority", 120)]
     [InlineData("priority", 80)]
+    [InlineData("width-reserve", 130)]
     [InlineData("failure", 120)]
     [InlineData("values", 120)]
     [InlineData("default-values", 120)]
     [InlineData("manual", 120)]
     [InlineData("group-ends", 120)]
+    [InlineData("same-id", 120)]
     [InlineData("junctions", 120)]
     public void CellProjectionPreservesReadableStructureAndOperationalFacts(string contract, int width) {
         var source = contract switch {
@@ -23,7 +25,11 @@ public sealed class TopologyCellContractTests {
         };
         var parsed = new MarkupArchitectureParser().Parse("```chartforgex architecture v1\n" + source + "\n```");
         Assert.False(parsed.HasErrors);
-        var chart = parsed.Document!;
+        var chart = contract == "width-reserve" ? TopologyCellLayoutTests.Example("ad-replication") : parsed.Document!;
+        if (contract == "same-id") chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
+            .AddAutoGroup("g", "Shell").AddAutoNode("g", "Authored node", status: TopologyHealthStatus.Warning)
+            .AddAutoNode("b", "Outside").AddAutoNode("a", "Member", groupId: "g")
+            .AddEdge("e", "g", "b", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward);
         if (contract == "group-ends") {
             chart.AddEdge("region-outside", "region", "outside", "egress", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward);
             chart.AddEdge("outside-other", "outside", "other", "ingress", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward);
@@ -33,7 +39,7 @@ public sealed class TopologyCellContractTests {
             chart.LayoutMode = TopologyLayoutMode.Manual;
             for (var index = 0; index < chart.Nodes.Count; index++) { chart.Nodes[index].X = 100 + index * 300; chart.Nodes[index].Y = 100; }
             chart.Edges[0].SourcePort = TopologyEdgePort.Right; chart.Edges[0].TargetPort = TopologyEdgePort.Left;
-            chart.Edges[0].Waypoints.Add(new ChartForgeX.Primitives.ChartPoint(300, 132));
+            chart.Edges[0].Waypoints.Add(new ChartForgeX.Primitives.ChartPoint(300, 40));
         }
         var layout = TopologyCellLayout.Create(chart.Prepare(), new() {
             MaximumColumns = width, CompactToFit = true, ReservedValueWidth = contract == "default-values" ? 0 : 10
@@ -52,8 +58,8 @@ public sealed class TopologyCellContractTests {
             }
             foreach (var group in layout.Groups) {
                 var boxes = layout.Nodes.Cast<TopologyCellBox>().Concat(layout.Groups).ToArray();
-                var sourceNode = boxes.Single(box => box.Id == edge.SourceNodeId); var targetNode = boxes.Single(box => box.Id == edge.TargetNodeId);
-                var crosses = group.Id == sourceNode.Id || group.Id == targetNode.Id || group.Contains(sourceNode.Column, sourceNode.Row) != group.Contains(targetNode.Column, targetNode.Row);
+                var sourceNode = boxes.First(box => box.Id == edge.SourceNodeId); var targetNode = boxes.First(box => box.Id == edge.TargetNodeId);
+                var crosses = sourceNode is TopologyCellGroup && group.Id == sourceNode.Id || targetNode is TopologyCellGroup && group.Id == targetNode.Id || group.Contains(sourceNode.Column, sourceNode.Row) != group.Contains(targetNode.Column, targetNode.Row);
                 var border = path.Where(point => group.Contains(point.Column, point.Row) && (point.Column == group.Column
                     || point.Column == group.Column + group.Width - 1 || point.Row == group.Row || point.Row == group.Row + group.Height - 1)).ToArray();
                 Assert.Equal(crosses ? 1 : 0, border.Length);
@@ -84,6 +90,10 @@ public sealed class TopologyCellContractTests {
                 }
                 Assert.True(layout.FindNode("dev")!.Row < layout.FindNode("app")!.Row);
                 break;
+            case "width-reserve":
+                Assert.True(layout.Columns <= width, "Cell columns: " + layout.Columns);
+                Assert.Contains("DC04", canvas.ToText(), StringComparison.Ordinal);
+                break;
             case "priority":
                 Assert.Contains("1722 · 3 h", canvas.ToText(), StringComparison.Ordinal);
                 Assert.Contains("14 min", canvas.ToText(), StringComparison.Ordinal);
@@ -98,11 +108,18 @@ public sealed class TopologyCellContractTests {
                 Assert.Contains("Bridgehead", rows[node.Row + 2], StringComparison.Ordinal);
                 Assert.Contains("lag 1m", rows[node.Row + 3], StringComparison.Ordinal);
                 break;
+            case "same-id":
+                var same = Assert.Single(layout.Edges);
+                var realNode = layout.FindNode("g")!;
+                Assert.True(realNode.Contains(same.Points[0].Column, same.Points[0].Row));
+                Assert.Contains(cells, cell => cell.ElementId == "e" && cell.Role == TopologyCellRole.EdgeArrow);
+                break;
             case "manual":
                 var authored = Assert.Single(layout.Edges);
                 var first = layout.FindNode("first")!; var last = layout.FindNode("last")!;
                 Assert.Equal(first.Column + first.Width - 1, authored.Points[0].Column);
                 Assert.Equal(last.Column, authored.Points[^1].Column);
+                Assert.True(authored.Points.Min(point => point.Row) < Math.Min(first.Row, last.Row));
                 break;
             case "group-ends":
                 Assert.Equal(3, layout.Edges.Count);

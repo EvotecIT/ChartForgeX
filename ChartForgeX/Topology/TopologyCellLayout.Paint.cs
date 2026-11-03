@@ -229,9 +229,10 @@ public sealed partial class TopologyCellLayout {
     }
 
     private bool ArrowAt(List<TopologyCellPoint> path, bool fromEnd, string endpointId, out TopologyCellPoint at, out int direction) {
+        var endpointGroup = Nodes.Any(node => node.Id == endpointId) ? null : Groups.FirstOrDefault(group => group.Id == endpointId);
         for (var offset = 0; offset < path.Count; offset++) {
             var index = fromEnd ? path.Count - 1 - offset : offset;
-            if (InsideNode(path[index]) || Groups.Any(group => group.Id == endpointId && group.Contains(path[index].Column, path[index].Row))) continue;
+            if (InsideNode(path[index]) || endpointGroup?.Contains(path[index].Column, path[index].Row) == true) continue;
             var next = fromEnd ? index + 1 : index - 1;
             if (next < 0 || next >= path.Count) break;
             at = path[index];
