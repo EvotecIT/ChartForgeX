@@ -40,7 +40,8 @@ public sealed class HtmlInteractiveDashboardRenderer {
 
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chartArray[0]);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
-            options.Localization.ResolveLanguage(chartArray[0].Accessibility.Language), options.Localization.DirectionAttribute);
+            options.Localization.ResolveLanguage(chartArray[0].Accessibility.Language), options.Localization.DirectionAttribute,
+            ChartForgeX.Typography.ChartFontAssets.StyleSheet);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {

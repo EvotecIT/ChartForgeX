@@ -8,7 +8,7 @@ internal static class HtmlInteractivePage {
         + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
 
     internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null,
-        string language = "en", string? direction = null) {
+        string language = "en", string? direction = null, string? productFontStyle = null) {
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", language).Attribute("dir", direction).EndStartElement().Line()
@@ -20,6 +20,9 @@ internal static class HtmlInteractivePage {
             HtmlInteractiveAssetFiles.WriteStylesheet(writer, assets, HtmlInteractiveAssetFiles.ChartStyle);
         }
         writer.StartElement("style").EndStartElement().RawTrusted(pageStyle).EndElement().Line();
+        if (productFontStyle != null)
+            writer.StartElement("style").Attribute("data-cfx-product-fonts", "true").EndStartElement()
+                .RawTrusted(productFontStyle).EndElement().Line();
 
         writer.EndElement().Line()
             .StartElement("body").Attribute("style", bodyStyle).EndStartElement().Line();

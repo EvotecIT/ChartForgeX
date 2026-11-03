@@ -33,8 +33,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chart);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
-            options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute);
-        WriteProductFontStyle(writer, options);
+            options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute,
+            options.TextPresentation == HtmlChartTextPresentation.NativeContours ? null : ChartForgeX.Typography.ChartFontAssets.StyleSheet);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
@@ -140,11 +140,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     internal static string InteractiveStyle => HtmlInteractiveAssets.Style;
 
-    private static void WriteProductFontStyle(HtmlMarkupWriter writer, HtmlChartInteractionOptions options) {
-        if (options.TextPresentation != HtmlChartTextPresentation.NativeContours)
-            writer.StartElement("style").Attribute("data-cfx-product-fonts", "true")
-                .RawTrusted(ChartForgeX.Typography.ChartFontAssets.StyleSheet).EndElement();
-    }
 
     internal static string InteractiveFragmentStyle => HtmlInteractiveAssets.Style
         .Replace(":root {", ".cfx-interactive-chart {")
