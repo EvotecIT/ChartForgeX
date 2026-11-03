@@ -7,7 +7,7 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
     /// <summary>Uses the native rank layout recursively, treating child regions as measured layout items.</summary>
-    private static bool TryApplyCompoundLayered(TopologyChart chart, TopologyRenderOptions? options, bool inferRoutes = true) {
+    private static bool TryApplyCompoundLayered(TopologyChart chart, TopologyRenderOptions? options, bool inferRoutes = true, bool compact = false) {
         var groupIds = new HashSet<string>(chart.Groups.Select(group => group.Id), StringComparer.Ordinal);
         if (!chart.Groups.Any(group => group.ParentGroupId != null || group.LayoutDirection.HasValue)
             && !chart.Edges.Any(edge => groupIds.Contains(edge.SourceNodeId) || groupIds.Contains(edge.TargetNodeId))
@@ -23,7 +23,7 @@ internal static partial class TopologyLayoutEngine {
         var swimlane = chart.LayoutMode == TopologyLayoutMode.Swimlane;
         var swimlaneConstraint = swimlane ? SwimlaneRankConstraint(chart, options) : null;
         var localOptions = (options ?? new TopologyRenderOptions()).CloneForRendering();
-        localOptions.FitContentToViewport = true;
+        localOptions.FitContentToViewport = !compact;
         localOptions.IncludeLegend = false;
         if (swimlane) {
             localOptions.LayeredNodeSpacing ??= 24;

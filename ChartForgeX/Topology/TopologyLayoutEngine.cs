@@ -9,7 +9,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null, TopologyChart? hierarchySource = null) {
+    public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null, TopologyChart? hierarchySource = null, bool compactCompoundLayout = false) {
         var external = new TopologyChartValidator().ValidateExternalPresentationInputs(chart, options ?? new TopologyRenderOptions());
         if (!external.IsValid) throw new TopologyValidationException(external);
         var paints=new TopologyChartValidator().ValidateSurfacePaintInputs(chart);
@@ -57,7 +57,7 @@ internal static partial class TopologyLayoutEngine {
                 ApplySwimlane(copy, options);
                 break;
             case TopologyLayoutMode.Layered:
-                compoundLayout = TryApplyCompoundLayered(copy, options, !constrained);
+                compoundLayout = TryApplyCompoundLayered(copy, options, !constrained, compactCompoundLayout);
                 if (!compoundLayout) ApplyLayered(copy, options, !constrained);
                 break;
             case TopologyLayoutMode.Matrix:
