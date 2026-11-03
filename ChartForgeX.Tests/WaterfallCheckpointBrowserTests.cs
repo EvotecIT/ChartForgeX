@@ -10,6 +10,25 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class WaterfallCheckpointBrowserTests {
+    [Theory]
+    [InlineData(120d)]
+    [InlineData(-120d)]
+    public void CompactOpeningCaptionHidesWithoutLosingItsAccessibleValue(double opening) {
+        // "Opening caption" cannot keep six characters over a 360 px column, so it hides rather than painting "Ope…".
+        var html = Create(360, false, false, opening).ToInteractiveHtmlFragment();
+        var start = html.IndexOf("<svg", StringComparison.Ordinal);
+        var svg = System.Xml.Linq.XDocument.Parse(html.Substring(start, html.IndexOf("</svg>", start, StringComparison.Ordinal) + 6 - start));
+        var elements = svg.Descendants().ToArray();
+        Assert.DoesNotContain(elements, element => (string?)element.Attribute("data-cfx-label-for") == "series-0-point-0");
+        var value = opening.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var names = elements.Where(element => (string?)element.Attribute("data-cfx-series-key") == "movement"
+            && (string?)element.Attribute("data-cfx-point") == "0" && element.Attribute("data-cfx-waterfall-kind") != null
+            && !((string?)element.Attribute("data-cfx-role") ?? "").StartsWith("legend", StringComparison.Ordinal))
+            .Select(element => (string?)element.Attribute("aria-label") ?? "").ToArray();
+        Assert.NotEmpty(names);
+        Assert.All(names, name => { Assert.Contains("Open", name); Assert.Contains(value, name); });
+    }
+
     [BrowserTheory]
     [InlineData(360, false, false, null)]
     [InlineData(360, true, false, null)]
@@ -76,6 +95,10 @@ public sealed class WaterfallCheckpointBrowserTests {
             await openingMark.FocusAsync(); await page.Keyboard.PressAsync("Space");
             Assert.Equal("false", await openingMark.GetAttributeAsync("aria-selected"));
             await MoveAwayAsync(page);
+            // A compact vertical column hides the caption under the six-character rule; the mark keeps its name and value.
+            var captionShown = width > 360 || horizontal;
+            Assert.Equal(captionShown, await page.Locator("[data-cfx-label-for='series-0-point-0']").CountAsync() > 0);
+            if (captionShown) {
             var openingCaption = await BoxAsync(page, "[data-cfx-label-for='series-0-point-0'] text");
             if (horizontal) Assert.Equal("IB", await page.Locator("[data-cfx-label-for='series-0-point-0'] text").TextContentAsync());
             var captionX = (float)(openingCaption.X + openingCaption.Width * .4); var captionY = (float)(openingCaption.Y + openingCaption.Height * .5);
@@ -91,6 +114,7 @@ public sealed class WaterfallCheckpointBrowserTests {
             await openingMark.FocusAsync(); await page.Keyboard.PressAsync("Space");
             Assert.Equal("false", await openingMark.GetAttributeAsync("aria-selected"));
             Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
+            }
             await page.EvaluateAsync("() => { window.waterfallSelections=[]; }");
         }
         var subtotal = page.Locator(Mark(4));
