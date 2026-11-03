@@ -64,7 +64,7 @@ jobs:
               return /^[^/]+\.md$/i.test(path);
             };
             build = paths.length === 0 || !paths.every(documentation);
-            standalone = paths.some(path => /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/(StandaloneViewportBrowserTests[^/]*|InteractiveBundleTests\.cs)$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
+            standalone = paths.some(path => /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/([^/]*BrowserTests[^/]*\.cs|InteractiveBundleTests\.cs)$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
             console.log(`Compared ${paths.length} PR paths; build/test required: ${build}`);
           }
           appendFileSync(process.env.GITHUB_OUTPUT, `build=${build}\n`);
