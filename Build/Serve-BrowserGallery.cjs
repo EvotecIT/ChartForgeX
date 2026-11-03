@@ -15,6 +15,8 @@ if (fs.existsSync(addressFile)) throw new Error('The readiness file must not alr
 
 const server = http.createServer((request, response) => {
   if (!['GET', 'HEAD'].includes(request.method)) { response.writeHead(405); response.end(); return; }
+  // Chromium requests the origin's icon independently of the chart under test.
+  if (request.url === '/favicon.ico') { response.writeHead(204); response.end(); return; }
   if (request.url === '/__cfx_browser_origin.html') {
     const body = '<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>';
     response.writeHead(200, { 'Content-Type': types['.html'], 'Content-Length': Buffer.byteLength(body), 'Cache-Control': 'no-store' });

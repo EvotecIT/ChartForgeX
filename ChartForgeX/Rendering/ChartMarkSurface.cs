@@ -5,20 +5,29 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartMarkSurface {
-    /// <summary>Design rule 4: a bar or column fills at most this share of its category band.</summary>
-    public const double BandFill = 0.62;
+    /// <summary>Design rule 4: a bar or column fills at most this share of its category band (band padding 0.32).</summary>
+    public const double BandFill = 0.68;
 
-    /// <summary>Design rule 4: the surface-coloured gap between stacked segments and touching marks.</summary>
+    /// <summary>Design rule 4: the surface-coloured gap between touching marks: grouped bars, funnel and pyramid stages.</summary>
     public const double SurfaceGap = 2;
+
+    /// <summary>Design rule 4: the thinner surface separator between the segments of one stack.</summary>
+    public const double StackSeparator = 1;
+
+    /// <summary>A stacked segment keeps at least this painted extent; a thinner one gives up no separator.</summary>
+    private const double MinimumSegmentExtent = 1;
+
+    /// <summary>The surface seam between contiguous histogram bins; bins are intervals, not separate bars.</summary>
+    public const double HistogramSeam = 1;
 
     /// <summary>Design rule 5: the surface-coloured ring around a marker without an authored outline.</summary>
     public const double MarkerRing = 2;
 
-    /// <summary>Design rule 4: a stacked column or bar is at most this thick unless a maximum width is authored.</summary>
-    public const double StackedMaximumThickness = 24;
+    /// <summary>A horizontal bar is at most this thick unless a maximum width is authored, so long category lists stay compact.</summary>
+    public const double HorizontalMaximumThickness = 28;
 
-    /// <summary>The automatic maximum bar thickness: the theme's, capped for stacks so segments read as one column.</summary>
-    public static double MaximumThickness(double themeMaximum, bool stacked) => stacked ? System.Math.Min(themeMaximum, StackedMaximumThickness) : themeMaximum;
+    /// <summary>The automatic maximum bar thickness: the theme's for columns, stacked or grouped alike, and a thinner cap for horizontal bars.</summary>
+    public static double MaximumThickness(double themeMaximum, bool horizontal) => horizontal ? System.Math.Min(themeMaximum, HorizontalMaximumThickness) : themeMaximum;
 
     /// <summary>Design rule 4: the default radius of a bar's data end.</summary>
     public const double DataEndRadius = 4;
@@ -43,19 +52,19 @@ internal static class ChartMarkSurface {
     }
 
     /// <summary>
-    /// Design rule 4: separates a stacked segment from its neighbours by <see cref="SurfaceGap"/>. Each side that meets
+    /// Design rule 4: separates a stacked segment from its neighbours by <see cref="StackSeparator"/>. Each side that meets
     /// another segment (not the stack's outer envelope) gives up half the gap, so adjacent segments read as distinct marks.
     /// </summary>
     public static ChartRect StackSegmentBounds(ChartRect bounds, ChartRect envelope, bool horizontal) {
-        const double half = SurfaceGap / 2, tolerance = .001;
+        const double half = StackSeparator / 2, tolerance = .001;
         if (horizontal) {
             var left = bounds.Left > envelope.Left + tolerance ? bounds.Left + half : bounds.Left;
             var right = bounds.Right < envelope.Right - tolerance ? bounds.Right - half : bounds.Right;
-            return right - left < .5 ? bounds : new ChartRect(left, bounds.Top, right - left, bounds.Height);
+            return right - left < MinimumSegmentExtent ? bounds : new ChartRect(left, bounds.Top, right - left, bounds.Height);
         }
         var top = bounds.Top > envelope.Top + tolerance ? bounds.Top + half : bounds.Top;
         var bottom = bounds.Bottom < envelope.Bottom - tolerance ? bounds.Bottom - half : bounds.Bottom;
-        return bottom - top < .5 ? bounds : new ChartRect(bounds.Left, top, bounds.Width, bottom - top);
+        return bottom - top < MinimumSegmentExtent ? bounds : new ChartRect(bounds.Left, top, bounds.Width, bottom - top);
     }
 
     public const double FunnelMiddleOpacity = 0.92;

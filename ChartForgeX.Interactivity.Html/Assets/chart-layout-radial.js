@@ -84,7 +84,9 @@
       const plotTop=top+(above?legendBand:0),bottomBand=!side&&!above?legendBand:0;
       const minimumPlot=Math.min(plotWidth,2*(r.labelSize*3+gap));
       let plotHeight=Math.max(minimumPlot,r.height-pb-plotTop-bottomBand,side?legendHeight:0);
-      const radii=r.frames.map(([horizontal,vertical,extent])=>Math.max(0,(Math.min(plotWidth*horizontal,plotHeight*vertical)/2-gap)/extent));
+      // Mirrors VisualRadialCompiler.WideWidth: a plot wider than 1.4:1 spans at most 0.6 of its width.
+      const wide=plotWidth>plotHeight*1.4?plotWidth*.6:Infinity;
+      const radii=r.frames.map(([horizontal,vertical,extent])=>Math.max(0,(Math.min(plotWidth*horizontal,wide,plotHeight*vertical)/2-gap)/extent));
       if(!printing)plotHeight=Math.max(side?legendHeight:0,...r.frames.map((frame,i)=>2*(radii[i]*frame[2]+gap)/frame[1]));
       const height=plotTop+plotHeight+bottomBand+pb,cx=left+plotWidth/2,cy=plotTop+plotHeight/2;
       let legendTop=side||above?top:plotTop+plotHeight+gap;

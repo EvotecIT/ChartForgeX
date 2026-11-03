@@ -38,6 +38,9 @@ internal sealed class ChartHierarchySurface {
             return ChartColorBlend.Solid(custom, SvgColorRole.Series);
         if (Scale != null) return _series.HierarchyItems[index].ColorValue is double value
             ? Scale.BlendFor(value, Minimum, Maximum) : ChartColorScaleSurface.NoData(Scale, _colors);
+        // A top-level node named Other is the remainder: neutral grey, never a categorical hue.
+        if (_series.HierarchyItems[index].ParentId == null && ChartSeriesColours.IsOther(_series.HierarchyItems[index].Label))
+            return ChartColorBlend.Solid(_colors.Other, SvgColorRole.Status);
         var color = ChartRelationshipPaint.Color(_series, index, _colors, paletteIndex);
         return ChartColorBlend.Solid(color, ChartRelationshipPaint.Role(_series, index));
     }

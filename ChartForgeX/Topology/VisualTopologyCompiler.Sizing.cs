@@ -36,6 +36,10 @@ internal sealed partial class VisualTopologyCompiler {
             ResolvePreparedSceneSize(entries);
             return;
         }
+        if (TrimNaturalFrame) {
+            FitNaturalContentFrame(entries);
+            return;
+        }
         var padding = _chart.Viewport.Padding;
         var viewportWidth = Math.Max(1, _chart.Viewport.Width - padding * 2);
         var content = IncludeAnnotationBounds(MeasureRenderedContent(padding, padding,
@@ -119,10 +123,10 @@ internal sealed partial class VisualTopologyCompiler {
             && (_chart.UsesPreparedSceneCoordinates || _chart.LayoutMode != TopologyLayoutMode.Manual || canFitManualCards || _pathDecorations.Count > 0);
         var naturalContent = _naturalSize && !_resolvedLayout && !_options.FitContentToViewport;
         var content = IncludeAnnotationBounds(fitResolvedLayout || naturalContent
-            ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent) : new ChartRect(padding, padding, width, height));
+            ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent && !TrimNaturalFrame) : new ChartRect(padding, padding, width, height));
         _contentClip = _plot;
         if (naturalContent) {
-            _offsetX = (_annotations.Count > 0 || _pathDecorations.Count > 0) ? _plot.X - content.X
+            _offsetX = (TrimNaturalFrame || _annotations.Count > 0 || _pathDecorations.Count > 0) ? _plot.X - content.X
                 : _plot.X - padding + Math.Max(0, padding - content.X - _plot.X);
             _offsetY = _plot.Y - content.Y;
             var left = Math.Min(_plot.X, _offsetX + content.X);

@@ -158,13 +158,16 @@ public sealed class SameValueColorPresentationTests {
         options.Name = null;
         var formatted = Marks(XDocument.Parse(Prepare(chart).ToSvg()), kind).First(mark => (string?)mark.Attribute("data-cfx-value") == "7.125");
         Assert.Equal("7.13 °C", (string?)formatted.Attribute("data-cfx-formatted-value"));
-        Assert.Equal(chart.Options.Labels.Value, (string?)formatted.Attribute("data-cfx-label-value"));
+        Assert.Equal(kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap
+            ? "Samples" : chart.Options.Labels.Value, (string?)formatted.Attribute("data-cfx-label-value"));
         options.ValueFormat = null;
         var reset = Prepare(chart);
         Assert.Equal(svg, reset.ToSvg()); Assert.Equal(png, reset.ToPng());
         var title = Role(XDocument.Parse(svg), Prefix(kind) + "-title");
-        // Design rule 9: a numeric heatmap key is always titled, by default with the localized value label.
-        if ((kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) && scaleKind == "discrete" || kind == ChartSeriesKind.Heatmap) Assert.Single(title);
+        // Matrix keys use the series name by default; map keys retain their existing heading policy.
+        if ((kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) && scaleKind == "discrete"
+            || kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap
+            || kind == ChartSeriesKind.CalendarHeatmap && scaleKind != "legacy") Assert.Single(title);
         else Assert.Empty(title);
     }
 

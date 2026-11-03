@@ -12,7 +12,7 @@ public sealed class SequenceSurfaceShadowDownloadTests {
     [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
     [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
     public void NativeFilterCaptureUsesTheCompletedSourceFrame(string variant, VisualThemeMode mode) {
-        const string source = "sequenceDiagram\nparticipant A as Review\nparticipant B as Archive\nA->>B: Save\nloop Audit\nB-->>A: Stored\nend\nNote over A,B: Retain audit facts\n";
+        const string source = "%%{init: {\"look\":\"neo\"}}%%\nsequenceDiagram\nparticipant A as Review\nparticipant B as Archive\nA->>B: Save\nloop Audit\nB-->>A: Stored\nend\nNote over A,B: Retain audit facts\n";
         var result = SequenceSurfaceShadowSourceRecipe.Parse(source, variant, mode);
         var expected = XElement.Parse(result.Artifact!.ToSvg());
         var prepared = SequenceSurfaceShadowSourceRecipe.PrepareCapture(result);

@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = PictorialRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 175)), theme, mode,
     new VisualFrame("Completed assessments by team", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -32,6 +32,6 @@ public static class PictorialRecipe {
             new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61)
         }, ChartPictorialShape.Person).WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
         if (variant == "options") chart.WithPictorialSvgPath("M2 2H22V22H2Z M8 8V16H16V8Z", new ChartRect(0, 0, 24, 24));
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

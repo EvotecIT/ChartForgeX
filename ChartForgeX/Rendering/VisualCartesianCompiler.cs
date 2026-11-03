@@ -48,6 +48,10 @@ internal static partial class VisualCartesianCompiler {
                 entries.AddRange(DumbbellLegendEntries(chart, series, index, colors));
                 continue;
             }
+            if (series.ShowInLegend && series.Kind == ChartSeriesKind.DifferenceArea) {
+                entries.AddRange(DifferenceLegendEntries(chart, series, index, colors));
+                continue;
+            }
             if (series.ShowInLegend) {
                 var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
                 entries.Add(new VisualLegendEntry(series.Name, color, SeriesId(index), series.Kind, series.FillPattern, series.StateRole,
@@ -206,7 +210,7 @@ internal static partial class VisualCartesianCompiler {
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
                     xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
-                builder.Append(seriesBuilder.Build());
+                builder.Append(seriesBuilder);
             }
             DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null,
                 xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);

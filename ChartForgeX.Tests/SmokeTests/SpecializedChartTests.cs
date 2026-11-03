@@ -366,7 +366,12 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-column-label\"") == 3, "Heatmaps should expose column label markers.");
         Assert(svg.Contains("data-cfx-role=\"heatmap-x-axis-title\"", StringComparison.Ordinal), "Heatmaps should mark the x-axis title.");
         Assert(svg.Contains("data-cfx-role=\"heatmap-y-axis-title\"", StringComparison.Ordinal), "Heatmaps should mark the y-axis title.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"heatmap-scale-label\"") == 2, "Heatmap scales should expose min and max labels.");
+        var scaleLabels = System.Xml.Linq.XDocument.Parse(svg).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-label").ToArray();
+        Assert(scaleLabels.Any(label => (string?)label.Attribute("data-cfx-source-id") == "matrix-scale-low" && label.Value == "20%") &&
+            scaleLabels.Any(label => (string?)label.Attribute("data-cfx-source-id") == "matrix-scale-high" && label.Value == "100%"),
+            "Heatmap scales should retain formatted min and max labels.");
+        Assert(scaleLabels.Length > 2, "Heatmap scales should expose intermediate labels when space allows.");
         Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Semantic heatmaps should expose positive cell status.");
         Assert(svg.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Semantic heatmaps should expose warning cell status.");
         Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Semantic heatmaps should expose negative cell status.");
@@ -449,8 +454,9 @@ internal static partial class SmokeTests {
             .AddFunnel("Funnel", Points(96, 72)).WithDataLabels();
         AssertFamilyTextFitsReservedRegion(PreparedFamily(funnel), "funnel-label", longLabel);
 
+        // Room for a shortened caption that keeps six characters before its ellipsis.
         var gauge = Chart.Create()
-            .WithSize(260, 180)
+            .WithSize(460, 300)
             .WithValueFormatter(_ => longLabel)
             .AddGauge(longLabel, 87);
         AssertFamilyTextFitsReservedRegion(PreparedFamily(gauge), "gauge-label", longLabel);
@@ -487,7 +493,9 @@ internal static partial class SmokeTests {
             .AddTimelineItem(longLabel, new DateTime(2026, 1, 1), new DateTime(2026, 1, 15))
             .ToSvg();
         Assert(timeline.Contains("data-cfx-role=\"schedule-row-label\"", StringComparison.Ordinal), "Timelines should use the shared fitted schedule row labels.");
-        Assert(timeline.Contains("…</text>", StringComparison.Ordinal), "Timeline row labels should shorten when their reserved regions are constrained.");
+        var timelineLabel = System.Xml.Linq.XDocument.Parse(timeline).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "schedule-row-label");
+        Assert(string.Join(" ", timelineLabel.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value)) == longLabel,
+            "Timeline row labels should retain complete words when wrapping fits their allocated height.");
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {

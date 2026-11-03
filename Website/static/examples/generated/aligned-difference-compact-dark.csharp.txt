@@ -57,8 +57,7 @@ public static class AlignedDifferenceRecipe {
         var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 500 : 520).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Observed and forecast at shared coordinates")
             .WithSubtitle(connect ? "Unmatched source slots remain captured; surviving pairs connect" : "Unmatched source slots remain captured and break the filled path")
-            .WithXAxis("Authored coordinate").WithYAxis("Requests").AddSeries(comparison)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithXAxis("Authored coordinate").WithYAxis("Requests").AddSeries(comparison);
         if (symmetric) { chart.Options.YAxis.Scale = ChartScaleKind.SymmetricLogarithmic; chart.Options.YAxis.SymmetricLogarithmThreshold = 1; }
         else chart.Options.YAxis.WithLogarithmicScale(domain: negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive);
         return chart;

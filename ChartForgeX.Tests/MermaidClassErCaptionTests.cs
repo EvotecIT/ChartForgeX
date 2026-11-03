@@ -35,7 +35,7 @@ public sealed class MermaidClassErCaptionTests {
         Assert.Equal(TopologyMarkerKind.OpenDiamond, Assert.Single(chart.Edges).SourceMarker);
         Assert.Equal("owns\nmany", Assert.Single(chart.Edges).Label);
         Assert.Equal(2, native.Details.Count);
-        Assert.Equal(owner.Members[0].Text, native.Details[0].Metadata["mermaid.member.source"]);
+        Assert.Contains(native.Details, detail => detail.Metadata["mermaid.member.source"] == owner.Members[0].Text);
     }
 
     [Theory]
@@ -117,7 +117,9 @@ public sealed class MermaidClassErCaptionTests {
         var texts = xml.Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.DoesNotContain(texts, element => element.Value.Contains("**", StringComparison.Ordinal) || element.Value.Contains("<br", StringComparison.Ordinal));
         Assert.Contains(xml.Descendants(), element => (string?)element.Attribute("data-cfx-caption") == (family == "class" ? "API\nservice & data" : "Customer\naccount"));
-        var image = RasterImageDecoder.Decode(png); Assert.True(image.Width >= width); Assert.True(image.Height > 0);
+        var image = RasterImageDecoder.Decode(png);
+        Assert.Equal((int)Math.Ceiling(double.Parse(xml.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture)), image.Width);
+        Assert.True(image.Height > 0);
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         Assert.Equal(envelope.ToJson(), VisualArtifactInterchangeEnvelope.FromUtf8Json(envelope.ToUtf8Json()).ToJson());
         Assert.NotNull(envelope.AccessibleName);
@@ -125,7 +127,7 @@ public sealed class MermaidClassErCaptionTests {
         if (family == "class") Assert.Equal("Pair~K,List~V~~", envelope.Nodes.Single(node => node.Id == "Pair").Extensions["mermaid.generic.source"]);
         else {
             Assert.Equal("**Customer**<br>account", envelope.Nodes.Single(node => node.Id == "C").Extensions["mermaid.source.label"]);
-            Assert.Equal("**External** key #38; value", envelope.Nodes.Single(node => node.Id == "C").Details[0].Extensions["mermaid.attribute.comment"]);
+            Assert.Equal("**External** key #38; value", envelope.Nodes.Single(node => node.Id == "C").Topology!.TableContent!.Rows[0].Extensions["mermaid.attribute.comment"]);
             Assert.Equal("Domain: core", envelope.Groups.Single(group => group.Id == "Order group").Topology!.ParentGroupId);
         }
         Capture(family + "-captions-" + width + (dark ? "-dark" : "-light"), svg, png);
@@ -138,12 +140,13 @@ public sealed class MermaidClassErCaptionTests {
         var svg = artifact.ToSvg(); var png = artifact.ToPng();
         var saved = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()); var json = saved.ToJson();
         var node = chart.Nodes.Single(item => item.Id == "API: service~literal");
-        node.Label = "Edited service"; node.Details[0].Text = "+edited()";
+        var method = node.Details.Single(detail => detail.Metadata["mermaid.member.source"] == "+List~Item~ find()*");
+        node.Label = "Edited service"; method.Text = "+edited()";
         Assert.NotEqual(svg, artifact.ToSvg()); Assert.False(png.SequenceEqual(artifact.ToPng()));
         var edited = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).Nodes.Single(item => item.Id == node.Id);
-        Assert.Equal("Edited service", edited.Label); Assert.Equal("+edited()", edited.Details[0].Text);
+        Assert.Equal("Edited service", edited.Label); Assert.Contains(edited.Details, detail => detail.Text == "+edited()");
         Assert.Equal("`**API**<br>service #38; data`", edited.Extensions["mermaid.source.label"]);
-        Assert.Equal("+List~Item~ find()*", edited.Details[0].Extensions["mermaid.member.source"]);
+        Assert.Equal("+List~Item~ find()*", edited.Details.Single(detail => detail.Text == "+edited()").Extensions["mermaid.member.source"]);
         Assert.Equal(json, saved.ToJson());
         Assert.Equal("API\nservice & data", saved.Nodes.Single(item => item.Id == node.Id).Label);
         var document = Assert.IsType<MermaidClassDocument>(result.Document); document.Classes.Single(item => item.Id == node.Id).Label = "`**Changed** label`";

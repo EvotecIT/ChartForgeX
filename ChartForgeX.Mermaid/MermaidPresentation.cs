@@ -45,15 +45,26 @@ internal static class MermaidPresentation {
             var sizing = host?.TopologySizing ?? MermaidTopologySizing.Natural;
             topology.DefaultRenderOptions ??= new TopologyRenderOptions();
             topology.DefaultRenderOptions.FitContentToViewport = sizing == MermaidTopologySizing.FixedViewport;
-            topology.Theme = Theme(topology.Theme, document.Configuration, host, defaultFontSize: TopologyDefaultFontSize(document, host));
+            topology.Theme = Theme(topology.Theme, document.Configuration, host);
+            topology.DefaultRenderOptions.AllowMultilineNodeLabels = true;
+            topology.DefaultRenderOptions.WrapNodeLabels = true;
+            topology.DefaultRenderOptions.MaxNodeSubtitleLines = 8;
+            // Diagram connectors are flat single strokes, like node outlines; no glow layers.
+            topology.DefaultRenderOptions.EdgeVisualStyle ??= ChartLineVisualStyle.Plain();
+            // Mermaid has no health; an unknown status must not turn notation into a dashed warning line.
+            // Families whose notation is dashed declare it on the edge.
+            foreach (var edge in topology.Edges)
+                if (edge.LineStyle == TopologyEdgeLineStyle.Auto && edge.DashPattern.Count == 0 && edge.Status == TopologyHealthStatus.Unknown) edge.LineStyle = TopologyEdgeLineStyle.Solid;
+            foreach (var node in topology.Nodes) if (node.Status == TopologyHealthStatus.Unknown) node.ShowStatusBadge = false;
             MermaidNativeStyles.ResolveLetterSpacing(topology);
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
-            chart.WithTheme(Theme(chart.Options.Theme, document.Configuration, host));
+            chart.WithTheme(Theme(chart.Options.Theme, document.Configuration, host, diagram: document.Kind == MermaidDiagramKind.Gantt));
+            if (document.Kind == MermaidDiagramKind.Gantt) chart.Options.ShowCard = false;
             // Native charts are transparent by default. An authored canvas color also requests its paint.
-            if (document.Configuration.ThemeColors?.HasBackground == true) chart.WithTransparentBackground(false);
+            if (document.Kind == MermaidDiagramKind.Gantt || document.Configuration.ThemeColors?.HasBackground == true) chart.WithTransparentBackground(false);
             document.Configuration.ChartColors?.Apply(chart);
             document.Configuration.RadarTheme?.Apply(chart);
             if (host?.ThemeMode != null) chart.WithThemeMode(host.ThemeMode.Value);
@@ -62,7 +73,11 @@ internal static class MermaidPresentation {
             block.Options.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) block.Options.ThemeMode = Mode(document.Theme);
             if (host?.ThemeMode != null) block.Options.ThemeMode = host.ThemeMode.Value;
-            block.Options.Theme = Theme(block.Options.Theme, document.Configuration, host);
+            block.Options.Theme = Theme(block.Options.Theme, document.Configuration, host, diagram: block is GitGraphBlock);
+            if (block is GitGraphBlock) {
+                block.Options.ShowCard = false;
+                block.Options.TransparentBackground = false;
+            }
             // An explicit source preset or canvas requests paint; an unstyled diagram keeps its transparent adapter canvas.
             if (block is JourneyDiagramBlock || block is TimelineDiagramBlock) {
                 var canvasRequested = document.Configuration.ThemeColors?.HasBackground == true
@@ -74,25 +89,21 @@ internal static class MermaidPresentation {
         return model;
     }
 
-    private static VisualTheme Theme(VisualTheme source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, MermaidThemePreset? resolved = null, double? defaultFontSize = null) {
+    private static VisualTheme Theme(VisualTheme source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, MermaidThemePreset? resolved = null, double? defaultFontSize = null, bool diagram = true) {
         var preset = resolved ?? configuration.Preset?.Resolve(host?.ThemeMode ?? Mode(configuration.Theme ?? "default"), host?.Theme != null, configuration.Theme);
         // An explicit host owns the base palette. Typed source node, edge and Sequence
         // role paints remain more specific and are applied by their existing native owners.
-        var theme = host?.Theme ?? preset?.Apply(source) ?? source;
+        var basis = diagram ? DiagramTheme.Apply(source) : source;
+        var theme = host?.Theme ?? preset?.Apply(basis) ?? basis;
         return theme.WithTypography(Typography(theme.Typography, configuration, host, defaultFontSize));
     }
-
-    // Explicit host themes retain their native typography when neither host nor source selects a font size.
-    // Only the pinned Flowchart/Swimlane family chain is qualified for the implicit16 source default.
-    private static double? TopologyDefaultFontSize(MermaidDocument document, MermaidPresentationOptions? host) => host?.Theme != null
-        ? null : document.Kind is MermaidDiagramKind.Flowchart or MermaidDiagramKind.Swimlane ? 16 : (double?)null;
 
     private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, double? defaultFontSize = null) {
         var fontSize = host?.FontSize ?? configuration.FontSize ?? defaultFontSize;
         var scale = fontSize.HasValue ? fontSize.Value / source.DataLabelSize : 1;
         return new VisualTypography(host?.FontFamily ?? configuration.FontFamily ?? source.Family, source.TitleSize * scale,
             source.SubtitleSize * scale, source.AxisSize * scale, source.LegendSize * scale,
-            source.DataLabelSize * scale, source.ScalarValueSize * scale, source.CenterValueSize * scale,
+            fontSize ?? source.DataLabelSize, source.ScalarValueSize * scale, source.CenterValueSize * scale,
             source.AxisTitleSize * scale, source.MonospaceFamily);
     }
     private static VisualThemeMode Mode(string theme) => string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;

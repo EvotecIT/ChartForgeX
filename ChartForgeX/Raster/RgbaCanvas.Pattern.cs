@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
-    internal void FillContoursPattern(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule = RasterFillRule.EvenOdd, double opacity = 1) {
+    internal void FillContoursPattern(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule = RasterFillRule.EvenOdd, double opacity = 1, bool smooth = false) {
         if (contours.Count == 0 || tileWidth <= 0 || tileHeight <= 0 || tilePixels.Length < tileWidth * tileHeight * 4) return;
         var scaledContours = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -16,10 +16,12 @@ internal sealed partial class RgbaCanvas {
         }
 
         if (scaledContours.Count == 0) return;
-        FillContoursPatternPixels(scaledContours, tileWidth, tileHeight, tilePixels, tileA, tileB, tileC, tileD, tileE, tileF, fillRule, opacity);
+        FillContoursPatternPixels(scaledContours, tileWidth, tileHeight, tilePixels, tileA, tileB, tileC, tileD, tileE, tileF, fillRule, opacity, smooth);
     }
 
-    private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule, double opacity) {
+    private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule, double opacity, bool smooth) {
+        var footprintX = Math.Sqrt(tileA * tileA + tileC * tileC) / _scale;
+        var footprintY = Math.Sqrt(tileB * tileB + tileD * tileD) / _scale;
         ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
             var logicalY = (y + 0.5) / _scale;
             for (var x = xStart; x <= xEnd; x++) {
@@ -28,7 +30,11 @@ internal sealed partial class RgbaCanvas {
                 var logicalX = (x + 0.5) / _scale;
                 var sampleX = logicalX * tileA + logicalY * tileC + tileE;
                 var sampleY = logicalX * tileB + logicalY * tileD + tileF;
-                var color = WithOpacity(SamplePattern(tilePixels, tileWidth, tileHeight, sampleX, sampleY), opacity);
+                var sample = smooth ? SampleImageFiltered(tilePixels, tileWidth, tileHeight,
+                    sampleX - Math.Floor(sampleX / tileWidth) * tileWidth - .5,
+                    sampleY - Math.Floor(sampleY / tileHeight) * tileHeight - .5, footprintX, footprintY)
+                    : SamplePattern(tilePixels, tileWidth, tileHeight, sampleX, sampleY);
+                var color = WithOpacity(sample, opacity);
                 if (color.A == 0) continue;
                 BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }

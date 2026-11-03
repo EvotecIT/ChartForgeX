@@ -7,9 +7,15 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Partitions one triangle in normalized coordinates before applying orientation, reversal and viewport fitting.</summary>
 internal sealed class ChartPyramidLayout {
-    private ChartPyramidLayout(ChartRect triangle, ChartPyramidStageLayout[] stages, double total, ChartDataLabelPlacement labelSide) {
-        Triangle = triangle; Stages = Array.AsReadOnly(stages); Total = total; LabelSide = labelSide;
+    /// <summary>Without an authored aspect ratio, an upright pyramid's base is at most this many times its height, so wide viewports keep a readable slope.</summary>
+    internal const double DefaultMaximumAspect = 1.3;
+    private ChartPyramidLayout(ChartRect triangle, ChartPyramidStageLayout[] stages, double total, ChartDataLabelPlacement labelSide,
+        (ChartPoint Start, ChartPoint End)[] separators) {
+        Triangle = triangle; Stages = Array.AsReadOnly(stages); Total = total; LabelSide = labelSide; Separators = Array.AsReadOnly(separators);
     }
+
+    /// <summary>The shared boundaries between painted partitions, each crossing the triangle at its process position.</summary>
+    internal IReadOnlyList<(ChartPoint Start, ChartPoint End)> Separators { get; }
 
     internal ChartRect Triangle { get; }
     internal IReadOnlyList<ChartPyramidStageLayout> Stages { get; }
@@ -43,6 +49,9 @@ internal sealed class ChartPyramidLayout {
             // Choose the limiting axis before multiplication; extreme finite ratios cannot overflow the viewport.
             if (ratio >= crossLength / processLength) processLength = crossLength / ratio;
             else crossLength = processLength * ratio;
+        } else if (!horizontal && processLength > 0 && crossLength > processLength * DefaultMaximumAspect) {
+            // A wide viewport would flatten the triangle edge to edge. Keep a readable slope and centre it.
+            crossLength = processLength * DefaultMaximumAspect;
         }
         var triangle = new ChartRect(available.Left + (available.Width - (horizontal ? processLength : crossLength)) / 2,
             available.Top + (available.Height - (horizontal ? crossLength : processLength)) / 2,
@@ -51,6 +60,7 @@ internal sealed class ChartPyramidLayout {
         var center = crossLength / 2;
         var stages = new ChartPyramidStageLayout[points.Count];
         var cumulative = 0d; var previous = 0d;
+        var separators = new List<(ChartPoint Start, ChartPoint End)>();
         double Process(double normalized) => processLength * (options.Reversed ? 1 - normalized : normalized);
         for (var index = 0; index < points.Count; index++) {
             cumulative += points[index].Y;
@@ -81,13 +91,17 @@ internal sealed class ChartPyramidLayout {
                 ChartDataLabelPlacement.Above => horizontal ? crossLeft : processFirst,
                 _ => horizontal ? crossRight : processLast
             };
+            // Neighbouring partitions are separate marks: a surface separator is painted over each shared boundary,
+            // so the partitions keep their exact encoded geometry.
+            if (previous > 0 && next > previous && previous < 1)
+                separators.Add((geometry.Position(center - crossLength * previous / 2, first), geometry.Position(center + crossLength * previous / 2, first)));
             stages[index] = new ChartPyramidStageLayout(index, share, previous, next, bounds,
                 geometry.Polygon(center, crossLength * previous, first, crossLength * next, last), inside, outside, anchor,
                 horizontal ? processFirst : crossLeft, horizontal ? processLast : crossRight,
                 horizontal ? crossLeft : processFirst, horizontal ? crossRight : processLast);
             previous = next;
         }
-        return new ChartPyramidLayout(triangle, stages, total, side);
+        return new ChartPyramidLayout(triangle, stages, total, side, separators.ToArray());
     }
 }
 

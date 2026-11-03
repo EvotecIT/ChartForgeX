@@ -49,13 +49,10 @@ internal static partial class TopologyRenderPrimitives {
                 continue;
             }
             // Empty labels must not route the whole chart before viewport normalization has finished.
-            edgeSegments ??= EdgeSegments(chart, nodes);
+            edgeSegments ??= EdgeSegments(chart, options, nodes);
 
-            var points = EdgePoints(chart, edge, nodes);
-            if (edge.Interpolation.HasValue) points = RenderedEdgeSamplePoints(chart, edge, nodes, points);
-            var labelPoint = IsGeographicCurve(chart, edge, nodes)
-                ? QuadraticPoint(points[0], GeographicCurveControlPoint(chart, edge, nodes, points), points[points.Count - 1], 0.5)
-                : EdgeLabelPoint(points);
+            var points = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
+            var labelPoint = EdgeLabelPoint(points);
             var units = TopologyPreparedEdgePlan.Units(edge);
             var lineCount = EdgeLabelRows(label, secondary, tertiary, options);
             var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement, options.ResolvedEdgeLabelScale * units, options.AllowMultilineNodeLabels);
@@ -68,7 +65,7 @@ internal static partial class TopologyRenderPrimitives {
                 var labels = new[] { label, secondary, tertiary };
                 for (var index = 0; index < labels.Length; index++) {
                     var value = labels[index]; if (string.IsNullOrWhiteSpace(value)) continue;
-                    var weight = index == 0 ? 600 : 400;
+                    var weight = index == 0 ? EdgeLabelPrimaryWeight(options) : 400;
                     var style = TopologyTextPolicy.Resolve(edge.TextStyle, sourceMeasurement.Font, size, weight);
                     var measurement = TopologyTextPolicy.Measurement(edge.TextStyle, sourceMeasurement, weight);
                     var rows = TopologyTextLayout.AuthoredRows(value!, options.AllowMultilineNodeLabels);
@@ -177,12 +174,11 @@ internal static partial class TopologyRenderPrimitives {
         return best ?? ClampLabel(new ChartPoint(baseX, baseY), width, height, chart, options);
     }
 
-    private static List<EdgeSegment> EdgeSegments(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes) {
+    private static List<EdgeSegment> EdgeSegments(TopologyChart chart, TopologyRenderOptions options, IReadOnlyDictionary<string, TopologyNode> nodes) {
         var segments = new List<EdgeSegment>();
         foreach (var edge in chart.Edges) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-            var points = EdgePoints(chart, edge, nodes);
-            points = RenderedEdgeSamplePoints(chart, edge, nodes, points, 12);
+            var points = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
             for (var i = 0; i < points.Count - 1; i++) segments.Add(new EdgeSegment(edge, points[i], points[i + 1]));
         }
 

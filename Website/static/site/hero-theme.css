@@ -9,9 +9,9 @@
   --cfx-series-1: #2A78D6;
   --cfx-series-2: #0F9F8C;
   --cfx-series-3: #7B61E8;
-  --cfx-series-4: #C24FA8;
-  --cfx-series-5: #5B7F00;
-  --cfx-series-6: #1D4F9E;
+  --cfx-series-4: #A0522D;
+  --cfx-series-5: #C24FA8;
+  --cfx-series-6: #5B7F00;
   --cfx-severity-critical-fill: #D4302F;
   --cfx-severity-critical-ink: #B8292A;
   --cfx-severity-high-fill: #DD5A17;
@@ -49,8 +49,8 @@
   --cfx-series-1-ink: #000000;
   --cfx-series-2-ink: #000000;
   --cfx-series-3-ink: #000000;
-  --cfx-series-4-ink: #000000;
-  --cfx-series-5-ink: #FFFFFF;
+  --cfx-series-4-ink: #FFFFFF;
+  --cfx-series-5-ink: #000000;
   --cfx-series-6-ink: #FFFFFF;
   --cfx-ramps-sequential-1-ink: #000000;
   --cfx-ramps-sequential-2-ink: #000000;
@@ -79,9 +79,9 @@
   --cfx-series-1: #3987E5;
   --cfx-series-2: #179C89;
   --cfx-series-3: #8A74EE;
-  --cfx-series-4: #C9579F;
-  --cfx-series-5: #6F9120;
-  --cfx-series-6: #5A7FD8;
+  --cfx-series-4: #C06A42;
+  --cfx-series-5: #C9579F;
+  --cfx-series-6: #6F9120;
   --cfx-severity-critical-fill: #F47171;
   --cfx-severity-critical-ink: #F47171;
   --cfx-severity-high-fill: #F7924F;

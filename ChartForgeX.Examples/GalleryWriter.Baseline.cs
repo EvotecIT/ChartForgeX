@@ -36,9 +36,10 @@ public static partial class GalleryWriter {
                 var outputScale = ReadBaselineInt32(pngBaseline, "outputScale", actual.PngScale);
                 var maxEdgeInkPixels = ReadBaselineInt64(pngBaseline, "maxEdgeInkPixels", long.MaxValue);
                 var naturalHeight = AllowsNaturalHeight(baselineChart, actual.Layout);
-                if (actual.SvgDimensions.Width == width &&
+                var naturalWidth = naturalHeight && actual.Layout.WidthMode == "natural";
+                if ((naturalWidth || actual.SvgDimensions.Width == width) &&
                     (naturalHeight || actual.SvgDimensions.Height == height) &&
-                    actual.SvgDimensions.LogicalWidth == logicalWidth &&
+                    (naturalWidth || actual.SvgDimensions.LogicalWidth == logicalWidth) &&
                     (naturalHeight || actual.SvgDimensions.LogicalHeight == logicalHeight) &&
                     actual.PngScale == outputScale &&
                     actual.PngDimensions.Width == Math.Ceiling(actual.SvgDimensions.LogicalWidth * outputScale) &&

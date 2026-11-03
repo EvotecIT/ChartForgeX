@@ -49,7 +49,7 @@ internal static partial class VisualCartesianCompiler {
                 var pattern = point < source.PointFillPatterns.Count && source.PointFillPatterns[point].HasValue ? source.PointFillPatterns[point]!.Value : source.FillPattern;
                 var pointStyle = point < source.PointDataLabelStyles.Count && source.PointDataLabelStyles[point] != null ? source.PointDataLabelStyles[point]!.Resolve(style) : style;
                 points[point] = new CartesianValuePoint(source.ObservationIds[point].Value, value, nativeMap.X(value.X), nativeMap.Y(value.Y),
-                    point < source.PointLabels.Count ? source.PointLabels[point] : null, pointStyle.TextCase, radius, ShowMarker(chart, source, point),
+                    point < source.PreparedLabels.Count ? source.PreparedLabels[point] : null, pointStyle.TextCase, radius, ShowMarker(chart, source, point),
                     VisualMarkerScene.CapturePaint(source, point, color, VisualChartPaint.Series(source, color, point), source.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(source.SemanticRole) ? source.SemanticRole! : "marker", pattern,
                         ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "marker-pattern", marker),
                     new BarSurfacePolicy(chart, context, source, point, colors), color,

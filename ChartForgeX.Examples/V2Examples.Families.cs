@@ -166,7 +166,7 @@ public static partial class V2Examples {
             // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
             var natural = topology.WithTitle(title).WithSubtitle(subtitle)
                 .WithTheme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
-            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), natural.ToSvg());
+            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleTypography.EmbedInSvg(natural.ToSvg()));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), natural.ToPng());
             WriteThumbnail(output, model, id, title, family, mode, legend);
             width = (int)Math.Ceiling(natural.NaturalSize!.Value.Width);
@@ -178,7 +178,8 @@ public static partial class V2Examples {
             return;
         }
         var prepared = model.Prepare(context);
-        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+        height = (int)Math.Ceiling(prepared.Size.Height);
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
         WriteThumbnail(output, model, id, title, family, mode, legend);
         var artifactKind = model is TopologyChart ? "Topology" : family is "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
@@ -193,6 +194,6 @@ public static partial class V2Examples {
     }
 
     private static VisualRenderContext GalleryContext(int width, int height, VisualThemeMode mode, string title, string subtitle, bool? legend) =>
-        new(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode, new VisualFrame(title, subtitle, showLegend: legend), FontSpec.FromFamily(ProofFont));
+        new(new VisualLayoutOptions(new VisualSize(width, height), fitHeightToContent: true), VisualTheme.Graphite(), mode, new VisualFrame(title, subtitle, showLegend: legend), FontSpec.FromFamily(ProofFont));
     private static string FamilyName(ChartSeriesKind kind) => System.Text.RegularExpressions.Regex.Replace(kind.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
 }

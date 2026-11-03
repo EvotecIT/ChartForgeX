@@ -28,6 +28,11 @@ internal static partial class VisualSceneSvgRenderer {
                 var uri = image.BoundedDataUri((int)(maximumCharacters - before),
                     observed => new VisualResourceLimitException("MaximumOutputBytes", maximumCharacters, before + observed, resourceOwner));
                 characters += uri.Length;
+            } else if (node is VisualSceneGradient { AuthoredFill.ImageData: { } fillImage }) {
+                var before = characters;
+                var resourceOwner = owner;
+                characters += fillImage.BoundedDataUri((int)(maximumCharacters - before),
+                    observed => new VisualResourceLimitException("MaximumOutputBytes", maximumCharacters, before + observed, resourceOwner)).Length;
             }
         }
         return characters;
@@ -45,6 +50,10 @@ internal static partial class VisualSceneSvgRenderer {
             } else if (node is VisualSceneEndGroup) owner = owners.Pop();
             else if (node is VisualSceneImage image) {
                 work += image.Image.Pixels.LongLength;
+                if (work > RasterEffectPreflight.MaximumWorkSamples) throw new VisualResourceLimitException(
+                    "SvgImageIdentityWorkSamples", RasterEffectPreflight.MaximumWorkSamples, work, owner);
+            } else if (node is VisualSceneGradient { AuthoredFill.ImageData: { } fillImage }) {
+                work += fillImage.Image.Pixels.LongLength;
                 if (work > RasterEffectPreflight.MaximumWorkSamples) throw new VisualResourceLimitException(
                     "SvgImageIdentityWorkSamples", RasterEffectPreflight.MaximumWorkSamples, work, owner);
             }

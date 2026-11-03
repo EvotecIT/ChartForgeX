@@ -14,7 +14,7 @@ public sealed class MermaidImplicitTopologyPaletteTests {
     [InlineData("flowchart", false)] [InlineData("flowchart", true)]
     [InlineData("swimlane", false)] [InlineData("swimlane", true)]
     [InlineData("agentflow", false)] [InlineData("agentflow", true)]
-    public void AbsentThemeUsesPinnedDefaultUnlessAnExplicitHostThemeOwnsThePalette(string family, bool hostTheme) {
+    public void AbsentThemeUsesGraphiteUnlessAnExplicitHostThemeOwnsThePalette(string family, bool hostTheme) {
         var source = MermaidTopologyPaletteRoleTests.Source(family, false, false); var options = MermaidTopologyPaletteRoleTests.Options();
         if (hostTheme) options.Presentation!.Theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Surface = ChartColor.FromHex("#102030"); builder.Light.Border = ChartColor.FromHex("#203040");
@@ -30,22 +30,21 @@ public sealed class MermaidImplicitTopologyPaletteTests {
             Assert.Equal(ChartColor.FromHex("#304050"), chart.Theme.Resolve(chart.ThemeMode).Foreground);
             Assert.Null(work.BackgroundColor); Assert.Null(work.BorderColor); Assert.Null(work.LabelColor); Assert.Null(edge.Color);
         } else {
-            Color("#ececff", work.BackgroundColor); Color("#9370db", work.BorderColor); Color("#333333", work.LabelColor);
-            Color("#aaaa33", group.BorderColor); Color("#333333", group.LabelColor); Color("#333333", edge.Color);
-            Assert.Equal(family == "agentflow" ? ChartColor.Transparent : ChartColor.FromHex("#ffffde"), ChartColor.Parse(group.BackgroundColor!));
-            Assert.Equal(ChartColor.FromRgba(232, 232, 232, 102), ChartColor.Parse(edge.LabelBackgroundColor!));
+            Assert.Null(work.BackgroundColor); Assert.Null(work.BorderColor); Assert.Null(work.LabelColor); Assert.Null(edge.Color);
+            Assert.Null(group.BorderColor); Assert.Null(group.LabelColor); Assert.Null(edge.LabelBackgroundColor);
+            Assert.Equal(VisualTheme.Graphite().Resolve(chart.ThemeMode).Surface, chart.Theme.Resolve(chart.ThemeMode).Surface);
         }
         var saved = artifact.ToInterchangeEnvelope(); var restoredChart = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart(); var restored = restoredChart.Prepare(); CaptureArtifact(family + "-host-" + hostTheme + "-restored", restored.Visual.ToArtifact());
         Assert.Equal(artifact.ToPng(), restored.ToPng()); Assert.Equal(work.Label, Assert.Single(restoredChart.Nodes, node => node.Id == "work").Label);
     }
     [Theory] [InlineData("flowchart")] [InlineData("swimlane")] [InlineData("agentflow")]
-    public void AbsentAndExplicitDefaultHaveEqualPaintWithoutInventingAnAuthoredThemeFact(string family) {
+    public void AbsentAndExplicitDefaultHaveDistinctPaintWithoutInventingAnAuthoredThemeFact(string family) {
         var source = MermaidTopologyPaletteRoleTests.Source(family, false, false); var options = MermaidTopologyPaletteRoleTests.Options();
         var implicitResult = MermaidRenderer.Render(source, options); var explicitSource = "%%{init: {\"theme\":\"default\"}}%%\n" + source; var explicitResult = MermaidRenderer.Render(explicitSource, options);
         Capture(family + "-implicit", source, implicitResult); Capture(family + "-explicit-default", explicitSource, explicitResult);
         Assert.Empty(implicitResult.Diagnostics); Assert.Empty(explicitResult.Diagnostics);
         var implicitArtifact = Assert.IsType<VisualArtifact>(implicitResult.Artifact); var explicitArtifact = Assert.IsType<VisualArtifact>(explicitResult.Artifact);
-        Assert.Equal(implicitArtifact.ToPng(), explicitArtifact.ToPng()); Assert.Null(implicitResult.Document!.Configuration.Theme); Assert.Equal("default", explicitResult.Document!.Configuration.Theme);
+        Assert.False(implicitArtifact.ToPng().SequenceEqual(explicitArtifact.ToPng())); Assert.Null(implicitResult.Document!.Configuration.Theme); Assert.Equal("default", explicitResult.Document!.Configuration.Theme);
         Assert.DoesNotContain(implicitArtifact.Metadata, pair => pair.Key == "mermaid.config.theme"); Assert.Equal("default", explicitArtifact.Metadata["mermaid.config.theme"]);
     }
     [Theory] [InlineData("flowchart")] [InlineData("swimlane")] [InlineData("agentflow")]

@@ -38,7 +38,6 @@ public static class WordCloudRecipe {
             ("Inventory", 8), ("Tickets", 8), ("Compliance", 7), ("Endpoints", 7), ("Mail flow", 6), ("Quotas", 6)
         };
         var count = variant == "compact" ? 20 : terms.Length;
-        return Chart.Create().AddWordCloud("Mentions", terms.Take(count).Select(term => new ChartWordCloudItem(term.Text, term.Mentions)).ToArray())
-            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        return Chart.Create().AddWordCloud("Mentions", terms.Take(count).Select(term => new ChartWordCloudItem(term.Text, term.Mentions)).ToArray());
     }
 }

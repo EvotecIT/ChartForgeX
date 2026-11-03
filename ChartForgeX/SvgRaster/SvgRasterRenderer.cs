@@ -397,6 +397,13 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterObjectPaint? objectPaint = null) {
+        // Object-bounds paint is defined before the element transform, including rotations and shears.
+        // Stroke and text callers already supply their original geometry; ordinary fills recover it here.
+        if (!objectPaint.HasValue && style.Fill.IsReference && matrix.TryInvert(out var inverse)) {
+            var localContours = new List<List<ChartPoint>>(contours.Count);
+            foreach (var contour in contours) localContours.Add(TransformRing(contour, inverse));
+            objectPaint = new SvgRasterObjectPaint(SvgRasterGradientValues.Bounds(localContours), matrix);
+        }
         if (contours.Count == 0 || style.Fill.IsNone) return;
         var fillRule = FillRule(style.FillRule);
         var paintOpacity = style.Opacity * style.FillOpacity;

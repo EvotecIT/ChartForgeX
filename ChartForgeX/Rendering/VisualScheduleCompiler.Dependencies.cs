@@ -25,13 +25,21 @@ internal static partial class VisualScheduleCompiler {
             var source = ScheduleCanonicalX(chart, plot, RangeBounds(chart, previous, plot, project, slot, height));
             var target = ScheduleCanonicalX(chart, plot, RangeBounds(chart, item, plot, project, slot, height));
             var arrow = DependencyArrowExtent(height);
-            var start = new ChartPoint(source.Right + DependencyClearance(context), source.Top + source.Height / 2);
-            var end = new ChartPoint(target.Left - DependencyClearance(context), target.Top + target.Height / 2);
             var halfStroke = context.Theme.AxisStrokeWidth / 2;
+            // The painted stroke meets each surface. Search corridors retain their separate
+            // clearance; a rounding epsilon keeps floating-point contact outside the interior.
+            var terminal = halfStroke + .0001;
+            var start = new ChartPoint(source.Right + terminal, source.Top + source.Height / 2);
+            var end = new ChartPoint(target.Left - terminal, target.Top + target.Height / 2);
             var commands = DependencyRoute(start, end, plot, slot, arrow, DependencyStubLength(context, arrow),
                 DependencyClearance(context), halfStroke, surfaces);
+            var topApproach = false;
+            if (ForwardDependencyRoute(source, target, previous.Milestone, item.Milestone, plot, surfaces,
+                arrow, halfStroke, terminal, DependencyClearance(context), context.Theme.BarRadius) is { } forward) {
+                commands = forward.Route; start = forward.Start; end = forward.End; topApproach = true;
+            }
             var arrowCommands = new[] { ChartPathCommand.MoveTo(end.X - arrow, end.Y - arrow), ChartPathCommand.LineTo(end.X, end.Y),
-                ChartPathCommand.LineTo(end.X - arrow, end.Y + arrow) };
+                ChartPathCommand.LineTo(topApproach ? end.X + arrow : end.X - arrow, topApproach ? end.Y - arrow : end.Y + arrow) };
             if (!DependencyPaintFits(arrowCommands, surfaces, plot, halfStroke)) commands = null;
             if (commands != null) commands = SchedulePhysicalPath(chart, plot, commands);
             arrowCommands = SchedulePhysicalPath(chart, plot, arrowCommands);

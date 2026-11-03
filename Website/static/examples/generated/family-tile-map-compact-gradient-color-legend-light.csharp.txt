@@ -48,7 +48,7 @@ public static class TileMapColorDimensionRecipe {
             .WithMapLabels().WithMapColorScale(scale)
             .ConfigureMapColorDimension(options => {
                 options.Name = "Temperature";
-                options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+                options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", System.Globalization.CultureInfo.InvariantCulture);
                 options.LegendStyle = variant is "gradient-color-legend" or "compact-gradient-color-legend" ? ChartColorLegendStyle.Gradient
                     : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
             });

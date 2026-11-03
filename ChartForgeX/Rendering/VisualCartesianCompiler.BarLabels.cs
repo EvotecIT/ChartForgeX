@@ -36,7 +36,7 @@ internal static partial class VisualCartesianCompiler {
             for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var point = series.RenderPoints[pointIndex];
                 if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
-                    && (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) continue;
+                    && (pointIndex >= series.PreparedLabels.Count || series.PreparedLabels[pointIndex] == null)) continue;
                 var anchor = map.Y(point.Y);
                 if (!ChartMath.IsFinite(anchor) || anchor < plot.Top || anchor > plot.Bottom) continue;
                 var label = labels.PointLabel(chart, series, pointIndex, style);

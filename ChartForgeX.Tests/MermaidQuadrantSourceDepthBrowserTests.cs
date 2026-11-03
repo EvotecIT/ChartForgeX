@@ -38,7 +38,7 @@ public sealed class MermaidQuadrantSourceDepthBrowserTests {
             () => {
                 const svg=document.querySelector('#native svg'), frame=svg.getBoundingClientRect();
                 const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"], [data-cfx-role="axis-y-label"]')];
-                return {labels:labels.map(node=>node.textContent),clip:labels.filter(node=>{
+                return {labels:labels.map(node=>node.getAttribute('aria-label')??node.textContent),clip:labels.filter(node=>{
                     const b=node.getBoundingClientRect(); return b.left<frame.left-1||b.right>frame.right+1||b.top<frame.top-1||b.bottom>frame.bottom+1;
                 }).map(node=>node.textContent),
                     source:[...svg.querySelectorAll('[data-cfx-role="point"]')].map(node=>node.dataset.cfxSourcePoint),

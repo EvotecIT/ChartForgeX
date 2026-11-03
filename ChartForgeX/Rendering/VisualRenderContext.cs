@@ -28,14 +28,14 @@ public readonly struct VisualSize {
 
 /// <summary>The resolved viewport and outer padding used by every prepared visual.</summary>
 public sealed class VisualLayoutOptions {
-    /// <summary>Creates a fixed viewport. Hosts implement fit sizing by supplying their measured viewport.</summary>
-    public VisualLayoutOptions(VisualSize size, double padding = 24) : this(size, ChartPadding.All(padding)) { }
+    /// <summary>Creates a viewport. Hosts implement fit sizing by supplying their measured viewport, or let row charts trim unused height.</summary>
+    public VisualLayoutOptions(VisualSize size, double padding = 24, bool fitHeightToContent = false) : this(size, ChartPadding.All(padding), fitHeightToContent) { }
     /// <summary>Creates a fixed viewport with independently configured outer edge insets.</summary>
-    public VisualLayoutOptions(VisualSize size, ChartPadding padding) {
+    public VisualLayoutOptions(VisualSize size, ChartPadding padding, bool fitHeightToContent = false) {
         VisualSize.Positive(size.Width, nameof(size)); VisualSize.Positive(size.Height, nameof(size));
         if (padding.Left + padding.Right >= size.Width || padding.Top + padding.Bottom >= size.Height)
             throw new ArgumentOutOfRangeException(nameof(padding));
-        Size = size; PaddingEdges = padding;
+        Size = size; PaddingEdges = padding; FitHeightToContent = fitHeightToContent;
     }
     /// <summary>Gets the resolved logical size.</summary>
     public VisualSize Size { get; }
@@ -44,6 +44,9 @@ public sealed class VisualLayoutOptions {
     public double Padding => Math.Min(Math.Min(PaddingEdges.Left, PaddingEdges.Right), Math.Min(PaddingEdges.Top, PaddingEdges.Bottom));
     /// <summary>Gets the outer edge insets in logical units.</summary>
     public ChartPadding PaddingEdges { get; }
+    /// <summary>Gets whether row charts (schedules, progress bars, horizontal bullets, pictorial rows and horizontal linear gauges)
+    /// may trim unused height within <see cref="Size"/>. False keeps a fixed host viewport with top-aligned rows.</summary>
+    public bool FitHeightToContent { get; }
 }
 
 /// <summary>Common title, subtitle, legend and surface configuration.</summary>
@@ -97,9 +100,22 @@ public sealed partial class VisualFrame {
     /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
     public double LegendMaximumHeightFraction { get; }
     internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle) {
+        AutomaticLegendPlacement = AutomaticLegendPlacement
+    };
     internal VisualFrame WithLegendTitle(string? legendTitle) => new(Title, Subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle) {
+        AutomaticLegendPlacement = AutomaticLegendPlacement
+    };
+
+    /// <summary>Whether neither the host nor the model placed the legend, so the frame may move a long legend beside the plot or into columns.</summary>
+    internal bool AutomaticLegendPlacement { get; private set; }
+
+    /// <summary>Marks a producer-resolved default position as automatic legend placement.</summary>
+    internal VisualFrame WithAutomaticLegendPlacement() => new(Title, Subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle) {
+        AutomaticLegendPlacement = true
+    };
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>

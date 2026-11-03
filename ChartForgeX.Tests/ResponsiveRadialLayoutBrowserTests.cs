@@ -124,7 +124,7 @@ public sealed class ResponsiveRadialLayoutBrowserTests {
         await page.EvaluateAsync("()=>document.querySelector('#hidden').style.display='block'");
         await page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutVersion==='spec-4'");
         var first = await page.Locator("[data-cfx-role=legend-entry]").First.EvaluateAsync<double>("e=>e.getBoundingClientRect().left");
-        Assert.InRange(first, 23, 25);
+        Assert.InRange(first, 25, 27);
         await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
         await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Screen });
         Assert.Equal(first, await page.Locator("[data-cfx-role=legend-entry]").First.EvaluateAsync<double>("e=>e.getBoundingClientRect().left"), .1);

@@ -48,7 +48,6 @@ public static class TileMapPartialColorRangeRecipe {
                 options.Name = "Requests";
                 options.ValueFormat = ChartValueFormat.Number("0", System.Globalization.CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Gradient;
-            })
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            });
     }
 }

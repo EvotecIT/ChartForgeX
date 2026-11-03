@@ -6,7 +6,9 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     private readonly List<ChartMarkerOptions?> _pointMarkers = new();
-    internal bool HasPointMarkers => _pointMarkers.Any(value => value != null);
+    internal bool HasOrdinalMarkerOverrides => _pointMarkers.Any(value => value != null);
+    internal bool HasPointMarkers => HasOrdinalMarkerOverrides
+        || _preparedItemStyles != null && _preparedItemStyles.Any(value => value?.MarkerSnapshot != null || value?.Stroke != null);
 
     /// <summary>Configures detached marker overrides for one Scatter observation. Unspecified fields inherit the series marker options.</summary>
     /// <param name="index">The zero-based existing numeric observation ordinal.</param>
@@ -39,8 +41,18 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    internal ChartMarkerOptions ResolvePointMarkers(int index) => Kind == ChartSeriesKind.Scatter
-        && index >= 0 && index < _pointMarkers.Count && _pointMarkers[index] is { } overrides ? Markers.Overlay(overrides) : Markers;
+    internal ChartMarkerOptions ResolvePointMarkers(int index, ChartMarkerOptions? fallback = null) {
+        var options = fallback ?? (Kind == ChartSeriesKind.Scatter && index >= 0 && index < _pointMarkers.Count
+            && _pointMarkers[index] is { } overrides ? Markers.Overlay(overrides) : Markers);
+        var style = PreparedItemStyle(index);
+        if (style?.MarkerSnapshot is { } item) options = options.Overlay(item);
+        if (style?.Stroke is not { } stroke) return options;
+        var outline = options.OutlineStroke;
+        var resolved = options.Clone();
+        resolved.OutlineStroke = new ChartStrokeStyle(stroke.Color ?? outline?.Color, stroke.Width ?? outline?.Width,
+            stroke.Opacity * (stroke.Color.HasValue ? 1 : outline?.Opacity ?? 1), stroke.Dash ?? outline?.Dash);
+        return resolved;
+    }
 
     private void RequirePointMarkers(int index) {
         if (Kind != ChartSeriesKind.Scatter) throw new NotSupportedException("Per-observation marker overrides currently support Scatter series.");

@@ -24,8 +24,8 @@ internal static partial class VisualSankeyCompiler {
         bool showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true);
         var styles = model.Nodes.Select(node => ChartRelationshipPaint.LabelStyle(chart, context, node.Index, colors.Foreground)).ToArray();
         var formatted = model.Nodes.Select(node => ChartNumericFormatter.FormatValue(chart.Options, node.Value)).ToArray();
-        var fullLabels = model.Nodes.Select(node => node.Label + " " + formatted[node.Index]).ToArray();
-        var labels = model.Nodes.Select(node => options.ShowValues ? fullLabels[node.Index] : node.Label).ToArray();
+        var fullLabels = model.Nodes.Select(node => series.PreparedLabel(node.Index) ?? node.Label + " " + formatted[node.Index]).ToArray();
+        var labels = model.Nodes.Select(node => series.PreparedLabel(node.Index) ?? (options.ShowValues ? fullLabels[node.Index] : node.Label)).ToArray();
         double reserve = showLabels ? Math.Min(plot.Width * .22, model.Nodes.Max(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Width) + 16) : 2;
         var nodePlot = new ChartRect(plot.X + reserve, plot.Y + 1, plot.Width - reserve * 2, Math.Max(1, plot.Height - 2));
         if (nodePlot.Width <= 1) throw new NotSupportedException("Sankey labels require a wider common viewport.");

@@ -84,8 +84,7 @@ internal static class MermaidTopologySourcePaints {
         if (line != null) foreach (var edge in chart.Edges)
             if (!edge.Metadata.ContainsKey("mermaid.style.stroke")) edge.Color = line;
         if (edgeBackground != null) {
-            // Pinned script-free labels use one fill-only rect with element opacity0.5; alpha on its own fill is equivalent.
-            var color = ChartColor.Parse(edgeBackground); var fill = color.WithOpacity(color.A / 255d * .5).ToHexRgba();
+            var fill = ChartColor.Parse(edgeBackground).ToHexRgba();
             foreach (var edge in chart.Edges) edge.LabelBackgroundColor = fill;
         }
     }

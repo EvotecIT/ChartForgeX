@@ -10,6 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScheduleCompiler {
     private const double PackedGanttCaptionPadding = 1;
+    // A halo wide enough to clear hatch lines from the glyph counters, as a share of the font size.
+    private const double HatchedCaptionHalo = .3;
 
     /// <summary>Uses spare row height for feasible authored text while leaving impossible captions to the omission policy.</summary>
     private static double GanttLaneCaptionBand(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -21,9 +23,10 @@ internal static partial class VisualScheduleCompiler {
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside)) continue;
             foreach (var placed in row.Items) {
-                if (string.IsNullOrWhiteSpace(placed.Item.Label) || !model.TrySpan(placed, projection, out _, out _)) continue;
+                var text = series.PreparedLabel(placed.PointIndex) ?? placed.Item.Label;
+                if (string.IsNullOrWhiteSpace(text) || !model.TrySpan(placed, projection, out _, out _)) continue;
                 var style = VisualStateSceneTools.DataStyle(chart, context, series, placed.PointIndex, ChartColor.Black);
-                var height = builder.MeasureText(placed.Item.Label!, style).Height + PackedGanttCaptionPadding * 2;
+                var height = builder.MeasureText(text!, style).Height + PackedGanttCaptionPadding * 2;
                 if (height <= maximum) minimum = Math.Max(minimum, height);
             }
         }
@@ -53,18 +56,19 @@ internal static partial class VisualScheduleCompiler {
                 var bounds = new ChartRect(visible ? left : plot.Left, top,
                     visible ? Math.Max(0, Math.Min(width, plot.Right - left)) : 0, Math.Max(0, band));
                 var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);
-                var item = new PackedGanttItem(id, bounds, visible);
+                var item = new PackedGanttItem(id, bounds, visible, CaptionBounds(chart, placed.Item.IsOpen, bounds));
                 items.Add(id, item);
                 if (!visible || bounds.Width <= 0 || bounds.Height <= 0) continue;
                 obstacles.Add(new LabelObstacle(id, bounds));
-                if (!series.ResolveDataLabels(chart.Options, defaultVisible: true) || string.IsNullOrWhiteSpace(placed.Item.Label)) continue;
+                var text = series.PreparedLabel(placed.PointIndex) ?? placed.Item.Label;
+                if (!series.ResolveDataLabels(chart.Options, defaultVisible: true) || string.IsNullOrWhiteSpace(text)) continue;
                 var style = VisualStateSceneTools.DataStyle(chart, context, series, placed.PointIndex,
                     ChartColorMath.AccessibleTextOnBackground(colors.Surface));
                 item.Placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
                 // A thin task needs an outside lane. Give it first use before a caption
                 // that fits across its own bar takes the only clear neighboring space.
-                item.Priority = builder.MeasureText(placed.Item.Label!, style).Width + PackedGanttCaptionPadding * 2 > bounds.Width ? 1 : 0;
-                var request = GanttLaneLabelRequest(placed.Item.Label!, style, item, context.Theme.Spacing / 2, shorten: false);
+                item.Priority = builder.MeasureText(text!, style).Width + PackedGanttCaptionPadding * 2 > item.CaptionBounds.Width ? 1 : 0;
+                var request = GanttLaneLabelRequest(text!, style, item, context.Theme.Spacing / 2, shorten: false);
                 item.Request = request; requests.Add(request); requested.Add(item);
             }
         }
@@ -91,10 +95,12 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private static LabelPlacementRequest GanttLaneLabelRequest(string text, TextStyle style, PackedGanttItem item, double gap, bool shorten) {
-        var bounds = item.Bounds; var anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
+        var bounds = item.CaptionBounds; var anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
         var placement = item.Placement; var candidates = new List<LabelCandidate>();
         var inside = placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center;
-        if (inside) candidates.Add(new LabelCandidate(0, 0, .5, .5));
+        // A caption wider than its bar would spill across the neighbouring timeline; it tries the outside lanes first
+        // and comes back inside only shortened (with the shortened-text minimum) on the second pass.
+        if (inside && (shorten || item.Priority == 0)) candidates.Add(new LabelCandidate(0, 0, .5, .5));
         void Vertical(bool above) {
             foreach (var alignment in new[] { .5, 0d, 1d }) candidates.Add(new LabelCandidate(0,
                 above ? bounds.Top - anchor.Y - gap : bounds.Bottom - anchor.Y + gap, alignment, above ? 1 : 0));
@@ -127,16 +133,35 @@ internal static partial class VisualScheduleCompiler {
             contained ? ink.Color : ChartColorMath.AccessibleTextOnBackground(colors.Surface));
         style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
         if (!contained && (label.Bounds.Right <= item.Bounds.Left || label.Bounds.Left >= item.Bounds.Right))
-            VisualStateSceneTools.Connector(builder, chart.Options, label.Request.Anchor, label.LeaderEnd, colors.MutedForeground);
+            VisualStateSceneTools.Connector(builder, chart.Options, label.LeaderStart, label.LeaderEnd, colors.MutedForeground);
+        // Hatch lines run through a contained caption. A halo in the mark's own base colour keeps the glyphs legible.
+        var halo = contained && mark.Lines != ChartFillPattern.None ? mark.Surface : (ChartColor?)null;
+        // The halo repeats the mark's own themed fill (composited over the backdrop when translucent), so light and dark share one SVG.
+        var markPaint = SvgPaint.Of(mark.Color, SvgColorRole.Status);
+        var haloPaint = !halo.HasValue ? (SvgPaint?)null : mark.FillOpacity >= .999 ? markPaint
+            : SvgPaint.Mix(mark.Surface, markPaint, SvgPaint.Of(ChartStateMark.Backdrop(chart.Options, colors, context.Frame), SvgColorRole.Surface), 1 - mark.FillOpacity);
         builder.Text(label.Text, label.Bounds.Left + label.Request.Padding,
             label.Bounds.Top + label.Request.Padding + builder.TextAscent(style), style, role: "data-label", id: id,
-            paint: VisualStateSceneTools.DataPaint(chart, series, index, style, contained ? ink.Paint : null));
+            paint: VisualStateSceneTools.DataPaint(chart, series, index, style, contained ? ink.Paint : null),
+            stroke: halo, strokeWidth: halo.HasValue ? style.EffectiveFontSize * HatchedCaptionHalo : 0,
+            strokePaint: haloPaint);
+    }
+
+    /// <summary>The part of an item a contained caption may use: an open item's end arrow keeps its own room.</summary>
+    private static ChartRect CaptionBounds(Chart chart, bool open, ChartRect bounds) {
+        if (!open || chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade) return bounds;
+        var reserve = Math.Min(bounds.Height / 3, bounds.Width / 2) + GanttLaneOpenEndStrokeWidth + 1;
+        var width = Math.Max(0, bounds.Width - reserve);
+        return new ChartRect(chart.Options.XAxis.Reversed ? bounds.Right - width : bounds.Left, bounds.Top, width, bounds.Height);
     }
 
     private sealed class PackedGanttItem {
-        internal PackedGanttItem(string id, ChartRect bounds, bool visible) { Id = id; Bounds = bounds; Visible = visible; }
+        internal PackedGanttItem(string id, ChartRect bounds, bool visible, ChartRect captionBounds) {
+            Id = id; Bounds = bounds; Visible = visible; CaptionBounds = captionBounds;
+        }
         internal string Id { get; }
         internal ChartRect Bounds { get; }
+        internal ChartRect CaptionBounds { get; }
         internal bool Visible { get; }
         internal ChartDataLabelPlacement Placement { get; set; }
         internal int Priority { get; set; }

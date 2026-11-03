@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 
@@ -20,7 +21,7 @@ public static partial class MermaidC4Rendering {
             .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid C4 diagram"))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.Layered, ToLayoutDirection(document.Direction));
+            .WithLayout(TopologyLayoutMode.Layered, MermaidTopologyRendering.DiagramDirection(document.Direction, MermaidTopologyRendering.PreferredDirection(options)));
 
         if (document.MaximumShapesPerRow.HasValue || document.MaximumBoundariesPerRow.HasValue) {
             chart.LayoutMode = TopologyLayoutMode.GroupGrid;
@@ -44,8 +45,14 @@ public static partial class MermaidC4Rendering {
         foreach (var element in document.Elements) {
             chart.AddAutoNode(element.Alias, element.Label, NodeKind(element), TopologyHealthStatus.Unknown, groupId: element.BoundaryId, subtitle: ElementSubtitle(element), width: NodeWidth(element), height: 76, symbol: NodeSymbol(element), cssClass: "cfx-mermaid-c4-element", iconId: IconId(element));
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.FitLabelToContent = true;
+            var fontSize = options.Presentation?.FontSize ?? document.Configuration.FontSize
+                ?? options.Presentation?.Theme?.Typography.DataLabelSize ?? chart.Theme.Typography.DataLabelSize;
+            node.MaximumTextWidth = DiagramTheme.CardTextMaxWidth *Math.Max(1, fontSize / chart.Theme.Typography.DataLabelSize);
+            node.MaximumLabelCharacters = node.Label.Length;
             node.Href = element.Link;
             node.Shape = MermaidC4Shapes.Resolve(element.Shape, element.Sprite, element.Tags);
+            if (node.Shape is null or TopologyNodeShape.Rectangle or TopologyNodeShape.Rounded) node.CornerRadius = DiagramTheme.CardCornerRadius;
             if (element.Shape != null) node.Metadata["mermaid.shape"] = element.Shape;
             if (element.LegendText != null) node.Metadata["mermaid.legendText"] = element.LegendText;
             if (element.LegendSprite != null) node.Metadata["mermaid.legendSprite"] = element.LegendSprite;
@@ -67,6 +74,7 @@ public static partial class MermaidC4Rendering {
             if (relationship.AuthoredIndex != null) edge.Metadata["mermaid.authoredIndex"] = relationship.AuthoredIndex;
             ApplyPortHints(edge, relationship.Kind);
         }
+        if (document.Direction == null) OrientBoundaries(chart, document, MermaidTopologyRendering.PreferredDirection(options));
 
         var sourceSettings = document.Configuration.C4;
         if (sourceSettings?.HasSettings == true) {
@@ -110,7 +118,7 @@ public static partial class MermaidC4Rendering {
         if (!string.IsNullOrWhiteSpace(boundary.Type) && !string.IsNullOrWhiteSpace(boundary.Description)) return boundary.Type + " - " + boundary.Description;
         if (!string.IsNullOrWhiteSpace(boundary.Description)) return boundary.Description;
         if (!string.IsNullOrWhiteSpace(boundary.Type)) return boundary.Type!;
-        return string.IsNullOrWhiteSpace(boundary.ParentId) ? boundary.Kind : "in " + boundary.ParentId;
+        return null;
     }
 
     private static string? ElementSubtitle(MermaidC4Element element) {
@@ -161,12 +169,6 @@ public static partial class MermaidC4Rendering {
         return VisualLinkDirection.Forward;
     }
 
-    private static TopologyLayoutDirection ToLayoutDirection(string? direction) {
-        if (string.Equals(direction, "BT", StringComparison.OrdinalIgnoreCase)) return TopologyLayoutDirection.BottomToTop;
-        if (string.Equals(direction, "RL", StringComparison.OrdinalIgnoreCase)) return TopologyLayoutDirection.RightToLeft;
-        if (string.Equals(direction, "LR", StringComparison.OrdinalIgnoreCase)) return TopologyLayoutDirection.LeftToRight;
-        return TopologyLayoutDirection.TopToBottom;
-    }
 
     private static void ApplyPortHints(TopologyEdge edge, string kind) {
         if (kind == "relu" || kind == "relup") { edge.SourcePort = TopologyEdgePort.Top; edge.TargetPort = TopologyEdgePort.Bottom; }

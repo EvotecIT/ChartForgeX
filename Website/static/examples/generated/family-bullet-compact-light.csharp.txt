@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = BulletRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 189)), theme, mode,
     new VisualFrame("Reviewed work against its targets", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -36,11 +36,10 @@ public static class BulletRecipe {
             var chart = Chart.Create().WithTitle("Service completion against target").WithDataLabels();
             for (var index = 0; index < values.Length; index++) chart.AddBullet("Regional service " + (index + 1), values[index], 9500.125,
                 0, 10000, new[] { 4000d, 8000 });
-            return chart.WithValueFormat(ChartValueFormat.Number("0.0000", System.Globalization.CultureInfo.InvariantCulture));
+            return chart;
         }
         var reviewed = ChartSeries.CreateBullet(new ChartSeriesId("reviewed"), "Reviewed", 76, 85, rangeEnds: new[] { 50d, 80d });
         var verified = ChartSeries.CreateBullet(new ChartSeriesId("verified"), "Verified", 58, 75, rangeEnds: new[] { 40d, 70d });
-        return Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(reviewed).AddSeries(verified)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(reviewed).AddSeries(verified);
     }
 }

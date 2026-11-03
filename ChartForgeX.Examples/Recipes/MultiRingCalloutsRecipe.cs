@@ -9,8 +9,7 @@ public static class MultiRingCalloutsRecipe {
         var chart = Chart.Create().WithSize(compact ? 390 : 900, compact ? 580 : 560)
             .WithTitle("Service intake across two periods").WithSubtitle("Caption leaders retain their own ring and observation")
             .WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Consulting", "Subscriptions")
-            .WithDataLabels().WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithDataLabels().WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
         var automatic = variant.EndsWith("automatic", StringComparison.Ordinal);
         if (automatic) chart.WithAutomaticRadialBands(new ChartRadialBandAllocation(.18, .14));
         for (var index = 0; index < 2; index++) {

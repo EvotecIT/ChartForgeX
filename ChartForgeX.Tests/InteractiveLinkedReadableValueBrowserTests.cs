@@ -68,7 +68,8 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
                 await document.fonts.ready;
                 const faces = [...document.fonts].filter(face => face.status === 'loaded');
                 const root=document.querySelector('[data-cfx-chart-id=linked-time]'),svg=root.querySelector('.cfx-stage svg');
-                const text=[...svg.querySelectorAll('text')].find(node=>node.textContent==='2026-03-05');
+                // The painted caption is either native glyph ink or ordinary text, whichever the export owns.
+                const text=svg.querySelector('[data-cfx-native-text-ink][data-cfx-ink-line="2026-03-05"]')||[...svg.querySelectorAll('text')].find(node=>node.textContent==='2026-03-05');
                 if(!faces.length||!text)return false;
                 const clip=text.closest('[clip-path]'),id=clip.getAttribute('clip-path').slice(5,-1);
                 const rect=svg.querySelector('#'+CSS.escape(id)+' rect'),box=text.getBBox();
@@ -98,13 +99,13 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.readableSelection = event.detail.target)");
         var point = page.Locator(Point(0, 0));
         await point.FocusAsync();
-        Assert.Equal(mode == HtmlChartTooltipMode.Single ? "Observation 66.09" : "66.09", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal(mode == HtmlChartTooltipMode.Single ? "Observation 66.095" : "66.095", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         var value = mode == HtmlChartTooltipMode.SharedX ? page.Locator(".cfx-tooltip dd").First
             : page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd");
-        Assert.Equal("2.61", await value.InnerTextAsync());
+        Assert.Equal("2.613", await value.InnerTextAsync());
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.readableSelection");
-        Assert.Equal("2.61", selected.GetProperty("value").GetString());
+        Assert.Equal("2.613", selected.GetProperty("value").GetString());
         Assert.Equal(y, selected.GetProperty("numericValue").GetDouble());
         Assert.Equal(x, selected.GetProperty("x").GetDouble());
         Assert.Equal(y, double.Parse((await point.GetAttributeAsync("data-cfx-y"))!, CultureInfo.InvariantCulture));

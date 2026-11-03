@@ -8,7 +8,6 @@ public static class ErrorBarRecipe {
         var measurements = Enumerable.Range(1, count)
             .Select(index => new ChartErrorBar(index, 30 + index * 2, yBounds: new ChartErrorBounds(20 + index, 42 + index * 3)));
         var delivery = ChartSeries.CreateErrorBar(new ChartSeriesId("delivery-time"), "Delivery time", measurements);
-        return Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(delivery)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(delivery);
     }
 }

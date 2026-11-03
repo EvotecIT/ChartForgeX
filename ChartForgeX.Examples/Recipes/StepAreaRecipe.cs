@@ -7,7 +7,6 @@ public static class StepAreaRecipe {
         var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
         var reserved = new ChartSeries(new ChartSeriesId("reserved-capacity"), "Reserved capacity", ChartSeriesKind.StepArea, points);
-        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(reserved)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(reserved);
     }
 }

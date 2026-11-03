@@ -40,6 +40,6 @@ public static class DonutSliceRadiusRecipe {
         services.DataLabelPlacement = ChartDataLabelPlacement.Outside;
         return Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support").WithDataLabels()
             .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithDonutCenterLabel(false)
-            .AddSeries(services).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .AddSeries(services);
     }
 }

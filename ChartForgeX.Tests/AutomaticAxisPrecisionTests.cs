@@ -22,7 +22,7 @@ public sealed class AutomaticAxisPrecisionTests {
             Assert.Equal(values.Length, captions.Distinct(StringComparer.Ordinal).Count());
             Assert.All(captions, caption => Assert.InRange(caption.Length, 1, 24));
             for (var index = 0; index < values.Length; index++) {
-                var displayed = double.Parse(captions[index], NumberStyles.Float, CultureInfo.InvariantCulture);
+                var displayed = double.Parse(captions[index], NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
                 Assert.Equal(Math.Sign(values[index]), Math.Sign(displayed));
             }
         }
@@ -119,7 +119,7 @@ public sealed class AutomaticAxisPrecisionTests {
         var x = Chart.Create().WithSize(900, 400).WithLegend(false)
             .AddLine("Values", new[] { new ChartPoint(1_000_001, 1), new ChartPoint(1_000_005, 2) });
         x.Options.XAxis.WithBounds(1_000_001, 1_000_005);
-        Assert.Equal(new[] { "1000001", "1000002", "1000003", "1000004", "1000005" },
+        Assert.Equal(new[] { "1,000,001", "1,000,002", "1,000,003", "1,000,004", "1,000,005" },
             Captions(x.Prepare(VisualExportRequest.ForChart(x).Context), "axis-x-label"));
         var horizontal = Chart.Create().WithSize(640, 400).WithLegend(false)
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, .0001), new ChartPoint(2, .0005) });

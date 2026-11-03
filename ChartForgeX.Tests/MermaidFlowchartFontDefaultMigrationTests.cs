@@ -12,7 +12,7 @@ public sealed class MermaidFlowchartFontDefaultMigrationTests {
     [Theory]
     [InlineData("flowchart LR\nA[Native caption]")]
     [InlineData("swimlane-beta LR\nsubgraph Lane[Lane]\nA[Native caption]\nend")]
-    public void OnlyQualifiedFamiliesSelectPinnedSixteenAcrossDirectFenceAndPortable(string source) {
+    public void DiagramScaleIsConsistentAcrossDirectFenceAndPortable(string source) {
         var options = Options(); var result = MermaidRenderer.Render(source, options); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var before = result.Artifact.ToSvg(); var png = result.Artifact.ToPng(); var json = result.Artifact.ToInterchangeJson();
         var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); var prepared = restored.Prepare();
@@ -21,7 +21,7 @@ public sealed class MermaidFlowchartFontDefaultMigrationTests {
         Capture(name + "-direct", before, png, json); Capture(name + "-restored", prepared.ToSvg(), prepared.ToPng(), prepared.ToInterchangeEnvelope().ToJson());
         Capture(name + "-fenced", artifact.ToSvg(), artifact.ToPng(), artifact.ToInterchangeJson());
         Assert.Empty(result.Diagnostics); Assert.Empty(fenced.Diagnostics); Assert.Null(result.Document!.Configuration.FontSize);
-        Assert.Equal(16, chart.Theme.Typography.DataLabelSize); Assert.Equal(16, restored.Theme.Typography.DataLabelSize);
+        Assert.Equal(13, chart.Theme.Typography.DataLabelSize); Assert.Equal(13, restored.Theme.Typography.DataLabelSize);
         Assert.Equal(before, artifact.ToSvg()); Assert.Equal(png, artifact.ToPng()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -46,12 +46,12 @@ public sealed class MermaidFlowchartFontDefaultMigrationTests {
     }
 
     [Fact]
-    public void UseCaseDoesNotInheritAnUnverifiedFlowchartDefault() {
+    public void UseCaseSharesTheDiagramScale() {
         var result = MermaidRenderer.Render("usecase-beta\nactor Visitor", new MermaidRenderOptions {
             UseCase = new MermaidFlowchartRenderOptions { FitContent = false, Title = "", Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family } } });
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         Capture("usecase-control", result.Artifact.ToSvg(), result.Artifact.ToPng(), result.Artifact.ToInterchangeJson());
-        Assert.Empty(result.Diagnostics); Assert.Equal(VisualTheme.Graphite().Typography.DataLabelSize, chart.Theme.Typography.DataLabelSize);
+        Assert.Empty(result.Diagnostics); Assert.Equal(13, chart.Theme.Typography.DataLabelSize);
     }
 
     [Fact]

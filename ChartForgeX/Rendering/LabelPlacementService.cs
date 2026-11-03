@@ -137,8 +137,10 @@ public sealed partial class LabelPlacementService {
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
-                for (var count = elements.Length - 1; count > 0 && result == null; count--) {
-                    var shorter = text.Substring(0, elements[count]).TrimEnd() + "…";
+                for (var count = elements.Length - 1; count >= ChartTextFitting.MinimumEllipsizedTextElements && result == null; count--) {
+                    var prefix = text.Substring(0, elements[count]);
+                    if (!ChartTextFitting.KeepsShortenedMinimum(prefix)) continue;
+                    var shorter = prefix.TrimEnd() + "…";
                     result = TryPlace(request, shorter, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels, ellipsized: true);
                 }
             }
@@ -146,7 +148,7 @@ public sealed partial class LabelPlacementService {
             placed[index] = result;
             if (!result.IsDropped) {
                 occupied.Add(result.Bounds, null, labelGap: request.MinimumLabelGap);
-                if (avoidLeaderLabels && result.HasLeaderLine) occupied.AddLeader(request.Anchor, result.LeaderEnd);
+                if (avoidLeaderLabels && result.HasLeaderLine) occupied.AddLeader(result.LeaderStart, result.LeaderEnd, request.AssociatedMarkId);
             }
         }
         return Array.AsReadOnly(placed);
@@ -180,7 +182,8 @@ public sealed partial class LabelPlacementService {
             if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) return null;
             if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) return null;
             var result = new PlacedLabel(request, text, box, false, index, ellipsized);
-            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(request.Anchor, result.LeaderEnd, request.MinimumLabelGap)) return null;
+            if (result.HasLeaderLine) result.LeaderStart = occupied.LeaderStart(request.Anchor, result.LeaderEnd, request.AssociatedMarkId);
+            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(result.LeaderStart, result.LeaderEnd, request.MinimumLabelGap, request.AssociatedMarkId)) return null;
             return result;
         }
     }

@@ -205,6 +205,8 @@ public sealed class ScriptFreeFluidSvgTests {
         double? captionWidth = null;
         foreach (var width in new[] { 400, 800, 390 }) {
             await session.Page.SetViewportSizeAsync(width, 220);
+            // WebKit can acknowledge the viewport before painting its resized SVG clip.
+            await session.Page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
             var measured = await session.Page.EvaluateAsync<JsonElement>("""
                 () => {
                     const root=document.querySelector('main>svg');
@@ -263,7 +265,7 @@ public sealed class ScriptFreeFluidSvgTests {
                 "() => { const r = document.querySelector('main svg [data-cfx-point=\"1\"] [data-cfx-role=\"bar\"]').getBoundingClientRect(); return [r.width, r.left + r.width / 2]; }");
             prepared ??= column[0];
             Assert.InRange(column[0], prepared.Value - .05, prepared.Value + .05);
-            Assert.True(column[0] <= 24.05, "A stacked column is at most 24px thick.");
+            Assert.InRange(column[0], 24.05, ChartForgeX.Themes.VisualTheme.Graphite().MaximumBarWidth + .05);
             if (previousCenter is { } before) Assert.True(column[1] > before * 2, "The column's category position stretches with the host.");
             previousCenter = column[1];
         }

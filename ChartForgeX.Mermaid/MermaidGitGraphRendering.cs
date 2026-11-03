@@ -38,7 +38,7 @@ public static class MermaidGitGraphRendering {
         for (var index = 0; index < ordered.Count; index++) ranks[ordered[index].Branch.Name] = index;
         foreach (var branch in document.Branches) block.AddBranch(branch.Name, ranks[branch.Name]);
         foreach (var commit in document.Commits) block.AddCommit(commit.Id, commit.BranchName, commit.ParentIds, commit.Type, commit.Label, commit.Tag, commit.SourceCommitId);
-        return MermaidPresentation.Apply(block, document, options.Presentation);
+        return MermaidPresentation.Apply(block, document, options.Presentation).WithNaturalSize();
     }
 
     /// <summary>

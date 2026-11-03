@@ -34,26 +34,27 @@ internal static partial class VisualCartesianCompiler {
                     paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(fill, opacity)));
                 DrawPattern(builder, polygon, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), area ? "range-area-pattern" : "range-band-pattern");
             }
-            var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : area ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, context.Theme.SeriesStrokeWidth) : ChartVisualPrimitives.RangeBandBoundaryStrokeWidth;
+            var stroke = VisualSeriesStroke.Width(series, area ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, context.Theme.SeriesStrokeWidth) : ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
             var upperOpacity = area ? 1 : ChartVisualPrimitives.RangeBandBoundaryOpacity;
             var lowerOpacity = area ? ChartVisualPrimitives.RangeAreaLowerStrokeOpacity : ChartVisualPrimitives.RangeBandBoundaryOpacity;
             var upperColor = ChartColorMath.WithOpacity(color, upperOpacity); var lowerColor = ChartColorMath.WithOpacity(color, lowerOpacity);
-            DrawLayeredPath(chart, builder, highPath, upperColor, sourcePaint.WithOpacity(upperColor, upperOpacity), stroke, "range-upper");
-            DrawLayeredPath(chart, builder, lowPath, lowerColor, sourcePaint.WithOpacity(lowerColor, lowerOpacity), stroke, "range-lower");
-            if (area) builder.Path(ChartPathBuilder.FromPoints(middle.GetRange(offset, segment.Count), series.Interpolation, series.StepPosition),
-                stroke: ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), strokeWidth: ChartVisualPrimitives.RangeAreaMidlineStrokeWidth,
-                role: "range-midline", dash: new[] { ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap },
-                paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineOpacity)));
+            DrawLayeredPath(chart, builder, series, highPath, upperColor, sourcePaint.WithOpacity(upperColor, upperOpacity), stroke, "range-upper");
+            DrawLayeredPath(chart, builder, series, lowPath, lowerColor, sourcePaint.WithOpacity(lowerColor, lowerOpacity), stroke, "range-lower");
+            if (area) VisualSeriesStroke.DrawPath(chart, builder, series, ChartPathBuilder.FromPoints(middle.GetRange(offset, segment.Count), series.Interpolation, series.StepPosition),
+                ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity),
+                sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineOpacity),
+                ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, "range-midline", new[] { ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap }, layered: false);
             obstacles.Add(new LabelObstacle(SeriesId(index) + "-envelope-" + Number(offset), new LabelMarkShape(new[] { highFlat.Concat(lowFlat.AsEnumerable().Reverse()).ToList() }, true, stroke, plot)));
             offset += segment.Count;
         }
         for (var item = 0; item < count; item++) {
             var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1];
             var showMarkers = PairedObservationMarkersEnabled(series, item);
-            var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
-            var bounds = series.Markers.CustomPath == null
-                ? Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius))
-                : VisualMarkerScene.PairBounds(series, lower[item], upper[item], radius);
+            var markers = series.ResolvePointMarkers(item);
+            var radius = showMarkers ? markers.Radius ?? context.Theme.MarkerRadius : 0;
+            var bounds = markers.CustomPath == null
+                ? Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius, markers))
+                : VisualMarkerScene.PairBounds(series, lower[item], upper[item], radius, markers);
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => RangeValueLabel(format, low.Y, high.Y));
             var values = new[] { ("x", low.X), ("lower", low.Y), ("upper", high.Y) };
             var visible = ViewportObservationVisible(xViewport, yViewport, low.X, low.Y, high.Y, map);

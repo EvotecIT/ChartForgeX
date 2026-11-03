@@ -41,7 +41,8 @@ public sealed partial class ChartValueFormat {
         if (_notation == Notation.Number) return value.ToString(_format, Culture);
         var magnitude = Math.Abs(value);
         if (_notation == Notation.ExistingValue && magnitude < 10000) {
-            var caption = value.ToString("#,0.##", Culture);
+            if (value != 0 && magnitude < .001) return FormatSignificant(value);
+            var caption = value.ToString("#,0.###", Culture);
             return value != 0 && (caption == "0" || caption == "-0") ? FormatSignificant(value) : caption;
         }
         var compact = magnitude >= 1000000000 ? (value / 1000000000).ToString("0.#", Culture) + "B"
@@ -102,6 +103,53 @@ public sealed partial class ChartValueFormat {
 
     internal static ChartValueFormat ExistingValue { get; } = new(Notation.ExistingValue, "0.##", null);
     internal static ChartValueFormat InvariantCompact { get; } = Compact();
+    /// <summary>Uses one precision for a chart's ratios; an authored percentage policy remains authoritative.</summary>
+    internal static ChartValueFormat Percentages(ChartValueFormat authored, System.Collections.Generic.IEnumerable<double> fractions) {
+        // Raw-value policies (counts, currencies and callbacks) do not change the unit
+        // of derived ratios. An explicit percentage policy owns its precision/culture.
+        if (authored._formatter == null && authored._notation == Notation.Number && authored.UsesPercentageNotation()) return authored;
+        var decimals = fractions.Any(value => Math.Round(value * 100, 1) != Math.Round(value * 100));
+        return Number(decimals ? "0.0%" : "0%", authored.Culture);
+    }
+    /// <summary>Uses the scale step's decimal places with grouping and optional trailing digits.</summary>
+    internal static ChartValueFormat ForTickStep(double step, double origin) {
+        var decimals = step == 0 ? 15 : Math.Max(Places(step), Places(origin));
+        return Number("#,0" + (decimals == 0 ? string.Empty : "." + new string('#', decimals)));
+        static int Places(double value) {
+            var fraction = Math.Abs(value - Math.Truncate(value));
+            for (var places = 0; places < 15; places++) {
+                var scaled = fraction * Math.Pow(10, places);
+                if (Math.Abs(scaled - Math.Round(scaled)) <= Math.Abs(scaled) * 1e-10) return places;
+            }
+            return 15;
+        }
+    }
+    /// <summary>Groups a round-trip observation without losing digits to a floating-point custom format.</summary>
+    internal static string ExactNumber(double value) {
+        var source = value.ToString("R", CultureInfo.InvariantCulture);
+        if (value != 0 && Math.Abs(value) < .001) return source;
+        if (decimal.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var exact)
+            && (double)exact == value) {
+            var grouped = exact.ToString("#,0.############################", CultureInfo.InvariantCulture);
+            if (grouped.Length <= 24) return grouped;
+        }
+        return source;
+    }
+    /// <summary>Preserves an overflowing derived ratio's description without admitting nonfinite source values.</summary>
+    internal string FormatFraction(double fraction) => double.IsInfinity(fraction) ? fraction.ToString(_format, Culture) : Format(fraction);
+    private bool UsesPercentageNotation() {
+        if (_format.Length > 0 && char.ToUpperInvariant(_format[0]) == 'P' && _format.Skip(1).All(char.IsDigit)) return true;
+        var quote = '\0';
+        for (var index = 0; index < _format.Length; index++) {
+            // Numeric custom formats may quote or escape a percent sign as a raw-value unit.
+            var token = _format[index];
+            if (token == '\\') { index++; continue; }
+            if (quote != '\0') { if (token == quote) quote = '\0'; continue; }
+            if (token is '\'' or '"') { quote = token; continue; }
+            if (token == '%') return true;
+        }
+        return false;
+    }
     // Automatic value and axis policies share this bounded fallback; authored formats remain exact policies.
     internal static string FormatSignificant(double value) => value.ToString("G6", CultureInfo.InvariantCulture);
     // Native transition plans retain built-in immutable policy, never a caller-owned mutable closure.

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 
 namespace ChartForgeX.Mermaid;
@@ -31,6 +32,7 @@ public static class MermaidGanttRendering {
             if (task.IsVerticalMarker) chart.AddGanttMarker(name, task.Start, task.End);
             else if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
             else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress);
+            chart.Series[chart.Series.Count - 1].LaneGroup = string.IsNullOrWhiteSpace(task.Section) ? null : task.Section;
         }
         var ids = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var index = 0; index < document.Tasks.Count; index++) {
@@ -48,7 +50,9 @@ public static class MermaidGanttRendering {
             }
         }
 
-        return MermaidPresentation.Apply(chart, document, options.Presentation);
+        MermaidPresentation.Apply(chart, document, options.Presentation);
+        VisualScheduleCompiler.FitNaturalHeight(chart);
+        return chart;
     }
 
     /// <summary>

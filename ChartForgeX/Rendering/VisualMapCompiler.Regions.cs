@@ -63,6 +63,7 @@ internal static partial class VisualMapCompiler {
                     if (chart.Options.MapCallouts is ChartMapCallouts callouts && labels != null && obstacles != null) {
                         var text = callouts.RegionLabel == ChartMapRegionLabel.Name ? region.Name
                             : callouts.RegionLabel == ChartMapRegionLabel.NameAndCode ? region.Name + " (" + region.Code + ")" : region.Code;
+                        if (index.HasValue) text = data.Series.PreparedLabel(index.Value) ?? text;
                         var style = MapDataStyle(chart, context, index ?? -1, series: data.Series);
                         obstacles.Add(shape == null ? new LabelObstacle(id, bounds) : new LabelObstacle(id, shape));
                         AddMapLabel(builder, labels, text, text, anchor, style, id + "-label", "region-map-label", labelBounds ?? map,
@@ -71,7 +72,7 @@ internal static partial class VisualMapCompiler {
                     } else {
                         var area = Intersect(new ChartRect(anchor.X - bounds.Width / 2, anchor.Y - bounds.Height / 2, bounds.Width, bounds.Height), bounds);
                         var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
-                        VisualRadialPrimitives.Text(builder, region.Code, area, style, "region-map-label", id + "-label",
+                        VisualRadialPrimitives.Text(builder, index.HasValue ? data.Series.PreparedLabel(index.Value) ?? region.Code : region.Code, area, style, "region-map-label", id + "-label",
                             chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
                     }
                 }
@@ -152,7 +153,7 @@ internal static partial class VisualMapCompiler {
                     if (index.HasValue && pattern != ChartFillPattern.None) builder.Pattern(geometry, pattern, ChartColorMath.AccessibleTextOnBackground(fill).WithAlpha(90), role: "tile-map-pattern");
                     if (chart.Options.ShowMapLabels) {
                         var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
-                        TileLabel(builder, region.Code, bounds, contour, width / 2, style, id + "-label",
+                        TileLabel(builder, index.HasValue ? series.PreparedLabel(index.Value) ?? region.Code : region.Code, bounds, contour, width / 2, style, id + "-label",
                             chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
                     }
                 }

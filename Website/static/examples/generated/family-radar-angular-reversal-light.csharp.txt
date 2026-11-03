@@ -37,8 +37,7 @@ public static class RadarRecipe {
         var expected = new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, Observations(variant == "sparse" ? "wide" : variant, 12));
         observed.ConfigureRadar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
         return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
-            .AddSeries(observed).AddSeries(expected)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .AddSeries(observed).AddSeries(expected);
     }
 
     private static Chart Markers() {
@@ -49,8 +48,7 @@ public static class RadarRecipe {
             .ConfigureRadar(options => options.Form = ChartLineAreaForm.Line)
             .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
         return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
-            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target);
     }
 
     private static Chart Reversed() {
@@ -61,8 +59,7 @@ public static class RadarRecipe {
             .ConfigureRadar(options => options.Form = ChartLineAreaForm.Line)
             .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
         return Chart.Create().WithXLabels("North", "East", "South", "West").WithYAxisBounds(0, 100).WithDataLabels(false)
-            .AddSeries(observed).AddSeries(target).ConfigureXAxis(axis => axis.WithReversal())
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .AddSeries(observed).AddSeries(target).ConfigureXAxis(axis => axis.WithReversal());
     }
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

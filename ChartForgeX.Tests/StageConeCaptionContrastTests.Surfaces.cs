@@ -27,7 +27,7 @@ public sealed partial class StageConeCaptionContrastTests {
             chart.Series[0].WithFunnelConnectorStyle(0, new ChartFunnelConnectorStyle(visible: variant != "hidden", fill: overridden,
                 fillOpacity: variant == "opaque" ? 1 : .12));
             var prepared = StagePresentationOptionsTests.Prepare(chart); var texts = CaptionTexts(prepared, component);
-            Assert.Equal(3, texts.Length);
+            Assert.Equal(component == "dropoff" ? 2 : 3, texts.Length);
             ScatterBubbleColorRenderingTests.Capture(prepared, $"cone-surface-{component}-{orientation}-{mode}-{variant}");
             var underneath = WithoutText(prepared);
             foreach (var text in texts) {

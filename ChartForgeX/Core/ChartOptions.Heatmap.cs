@@ -3,6 +3,9 @@ using System;
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartOptions {
+    /// <summary>Gets or sets whether numeric heatmap keys add automatic intermediate step labels where they fit. Authored scale captions remain authoritative. Default: true.</summary>
+    public bool ShowHeatmapScaleStepLabels { get; set; } = true;
+
     private double? _heatmapCellGap;
     private double? _heatmapCellRadius;
     private ChartHeatmapValueTextMode _heatmapValueTextMode = ChartHeatmapValueTextMode.Auto;

@@ -30,7 +30,8 @@ public sealed class GalleryBaselineProvenanceTests {
             var ordinary = Render(120, Path.Combine(output, "ordinary"), 12);
             var legacy = Render(120, Path.Combine(output, "legacy"), 12, stripAuthoredRequest: true);
             Assert.Equal(12, ordinary.PaintedSize);
-            Assert.Equal(family + ", sans-serif|700|normal|12|", legacy.Request);
+            // Without an authored request the painted size may be host-fitted, so it is not part of the request.
+            Assert.Equal(family + ", sans-serif|700|normal|", legacy.Request);
             Assert.NotEqual(ordinary.Fingerprint, legacy.Fingerprint);
         } finally { Directory.Delete(output, true); }
 
@@ -76,16 +77,24 @@ public sealed class GalleryBaselineProvenanceTests {
     [InlineData("advanced-topology", "missing", false, false, false)]
     [InlineData("advanced-topology", "request-changed", false, false, false)]
     [InlineData("fixed-canvas", "different", false, false, false)]
-    [InlineData("advanced-topology", "different", true, false, false)]
+    [InlineData("advanced-topology", "different", true, false, true)]
+    [InlineData("advanced-topology", "same", true, false, false)]
+    [InlineData("advanced-topology", "different", true, true, false)]
     [InlineData("advanced-topology", "different", false, true, false)]
-    public void NaturalHeightRequiresChangedResolvedFrameFontAndExactWidthAndAllocation(string name, string fontState, bool changedWidth, bool extraPixel, bool matches) {
+    [InlineData("fitted-topology", "different", true, false, true)]
+    [InlineData("fitted-topology", "same", true, false, false)]
+    [InlineData("fitted-topology", "request-changed", true, false, false)]
+    public void NaturalFrameRequiresChangedResolvedFontAndExactRasterAllocation(string name, string fontState, bool changedWidth, bool extraPixel, bool matches) {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-font-baseline-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
             var builder = new VisualSceneBuilder(new VisualSize(160, 100.014), FontSpec.SystemSans());
             builder.Rect(new ChartRect(0, 0, 160, 100.014), ChartColor.White, role: "background");
+            // A content-fitted topology owns its canvas without being listed by name.
+            var canvas = name == "fitted-topology" ? builder.PushGroup(null, "topology", new Dictionary<string, string> { ["data-fit-content-to-viewport"] = "false" }) : null;
             builder.Text("Frame", 15, 30, new TextStyle { Font = FontSpec.SystemSans(), FontSize = 12 }, role: "frame-heading");
             for (var index = 0; index < 10; index++) builder.Rect(new ChartRect(15 + index * 12, 45, 10, 30), ChartColor.FromRgb((byte)(index * 20), 100, 150));
+            canvas?.Dispose();
             var scene = builder.Build();
             File.WriteAllText(Path.Combine(output, name + ".svg"), VisualSceneSvgRenderer.Render(scene));
             var image = VisualSceneRasterRenderer.Render(scene, 1, supersampling: 1);
@@ -94,7 +103,7 @@ public sealed class GalleryBaselineProvenanceTests {
             using var generated = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));
             var actual = generated.RootElement.GetProperty("charts")[0];
             var layout = actual.GetProperty("layout");
-            // A deliberately different resolved face permits only a natural height difference.
+            // A different resolved face permits natural height, and width only for content-fitted topology frames.
             var fingerprint = fontState == "same" ? layout.GetProperty("frameFontFingerprint").GetString() : fontState == "missing" ? "" : "OTHER-FONT-BYTES";
             var request = layout.GetProperty("frameFontRequest").GetString() + (fontState == "request-changed" ? "changed" : "");
             var expected = new {

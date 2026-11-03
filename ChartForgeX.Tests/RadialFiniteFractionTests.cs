@@ -81,8 +81,8 @@ public sealed class RadialFiniteFractionTests {
     [Theory]
     [InlineData(500, 340, .35)]
     [InlineData(500, 340, .62)]
-    [InlineData(320, 240, .35)]
-    [InlineData(320, 240, .62)]
+    [InlineData(300, 240, .35)]
+    [InlineData(300, 240, .62)]
     public void OverflowCenterRetainsItsExponentAtSupportedHoleSizes(int width, int height, double ratio) {
         var chart = Create(ChartSeriesKind.Donut, 1e308, 1e308).WithSize(width, height).WithLegend(false);
         chart.Options.DonutInnerRadiusRatio = ratio;

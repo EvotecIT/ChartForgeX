@@ -10,8 +10,24 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
+    private static string FunnelValue(Chart chart, int index) {
+        var series = chart.Series[0];
+        if (index < series.PointLabels.Count && series.PointLabels[index] != null) return series.PointLabels[index]!;
+        var format = ChartNumericFormatter.SeriesCaptionFormat(chart.Options, series.RenderPoints.Select(point => point.Y), sharePrecision: true);
+        return format?.Invoke(series.RenderPoints[index].Y) ?? ChartNumericFormatter.FormatValue(chart.Options, series.RenderPoints[index].Y);
+    }
+    private static ChartValueFormat FunnelPercentageFormat(Chart chart) {
+        var points = chart.Series[0].RenderPoints;
+        var ratios = new List<double>();
+        for (var index = 0; index < points.Count; index++) {
+            if (points[0].Y > 0) ratios.Add(points[index].Y / points[0].Y);
+            if (index > 0 && points[index - 1].Y > 0) ratios.Add((points[index - 1].Y - points[index].Y) / points[index - 1].Y);
+        }
+        return ChartValueFormat.Percentages(chart.Options.ValueFormat, ratios);
+    }
     private static void Funnel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
+        var percentages = FunnelPercentageFormat(chart);
         var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var form = chart.Options.Funnel.Form;
         var separate = show && chart.Options.Funnel.LabelContent == ChartStageLabelContent.Separate
@@ -28,6 +44,8 @@ internal static partial class VisualSpecialtyCompiler {
                 form == ChartFunnelForm.Cone ? context.Theme.SeriesStrokeWidth : 1);
             var width = zero ? 1 : form == ChartFunnelForm.Cone && !outline.Color.HasValue
                 ? series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth : outline.Width;
+            if (!zero && form == ChartFunnelForm.Cone && !series.HasExplicitStrokeWidth && !outline.Color.HasValue && stage.Extent <= 12)
+                width = Math.Max(4, width);
             var bounds = stage.Bounds;
             return new StageCaptionFrame(stage.SourceIndex, bounds, stage.LabelBounds, path, !zero && form == ChartFunnelForm.StageBars, true, width,
                 vertical ? stage.LineStart : new ChartPoint(bounds.Left, bounds.Top + bounds.Height / 2),
@@ -51,12 +69,13 @@ internal static partial class VisualSpecialtyCompiler {
                 ["data-cfx-dropoff-defined"] = drop.HasValue ? "true" : "false" };
             if (retention.HasValue) metadata["data-cfx-retention"] = N(retention.Value);
             if (drop.HasValue) metadata["data-cfx-dropoff"] = N(drop.Value);
-            var summary = Category(chart, index) + ": " + VisualStateSceneTools.Value(chart, series, index, raw);
-            if (retention.HasValue) summary += ", retained " + retention.Value.ToString("0.#%", CultureInfo.InvariantCulture);
-            if (drop.HasValue) summary += ", drop-off " + drop.Value.ToString("0.#%", CultureInfo.InvariantCulture);
+            var summary = Category(chart, index) + ": " + FunnelValue(chart, index);
+            if (retention.HasValue) summary += ", retained " + percentages.FormatFraction(retention.Value);
+            if (drop.HasValue) summary += ", drop-off " + percentages.FormatFraction(drop.Value);
             using (Point(chart, builder, index, "funnel-stage", stage.Bounds, summary, metadata)) {
                 if (form == ChartFunnelForm.Cone) {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+                    if (!series.HasExplicitStrokeWidth && raw > 0 && stage.Extent <= 12) stroke = Math.Max(4, stroke);
                     var line = new ChartPath(new[] { ChartPathCommand.MoveTo(stage.LineStart.X, stage.LineStart.Y),
                         ChartPathCommand.LineTo(stage.LineEnd.X, stage.LineEnd.Y) });
                     var outline = StageOutline(series, index, color, chart.Options.Funnel.StageOutline, stroke);
@@ -64,13 +83,13 @@ internal static partial class VisualSpecialtyCompiler {
                         cap: VisualStrokeCap.Butt, dash: outline.Dash, dashOffset: chart.Options.Funnel.StageOutlineDashOffset,
                         paint: new VisualScenePaintBinding(stroke: outline.Paint));
                     else builder.Path(line, stroke: color, strokeWidth: stroke, role: "funnel-stage-line", cap: VisualStrokeCap.Butt,
-                        paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, index)));
+                        paint: VisualChartPaint.Stroke(StagePaint(series, index, color, colors)));
                 } else if (raw > 0) {
                     if (chart.Options.Funnel.StageOutline != null || index < series.PointStrokeColors.Count && series.PointStrokeColors[index].HasValue)
-                        StagePartition(chart, builder, stage.Bar, index, color, "funnel-segment", chart.Options.Funnel.StageOutline, chart.Options.Funnel.StageOutlineDashOffset);
+                        StagePartition(chart, builder, stage.Bar, index, color, StagePaint(series, index, color, colors), "funnel-segment", chart.Options.Funnel.StageOutline, chart.Options.Funnel.StageOutlineDashOffset);
                     else {
                         builder.Path(stage.Bar, color, role: "funnel-segment", close: true,
-                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                            paint: VisualChartPaint.Fill(StagePaint(series, index, color, colors)));
                         Pattern(chart, builder, index, stage.Bar, color);
                     }
                 }
@@ -88,18 +107,17 @@ internal static partial class VisualSpecialtyCompiler {
         VisualThemeColors colors, ChartFunnelForm form) {
         var series = chart.Series[0]; var color = Color(series, connection.FromIndex, colors);
         var style = FunnelConnectionStyle(chart, connection.FromIndex);
-        var fill = FunnelConnectionFill(chart, connection.FromIndex, color, form, style);
+        var fill = FunnelConnectionFill(chart, connection.FromIndex, color, form, style, StagePaint(series, connection.FromIndex, color, colors));
         var id = Id(connection.FromIndex) + "-connection";
         var summary = Category(chart, connection.FromIndex) + " to " + Category(chart, connection.ToIndex) + ": "
-            + VisualStateSceneTools.Value(chart, series, connection.FromIndex, series.RenderPoints[connection.FromIndex].Y)
-            + " to " + VisualStateSceneTools.Value(chart, series, connection.ToIndex, series.RenderPoints[connection.ToIndex].Y);
+            + FunnelValue(chart, connection.FromIndex) + " to " + FunnelValue(chart, connection.ToIndex);
         using (VisualStateSceneTools.Mark(builder, id, "funnel-connection", connection.Bounds, summary,
             new Dictionary<string, string> {
                 ["data-cfx-from-point"] = N(connection.FromIndex), ["data-cfx-to-point"] = N(connection.ToIndex),
                 ["data-cfx-from-value"] = N(series.RenderPoints[connection.FromIndex].Y),
                 ["data-cfx-to-value"] = N(series.RenderPoints[connection.ToIndex].Y)
             })) {
-            if (style != null) StyledFunnelConnection(chart, builder, connection, color, form, style);
+            if (style != null) StyledFunnelConnection(chart, builder, connection, color, StagePaint(series, connection.FromIndex, color, colors), form, style);
             else {
                 builder.Path(connection.Path, fill.Color, role: form == ChartFunnelForm.Cone ? "funnel-connection-area" : "funnel-dropoff", close: true,
                     paint: VisualChartPaint.Fill(fill.Paint));
@@ -111,21 +129,39 @@ internal static partial class VisualSpecialtyCompiler {
     private static void FunnelLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartFunnelStageLayout stage,
         ChartColor color, VisualThemeColors colors, double raw, double? retention, double? drop, ChartFunnelForm form) {
         var index = stage.SourceIndex;
-        var value = VisualStateSceneTools.Value(chart, chart.Series[0], index, raw);
-        var text = Category(chart, index) + ": " + value;
+        var value = FunnelValue(chart, index);
+        var text = chart.Series[0].PreparedLabel(index) ?? Category(chart, index) + ": " + value;
         var inside = raw > 0 && form == ChartFunnelForm.StageBars;
         var textColor = inside ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
         var style = Style(chart, context, index, textColor);
         var bounds = stage.LabelBounds;
         var metricsBounds = stage.MetricsBounds;
         var metricsStyle = Style(chart, context, index, colors.MutedForeground);
-        var metrics = (retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
-            + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
+        var percentages = FunnelPercentageFormat(chart);
+        var metrics = (retention.HasValue ? percentages.FormatFraction(retention.Value) + " retained" : "No initial baseline")
+            + (index == 0 ? "" : "\n" + (drop.HasValue ? percentages.FormatFraction(drop.Value) + " drop-off" : "No previous baseline"));
+        if (form == ChartFunnelForm.Cone && chart.Options.Funnel.Orientation == ChartOrientation.Vertical) {
+            ConeLabels(chart, context, builder, stage, text, metrics, style, metricsStyle);
+            return;
+        }
         var displayed = text;
         var measured = builder.MeasureText(text, style);
         double Fit(ChartRect box) => Math.Min(box.Width / Math.Max(1, measured.Width), box.Height / Math.Max(1, measured.Height));
         // Try complete outside text before shortening a positive bar's caption. The empty side of a narrow stage
         // can share one rail with its retention rows; neither caption needs to compete for a separate narrow box.
+        var wrappedInside = false;
+        // A caption a little wider than its stage stays inside on two balanced lines ("Completed:" over "41")
+        // before it moves out beside the stage, where it would compete with the ratio column.
+        if (inside && Fit(bounds) < 1) {
+            var wrapped = string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                bounds.Width, (value, _) => builder.MeasureText(value, style).Width));
+            var wrappedSize = builder.MeasureText(wrapped, style);
+            if (wrapped.IndexOf('\n') >= 0 && wrappedSize.Width <= bounds.Width && wrappedSize.Height <= bounds.Height) {
+                displayed = wrapped;
+                measured = wrappedSize;
+                wrappedInside = true;
+            }
+        }
         if (inside && Fit(bounds) < 1) {
             if (Fit(stage.OutsideLabelBounds) >= 1) {
                 bounds = stage.OutsideLabelBounds;
@@ -158,35 +194,15 @@ internal static partial class VisualSpecialtyCompiler {
             }
             if (!inside) style = Style(chart, context, index, colors.Foreground);
         }
-        var railCaption = false;
-        if (form == ChartFunnelForm.Cone && chart.Options.Funnel.Orientation == ChartOrientation.Vertical && metricsBounds.Width > 0) {
-            var readable = style.Clone(); readable.FontSize = Math.Min(10, style.EffectiveFontSize);
-            var lineHeight = builder.MeasureText(text, readable).Height;
-            // A dense stage gives a useful category and raw value first use of its rail.
-            // Ratio descriptors remain available when that space cannot paint both.
-            if (lineHeight > bounds.Height && lineHeight <= metricsBounds.Height) {
-                var suffix = ": " + value;
-                var category = ChartTextFitting.FitEnd(Category(chart, index),
-                    prefix => builder.MeasureText(prefix + suffix, readable).Width <= metricsBounds.Width, "…");
-                if (category.Length > 0 && category != "…") {
-                    displayed = category + suffix; bounds = metricsBounds; style = readable; railCaption = true;
-                    if (bounds.Left > stage.LineEnd.X + context.Theme.Spacing)
-                        VisualStateSceneTools.Connector(builder, chart.Options, stage.LineEnd,
-                            new ChartPoint(bounds.Left - context.Theme.Spacing / 4, stage.LineEnd.Y), colors.MutedForeground);
-                }
-            }
-        }
-        StageText(builder, railCaption ? text : displayed, bounds, style, "funnel-label", Id(index) + "-label",
-            railCaption ? TextAlignment.Left : TextAlignment.Center,
+        // The described text stays complete; a wrapped caption only changes what is painted.
+        StageText(builder, wrappedInside ? text : displayed, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
             VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
                 : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel",
-            displayedText: railCaption ? displayed : null);
+            displayedText: wrappedInside ? displayed : null);
         if (index > 0 && metricsBounds.Width > 0 && metricsBounds.Height > 0) {
-            var ratioBounds = railCaption
-                ? new ChartRect(metricsBounds.Left, metricsBounds.Top, metricsBounds.Width, 0)
-                : metricsBounds;
-            StageText(builder, metrics, ratioBounds, metricsStyle,
-                "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
+            // The ratio column is a numeric column: right-aligned so its percentages line up.
+            StageText(builder, metrics, metricsBounds, metricsStyle,
+                "funnel-ratio", Id(index) + "-ratio", TextAlignment.Right,
                 VisualChartPaint.Text(metricsStyle), "funnel");
         }
     }

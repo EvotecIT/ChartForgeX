@@ -34,7 +34,6 @@ public static class LollipopRecipe {
         var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId("orders"), "Orders", ChartSeriesKind.Lollipop, points);
-        return Chart.Create().WithXLabels("Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed").AddSeries(orders)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return Chart.Create().WithXLabels("Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed").AddSeries(orders);
     }
 }

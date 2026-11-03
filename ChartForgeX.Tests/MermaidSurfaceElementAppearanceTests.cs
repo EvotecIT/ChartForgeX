@@ -27,7 +27,7 @@ public sealed class MermaidSurfaceElementAppearanceTests {
             Assert.Equal(Assert.IsType<VisualScenePath>(marks[0]).Commands, Assert.IsType<VisualScenePath>(marks[1]).Commands);
         } else {
             foreach (var mark in marks.Take(shape == "bucket" ? 1 : marks.Count)) { Assert.Equal(red, mark.Fill); Assert.Equal(blue, mark.Stroke); }
-            if (shape == "bucket") { Assert.Null(marks[1].Fill); Assert.Equal(1, marks[1].Opacity); Assert.Equal(ChartColor.FromHex("#9370DB"), marks[1].Stroke); }
+            if (shape == "bucket") { Assert.Null(marks[1].Fill); Assert.Equal(1, marks[1].Opacity); Assert.Equal(blue, marks[1].Stroke); }
         }
         var isolated = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Opacity == .5).ToArray();
         if (shape == "dbl-circ") Assert.Single(isolated); else Assert.Empty(isolated);

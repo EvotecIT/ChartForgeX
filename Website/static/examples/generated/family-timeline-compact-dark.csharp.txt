@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TimelineRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(360, 234)), theme, mode,
     new VisualFrame("Project activities in March 2026", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -39,6 +39,6 @@ public static class TimelineRecipe {
             .ConfigureXAxis(axis => {
                 axis.Scale = ChartScaleKind.Time;
                 axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
-            }).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            });
     }
 }

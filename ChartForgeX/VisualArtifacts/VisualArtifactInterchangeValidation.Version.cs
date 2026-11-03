@@ -40,7 +40,7 @@ internal static partial class VisualArtifactInterchangeValidation {
                 || node?.Topology?.Shape is ChartForgeX.Topology.TopologyNodeShape.ActorHollow or ChartForgeX.Topology.TopologyNodeShape.ActorBusiness
                     or ChartForgeX.Topology.TopologyNodeShape.ActorBusinessHollow or ChartForgeX.Topology.TopologyNodeShape.ActorSilhouette
                     or ChartForgeX.Topology.TopologyNodeShape.ActorIcon or ChartForgeX.Topology.TopologyNodeShape.BusinessEllipse) return true;
-            if (node != null) foreach (var detail in node.Details) if (detail?.BadgeStyle != null) return true;
+            if (node != null) foreach (var detail in node.Details) if (detail?.BadgeStyle != null || detail?.StartsSection == true) return true;
         }
         foreach (var edge in envelope.Edges) if (edge?.Topology is { } topology && (topology.Interpolation != null || topology.InterpolationCornerBlendLength != null || topology.PathGeometry != null || topology.LabelPosition != null || topology.SourceMarkerStyle != null || topology.TargetMarkerStyle != null)) return true;
         return false;

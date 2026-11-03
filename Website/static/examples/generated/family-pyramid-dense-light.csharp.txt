@@ -55,6 +55,6 @@ public static class PyramidRecipe {
                 new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
             chart.WithXLabels("Services", "Platform", "Support").AddSeries(allocation);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

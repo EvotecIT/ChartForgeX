@@ -33,8 +33,8 @@ public sealed class MermaidNotationReferenceCorpusTests {
                     nodes = document.Classes.Select(item => {
                         var node = chart.Nodes.Single(candidate => candidate.Id == item.Id);
                         return new object[] { item.Id, node.Label,
-                            item.Members.Select((member, index) => (member, index)).Where(pair => !pair.member.IsMethod).Select(pair => node.Details[pair.index].Text).ToArray(),
-                            item.Members.Select((member, index) => (member, index)).Where(pair => pair.member.IsMethod).Select(pair => node.Details[pair.index].Text).ToArray() };
+                            node.Details.Where(detail => detail.Metadata["mermaid.member.kind"] == "attribute").Select(detail => detail.Text).ToArray(),
+                            node.Details.Where(detail => detail.Metadata["mermaid.member.kind"] == "method").Select(detail => detail.Text).ToArray() };
                     }).ToArray(),
                     relationships = chart.Edges.Select(item => new[] { item.SourceNodeId, item.TargetNodeId, item.SourceMarker.ToString(), item.TargetMarker.ToString(),
                         item.LineStyle.ToString(), item.Label ?? "", item.SourceLabel ?? "", item.TargetLabel ?? "" }).ToArray(),

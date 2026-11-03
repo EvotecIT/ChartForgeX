@@ -6,7 +6,7 @@ public static partial class V2Examples {
             var chart = HtmlOwnedFontRecipe.Create(variant, mode, ExampleTypography.FontFamily);
             var id = "owned-html-fonts-" + variant + "-" + mode.ToString().ToLowerInvariant();
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg());
+            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
             ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(options => options.TextPresentation = HtmlChartTextPresentation.Automatic));
             ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), ExampleRecipeSource.EmitHtmlOwnedFonts(variant, mode));

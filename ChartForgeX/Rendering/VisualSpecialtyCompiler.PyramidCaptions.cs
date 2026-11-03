@@ -9,8 +9,9 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
     private sealed class PyramidCaption {
-        internal PyramidCaption(ChartRect bounds, string text) { Bounds = bounds; Text = text; }
+        internal PyramidCaption(ChartRect bounds, string text, bool inside = false) { Bounds = bounds; Text = text; Inside = inside; }
         internal ChartRect Bounds { get; }
+        internal bool Inside { get; }
         internal string Text { get; }
     }
 
@@ -27,14 +28,21 @@ internal static partial class VisualSpecialtyCompiler {
         var rail = new ChartRect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
         var occupiedEnd = double.NegativeInfinity;
         var gap = context.Theme.Spacing / 4;
+        bool FitsInside(ChartPyramidStageLayout stage) {
+            var metrics = builder.MeasureText(PyramidLabel(chart, stage.SourceIndex), Style(chart, context, stage.SourceIndex, colors.Foreground));
+            return metrics.Width <= stage.InsideLabel.Width && metrics.Height <= stage.InsideLabel.Height;
+        }
+        // Automatic placement keeps one caption treatment: when any stage needs the rail, every stage uses it,
+        // so the chart never mixes a leader with inside captions. Explicit inside placement keeps its per-stage fit.
+        var insideAllowed = placement is ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center
+            || placement == ChartDataLabelPlacement.Auto && layout.Stages.Where(stage => stage.HasGeometry).All(FitsInside);
         foreach (var stage in layout.Stages.OrderBy(stage => vertical ? stage.OutsideLabel.Top : stage.OutsideLabel.Left)) {
             var index = stage.SourceIndex;
             var source = PyramidLabel(chart, index);
             var style = Style(chart, context, index, colors.Foreground);
             var metrics = builder.MeasureText(source, style);
-            if (placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center
-                && metrics.Width <= stage.InsideLabel.Width && metrics.Height <= stage.InsideLabel.Height) {
-                result[index] = new PyramidCaption(stage.InsideLabel, source);
+            if (insideAllowed && metrics.Width <= stage.InsideLabel.Width && metrics.Height <= stage.InsideLabel.Height) {
+                result[index] = new PyramidCaption(stage.InsideLabel, source, inside: true);
                 continue;
             }
             // A stage's geometric slot may be shorter than one text line. Keep its

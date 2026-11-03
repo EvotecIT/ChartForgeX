@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 
@@ -12,8 +13,9 @@ internal static partial class Program {
             var artifact = PackedNativeDiagram("curve-" + (lane ? "swimlane" : "flowchart"), source);
             var chart = (TopologyChart)artifact.Model!;
             PackageAssertions.Require(chart.Edges[0].Interpolation == TopologyEdgeInterpolation.StepAfter
-                && chart.Edges[1].Interpolation == (lane ? TopologyEdgeInterpolation.Rounded : TopologyEdgeInterpolation.Basis)
-                && chart.Theme.Typography.DataLabelSize == 16, "Packed source curve or typography default was lost.");
+                && chart.Edges[1].Interpolation == TopologyEdgeInterpolation.Rounded
+                && chart.Theme.Typography.DataLabelSize == Math.Max(13, VisualTheme.Graphite().Typography.DataLabelSize),
+                "Packed source curve or shared diagram typography default was lost.");
             var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
             var restored = envelope.ToTopologyChart().ToVisualArtifact();
             PackageAssertions.Require(EdgeCurveInk(artifact.ToSvg()).SequenceEqual(EdgeCurveInk(restored.ToSvg())), "Packed source curve numeric paint changed on native restoration.");

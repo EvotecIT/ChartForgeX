@@ -58,7 +58,8 @@ public sealed class SankeyLabelPlacementTests {
     [InlineData(true)]
     public void DenseInsideCaptionsShortenWithoutOverlapAndKeepFullSemanticsAndAuthoredTypography(bool dark) {
         var name = new string('W', 40);
-        var chart = Chart.Create().WithSize(360, 260).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        // Wide enough for a shortened caption that keeps six characters before its ellipsis.
+        var chart = Chart.Create().WithSize(560, 260).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithPngFont(Font()).AddSankey("Flow", new[] { new ChartNode("first", name), new ChartNode("last", name) },
                 new[] { new ChartFlowLink("flow", "first", "last", 100) })
             .ConfigureSankey(options => { options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Inside; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });

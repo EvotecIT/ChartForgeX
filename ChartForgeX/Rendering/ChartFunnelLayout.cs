@@ -42,6 +42,10 @@ internal sealed class ChartFunnelLayout {
         var connections = new ChartFunnelConnectionLayout[Math.Max(0, points.Count - 1)];
         for (var index = 0; index < points.Count; index++) {
             var extent = maximum > 0 ? domainLength * (points[index].Y / maximum) : 0;
+            // A positive cone boundary must remain a visible mark, including the final
+            // conversion stage. The source value and retention still describe its true ratio.
+            if (options.Form == ChartFunnelForm.Cone && points[index].Y > 0)
+                extent = Math.Max(extent, Math.Min(domainLength, Math.Min(12, slot * .25)));
             var low = options.Form == ChartFunnelForm.Cone ? index * slot : index * (barLength + gap);
             var length = options.Form == ChartFunnelForm.Cone ? slot : barLength;
             var anchor = low + length / 2;
@@ -64,7 +68,7 @@ internal sealed class ChartFunnelLayout {
                 Polygon(extent, low, extent, low + length),
                 Position(center - extent / 2, anchor), Position(center + extent / 2, anchor),
                 Position(center - Math.Min(6, domainLength / 20), anchor), Position(center + Math.Min(6, domainLength / 20), anchor),
-                labelBounds, outsideLabelBounds, metricsBounds);
+                labelBounds, outsideLabelBounds, metricsBounds, Rectangle(0, low, crossLength, length));
         }
         for (var index = 0; index < connections.Length; index++) {
             var first = stages[index]; var last = stages[index + 1];
@@ -82,10 +86,11 @@ internal sealed class ChartFunnelLayout {
 internal sealed class ChartFunnelStageLayout {
     internal ChartFunnelStageLayout(int sourceIndex, double extent, ChartRect bounds, ChartPath bar,
         ChartPoint lineStart, ChartPoint lineEnd, ChartPoint zeroStart, ChartPoint zeroEnd,
-        ChartRect labelBounds, ChartRect outsideLabelBounds, ChartRect metricsBounds) {
+        ChartRect labelBounds, ChartRect outsideLabelBounds, ChartRect metricsBounds, ChartRect slotBounds) {
         SourceIndex = sourceIndex; Extent = extent; Bounds = bounds; Bar = bar;
         LineStart = lineStart; LineEnd = lineEnd; ZeroStart = zeroStart; ZeroEnd = zeroEnd;
         LabelBounds = labelBounds; OutsideLabelBounds = outsideLabelBounds; MetricsBounds = metricsBounds;
+        SlotBounds = slotBounds;
     }
     internal int SourceIndex { get; }
     internal double Extent { get; }
@@ -98,6 +103,7 @@ internal sealed class ChartFunnelStageLayout {
     internal ChartRect LabelBounds { get; }
     internal ChartRect OutsideLabelBounds { get; }
     internal ChartRect MetricsBounds { get; }
+    internal ChartRect SlotBounds { get; }
 }
 
 internal sealed class ChartFunnelConnectionLayout {

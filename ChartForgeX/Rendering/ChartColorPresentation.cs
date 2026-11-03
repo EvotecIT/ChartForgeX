@@ -39,8 +39,7 @@ internal sealed class ChartColorPresentation {
 
     internal string[] ScaleValues(IReadOnlyList<double> values) {
         foreach (var cached in _scales) if (cached.Values.SequenceEqual(values)) return cached.Captions;
-        var captions = values.Select(Raw).ToArray();
-        if (_refineDefaults) ChartNumericFormatter.RefineDefaults(values, captions, Raw(0));
+        var captions = _refineDefaults ? ChartNumericFormatter.FormatCompactScaleValues(values) : values.Select(Raw).ToArray();
         _scales.Add((values.ToArray(), captions));
         return captions;
     }

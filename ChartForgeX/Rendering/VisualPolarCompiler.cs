@@ -93,11 +93,12 @@ internal static partial class VisualPolarCompiler {
                         if (radar && source < 0 && series.Radar.MissingCategoryPolicy != ChartRadarMissingCategoryPolicy.Zero) continue;
                         var angle = radar ? CategoryAngle(chart, index, categories.Length) : PolarAngle(chart, series.RenderPoints[source].X);
                         var category = radar ? categories[index] : series.RenderPoints[source].X;
-                        var formatted = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null
-                            ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
+                        var formatted = source >= 0 && source < series.PreparedLabels.Count && series.PreparedLabels[source] != null
+                            ? series.PreparedLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                         var pointId = source >= 0 ? Id(seriesIndex, source) : Id(seriesIndex) + "-missing-category-" + index;
-                        var marker = VisualMarkerScene.Radius(series, context);
-                        var bounds = VisualMarkerScene.Bounds(series, mapped[index].X, mapped[index].Y, marker);
+                        var markerOptions = series.ResolvePointMarkers(source);
+                        var marker = VisualMarkerScene.Radius(series, context, markerOptions);
+                        var bounds = VisualMarkerScene.Bounds(series, mapped[index].X, mapped[index].Y, marker, markerOptions);
                         builder.AddRegion(new VisualSemanticRegion(pointId, radar ? "radar-point" : "polar-point", bounds, CategoryText(category) + ": " + formatted));
                         var pointMetadata = new Dictionary<string, string> {
                             ["data-cfx-series"] = N(seriesIndex),

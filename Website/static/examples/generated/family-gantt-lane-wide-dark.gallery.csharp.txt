@@ -20,7 +20,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = GanttLaneRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(800, 320)), theme, mode,
     new VisualFrame("Incidents and recovery in parallel", "", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -44,7 +44,6 @@ public static class GanttLaneRecipe {
         return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
             new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
-            .WithGanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary)
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .WithGanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary);
     }
 }

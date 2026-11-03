@@ -180,7 +180,7 @@ public sealed class NativeTopologyGeometryTests {
         } else {
             chart = TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
                 .AddNode("a", "A", 130, 70, width: 80, height: 40)
-                .AddNode("b", "B", 136, 191, width: 80, height: 40)
+                .AddNode("b", "B", 136, 171, width: 80, height: 40)
                 .AddEdge("stair", "a", "b", "LDAP fail", routing: TopologyEdgeRouting.Orthogonal, secondaryLabel: "DNS OK")
                 .WithEdgePorts("stair", TopologyEdgePort.Bottom, TopologyEdgePort.Top);
         }
@@ -239,9 +239,9 @@ public sealed class NativeTopologyGeometryTests {
     private static TopologyChart InterGroup(TopologyEdgeRouting routing) {
         var chart = TopologyChart.Create().WithId("inter-group").WithViewport(960, 600).WithLegend(null);
         chart.Groups.Add(new TopologyGroup { Id = "primary", Label = "Primary", X = 0, Y = 0, Width = 340, Height = 300 });
-        chart.Groups.Add(new TopologyGroup { Id = "secondary", Label = "Secondary", X = 390, Y = 0, Width = 340, Height = 300 });
+        chart.Groups.Add(new TopologyGroup { Id = "secondary", Label = "Secondary", X = 440, Y = 0, Width = 340, Height = 300 });
         chart.Nodes.Add(new TopologyNode { Id = "client", Label = "Client", GroupId = "primary", X = 30, Y = 65, Width = 240, Height = 85 });
-        chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Worker", GroupId = "secondary", X = 430, Y = 65, Width = 240, Height = 85 });
+        chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Worker", GroupId = "secondary", X = 480, Y = 65, Width = 240, Height = 85 });
         chart.Edges.Add(new TopologyEdge { Id = "request", SourceNodeId = "client", TargetNodeId = "worker", Label = "Requests", SecondaryLabel = "Active", Routing = routing, Direction = VisualLinkDirection.Forward });
         return chart;
     }

@@ -33,7 +33,7 @@ public static class ScatterPositionedColorScaleRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
     public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
-        return PositionedColorScale(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return PositionedColorScale(mode);
     }
 
     private static Chart PositionedColorScale(VisualThemeMode mode) {

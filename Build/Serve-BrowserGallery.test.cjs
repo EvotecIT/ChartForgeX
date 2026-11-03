@@ -72,6 +72,9 @@ test('Readiness publishes a complete address and the real gallery server serves 
     const missing = await fetch(new URL('missing.svg', address), { signal: AbortSignal.timeout(5000) });
     assert.equal(missing.status, 404);
     await missing.text();
+    const favicon = await fetch(new URL('favicon.ico', address), { signal: AbortSignal.timeout(5000) });
+    assert.equal(favicon.status, 204);
+    assert.equal(await favicon.text(), '');
     const post = await fetch(address, { method: 'POST', signal: AbortSignal.timeout(5000) });
     assert.equal(post.status, 405);
     await post.text();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
@@ -21,17 +22,37 @@ internal static class ChartPathBuilder {
         }
     }
 
-    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End, bool preserveXIntervals = false) {
+    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End, bool preserveXIntervals = false) =>
+        FromPoints(points, interpolation, stepPosition, preserveXIntervals, null);
+
+    /// <summary>
+    /// Builds a series path. With <paramref name="treadRange"/>, a step series closes the outer tread its transitions do not draw
+    /// (the first value for Start steps, the last for End steps): half its neighbouring interval, kept inside the range.
+    /// </summary>
+    internal static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation, ChartStepPosition stepPosition,
+        bool preserveXIntervals, (double Minimum, double Maximum)? treadRange) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var commands = new List<ChartPathCommand>();
         if (points.Count == 0) return new ChartPath(commands);
 
-        foreach (var segment in ChartPointSegments.Split(points)) {
-            commands.Add(ChartPathCommand.MoveTo(segment[0].X, segment[0].Y));
+        var segments = ChartPointSegments.Split(points).ToList();
+        var treads = treadRange.HasValue && interpolation == ChartInterpolation.Step;
+        for (var segmentIndex = 0; segmentIndex < segments.Count; segmentIndex++) {
+            var segment = segments[segmentIndex];
+            var opening = treads && stepPosition == ChartStepPosition.Start && segmentIndex == 0 && segment.Count > 1
+                ? Tread(segment[0].X, segment[1].X, treadRange!.Value) : (double?)null;
+            commands.Add(ChartPathCommand.MoveTo(opening ?? segment[0].X, segment[0].Y));
+            if (opening.HasValue) commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
             if (segment.Count == 1) {
                 // A round-capped zero-length segment keeps an isolated observation visible.
                 commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
-            } else if (interpolation == ChartInterpolation.Step) AddStepSegments(commands, segment, stepPosition);
+            } else if (interpolation == ChartInterpolation.Step) {
+                AddStepSegments(commands, segment, stepPosition);
+                var last = segment[segment.Count - 1];
+                if (treads && stepPosition == ChartStepPosition.End && segmentIndex == segments.Count - 1
+                    && Tread(last.X, segment[segment.Count - 2].X, treadRange!.Value) is double closing)
+                    commands.Add(ChartPathCommand.LineTo(closing, last.Y));
+            }
             else if (interpolation == ChartInterpolation.Smooth && segment.Count >= 3) AddSmoothSegments(commands, segment, preserveXIntervals);
             else AddStraightSegments(commands, segment);
         }
@@ -81,6 +102,14 @@ internal static class ChartPathBuilder {
             if (position != ChartStepPosition.End) commands.Add(ChartPathCommand.LineTo(transition, points[i].Y));
             commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
         }
+    }
+
+    /// <summary>The end of an outer tread from <paramref name="x"/> away from its neighbour, or null when the range leaves no visible run.</summary>
+    private static double? Tread(double x, double neighbour, (double Minimum, double Maximum) range) {
+        // An observation outside the range (a scrolled window) is clipped anyway; its tread cannot turn back into view.
+        if (x < range.Minimum || x > range.Maximum) return null;
+        var end = Math.Max(range.Minimum, Math.Min(range.Maximum, x + (x - neighbour) / 2));
+        return Math.Abs(end - x) >= .5 ? end : null;
     }
 
     /// <summary>Places a step between mapped neighbors; the midpoint avoids overflowing their sum or difference.</summary>

@@ -11,6 +11,6 @@ public static class HexbinHeatmapColorScaleRecipe {
                 new ChartColorBand(40, colors.SequentialRamp[0], "Low"),
                 new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], "Medium"),
                 new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], "High")
-            })).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            }));
     }
 }

@@ -70,19 +70,24 @@ public static partial class GalleryWriter {
         "visual-topology-shared-trunks",
     };
 
-    private readonly record struct LayoutProvenance(string HeightMode, string FrameFontRequest, string FrameFontFingerprint);
+    // WidthMode is natural when the export fits both canvas dimensions to its measured content.
+    private readonly record struct LayoutProvenance(string HeightMode, string FrameFontRequest, string FrameFontFingerprint, string WidthMode = "fixed");
 
     private static LayoutProvenance ReadLayoutProvenance(string name, string svgPath) {
-        if (!NaturalHeightExamples.Contains(name)) return new("fixed", "", "");
+        var document = SvgRasterParser.ParseDocument(File.ReadAllText(svgPath));
+        // A content-fitted topology (natural Mermaid/topology sizing) measures every caption for both axes,
+        // so all of its text faces, not only the heading, decide its canvas.
+        var fitted = FitsContent(document.Root);
+        if (!fitted && !NaturalHeightExamples.Contains(name)) return new("fixed", "", "");
         var requests = new SortedSet<string>(StringComparer.Ordinal);
         var faces = new SortedSet<string>(StringComparer.Ordinal);
-        var document = SvgRasterParser.ParseDocument(File.ReadAllText(svgPath));
         var definitions = SvgRasterDefinitions.From(document);
         var ancestors = new List<SvgRasterElement>();
         var unavailable = false;
         // Only the outer frame controls natural height; nested panels have their own fixed viewports.
-        Inspect(document.Root, SvgRasterStyle.Default, false);
-        return new("natural", string.Join("\n", requests), unavailable || faces.Count == 0 ? "" : Hash(Encoding.UTF8.GetBytes(string.Join("\n", faces))));
+        Inspect(document.Root, SvgRasterStyle.Default, fitted);
+        return new("natural", string.Join("\n", requests), unavailable || faces.Count == 0 ? "" : Hash(Encoding.UTF8.GetBytes(string.Join("\n", faces))),
+            fitted || name == "advanced-topology" ? "natural" : "fixed");
 
         void Inspect(SvgRasterElement element, SvgRasterStyle parent, bool heading, string? authoredRequest = null) {
             if (element.Name is "defs" or "style" or "title" or "desc" || element.Get("data-cfx-role") == "panel" || element.Name == "svg" && ancestors.Count > 0) return;
@@ -90,12 +95,15 @@ public static partial class GalleryWriter {
             authoredRequest = element.Get("data-cfx-authored-font-request") ?? authoredRequest;
             heading |= element.Get("data-cfx-role") is "frame-heading" or "frame-heading-continuation" or "legend-title" or "legend-label";
             if (heading && element.Name == "text") {
-                var request = authoredRequest ?? string.Join("|", style.FontFamily, style.FontWeight.ToString(CultureInfo.InvariantCulture), style.FontStyle, style.FontSize.ToString("R", CultureInfo.InvariantCulture), style.Variations?.Key ?? "");
+                // A painted size can be fitted to the host's measured face, so only an authored request names a size.
+                var request = authoredRequest ?? string.Join("|", style.FontFamily, style.FontWeight.ToString(CultureInfo.InvariantCulture), style.FontStyle, style.Variations?.Key ?? "");
                 requests.Add(request);
                 var face = TypographyFontResolver.WithVariations(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, style.FontStyle != "normal"), style.Variations);
                 // Font-size fitting changes the paint request, not the identity of the resolved face.
                 if (face.Font == null) faces.Add(request + "|bitmap");
-                else if (face.Path == null || !File.Exists(face.Path)) unavailable = true;
+                // A bundled product face has no file; its family and captured identity are stable across hosts.
+                else if (face.Path == null) faces.Add(request + "|bundled|" + face.Font.SelectedFamily + "|" + face.Font.CollectionIndex + "|" + face.Font.Variations.Key + "|" + face.SynthesizeBold + "|" + face.SynthesizeItalic);
+                else if (!File.Exists(face.Path)) unavailable = true;
                 else {
                     try {
                         faces.Add(request + "|" + Hash(File.ReadAllBytes(face.Path)) + "|" + face.Font.CollectionIndex + "|" + face.Font.SelectedFamily + "|" + face.Font.Variations.Key + "|" + face.SynthesizeBold + "|" + face.SynthesizeItalic);
@@ -107,6 +115,16 @@ public static partial class GalleryWriter {
             foreach (var child in element.Children) Inspect(child, style, heading, authoredRequest);
             ancestors.RemoveAt(ancestors.Count - 1);
         }
+    }
+
+    // The first topology or panel in document order owns the outer canvas; panels keep their own fixed viewports.
+    private static bool FitsContent(SvgRasterElement root) => FirstCanvasOwner(root) is { } owner
+        && owner.Get("data-cfx-role") == "topology" && owner.Get("data-fit-content-to-viewport") == "false";
+
+    private static SvgRasterElement? FirstCanvasOwner(SvgRasterElement element) {
+        if (element.Get("data-cfx-role") is "topology" or "panel") return element;
+        foreach (var child in element.Children) if (FirstCanvasOwner(child) is { } owner) return owner;
+        return null;
     }
 
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));

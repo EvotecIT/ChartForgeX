@@ -51,6 +51,7 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static void WriteFluidGradientDefinition(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix,
         int index, VisualSvgOptions? options, FluidSvgLayout layout) {
+        if (gradient.AuthoredFill != null) { WriteChartFillDefinition(writer, gradient, prefix, index, options); return; }
         // Paths retain their logical viewport. Percentage rectangle paints live directly in the root's coordinates.
         var transform = gradient.Shape is VisualScenePath || gradient.Shape is VisualSceneRectangle rectangle && rectangle.HasPartialCorners
             ? VisualSceneTransform.Identity : layout.Transforms[index];

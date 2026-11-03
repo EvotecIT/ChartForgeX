@@ -5,6 +5,27 @@ using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void SequencePresetAppearanceSourceContracts() {
-        using var stream=typeof(Program).Assembly.GetManifestResourceStream("PackageProbe.sequence-preset-appearance.mmd")??throw new InvalidOperationException("Missing palette fixture.");using var reader=new StreamReader(stream);var source=reader.ReadToEnd();foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark}){var result=RenderFixture(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=mode}});if(result.HasErrors||result.Artifact?.Model is not SequenceArtifact model||model.Layout?.ParticipantBands==null)throw new InvalidOperationException("Omitted Sequence preset/band projection failed.");var expected=mode==VisualThemeMode.Dark?null:"#FDF4FF";if(model.Participants[0].Fill?.ToCss()!=expected||model.Participants[0].Border?.ToCss()!="#E879F9"||result.Artifact.ToPng().Length==0)throw new InvalidOperationException("Source preset palette did not follow effective host mode.");var restored=VisualArtifactInterchangeEnvelope.FromJson(result.Artifact.ToInterchangeJson()).ToSequenceArtifact();restored.Messages[0].Text="Edited";if(!restored.ToSvg().Contains("Edited"))throw new InvalidOperationException("Source preset facts did not restore to editable native owners.");}
+        using var stream = typeof(Program).Assembly.GetManifestResourceStream("PackageProbe.sequence-preset-appearance.mmd")
+            ?? throw new InvalidOperationException("Missing palette fixture.");
+        using var reader = new StreamReader(stream);
+        var source = reader.ReadToEnd();
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { ThemeMode = mode } };
+            var result = RenderFixture(source, options);
+            if (result.HasErrors || result.Artifact?.Model is not SequenceArtifact model || model.Layout?.ParticipantBands == null)
+                throw new InvalidOperationException("Omitted Sequence preset/band projection failed.");
+            if (model.Participants[0].Fill != null || model.Paint.ParticipantFill != null
+                || !model.Theme.Resolve(mode).Surface.Equals(VisualTheme.Graphite().Resolve(mode).Surface)
+                || result.Artifact.ToPng().Length == 0)
+                throw new InvalidOperationException("Unthemed Sequence did not inherit Graphite in the effective host mode.");
+            var literal = RenderFixture("%%{init:{\"theme\":\"default\"}}%%\n" + source, options);
+            if (literal.HasErrors || literal.Artifact?.Model is not SequenceArtifact explicitModel
+                || (explicitModel.Participants[0].Fill ?? explicitModel.Paint.ParticipantFill)?.ToCss() != "#ECECFF")
+                throw new InvalidOperationException("Explicit default Sequence palette did not remain literal.");
+            var restored = VisualArtifactInterchangeEnvelope.FromJson(result.Artifact.ToInterchangeJson()).ToSequenceArtifact();
+            restored.Messages[0].Text = "Edited";
+            if (!restored.ToSvg().Contains("Edited"))
+                throw new InvalidOperationException("Source preset facts did not restore to editable native owners.");
+        }
     }
 }

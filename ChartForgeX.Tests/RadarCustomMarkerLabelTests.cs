@@ -13,8 +13,9 @@ public sealed class RadarCustomMarkerLabelTests {
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void EquivalentBuiltInAndCustomSquaresRetainIdenticalVisibleCaptionPlacement(int width, bool dark) {
         var shape = ChartMarkerPath.Start(-1, -1).LineTo(1, -1).LineTo(1, 1).LineTo(-1, 1);
-        var before = Prepare(Create(width, dark, null, 12, "MMMM"));
-        var after = Prepare(Create(width, dark, shape, 12, "MMMM"));
+        // A wide caption that fits its square completely; a shortened one would need six characters before its ellipsis.
+        var before = Prepare(Create(width, dark, null, 16, "MM"));
+        var after = Prepare(Create(width, dark, shape, 16, "MM"));
         var expectedMarks = before.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "radar-point").ToArray();
         var marks = after.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "radar-point").ToArray();
         Assert.Equal(4, marks.Length);

@@ -6,7 +6,7 @@ public static class DonutRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Donut, Observations(variant));
         var chart = Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
-            .AddSeries(revenue).WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            .AddSeries(revenue);
         if (variant == "options") {
             chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDonutCenterText("1,000", "Revenue (k)");
             revenue.WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);

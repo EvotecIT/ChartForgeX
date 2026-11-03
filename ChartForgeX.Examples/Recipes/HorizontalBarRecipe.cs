@@ -25,7 +25,7 @@ public static class HorizontalBarRecipe {
             var orders = new ChartSeries(new ChartSeriesId("orders"), "Orders", ChartSeriesKind.HorizontalBar, points);
             chart.WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(orders);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 
     private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";

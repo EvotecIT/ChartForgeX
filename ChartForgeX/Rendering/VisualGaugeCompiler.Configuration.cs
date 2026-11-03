@@ -59,7 +59,7 @@ internal static partial class VisualGaugeCompiler {
             if (fullTurn && intervals / stride < 2) {
                 values = GeneratedScaleValues(data, maximum, fullTurn: true);
                 var missing = values.Where(value => !captured.ContainsKey(value)).ToArray();
-                var formatted = ChartNumericFormatter.FormatScaleValues(format, missing);
+                var formatted = ChartNumericFormatter.FormatScaleValues(format, missing, values);
                 for (var index = 0; index < missing.Length; index++) captured.Add(missing[index], formatted[index]);
             } else {
                 values = values.Where((_, index) => index % stride == 0).ToArray();
@@ -158,9 +158,12 @@ internal static partial class VisualGaugeCompiler {
         }
         if (chart.Options.Form is ChartGaugeForm.Arc or ChartGaugeForm.ArcWithNeedle)
             VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep * data.Ratio, data.Color, "gauge-value", "series-0-value", paint: chart.ValuePaint(data));
+        LabelMarkShape? needle = null;
         if (chart.Options.Form is ChartGaugeForm.Needle or ChartGaugeForm.ArcWithNeedle) {
             var angle = start + sweep * data.Ratio;
-            builder.Line(cx, cy, cx + Math.Cos(angle) * (radius - stroke), cy + Math.Sin(angle) * (radius - stroke), chart.Options.NeedleColor ?? data.Color,
+            var end = new ChartPoint(cx + Math.Cos(angle) * (radius - stroke), cy + Math.Sin(angle) * (radius - stroke));
+            needle = new LabelMarkShape(new[] { new List<ChartPoint> { new(cx, cy), end } }, false, Math.Max(1, context.Theme.SeriesStrokeWidth));
+            builder.Line(cx, cy, end.X, end.Y, chart.Options.NeedleColor ?? data.Color,
                 Math.Max(1, context.Theme.SeriesStrokeWidth), "gauge-needle", paint: VisualChartPaint.Stroke(NeedlePaint(chart, data)));
             builder.Ellipse(cx, cy, stroke / 3, stroke / 3, colors.Foreground, role: "gauge-pivot", paint: VisualChartPaint.Fill(colors.Foreground, SvgColorRole.Axis));
         }
@@ -183,13 +186,15 @@ internal static partial class VisualGaugeCompiler {
                 cx + cos * (radius + stroke / 2 + bandWidth), cy + sin * (radius + stroke / 2 + bandWidth),
                 colors.Foreground, context.Theme.SeriesStrokeWidth, "gauge-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Axis));
             var width = chart.Measure(builder, targetCaptions[index], labelStyle).Width;
-            var box = new ChartRect(cx + cos * (exterior + gap + labelHeight / 2) - width / 2,
-                cy + sin * (exterior + gap + labelHeight / 2) - labelHeight / 2, width, labelHeight);
-            if (!FitsCaption(plot, box, occupied)) {
-                var farther = exterior + gap + labelHeight * 1.75;
-                var alternative = new ChartRect(cx + cos * farther - width / 2, cy + sin * farther - labelHeight / 2, width, labelHeight);
-                if (FitsCaption(plot, alternative, occupied)) box = alternative;
-            }
+            // The caption sits on the tick's ray beyond the outer status arc: its centre is pushed out by the box's half-extent
+            // along that ray, so the nearest edge keeps a gap from the arc and the tick whatever the angle.
+            var halfExtent = (Math.Abs(cos) * width + Math.Abs(sin) * labelHeight) / 2;
+            ChartRect At(double distance) => new(cx + cos * distance - width / 2, cy + sin * distance - labelHeight / 2, width, labelHeight);
+            var clear = exterior + gap / 2 + halfExtent;
+            var inside = radius - stroke / 2 - bandWidth - gap / 2 - halfExtent;
+            var candidates = new[] { At(clear), At(clear + labelHeight), At(inside) };
+            var box = candidates.FirstOrDefault(candidate => FitsCaption(plot, candidate, occupied) && needle?.Intersects(candidate) != true);
+            if (box.Width <= 0) box = candidates[0];
             FactualLabel(chart, context, builder, plot, targetCaptions[index], box, "gauge-target-label", "series-0-gauge-target-label-" + index, occupied);
         }
     }

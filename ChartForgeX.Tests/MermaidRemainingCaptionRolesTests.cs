@@ -138,6 +138,8 @@ public sealed class MermaidRemainingCaptionRolesTests {
     private static IEnumerable<TextContent> Contents(TopologyChart chart) => chart.Groups.Select(group => group.LabelContent)
         .Concat(chart.Nodes.Select(node => node.LabelContent)).Concat(chart.Nodes.SelectMany(node => node.Details)
             .Select(detail => detail.Content ?? TextContent.Join(TextContent.Plain(detail.Label + " "), detail.ValueContent)))
+        .Concat(chart.Nodes.Where(node => node.TableContent != null).SelectMany(node => node.TableContent!.Rows).SelectMany(row => row.Cells)
+            .Where(cell => cell.Content != null).Select(cell => cell.Content!))
         .Concat(chart.Edges.Where(edge => edge.LabelContent != null).Select(edge => edge.LabelContent!));
     private static string[] Signatures(TopologyChart chart) => Contents(chart).Where(content => content.IsStructured)
         .Select(content => content.PlainText + ":" + string.Join(";", content.Runs.Select(run => run.Text + "=" + run.Emphasis))).OrderBy(value => value, StringComparer.Ordinal).ToArray();

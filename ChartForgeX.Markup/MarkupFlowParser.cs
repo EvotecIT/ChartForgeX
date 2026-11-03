@@ -34,7 +34,9 @@ public sealed class MarkupFlowParser {
     /// </summary>
     /// <param name="block">The flow visual block.</param>
     /// <returns>The parse result.</returns>
-    public MarkupParseResult<FlowArtifact> ParseBlock(VisualMarkupBlock block) {
+    public MarkupParseResult<FlowArtifact> ParseBlock(VisualMarkupBlock block) => ParseBlock(block, "flow");
+
+    internal MarkupParseResult<FlowArtifact> ParseBlock(VisualMarkupBlock block, string defaultId) {
         if (block == null) throw new ArgumentNullException(nameof(block));
         var result = new MarkupParseResult<FlowArtifact>();
         if (block.Kind != VisualMarkupKind.Flow) {
@@ -42,11 +44,11 @@ public sealed class MarkupFlowParser {
             return result;
         }
 
-        return ParseBlockCore(block, result);
+        return ParseBlockCore(block, result, defaultId);
     }
 
-    private static MarkupParseResult<FlowArtifact> ParseBlockCore(VisualMarkupBlock block, MarkupParseResult<FlowArtifact> result) {
-        var flow = FlowArtifact.Create("flow");
+    private static MarkupParseResult<FlowArtifact> ParseBlockCore(VisualMarkupBlock block, MarkupParseResult<FlowArtifact> result, string defaultId = "flow") {
+        var flow = FlowArtifact.Create(defaultId);
         result.Document = flow;
         if (block.SchemaVersion != 1) Add(result, block.FenceLine, MarkupDiagnosticSeverity.Error, "ChartForgeX flow markup requires schema version v1.");
         ApplyFenceAttributes(result, flow, block);

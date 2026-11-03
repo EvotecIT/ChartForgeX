@@ -21,6 +21,19 @@ public sealed class TopologyRoundedContourAttachmentTests {
     [InlineData(TopologyNodeShape.Rounded, 140, 60, true)]
     public void FittedRouteEndpointMeetsTheSameRoundedContourPaintedByNativeAndSvg(
         TopologyNodeShape shape, double width, double height, bool reversed) {
+        AssertAttachment(shape, width, height, reversed, true);
+    }
+
+    [Theory]
+    [InlineData(TopologyNodeShape.Rounded, false)] [InlineData(TopologyNodeShape.Rounded, true)]
+    [InlineData(TopologyNodeShape.Stadium, false)] [InlineData(TopologyNodeShape.Stadium, true)]
+    [InlineData(TopologyNodeShape.Diamond, false)] [InlineData(TopologyNodeShape.Diamond, true)]
+    [InlineData(TopologyNodeShape.Cylinder, false)] [InlineData(TopologyNodeShape.Cylinder, true)]
+    public void NaturalRouteEndpointMeetsItsPaintedContourWithoutRequiringViewportFitting(TopologyNodeShape shape, bool reversed) {
+        AssertAttachment(shape, 140, 80, reversed, false);
+    }
+
+    private static void AssertAttachment(TopologyNodeShape shape, double width, double height, bool reversed, bool fit) {
         var chart = TopologyChart.Create().WithViewport(500, 360, 0)
             .WithLayout(TopologyLayoutMode.Manual).WithLegend(null);
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 100, Y = 100,
@@ -34,7 +47,7 @@ public sealed class TopologyRoundedContourAttachmentTests {
         var prepared = chart.Prepare(new TopologyRenderOptions {
             IncludeTitle = false, IncludeLegend = false, IncludeNodeLabels = false,
             IncludeIconLabels = false, IncludeStatusBadges = false, IncludeEdgeLabels = false,
-            IncludeEndpointLabels = false, IncludeDirectionMarkers = false, FitContentToViewport = true
+            IncludeEndpointLabels = false, IncludeDirectionMarkers = false, FitContentToViewport = fit
         });
         var bounds = prepared.Analyze().Nodes.Single(node => node.Id == "source").Bounds;
         var scale = bounds.Width / width;
@@ -49,7 +62,7 @@ public sealed class TopologyRoundedContourAttachmentTests {
         var svg = XDocument.Parse(svgText);
         var sourceGroup = Assert.Single(svg.Descendants(), node => Role(node) == "topology-node"
             && (string?)node.Attribute("data-node-id") == "source");
-        var svgSurface = Assert.Single(sourceGroup.Descendants(), node => Role(node) == "topology-node-surface");
+        var svgSurface = Assert.Single(sourceGroup.Descendants(), node => Role(node) == "topology-node-surface" && (string?)node.Attribute("fill") != "none");
         var svgRoute = Assert.Single(svg.Descendants(), node => Role(node) == "topology-edge-line");
         var svgRoutePoints = Assert.Single(ChartMapPathParser.ParseSubpaths((string)svgRoute.Attribute("d")!, 64 / scale)).Points;
         var svgEndpoint = reversed ? svgRoutePoints[^1] : svgRoutePoints[0];

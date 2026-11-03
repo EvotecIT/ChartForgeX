@@ -56,16 +56,16 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
         }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.positionedSelection = event.detail.target)");
         await MoveToAsync(page, clamped);
-        await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "55");
-        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Processing time", "35");
+        await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", kind == ChartSeriesKind.Heatmap ? "55.0" : "55");
+        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Processing time", "35 minutes");
         await CaptureAsync("clamped-pointer");
         if (kind != ChartSeriesKind.TileMap) {
             await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(Target(-30)));
-            await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "-30");
+            await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", kind == ChartSeriesKind.Heatmap ? "-30.0" : "-30");
         }
         await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(zero));
-        await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "0");
-        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Processing time", "20");
+        await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", kind == ChartSeriesKind.Heatmap ? "0.0" : "0");
+        if (kind == ChartSeriesKind.Scatter) await AssertRowAsync("Processing time", "20 minutes");
         await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(interpolated));
         await AssertRowAsync(kind == ChartSeriesKind.Scatter ? "Temperature (°C)" : "Value", "2.5");
         await page.Keyboard.PressAsync("Space");
@@ -90,7 +90,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
             if (kind == ChartSeriesKind.Scatter) {
                 Assert.Null(await missing.GetAttributeAsync("data-cfx-color-value"));
                 Assert.Equal("true", await missing.GetAttributeAsync("data-cfx-color-missing"));
-                await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Processing time", "22");
+                await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Processing time", "22 minutes");
             } else {
                 Assert.Equal("true", await missing.GetAttributeAsync("data-cfx-empty"));
                 Assert.Equal("", await missing.GetAttributeAsync("data-cfx-value"));

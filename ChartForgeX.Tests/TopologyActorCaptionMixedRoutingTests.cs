@@ -11,18 +11,29 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class TopologyActorCaptionMixedRoutingTests {
     [Theory]
-    [InlineData(TopologyEdgeRouting.Straight, false)]
-    [InlineData(TopologyEdgeRouting.Straight, true)]
-    [InlineData(TopologyEdgeRouting.Orthogonal, false)]
-    [InlineData(TopologyEdgeRouting.Orthogonal, true)]
-    public void MixedActualActorAndObstaclePoliciesUseFiniteCaptionClearance(TopologyEdgeRouting policy, bool readable) {
+    [InlineData(TopologyEdgeRouting.Straight, false, false)]
+    [InlineData(TopologyEdgeRouting.Straight, true, false)]
+    [InlineData(TopologyEdgeRouting.Orthogonal, false, false)]
+    [InlineData(TopologyEdgeRouting.Orthogonal, true, false)]
+    [InlineData(TopologyEdgeRouting.Orthogonal, false, true)]
+    [InlineData(TopologyEdgeRouting.Orthogonal, true, true)]
+    public void MixedActualActorAndObstaclePoliciesUseFiniteCaptionClearance(TopologyEdgeRouting policy, bool readable, bool fixedPositions) {
         var model = UseCaseAdvancedActorsRecipe.Create("wide", VisualThemeMode.Dark);
         model.WithTheme(model.Theme.WithFontFamily(BrowserProofFonts.Family), VisualThemeMode.Dark);
+        if (fixedPositions) {
+            // Keep the reported placement independent of later automatic rank packing.
+            var positions = new[] { new ChartPoint(219, 244.9), new ChartPoint(610.5, 94.9), new ChartPoint(88.5, 94.9),
+                new ChartPoint(349.5, 94.9), new ChartPoint(480, 244.9), new ChartPoint(871.5, 94.9), new ChartPoint(716, 252.9) };
+            for (var index = 0; index < positions.Length; index++) {
+                model.Nodes[index].X = positions[index].X;
+                model.Nodes[index].Y = positions[index].Y;
+            }
+        }
         model.DefaultRenderOptions!.ReadableDenseLayout = readable;
         foreach (var edge in model.Edges) edge.Routing = policy;
         model.Edges.Single(edge => edge.Id == "system").Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
         var prepared = model.Prepare(); var envelope = prepared.ToInterchangeEnvelope(); var json = envelope.ToJson();
-        var name = "actor-caption-mixed-" + policy + "-" + readable;
+        var name = "actor-caption-mixed-" + policy + "-" + readable + (fixedPositions ? "-fixed" : "");
         Capture(name, prepared.ToSvg(), prepared.ToPng(), json);
         var observation = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();
         var options = model.DefaultRenderOptions!.Clone();

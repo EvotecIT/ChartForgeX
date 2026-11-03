@@ -267,6 +267,8 @@ public sealed class VisualArtifactInterchangePort {
 
 /// <summary>Represents one typed node detail row.</summary>
 public sealed class VisualArtifactInterchangeDetail {
+    /// <summary>Gets or sets whether a divider starts a new node content compartment before this row.</summary>
+    public bool StartsSection { get; set; }
     /// <summary>Gets or sets native detail surface styling. Non-null requires version 2.</summary>
     public TopologyDetailBadgeStyle? BadgeStyle { get; set; }
     /// <summary>Gets or sets immutable structured full-width text; its plain projection must equal Text.</summary>

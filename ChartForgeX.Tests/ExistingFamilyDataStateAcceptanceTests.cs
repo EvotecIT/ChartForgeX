@@ -34,8 +34,8 @@ public sealed class ExistingFamilyDataStateAcceptanceTests {
         Assert.Contains(source, item => item.Start == 0 && item.End == 0);
         Assert.Contains(source, item => item.End < item.Start);
         AssertNumericAxisCaptions(prepared, variant.Contains("horizontal", StringComparison.Ordinal) ? "axis-x-label" : "axis-y-label");
-        var facts = source.Select(item => Math.Min(item.Start, item.End).ToString("0.##", CultureInfo.InvariantCulture) + "–"
-            + Math.Max(item.Start, item.End).ToString("0.##", CultureInfo.InvariantCulture)).ToArray();
+        var facts = source.Select(item => Math.Min(item.Start, item.End).ToString("#,0.###", CultureInfo.InvariantCulture) + "–"
+            + Math.Max(item.Start, item.End).ToString("#,0.###", CultureInfo.InvariantCulture)).ToArray();
         var values = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         Assert.NotEmpty(values);
         Assert.All(values, value => Assert.Contains(string.Join(" ", value.Text.Lines.Select(line => line.Text)), facts));

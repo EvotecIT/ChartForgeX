@@ -39,8 +39,12 @@ internal static partial class Program {
         var entityModel = (TopologyChart)PackedNativeDiagram("er-fields", entities).Model!;
         var customer = entityModel.Nodes.Single(node => node.Id == "C");
         PackageAssertions.Require(customer.Label == "Customer account" && customer.BackgroundColor == "#fef9c3"
-            && customer.Details.Any(detail => (detail.Text ?? "").Contains("PK", StringComparison.Ordinal) && (detail.Text ?? "").Contains("FK", StringComparison.Ordinal))
-            && entityModel.Edges.Count == 1, "Packed ER aliases, typed keys or native paint was lost.");
+            && customer.TableContent is { } attributes
+            && attributes.Columns.Take(3).Select(column => column.Id).SequenceEqual(new[] { "type", "name", "key" })
+            && attributes.Rows.Any(row => row.Cells.Count >= 3 && row.Cells[0].DisplayText == "string"
+                && row.Cells[1].DisplayText == "id" && row.Cells[2].DisplayText.Contains("PK", StringComparison.Ordinal)
+                && row.Cells[2].DisplayText.Contains("FK", StringComparison.Ordinal))
+            && entityModel.Edges.Count == 1, "Packed ER aliases, structured typed keys or native paint was lost.");
 
         // Topology's global text role is textColor; primaryTextColor has a separate source-preset role.
         const string themed = "%%{init: {'theme':'dark','themeVariables':{'background':'#112233','primaryColor':'#334455','textColor':'#FFEEDD','lineColor':'#CCDDEE'}}}%%\nflowchart LR\nA[Start] --> B[Finish]";

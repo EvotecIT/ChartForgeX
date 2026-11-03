@@ -12,6 +12,39 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks measured keys, exact numeric intervals, native paint and calendar missing-day separation.</summary>
 public sealed class HeatmapColorScaleLegendTests {
+    [Theory]
+    [InlineData(true, "5", "10", "15")]
+    [InlineData(false, "12", "14", "16")]
+    public void IntermediateStepCaptionsFitWithoutOverlap(bool configured, string first, string middle, string last) {
+        var chart = ContinuousKey(configured);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
+        Assert.Contains(labels, node => node.Id == "heatmap-scale-label-step-1" && node.Text.Lines.Single().Text == first);
+        Assert.Contains(labels, node => node.Id == "heatmap-scale-label-step-2" && node.Text.Lines.Single().Text == middle);
+        Assert.Contains(labels, node => node.Id == "heatmap-scale-label-step-3" && node.Text.Lines.Single().Text == last);
+        // Endpoint regions reserve half the rail, so compare actual painted text footprints.
+        var ink = labels.Select(node => (Left: node.LineLeft(node.Text.Lines[0]), Right: node.LineLeft(node.Text.Lines[0]) + node.Text.Metrics.Width))
+            .OrderBy(box => box.Left).ToArray();
+        for (var index = 1; index < ink.Length; index++) Assert.True(ink[index - 1].Right <= ink[index].Left);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void StepCaptionOptOutKeepsEndpointCaptions(bool configured) {
+        var chart = ContinuousKey(configured).WithHeatmapScaleStepLabels(false);
+        var labels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>()
+            .Where(node => node.Role == "heatmap-scale-label").ToArray();
+        Assert.Equal(2, labels.Length);
+        Assert.DoesNotContain(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>(),
+            node => node.Id?.StartsWith("heatmap-scale-label-step-", StringComparison.Ordinal) == true);
+    }
+
+    private static Chart ContinuousKey(bool configured) {
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 10, 20).WithSize(800, 440);
+        return configured ? chart.WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")).WithValueRange(0, 20)) : chart;
+    }
     private static readonly ChartColor Low = ChartColor.FromHex("#DAE8F8"), Middle = ChartColor.FromHex("#6F9ECE"), High = ChartColor.FromHex("#1C5CAB");
 
     [Theory]
@@ -43,13 +76,15 @@ public sealed class HeatmapColorScaleLegendTests {
             Assert.Equal(new[] { "10", "20", "" }, steps.Select(step => (string?)step.Attribute("data-cfx-upper-bound")));
             Assert.All(steps, step => Assert.Equal("true", (string?)step.Attribute("data-cfx-upper-exclusive")));
         } else {
-            Assert.Equal(new[] { "0", "5", "10", "15", "20" }, steps.Select(step => (string?)step.Attribute("data-cfx-value")));
+            Assert.Equal(new[] { "2.5", "7.5", "12.5", "17.5" }, steps.Select(step => (string?)step.Attribute("data-cfx-value")));
+            Assert.Equal(new[] { "0", "5", "10", "15" }, steps.Select(step => (string?)step.Attribute("data-cfx-lower-bound")));
+            Assert.Equal(new[] { "5", "10", "15", "20" }, steps.Select(step => (string?)step.Attribute("data-cfx-upper-bound")));
             Assert.Equal("0", (string?)Role(document, prefix).Single().Attribute("data-cfx-min-value"));
             Assert.Equal("20", (string?)Role(document, prefix).Single().Attribute("data-cfx-max-value"));
             if (mode == "diverging") Assert.Contains(prepared.Regions, region => region.Label == "Target · 10");
         }
         var expected = mode == "discrete" ? scale.Bands.Select(band => band.Color).ToArray()
-            : new[] { 0d, 5, 10, 15, 20 }.Select(value => scale.ColorFor(value, 0, 20)).ToArray();
+            : new[] { 2.5d, 7.5, 12.5, 17.5 }.Select(value => scale.ColorFor(value, 0, 20)).ToArray();
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == prefix + "-swatch").ToArray();
         Assert.Equal(expected, swatches.Select(swatch => swatch.Fill!.Value));
         var image = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
@@ -136,7 +171,7 @@ public sealed class HeatmapColorScaleLegendTests {
     [InlineData(ChartSeriesKind.CalendarHeatmap, 360, true, 1, -20, 0, 40, 0, false)]
     [InlineData(ChartSeriesKind.Heatmap, 360, false, 1, 0, -10, 30, 1, true)]
     [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, 1, -20, 0, 40, 0, true)]
-    public void DivergingMidpointCaptionsFollowTheirNeutralSwatchAndKeepCompleteReadableText(ChartSeriesKind kind,
+    public void DivergingMidpointCaptionsFollowTheirValuePositionAndKeepCompleteReadableText(ChartSeriesKind kind,
         int width, bool inferred, int lowCount, double midpoint, double min, double max, int midpointStep, bool threeColors) {
         const string family = "CFX Heatmap Midpoint Carlito";
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
@@ -153,18 +188,17 @@ public sealed class HeatmapColorScaleLegendTests {
         var prefix = kind == ChartSeriesKind.CalendarHeatmap ? "calendar-scale" : "heatmap-scale";
         var document = XDocument.Parse(prepared.ToSvg()); var steps = Role(document, prefix + "-step");
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == prefix + "-swatch").ToArray();
-        Assert.Equal(5, swatches.Length);
-        Assert.Equal(effectiveMidpoint.ToString("R", CultureInfo.InvariantCulture), (string?)steps[midpointStep].Attribute("data-cfx-value"));
-        Assert.Equal(Middle, swatches[midpointStep].Fill!.Value);
-        var center = swatches[midpointStep].Bounds.Left + swatches[midpointStep].Bounds.Width / 2;
+        Assert.Equal(max - min == 30 ? 6 : 4, swatches.Length);
+        Assert.Equal(midpointStep == 0 ? min : midpointStep == 4 ? max : midpoint, effectiveMidpoint);
+        var center = swatches[0].Bounds.Left + (swatches[^1].Bounds.Right - swatches[0].Bounds.Left) * (effectiveMidpoint - min) / (max - min);
         var caption = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == prefix + "-label-midpoint");
         var captionRegion = prepared.Regions.Single(region => region.Id == caption.Id);
         var svgCaption = Role(document, prefix + "-label").Single(group => (string?)group.Attribute("data-cfx-source-id") == caption.Id)
             .Descendants().Single(element => element.Name.LocalName == "text");
         Assert.Equal("Target · " + effectiveMidpoint.ToString("R", CultureInfo.InvariantCulture), svgCaption.Value);
-        Assert.Equal(center, caption.X, 6);
+        Assert.InRange(center, captionRegion.Bounds.Left, captionRegion.Bounds.Right);
         var svgCenter = double.Parse(svgCaption.Attribute("x")!.Value, CultureInfo.InvariantCulture) + caption.Text.Metrics.Width / 2;
-        Assert.InRange(Math.Abs(svgCenter - center), 0, .001);
+        if (effectiveMidpoint > min && effectiveMidpoint < max) Assert.InRange(Math.Abs(svgCenter - center), 0, .001);
         Assert.True(caption.Text.Size >= 8);
         Assert.True(caption.Text.Metrics.Width <= captionRegion.Bounds.Width);
         var key = prepared.Regions.Single(region => region.Role == prefix);
@@ -186,7 +220,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
         var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "heatmap-scale-label-midpoint");
-        Assert.Equal(swatches[0].Bounds.Left + 1.78 * swatches[0].Bounds.Width, text.X, 6);
+        Assert.Equal(swatches[0].Bounds.Left + (swatches[^1].Bounds.Right - swatches[0].Bounds.Left) * .32, text.X, 6);
         Assert.Equal("Target · 3.2", Assert.Single(text.Text.Lines).Text);
         Assert.Equal("3.2", (string?)Role(XDocument.Parse(prepared.ToSvg()), "heatmap-scale").Single().Attribute("data-cfx-midpoint-value"));
     }

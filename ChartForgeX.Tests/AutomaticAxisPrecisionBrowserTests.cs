@@ -48,7 +48,8 @@ public sealed class AutomaticAxisPrecisionBrowserTests {
                     if (box.left < bounds.left - 1 || box.right > bounds.right + 1 || box.top < bounds.top - 1 || box.bottom > bounds.bottom + 1)
                         throw new Error('Numeric caption escapes its native SVG');
                 }
-                return labels.map(label => label.textContent);
+                // Captured glyph ink carries each line's text; ordinary text carries its own content.
+                return labels.map(label => label.textContent || [...label.querySelectorAll('[data-cfx-ink-line]')].map(line => line.dataset.cfxInkLine).join(' '));
             }
             """, new { id, theme, width, height });
         Assert.Equal(new[] { "-0.001", "-0.0009", "-0.0008", "-0.0007", "-0.0006", "-0.0005" }, captions);

@@ -27,7 +27,7 @@ public sealed class MermaidBoundImageCaptionTests {
         Assert.False(direct.HasErrors);Assert.Empty(direct.Diagnostics);Assert.False(fenced.HasErrors);Assert.Empty(fenced.Diagnostics);
         var node=Assert.Single(Assert.IsType<TopologyChart>(artifact.Model).Nodes);Assert.Equal(TopologyNodeDisplayMode.Artwork,node.DisplayMode);
         Assert.Equal(40,node.Width);Assert.Equal(20,node.Height);Assert.Equal(top?TopologyCaptionPlacement.Top:TopologyCaptionPlacement.Bottom,node.CaptionPlacement);
-        Assert.Equal(8,node.CaptionGap);Assert.Equal(16,node.CaptionTextStyle!.FontSize);Assert.Equal("Proof caption",node.Label);Assert.True(node.ShowLabel);
+        Assert.Equal(8,node.CaptionGap);Assert.Equal(13,node.CaptionTextStyle!.FontSize);Assert.Equal("Proof caption",node.Label);Assert.True(node.ShowLabel);
         Assert.Equal(svg,fence.ToSvg());Assert.Equal(png,fence.ToPng());Assert.Equal(png,restored.ToPng());
         pixels[0]=0;options.Flowchart!.ImageBindings!.Clear();Assert.Equal(svg,artifact.ToSvg());Assert.Equal(png,artifact.ToPng());
         var repeat=Assert.Single(parser.Parse("```mermaid\n"+source+"\n```").Artifacts);Assert.Equal(svg,repeat.ToSvg());Assert.Equal(png,repeat.ToPng());

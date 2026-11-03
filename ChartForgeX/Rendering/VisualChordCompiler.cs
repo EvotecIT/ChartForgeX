@@ -25,7 +25,7 @@ internal static partial class VisualChordCompiler {
         var showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true) && options.LabelContent != ChartChordLabelContent.None;
         var model = ChartChordLayout.Compute(series, options, plot);
         // Semantic-only nodes have no rendered caption, including positive totals whose native arcs collapse.
-        var captionNodes = showLabels ? model.Nodes.Where(node => node.IsVisible).ToArray() : Array.Empty<ChartChordNode>();
+        var captionNodes = showLabels ? model.Nodes.Where(node => node.IsVisible && labels[node.Index].Length > 0).ToArray() : Array.Empty<ChartChordNode>();
         var reserveX = captionNodes.Length > 0 ? Math.Min(plot.Width * .22, captionNodes.Select(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Width).Max() + context.Theme.Spacing) : 0;
         var reserveY = captionNodes.Length > 0 ? Math.Min(plot.Height * .2, captionNodes.Select(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Height).Max() + context.Theme.Spacing) : 0;
         var circle = new ChartRect(plot.Left + reserveX, plot.Top + reserveY, Math.Max(0, plot.Width - reserveX * 2), Math.Max(0, plot.Height - reserveY * 2));
@@ -113,7 +113,8 @@ internal static partial class VisualChordCompiler {
 
     private static string Label(Chart chart, int index) {
         var series = chart.Series[0]; var facts = series.Relationships!; var node = facts.Nodes[index];
-        var label = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : node.Label;
+        if (index < series.PreparedLabels.Count && series.PreparedLabels[index] is { } authored) return authored;
+        var label = node.Label;
         string Value(double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
         return chart.Options.Chord.LabelContent switch {
             ChartChordLabelContent.LabelAndValue => label + " " + Value(facts.FlowEndpointValues[index]),

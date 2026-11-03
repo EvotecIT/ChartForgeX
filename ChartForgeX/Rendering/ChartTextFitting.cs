@@ -15,24 +15,39 @@ internal static class ChartTextFitting {
         return Math.Floor(minimum * 1000) / 1000;
     }
 
+    /// <summary>Shortens chart text with an ellipsis, keeping at least <see cref="MinimumEllipsizedTextElements"/> visible text elements or hiding it.</summary>
     public static string TrimEnd(string value, double fontSize, double maxWidth, Func<string, double, double> measure) {
-        return FitEnd(value, maxWidth, text => measure(text, fontSize), "…");
+        return FitEnd(value, maxWidth, text => measure(text, fontSize), "…", MinimumEllipsizedTextElements);
     }
 
     /// <summary>Fits a prefix without first shaping an arbitrarily long source value.</summary>
-    internal static string FitEnd(string value, double maxWidth, Func<string, double> measure, string suffix) {
-        return FitEnd(value, text => measure(text) <= maxWidth, suffix);
+    internal static string FitEnd(string value, double maxWidth, Func<string, double> measure, string suffix, int minimumElements = 0) {
+        return FitEnd(value, text => measure(text) <= maxWidth, suffix, minimumElements);
+    }
+
+    /// <summary>An ellipsized caption keeps at least this many visible text elements; anything shorter cannot identify its source and is hidden.</summary>
+    internal const int MinimumEllipsizedTextElements = 6;
+
+    /// <summary>Whether a shortened prefix keeps enough visible text elements to stand for its source.</summary>
+    internal static bool KeepsShortenedMinimum(string prefix, int minimumElements = MinimumEllipsizedTextElements) {
+        prefix = prefix.TrimEnd();
+        var count = 0;
+        for (var index = 0; index < prefix.Length && count < minimumElements; index = Typography.TextElementBoundary.Next(prefix, index)) count++;
+        return count >= minimumElements;
     }
 
     /// <summary>Fits a whole-text-element prefix in a measured shape. The predicate must accept nested, increasing prefixes.</summary>
-    internal static string FitEnd(string value, Func<string, bool> fits, string suffix) {
+    /// <remarks>With a suffix, a prefix shorter than <paramref name="minimumElements"/> returns an empty string: the caller hides the text.
+    /// Chart text passes <see cref="MinimumEllipsizedTextElements"/>; general text blocks keep any whole-element prefix.</remarks>
+    internal static string FitEnd(string value, Func<string, bool> fits, string suffix, int minimumElements = 0) {
         if (string.IsNullOrEmpty(value)) return value;
         var length = PrefixLength(value, fits);
         if (length == value.Length) return value;
         if (suffix.Length == 0) return value.Substring(0, length);
         if (!fits(suffix)) return string.Empty;
         length = PrefixLength(value, text => fits(text + suffix));
-        return value.Substring(0, length) + suffix;
+        var prefix = value.Substring(0, length);
+        return minimumElements <= 0 || KeepsShortenedMinimum(prefix, minimumElements) ? prefix + suffix : string.Empty;
     }
 
     /// <summary>Returns a whole-text-element prefix using bounded exponential then binary measurement.</summary>

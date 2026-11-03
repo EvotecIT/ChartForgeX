@@ -3,7 +3,7 @@ public static class ScatterMarkerShapesRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
     public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("options" or "compact-options")) throw new ArgumentOutOfRangeException(nameof(variant));
-        return MarkerShapes().WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return MarkerShapes();
     }
 
     private static Chart MarkerShapes() {

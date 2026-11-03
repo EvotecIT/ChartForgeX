@@ -18,6 +18,36 @@ Treemaps display their group and leaf captions by default. An explicit `WithData
 
 ## Unified authoring contracts
 
+### Series paint and text callbacks
+
+`WithItemStyler<TDatum>`, `WithFill`, `WithStrokeStyle`,
+`WithDataLabelFormatter` and `WithTooltipFormatter` add general series authoring
+without replacing existing calls. `WithPointColor` and other ordinal overrides
+remain useful for fixed source positions. A non-null datum callback field takes
+precedence over them; null inherits their presentation. Use each family's typed
+authored observation rather than its internal numeric projection.
+
+For a dashed forecast, replace repeated segment workarounds with
+`series.WithStrokeStyle(new ChartStrokeStyle(dash: new[] { 7d, 4d }))`.
+Use the general label formatter for a primary observation caption and keep typed
+endpoint/statistic formatters when their additional measured fields are needed.
+No API removal is required for these capabilities. See
+[chart paint and formatters](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chart-styling.md) for the complete contracts.
+
+Primary caption precedence is consistent across families: a general formatter's
+non-null output, then an authored point label, then the family default. For
+Pie/Donut, an authored point label therefore takes precedence over the pie-specific
+label formatter. Funnel/Pyramid and Chord point labels replace the complete primary
+caption, and single-ring center captions honor the resolved observation label. A
+Chord caption such as `WithPointLabel(0, "North")` previously became `North 20`
+under `LabelAndValue`; it now stays `North`. Leave the point label unset to retain
+the family-composed name and totals, or return the complete caption from
+`WithDataLabelFormatter`. Empty captions also remove their label geometry and
+space reservation. Remove an
+authored point label when the specialized family formatter should supply it.
+Typed endpoint, statistic and secondary-caption formatters keep their separate
+measured-field contracts.
+
 Quadrant source endpoint names now populate separate `chart.Options.XAxis.Labels` and `YAxis.Labels`; they are no longer joined into `XAxisTitle` or `YAxisTitle`. Read the label at `.25`/`.75` for paired low/high names. Native chart callers can still author independent axis titles normally. Source `chartWidth`/`chartHeight` apply unless the corresponding host render option is explicitly assigned. Setting `Width = 960` intentionally overrides a different source width; leaving it unassigned retains source precedence. Existing render-option CLR property signatures are unchanged.
 
 Scatter observations can capture detached `ChartMarkerOptions` through `ConfigurePointMarkers`, inspect authored copies through `GetPointMarkers`, and clear a single override through `UseSeriesMarkers`. Rebuild and reprepare artifacts after source edits; a previously prepared scene remains detached. The API does not add per-point marker ownership to other families.
@@ -911,7 +941,7 @@ Quoted XY datum captions are exposed as `MermaidXYChartSeries.PointLabels`, reta
 
 Safe Markdown in Flowchart node captions, Mindmap node labels and Requirement text values now preserves strong/italic emphasis. Those supported captions no longer emit the obsolete plain-text approximation warning. Unsupported code, links, images, HTML and math remain literal with located warnings; warning rejection still applies. Unwired edge/group and other-family captions retain their previous warnings.
 
-`TextContent` is immutable and owns both runs and plain semantic text. `LabelContent`, `Content` and `ValueContent` are native authoring accessors; setting the incumbent string accessor intentionally resets that caption to plain content. Portable fields carry structured runs only when needed and validate their plain projection. Structured SVG exports use permanent self-contained glyph resources instead of editable SVG `<text>`; edit through the native content owner. Plain-string SVG/PNG and caption semantics keep the incumbent path. Color/bitmap-only rich glyph outlines remain an explicit unsupported SVG export, while the built-in fontless TinyFont path stays available.
+`TextContent` is immutable and owns both runs and plain semantic text. `LabelContent`, `Content` and `ValueContent` are native authoring accessors; setting the incumbent string accessor intentionally resets that caption to plain content. Portable fields carry structured runs only when needed and validate their plain projection. Structured SVG exports use permanent self-contained glyph resources when outlines are available; edit through the native content owner. Automatic export falls back to visible browser `<text>` for color/bitmap-only rich glyphs that cannot supply outlines. This fallback may have neither an embedded font nor native paths and uses the browser's available faces; it is separate from ordinary text-line raster capture. Explicit `NativeContours` still rejects unsupported outlines. Native PNG paint and the built-in fontless TinyFont path stay available.
 
 
 ## Explicit bounded Gaussian SVG import

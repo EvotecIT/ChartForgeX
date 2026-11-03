@@ -92,6 +92,12 @@ public sealed class PreparedSvgPolicyTests {
         var artifact = prepared.ToArtifact("record", VisualArtifactKind.Chart); artifact.Accessibility.Name = "Current host title";
         Assert.Contains("Current host title", artifact.ToSvg()); Assert.Contains("var(--status,", artifact.ToSvg());
         Assert.Contains("target=\"_blank\"", artifact.ToSvg());
+        var native = prepared.ToSvg(artifact.Accessibility, "native-record", textPresentation: VisualSvgTextPresentation.NativeContours);
+        Assert.Contains("Current host title", native);
+        Assert.Contains("var(--status,", native);
+        Assert.Contains("target=\"_blank\"", native);
+        Assert.All(XDocument.Parse(native).Descendants().Attributes("id"), attribute =>
+            Assert.StartsWith("native-record-", attribute.Value, StringComparison.Ordinal));
         Assert.DoesNotContain("var(--", prepared.ToSvg(new VisualSvgOptions()));
         Assert.DoesNotContain("target=", prepared.ToSvg(new VisualSvgOptions()));
     }

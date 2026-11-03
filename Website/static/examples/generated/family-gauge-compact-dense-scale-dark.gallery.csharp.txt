@@ -20,7 +20,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = GaugeRecipe.Create("compact-dense-scale", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(390, 300)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(390, 194)), theme, mode,
     new VisualFrame("Available capacity against a target", "", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -38,7 +38,6 @@ public static class GaugeRecipe {
                 new ChartGaugeTarget(10500, "Goal"), new ChartGaugeTarget(19000, "Limit")
             });
             return Chart.Create().WithTitle("Processed requests").AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading))
-                .WithValueFormat(ChartValueFormat.Number("0.000", System.Globalization.CultureInfo.InvariantCulture))
                 .ConfigureGauge(options => {
                     options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = "Processed requests";
                     options.Bands.Add(new ChartGaugeBand(0, 10000, ChartSeriesState.Warning));
@@ -58,7 +57,6 @@ public static class GaugeRecipe {
         var capacity = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
             new ChartGaugeValue(76, targets: configured ? new[] { new ChartGaugeTarget(60, "Baseline"), new ChartGaugeTarget(85, "Goal") } : new[] { new ChartGaugeTarget(85) }));
         return Chart.Create().AddSeries(capacity)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture))
             .ConfigureGauge(options => {
                 options.Form = variant is "options" or "compact-options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
                 if (configured) options.TickCount = 5;

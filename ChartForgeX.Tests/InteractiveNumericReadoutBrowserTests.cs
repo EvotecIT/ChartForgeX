@@ -105,7 +105,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var equal = page.Locator(Point(0, 0)); await equal.FocusAsync();
         Assert.Equal(new[] { "Observed", "Peer" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
-        Assert.Equal("0.03", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("0.025", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await page.Keyboard.PressAsync("ArrowDown");
         Assert.Equal("peer:0", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
         var distinct = page.Locator(Point(0, 1)); var rawX = await distinct.GetAttributeAsync("data-cfx-x");

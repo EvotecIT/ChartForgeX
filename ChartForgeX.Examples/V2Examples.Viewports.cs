@@ -23,7 +23,7 @@ public static partial class V2Examples {
                     var viewport = new ChartCartesianViewport(x: new ChartAxisWindow(2, 8));
                     var model = new ViewportExample(chart, viewport);
                     var prepared = model.Prepare(GalleryContext(width, height, mode, title, subtitle, !compact));
-                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                     WriteThumbnail(output, model, id, title, family, mode, !compact);
                     WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, !compact, viewport: true);

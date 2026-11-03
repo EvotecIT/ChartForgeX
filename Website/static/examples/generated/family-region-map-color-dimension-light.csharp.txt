@@ -41,7 +41,7 @@ public static class RegionMapRecipe {
                     .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
                 .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        return chart;
     }
 
     private static Chart Temperature(VisualThemeMode mode) {
@@ -59,7 +59,7 @@ public static class RegionMapRecipe {
             .WithMapLabels(false).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
             .ConfigureMapColorDimension(options => {
                 options.Name = "Temperature";
-                options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+                options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", System.Globalization.CultureInfo.InvariantCulture);
             });
     }
 

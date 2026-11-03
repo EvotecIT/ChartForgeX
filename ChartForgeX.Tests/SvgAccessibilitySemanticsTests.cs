@@ -1,6 +1,7 @@
 using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -67,6 +68,20 @@ public sealed class SvgAccessibilitySemanticsTests {
         Assert.Equal("true", (string?)hidden.Attribute("aria-hidden"));
         Assert.Empty(hidden.DescendantsAndSelf().Attributes("aria-label"));
         Assert.Equal("Passkey: 800 sign-ins", Assert.Single(hidden.Descendants().Attributes("data-cfx-description")).Value);
+
+        var wrapped = Wrapped();
+        var spoken = XDocument.Parse(VisualSceneSvgRenderer.Render(wrapped, options: options)).Descendants()
+            .Single(node => (string?)node.Attribute("data-cfx-role") == "axis-y-label");
+        Assert.Equal("High impact", (string?)spoken.Attribute("aria-label"));
+        Assert.Empty(XDocument.Parse(VisualSceneSvgRenderer.Render(wrapped, decorative: true, options: options)).Descendants().Attributes("aria-label"));
+
+        VisualScene Wrapped() {
+            var prepared = new VisualScenePreparedText(new ResolvedTypeface(null, false, false), new TextStyle(), 8, 16,
+                new[] { new VisualSceneTextLine("High", 20, Array.Empty<ShapedGlyph>()), new VisualSceneTextLine("impact", 30, Array.Empty<ShapedGlyph>()) },
+                new TextMetrics(30, 16, 8));
+            return new VisualScene(new VisualSize(100, 60), new VisualSceneNode[] { new VisualSceneText(prepared, 4, 12, ChartColor.Black, TextAlignment.Left, "axis-y-label", "impact") },
+                Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>());
+        }
 
         VisualScene Scene(IReadOnlyDictionary<string, string> facts, string? href = null) =>
             new(new VisualSize(100, 60), new VisualSceneNode[] {

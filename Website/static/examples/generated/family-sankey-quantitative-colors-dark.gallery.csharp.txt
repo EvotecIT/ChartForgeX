@@ -61,7 +61,7 @@ public static class SankeyOptionsRecipe {
             options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
             options.NodeWidth = 16; options.NodeGap = 12; options.NodeCornerRadius = 1;
             options.RibbonFill = ChartColor.FromHex("#607DAA"); options.RibbonOpacity = .45;
-        }).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        });
         if (variant.EndsWith("source-colors", StringComparison.Ordinal) || variant.EndsWith("target-colors", StringComparison.Ordinal) || quantitative) {
             chart.ConfigureSankey(options => {
                 options.RibbonFill = null; // Let the selected endpoint or measurement policy supply ribbon paint.

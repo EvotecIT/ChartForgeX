@@ -126,6 +126,12 @@ internal static partial class SmokeTests {
 
         var mirroredSvg = mirrored.ToSvg(options);
         var mirroredAnchorX = GetAttribute(mirroredSvg, "data-cfx-role=\"topology-edge-label\" data-edge-id=\"source-target\"", "data-label-anchor-x");
-        Assert(mirroredAnchorX > 250, "Explicit edge-label anchors should mirror with right-to-left prepared layouts.");
+        var rightSource = mirrored.Prepare(options).Analyze().Nodes.Single(node => node.Id == "source").Bounds;
+        mirrored.LayoutDirection = TopologyLayoutDirection.LeftToRight;
+        var leftSvg = mirrored.ToSvg(options);
+        var leftAnchor = GetAttribute(leftSvg, "data-cfx-role=\"topology-edge-label\" data-edge-id=\"source-target\"", "data-label-anchor-x");
+        var leftSource = mirrored.Prepare(options).Analyze().Nodes.Single(node => node.Id == "source").Bounds;
+        Assert(Math.Abs(mirroredAnchorX - rightSource.X - rightSource.Width / 2 + leftAnchor - leftSource.X - leftSource.Width / 2) < .001,
+            "Explicit edge-label anchors should mirror relative to their nodes in naturally framed layouts.");
     }
 }

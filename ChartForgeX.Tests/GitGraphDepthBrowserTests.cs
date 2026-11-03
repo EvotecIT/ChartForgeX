@@ -31,7 +31,8 @@ public sealed class GitGraphDepthBrowserTests {
             File.WriteAllText(stem + ".svg", svg); File.WriteAllBytes(stem + ".native.png", png); File.WriteAllText(stem + ".observed.json", observed.GetRawText());
         }
         Assert.Equal(6, observed.GetProperty("commits").GetArrayLength()); Assert.Equal(7, observed.GetProperty("edges").GetArrayLength());
-        Assert.Equal(width, observed.GetProperty("pngWidth").GetInt32()); Assert.Equal(620, observed.GetProperty("pngHeight").GetInt32());
+        Assert.Equal(observed.GetProperty("svgWidth").GetInt32(), observed.GetProperty("pngWidth").GetInt32());
+        Assert.Equal(observed.GetProperty("svgHeight").GetInt32(), observed.GetProperty("pngHeight").GetInt32());
         Assert.Empty(observed.GetProperty("clipped").EnumerateArray()); Assert.Equal(0, observed.GetProperty("activeElements").GetInt32());
         Assert.True(observed.GetProperty("fitsHost").GetBoolean());
         foreach (var other in new[] { width == 390 ? 1124 : 414, width + 24 }) {
@@ -48,7 +49,7 @@ public sealed class GitGraphDepthBrowserTests {
           const png=document.querySelector('#pixels');
           return {commits:[...svg.querySelectorAll('[data-cfx-role=git-commit]')].map(n=>({id:n.dataset.commitId,branch:n.dataset.branch,x:+n.getAttribute('cx'),y:+n.getAttribute('cy')})),
             edges:[...svg.querySelectorAll('[data-cfx-role=git-commit-edge]')].map(n=>({id:n.dataset.commitId,parent:n.dataset.parentId})),clipped,
-            activeElements:svg.querySelectorAll('script,image,foreignObject,[tabindex],button').length,pngWidth:png.naturalWidth,pngHeight:png.naturalHeight,
+            activeElements:svg.querySelectorAll('script,image,foreignObject,[tabindex],button').length,pngWidth:png.naturalWidth,pngHeight:png.naturalHeight,svgWidth:+svg.getAttribute('width'),svgHeight:+svg.getAttribute('height'),
             fitsHost:document.documentElement.scrollWidth<=innerWidth+1};
         }
         """);

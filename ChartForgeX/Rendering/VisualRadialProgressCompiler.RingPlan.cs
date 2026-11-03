@@ -25,6 +25,7 @@ internal static partial class VisualRadialProgressCompiler {
         private readonly ChartSeriesState _state;
         private readonly double _cx, _cy, _outer, _strokeScale;
         private readonly ChartValueFormat? _format;
+        private readonly bool _percentage;
         private readonly (string Notation, string Format, string Culture)? _formatKey;
         private readonly IReadOnlyList<VisualValueReading> _readings;
         internal RingPlan(Chart chart, VisualRenderContext context, double cx, double cy, double outer, VisualThemeColors colors) {
@@ -33,13 +34,17 @@ internal static partial class VisualRadialProgressCompiler {
             _pin = chart.Options.PinStateColorsInForcedColors && _state != ChartSeriesState.None;
             _showCenter = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressRingCenterLabel;
             _strokeScale = chart.Options.RadialProgressStrokeScale; _values = series.RenderPoints.Select(point => point.Y).ToArray();
-            _ordinaryAverage = ChartNumericFormatter.FormatValue(chart.Options, _values.Average());
+            _percentage = ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue);
+            var displayFormat = _percentage ? ChartValueFormat.Percentages(chart.Options.ValueFormat,
+                _values.Concat(new[] { _values.Average() }).Select(value => value / 100)) : chart.Options.ValueFormat;
+            double DisplayValue(double value) => _percentage ? value / 100 : value;
+            _ordinaryAverage = displayFormat.Format(DisplayValue(_values.Average()));
             _labels = series.RenderPoints.Select((point, index) => VisualRadialPrimitives.Label(chart, point, index)).ToArray();
-            _displays = _values.Select(value => ChartNumericFormatter.FormatValue(chart.Options, value)).ToArray();
+            _displays = _values.Select(value => displayFormat.Format(DisplayValue(value))).ToArray();
             _paints = _values.Select((_, index) => VisualRadialPrimitives.Color(series, index, colors)).ToArray();
             _bindings = _paints.Select((color, index) => VisualChartPaint.Series(series, color, index)).ToArray();
             _ids = _values.Select((_, index) => series.ObservationIds.TryGetValue(index, out var id) ? id.Value : null).ToArray();
-            _authored = _values.Select((_, index) => index < series.PointLabels.Count ? series.PointLabels[index] : null).ToArray();
+            _authored = _values.Select((_, index) => index < series.PreparedLabels.Count ? series.PreparedLabels[index] : null).ToArray();
             _text = new VisualValueTextPolicy(chart, series, context); _format = chart.Options.ValueFormat.CapturedValuePolicy;
             if (_format != null) {
                 try { _formatKey = _format.PortablePolicy(); } catch (NotSupportedException) { } catch (ArgumentException) { }
@@ -58,17 +63,21 @@ internal static partial class VisualRadialProgressCompiler {
             && _cx == ring._cx && _cy == ring._cy && _outer == ring._outer && _strokeScale == ring._strokeScale && _showCenter == ring._showCenter
             && _labels.SequenceEqual(ring._labels) && _paints.SequenceEqual(ring._paints)
             && _bindings.Select(paint => (paint.Value, paint.IsRaw)).SequenceEqual(ring._bindings.Select(paint => (paint.Value, paint.IsRaw)))
-            && _formatKey.HasValue && _formatKey.Equals(ring._formatKey) && _text.SamePolicy(ring._text)
+            && _percentage == ring._percentage && _formatKey.HasValue && _formatKey.Equals(ring._formatKey) && _text.SamePolicy(ring._text)
             && VisualValuePolicy.SameNativeTheme(_context, ring._context);
         void IVisualValuePlan.Paint(VisualSceneBuilder builder, double[]? readings, bool captured) {
-            var values = readings ?? _values; var value = readings == null ? _ordinaryAverage : _format!.Format(values.Average());
+            var values = readings ?? _values;
+            var format = _percentage ? ChartValueFormat.Percentages(_format!, values.Concat(new[] { values.Average() }).Select(number => number / 100)) : _format;
+            var value = readings == null ? _ordinaryAverage : format!.Format(_percentage ? values.Average() / 100 : values.Average());
+            if (_authored.Length == 1 && _authored[0] != null) value = _authored[0]!;
             var style = _text.Style(_colors.Foreground, _context.Theme.Typography.CenterValueSize, 700);
             var captionStyle = _text.Style(_colors.MutedForeground, _context.Theme.Typography.DataLabelSize);
             var requested = _showCenter ? RequestedCenterRadius(builder, _context, value, _caption, style, captionStyle,
                 captured ? _text.Face(style) : null, captured ? _text.Face(captionStyle) : null) : 0;
             var layout = ProgressRingLayout.Create(_outer, values.Length, _strokeScale, requested);
             for (var index = 0; index < values.Length; index++) {
-                var raw = values[index]; var label = _labels[index]; var formatted = readings == null ? _displays[index] : _format!.Format(raw);
+                var raw = values[index]; var label = _labels[index];
+                var formatted = readings == null ? _displays[index] : format!.Format(_percentage ? raw / 100 : raw);
                 var radius = layout.RadiusAt(index); var color = _paints[index];
                 var bounds = new ChartRect(_cx - radius - layout.StrokeWidth / 2, _cy - radius - layout.StrokeWidth / 2,
                     radius * 2 + layout.StrokeWidth, radius * 2 + layout.StrokeWidth);

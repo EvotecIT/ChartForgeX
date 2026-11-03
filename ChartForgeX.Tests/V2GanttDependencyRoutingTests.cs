@@ -32,12 +32,26 @@ public sealed class V2GanttDependencyRoutingTests {
             var route = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-line");
             var arrow = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
             var first = route.Commands[0]; var last = route.Commands[route.Commands.Count - 1];
-            Assert.True(first.X - route.StrokeWidth / 2 > sourceBounds.Right, "The painted connector must start beyond the source finish.");
-            Assert.True(last.X + arrow.StrokeWidth / 2 < targetBounds.Left, "The painted arrow must stop before the target start, including a diamond's left vertex.");
-            Assert.Equal(sourceBounds.Top + sourceBounds.Height / 2, first.Y, 7);
-            Assert.Equal(targetBounds.Top + targetBounds.Height / 2, last.Y, 7);
-            Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
-            Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
+            if (first.Y > sourceBounds.Bottom) {
+                Assert.InRange(Math.Abs(sourceBounds.Bottom - (first.Y - route.StrokeWidth / 2)), 0, .001);
+                Assert.InRange(first.X, sourceBounds.Left, sourceBounds.Right);
+            } else {
+                Assert.InRange(Math.Abs(sourceBounds.Right - (first.X - route.StrokeWidth / 2)), 0, .001);
+                Assert.Equal(sourceBounds.Top + sourceBounds.Height / 2, first.Y, 7);
+            }
+            if (last.Y < targetBounds.Top) {
+                Assert.InRange(Math.Abs(targetBounds.Top - (last.Y + arrow.StrokeWidth / 2)), 0, .001);
+                Assert.InRange(last.X, targetBounds.Left, targetBounds.Right);
+                Assert.True(route.Commands[^2].Y < last.Y);
+                Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.Y < last.Y));
+                Assert.All(route.Commands.Zip(route.Commands.Skip(1)), pair => Assert.True(pair.First.X <= pair.Second.X,
+                    "An adjacent finish-to-start route must not double back in time."));
+            } else {
+                Assert.InRange(Math.Abs(targetBounds.Left - (last.X + arrow.StrokeWidth / 2)), 0, .001);
+                Assert.Equal(targetBounds.Top + targetBounds.Height / 2, last.Y, 7);
+                Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
+                Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
+            }
             foreach (var bounds in new[] { sourceBounds, targetBounds }) {
                 AssertClear(route, bounds); AssertClear(arrow, bounds);
             }
@@ -89,10 +103,17 @@ public sealed class V2GanttDependencyRoutingTests {
             var sourceBounds = scene.Regions.Single(region => region.Id == "series-" + (upward ? 2 : 0) + "-point-0").Bounds;
             var targetBounds = scene.Regions.Single(region => region.Id == "series-" + (upward ? 0 : 2) + "-point-0").Bounds;
             var first = route.Commands[0]; var last = route.Commands[route.Commands.Count - 1];
-            Assert.Equal(3, first.X - route.StrokeWidth / 2 - sourceBounds.Right, 6);
-            Assert.Equal(3, targetBounds.Left - last.X - arrow.StrokeWidth / 2, 6);
-            Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
-            Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
+            Assert.Equal(0, first.X - route.StrokeWidth / 2 - sourceBounds.Right, 3);
+            if (last.Y < targetBounds.Top) {
+                Assert.InRange(Math.Abs(targetBounds.Top - (last.Y + arrow.StrokeWidth / 2)), 0, .001);
+                Assert.InRange(last.X, targetBounds.Left, targetBounds.Right);
+                Assert.True(route.Commands[^2].Y < last.Y);
+                Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.Y < last.Y));
+            } else {
+                Assert.InRange(Math.Abs(0 - (targetBounds.Left - last.X - arrow.StrokeWidth / 2)), 0, .001);
+                Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
+                Assert.All(new[] { arrow.Commands[0], arrow.Commands[2] }, wing => Assert.True(wing.X < last.X));
+            }
             var plot = DependencyClip(scene);
             Assert.All(route.Commands.Concat(arrow.Commands), command => {
                 Assert.InRange(command.X, plot.Left + route.StrokeWidth / 2, plot.Right - route.StrokeWidth / 2);
@@ -114,17 +135,16 @@ public sealed class V2GanttDependencyRoutingTests {
         var target = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Id == "series-1-point-0");
         Assert.Equal("3", target.Metadata["data-cfx-start"]); Assert.Equal("7", target.Metadata["data-cfx-end"]);
         var activeGroups = new Stack<VisualSceneGroup>();
-        ChartRect? markClip = null;
+        var markClip = DependencyClip(scene);
         var checkedRoute = false;
         foreach (var node in scene.Nodes) {
             if (node is VisualSceneGroup group) activeGroups.Push(group);
             else if (node is VisualSceneEndGroup) activeGroups.Pop();
-            else if (node.Role == "gantt-task-shape") markClip = activeGroups.First(ancestor => ancestor.Clip.HasValue).Clip;
+            else if (node.Role == "gantt-task-shape") Assert.Contains(activeGroups, ancestor => ancestor.Clip.HasValue && ancestor.Clip.Value.Equals(markClip));
             else if (node is VisualScenePath route && route.Role == "gantt-dependency-line") {
-                Assert.True(markClip.HasValue);
-                Assert.Contains(activeGroups, ancestor => ancestor.Clip.HasValue && ancestor.Clip.Value.Equals(markClip!.Value));
+                Assert.Contains(activeGroups, ancestor => ancestor.Clip.HasValue && ancestor.Clip.Value.Equals(markClip));
                 // A finish beyond the authored maximum must retain its off-plot stub and let this active clip contain it.
-                Assert.Contains(route.Commands, command => command.X > markClip!.Value.Right);
+                Assert.Contains(route.Commands, command => command.X > markClip.Right);
                 checkedRoute = true;
             }
         }
@@ -150,8 +170,13 @@ public sealed class V2GanttDependencyRoutingTests {
         Assert.All(surfaces, bounds => { AssertClear(route, bounds); AssertClear(arrow, bounds); });
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "gantt.dependency-insufficient-space");
         var target = surfaces[upward ? 0 : 2]; var last = route.Commands[route.Commands.Count - 1];
-        Assert.Equal(3, target.Left - last.X - stroke / 2, 6);
-        Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
+        if (last.Y < target.Top) {
+            Assert.Equal(target.Top, last.Y + stroke / 2, 3);
+            Assert.True(route.Commands[^2].Y < last.Y);
+        } else {
+            Assert.Equal(0, target.Left - last.X - stroke / 2, 3);
+            Assert.True(route.Commands[route.Commands.Count - 2].X < last.X);
+        }
         if (!explicitWindow) {
             var plot = DependencyClip(scene);
             Assert.All(route.Commands.Concat(arrow.Commands), command => {
@@ -293,6 +318,7 @@ public sealed class V2GanttDependencyRoutingTests {
         var control = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size,
             scene.Nodes.Where(node => node.Role is not ("gantt-dependency-line" or "gantt-dependency-arrow")).ToArray(), scene.Diagnostics, scene.Regions));
         var changed = 0;
+        var deepestInteriorChange = 0d;
         for (var y = 0; y < actual.Height; y++)
             for (var x = 0; x < actual.Width; x++) {
                 var offset = (y * actual.Width + x) * 4;
@@ -300,8 +326,14 @@ public sealed class V2GanttDependencyRoutingTests {
                     && Math.Abs(actual.Pixels[offset + 1] - control.Pixels[offset + 1]) <= 20
                     && Math.Abs(actual.Pixels[offset + 2] - control.Pixels[offset + 2]) <= 20) continue;
                 changed++;
-                Assert.DoesNotContain(surfaces, bounds => x + .5 > bounds.Left && x + .5 < bounds.Right && y + .5 > bounds.Top && y + .5 < bounds.Bottom);
+                foreach (var bounds in surfaces) {
+                    var depth = Math.Min(Math.Min(x + .5 - bounds.Left, bounds.Right - x - .5),
+                        Math.Min(y + .5 - bounds.Top, bounds.Bottom - y - .5));
+                    deepestInteriorChange = Math.Max(deepestInteriorChange, depth);
+                }
             }
+        // A touching stroke shares the half-pixel antialias fringe. Complete interior pixels stay unchanged.
+        Assert.InRange(deepestInteriorChange, 0, .5);
         if (expectInk) Assert.True(changed >= 10, "The native dependency must retain visible ink outside the task surfaces.");
         else Assert.Equal(0, changed);
     }

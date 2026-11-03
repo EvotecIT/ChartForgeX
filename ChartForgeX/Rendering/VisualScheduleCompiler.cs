@@ -10,6 +10,9 @@ namespace ChartForgeX.Rendering;
 /// <summary>Native preparation for range schedules, state lanes and packed Gantt lanes.</summary>
 internal static partial class VisualScheduleCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+        if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && chart.Series.Count > 0
+            && chart.Series.All(series => series.Kind == ChartSeriesKind.Gantt && !IsMarker(series)))
+            return Array.Empty<VisualLegendEntry>();
         if (ChartSeriesKindTraits.IsMixedSchedule(chart)) {
             var states = chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane)
                 ? chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors))

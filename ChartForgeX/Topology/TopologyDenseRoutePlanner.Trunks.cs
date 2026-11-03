@@ -10,8 +10,11 @@ internal static partial class TopologyDenseRoutePlanner {
     internal static List<ChartPoint> PaintPoints(TopologyChart chart, TopologyEdge edge, List<ChartPoint> fullRoute, bool includeOwner = false) {
         if (chart.RenderOptions?.ShareIncomingTrunks != true) return fullRoute;
         Plan(chart);
-        return Plans.TryGetValue(chart, out var holder) && holder.PaintRoutes.TryGetValue(edge, out var branch) &&
-            (includeOwner || !ReferenceEquals(holder.TrunkOwners[edge], edge)) ? new List<ChartPoint>(branch) : fullRoute;
+        if (!Plans.TryGetValue(chart, out var holder) || !holder.PaintRoutes.TryGetValue(edge, out var branch)
+            || !includeOwner && ReferenceEquals(holder.TrunkOwners[edge], edge)) return fullRoute;
+        var paint = new List<ChartPoint>(branch);
+        AttachPaintTerminals(paint, target: false);
+        return paint;
     }
 
     /// <summary>SVG keeps one movable tail so an HTML host can focus or filter any member without losing the bus.</summary>
@@ -19,7 +22,9 @@ internal static partial class TopologyDenseRoutePlanner {
         if (chart.RenderOptions?.ShareIncomingTrunks != true) return (null, null);
         Plan(chart);
         if (!Plans.TryGetValue(chart, out var holder) || !holder.TrunkOwners.TryGetValue(edge, out var owner)) return (null, null);
-        return (owner, holder.Routes![edge]!.Skip(holder.PaintRoutes[edge].Count - 1).ToList());
+        var tail = holder.Routes![edge]!.Skip(holder.PaintRoutes[edge].Count - 1).ToList();
+        AttachPaintTerminals(tail, source: false);
+        return (owner, tail);
     }
 
     internal static bool IsTrunkBranch(TopologyChart chart, TopologyEdge edge) {
@@ -34,8 +39,10 @@ internal static partial class TopologyDenseRoutePlanner {
         Plan(chart);
         if (!Plans.TryGetValue(chart, out var holder) || !holder.TrunkOwners.TryGetValue(first, out var a) ||
             !holder.TrunkOwners.TryGetValue(second, out var b) || !ReferenceEquals(a, b)) return 0;
-        var firstPoints = holder.Routes![first]!;
-        var secondPoints = holder.Routes[second]!;
+        var firstPoints = new List<ChartPoint>(holder.Routes![first]!);
+        var secondPoints = new List<ChartPoint>(holder.Routes[second]!);
+        AttachPaintTerminals(firstPoints, source: false);
+        AttachPaintTerminals(secondPoints, source: false);
         var branch = ReferenceEquals(first, a) ? second : first;
         var junction = holder.PaintRoutes[branch].Last();
         var firstStart = firstPoints.FindIndex(point => Length(point, junction) < 0.01);

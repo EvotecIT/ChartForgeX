@@ -8,7 +8,8 @@ public static class MermaidUseCaseJsonSourceExample {
             WarningPolicy = ChartForgeX.Mermaid.MermaidWarningPolicy.Reject,
             UseCase = new ChartForgeX.Mermaid.MermaidFlowchartRenderOptions { Width = compact ? 390 : 1000, Height = compact ? 1000 : 680,
                 Presentation = new ChartForgeX.Mermaid.MermaidPresentationOptions { FontFamily = fontFamily, ThemeMode = mode,
-                    TopologySizing = ChartForgeX.Mermaid.MermaidTopologySizing.FixedViewport } } });
+                    // A phone-width column keeps the table readable at its natural size and scrolls instead of shrinking strokes below 0.75 px.
+                    TopologySizing = compact ? ChartForgeX.Mermaid.MermaidTopologySizing.Natural : ChartForgeX.Mermaid.MermaidTopologySizing.FixedViewport } } });
         if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException("The complete UseCase JSON source must lower through its canonical native table owner.");
         // This example explicitly chooses complete participant captions through the existing native per-node policy.
         var topology = (ChartForgeX.Topology.TopologyChart)result.Artifact.Model!;

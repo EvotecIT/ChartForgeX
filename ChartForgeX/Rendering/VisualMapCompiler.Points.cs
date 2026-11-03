@@ -48,7 +48,7 @@ internal static partial class VisualMapCompiler {
                 builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point", paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 obstacles.Add(new LabelObstacle(id, new ChartRect(point.X - halo, point.Y - halo, halo * 2, halo * 2)));
                 if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) {
-                    var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]!
+                    var text = index < series.PreparedLabels.Count && series.PreparedLabels[index] != null ? series.PreparedLabels[index]!
                         : category + (formatted.Length > 0 ? " " + formatted : "");
                     var labelClearance = Math.Max(radius + context.Theme.Spacing, halo + context.Theme.Spacing / 3);
                     AddMapLabel(builder, labels, text, text, point, MapDataStyle(chart, context, index, series: series), id + "-label", "dotted-map-data-label", plot, labelClearance, 50,

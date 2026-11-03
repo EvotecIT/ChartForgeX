@@ -117,7 +117,7 @@
         el: el, n: n, s: s, p: p, role: attr(el, "data-cfx-role") || "", raw: raw == null ? NaN : +raw,
         x: instant ? Date.parse(instant) : raw == null ? NaN : +raw, head: value ? head : "", value: value || aria || head,
         keys: parse(attr(el, "data-cfx-keys"), point.k || []), fields: parse(attr(el, "data-cfx-fields"), {}),
-        href: attr(el, "href") || attr(el, "xlink:href"), note: note ? note.textContent : ""
+        href: attr(el, "href") || attr(el, "xlink:href"), note: note ? note.textContent : "", tooltip: attr(el, "data-cfx-tooltip-text")
       };
       if (value && aria !== value) m.aria = aria;
       m.box = (attr(el, "data-cfx-bounds") || "").split(" ").map(Number);
@@ -244,11 +244,20 @@
         head: ms[0].head || !series[ms[0].s].name && ms[0].aria || "", rows: ms.map(function (m) { return { color: color(m.s), value: m.value, name: series[m.s].name || "" }; }),
         hint: ms.length === 1 && ms[0].note || (api.selectOnClick || !ms[0].href ? L.hint : "")
       };
+      if (ms.some(function (m) { return m.tooltip != null; })) c = {
+        head: ms.length > 1 ? c.head : "", hint: "",
+        rows: ms.filter(function (m) { return m.tooltip !== ""; }).map(function (m) { return { color: color(m.s), value: m.tooltip == null ? m.value : m.tooltip, name: ms.length > 1 ? series[m.s].name || "" : "" }; })
+      };
+      if (!c.rows.length) c.head = "";
       c = ask("tooltip", ms, c) || c;
       tooltips.forEach(function (t) { if (t.match(kit, ms)) c = t.format(ms, c, kit) || c; });
       return o.tooltip ? o.tooltip(ms, c, kit) || c : c;
     }
-    function tipFor(ms, x, y) { if (ms.length) S.tip.show(content(ms), x, y, template); else S.tip.hide(); }
+    function tipFor(ms, x, y) {
+      if (!ms.length) { S.tip.hide(); return; }
+      var c = content(ms);
+      if (c.head || c.hint || c.rows && c.rows.length) S.tip.show(c, x, y, template); else S.tip.hide();
+    }
     function labelFor(ms) {
       var parts = ms.slice(0, 3).map(function (m) { var name = series[m.s].name; return m.head && name && order.length > 1 ? m.head + " · " + name : m.head || name || m.value; });
       return parts.join(", ") + (ms.length > 3 ? " +" + (ms.length - 3) : "");
@@ -664,6 +673,7 @@
           return c ? { label: ms[0].head, range: api.timeX ? span(c, c) : undefined } : undefined;
         },
         tooltip: function (ms, content) {
+          if (ms.some(function (m) { return m.tooltip != null; })) return content;
           // The data island also lists series whose marks were not drawn at this X.
           var c = single(ms), points = c && k.data.points && k.data.points.filter(function (p) { return p.x === c.raw && k.series[p.s] && !k.series[p.s].hidden; });
           if (points && points.length) content.rows = points.map(function (p) { return { color: k.color(p.s), value: p.v || "", name: k.series[p.s].name || "" }; });

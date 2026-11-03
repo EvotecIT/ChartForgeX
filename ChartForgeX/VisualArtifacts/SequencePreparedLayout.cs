@@ -215,6 +215,8 @@ internal sealed partial class SequencePreparedLayout {
     internal static string Wrap(string text, double width, VisualSceneBuilder builder, ChartForgeX.Typography.TextStyle style, bool wrap) =>
         WrapCore(text, width, builder, style.EffectiveFontSize, style, wrap);
 
+    private const double GlyphFitTolerance = 1e-6;
+
     private static string WrapCore(string text, double width, VisualSceneBuilder builder, double size, ChartForgeX.Typography.TextStyle? style, bool wrap) {
         var lines = new List<string>();
         foreach (string paragraph in text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n')) {
@@ -226,8 +228,10 @@ internal sealed partial class SequencePreparedLayout {
             var elements = StringInfo.GetTextElementEnumerator(paragraph);
             while (elements.MoveNext()) {
                 string element = elements.GetTextElement();
-                if (Measure(line + element) > width && line.Length > 0) { lines.Add(line); line = string.Empty; }
-                if (Measure(element) > width) throw new NotSupportedException("A sequence text glyph exceeds the available lane width.");
+                // The lane is the widest glyph plus padding minus padding; compare with a sub-pixel tolerance so the
+                // glyph that sized it still fits after the arithmetic loses a few ulps.
+                if (Measure(line + element) > width + GlyphFitTolerance && line.Length > 0) { lines.Add(line); line = string.Empty; }
+                if (Measure(element) > width + GlyphFitTolerance) throw new NotSupportedException("A sequence text glyph exceeds the available lane width.");
                 line += element;
             }
             lines.Add(line);

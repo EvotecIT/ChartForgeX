@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = StateTimelineRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(800, 258)), theme, mode,
     new VisualFrame("Availability throughout the day", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
@@ -42,6 +42,6 @@ public static class StateTimelineRecipe {
         return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
             new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
-            .AddSeries(primary).AddSeries(secondary).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+            .AddSeries(primary).AddSeries(secondary);
     }
 }

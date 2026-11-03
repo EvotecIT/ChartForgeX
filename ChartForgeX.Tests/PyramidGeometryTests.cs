@@ -46,7 +46,8 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartOrientation.Horizontal, false, ChartPyramidValueEncoding.Area)]
     [InlineData(ChartOrientation.Horizontal, true, ChartPyramidValueEncoding.Area)]
     public void IndependentLengthsAreasAndNativePixelsFollowTheDeclaredEncoding(ChartOrientation orientation, bool reversed, ChartPyramidValueEncoding encoding) {
-        var chart = Pyramid(50, 30, 20).ConfigurePyramid(options => { options.Orientation = orientation; options.Reversed = reversed; options.ValueEncoding = encoding; });
+        var chart = Pyramid(50, 30, 20).ConfigurePyramid(options => { options.Orientation = orientation; options.Reversed = reversed; options.ValueEncoding = encoding;
+            if (orientation == ChartOrientation.Vertical) options.AspectRatio = FullPlotAspect; });
         var scene = Compile(chart); var marks = Marks(scene); var stages = Stages(scene);
         var expected = new[] { .5, .3, .2 };
         var areas = marks.Select(PolygonArea).ToArray();
@@ -80,7 +81,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartPyramidValueEncoding.Height)]
     [InlineData(ChartPyramidValueEncoding.Area)]
     public void ZeroSingletonAndAllZeroInputsKeepHonestGeometryAndSourceSlots(ChartPyramidValueEncoding encoding) {
-        var scene = Compile(Pyramid(0, 50, 0, 50, 0).ConfigurePyramid(options => options.ValueEncoding = encoding));
+        var scene = Compile(Pyramid(0, 50, 0, 50, 0).ConfigurePyramid(options => { options.ValueEncoding = encoding; options.AspectRatio = FullPlotAspect; }));
         Assert.Equal(2, Marks(scene).Length); Assert.Equal(5, Stages(scene).Length);
         foreach (var index in new[] { 0, 2, 4 }) {
             Assert.Equal(0, Number(Stages(scene)[index], "data-cfx-length-fraction"));
@@ -88,7 +89,7 @@ public sealed class PyramidGeometryTests {
             Assert.Equal("true", Stages(scene)[index].Metadata["data-cfx-zero"]);
             Assert.Equal(0, scene.Regions.Single(region => region.Id == "series-0-point-" + index).Bounds.Height);
         }
-        var singleton = Compile(Pyramid(8).ConfigurePyramid(options => options.ValueEncoding = encoding));
+        var singleton = Compile(Pyramid(8).ConfigurePyramid(options => { options.ValueEncoding = encoding; options.AspectRatio = FullPlotAspect; }));
         Assert.Equal(400 * 240 / 2d, PolygonArea(Assert.Single(Marks(singleton))), 8);
         var empty = Compile(Pyramid(0, 0, 0).ConfigurePyramid(options => options.ValueEncoding = encoding));
         Assert.Empty(Marks(empty)); Assert.Equal(3, Stages(empty).Length);
@@ -199,7 +200,7 @@ public sealed class PyramidGeometryTests {
         Assert.Equal(chart.Series[0].PointColors[0], Marks(prepared.Scene)[0].Fill);
         Assert.Equal(ChartColor.FromHex("#B14091"), prepared.Scene.Nodes.OfType<VisualSceneText>().First(text => text.Role == "pyramid-label").Color);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "pyramid-label"), text => Assert.True(text.Text.Size >= 10));
-        Assert.Contains(prepared.Regions, region => region.Role == "pyramid-label" && region.Label == "Stage 0: Complete");
+        Assert.Contains(prepared.Regions, region => region.Role == "pyramid-label" && region.Label == "Complete");
         var artifact = prepared.ToArtifact("pyramid", VisualArtifactKind.Chart);
         Assert.Contains("data-cfx-value-encoding=\"area\"", artifact.ToSvg());
         Assert.Contains("data-cfx-value=\"50\"", artifact.ToHtmlPage());
@@ -250,6 +251,9 @@ public sealed class PyramidGeometryTests {
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
+
+    // Encoding checks span the complete 400 x 240 plot; an upright pyramid otherwise keeps its readable default slope.
+    private const double FullPlotAspect = 400d / 240d;
 
     private static Chart Pyramid(params double[] values) {
         var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));

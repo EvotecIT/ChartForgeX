@@ -225,7 +225,8 @@ internal sealed partial class ChartRange {
         range.ApplyHorizontalBarPadding(horizontalBarYValues, horizontalScalarCategories);
         if (!hasHorizontalSeries) {
             if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.YAxis);
-            range.ApplyVerticalPadding(chart.Options.YAxis);
+            // Price charts read the movement between candles, so a financial-only value axis fits the observed prices instead of reaching zero.
+            range.ApplyVerticalPadding(chart.Options.YAxis, HasOnlyFinancialSeries(chart, ChartAxisSide.Primary));
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
 
@@ -267,7 +268,7 @@ internal sealed partial class ChartRange {
 
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) (range.MinY, range.MaxY) = ExpandedSingleton(range.MinY, chart.Options.SecondaryYAxis);
         if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.SecondaryYAxis);
-        range.ApplyVerticalPadding(chart.Options.SecondaryYAxis);
+        range.ApplyVerticalPadding(chart.Options.SecondaryYAxis, HasOnlyFinancialSeries(chart, ChartAxisSide.Secondary));
         if (applyOptionBounds) range.ApplySecondaryYAxisOptions(chart);
         range.ApplyTimeSpacingBounds(chart.Options.SecondaryYAxis, horizontal: false, applyOptionBounds);
         return range;
@@ -398,7 +399,17 @@ internal sealed partial class ChartRange {
         || kind == ChartSeriesKind.Candlestick || kind == ChartSeriesKind.Ohlc || kind == ChartSeriesKind.Dumbbell
         || kind == ChartSeriesKind.RangeBar || kind == ChartSeriesKind.BoxPlot || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Slope;
 
-    private void ApplyVerticalPadding(ChartAxis axis) {
+    private static bool HasOnlyFinancialSeries(Chart chart, ChartAxisSide axis) {
+        var series = chart.Series.Where(item => item.ValueAxis == axis && item.HasSourceData).ToArray();
+        return series.Length > 0 && series.All(item => item.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc);
+    }
+
+    private void ApplyVerticalPadding(ChartAxis axis, bool fitData = false) {
+        if (fitData && axis.Scale == ChartScaleKind.Linear && ChartMath.IsFinite(MaxY - MinY) && MaxY > MinY) {
+            var padding = (MaxY - MinY) * .08;
+            MinY -= padding; if (!ChartValueAxisRange.Applies(axis)) MaxY += padding;
+            return;
+        }
         (MinY, MaxY) = PaddedValueBounds(MinY, MaxY, axis);
     }
 

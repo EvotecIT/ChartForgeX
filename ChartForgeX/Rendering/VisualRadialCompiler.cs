@@ -25,7 +25,7 @@ internal static partial class VisualRadialCompiler {
                 slice.Color, SliceId(slice), series.Kind, slice.Pattern, series.StateRole, series.InteractionIdentityKey,
                 paint: SlicePaint(chart, slice),
                 value: chart.Options.PieLegendContent == ChartPieLegendContent.Label ? null : DisplayValue(chart, slice),
-                percentage: chart.Options.PieLegendContent.HasValue ? null : FormatPercentage(Fraction(chart, slice, total)),
+                percentage: chart.Options.PieLegendContent.HasValue ? null : FormatPercentage(chart, Fraction(chart, slice, total)),
                 metadata: Metadata(chart, slice, Fraction(chart, slice, total), null, !total.FiniteTotal.HasValue, bands[seriesIndex]))));
         }
         return entries;
@@ -268,7 +268,9 @@ internal static partial class VisualRadialCompiler {
     }
 
     private static string FormatLabel(Chart chart, RadialSlice slice, double percent, string value) {
-        var percentage = FormatPercentage(percent);
+        var captured = chart.Series[slice.SeriesIndex].PreparedLabel(slice.PointIndex);
+        if (captured != null) return captured;
+        var percentage = FormatPercentage(chart, percent);
         if (chart.Options.PieSliceLabelFormatter != null && ChartMath.IsFinite(slice.Value))
             return chart.Options.PieSliceLabelFormatter(new ChartPieSliceLabelContext(chart.Series[slice.SeriesIndex].Name, slice.Label,
                 slice.Value, percent, value, percentage, slice.PointIndex)) ?? string.Empty;

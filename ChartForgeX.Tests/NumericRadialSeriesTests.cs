@@ -23,7 +23,7 @@ public sealed class NumericRadialSeriesTests {
         // captions have their own curved-mark containment regression.
         chart.RemoveSeries(chart.Series[1]); chart.WithLegend();
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "radial-data-label" && element.Value == "1200");
+        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "radial-data-label" && element.Value == "1,200");
     }
 
     [Theory]

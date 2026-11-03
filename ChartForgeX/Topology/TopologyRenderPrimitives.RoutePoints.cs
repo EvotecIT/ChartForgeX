@@ -23,7 +23,7 @@ internal static partial class TopologyRenderPrimitives {
             if (edge.Waypoints.Count == 0 && (edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal
                 || chart.Alignments.Count > 0 && edge.Routing == TopologyEdgeRouting.Orthogonal))
                 points = TopologyEdgeRouter.RefineBodyClearance(chart, edge, source, target, points, routeLane);
-            return AvoidOtherActorCaptions(chart, edge, source, target, points, routeLane, nodes);
+            return Attached(AvoidOtherActorCaptions(chart, edge, source, target, points, routeLane, nodes));
         }
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
@@ -31,11 +31,17 @@ internal static partial class TopologyRenderPrimitives {
         var dx = CenterX(vectorTarget) - CenterX(vectorSource);
         var dy = CenterY(vectorTarget) - CenterY(vectorSource);
         var length = Math.Sqrt(dx * dx + dy * dy);
-        if (length < 0.0001) return points;
+        if (length < 0.0001) return Attached(points);
 
         var ox = -dy / length * offset;
         var oy = dx / length * offset;
-        return AvoidOtherActorCaptions(chart, edge, source, target,
-            ApplyActorEndpointRouting(chart, edge, source, target, OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy)), routeLane, nodes);
+        return Attached(AvoidOtherActorCaptions(chart, edge, source, target,
+            ApplyActorEndpointRouting(chart, edge, source, target, OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy)), routeLane, nodes));
+
+        List<ChartPoint> Attached(List<ChartPoint> route) {
+            if (TopologyDenseRoutePlanner.IsPlanned(chart, edge)) TopologyDenseRoutePlanner.AttachPaintTerminals(route);
+            else AttachEndpointsToSurfaces(edge, source, target, route);
+            return route;
+        }
     }
 }

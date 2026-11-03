@@ -1,0 +1,13 @@
+C4Container
+title Checkout platform
+Person(customer, "Customer", "Places an order")
+Enterprise_Boundary(company, "Company") {
+  System_Boundary(shop, "Store") {
+    Container(web, "Web app", "Browser", "Browse products and complete checkout")
+    Container(api, "Order service", ".NET", "Validate orders and coordinate payment")
+    ContainerDb(db, "Orders", "SQL", "Store orders and their fulfilment state")
+  }
+}
+Rel(customer, web, "Places an order")
+Rel(web, api, "Submits checkout", "HTTPS")
+Rel(api, db, "Stores the order")

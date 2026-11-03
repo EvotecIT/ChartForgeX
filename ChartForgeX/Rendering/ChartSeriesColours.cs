@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
@@ -12,7 +13,21 @@ internal static class ChartSeriesColours {
 
     internal static ChartColor Resolve(ChartSeries series, int index, VisualThemeColors colors) {
         if (series.Color.HasValue) return series.Color.Value;
-        return State(series.StateRole, colors, Palette(series, index, colors));
+        return State(series.StateRole, colors, IsOtherSeries(series) ? colors.Other : Palette(series, index, colors));
+    }
+
+    /// <summary>A category or series named Other is the remainder: the neutral Other grey, never a categorical hue.</summary>
+    internal static bool IsOther(string? name) => name != null && string.Equals(name.Trim(), "Other", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>A bar series named Other is the remainder segment of its stack or group; other kinds keep their slot.</summary>
+    internal static bool IsOtherSeries(ChartSeries series) => series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar && IsOther(series.Name);
+
+    /// <summary>Whether a part-to-whole point is the authored Other category of its chart's category labels.</summary>
+    internal static bool IsOtherCategory(ChartSeries series, int point) {
+        if (series.Owner == null || point < 0 || point >= series.RenderPoints.Count || !ChartSeriesKindTraits.IsPieLikeKind(series.Kind)) return false;
+        var x = series.RenderPoints[point].X;
+        foreach (var label in series.Owner.Options.XAxisLabels) if (Math.Abs(label.Value - x) < 0.000001) return IsOther(label.Text);
+        return false;
     }
 
     internal static ChartColor Palette(ChartSeries series, int index, VisualThemeColors colors, int offset = 0) =>
@@ -20,7 +35,8 @@ internal static class ChartSeriesColours {
 
     /// <summary>Part-to-whole categories retain their own ordinal palette instead of inheriting one series slot.</summary>
     internal static ChartColor CategoryPoint(ChartSeries series, int point, VisualThemeColors colors) =>
-        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.Palette[CategorySourceOrdinal(series, point) % colors.Palette.Count]);
+        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors,
+            IsOtherCategory(series, point) ? colors.Other : colors.Palette[CategorySourceOrdinal(series, point) % colors.Palette.Count]);
 
     /// <summary>
     /// The palette ordinal an automatic colour of this paint came from: the category ordinal for part-to-whole and
@@ -32,14 +48,42 @@ internal static class ChartSeriesColours {
             return point >= 0 ? CategorySourceOrdinal(series, point) : -1;
         var owner = series.Owner;
         if (owner == null || owner.Options.SeriesColorAssignment == ChartSeriesColorAssignment.Identity && series.AutomaticIdentityOwner == null && series.HasIdentity) return -1;
-        for (var index = 0; index < owner.Series.Count; index++) if (ReferenceEquals(owner.Series[index], series)) return index;
+        // A presentation copy retains its authored owner and identity, while the owner keeps its original handles.
+        for (var index = 0; index < owner.Series.Count; index++) if (owner.Series[index].Id == series.Id) return index;
         return -1;
     }
 
     // Filtered Pie/Donut models keep source category palette identity while sparse overrides follow the visible native ordinal.
-    private static int CategorySourceOrdinal(ChartSeries series, int point) => series.IsVisibilityPreparation
-        && ChartSeriesKindTraits.IsPieLikeKind(series.Kind) && point >= 0 && point < series.SourcePointIndices.Count ? series.SourcePointIndices[point] : point;
+    private static int CategorySourceOrdinal(ChartSeries series, int point) {
+        var ordinal = series.IsVisibilityPreparation && ChartSeriesKindTraits.IsPieLikeKind(series.Kind) && point >= 0 && point < series.SourcePointIndices.Count
+            ? series.SourcePointIndices[point] : point;
+        // Other takes no hue, so the categories after it keep contiguous palette slots.
+        if (point > 0 && ChartSeriesKindTraits.IsPieLikeKind(series.Kind)) for (var i = 0; i < point; i++) if (IsOtherCategory(series, i)) ordinal--;
+        return ordinal;
+    }
 
+    /// <summary>The share of white each successive funnel or pyramid stage blends into the series colour (about 12% lightness on a mid-tone).</summary>
+    internal const double StageWhiteStep = .24;
+
+    /// <summary>The most white a stage sequence blends in, so the last stage of a long sequence keeps a visible fill.</summary>
+    internal const double StageWhiteRange = .6;
+
+    /// <summary>
+    /// The share of white a funnel or pyramid stage blends into its automatic series colour, or zero when the stage keeps it:
+    /// the first stage, explicit point, series or state paint. The share depends only on the stage order, so light and dark
+    /// drawings tint their own series colour by the same amount.
+    /// </summary>
+    internal static double StageShare(ChartSeries series, int point, int count) =>
+        point <= 0 || count < 2 || PointOverride(series, point).HasValue || series.Color.HasValue || series.StateRole != ChartSeriesState.None
+            ? 0 : point * Math.Min(StageWhiteStep, StageWhiteRange / (count - 1));
+
+    /// <summary>Ordered stages (funnel, pyramid) share one hue: the automatic series colour, lightened per stage by <see cref="StageShare"/>.</summary>
+    internal static ChartColor Stage(ChartSeries series, int point, int count, VisualThemeColors colors) {
+        if (PointOverride(series, point) is { } authored) return authored;
+        var source = Resolve(series, 0, colors);
+        var share = StageShare(series, point, count);
+        return share > 0 ? ChartColorMath.Blend(source, ChartColor.White.WithAlpha(source.A), share) : source;
+    }
     internal static ChartColor State(ChartSeriesState state, VisualThemeColors colors, ChartColor fallback) {
         if (state == ChartSeriesState.None) return fallback;
         var status = colors.Status;
@@ -48,7 +92,9 @@ internal static class ChartSeriesColours {
             ChartSeriesState.Warning => status.Medium.Fill,
             ChartSeriesState.Info => status.Info.Fill,
             ChartSeriesState.Neutral => status.Neutral.Fill,
-            ChartSeriesState.Success or ChartSeriesState.Quiet => status.Pass.Fill,
+            ChartSeriesState.Success => status.Pass.Fill,
+            // Quiet is the healthy state that should recede: its own theme role, not the success green.
+            ChartSeriesState.Quiet => colors.Quiet,
             _ => fallback
         };
     }
@@ -60,7 +106,7 @@ internal static class ChartSeriesColours {
         PointOverride(series, pointIndex) ?? series.Color ?? State(series.StateRole, colors, fallback);
 
     private static ChartColor? PointOverride(ChartSeries series, int pointIndex) =>
-        pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null;
+        series.PreparedItemStyle(pointIndex)?.Color ?? (pointIndex >= 0 && pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null);
 
     internal static ChartColor Resolve(Chart chart, int index) {
         var series = chart.Series[index]; var t = chart.Options.ResolvedTheme;
@@ -79,7 +125,7 @@ internal static class ChartSeriesColours {
     /// <remarks>With <see cref="ChartSeriesColorAssignment.Identity"/>, explicit identities select deterministic palette slots instead:
     /// hashing never depends on the current series set, so adding or removing another series cannot recolor an existing ID.
     /// A finite palette can then repeat; an explicit series color remains the way to guarantee a distinct authored color.</remarks>
-    private static int PaletteIndex(ChartSeries series, int index, int count) {
+    internal static int PaletteIndex(ChartSeries series, int index, int count) {
         if (series.Owner?.Options.SeriesColorAssignment != ChartSeriesColorAssignment.Identity
             || series.AutomaticIdentityOwner != null || !series.HasIdentity) return index % count;
         // FNV-1a over UTF-16 code units is stable across runtimes and platforms, unlike string.GetHashCode().

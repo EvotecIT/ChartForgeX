@@ -121,16 +121,6 @@ internal sealed partial class VisualTopologyCompiler {
             var route = EdgePoints(_chart, edge, nodes);
             var paintRoute = TopologyDenseRoutePlanner.PaintPoints(_chart, edge, route, includeOwner: true);
             var trunk = TopologyDenseRoutePlanner.SharedTrunk(_chart, edge);
-            if (_options.FitContentToViewport && edge.PathGeometry == null) {
-                TopologyRenderPrimitives.AttachEndpointsToSurfaces(edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], route);
-                if (paintRoute.Count > 1) {
-                    TopologyRenderPrimitives.AttachEndpoint(nodes[edge.SourceNodeId], edge.SourcePort, edge.SourcePortId, paintRoute, 0, 1);
-                    if (trunk.Owner == null)
-                        TopologyRenderPrimitives.AttachEndpoint(nodes[edge.TargetNodeId], edge.TargetPort, edge.TargetPortId, paintRoute, paintRoute.Count - 1, paintRoute.Count - 2);
-                    if (ReferenceEquals(trunk.Owner, edge) && trunk.Tail is { Count: > 1 } tail)
-                        TopologyRenderPrimitives.AttachEndpoint(nodes[edge.TargetNodeId], edge.TargetPort, edge.TargetPortId, tail, tail.Count - 1, tail.Count - 2);
-                }
-            }
             _routes.Add(edge, edge.Interpolation.HasValue ? route.ToArray() : SampleRoute(route));
             _paintRoutes.Add(edge, edge.Interpolation.HasValue ? paintRoute.ToArray() : SampleRoute(paintRoute));
             if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge, (trunk.Owner, edge.Interpolation.HasValue ? trunk.Tail.ToArray() : SampleRoute(trunk.Tail)));

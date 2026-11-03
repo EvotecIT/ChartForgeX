@@ -9,6 +9,9 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
+    internal static double PictorialRequiredRows(double value, ChartOptions options) => options.PictorialValuePerSymbol.HasValue
+        ? Math.Max(1, Math.Ceiling(value / options.PictorialValuePerSymbol.Value / options.PictorialColumns)) : 1;
+
     private static void Pictorial(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var options = chart.Options; var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
         var maximum = options.PictorialMaximum ?? series.RenderPoints.Max(point => point.Y);
@@ -18,7 +21,7 @@ internal static partial class VisualSpecialtyCompiler {
         // A viewport cannot display arbitrarily many unit symbols. Keep full values and report omitted rows.
         var rowBudget = Math.Max(1, (int)Math.Min(256, Math.Floor(plot.Height / rows.Length / 4)));
         for (var index = 0; index < rows.Length; index++) {
-            requestedRows[index] = unit.HasValue ? Math.Max(1, Math.Ceiling(series.RenderPoints[index].Y / unit.Value / columns)) : 1;
+            requestedRows[index] = PictorialRequiredRows(series.RenderPoints[index].Y, options);
             rows[index] = (int)Math.Min(rowBudget, requestedRows[index]);
         }
         if (rows.Where((row, index) => row < requestedRows[index]).Any()) builder.AddDiagnostic(new VisualDiagnostic(

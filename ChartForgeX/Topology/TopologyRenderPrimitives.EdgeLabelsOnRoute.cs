@@ -19,8 +19,7 @@ internal static partial class TopologyRenderPrimitives {
     private static bool PlacesLabelAlongRoute(TopologyChart chart, TopologyRenderOptions options, TopologyEdge edge) =>
         Math.Abs(edge.LabelOffsetX) < 0.000001 && Math.Abs(edge.LabelOffsetY) < 0.000001 &&
         !edge.HasLabelAnchorOverride && string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) &&
-        (TopologyDenseRoutePlanner.IsPlanned(chart, edge) ||
-            edge.Waypoints.Count == 0 && edge.Routing != TopologyEdgeRouting.Curved);
+        edge.PathGeometry == null;
 
     /// <summary>The cards, tile captions, and group headers a label on a planned route must not cover.</summary>
     private static List<LabelBox> RouteLabelObstacles(TopologyChart chart, TopologyRenderOptions options) {
@@ -40,6 +39,11 @@ internal static partial class TopologyRenderPrimitives {
         foreach (var group in chart.Groups) {
             foreach (var header in TopologyGroupHeader.PaintedParts(chart, group, options))
                 boxes.Add(LabelBox.FromBounds(header.Left - 2, header.Top - 2, header.Right + 2, header.Bottom + 2));
+            if (TopologyLayoutEngine.UsesReadableDenseLayout(chart)) continue;
+            boxes.Add(LabelBox.FromBounds(group.X - 2, group.Y - 2, group.X + group.Width + 2, group.Y + 2));
+            boxes.Add(LabelBox.FromBounds(group.X - 2, group.Y + group.Height - 2, group.X + group.Width + 2, group.Y + group.Height + 2));
+            boxes.Add(LabelBox.FromBounds(group.X - 2, group.Y, group.X + 2, group.Y + group.Height));
+            boxes.Add(LabelBox.FromBounds(group.X + group.Width - 2, group.Y, group.X + group.Width + 2, group.Y + group.Height));
         }
 
         return boxes;
@@ -55,6 +59,10 @@ internal static partial class TopologyRenderPrimitives {
     private static (ChartPoint Center, ChartPoint Anchor)? PlaceLabelAlongRoute(TopologyChart chart, TopologyRenderOptions options, TopologyEdge edge, IReadOnlyList<ChartPoint> points, double width, double height, int lineCount, IReadOnlyList<LabelBox> obstacles, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments) {
         var middle = EdgeLabelPoint(points);
         var monitoring = IsMonitoringDashboardStyle(options) && !TopologyDenseRoutePlanner.IsPlanned(chart, edge);
+        if (!monitoring && !TopologyDenseRoutePlanner.IsPlanned(chart, edge)) {
+            var midpoint = PlaceLabelOnPolyline(chart, options, edge, points, width, height, obstacles, placedLabels, edgeSegments);
+            if (midpoint.HasValue) return midpoint;
+        }
         (ChartPoint Center, ChartPoint Anchor)? best = null;
         var bestScore = double.MaxValue;
         for (var i = 0; i + 1 < points.Count; i++) {
@@ -97,6 +105,8 @@ internal static partial class TopologyRenderPrimitives {
                         anchor.Y + normalY * normalOffset * direction), width, height, chart, options);
                     var box = LabelBox.FromCenter(center.X, center.Y, width, height);
                     if (!monitoring && !box.Intersects(a, b)) continue;
+                    if (!monitoring && !TopologyDenseRoutePlanner.IsPlanned(chart, edge)
+                        && Math.Abs((center.X - anchor.X) * normalX + (center.Y - anchor.Y) * normalY) > .01) continue;
                     // Viewport fitting may reduce normal clearance, but must not slide the anchor past a run end.
                     if (monitoring && Math.Abs((center.X - anchor.X) * normalY - (center.Y - anchor.Y) * normalX) > .01) continue;
                     var routeBox = monitoring ? box.Expand(MonitoringRouteLabelMargin) : box;

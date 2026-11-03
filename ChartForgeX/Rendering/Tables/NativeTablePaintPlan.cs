@@ -62,7 +62,7 @@ internal sealed partial class NativeTablePaintPlan {
         _svg.Add(new SvgElement("circle", new[] { A("data-cfx-role", role), A("cx", x), A("cy", y), A("r", radius), A("fill", fill.ToCss()) }));
         _builder.Ellipse(x, y, radius, radius, fill, role: role);
     }
-    private void Text(string value, double x, double baseline, double width, TextAlignment alignment, ChartColor color, double size, int weight, string role = "visual-text") {
+    private void Text(string value, double x, double baseline, double width, TextAlignment alignment, ChartColor color, double size, int weight, string role = "visual-text", bool native = true) {
         color = Paint(color);
         weight = _data.WeightOverride ?? weight;
         if (!_faces.TryGetValue(weight, out var face)) _faces.Add(weight, face = new VisualSceneTextFace(_data.Font, weight));
@@ -74,7 +74,7 @@ internal sealed partial class NativeTablePaintPlan {
         var left = alignment == TextAlignment.Center ? x + width / 2 : alignment == TextAlignment.Right ? x + width : x;
         _svg.Add(new SvgElement("text", new[] { A("data-cfx-role", role), A("x", left), A("y", baseline), A("text-anchor", anchor),
             A("fill", color.ToCss()), A("font-family", _data.Font.Family), A("font-size", size), A("font-weight", weight) }, fitted));
-        _builder.PreparedText(captured, left, baseline, color, alignment, role);
+        if (native) _builder.PreparedText(captured, left, baseline, color, alignment, role);
     }
     private static double OutputFontSize(NativeTableData data, double roleSize) => data.AbsoluteDataLabelSize is double absolute
         ? absolute * (roleSize / data.Theme.DataLabelFontSize) : roleSize * data.Scale;

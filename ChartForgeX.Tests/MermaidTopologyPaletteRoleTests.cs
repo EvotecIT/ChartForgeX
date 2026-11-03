@@ -27,7 +27,7 @@ public sealed class MermaidTopologyPaletteRoleTests {
         Assert.Equal(directOverride ? ChartColor.FromHex("#102030") : family == "agentflow" ? ChartColor.Transparent : ChartColor.FromHex("#ffeddd"), ChartColor.Parse(group.BackgroundColor!));
         Assert.Equal(ChartColor.FromHex(directOverride ? "#203040" : "#876543"), ChartColor.Parse(group.BorderColor!));
         Assert.Equal(ChartColor.FromHex(directOverride ? "#304050" : "#567890"), ChartColor.Parse(group.LabelColor!));
-        Assert.Equal(ChartColor.FromRgba(204, 221, 238, 128), ChartColor.Parse(Assert.Single(chart.Edges).LabelBackgroundColor!));
+        Assert.Equal(ChartColor.FromRgba(204, 221, 238, 255), ChartColor.Parse(Assert.Single(chart.Edges).LabelBackgroundColor!));
         var setting = Assert.Single(result.Document!.Configuration.Settings, item => item.Path == "themeVariables.nodeBorder");
         Assert.True(setting.IsString); Assert.Equal("#123456", setting.Value); Assert.Equal(1, setting.Span.Line); Assert.True(setting.Span.Column > 0); Assert.True(setting.Span.Length > 0);
         var fence = Assert.Single(fenced.Artifacts); var facts = artifact.ToInterchangeEnvelope();
@@ -68,12 +68,18 @@ public sealed class MermaidTopologyPaletteRoleTests {
         var restored = prepared.ToInterchangeEnvelope().ToTopologyChart().Prepare(); CaptureArtifact("text-paint-" + styles.Length + "-restored", restored.Visual.ToArtifact()); Assert.Equal(prepared.ToPng(), restored.ToPng());
     }
     [Fact]
-    public void NativeGraphiteAndOrdinarySourceHaveSeparateUnmodifiedControls() {
+    public void NativeAndUnthemedSourceShareGraphiteColorsAndDiagramTypography() {
         var chart = TopologyChart.Create().WithId("palette-native-control").WithTitle("").WithViewport(300, 250, 24).WithLegend(null).AddNode("node", "Work", 60, 60, width: 140, height: 70);
         var artifact = chart.ToVisualArtifact(); CaptureArtifact("ordinary-native-graphite", artifact);
+        Assert.Equal(ChartForgeX.Themes.VisualTheme.Graphite().Resolve(chart.ThemeMode).Background, chart.Theme.Resolve(chart.ThemeMode).Background);
         Assert.Equal(ChartForgeX.Themes.VisualTheme.Graphite().ToJson(), chart.Theme.ToJson());
         Assert.Null(chart.Nodes[0].BorderColor); Assert.Null(chart.Nodes[0].BackgroundColor); Assert.Null(chart.Nodes[0].LabelColor);
         const string source = "flowchart LR\na[Plan] --> b[Done]"; var result = MermaidRenderer.Render(source, Options()); Capture("ordinary-source", source, result); Assert.Empty(result.Diagnostics);
+        var mermaid = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        Assert.Equal(chart.Theme.Resolve(chart.ThemeMode).Background, mermaid.Theme.Resolve(mermaid.ThemeMode).Background);
+        Assert.Null(mermaid.Nodes[0].BackgroundColor);
+        var explicitDefault = MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n" + source);
+        Assert.Equal(ChartColor.FromHex("#ECECFF"), ChartColor.Parse(Assert.IsType<TopologyChart>(explicitDefault.Artifact!.Model).Nodes[0].BackgroundColor!));
     }
     internal static MermaidRenderOptions Options() => new() {
         Flowchart = new MermaidFlowchartRenderOptions { Width = 640, Height = 440 },

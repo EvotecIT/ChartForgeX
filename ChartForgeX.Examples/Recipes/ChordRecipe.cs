@@ -12,7 +12,7 @@ public static class ChordRecipe {
             new ChartFlowLink("support-return", "south-support", "north", 4), new ChartFlowLink("support-internal", "south-support", "south-support", 3),
             new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
         });
-        var chart = Chart.Create().AddSeries(transfers).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().AddSeries(transfers);
         if (configured) {
             chart.ConfigureChord(options => {
                 options.StartAngleDegrees = -120; options.SweepAngleDegrees = 300;

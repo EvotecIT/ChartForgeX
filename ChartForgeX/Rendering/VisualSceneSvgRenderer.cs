@@ -258,12 +258,14 @@ internal static partial class VisualSceneSvgRenderer {
         var prepared = node.Text; var style = prepared.Style;
         writer.StartElement("g"); Semantics(writer, node, prefix, index);
         WritePageFontAttributes(writer, options);
+        // Wrapped lines are one phrase; the accessible name keeps the word break as a space.
+        var spoken = string.Join(" ", prepared.Lines.Select(line => line.Text));
         if (textImages?.ForNode(node) is {} capturedImage) {
             var caption = string.Join("\n", prepared.Lines.Select(line => line.Text));
-            if (explorable) writer.Attribute("role", "graphics-symbol").Attribute("aria-label", caption);
+            if (explorable) writer.Attribute("role", "graphics-symbol").Attribute("aria-label", spoken);
             writer.Attribute("data-cfx-caption", caption).EndStartElement();
             writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
-                .Attribute("data-cfx-native-raster-text-ink", "true").EndStartElement();
+                .Attribute("data-cfx-native-raster-text-ink", "true").Attribute("font-size", prepared.Size).EndStartElement();
             writer.StartElement("image").Attribute("x", capturedImage.Bounds.X).Attribute("y", capturedImage.Bounds.Y)
                 .Attribute("width", capturedImage.Bounds.Width).Attribute("height", capturedImage.Bounds.Height)
                 .Attribute("preserveAspectRatio", "none").Attribute("href", capturedImage.Uri);
@@ -272,13 +274,17 @@ internal static partial class VisualSceneSvgRenderer {
             writer.EndElement();
             writer.EndElement(); return;
         }
+        if (explorable && prepared.Lines.Count > 1) writer.Attribute("aria-label", spoken);
         writer.EndStartElement();
         for (var i = 0; i < prepared.Lines.Count; i++) {
             var line = prepared.Lines[i];
             var delivered = fonts?.ForLine(node, i);
             var nativeInk = prepared.NativeGlyphInk || options?.TextPresentation is VisualSvgTextPresentation.Automatic or VisualSvgTextPresentation.NativeContours;
+            var capturedInk = false;
             if (nativeInk && pngText != null && pngText.TryCapture(node, line, i, true, out var glyphs)) {
+                capturedInk = true;
                 writer.StartElement("g").Attribute("aria-hidden", "true").Attribute("data-cfx-native-text-ink", "true")
+                    .Attribute("data-cfx-ink-line", line.Text).Attribute("font-size", prepared.Size)
                     .Attribute("fill", ResolvePaint(node.Color, node.Paint, options)).Attribute("fill-rule", "nonzero");
                 if (delivered != null) writer.Attribute("data-cfx-owned-font-native", delivered.Alias);
                 if (node.Stroke.HasValue && node.StrokeWidth > 0) writer.Attribute("stroke", ResolvePaint(node.Stroke, node.StrokePaint, options))
@@ -288,15 +294,18 @@ internal static partial class VisualSceneSvgRenderer {
                     .Attribute("transform", "matrix(1 0 0 1 " + glyph.X.ToString("R", CultureInfo.InvariantCulture) + " " + glyph.Baseline.ToString("R", CultureInfo.InvariantCulture) + ")").EndEmptyElement();
                 writer.EndElement();
                 if (delivered == null) continue;
-            } else if (nativeInk) throw new NotSupportedException(prepared.NativeGlyphInk
-                ? "Structured SVG caption ink requires native outline or built-in TinyFont geometry; color/bitmap-only glyph faces are unsupported."
-                : "Captured SVG text ink requires native outline or built-in TinyFont geometry; color/bitmap-only glyph faces are unsupported.");
+            } else if (nativeInk && options?.TextPresentation == VisualSvgTextPresentation.NativeContours)
+                throw new NotSupportedException("Explicit native contour export requires outline or built-in TinyFont geometry; color/bitmap-only glyph faces require automatic or browser text presentation.");
             writer.StartElement("text").Attribute("x", node.LineLeft(line)).Attribute("y", node.Baseline + i * prepared.Metrics.LineHeight);
             WriteTextFontAttributes(writer, delivered?.Alias ?? style.Font.Family, prepared.Size, options);
             writer.Attribute("font-weight", style.Font.Weight)
                 .Attribute("font-style", style.Font.Italic ? "italic" : "normal").Attribute("fill", ResolvePaint(node.Color, node.Paint, options))
                 .Attribute("xml:space", "preserve");
-            if (delivered != null) writer.Attribute("data-cfx-owned-font-text", delivered.Alias).Attribute("display", "none");
+            if (delivered != null) {
+                writer.Attribute("data-cfx-owned-font-text", delivered.Alias);
+                if (capturedInk) writer.Attribute("display", "none");
+            }
+            if (nativeInk && !capturedInk) writer.Attribute("data-cfx-native-text-fallback", "browser-text");
             if (capturePngText && pngText != null) {
                 if (pngText.TryCapture(node, line, i, out var references)) writer.Attribute("data-cfx-png-glyphs", references);
                 else writer.Attribute("data-cfx-png-font-fallback", "browser-text");

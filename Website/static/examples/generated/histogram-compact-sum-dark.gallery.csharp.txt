@@ -52,7 +52,8 @@ public static class HistogramRecipe {
                 "density" => "Observations per unit", "probability" => "Probability",
                 "probability-density" => "Probability per unit", _ => "Observation count"
             });
-            foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count + " obs");
+            // An empty bin draws nothing, so it gets no caption either.
+            foreach (var bin in observations.HistogramBins) if (bin.Count > 0) observations.WithPointLabel(bin.Index, bin.Count + " obs");
         } else if (aggregation == "weighted-mean") {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId("weighted-quantity"), "Weighted quantity",
                 new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),

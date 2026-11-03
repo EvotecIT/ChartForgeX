@@ -38,8 +38,7 @@ public static class AreaRecipe {
             var sparse = Enumerable.Range(1, 6).Where(index => index is 1 or 3 or 6)
                 .Select(index => new ChartPoint(index, 20 + index * 7 % 29, index == 6));
             return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-                .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", sparse))
-                .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+                .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", sparse));
         }
         // Two weeks of peak cluster capacity in use (%): busy weekdays, quiet weekends and a release on day 10.
         var points = Enumerable.Range(0, 14).Select(index => new ChartPoint(index + 1,
@@ -51,6 +50,6 @@ public static class AreaRecipe {
             capacity.WithFillPattern(ChartFillPattern.Crosshatch).WithState(ChartSeriesState.Warning);
             chart.WithDataLabels();
         }
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        return chart;
     }
 }

@@ -34,11 +34,12 @@ internal static partial class VisualNumericRadialCompiler {
                     var source = raw[category]; var value = source >= 0 ? series.RenderPoints[source].Y : 0;
                     if (source < 0 && series.Radar.MissingCategoryPolicy != ChartRadarMissingCategoryPolicy.Zero) continue;
                     var angle = CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false);
-                    var text = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null
-                        ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
+                    var text = source >= 0 && source < series.PreparedLabels.Count && series.PreparedLabels[source] != null
+                        ? series.PreparedLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                     var id = source >= 0 ? PointId(seriesIndex, source) : SeriesId(seriesIndex) + "-missing-category-" + category;
-                    var marker = VisualMarkerScene.Radius(series, context);
-                    var bounds = geometry.Outer > 0 ? VisualMarkerScene.Bounds(series, mapped[category].X, mapped[category].Y, marker)
+                    var markerOptions = series.ResolvePointMarkers(source);
+                    var marker = VisualMarkerScene.Radius(series, context, markerOptions);
+                    var bounds = geometry.Outer > 0 ? VisualMarkerScene.Bounds(series, mapped[category].X, mapped[category].Y, marker, markerOptions)
                         : new ChartRect(mapped[category].X, mapped[category].Y, 0, 0);
                     builder.AddRegion(new VisualSemanticRegion(id, "radar-point", bounds, categoryLabels[category] + ": " + text));
                     var facts = new Dictionary<string, string> {
@@ -61,11 +62,11 @@ internal static partial class VisualNumericRadialCompiler {
                             VisualMarkerScene.Draw(builder, series, source, mapped[category].X, mapped[category].Y, marker, pointColor,
                                 VisualChartPaint.Series(series, pointColor, source), "radar-point", colors.Surface, 1,
                                 SvgPaint.Of(colors.Surface, SvgColorRole.Surface), pattern, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "radar-point-pattern");
-                            if (obstacles != null && VisualMarkerScene.Extent(series, marker) > 0) {
-                                var contour = new VisualScenePath(ChartMarkerGeometry.Path(series.Markers, mapped[category].X, mapped[category].Y, marker),
+                            if (obstacles != null && VisualMarkerScene.Extent(series, marker, markerOptions) > 0) {
+                                var contour = new VisualScenePath(ChartMarkerGeometry.Path(markerOptions, mapped[category].X, mapped[category].Y, marker),
                                     true, null, null, 0, null, null);
                                 obstacles.Add(new LabelObstacle(id, new LabelMarkShape(VisualSceneGeometry.Flatten(contour, 8),
-                                    true, VisualMarkerScene.StrokeWidth(series, true), plot)));
+                                    true, VisualMarkerScene.StrokeWidth(series, true, markerOptions: markerOptions), plot)));
                             }
                         }
                     }

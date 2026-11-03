@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualChordCompiler {
     private static void Labels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartChordModel model, TextStyle[] styles, string[] labels, VisualThemeColors colors) {
-        var nodes = model.Nodes.Where(node => node.IsVisible).ToArray();
+        var nodes = model.Nodes.Where(node => node.IsVisible && labels[node.Index].Length > 0).ToArray();
         var requests = new List<LabelPlacementRequest>();
         var gap = context.Theme.Spacing;
         foreach (var node in nodes) {
@@ -33,7 +33,7 @@ internal static partial class VisualChordCompiler {
             var result = placed[index];
             if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("chord.label-overflow", "Chord labels were shortened or omitted to fit; full labels and endpoint totals remain in node semantics."));
             if (result.IsDropped) continue;
-            if (result.HasLeaderLine) builder.Line(result.Request.Anchor.X, result.Request.Anchor.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
+            if (result.HasLeaderLine) builder.Line(result.LeaderStart.X, result.LeaderStart.Y, result.LeaderEnd.X, result.LeaderEnd.Y,
                 colors.MutedForeground, 1, "chord-label-leader", paint: VisualChartPaint.Stroke(colors.MutedForeground, SvgColorRole.Text));
             var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
             style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;

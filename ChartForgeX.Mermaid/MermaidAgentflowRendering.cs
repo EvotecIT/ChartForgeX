@@ -41,7 +41,7 @@ public static class MermaidAgentflowRendering {
                     groupId: flow.ParentId, width: 180, height: 80);
                 var node = chart.Nodes[chart.Nodes.Count - 1];
                 node.Shape = TopologyNodeShape.CollapsedContainer; node.ShowStatusBadge = false; node.FitLabelToContent = true;
-                node.PreserveDisplayModeSize = true; node.BackgroundColor = "transparent";
+                node.PreserveDisplayModeSize = true;
                 node.Metadata["mermaid.collapsed"] = "true";
                 Copy(flow.Metadata, node.Metadata);
                 MermaidNativeStyles.Node(node,flow.Classes,flow.Styles);

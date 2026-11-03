@@ -143,7 +143,7 @@ public sealed class VisualMarkupParser {
     }
 
     private static void ParseFlow(VisualMarkupParseResult result, VisualMarkupBlock block) {
-        var flowResult = new MarkupFlowParser().ParseBlock(block);
+        var flowResult = new MarkupFlowParser().ParseBlock(block, "flow-" + (result.Artifacts.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
         foreach (var diagnostic in flowResult.Diagnostics) result.Diagnostics.Add(diagnostic);
 
         if (flowResult.HasErrors || flowResult.Document == null) return;

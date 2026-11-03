@@ -7,8 +7,11 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartTreeLayout {
+    /// <summary>The narrowest horizontal run left for a link when nodes widen to fit their captions.</summary>
+    internal const double MinimumLinkRun = 20;
+
     public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false,
-        Func<int, double, double>? requestedNodeHeight = null, double nodeStrokeWidth = 0, double nodeGap = 0) {
+        Func<int, double, double>? requestedNodeHeight = null, double nodeStrokeWidth = 0, double nodeGap = 0, double requestedNodeWidth = 0) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Tree);
         if (series?.Relationships == null || series.Nodes.Count == 0) return ChartTreeModel.Empty;
         var facts = series.Relationships;
@@ -26,7 +29,7 @@ internal static class ChartTreeLayout {
 
         var root = facts.Root;
         ApplyDepths(nodes, children, root, 0);
-        LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var maxDepth);
+        LayoutNodes(nodes, children, root, plot, fitViewport, requestedNodeWidth, out var nodeWidth, out var maxDepth);
         if (requestedNodeHeight != null) FitNodeHeights(nodes, plot, index => requestedNodeHeight(index, nodeWidth), nodeStrokeWidth, nodeGap);
         var maxLinkValue = links.Count == 0 ? 1 : links.Max(link => link.Value);
         return new ChartTreeModel(nodes, links, nodeWidth, maxDepth, maxLinkValue);
@@ -37,7 +40,8 @@ internal static class ChartTreeLayout {
         foreach (var child in children[node]) ApplyDepths(nodes, children, child, depth + 1);
     }
 
-    private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, bool fitViewport, out double nodeWidth, out int maxDepth) {
+    private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, bool fitViewport,
+        double requestedNodeWidth, out double nodeWidth, out int maxDepth) {
         maxDepth = nodes.Max(node => node.Depth);
         var leafCount = Math.Max(1, nodes.Count(node => children[node.Index].Count == 0));
         nodeWidth = Math.Max(ChartVisualPrimitives.TreeNodeMinWidth, Math.Min(ChartVisualPrimitives.TreeNodeMaxWidth, plot.Width / (maxDepth + 1) * ChartVisualPrimitives.TreeNodeWidthFactor));
@@ -45,6 +49,13 @@ internal static class ChartTreeLayout {
         if (fitViewport) {
             nodeWidth = Math.Min(nodeWidth, Math.Max(1, plot.Width / (maxDepth + 1) * .68));
             nodeHeight = Math.Min(nodeHeight, Math.Max(1, plot.Height / leafCount * .68));
+            // A caption's longest word cannot wrap. Give it the column room the links do not need
+            // before the label falls back to shortening it.
+            if (requestedNodeWidth > nodeWidth) {
+                var padding = Math.Min(ChartVisualPrimitives.TreeLayoutHorizontalPadding, Math.Max(0, (plot.Width - nodeWidth) / 2));
+                var widest = (plot.Width - padding * 2 - maxDepth * MinimumLinkRun) / (maxDepth + 1);
+                nodeWidth = Math.Max(nodeWidth, Math.Min(requestedNodeWidth, Math.Min(ChartVisualPrimitives.TreeNodeMaxWidth, widest)));
+            }
         }
         var effectiveNodeHeight = nodeHeight;
         var leafInset = fitViewport ? Math.Min(ChartVisualPrimitives.TreeLayoutLeafInset, Math.Max(0, (plot.Height - nodeHeight) / 2)) : ChartVisualPrimitives.TreeLayoutLeafInset;

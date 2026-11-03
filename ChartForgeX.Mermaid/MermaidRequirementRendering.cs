@@ -59,6 +59,9 @@ public static class MermaidRequirementRendering {
         for (var index = 0; index < document.Relationships.Count; index++) {
             var relationship = document.Relationships[index];
             chart.AddEdge("mermaid-requirement-edge-" + index.ToString(CultureInfo.InvariantCulture), relationship.SourceName, relationship.TargetName, relationship.RelationshipType, ToEdgeKind(relationship.RelationshipType), TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            // Requirement notation: containment is solid, every traced relationship is dashed.
+            chart.Edges[chart.Edges.Count - 1].LineStyle = string.Equals(relationship.RelationshipType, "contains", StringComparison.OrdinalIgnoreCase)
+                ? TopologyEdgeLineStyle.Solid : TopologyEdgeLineStyle.Dashed;
             sourceTheme?.Apply(chart.Edges[chart.Edges.Count - 1]);
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.relationship"] = relationship.RelationshipType;
         }

@@ -22,7 +22,7 @@ public sealed class FlowchartAssetRecipeTests {
         var chart=Assert.IsType<TopologyChart>(artifact.Model);var prepared=chart.Prepare();
         Assert.Equal(5,chart.Nodes.Count);Assert.Equal(2,chart.Groups.Count);Assert.Equal(4,chart.Edges.Count);
         var image=chart.Nodes.Single(node=>node.Id=="Review");Assert.Equal(TopologyNodeDisplayMode.Artwork,image.DisplayMode);
-        Assert.Equal(TopologyCaptionPlacement.Top,image.CaptionPlacement);Assert.Equal(8,image.CaptionGap);Assert.Equal(16,image.CaptionTextStyle!.FontSize);
+        Assert.Equal(TopologyCaptionPlacement.Top,image.CaptionPlacement);Assert.Equal(8,image.CaptionGap);Assert.Equal(13,image.CaptionTextStyle!.FontSize);
         Assert.Equal("common:server",chart.Nodes.Single(node=>node.Id=="Policy").Metadata["mermaid.property.icon"]);
         Assert.Equal("cloud:cloud",chart.Nodes.Single(node=>node.Id=="Publish").Metadata["mermaid.property.icon"]);
         Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneImage>());

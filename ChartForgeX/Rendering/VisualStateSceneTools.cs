@@ -30,8 +30,8 @@ internal static class VisualStateSceneTools {
             ? VisualChartPaint.Text(style) : defaultPaint ?? SvgPaint.Literal(style.Color);
 
     internal static string Value(Chart chart, ChartSeries series, int index, double value) =>
-        index >= 0 && index < series.PointLabels.Count && series.PointLabels[index] != null
-            ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
+        index >= 0 && index < series.PreparedLabels.Count && series.PreparedLabels[index] != null
+            ? series.PreparedLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
 
     internal static string Number(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     internal static string SourceId(int series, int point) => "series-" + series.ToString(CultureInfo.InvariantCulture) + "-point-" + point.ToString(CultureInfo.InvariantCulture);
@@ -102,7 +102,7 @@ internal static class VisualStateSceneTools {
         // A complete word-preserving reflow is lossless only when it is still drawn.
         if (omitted || fit != displayed || displayedText != null && !SameWords(text, displayed))
             builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
-        if (omitted) return;
+        if (omitted || fit.Length == 0) return;
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - height) / 2 + builder.TextAscent(style);
@@ -120,13 +120,15 @@ internal static class VisualStateSceneTools {
         return ChartPathBuilder.RoundedRectangle(bounds, radius);
     }
 
-    internal static void Connector(VisualSceneBuilder builder, ChartOptions options, ChartPoint start, ChartPoint end, ChartColor fallback) {
+    internal static void Connector(VisualSceneBuilder builder, ChartOptions options, ChartPoint start, ChartPoint end, ChartColor fallback,
+        ChartDataLabelConnectorStyle? defaultStyle = null) {
+        var style = options.HasDataLabelConnectorStyle ? options.DataLabelConnectorStyle : defaultStyle ?? options.DataLabelConnectorStyle;
         var middle = start.X + (end.X - start.X) / 2;
         var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(start.X, start.Y) };
-        if (options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Curve)
+        if (style == ChartDataLabelConnectorStyle.Curve)
             commands.Add(ChartPathCommand.CubicTo(middle, start.Y, middle, end.Y, end.X, end.Y));
         else {
-            if (options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Elbow) {
+            if (style == ChartDataLabelConnectorStyle.Elbow) {
                 commands.Add(ChartPathCommand.LineTo(middle, start.Y)); commands.Add(ChartPathCommand.LineTo(middle, end.Y));
             }
             commands.Add(ChartPathCommand.LineTo(end.X, end.Y));

@@ -24,7 +24,7 @@ public sealed class MermaidAccentPaintIndependenceTests {
     [InlineData("fork", "stroke-only", "stroke:#0000ff")]
     [InlineData("fork", "both", "fill:#ff0000,stroke:#0000ff")]
     public void AuthoredAccentFillAndStrokeRemainIndependentThroughNativePaintAndPortableReplay(string shape, string variant, string? style) {
-        var source = "flowchart LR\nwork@{ shape: " + shape + ", label: 'Work' }"
+        var source = "%%{init: {'theme':'default'}}%%\nflowchart LR\nwork@{ shape: " + shape + ", label: 'Work' }"
             + (style == null ? "" : "\nstyle work " + style);
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
             Flowchart = new MermaidFlowchartRenderOptions { Title = "", Width = 400, Height = 260 },

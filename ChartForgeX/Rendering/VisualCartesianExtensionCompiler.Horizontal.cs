@@ -35,7 +35,7 @@ internal static partial class VisualCartesianCompiler {
         var slot = stacks.Slot(bars, index);
         var layout = ChartCategorySlotLayout.Create(stacks.HorizontalCategories.Select(map.Y),
             plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
-            maximumThickness: chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, stacks.IsStacked(index)),
+            maximumThickness: chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: true),
             minimumThickness: Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
             maximumPitch: map.CalendarBandPitch(horizontal: true));
         return (layout.Thickness, layout.Offset, layout.Pitch);

@@ -59,6 +59,8 @@ public enum TableArtifactColumnType {
 /// Describes one reusable table artifact for static rendering and native-host interaction.
 /// </summary>
 public sealed class TableArtifact {
+    /// <summary>Gets or sets whether native table output separates rows and columns with grid lines.</summary>
+    public bool ShowGridLines { get; set; }
     // Captured native table scale preserves the incumbent max(1, bodyScale) header law after Manual restoration.
     internal double CapturedPresentationScale { get; set; } = 1;
     private string _id = string.Empty;
@@ -292,13 +294,17 @@ public sealed class TableArtifactRow {
 /// </summary>
 public sealed class TableArtifactCell {
     private string _displayText;
+    private ChartForgeX.Typography.TextContent? _content;
     private VisualStatus _status;
 
     /// <summary>Initializes a table artifact cell.</summary>
     public TableArtifactCell(string displayText) => _displayText = displayText ?? throw new ArgumentNullException(nameof(displayText));
 
     /// <summary>Gets or sets the text used by static previews.</summary>
-    public string DisplayText { get => _displayText; set => _displayText = value ?? throw new ArgumentNullException(nameof(value)); }
+    public string DisplayText { get => _content?.PlainText ?? _displayText; set { _displayText = value ?? throw new ArgumentNullException(nameof(value)); _content = null; } }
+
+    /// <summary>Gets or sets structured content for a native embedded cell. Assigning DisplayText clears its formatting.</summary>
+    public ChartForgeX.Typography.TextContent? Content { get => _content; set { if (value != null) _displayText = value.PlainText; _content = value; } }
 
     /// <summary>Gets or sets optional text used by host search.</summary>
     public string? SearchText { get; set; }
@@ -323,7 +329,7 @@ public sealed class TableArtifactCell {
 
     internal TableArtifactCell Clone() {
         var copy = new TableArtifactCell(DisplayText) {
-            SearchText = SearchText, SortText = SortText, CopyText = CopyText, ExportText = ExportText, Status = Status
+            SearchText = SearchText, SortText = SortText, CopyText = CopyText, ExportText = ExportText, Status = Status, Content = Content
         };
         foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
         return copy;

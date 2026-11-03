@@ -12,7 +12,7 @@ internal static class TopologyLayoutNormalizer {
     internal const double GroupHeaderBottomGap = 12;
     private const double RowTolerance = 36;
     private const double MinimumNodeWidth = 108;
-    private const double MinimumAutoGroupWidth = 190;
+    internal const double MinimumAutoGroupWidth = 190;
     private const double MinimumAutoGroupHeight = 170;
 
     internal static void PrepareGroupShellsForPacking(TopologyChart chart, TopologyRenderOptions? options) {

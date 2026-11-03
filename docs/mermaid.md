@@ -10,6 +10,24 @@ It is intentionally separate from `ChartForgeX.Markup`:
 
 This split keeps ChartForgeX dependency-free at runtime, keeps Markdown support reusable, and lets hosts opt into Mermaid only when they need it.
 
+## Diagram appearance
+
+Unconfigured diagrams use Graphite in the selected light or dark mode. Fonts come from `VisualTheme.Typography.Family`; a host theme or font override remains authoritative. Diagram roles use a 20-pixel title, 14-pixel subtitle, 13-pixel node caption and smaller relationship/member text. Explicit source typography still applies.
+
+Every family shares one flat look. Connectors are single 1.5-pixel strokes without glow layers, solid unless the notation is dashed (dotted flowchart links, class dependencies, non-identifying ER relationships, traced requirement relationships). Relationship captions sit on a borderless chip just off the canvas tone that hugs the text, and multiplicities only mask their line. Cards with an icon (C4, architecture) fit their content up to a shared wrapping width. Sequence participants are flat; Mermaid's neo elevation applies when the source sets `look: neo` or names one of Mermaid's themes. A C4 boundary whose containers form a chain lays that chain along the requested canvas's long axis, with people and external systems across it.
+
+To retain Mermaid's lavender default palette, request it in the source:
+
+```mermaid
+%%{init: {"theme":"default"}}%%
+flowchart LR
+    Request --> Response
+```
+
+Automatic topology-backed diagrams fit their measured nodes, groups, routes and labels with even outer padding. Width and height guide layout and aspect selection; they no longer force empty space around a small diagram. An explicit source direction is preserved. Class, state, ER and C4 layouts choose a direction from the requested aspect when the source omits one. Git graphs fit their commit columns and lanes, and Gantt height follows its task rows. Hosts that require a fixed topology canvas can select `MermaidTopologySizing.FixedViewport`.
+
+Class members render in attribute and method compartments. ER attributes use editable native table columns for type, name and key, with a description column when comments exist. Metadata retains the original member or attribute facts after layout, and portable snapshots retain compartments, grid lines and rich comments.
+
 ## Support Policy
 
 Mermaid support should grow as a real language surface, not as a small custom subset that only works for demo strings.

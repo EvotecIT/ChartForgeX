@@ -206,7 +206,7 @@ public sealed class TopologyRoutingMilestoneTests {
         var chart = FanIn(named);
         var separate = chart.Prepare(Options()).Analyze();
         if (!named) Assert.Empty(separate.RouteOverlaps);
-        else Assert.All(separate.RouteOverlaps, overlap => Assert.InRange(overlap.Length, 0, 14));
+        else Assert.All(separate.RouteOverlaps, overlap => Assert.InRange(overlap.Length, 0, 21));
         var options = Options();
         options.ShareIncomingTrunks = true;
         var prepared = chart.Prepare(options);

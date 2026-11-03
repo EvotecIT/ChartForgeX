@@ -46,8 +46,7 @@ public static class DottedMapRecipe {
                 new ChartMapPoint("Warsaw", 21, 52.2),
                 new ChartMapPoint("Baltic", 17, 56),
                 new ChartMapPoint("Oslo", 10.8, 59.9)
-            })
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            });
         if (variant is "options" or "compact-options") chart.WithPointLegend();
         return chart;
     }

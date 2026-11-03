@@ -64,7 +64,7 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
     [InlineData(256, 160)]
     public async Task DenseAcceptedSequenceTypographyPreservesVectorGeometryAndDefaultExportResourceBounds(int size, int count) {
         var participants = string.Join("\n", Enumerable.Range(0, count).Select(index => "participant P" + index + " as W"));
-        var result = MermaidRenderer.Render(Source(size, "sequenceDiagram\n" + participants + "\nP0->>P" + (count - 1) + ": Save"));
+        var result = MermaidRenderer.Render(Source(size, "sequenceDiagram\n" + participants + "\nP0->>P" + (count - 1) + ": Save", neo: true));
         Assert.Empty(result.Diagnostics); var artifact = result.Artifact!;
         var sequence = Assert.IsType<SequenceArtifact>(artifact.Model);
         // Use the exact natural preparation owner used by artifact exports. Public Prepare(context)
@@ -137,7 +137,7 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
         return failure;
     }
 
-    private static string Source(int size, string body) => "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size.ToString(CultureInfo.InvariantCulture) + "}}}%%\n" + body;
+    private static string Source(int size, string body, bool neo = false) => "%%{init: {" + (neo ? "'look':'neo'," : "") + "'fontFamily':'Arial','themeVariables':{'fontSize':" + size.ToString(CultureInfo.InvariantCulture) + "}}}%%\n" + body;
 
     private static async Task Capture(string svg, byte[]? png, string name, int width, int height) {
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

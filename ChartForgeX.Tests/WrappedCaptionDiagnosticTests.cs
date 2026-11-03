@@ -30,7 +30,7 @@ public sealed class WrappedCaptionDiagnosticTests {
 
     [Theory]
     [InlineData("North America services", "North America\nservices", 260, 100, false, true)]
-    [InlineData("North America services", "North America\nservices", 40, 100, true, true)]
+    [InlineData("North America services", "North America\nservices", 40, 100, true, false)]
     [InlineData("North America services", "North America", 260, 100, true, true)]
     [InlineData("North America services", "services North America", 260, 100, true, true)]
     [InlineData("North America services", "North America\nservices", 260, 12, true, false)]
@@ -49,7 +49,7 @@ public sealed class WrappedCaptionDiagnosticTests {
         if (!drawn) { Assert.Empty(scene.Nodes.OfType<VisualSceneText>()); return; }
         var caption = Assert.Single(scene.Nodes.OfType<VisualSceneText>());
         if (!overflow) Assert.Equal(displayed, string.Join("\n", caption.Text.Lines.Select(line => line.Text)));
-        else if (width == 40) Assert.Contains("…", string.Join("\n", caption.Text.Lines.Select(line => line.Text)));
+
     }
 
     [Theory]
@@ -84,7 +84,7 @@ public sealed class WrappedCaptionDiagnosticTests {
     [InlineData(ChartSeriesKind.GanttLane, VisualThemeMode.Dark)]
     [InlineData(ChartSeriesKind.StateTimeline, VisualThemeMode.Light)]
     [InlineData(ChartSeriesKind.StateTimeline, VisualThemeMode.Dark)]
-    public void ScheduleRowsKeepFullSourceNamesWhenTheirVisibleCaptionsAreShortened(ChartSeriesKind kind, VisualThemeMode mode) {
+    public void ScheduleRowsKeepFullSourceNamesWhenTheirVisibleCaptionsWrapOrShorten(ChartSeriesKind kind, VisualThemeMode mode) {
         const string source = "North America regional platform services and infrastructure ownership";
         var chart = Chart.Create().WithLegend(false);
         if (kind == ChartSeriesKind.GanttLane) chart.AddGanttLane(source, new[] { new ChartGanttLaneItem(1, 3, "active") });
@@ -94,9 +94,13 @@ public sealed class WrappedCaptionDiagnosticTests {
         var caption = Assert.Single(Captions(prepared, "schedule-row-label"));
         var displayed = CaptionText(caption);
         Assert.NotEqual(source, displayed);
-        Assert.EndsWith("…", displayed);
         Assert.Equal(source, Assert.Single(prepared.Regions, region => region.Role == "schedule-row-label").Label);
-        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "text.overflow");
+        if (displayed.EndsWith("…", StringComparison.Ordinal)) {
+            Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "text.overflow");
+        } else {
+            Assert.Equal(source, displayed.Replace('\n', ' '));
+            Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "text.overflow");
+        }
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 

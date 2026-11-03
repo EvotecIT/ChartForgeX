@@ -32,10 +32,11 @@ public sealed class MermaidClassSemanticNotationTests {
         Assert.Equal("Customer, account", document.Classes.Single(item => item.Id == "Customer").Label);
         var chart = Assert.IsType<TopologyChart>(direct.Artifact!.Model);
         var details = chart.Nodes.Single(node => node.Id == "Store").Details;
-        Assert.Equal(owner.Members.Select(item => item.DisplayText), details.Select(detail => detail.Text));
-        Assert.True(details[1].TextStyle!.Italic);
+        Assert.Equal(new[] { "+List<List<int>> values", "+int count", "+lookup(int id, string key) Item", "+create() Item", "+reset()" }, details.Select(detail => detail.Text));
+        Assert.True(details[2].StartsSection);
         Assert.True(details[2].TextStyle!.Italic);
-        Assert.True(details[3].TextStyle!.Underline);
+        Assert.True(details[3].TextStyle!.Italic);
+        Assert.True(details[1].TextStyle!.Underline);
         Assert.True(details[4].TextStyle!.Underline);
         var prepared = chart.Prepare();
         var texts = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(item => item.Role == "topology-node-detail").ToArray();
@@ -53,11 +54,11 @@ public sealed class MermaidClassSemanticNotationTests {
         Assert.Equal(png, fenced.ToPng());
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(direct.Artifact.ToInterchangeJson());
         var rows = envelope.Nodes.Single(node => node.Id == "Store").Details;
-        Assert.True(rows[1].TextStyle!.Italic);
         Assert.True(rows[2].TextStyle!.Italic);
-        Assert.True(rows[3].TextStyle!.Underline);
-        rows[1].TextStyle!.Italic = false;
-        Assert.True(VisualArtifactInterchangeEnvelope.FromJson(direct.Artifact.ToInterchangeJson()).Nodes.Single(node => node.Id == "Store").Details[1].TextStyle!.Italic);
+        Assert.True(rows[3].TextStyle!.Italic);
+        Assert.True(rows[1].TextStyle!.Underline);
+        rows[2].TextStyle!.Italic = false;
+        Assert.True(VisualArtifactInterchangeEnvelope.FromJson(direct.Artifact.ToInterchangeJson()).Nodes.Single(node => node.Id == "Store").Details[2].TextStyle!.Italic);
         Capture("class-members" + (dark ? "-dark" : "-light"), svgText, png);
     }
 

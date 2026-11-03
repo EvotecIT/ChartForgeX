@@ -56,7 +56,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
         foreach (var id in new[] { "dns-domain", "ip-domain" }) {
             var edge = report.Edges.Single(item => item.Id == id);
             Assert.True(edge.SourceAttached && edge.TargetAttached, id);
-            Assert.Equal(domain.Left - 7, edge.Points[^1].X, 6);
+            Assert.Equal(domain.Left, edge.Points[^1].X, 6);
             if (named) Assert.Equal(domain.Top + (domain.Bottom - domain.Top) * (id == "dns-domain" ? .25 : .75), edge.Points[^1].Y, 6);
         }
         Separate(report, "dns-domain", "ip-domain", source: false, minimum: 10);
@@ -82,7 +82,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
         var targetBounds = new ChartRect(targetNode.X, targetNode.Y, targetNode.Width, targetNode.Height);
         NormalEnd(candidate, sourceBounds, source: true);
         NormalEnd(candidate, targetBounds, source: false);
-        Assert.Equal(horizontal ? reversed ? sourceBounds.Left - 7 : sourceBounds.Right + 7 : reversed ? sourceBounds.Top - 7 : sourceBounds.Bottom + 7,
+        Assert.Equal(horizontal ? reversed ? sourceBounds.Left : sourceBounds.Right : reversed ? sourceBounds.Top : sourceBounds.Bottom,
             horizontal ? candidate[0].X : candidate[0].Y, 6);
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = false,
             ArrowMarkerStyle = TopologyArrowMarkerStyle.Diamond });
@@ -106,12 +106,12 @@ public sealed class TopologyObstacleAutomaticPortTests {
         if (Math.Abs(dx) > .001) {
             Assert.InRange(Math.Abs(dy), 0, .001);
             Assert.InRange(point.Y, bounds.Top, bounds.Bottom);
-            Assert.Equal(point.X < bounds.Left ? bounds.Left - 7 : bounds.Right + 7, point.X, 6);
-            Assert.True(dx * (point.X < bounds.Left ? -1 : 1) > 0);
+            Assert.Equal(point.X <= bounds.Left + .001 ? bounds.Left : bounds.Right, point.X, 6);
+            Assert.True(dx * (point.X <= bounds.Left + .001 ? -1 : 1) > 0);
         } else {
             Assert.InRange(point.X, bounds.Left, bounds.Right);
-            Assert.Equal(point.Y < bounds.Top ? bounds.Top - 7 : bounds.Bottom + 7, point.Y, 6);
-            Assert.True(dy * (point.Y < bounds.Top ? -1 : 1) > 0);
+            Assert.Equal(point.Y <= bounds.Top + .001 ? bounds.Top : bounds.Bottom, point.Y, 6);
+            Assert.True(dy * (point.Y <= bounds.Top + .001 ? -1 : 1) > 0);
         }
     }
 

@@ -202,8 +202,8 @@ public sealed class TopologyTeamOptions {
     /// <summary>Gets or sets the layered flow direction.</summary>
     public TopologyLayoutDirection LayoutDirection { get; set; } = TopologyLayoutDirection.TopToBottom;
 
-    /// <summary>Gets or sets the default hierarchy layout policy inherited by members without an explicit policy.</summary>
-    public TopologyHierarchyLayoutPolicy LayoutPolicy { get; set; } = TopologyHierarchyLayoutPolicy.Auto;
+    /// <summary>Gets or sets the default team layout policy. Standard keeps reporting subtrees in sibling bands under their managers.</summary>
+    public TopologyHierarchyLayoutPolicy LayoutPolicy { get; set; } = TopologyHierarchyLayoutPolicy.Standard;
 
     /// <summary>Gets or sets the generated relationship edge kind.</summary>
     public TopologyEdgeKind EdgeKind { get; set; } = TopologyEdgeKind.Ownership;

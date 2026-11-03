@@ -81,7 +81,7 @@ public sealed partial class ExampleRecipeTests {
         var observations = chart.Series.Single(series => series.Name == "Recorded batches");
         Assert.Equal(new[] { 18d, 30, 24, 44, 32 }, observations.Points.Select(point => point.Y));
         Assert.Equal("Temperature", observations.ColorDimension.Name);
-        Assert.Equal("pl-PL", observations.ColorDimension.ValueFormat!.Culture.Name);
+        Assert.Equal(string.Empty, observations.ColorDimension.ValueFormat!.Culture.Name);
         Assert.Equal("Processing time (minutes)", chart.YAxisTitle);
     }
 
@@ -107,7 +107,7 @@ public sealed partial class ExampleRecipeTests {
         var sources = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role)
             .ToDictionary(element => element.Attribute("data-cfx-region")!.Value);
         Assert.Equal("-25", sources["CA"].Attribute("data-cfx-value")!.Value);
-        Assert.Equal("-25,0 °C", sources["CA"].Attribute("data-cfx-formatted-value")!.Value);
+        Assert.Equal("-25 °C", sources["CA"].Attribute("data-cfx-formatted-value")!.Value);
         Assert.Equal("0", sources["NY"].Attribute("data-cfx-value")!.Value);
         Assert.Equal("false", sources["NY"].Attribute("data-cfx-empty")!.Value);
         Assert.Equal("55", sources["CO"].Attribute("data-cfx-value")!.Value);

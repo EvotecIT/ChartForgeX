@@ -23,7 +23,7 @@ public sealed class NumericRadialLabelTests {
         }
         Assert.Equal(8, scene.Regions.Count(region => region.Role == "point"));
         Assert.Equal("1050", Point(scene, "series-0-point-3").Metadata["data-cfx-y"]);
-        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-3-label" && region.Label == "1050");
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-3-label" && region.Label == "1,050");
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "numeric-radial.label-overflow");
     }
 

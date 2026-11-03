@@ -222,7 +222,7 @@ internal sealed partial class ChartGanttLaneModel {
     }
 
     public string FormatTick(double value) => ChartAxisValueFormatter.Format(Chart.Options.XAxis, value,
-        tick => Mixed && Chart.Options.XAxis.Scale == ChartScaleKind.Linear ? tick.ToString("G17", CultureInfo.InvariantCulture)
+        tick => Mixed && Chart.Options.XAxis.Scale == ChartScaleKind.Linear ? ChartAxisValueFormatter.Create(Chart.Options.XAxis, Ticks, Chart.Options.ValueFormatter)(tick)
             : Mixed && Chart.Options.XAxis.TimeTickLabelFormatter != null ? Chart.Options.XAxis.TimeTickLabelFormatter(tick, HasFixedTicks ? Chart.Options.GanttTickInterval?.Unit : null)
             : ChartTicks.IsNumericTimeFallback(Ticks) ? tick.ToString("G17", CultureInfo.InvariantCulture)
             : ChartTimeScale.Format(Chart.Options.XAxis, tick, Mixed && HasFixedTicks && Chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond), Ticks);

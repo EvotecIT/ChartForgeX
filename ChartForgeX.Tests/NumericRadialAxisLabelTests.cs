@@ -40,7 +40,9 @@ public sealed class NumericRadialAxisLabelTests {
         var chart = Categories(start, width, reversed);
         var scene = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
         var captions = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "radial-category-label").ToArray();
-        Assert.Equal(3, captions.Length);
+        // A compact ring hides a caption that cannot keep six characters before an ellipsis; its region keeps the name.
+        if (width > 400) Assert.Equal(3, captions.Length); else Assert.InRange(captions.Length, 1, 3);
+        Assert.All(captions, caption => Assert.Contains(string.Concat(caption.Text.Lines.Select(line => line.Text)), new[] { "North", "South", "East" }));
         foreach (var name in new[] { "North", "South", "East" }) Assert.Contains(scene.Regions, region => region.Role == "radial-category-label" && region.Label == name);
         var marks = NumericRadialSeriesTests.Marks(scene);
         foreach (var caption in captions) foreach (var mark in marks) {

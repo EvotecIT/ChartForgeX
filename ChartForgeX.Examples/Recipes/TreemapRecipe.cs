@@ -37,7 +37,7 @@ public static class TreemapRecipe {
             options.ColorScale = variant == "sparse" ? scale.WithNoDataColor(colors.Surface) : scale;
         });
         if (variant == "options") allocation.WithNodeState("south-support", ChartSeriesState.Warning);
-        return chart.WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        return chart;
     }
 
 }

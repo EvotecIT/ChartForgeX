@@ -95,7 +95,11 @@ public sealed class TileMapLabelFittingTests : IDisposable {
             var write = typeof(V2Examples).GetMethod("WriteThumbnail", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
             write.Invoke(null, new object?[] { output, model, "readable", "Readable overview", family, VisualThemeMode.Light, family != "histogram" });
             var svg = XDocument.Load(Path.Combine(output, "readable.thumbnail.svg"));
-            var labels = svg.Descendants().Where(node => node.Name.LocalName == "text" && node.Ancestors().Any(owner =>
+            var labels = svg.Descendants().Where(node => (node.Name.LocalName == "text" || (string?)node.Attribute("data-cfx-native-text-ink") == "true")
+                && (string?)node.Attribute("display") != "none"
+                && !string.IsNullOrWhiteSpace(node.Name.LocalName == "text" ? node.Value
+                    : (string?)node.Attribute("data-cfx-ink-line") ?? node.Ancestors().Select(owner => (string?)owner.Attribute("data-cfx-caption")).FirstOrDefault(caption => caption != null))
+                && node.Ancestors().Any(owner =>
                 ((string?)owner.Attribute("data-cfx-role")) is "axis-y-label" or "radar-ring-label" or "polar-radius-label")).ToArray();
             Assert.True(labels.Length >= 2, "The overview must retain useful value-axis captions.");
             Assert.All(labels, label => Assert.True(double.Parse(label.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture) >= 12,

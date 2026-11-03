@@ -134,8 +134,8 @@ public sealed class V2CartesianMigrationTests {
         var scene = Compile(chart);
         var bars = BarShapes(scene).ToArray();
         // Stacked segments meet across the 2px surface gap (design rule 4).
-        Assert.Equal(bars[4].Bounds.Bottom + ChartMarkSurface.SurfaceGap, bars[0].Bounds.Top, 8);
-        Assert.Equal(bars[6].Bounds.Bottom + ChartMarkSurface.SurfaceGap, bars[2].Bounds.Top, 8);
+        Assert.Equal(bars[4].Bounds.Bottom + ChartMarkSurface.StackSeparator, bars[0].Bounds.Top, 8);
+        Assert.Equal(bars[6].Bounds.Bottom + ChartMarkSurface.StackSeparator, bars[2].Bounds.Top, 8);
         Assert.True(bars[0].Bounds.Right < bars[2].Bounds.Left);
         var totals = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "stack-total").ToArray();
         Assert.Equal(4, totals.Length);

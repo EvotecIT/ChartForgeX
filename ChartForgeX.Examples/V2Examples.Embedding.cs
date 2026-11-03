@@ -33,12 +33,12 @@ public static partial class V2Examples {
         var id = "embedding-" + variant + "-" + mode.ToString().ToLowerInvariant();
         var chart = ServerRenderedRecipe.Create(variant, mode);
         var prepared = chart.PrepareStrip(ServerRenderedChartExamples.Context(width, 96, mode, padding: 0, family: ProofFont), ServerRenderedRecipe.SharedScale());
-        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
         var thumbnail = chart.PrepareStrip(ServerRenderedChartExamples.Context(ThumbnailWidth, ThumbnailHeight, mode, padding: 0, family: ProofFont), ServerRenderedRecipe.SharedScale());
         var preview = thumbnail.ToArtifact(id + "-thumbnail", VisualArtifactKind.Chart);
         preview.Accessibility.Name = "A row against a shared domain";
-        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), preview.ToSvg());
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), ExampleArtifactWriter.Svg(thumbnail, id + "-thumbnail", preview.Accessibility));
         File.WriteAllBytes(Path.Combine(output, id + ".thumbnail.png"), thumbnail.ToPng());
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), ExampleRecipeSource.EmitServerRenderedStrip(variant, mode, width, 96));
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".gallery.csharp.txt"), ExampleRecipeSource.EmitServerRenderedStrip(variant, mode, width, 96, galleryTypography: true));

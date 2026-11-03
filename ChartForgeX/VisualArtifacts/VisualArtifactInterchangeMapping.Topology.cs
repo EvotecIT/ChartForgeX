@@ -129,6 +129,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 status = parsed;
             }
             var detail = new TopologyNodeDetail {
+                StartsSection = sourceDetail.StartsSection,
                 Content = sourceDetail.Content ?? (sourceDetail.Text == null ? null : ChartForgeX.Typography.TextContent.Plain(sourceDetail.Text)), Label = sourceDetail.Label,
                 ValueContent = sourceDetail.ValueContent ?? ChartForgeX.Typography.TextContent.Plain(sourceDetail.Value), IconId = sourceDetail.IconId,
                 Status = status, Color = sourceDetail.Color, TextStyle = sourceDetail.TextStyle?.Clone(), BadgeStyle = sourceDetail.BadgeStyle?.Clone()

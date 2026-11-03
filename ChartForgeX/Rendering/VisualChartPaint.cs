@@ -8,13 +8,15 @@ namespace ChartForgeX.Rendering;
 /// <summary>Captures paint provenance at the same decision point that resolves chart colours.</summary>
 internal static class VisualChartPaint {
     internal static SvgColorRole SeriesRole(ChartSeries series, int point = -1, bool explicitOverride = false, SvgColorRole fallbackRole = SvgColorRole.Series) =>
-        explicitOverride || series.Color.HasValue || point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue
+        explicitOverride || series.Color.HasValue || series.PreparedItemStyle(point)?.Color != null || point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue
             ? SvgColorRole.Series : series.StateRole == ChartSeriesState.None ? fallbackRole : SvgColorRole.Status;
 
     /// <summary>Writes an automatic palette colour by its slot, so equal RGB values in two slots never share a property.</summary>
     internal static SvgPaint Series(ChartSeries series, ChartColor color, int point = -1, bool explicitOverride = false) {
         var role = SeriesRole(series, point, explicitOverride);
         if (explicitOverride || role != SvgColorRole.Series || series.Color.HasValue) return SvgPaint.Of(color, role);
+        // The neutral Other grey is a token blend, not a palette slot.
+        if (point >= 0 ? ChartSeriesColours.IsOtherCategory(series, point) : ChartSeriesColours.IsOtherSeries(series)) return SvgPaint.Literal(color);
         var ordinal = ChartSeriesColours.SlotOrdinal(series, point);
         return ordinal < 0 ? SvgPaint.Of(color, role) : SvgPaint.SeriesSlot(color, ordinal);
     }

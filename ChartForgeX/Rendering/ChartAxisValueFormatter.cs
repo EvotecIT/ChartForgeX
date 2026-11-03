@@ -69,11 +69,11 @@ internal static class ChartAxisValueFormatter {
             return value => Format(axis, value, fallbackFormatter, ticks, retainTimeDateContext);
         // Schedule axes retain their existing value notation; other numeric axes use compact notation.
         var captions = valueDefaults == null ? ChartNumericFormatter.FormatCompactScaleValues(ticks)
-            : ChartNumericFormatter.FormatScaleValues(valueDefaults, ticks);
+            : ChartNumericFormatter.FormatScaleValues(valueDefaults.ValueFormat, ticks, ticks);
         var defaults = new Dictionary<double, string>();
         for (var index = 0; index < ticks.Count; index++) defaults[ticks[index]] = captions[index];
         return value => FindExplicitLabel(axis.Labels, value) ?? (defaults.TryGetValue(value, out var text) ? text
-            : valueDefaults == null ? ChartNumericFormatter.FormatCompactAxisValue(value)
+            : valueDefaults == null ? ChartValueFormat.ExistingValue.Format(value)
             : ChartNumericFormatter.FormatScaleValues(valueDefaults, new[] { value })[0]);
     }
 }

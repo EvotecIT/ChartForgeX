@@ -12,7 +12,7 @@
     const addObservation = (point) => {
       const candidate = point.dataset;
 
-      if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(sharedXValue(candidate))
+      if (candidate.cfxTooltipText === '' || !sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(sharedXValue(candidate))
         || Number(candidate.cfxX) !== x || points.has(candidate.cfxSeries) || !isInteractiveTarget(point)
         || point.closest('.cfx-series-muted,[data-cfx-role="legend-item"]')) return;
       const paint = pointerTargetPaint(point, styles);
@@ -41,6 +41,8 @@
     const title = categoryReadoutText(node, data.cfxCategoryLabel ?? capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X'))));
     const content = [];
     rows.forEach((row) => {
+      const captured = row.point.dataset.cfxTooltipText;
+      if (captured !== undefined) { content.push({ ...row, value: captured }); return; }
       if (row.point.dataset.cfxWaterfallKind) {
         waterfallTooltipRows(row.point).forEach(fact => content.push({ ...row, ...fact,
           name: rows.length > 1 ? row.name + ' · ' + fact.name : fact.name }));

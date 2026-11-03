@@ -49,7 +49,7 @@ public static class BubbleColorDimensionRecipe {
                 new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")
             }).WithNoDataColor(colors.Border)).ConfigureColorDimension(options => {
                 options.Name = "Temperature";
-                options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
+                options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Auto;
             });
         return NumericAxes().ConfigureLabels(labels => labels.NoData = "Not sampled")
