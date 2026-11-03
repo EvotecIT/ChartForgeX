@@ -15,8 +15,10 @@ public sealed class HtmlTooltipPositionOptionsTests {
         var dashboard = new HtmlInteractiveDashboardOptions().Tooltip.Position;
         Assert.NotSame(chart, dashboard);
         Assert.Equal(HtmlChartTooltipAnchor.Pointer, chart.Anchor);
-        Assert.Equal(new[] { HtmlChartTooltipPlacement.TopRight, HtmlChartTooltipPlacement.TopLeft,
-            HtmlChartTooltipPlacement.BottomRight, HtmlChartTooltipPlacement.BottomLeft }, chart.Placements);
+        var placements = new[] { HtmlChartTooltipPlacement.TopRight, HtmlChartTooltipPlacement.TopLeft,
+            HtmlChartTooltipPlacement.BottomRight, HtmlChartTooltipPlacement.BottomLeft };
+        Assert.Equal(placements, chart.Placements);
+        Assert.Equal(placements, dashboard.Placements);
         Assert.Equal(12, chart.Gap);
         Assert.Equal(0, chart.OffsetX);
         Assert.Equal(0, chart.OffsetY);
@@ -24,6 +26,13 @@ public sealed class HtmlTooltipPositionOptionsTests {
         chart.Gap = 0;
         Assert.Equal(HtmlChartTooltipAnchor.Pointer, dashboard.Anchor);
         Assert.Equal(12, dashboard.Gap);
+        var html = new[] { Chart(), Chart() }.ToInteractiveHtmlDashboardPage();
+        var children = Regex.Matches(html, "<section[^>]*class=\"cfx-interactive-chart\"[^>]*>");
+        Assert.Equal(2, children.Count);
+        Assert.All(children.Cast<Match>(), child => {
+            Assert.Contains("data-cfx-tooltip-placements=\"auto\"", child.Value, StringComparison.Ordinal);
+            Assert.Contains("data-cfx-tooltip-gap=\"12\"", child.Value, StringComparison.Ordinal);
+        });
     }
 
     [Fact]
