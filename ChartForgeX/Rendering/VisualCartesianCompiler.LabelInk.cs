@@ -14,6 +14,7 @@ internal static partial class VisualCartesianCompiler {
         internal readonly Dictionary<LabelPlacementRequest, string> LabelIds = new();
         internal readonly Dictionary<LabelPlacementRequest, (ChartRect Bounds, TextStyle Style, SvgPaint? Paint)> ContainedInk = new();
         internal readonly HashSet<LabelPlacementRequest> Outlined = new();
+        internal readonly Dictionary<LabelPlacementRequest, double> SourceX = new();
 
         private readonly Dictionary<ChartSeries, System.Func<double, string>?> _seriesFormats = new();
 

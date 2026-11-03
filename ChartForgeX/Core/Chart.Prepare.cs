@@ -65,26 +65,11 @@ public sealed partial class Chart : IVisualRenderable {
     private PreparedVisual PrepareScene(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain) {
         ChartGuards.RenderCompatibility(this, preparing: true);
         if (viewport != null) VisualCartesianCompiler.ValidateViewport(this, viewport);
-        var family = VisualChartCompiler.Family(this);
-        var bubbleScale = Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? ChartBubbleSizeScale.Create(this) : null;
-        var colorScales = new ChartColorPresentationSet(this);
         var sourceFrame = context.Frame;
-        var frameColors = context.Theme.Resolve(context.ThemeMode);
-        var axisLabels = family is VisualChartFamily.NumericRadial or VisualChartFamily.Cartesian ? new ChartAxisValueFormatter.Cache() : null;
-        var entries = _visibilityLegendEntries?.Invoke(context)
-            ?? VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale, colorScales);
-        TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) =>
-            ResolveFrameTextStyle(context, configured, model, size, color, weight);
-        var frame = new VisualFrame(sourceFrame.Title ?? Title, sourceFrame.Subtitle ?? Subtitle,
-            sourceFrame.HasExplicitLegend ? sourceFrame.ShowLegend : ChartLegendVisibility.ForPreparedContent(this, entries.Count, colorScales),
-            sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.LegendPosition,
-            sourceFrame.ShowSurface, sourceFrame.TransparentBackground,
-            RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, 700),
-            RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
-            RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
-            sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
-        if (!sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition && family != VisualChartFamily.Map)
-            frame = frame.WithAutomaticLegendPlacement();
+        var frameInputs = PreparationFrame(context);
+        var family = frameInputs.Family; var bubbleScale = frameInputs.BubbleScale;
+        var colorScales = frameInputs.ColorScales; var axisLabels = frameInputs.AxisLabels;
+        var entries = frameInputs.Entries; var frame = frameInputs.Frame;
         var captureHierarchy = Series.Count == 1 && Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst;
         var captureBubble = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind == ChartSeriesKind.Bubble);
         var captureRange = context.CaptureNativeValueSource && viewport == null && Series.Count > 0 && Series.All(series => series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea);

@@ -51,6 +51,22 @@ internal static partial class VisualSceneGeometry {
         return edges;
     }
 
+    internal static List<List<ChartPoint>> Flatten(VisualSceneMark shape, double density) {
+        if (shape is VisualScenePath path) return VisualSceneGeometry.Flatten(path, density);
+        if (shape is VisualSceneSlice slice) return VisualSceneGeometry.Flatten(slice, density);
+        if (shape is VisualSceneRectangle partial && partial.HasPartialCorners)
+            return VisualSceneGeometry.Flatten(new VisualScenePath(partial.Outline(), true, partial.Fill, partial.Stroke, partial.StrokeWidth, partial.Role, partial.Id), density);
+        if (shape is VisualSceneRectangle rect) return new List<List<ChartPoint>> { ChartCurveFlattening.RoundedRectangle(rect.Bounds.X, rect.Bounds.Y, rect.Bounds.Width, rect.Bounds.Height, rect.Radius, rect.Radius, density) };
+        if (shape is VisualSceneEllipse ellipse) {
+            var points = ChartCurveFlattening.Arc(0, 0, 1, 0, Math.PI * 2, density * Math.Max(ellipse.Rx, ellipse.Ry));
+            for (var i = 0; i < points.Count; i++) points[i] = new ChartPoint(ellipse.Cx + points[i].X * ellipse.Rx, ellipse.Cy + points[i].Y * ellipse.Ry);
+            if (points.Count > 0) points.Add(points[0]);
+            return new List<List<ChartPoint>> { points };
+        }
+        if (shape is VisualSceneLine line) return new List<List<ChartPoint>> { new() { line.Start, line.End } };
+        throw new NotSupportedException("Unsupported numeric scene shape.");
+    }
+
     internal static List<List<ChartPoint>> Flatten(VisualScenePath path, double pixelsPerUnit) {
         var contours = new List<List<ChartPoint>>();
         List<ChartPoint>? current = null;

@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualAnnotationCompiler {
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
     // A caller that already describes its mark can reuse annotation painting without a nested interaction target.
-    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, ChartAnnotationKind>? kindSelector = null, Func<ChartAnnotation, bool>? isVisible = null, ChartRect? labelBounds = null, bool clipGeometry = false) {
+    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, ChartAnnotationKind>? kindSelector = null, Func<ChartAnnotation, bool>? isVisible = null, ChartRect? labelBounds = null, bool clipGeometry = false, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (annotation.HasSourceGeometry || annotation.IsBand != bands || (include != null && !include(annotation))) continue;
@@ -33,8 +33,12 @@ internal static partial class VisualAnnotationCompiler {
                 ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
             };
             if (annotation.Id is ChartAnnotationId sourceId && describeAnnotations) metadata[VisualAnnotationIdentity.Attribute] = sourceId.Value;
+            CartesianXSourceAdmission? sourceX = zoom == null || horizontal ? null : bands
+                ? CartesianXSourceAdmission.Range(Math.Min(annotation.Value, annotation.EndValue!.Value), Math.Max(annotation.Value, annotation.EndValue.Value))
+                : CartesianXSourceAdmission.Point(annotation.Value);
             using (describeAnnotations ? builder.PushGroup(id, "annotation", metadata) : null) {
             using (clipGeometry ? builder.PushClip(plot) : null) {
+            using var sourcePaint = sourceX.HasValue ? builder.PushSourceX(sourceX.Value) : null;
             if (annotation.EndValue.HasValue) {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, mapY(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, mapX(annotation.EndValue.Value)));
                 bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
@@ -85,24 +89,27 @@ internal static partial class VisualAnnotationCompiler {
                         label = placement.Place(new[] { request }, titleStrip.Value, obstacles, 2, builder.MeasureText)[0];
                 }
                 if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic(overflowCode, "An annotation label was shortened or omitted to avoid marks and other labels within the plot."));
-                if (!label.IsDropped) {
-                    obstacles.Add(new LabelObstacle(id + "-label", label.Bounds));
+                if (!label.IsDropped) obstacles.Add(new LabelObstacle(id + "-label", label.Bounds));
+                void Paint(VisualSceneBuilder target) {
                     if (horizontal && (label.Bounds.Left > plot.Right || label.Bounds.Top > position + context.Theme.Spacing + .001
                         || label.Bounds.Bottom < position - context.Theme.Spacing - .001)) {
                         var guideX = Math.Min(plot.Right, label.Bounds.Left + label.Bounds.Width / 2);
                         var endpoint = new ChartPoint(Math.Max(label.Bounds.Left, Math.Min(label.Bounds.Right, guideX)),
                             Math.Max(label.Bounds.Top, Math.Min(label.Bounds.Bottom, position)));
-                        builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(guideX, position), ChartPathCommand.LineTo(endpoint.X, endpoint.Y) }),
+                        target.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(guideX, position), ChartPathCommand.LineTo(endpoint.X, endpoint.Y) }),
                             stroke: color, strokeWidth: context.Theme.AxisStrokeWidth, role: "annotation-label-leader",
                             paint: VisualChartPaint.Stroke(SvgPaint.Of(color, annotationColorRole)));
                     }
-                    builder.Rect(label.Bounds, backplate, ChartColorMath.WithOpacity(color, .36), radius: Math.Min(4, context.Theme.BarRadius),
+                    target.Rect(label.Bounds, backplate, ChartColorMath.WithOpacity(color, .36), radius: Math.Min(4, context.Theme.BarRadius),
                         role: "annotation-label-backplate", paint: new VisualScenePaintBinding(
                             fill: plate.Paint,
                             stroke: SvgPaint.Of(color, annotationColorRole).WithOpacity(ChartColorMath.WithOpacity(color, .36), .36)));
-                    builder.Text(label.Text, label.Bounds.Left + labelPadding, label.Bounds.Top + labelPadding + builder.TextAscent(style), style,
+                    target.Text(label.Text, label.Bounds.Left + labelPadding, label.Bounds.Top + labelPadding + target.TextAscent(style), style,
                         role: "annotation-label", paint: ink.Paint);
-                }
+                                }
+                if (zoom != null) zoom.Caption(horizontal ? CartesianXMotion.Fixed : CartesianXMotion.XTrack,
+                    outputPlot!.Value, id + "-label", label, Paint, sourceX);
+                else if (!label.IsDropped) Paint(builder);
             }
             }
         }

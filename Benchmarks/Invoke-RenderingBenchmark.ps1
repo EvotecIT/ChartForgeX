@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Rendering', 'Decimation', 'Topology', 'Charts', 'Scenes')]
+    [ValidateSet('Rendering', 'Decimation', 'Topology', 'Charts', 'Scenes', 'XZoom')]
     [string] $Suite = 'Rendering',
 
     [ValidateRange(0, 100)]
@@ -22,6 +22,11 @@ param(
     [ValidateSet('Current', 'Legacy')]
     [string] $BaselineApiProfile = 'Current',
 
+    [ValidateSet('Smoke', 'Full')]
+    [string] $XZoomMatrix = 'Full',
+
+    [string] $ProductAssemblyPath,
+
     [switch] $Plan,
 
     [switch] $SkipBuild
@@ -29,6 +34,8 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if ($Suite -ne 'XZoom' -and ($XZoomMatrix -ne 'Full' -or -not [string]::IsNullOrWhiteSpace($ProductAssemblyPath))) { throw '-XZoomMatrix and -ProductAssemblyPath are supported only by XZoom.' }
+if (-not [string]::IsNullOrWhiteSpace($ProductAssemblyPath) -and -not $SkipBuild.IsPresent) { throw '-ProductAssemblyPath requires -SkipBuild so the named candidate binary remains the measurement boundary.' }
 if ($Suite -ne 'Scenes' -and $SceneGroup -ne 'Phase2') { throw '-SceneGroup is supported only by the Scenes suite.' }
 if ($Suite -ne 'Scenes' -and $BaselineRendering -ne 'Public') { throw '-BaselineRendering is supported only by the Scenes suite.' }
 if ($Suite -ne 'Scenes' -and $BaselineApiProfile -ne 'Current') { throw '-BaselineApiProfile is supported only by the Scenes suite.' }
@@ -37,6 +44,7 @@ if ($BaselineRendering -eq 'Direct' -and $BaselineApiProfile -eq 'Legacy') { thr
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $projectPath = Join-Path $repositoryRoot 'ChartForgeX\ChartForgeX.csproj'
 $assemblyPath = Join-Path $repositoryRoot 'ChartForgeX\bin\Release\net8.0\ChartForgeX.dll'
+if (-not [string]::IsNullOrWhiteSpace($ProductAssemblyPath)) { $assemblyPath = (Resolve-Path -LiteralPath $ProductAssemblyPath).Path }
 $specPath = Join-Path $PSScriptRoot ($Suite.ToLowerInvariant() + '.benchmark.ps1')
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
     $OutputRoot = Join-Path $PSScriptRoot ('..\Ignore\Benchmarks\' + $Suite)
@@ -54,7 +62,17 @@ if (-not (Test-Path -LiteralPath $assemblyPath -PathType Leaf)) {
 }
 
 $variables = @{ AssemblyPath = $assemblyPath }
-if ($Suite -in 'Topology', 'Charts', 'Scenes') {
+if ($Suite -eq 'XZoom') {
+    if (-not [string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) { throw 'XZoom is a candidate-only suite; -BaselineAssemblyPath is not supported.' }
+    $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
+    & dotnet build (Join-Path $PSScriptRoot 'XZoom/XZoomBenchmarkFixtures.csproj') -c Release --nologo -m:1 -nr:false -o $fixtureOutput "-p:ProductDll=$assemblyPath" "-p:BaseIntermediateOutputPath=$fixtureOutput/obj/" '-p:BuildInParallel=false'
+    if ($LASTEXITCODE -ne 0) { throw 'The XZoom candidate fixture build failed.' }
+    $variables.FixtureAssemblyPath = Join-Path $fixtureOutput 'XZoomBenchmarkFixtures.dll'
+    $variables.TokenPath = Join-Path $repositoryRoot 'ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json'
+    $variables.FontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Regular.ttf'
+    $variables.BoldFontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Bold.ttf'
+    $variables.XZoomMatrix = $XZoomMatrix
+} elseif ($Suite -in 'Topology', 'Charts', 'Scenes') {
     if ([string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) { $BaselineAssemblyPath = $assemblyPath }
     $variables.BaselineAssemblyPath = (Resolve-Path -LiteralPath $BaselineAssemblyPath).Path
     $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
@@ -80,7 +98,8 @@ if ($Suite -in 'Topology', 'Charts', 'Scenes') {
     throw '-BaselineAssemblyPath is supported by the Topology, Charts and Scenes suites.'
 }
 
-Import-Module PSPublishModule -MinimumVersion 3.0.72 -Force -ErrorAction Stop
+$benchmarkMinimum = if ($Suite -eq 'XZoom') { '3.0.158' } else { '3.0.72' }
+Import-Module PSPublishModule -MinimumVersion $benchmarkMinimum -Force -ErrorAction Stop
 
 $invoke = @{
     Path = $specPath

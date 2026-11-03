@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
         ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
-        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
+        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null, IReadOnlyList<ResolvedPointLabel>? pointLabels = null, CartesianXZoomLayers? zoom = null) {
         var series = chart.Series[index];
         var horizontal = ChartCartesianOrientation.IsHorizontalLine(chart, series);
         var points = new List<ChartPoint>(series.RenderPoints.Count);
@@ -91,11 +91,12 @@ internal static partial class VisualCartesianCompiler {
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && insideSourceX && (!clipMarks || inside)
                 && ShowMarker(chart, series, pointIndex);
-            var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
+            var resolvedLabel = pointLabels?[pointIndex] ?? ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
             var pointColor = PointColor(series, index, pointIndex, colors);
             var pointPaint = VisualChartPaint.Series(series, pointColor, pointIndex);
             if (colorSurface != null) (pointColor, pointPaint) = colorSurface.Paint(series, index, pointIndex, colors);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface, visible: insideSourceX)) {
+                using var sourcePaint = zoom == null ? null : builder.PushSourceX(CartesianXSourceAdmission.Point(sourceX));
                 if (visible) {
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
@@ -111,10 +112,12 @@ internal static partial class VisualCartesianCompiler {
             if (!insideSourceX) continue;
             var fill = colorSurface?.Scale != null || !ReferenceEquals(markers, series.Markers)
                 ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint, markers) : ((ChartColor Color, SvgPaint Paint)?)null;
+            var previousLabels = labels.Count;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
                 barDirection: horizontal ? BarValueDirection(ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis), series.RenderPoints[pointIndex].Y) : (double?)null,
                 horizontal: horizontal, markFill: fill?.Color, markFillPaint: fill?.Paint);
+            if (zoom != null) for (var label = previousLabels; label < labels.Count; label++) ((CartesianLabels)labels).SourceX[labels[label]] = sourceX;
         }
     }
 
@@ -373,14 +376,13 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawDataLabels(VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null) {
         FitOversizedDataLabels(builder, plot, labels, obstacles);
         foreach (var request in labels) request.MeasuredSize ??= builder.MeasureText(request.Text, request.Style);
         var placed = new LabelPlacementService().Place(labels, plot, obstacles, 2, builder.MeasureText);
         if (placed.Any(label => label.IsDropped || label.IsEllipsized))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.data-label-overflow", "Data labels were shortened or omitted to avoid marks and other labels within the available plot."));
         foreach (var label in placed) {
-            if (label.IsDropped) continue;
             var ink = ((CartesianLabels)labels).ContainedInk;
             var contained = ink.TryGetValue(label.Request, out var insideInk) && LabelPlacementService.Contains(insideInk.Bounds, label.Bounds);
             var displayedStyle = DisplayedStyle(contained ? insideInk.Style : label.Request.Style);
@@ -388,14 +390,19 @@ internal static partial class VisualCartesianCompiler {
             var surface = context.Theme.Resolve(context.ThemeMode).Surface;
             var total = label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true;
             var labelId = ((CartesianLabels)labels).LabelIds.TryGetValue(label.Request, out var distinctId) ? distinctId : label.Request.AssociatedMarkId;
-            using (builder.PushGroup(labelId + "-label-source", total ? "stack-total-label-source" : "data-label-source",
-                VisualMarkLabel.Metadata(label.Request.Text, total ? null : label.Request.AssociatedMarkId))) {
-                builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
-                    role: total ? "stack-total-label" : "data-label",
-                    id: labelId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
-                    stroke: outlined ? surface : null, strokeWidth: outlined ? ChartTextHalo.SvgStrokeWidth(displayedStyle.EffectiveFontSize, displayedStyle.Font.Weight >= 700) : 0,
-                    strokePaint: outlined ? SvgPaint.Of(surface, SvgColorRole.Surface) : null);
+            void Paint(VisualSceneBuilder target) {
+                using (target.PushGroup(labelId + "-label-source", total ? "stack-total-label-source" : "data-label-source",
+                    VisualMarkLabel.Metadata(label.Request.Text, total ? null : label.Request.AssociatedMarkId))) {
+                    target.Text(label.Text, label.Bounds.Left, label.Bounds.Top + target.TextAscent(displayedStyle), displayedStyle,
+                        role: total ? "stack-total-label" : "data-label",
+                        id: labelId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
+                        stroke: outlined ? surface : null, strokeWidth: outlined ? ChartTextHalo.SvgStrokeWidth(displayedStyle.EffectiveFontSize, displayedStyle.Font.Weight >= 700) : 0,
+                        strokePaint: outlined ? SvgPaint.Of(surface, SvgColorRole.Surface) : null);
+                }
             }
+            if (zoom != null) zoom.Caption(CartesianXMotion.XTrack, outputPlot!.Value, labelId + "-label", label, Paint,
+                ((CartesianLabels)labels).SourceX.TryGetValue(label.Request, out var sourceX) ? CartesianXSourceAdmission.Point(sourceX) : null);
+            else if (!label.IsDropped) Paint(builder);
         }
     }
 

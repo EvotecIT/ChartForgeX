@@ -53,8 +53,8 @@ internal abstract class VisualSceneNode {
 internal sealed class VisualSceneGroup : VisualSceneNode {
     internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata,
         VisualScenePath? pathClip = null, VisualRotation? rotation = null, string? href = null, string? tooltip = null,
-        ChartPoint? translation = null, VisualSceneImageResource? imageResource = null, VisualSceneColorScope? colorScope = null)
-        : this(role, id, clip, metadata, pathClip, rotation, href, tooltip, translation, imageResource, colorScope, 1) { }
+        ChartPoint? translation = null, VisualSceneImageResource? imageResource = null, VisualSceneColorScope? colorScope = null, CartesianXSourceAdmission? sourceX = null)
+        : this(role, id, clip, metadata, pathClip, rotation, href, tooltip, translation, imageResource, colorScope, 1) { SourceX = sourceX; }
     internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata,
         VisualScenePath? pathClip, VisualRotation? rotation, string? href, string? tooltip,
         ChartPoint? translation, VisualSceneImageResource? imageResource, VisualSceneColorScope? colorScope, double opacity)
@@ -69,14 +69,14 @@ internal sealed class VisualSceneGroup : VisualSceneNode {
     internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata,
         VisualScenePath? pathClip, VisualRotation? rotation, string? href, string? tooltip, ChartPoint? translation,
         VisualSceneImageResource? imageResource, VisualSceneColorScope? colorScope, double opacity,
-        VisualSceneSurfaceShadow? surfaceShadow, VisualSceneRetainedEffect? retainedEffect) : base(role, id) {
+        VisualSceneSurfaceShadow? surfaceShadow, VisualSceneRetainedEffect? retainedEffect, CartesianXSourceAdmission? sourceX = null) : base(role, id) {
         if (surfaceShadow != null && retainedEffect != null) {
             throw new ArgumentException("Surface shadows and completed-object masks use separate ordered scopes.");
         }
         SurfaceShadow = surfaceShadow;
         RetainedEffect = retainedEffect;
         Opacity = VisualSceneOpacity.Validate(opacity);
-        Clip = clip;
+        Clip = clip; SourceX = sourceX;
         PathClip = pathClip; Rotation = rotation; Href = href; Tooltip = tooltip; Translation = translation; ImageResource = imageResource;
         ColorScope = colorScope;
         var copy = new SortedDictionary<string, string>(StringComparer.Ordinal);
@@ -87,6 +87,7 @@ internal sealed class VisualSceneGroup : VisualSceneNode {
     internal VisualSceneRetainedEffect? RetainedEffect { get; }
     internal double Opacity { get; }
     internal ChartRect? Clip { get; }
+    internal CartesianXSourceAdmission? SourceX { get; }
     internal IReadOnlyDictionary<string, string> Metadata { get; }
     internal VisualScenePath? PathClip { get; }
     internal VisualRotation? Rotation { get; }

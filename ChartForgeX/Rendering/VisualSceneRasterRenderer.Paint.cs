@@ -35,21 +35,7 @@ internal static partial class VisualSceneRasterRenderer {
         return canvas.PushContoursClip(transform.Apply(new List<List<ChartPoint>> { RectanglePoints(bounds, 0, canvas.PixelsPerUnit) }));
     }
 
-    private static List<List<ChartPoint>> Contours(VisualSceneMark shape, double density) {
-        if (shape is VisualScenePath path) return VisualSceneGeometry.Flatten(path, density);
-        if (shape is VisualSceneSlice slice) return VisualSceneGeometry.Flatten(slice, density);
-        if (shape is VisualSceneRectangle partial && partial.HasPartialCorners)
-            return VisualSceneGeometry.Flatten(new VisualScenePath(partial.Outline(), true, partial.Fill, partial.Stroke, partial.StrokeWidth, partial.Role, partial.Id), density);
-        if (shape is VisualSceneRectangle rect) return new List<List<ChartPoint>> { RectanglePoints(rect.Bounds, rect.Radius, density) };
-        if (shape is VisualSceneEllipse ellipse) {
-            var points = ChartCurveFlattening.Arc(0, 0, 1, 0, Math.PI * 2, density * Math.Max(ellipse.Rx, ellipse.Ry));
-            for (var i = 0; i < points.Count; i++) points[i] = new ChartPoint(ellipse.Cx + points[i].X * ellipse.Rx, ellipse.Cy + points[i].Y * ellipse.Ry);
-            if (points.Count > 0) points.Add(points[0]);
-            return new List<List<ChartPoint>> { points };
-        }
-        if (shape is VisualSceneLine line) return new List<List<ChartPoint>> { new() { line.Start, line.End } };
-        throw new NotSupportedException("Unsupported numeric scene shape.");
-    }
+    private static List<List<ChartPoint>> Contours(VisualSceneMark shape, double density) => VisualSceneGeometry.Flatten(shape, density);
 
     private static List<ChartPoint> RectanglePoints(ChartRect bounds, double radius, double density) =>
         ChartCurveFlattening.RoundedRectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height, radius, radius, density);

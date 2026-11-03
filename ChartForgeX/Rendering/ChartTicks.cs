@@ -14,6 +14,16 @@ internal static class ChartTicks {
         axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => InDomain(axis, value, minimum, maximum)).Distinct().OrderBy(value => value).ToArray()
             : GenerateInside(axis, minimum, maximum);
 
+    /// <summary>Uses the canonical anchored numeric interval across an entire prepared magnified track.</summary>
+    internal static IReadOnlyList<double> ForXTrack(ChartAxis axis, double minimum, double maximum, double magnification) {
+        if (axis.Labels.Count > 0) return ForAxis(axis, minimum, maximum);
+        var count = Math.Ceiling(Math.Max(1, axis.TickCount - 1) * magnification) + 1;
+        if (!ChartMath.IsFinite(count) || count > MaximumGeneratedTicks)
+            throw new ArgumentOutOfRangeException(nameof(magnification), "The full X tick track exceeds the native tick-generation limit.");
+        return axis.IntegerTicks ? GenerateInteger(minimum, maximum, (int)count, inside: true)
+            : GenerateInside(minimum, maximum, (int)count);
+    }
+
     /// <summary>Keeps generated numeric value ticks alongside authored label positions within the visible domain.</summary>
     internal static IReadOnlyList<double> ForValueAxis(ChartAxis axis, double minimum, double maximum) {
         var generated = GenerateInside(axis, minimum, maximum);

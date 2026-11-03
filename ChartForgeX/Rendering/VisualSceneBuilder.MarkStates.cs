@@ -104,7 +104,7 @@ internal sealed partial class VisualSceneBuilder {
 
     private static bool IsMarkerRole(string? role) => role == "marker" || role != null && role.EndsWith("-marker", StringComparison.Ordinal);
 
-    private static Dictionary<string, string> NonLinkMarkMetadata(VisualSceneGroup group) {
+    internal static Dictionary<string, string> NonLinkMarkMetadata(VisualSceneGroup group) {
         var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
         metadata["role"] = "group"; metadata.Remove("target");

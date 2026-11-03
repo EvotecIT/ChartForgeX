@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -26,6 +27,7 @@ internal static class PreparedPipelineSmoke {
             var donut = Chart.Create().WithXLabels("Ready", "Waiting")
                 .AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) });
             AssertPrepared(donut.Prepare(context), "donut-slice");
+            AssertXZoom(context);
 
             var topology = CreateTopology().WithTheme(theme, mode);
             var preparedTopology = topology.Prepare(context);
@@ -44,7 +46,28 @@ internal static class PreparedPipelineSmoke {
             AssertSemanticHandoff(preparedSequence, sequence.ToVisualArtifact().ToInterchangeEnvelope(),
                 VisualArtifactInterchangeFamily.Sequence, 2);
         }
-        Console.WriteLine("Prepared pipeline AOT smoke passed: paired theme JSON, light/dark Cartesian/radial/topology/sequence SVG/PNG and semantic handoff.");
+        Console.WriteLine("Prepared pipeline AOT smoke passed: paired theme JSON, light/dark Cartesian/radial/topology/sequence SVG/PNG, detached X zoom and semantic handoff.");
+    }
+
+    private static void AssertXZoom(VisualRenderContext context) {
+        foreach (var step in new[] { false, true }) {
+            var chart = Chart.Create().WithLegend(false).WithDataLabels().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+            var points = new[] { new ChartPoint(0, 2), new ChartPoint(4, 5, breakBefore: true), new ChartPoint(10, 8) };
+            if (step) chart.AddStepLine("Observed", points); else chart.AddLine("Observed", points);
+            chart.Options.XAxis.Reversed = step;
+            var bank = chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2, 4));
+            chart.Options.XAxis.LabelFormatter = _ => throw new InvalidOperationException("Detached X zoom invoked the chart formatter.");
+            foreach (var window in new[] { (Level: 0, Pan: 0d), (Level: 1, Pan: .173), (Level: 2, Pan: 1d) }) {
+                var view = bank.At(window.Level, window.Pan);
+                AssertPrepared(view, "line");
+                var projection = view.XProjection;
+                Require(projection != null && projection.PlotBounds.Equals(bank.PlotBounds) && projection.Reversed == step,
+                    "Detached X zoom projection lost its fixed layout.");
+                var point = view.Regions.Single(region => region.Id == "series-0-point-1");
+                Require(Math.Abs(point.Bounds.Left + point.Bounds.Width / 2 - projection!.Project(4)) < 1e-9,
+                    "Detached X zoom paint and projection disagree.");
+            }
+        }
     }
 
     private static TopologyChart CreateTopology() {

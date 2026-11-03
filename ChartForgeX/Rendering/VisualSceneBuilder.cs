@@ -130,6 +130,9 @@ internal sealed partial class VisualSceneBuilder {
         return OpenGroup(new VisualSceneGroup(null, null, bounds, null));
     }
 
+    /// <summary>Names raw source eligibility without removing descriptive groups or regions.</summary>
+    internal IDisposable PushSourceX(CartesianXSourceAdmission sourceX) => OpenGroup(new VisualSceneGroup(null, null, null, null, sourceX: sourceX));
+
     internal IDisposable PushGroup(string? id, string? role, IReadOnlyDictionary<string, string>? metadata = null, double opacity = 1) {
         if (metadata != null) foreach (var item in metadata) {
             // Native semantic attributes are data, never event handlers, style or markup.
