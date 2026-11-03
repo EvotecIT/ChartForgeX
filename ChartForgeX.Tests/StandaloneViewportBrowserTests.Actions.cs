@@ -58,8 +58,11 @@ public sealed partial class StandaloneViewportBrowserTests {
         var page = session.Page;
         await MountAsync(page);
         var original = await page.Locator(".cfx-stage > svg").GetAttributeAsync("viewBox");
+        var branch = page.Locator("[data-cfx-node=engineering]");
+        await branch.ScrollIntoViewIfNeededAsync();
         var hit = await NativeInteriorPointAsync(page, "[data-cfx-node=engineering]", sunburst ? "[data-cfx-role=sunburst-segment-mark]" : "[data-cfx-role=treemap-group-mark]", 2);
-        await page.Mouse.ClickAsync((float)hit[0], (float)hit[1]);
+        Assert.Equal("engineering", await page.EvaluateAsync<string>("p=>document.elementFromPoint(p[0],p[1]).closest('[data-cfx-node]')?.dataset.cfxNode", hit));
+        await ClickNativePointAsync(branch, hit);
         Assert.True(await page.Locator("svg[data-cfx-standalone-hierarchy=engineering]").IsVisibleAsync());
         Assert.Contains("Engineering", await page.Locator(".cfx-hierarchy-breadcrumb").InnerTextAsync());
         await MoveToAsync(page, "svg[data-cfx-standalone-hierarchy] [data-cfx-node=platform]");
