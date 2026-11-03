@@ -286,6 +286,10 @@ numeric measurements and JSON retain their original values. Rows include stable
 series and target IDs, observation/contributor IDs and available hierarchy or
 link identities so hosts can join them to the current selection.
 
+The menu follows the chart's host typography and chrome, including nested
+themes. It closes when those theme settings change; reopen it to use the updated
+appearance.
+
 Hosts add their own items after the built-in actions. In C#, an item needs a
 unique id and a label; choosing it dispatches `cfxcontextaction` from the chart
 section with the item's `id`, the `chartId`, the current `selection` and the
