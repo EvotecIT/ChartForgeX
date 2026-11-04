@@ -8,6 +8,15 @@ namespace ChartForgeX.Tests;
 internal static class BrowserProofFonts {
     internal const string Family = ChartFontStacks.ProductSans;
 
+    /// <summary>Names the Carlito fixture face for charts whose native metrics come from <see cref="CarlitoPath"/>.</summary>
+    internal const string CarlitoFamily = "CFX Proof Carlito";
+
+    internal static string CarlitoPath => Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+
+    /// <summary>Delivers the same Carlito bytes to the browser, so browser and native geometry measure one face.</summary>
+    internal static string CarlitoStyle => "<style>@font-face{font-family:'" + CarlitoFamily + "';font-weight:400;src:url(data:font/ttf;base64,"
+        + Convert.ToBase64String(File.ReadAllBytes(CarlitoPath)) + ") format('truetype')}</style>";
+
     /// <summary>Declares the bounded font inputs for notation/portable-scene fixtures, independently of installed host collections.</summary>
     internal static ChartForgeX.Mermaid.MermaidRenderOptions MermaidOptions() => new() {
         Presentation = new ChartForgeX.Mermaid.MermaidPresentationOptions { FontFamily = Family }
@@ -28,6 +37,9 @@ internal static class BrowserProofFonts {
                 }
                 """, "Archivo");
             if (!loaded) throw new InvalidOperationException("The browser did not load bundled Archivo at weights 400, 500, 600, 650 and 700.");
+            if (body.Contains(CarlitoFamily, StringComparison.Ordinal) && !await session.Page.EvaluateAsync<bool>(
+                    "async family => (await document.fonts.load('400 16px \"' + family + '\"')).some(face => face.status === 'loaded')", CarlitoFamily))
+                throw new InvalidOperationException("The browser did not load the Carlito fixture face.");
             return session;
         } catch {
             await session.DisposeAsync();
