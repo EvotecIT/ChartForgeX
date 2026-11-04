@@ -315,7 +315,9 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal) && html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal), "Interactive dashboards should include enabled per-chart export controls.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should not reference external stylesheets.");
         Assert(!html.Contains("@import", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should not import external stylesheets.");
-        var withoutSvgNamespace = html.Replace("http://www.w3.org/2000/svg", string.Empty);
+        // Bundled font faces carry their OFL notice as a CSS comment; its licence URLs are text, not fetches.
+        var withoutSvgNamespace = System.Text.RegularExpressions.Regex.Replace(html, @"/\*.*?\*/", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline)
+            .Replace("http://www.w3.org/2000/svg", string.Empty);
         Assert(!withoutSvgNamespace.Contains("http://", StringComparison.OrdinalIgnoreCase) && !withoutSvgNamespace.Contains("https://", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should remain self-contained.");
         AssertThrows<ArgumentException>(() => new HtmlInteractiveDashboardRenderer().RenderPage(Array.Empty<ChartForgeX.Core.Chart>()), "Interactive dashboards should reject empty chart sets.");
     }

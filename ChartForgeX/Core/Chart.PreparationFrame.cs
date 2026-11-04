@@ -27,7 +27,9 @@ public sealed partial class Chart {
             RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, context.Theme.Typography.TitleWeight),
             RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
             RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
-            sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
+            sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle) {
+            HasExplicitLegendWeight = sourceFrame.HasExplicitLegendWeight || Options.LegendStyle.FontWeight != null
+        };
         if (!sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition && family != VisualChartFamily.Map)
             frame = frame.WithAutomaticLegendPlacement();
         return (family, bubbleScale, colorScales, axisLabels, entries, frame);

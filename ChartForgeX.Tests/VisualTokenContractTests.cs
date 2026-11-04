@@ -91,6 +91,6 @@ public sealed class VisualTokenContractTests {
         Assert.Contains("--cfx-tooltip-surface:var(--cfx-surface-card,var(--hfx-color-surface,", html);
         Assert.Contains("--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,var(--hfx-elevation-2,", html);
         Assert.Contains("--cfx-tooltip-radius:var(--hfx-radius-overlay,10px)", html);
-        Assert.Contains("--cfx-focus-ring:var(--hfx-color-focus-ring,", html);
+        Assert.Contains("--cfx-focus-ring:var(--cfx-host-accent,var(--hfx-color-focus-ring,", html);
     }
 }
