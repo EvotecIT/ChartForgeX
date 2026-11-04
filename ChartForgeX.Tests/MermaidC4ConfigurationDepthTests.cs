@@ -120,7 +120,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
             Assert.Contains(parsed.Diagnostics,item=>item.Code==MermaidDiagnosticCodes.UnsupportedConfiguration&&item.Span.Line==1&&item.Message.Contains("c4."+key,StringComparison.Ordinal));
         }
         var configured=parsed.Document!.ToTopologyChart();Assert.Null(configured.GridLayout);
-        Assert.Equal(Parse(body).ToSvg(),configured.ToSvg());
+        Assert.Equal(Parse(body).ToTopologyChart().ToSvg(),configured.ToSvg());
     }
     [Fact]
     public void NativeTextAndGridPoliciesRejectNonFiniteOrNegativeGeometryBeforePreparation() {

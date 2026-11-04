@@ -85,7 +85,7 @@ public sealed class GanttTickIntervalTests {
         Assert.Equal(json, envelope.ToJson());
         var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + File.ReadAllText(Fixture("mmd")) + "\n```");
         Assert.Empty(markup.Diagnostics);
-        Assert.Equal(svg, Assert.Single(markup.Artifacts).ToSvg());
+        Assert.Equal(svg, Assert.Single(markup.Artifacts).ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true }));
     }
 
     [Fact]
