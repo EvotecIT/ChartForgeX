@@ -8,11 +8,13 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     /// <summary>Resolves the existing finite native face/slot metrics for compiler and detached input comparison.</summary>
-    internal static void InitializeOptionsMetrics(VisualRenderContext context, TopologyRenderOptions options) {
+    /// <remarks>Region diagrams paint their own prepared text, so they skip the badge and endpoint faces.</remarks>
+    internal static void InitializeOptionsMetrics(VisualRenderContext context, TopologyRenderOptions options, bool textFaces = true) {
         options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
         options.ResolvedSubtitleChipFontSize = context.Theme.Typography.DataLabelSize * (9.5 / 11);
         options.ResolvedEdgeLabelScale = context.Theme.Typography.DataLabelSize / 11;
         options.ResolvedCaptionStrokeWidth = context.Theme.AxisStrokeWidth;
+        if (!textFaces) return;
         var badgeFace = new VisualSceneTextFace(context.Font, 600);
         var badgeFontSize = context.Theme.Typography.DataLabelSize * .75;
         badgeFontSize = ChartTextFitting.FitFontSize(Math.Min(8, badgeFontSize), badgeFontSize,

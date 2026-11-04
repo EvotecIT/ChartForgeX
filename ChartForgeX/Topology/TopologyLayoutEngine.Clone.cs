@@ -26,6 +26,8 @@ internal static partial class TopologyLayoutEngine {
             RenderOptions = chart.RenderOptions?.Clone(),
             TextMeasurement = chart.TextMeasurement,
             PreparedGroupHeaderParts = chart.PreparedGroupHeaderParts,
+            PreparedRegionRoutes = chart.PreparedRegionRoutes,
+            PreparedRegionPaintPlan = chart.PreparedRegionPaintPlan,
             PreparedGroupHeaderLayoutParts = chart.PreparedGroupHeaderLayoutParts
         };
         copy.Accessibility.Name = chart.Accessibility.Name;
@@ -117,6 +119,8 @@ internal static partial class TopologyLayoutEngine {
             BackgroundColor = node.BackgroundColor,
             PreparedNodeBasis = node.PreparedNodeBasis,
             ShowStatusBadge = node.ShowStatusBadge,
+            ShowHealthRing = node.ShowHealthRing,
+            AccessibleName = node.AccessibleName,
             ShowLabel = node.ShowLabel,
             PreserveDisplayModeSize = node.PreserveDisplayModeSize,
             FitLabelToContent = node.FitLabelToContent,

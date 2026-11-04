@@ -376,6 +376,8 @@ internal static partial class VisualArtifactInterchangeSnapshot {
             Longitude = source.Longitude,
             Latitude = source.Latitude,
             ShowStatusBadge = source.ShowStatusBadge,
+            ShowHealthRing = source.ShowHealthRing,
+            AccessibleName = source.AccessibleName,
             ShowLabel = source.ShowLabel,
             MaximumLabelCharacters = source.MaximumLabelCharacters,
             Artwork = Copy(source.Artwork),
