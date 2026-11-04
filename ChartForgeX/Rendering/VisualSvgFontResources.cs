@@ -38,10 +38,12 @@ internal sealed class VisualSvgFontResources {
             }
         }
     }
-    // CSS font-weight selects the same wght instance of a variable face without an extra variation descriptor.
-    // Other selected axes retain the established native-contour fallback until their delivery policy is supported.
-    private static bool MatchesWeight(TrueTypeFont font, int weight) => font.Variations.Count == 0 ? font.Weight == weight
-        : font.Variations.Count == 1 && font.HasSelectedAxis("wght") && font.Variations["wght"] == weight;
+    // A static face painted without synthesis is delivered under the requested weight, so the browser draws the same
+    // captured glyphs (for example a 500 caption on a family that ships only Regular). CSS font-weight selects the same
+    // wght instance of a variable face without an extra variation descriptor. Other selected axes retain the established
+    // native-contour fallback until their delivery policy is supported.
+    private static bool MatchesWeight(TrueTypeFont font, int weight) => font.Variations.Count == 0 && !font.HasAxis("wght")
+        || font.Variations.Count == 1 && font.HasSelectedAxis("wght") && font.Variations["wght"] == weight;
     // A face keeps one byte/descriptor identity across captured SVG scopes and frames.
     // Per-chart registration handles still own its lifetime; SVG resource IDs retain their own prefixes.
     private static string Alias(TrueTypeFont font, int weight, bool italic) {
