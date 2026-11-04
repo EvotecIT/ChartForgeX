@@ -398,7 +398,7 @@ internal static partial class MermaidExamples {
                 wardley.WithSize(420, 320);
             }
             if (item.Key == "mermaid-source-font-size-packet-narrow-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.PacketLayoutBlock packet)
-                packet.WithSize(640, 280);
+                packet.WithSize(600, 262);
             if (item.Key == "mermaid-source-font-size-group-header-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart grouped)
                 grouped.Groups[0].Subtitle = "Group description";
             if (item.Key.StartsWith("mermaid-source-font-size-icon-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.Topology.TopologyChart icons) {

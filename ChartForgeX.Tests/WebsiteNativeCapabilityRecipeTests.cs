@@ -29,7 +29,7 @@ public sealed class WebsiteNativeCapabilityRecipeTests {
         Assert.Equal(original, chart.Series[0].HierarchyItems.Select(item => (item.Id, item.ParentId, item.Value, item.ColorValue)));
         foreach (var prepared in new[] { full, subtree }) {
             var pixels = RasterImageDecoder.Decode(prepared.ToPng());
-            Assert.Equal((760, 480), (pixels.Width, pixels.Height));
+            Assert.Equal((800, 505), (pixels.Width, pixels.Height));
         }
     }
 
@@ -55,10 +55,10 @@ public sealed class WebsiteNativeCapabilityRecipeTests {
             else Assert.Equal(ChartTimeTickUnit.Month, chart.Options.XAxis.TimeSpacing!.CalendarUnit!.Unit);
         }
         var svg = XDocument.Parse(chart.ToSvg("axis-example"));
-        Assert.Equal("760", (string?)svg.Root!.Attribute("width"));
-        Assert.Equal("440", (string?)svg.Root.Attribute("height"));
+        Assert.Equal("800", (string?)svg.Root!.Attribute("width"));
+        Assert.Equal("463", (string?)svg.Root.Attribute("height"));
         var pixels = RasterImageDecoder.Decode(chart.ToPng());
-        Assert.Equal((760, 440), (pixels.Width, pixels.Height));
+        Assert.Equal((800, 463), (pixels.Width, pixels.Height));
         Assert.Equal(points, chart.Series[0].Points);
     }
 }

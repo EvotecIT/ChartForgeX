@@ -81,7 +81,7 @@ internal static class GraphiteExamples {
         var line=Frame("Check results over time","Healthy checks recede; failures remain visible").WithXLabels("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
             .AddSeries(passed).AddSeries(warnings).AddSeries(failed);
         line.Options.YAxis.Maximum=1400; line.Options.YAxis.TickCount=8;
-        var donut=Frame("Findings by control","Largest slices first",596,314).WithXLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
+        var donut=Frame("Findings by control","Largest slices first",600,316).WithXLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
             .AddDonut("Findings",Points(356,268,214,188,142,116));
         var gauge=Frame("Control readiness","Target 90",396,294)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> {
@@ -90,15 +90,15 @@ internal static class GraphiteExamples {
         });
         var needle=Frame("Readiness needle","Explicit target and bands",396,294)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var linear=Frame("Linear readiness","Explicit target and bands",596,230)
+        var linear=Frame("Linear readiness","Explicit target and bands",600,232)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Linear; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var bullet=Frame("Control coverage","Actual values and targets",556,294).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+"%").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
-        var funnel=Frame("Remediation stages","Percentage of the first stage",556,324).WithDataLabels().WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
-        var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {
+        var bullet=Frame("Control coverage","Actual values and targets",600,317).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+"%").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
+        var funnel=Frame("Remediation stages","Percentage of the first stage",600,350).WithDataLabels().WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
+        var sankey=Frame("Remediation flow","Source-coloured links",600,350).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {
             new ChartFlowLink("flow-1", "Assessment","Remediated",360),new("flow-2", "Assessment","In progress",110),new("flow-3", "Assessment","Overdue",50),new("flow-4", "Monitoring","Remediated",170),new("flow-5", "Monitoring","In progress",90),new("flow-6", "Monitoring","Overdue",50),new("flow-7", "GPO","Remediated",80),new("flow-8", "GPO","In progress",50),new("flow-9", "GPO","Overdue",40)
         });
         sankey.Series[0].WithNodeState("Remediated",ChartSeriesState.Neutral).WithNodeState("In progress",ChartSeriesState.Warning).WithNodeState("Overdue",ChartSeriesState.Danger);
-        var heat=Frame("Activity by hour","Sequential ramp; zero is neutral",616,304).WithXLabels(Enumerable.Range(0,24).Select(i=>new[]{0,6,12,18,23}.Contains(i)?i.ToString("00"):"").ToArray());
+        var heat=Frame("Activity by hour","Sequential ramp; zero is neutral",600,296).WithXLabels(Enumerable.Range(0,24).Select(i=>new[]{0,6,12,18,23}.Contains(i)?i.ToString("00"):"").ToArray());
         var days=new[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
         for(var d=0;d<7;d++)heat.AddHeatmapRow(days[d],Enumerable.Range(0,24).Select(h=>new ChartPoint(h+1,HeatLevel(d,h))));
         heat.Options.HeatmapRelativeScale=true;

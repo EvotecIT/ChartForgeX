@@ -36,11 +36,11 @@ public sealed partial class ExampleRecipeTests {
     }
 
     [Theory]
-    [InlineData("license-cost", "wide", VisualThemeMode.Light, 760, 460)]
+    [InlineData("license-cost", "wide", VisualThemeMode.Light, 800, 484)]
     [InlineData("dashboard-premium-trend", "wide", VisualThemeMode.Light, 920, 360)]
     [InlineData("dashboard-premium-trend", "snippet", VisualThemeMode.Light, 840, 360)]
-    [InlineData("control-coverage-heatmap", "wide", VisualThemeMode.Dark, 980, 560)]
-    [InlineData("travel-dotted-map", "wide", VisualThemeMode.Dark, 980, 560)]
+    [InlineData("control-coverage-heatmap", "wide", VisualThemeMode.Dark, 800, 457)]
+    [InlineData("travel-dotted-map", "wide", VisualThemeMode.Dark, 800, 457)]
     public void ConfiguredLegacyRecipesRetainNativeViewportAndExportDimensions(string name, string variant, VisualThemeMode mode, int width, int height) {
         var chart = Assert.IsType<Chart>(ExampleRecipes.Named(name).Create(variant, mode));
         Assert.Equal(width, chart.Options.Size.Width);

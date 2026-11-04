@@ -42,7 +42,7 @@ public static class NativeHierarchyWebsiteRecipe {
     static Chart CreateChart(ChartSeriesKind kind, VisualThemeMode mode) {
         if (kind is not (ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) throw new ArgumentOutOfRangeException(nameof(kind));
         // This existing recipe owns every ID, parent and value. Its null group values are valid for both families.
-        var sunburst = SunburstRecipe.Create("wide", mode).WithSize(760, 480);
+        var sunburst = SunburstRecipe.Create("wide", mode).WithSize(800, 505);
         if (kind == ChartSeriesKind.Sunburst) return sunburst.ConfigureSunburst(options => {
             options.SectorGap = 6;
             options.MinimumLabelFontSize = 10;
@@ -53,12 +53,12 @@ public static class NativeHierarchyWebsiteRecipe {
         treemap.PointColors.AddRange(source.PointColors);
         treemap.PointFillPatterns.AddRange(source.PointFillPatterns);
         foreach (var state in source.NodeStates) treemap.WithNodeState(state.Key, state.Value);
-        return Chart.Create().WithSize(760, 480).WithDataLabels().AddSeries(treemap)
+        return Chart.Create().WithSize(800, 505).WithDataLabels().AddSeries(treemap)
             .WithValueFormat(sunburst.Options.ValueFormat);
     }
 
     static VisualRenderContext Context(VisualThemeMode mode) => new(
-        new VisualLayoutOptions(new VisualSize(760, 480)), VisualTheme.Graphite(), mode,
+        new VisualLayoutOptions(new VisualSize(800, 505)), VisualTheme.Graphite(), mode,
         new VisualFrame("Team allocation", "Same source hierarchy; full view or Engineering as the visible root", showLegend: false),
         FontSpec.FromFamily("Carlito"));
 #endregion

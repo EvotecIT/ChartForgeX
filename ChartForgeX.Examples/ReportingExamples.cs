@@ -31,7 +31,7 @@ internal static class ReportingExamples {
             .WithTitle("Konfigurationsänderungen pro Tag")
             .WithSubtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 360)
+            .WithSize(800, 379)
             .WithPngOutputScale(pngOutputScale)
             .ConfigureCalendar(options => {
                 options.MaximumCellSize = 30;
@@ -75,7 +75,7 @@ internal static class ReportingExamples {
             .WithTitle("Sign-in failures by hour and weekday")
             .WithSubtitle("Four weeks of events; darker cells had more failures")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 440)
+            .WithSize(800, 298)
             .WithPngOutputScale(pngOutputScale)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden)
             .AddHourWeekdayHeatmap(events, color: ChartColor.FromHex("#2a78d6"));
@@ -94,7 +94,7 @@ internal static class ReportingExamples {
             .WithTitle("Incidents by service")
             .WithSubtitle("Last 48 hours; overlapping incidents stack within a lane and open incidents run to now")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 560)
+            .WithSize(800, 380)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
             .WithGanttLaneNow(start.AddHours(44))
@@ -119,7 +119,7 @@ internal static class ReportingExamples {
             .WithTitle("Directory health by domain controller")
             .WithSubtitle("Worst finding per check, grouped by site; select a cell to open its evidence")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 620)
+            .WithSize(800, 420)
             .WithPngOutputScale(pngOutputScale)
             .WithStateCategories(
                 new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52"), emphasis: ChartStateEmphasis.Quiet),
@@ -167,7 +167,7 @@ internal static class ReportingExamples {
             .WithTitle("Domain controller availability")
             .WithSubtitle("15-minute rollups over the last 24 hours, grouped by site; gaps mean no data was collected")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 620)
+            .WithSize(800, 420)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(states)
@@ -217,7 +217,7 @@ internal static class ReportingExamples {
         var end = start + 200.0 / 86400000;
         var fast = Chart.Create().WithTitle("Sub-second time-axis fallback")
             .WithSubtitle("Fractional OLE Automation dates keep distinct values below one second")
-            .WithTheme(VisualTheme.Graphite()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
+            .WithTheme(VisualTheme.Graphite()).WithSize(800, 272).WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale().WithXAxis("Observed (OLE Automation days)").WithYAxis("Sample")
             .AddLine("Signal", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
         fast.Options.XAxis.WithBounds(start, end);
@@ -228,7 +228,7 @@ internal static class ReportingExamples {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Example/Plus5", TimeSpan.FromHours(5), "UTC+05", "UTC+05");
         var schedule = Chart.Create().WithTitle("Classic wall-clock schedule")
             .WithSubtitle("Date inputs keep their fields; calendar ticks align to midnight in the UTC+05 display zone")
-            .WithTheme(VisualTheme.Graphite()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
+            .WithTheme(VisualTheme.Graphite()).WithSize(800, 272).WithPngOutputScale(pngOutputScale)
             .WithXAxis("Window").WithXAxisTimeScale(zone, showTimeZone: true, label: "UTC+05")
             .WithTickCount(3)
             .AddGanttTask("Maintenance", WindowStart.Date, WindowStart.Date.AddDays(2));
@@ -251,7 +251,7 @@ internal static class ReportingExamples {
             .WithTitle("LDAP bind latency")
             .WithSubtitle("5-minute rollups; the collection outage stays empty instead of being bridged")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 480)
+            .WithSize(800, 325)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxis("Observed")
             .WithYAxis("Latency (ms)")

@@ -27,7 +27,7 @@ internal static class MapExamples {
             .WithTitle("Developer Consistency Calendar")
             .WithSubtitle("Contribution-style day grid with named SVG regions and native hover titles")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 420)
+            .WithSize(800, 270)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
             .AddCalendarHeatmap("Commits", CalendarActivity(), ChartColor.FromRgb(34, 197, 94));
     }
@@ -53,7 +53,7 @@ internal static class MapExamples {
             .WithTitle("Sea Route Alternatives")
             .WithSubtitle("Ordered waypoint routes compare Suez Canal and Cape of Good Hope paths")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 560)
+            .WithSize(800, 457)
             .WithLegend(false)
             .WithDataLabels()
             .WithMapViewport(ChartMapViewport.World())
@@ -93,7 +93,7 @@ internal static class MapExamples {
             .WithColumns(2)
             .WithPadding(30)
             .WithGap(18)
-            .WithPanelSize(520, 340);
+            .WithPanelSize(600, 392);
 
         foreach (var example in MapViewportExamples()) {
             grid.Add(CreateViewportMap(example.Title, example.Viewport, example.Points, example.Route, 520, 340, example.Viewport.Name + " viewport"));
@@ -205,7 +205,7 @@ internal static class MapExamples {
             .WithTitle("Revenue by European Market")
             .WithSubtitle("Weighted country markers with route overlays for regional revenue")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 560)
+            .WithSize(800, 457)
             .WithLegend(false)
             .WithMapViewport(ChartMapViewport.Europe())
             .WithDataLabels()
@@ -227,7 +227,7 @@ internal static class MapExamples {
             .WithTitle("Revenue Tile Map")
             .WithSubtitle("Catalog-backed tile geography for compact regional comparison")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 500)
+            .WithSize(800, 408)
             .WithLegend(false)
             .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
@@ -249,7 +249,7 @@ internal static class MapExamples {
             .WithTitle("Attainment Against Target")
             .WithSubtitle("Every step of a seven-colour diverging ramp, on the map and in the legend")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 500)
+            .WithSize(800, 408)
             .WithLegend(false)
             .WithMapColorScale(scale)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
@@ -266,7 +266,7 @@ internal static class MapExamples {
             .WithTitle("Revenue Bands by State")
             .WithSubtitle("Fixed exclusive thresholds keep the same bands across reporting periods")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 500)
+            .WithSize(800, 408)
             .WithLegend(false)
             .WithMapColorScale(scale)
             .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
@@ -279,7 +279,7 @@ internal static class MapExamples {
             .WithTitle("Revenue Region Map")
             .WithSubtitle("Catalog-backed SVG geometry with named regions")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 560)
+            .WithSize(800, 457)
             .WithLegend(false)
             .WithMapLabels(false)
             .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
@@ -297,7 +297,7 @@ internal static class MapExamples {
             .WithTitle("Where Industrial Firms Are Being Born")
             .WithSubtitle("Births per 10,000 residents with a diverging choropleth scale")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(980, 560)
+            .WithSize(800, 457)
             .WithLegend(false)
             .WithMapLabels(false)
             .WithMapColorScale(colorScale)
@@ -366,7 +366,7 @@ internal static class MapExamples {
             .WithTitle("Where new industrial firms are being born across EU regions")
             .WithSubtitle("Catalog-loaded EU NUTS3 geometry with per-region heatmap values")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1120, 768)
+            .WithSize(800, 549)
             .WithCard(false)
             .WithPlotBackground(false)
             .WithMapSurface(false)
@@ -391,7 +391,7 @@ internal static class MapExamples {
             .WithTitle(example.Country + " NUTS3 Industrial Births")
             .WithSubtitle("Catalog-loaded EU NUTS3 geometry filtered by CNTR_CODE=" + example.CountryCode)
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(860, 680)
+            .WithSize(800, 633)
             .WithCard(false)
             .WithPlotBackground(false)
             .WithMapSurface(false)

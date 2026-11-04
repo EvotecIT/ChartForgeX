@@ -25,7 +25,7 @@ internal static class VisualStoryExamples {
             .Output("Saved weekly-builds.png", TerminalTextTone.Success);
         var story = VisualStory.Create("Create a chart in five lines")
             .WithDescription("Source, execution transcript, and the generated chart stay together.")
-            .WithSize(1200, 675);
+            .WithSize(800, 450);
         story.Scene("source", "Start with five lines", 2.8)
             .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(FiveLineChartExample.Source, "csharp"), "C# source"));
         story.Scene("run", "Run the example", 2.2, VisualStorySceneLayout.Split)
@@ -43,7 +43,7 @@ internal static class VisualStoryExamples {
         const string response = "{\n  \"name\": \"ChartForgeX\",\n  \"status\": \"ready\",\n  \"formats\": [\"svg\", \"png\", \"gif\"]\n}";
         var story = VisualStory.Create("Explain an API in one visual story")
             .WithDescription("The request, response, and useful result are presented as one resolved narrative.")
-            .WithSize(960, 540);
+            .WithSize(800, 450);
         story.Scene("request", "Send the request", 2)
             .Panel("request", new VisualStorySourceSurface(StorySourceText.Create(request, "http"), "HTTP request"));
         story.Scene("response", "Inspect the response", 2, VisualStorySceneLayout.Split)
@@ -69,7 +69,7 @@ internal static class VisualStoryExamples {
             .ToImage();
         var story = VisualStory.Create("Show an image transformation")
             .WithDescription("Generic media surfaces make before-and-after demos first-class.")
-            .WithSize(960, 540);
+            .WithSize(800, 450);
         story.Scene("before", "Begin with the source image", 2)
             .Panel("before", new VisualStoryMediaSurface(before, "Plain source image labeled before"));
         story.Scene("compare", "Apply the transformation", 2.4, VisualStorySceneLayout.Split)
@@ -98,7 +98,7 @@ internal static class FiveLineChartExample {
             .WithTitle("Weekly builds")
             .WithSubtitle("A real outcome, not a console promise")
             .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
-            .WithSize(900, 500)
+            .WithSize(800, 444)
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri");
         chart.AddSmoothArea(
             "Builds",

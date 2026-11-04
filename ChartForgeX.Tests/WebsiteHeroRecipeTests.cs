@@ -25,13 +25,13 @@ public sealed class WebsiteHeroRecipeTests {
         Assert.Equal(new[] { 8900d, 6200, 1300, 1500 }, values.Select(series => series[^1]));
 
         var svg = XDocument.Parse(chart.ToSvg("homepage-recipe"));
-        Assert.Equal("960", (string?)svg.Root!.Attribute("width"));
-        Assert.Equal("540", (string?)svg.Root.Attribute("height"));
+        Assert.Equal("800", (string?)svg.Root!.Attribute("width"));
+        Assert.Equal("450", (string?)svg.Root.Attribute("height"));
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "desc"
             && element.Value.Contains("8,900", StringComparison.Ordinal));
         var png = chart.ToPng();
-        Assert.Equal(960, ReadInt32(png, 16));
-        Assert.Equal(540, ReadInt32(png, 20));
+        Assert.Equal(800, ReadInt32(png, 16));
+        Assert.Equal(450, ReadInt32(png, 20));
     }
 
     private static int ReadInt32(byte[] bytes, int offset) =>

@@ -7,7 +7,7 @@ public static class SimpleSequenceRecipe {
         if (variant is not ("wide" or "feasibility"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or feasibility.");
 
-        return SequenceArtifact.Create("session").WithSize(640, 400)
+        return SequenceArtifact.Create("session").WithSize(600, 375)
             .AddParticipant("client", "Client")
             .AddParticipant("server", "Server")
             .AddMessage("client", "server", "Request\npayload")

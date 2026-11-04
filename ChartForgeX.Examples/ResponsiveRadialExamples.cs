@@ -9,7 +9,7 @@ using ChartForgeX.Themes;
 public static class ResponsiveRadialExamples {
     /// <summary>Creates six licence categories, optionally grouping the three smallest into Other.</summary>
     public static Chart Create(VisualThemeMode mode, bool other = false) {
-        var chart = Chart.Create().WithSize(1100, 420).WithTheme(VisualTheme.Graphite(), mode)
+        var chart = Chart.Create().WithSize(800, 305).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Licences by product").WithSubtitle("Assigned seats, October 2026")
             .WithXLabels("Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3");
         var values = new double[] { 412, 268, 190, 120, 64, 31 };

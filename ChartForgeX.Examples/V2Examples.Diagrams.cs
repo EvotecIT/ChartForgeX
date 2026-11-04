@@ -13,7 +13,7 @@ public static partial class V2Examples {
                 var title = family == "topology" ? "Service request route" : "Client and server exchange";
                 var recipe = ExampleRecipes.Named("simple-" + family);
                 var model = recipe.Create("feasibility", mode);
-                var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
+                var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 375)),
                     VisualTheme.Graphite(), mode, new VisualFrame(title, "Product-neutral diagram semantics", showLegend: false), FontSpec.FromFamily(ProofFont));
                 var prepared = model.Prepare(context);
                 ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleArtifactWriter.Svg(prepared, id));

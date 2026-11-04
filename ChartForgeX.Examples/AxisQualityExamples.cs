@@ -11,7 +11,7 @@ internal static class AxisQualityExamples {
             .WithTitle("Automatic Axis Label Fitting")
             .WithSubtitle("Dense long-form values thin predictably instead of colliding")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 300)
+            .WithSize(800, 316)
             .WithLegend(false)
             .WithXAxis("Review window")
             .WithYAxis("Processed volume")

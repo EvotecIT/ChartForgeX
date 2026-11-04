@@ -28,7 +28,7 @@ public static class NativeAxisWebsiteRecipe {
 
 #region helpers
     static Chart CreateChart(string variant, VisualThemeMode mode) {
-        var chart = Chart.Create().WithSize(760, 440).WithThemeMode(mode).WithLegend(false);
+        var chart = Chart.Create().WithSize(800, 463).WithThemeMode(mode).WithLegend(false);
         if (variant is "positive-log" or "negative-log") {
             var negative = variant == "negative-log";
             var magnitudes = new[] { 1d, 8, 64 };

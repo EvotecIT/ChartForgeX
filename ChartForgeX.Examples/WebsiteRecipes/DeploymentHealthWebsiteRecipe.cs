@@ -18,7 +18,7 @@ public static class DeploymentHealthWebsiteRecipe {
             .WithTitle("Deployment health")
             .WithXAxis("Run")
             .WithYAxis("Checks")
-            .WithSize(1180, 640)
+            .WithSize(800, 434)
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120))
             .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18),

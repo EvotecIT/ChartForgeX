@@ -21,7 +21,7 @@ internal static class CartesianCategoryExamples {
             .AddHorizontalBar("Second", new[] { new ChartPoint(peer, 4), new ChartPoint(3.5, 5) });
         var grid = ChartGrid.Create().WithTitle("Automatic category margins")
             .WithSubtitle("Complete edge bars with mixed marks and equivalent source coordinates")
-            .WithColumns(2).WithGap(20).WithPanelSize(520, 360)
+            .WithColumns(2).WithGap(20).WithPanelSize(600, 415)
             .Add(mixed).Add(stacked);
         ExampleArtifactWriter.SaveGrid(grid, output, "cartesian-automatic-category-margins", pngOutputScale);
         WriteGrouped(output, pngOutputScale);

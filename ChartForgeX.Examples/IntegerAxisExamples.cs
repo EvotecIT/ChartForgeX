@@ -40,7 +40,7 @@ public static class IntegerAxisExamples {
     public static void Write(string output, ChartPngOutputScale scale) {
         TopologyAccentExamples.Write(output);
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
-            var sparse = Chart.Create().WithSize(1120, 280).WithTheme(VisualTheme.Graphite(), mode)
+            var sparse = Chart.Create().WithSize(800, 200).WithTheme(VisualTheme.Graphite(), mode)
                 .WithTitle("Sparse category counts").WithXLabels("January", "February")
                 .WithStackedBars().WithYAxisIntegerTicks().WithMaximumBarWidth(48)
                 .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })

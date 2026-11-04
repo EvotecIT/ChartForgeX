@@ -23,7 +23,7 @@ public static class HeroSignInsWebsiteRecipe {
                 "Sign-ins by method",
                 "Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline.",
                 "en"))
-            .WithSize(960, 540)
+            .WithSize(800, 450)
             .WithXLabels(weeks)
             .AddStackedArea(series[0], Points(values[0]))
             .AddStackedArea(series[1], Points(values[1]))

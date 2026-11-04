@@ -11,7 +11,7 @@ internal static class DenseSignalExamples {
             .WithXAxis("Sample")
             .WithYAxis("Latency")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 640)
+            .WithSize(800, 434)
             .WithPngOutputScale(pngOutputScale)
             .AddAdaptiveLine(
                 "P95 latency",
@@ -33,7 +33,7 @@ internal static class DenseSignalExamples {
         var chart = Chart.Create().WithTitle("Signal with collection gaps")
             .WithSubtitle("Missing intervals stay empty; min/max sampling retains local peaks and troughs")
             .WithXAxis("Sample").WithYAxis("Latency").WithTheme(VisualTheme.Graphite())
-            .WithSize(1180, 640).WithPngOutputScale(pngOutputScale)
+            .WithSize(800, 434).WithPngOutputScale(pngOutputScale)
             .AddAdaptiveArea("Observed latency", points, 1180,
                 new ChartResolutionPolicy { MaximumPointCount = 500, DecimationMode = ChartDecimationMode.MinMax },
                 ChartColor.FromRgb(37, 99, 235));

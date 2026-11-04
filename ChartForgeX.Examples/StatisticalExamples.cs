@@ -13,7 +13,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Probe")
             .WithYAxis("Response time")
             .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
             .WithXLabels("DNS", "TCP", "TLS", "HTTP")
@@ -35,7 +35,7 @@ internal static class StatisticalExamples {
         SaveChart(Chart.Create().WithTitle("Service latency distributions")
             .WithSubtitle("Quartiles and IQR whiskers retain individual outlier measurements")
             .WithXLabels("DNS", "TCP", "TLS").WithYAxis("Response time (ms)")
-            .WithSize(760, 460).WithTheme(VisualTheme.Graphite()).WithDataLabels(false)
+            .WithSize(800, 484).WithTheme(VisualTheme.Graphite()).WithDataLabels(false)
             .AddSeries(measurements), "service-latency-iqr-boxplot-light");
 
         var exposureClusters = Chart.Create()
@@ -44,7 +44,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Reachability")
             .WithYAxis("Exploitability")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .AddBubble("Assets", new[] {
                 new ChartBubble(1.0, 24, 8),
@@ -75,7 +75,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Week")
             .WithYAxis("Open findings")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddScatter("Observed", remediationTrendPoints, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", remediationTrendPoints, ChartColor.FromRgb(245, 158, 11))
@@ -90,7 +90,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Run")
             .WithYAxis("Confidence")
             .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithXLabels("Baseline", "Tuning", "Canary", "Rollout", "Steady")
@@ -110,7 +110,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Window")
             .WithYAxis("Signal")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddCandlestick("Signal", new[] {
@@ -130,7 +130,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Window")
             .WithYAxis("Signal")
             .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddOhlc("Signal", new[] {
@@ -150,7 +150,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Run")
             .WithYAxis("Expected Range")
             .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithXLabels("R1", "R2", "R3", "R4", "R5", "R6")
             .AddRangeBand("Expected", new[] {
@@ -170,7 +170,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Run")
             .WithYAxis("Expected Range")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithXLabels("R1", "R2", "R3", "R4", "R5", "R6", "R7")
             .AddRangeArea("Prediction interval", new[] {
                 new ChartRangeBand(1, 28, 44),
@@ -191,7 +191,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Control")
             .WithYAxis("Coverage")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT")
@@ -211,7 +211,7 @@ internal static class StatisticalExamples {
             .WithXAxis("Severity")
             .WithYAxis("Share")
             .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
-            .WithSize(760, 460)
+            .WithSize(800, 484)
             .WithDataLabels()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddPareto("Findings", new[] {

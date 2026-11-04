@@ -9,7 +9,7 @@ public static class ControlCoverageRecipe {
             .WithXAxis("Control")
             .WithYAxis("Domain group")
             .WithTheme(VisualTheme.Graphite(), mode)
-            .WithSize(980, 560)
+            .WithSize(800, 457)
             .WithLegend(false)
             .WithDataLabels()
             .WithHeatmapScale(ChartHeatmapScale.Semantic)

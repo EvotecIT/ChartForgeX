@@ -9,7 +9,7 @@ internal static class HierarchyViewExamples {
     internal static void Write(string output) {
         foreach (var kind in new[] { ChartSeriesKind.Treemap, ChartSeriesKind.Sunburst })
             foreach (var dark in new[] { false, true }) {
-                var width = dark ? 390 : 720; var height = dark ? 420 : 460;
+                var width = dark ? 390 : 800; var height = dark ? 420 : 511;
                 // Reuse the maintained allocation facts; mapping the second chart family is authoring, not browser drill-down.
                 var sunburst = SunburstBranchHighlightExamples.CreateChart(width, dark);
                 if (kind == ChartSeriesKind.Sunburst) sunburst.ConfigureSunburst(options => {
@@ -23,7 +23,7 @@ internal static class HierarchyViewExamples {
                     var id = "hierarchy-view-" + kind.ToString().ToLowerInvariant() + "-" + (selected ? "engineering" : "full") + "-" + (dark ? "dark" : "light");
                     var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(),
                         dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
-                        new VisualFrame(selected ? "Engineering allocation" : "All teams", "Original item IDs, sizes and color values", showLegend: false),
+                        new VisualFrame(selected ? "Engineering allocation" : "All teams", "Original item IDs, sizes and color values", showLegend: false, showCard: true),
                         FontSpec.FromFamily(ExampleTypography.FontFamily));
                     var prepared = chart.PrepareHierarchy(context, selected ? new ChartHierarchyView("engineering") : null);
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));

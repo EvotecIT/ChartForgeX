@@ -29,7 +29,7 @@ internal static class ReportHostExamples {
             .WithTitle("Checks per site")
             .WithSubtitle("Counts take the card or text colour by role, not a fixed contrast colour")
             .WithTheme(new VisualTheme(tokens, tokens))
-            .WithSize(760, 360)
+            .WithSize(800, 379)
             .WithPngOutputScale(pngOutputScale)
             .WithMarkBackdrop(ChartMarkBackdrop.Card)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
@@ -61,7 +61,7 @@ internal static class ReportHostExamples {
             .WithTitle("Changes per day")
             .WithSubtitle("SVG colours are the custom properties of the design tokens")
             .WithTheme(new VisualTheme(tokens, tokens))
-            .WithSize(760, 300)
+            .WithSize(800, 316)
             .WithPngOutputScale(pngOutputScale)
             .WithSvgColorVariables(tokens.ToSvgColorVariables())
             .AddCalendarHeatmap("Changes", items);
@@ -78,7 +78,7 @@ internal static class ReportHostExamples {
             .WithTitle("LDAP bind latency")
             .WithSubtitle("Flat bars: one colour per bar")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 360)
+            .WithSize(800, 379)
             .WithPngOutputScale(pngOutputScale)
             .WithBarStyle(ChartBarStyle.Flat)
             .WithXAxis("Latency (ms)")
@@ -101,7 +101,7 @@ internal static class ReportHostExamples {
             .WithTitle("Changements par jour")
             .WithHeader(false)
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 230)
+            .WithSize(800, 242)
             .WithPngOutputScale(pngOutputScale)
             .ConfigureCalendar(options => {
                 options.MaximumCellSize = 18;
@@ -132,7 +132,7 @@ internal static class ReportHostExamples {
             .WithTitle("Checks by domain controller")
             .WithSubtitle("Column labels follow the x-axis label angle")
             .WithTheme(VisualTheme.Graphite())
-            .WithSize(620, 440)
+            .WithSize(600, 426)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisLabelAngle(-45)
             .WithStateCategories(

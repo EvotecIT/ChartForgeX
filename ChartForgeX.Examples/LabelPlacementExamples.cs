@@ -10,17 +10,17 @@ public static class LabelPlacementExamples {
     public static IReadOnlyList<(string Name, Chart Chart)> Charts(bool dark) {
         var theme = VisualTheme.Graphite();
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
-        var bullet = Chart.Create().WithTitle("Control targets").WithSize(640, 360).WithTheme(theme, mode)
+        var bullet = Chart.Create().WithTitle("Control targets").WithSize(600, 338).WithTheme(theme, mode)
             .WithValueFormatter(v => v.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d })
             .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d })
             .AddBullet("MTA-STS deployment", 63, 85, 0, 100, new[] { 50d, 75d });
-        var funnel = Chart.Create().WithTitle("Remediation funnel").WithSize(640, 420).WithTheme(theme, mode).WithDataLabels()
+        var funnel = Chart.Create().WithTitle("Remediation funnel").WithSize(600, 394).WithTheme(theme, mode).WithDataLabels()
             .WithXLabels("Discovered", "Verified", "Prioritized", "Remediated", "Monitored")
             .AddFunnel("Domains", Points(420, 318, 174, 96, 72));
-        var gauge = Chart.Create().WithTitle("Policy readiness").WithSize(480, 340).WithTheme(theme, mode)
+        var gauge = Chart.Create().WithTitle("Policy readiness").WithSize(600, 425).WithTheme(theme, mode)
             .AddGauge("Policy readiness", 86, 0, 100);
-        var map = Chart.Create().WithTitle("European routes").WithSize(760, 460).WithTheme(theme, mode).WithDataLabels().WithLegend(false)
+        var map = Chart.Create().WithTitle("European routes").WithSize(800, 484).WithTheme(theme, mode).WithDataLabels().WithLegend(false)
             .WithMapViewport(ChartMapViewport.Europe())
             .AddDottedMap("Places", new[] {
                 new ChartMapPoint("Madrid", -3.7038, 40.4168), new ChartMapPoint("Paris", 2.3522, 48.8566),
@@ -29,7 +29,7 @@ public static class LabelPlacementExamples {
             }).AddMapRouteBetweenPoints("Madrid to Paris", "Madrid", "Paris")
             .AddMapRouteBetweenPoints("London to Warsaw", "London", "Warsaw")
             .AddMapRouteBetweenPoints("Berlin to Rome", "Berlin", "Rome");
-        var sankey = Chart.Create().WithTitle("Finding flow").WithSize(760, 460).WithTheme(theme, mode).WithDataLabels()
+        var sankey = Chart.Create().WithTitle("Finding flow").WithSize(800, 484).WithTheme(theme, mode).WithDataLabels()
             .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediation", "Remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
                 new ChartFlowLink("flow-1", "Discovered", "Validated", 72), new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 18),
                 new ChartFlowLink("flow-3", "Validated", "Remediation", 48), new ChartFlowLink("flow-4", "Validated", "Monitoring", 24),

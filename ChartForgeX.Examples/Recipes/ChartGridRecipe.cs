@@ -8,7 +8,7 @@ public static class ChartGridRecipe {
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", observations));
         var capacity = Chart.Create().WithTitle("Capacity used").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
             .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", observations));
-        return ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        return ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(600, 375)
             .Add(requests).Add(reviewed).Add(capacity, 2).WithSharedAxes();
     }
 }

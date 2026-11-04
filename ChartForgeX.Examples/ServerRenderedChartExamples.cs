@@ -76,7 +76,7 @@ internal static class ServerRenderedChartExamples {
         var strip = ServerRenderedRecipe.CreateStrip(1, mode).PrepareStrip(Context(640, 80, mode, padding: 0), ServerRenderedRecipe.SharedScale());
         var story = VisualStory.Create("Charts for a server-rendered page")
             .WithDescription("Mark links, an open support window and an HTML-friendly shared-domain strip, with their C# source.")
-            .WithTheme(VisualTheme.Graphite(), mode).WithSize(1200, 720);
+            .WithTheme(VisualTheme.Graphite(), mode).WithSize(800, 480);
         Scene("links", "Give each stacked segment its own destination", columns, "linked-columns.csharp.txt",
             "Five stacked columns. Updates link to daily summaries; publisher notes open in a new tab.");
         Scene("schedule", "Mark the current row and let open support continue", gantt, "support-schedule.csharp.txt",

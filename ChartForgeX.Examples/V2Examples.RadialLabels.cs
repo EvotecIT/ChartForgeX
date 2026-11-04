@@ -15,7 +15,7 @@ public static partial class V2Examples {
                     var id = family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                     var recipe = ExampleRecipes.Named("equal-" + family);
                     var chart = (Chart)recipe.Create(variant, mode);
-                    var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
+                    var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 375)),
                         VisualTheme.Graphite(), mode, new VisualFrame("Four equal shares", "Labels " + placement.ToString().ToLowerInvariant(), showLegend: false), FontSpec.FromFamily(ProofFont));
                     var prepared = chart.Prepare(context);
                     var svg = ExampleArtifactWriter.Svg(prepared, id);
