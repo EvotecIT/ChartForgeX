@@ -82,7 +82,11 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
             Assert.Equal(percent.GetString(), await target.GetAttributeAsync("data-cfx-percent"));
         Assert.Equal(raw.TryGetProperty("point", out var point) ? point.GetString() : null,
             selected.TryGetProperty("point", out var selectedPoint) ? selectedPoint.GetString() : null);
-        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => { const box = node.getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight; }"));
+        Assert.True(await page.Locator(".cfx-tooltip dt").EvaluateAllAsync<bool>("nodes => nodes.every(node => node.getBoundingClientRect().height <= parseFloat(getComputedStyle(node).lineHeight) * 2 + 1)"),
+            "The fixture's field names must remain readable within two lines.");
+        var bounds = await page.Locator(".cfx-tooltip").EvaluateAsync<double[]>("node => { const box = node.getBoundingClientRect(); return [box.left, box.top, box.right, box.bottom, innerWidth, innerHeight]; }");
+        Assert.True(bounds[0] >= 0 && bounds[1] >= 0 && bounds[2] <= bounds[4] && bounds[3] <= bounds[5],
+            "Tooltip left/top/right/bottom and viewport width/height: " + string.Join(", ", bounds));
         if (!string.IsNullOrWhiteSpace(capture)) {
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, name + ".png") });
             await File.WriteAllTextAsync(Path.Combine(capture, name + ".runtime.json"), JsonSerializer.Serialize(new { Raw = raw, Selected = selected, Rows = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync() }, new JsonSerializerOptions { WriteIndented = true }));

@@ -53,9 +53,10 @@ public sealed class InteractiveSourceCollectionBrowserTests {
             // Its similarly named metadata is a count, not an observation contributor collection.
             await page.Locator("[data-cfx-reset]").ClickAsync();
             await MoveAwayAsync(page);
-            var line = page.Locator("[data-cfx-role='series'] [data-cfx-role='trend-line']").First;
-            var position = await line.EvaluateAsync<double[]>("node => { const p = node.getPointAtLength(node.getTotalLength() / 2).matrixTransform(node.getScreenCTM()); return [p.x, p.y]; }");
+            var position = await NativeSeriesPositionsAsync(page, "trend-line", new[] { .37, .61, .5 });
+            await page.EvaluateAsync("() => window.cfxCollectionEvents = []");
             await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+            await page.WaitForFunctionAsync("() => window.cfxCollectionEvents.some(item => item.type === 'cfxhover')");
             using var events = await ReadEventsAsync(page);
             var seriesHover = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == "cfxhover");
             var target = seriesHover.GetProperty("target");

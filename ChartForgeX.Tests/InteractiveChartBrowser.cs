@@ -118,6 +118,24 @@ internal static partial class InteractiveChartBrowser {
         await page.Mouse.MoveAsync((float)(box.X + box.Width / 2 + offsetX), (float)(box.Y + box.Height / 2 + offsetY), new MouseMoveOptions { Steps = 4 });
     }
 
+    /// <summary>Locates two actual series-ink positions, excluding observation hit targets and stroke gaps.</summary>
+    internal static Task<double[]> NativeSeriesPositionsAsync(IPage page, string role, double[]? fractions = null) =>
+        page.Locator("[data-cfx-role='" + role + "']").First.EvaluateAsync<double[]>("""
+            (path, fractions) => {
+                const length = path.getTotalLength(), owner = path.closest('[data-cfx-role=series]');
+                const valid = point => {
+                    const hit = document.elementFromPoint(point.x, point.y);
+                    return !!hit && owner.contains(hit) && hit.closest('[data-cfx-target-kind]') === owner;
+                };
+                for (const fraction of fractions) {
+                    const first = path.getPointAtLength(length * fraction).matrixTransform(path.getScreenCTM());
+                    const second = path.getPointAtLength(length * fraction + 2).matrixTransform(path.getScreenCTM());
+                    if (valid(first) && valid(second)) return [first.x, first.y, second.x, second.y];
+                }
+                throw new Error('No native series path position outside observation hit areas');
+            }
+            """, fractions ?? new[] { .13, .23, .37, .61, .77 });
+
     internal static async Task MoveAwayAsync(IPage page) {
         var size = page.ViewportSize ?? throw new InvalidOperationException("Viewport size is unavailable.");
         await page.Mouse.MoveAsync(size.Width - 4, size.Height - 4, new MouseMoveOptions { Steps = 2 });
