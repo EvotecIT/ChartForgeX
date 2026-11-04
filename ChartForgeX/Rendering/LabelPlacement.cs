@@ -86,6 +86,8 @@ public sealed class LabelPlacementRequest {
     internal double AutoPointSpacing { get; set; }
     internal TextMetrics? MeasuredSize { get; set; }
     internal TextMetrics? DecorationSize { get; set; }
+    // Dense owners may step complete text down toward the theme's readable floor before shortening or omitting it.
+    internal double? MinimumFontSize { get; set; }
 }
 
 /// <summary>An occupied mark rectangle that labels must avoid.</summary>
@@ -104,7 +106,10 @@ public readonly struct LabelObstacle {
 public sealed class PlacedLabel {
     internal PlacedLabel(LabelPlacementRequest request, string text, ChartRect bounds, bool dropped, int candidateIndex, bool ellipsized = false) {
         Request = request; Text = text; Bounds = bounds; IsDropped = dropped; CandidateIndex = candidateIndex; IsEllipsized = ellipsized; LeaderStart = request.Anchor;
+        Style = request.Style;
     }
+    // The style the placed text was measured with; smaller than the request's when the caption stepped down.
+    internal TextStyle Style { get; set; }
     /// <summary>Gets the original request.</summary>
     public LabelPlacementRequest Request { get; }
     /// <summary>Gets the displayed text, or an empty string when dropped.</summary>

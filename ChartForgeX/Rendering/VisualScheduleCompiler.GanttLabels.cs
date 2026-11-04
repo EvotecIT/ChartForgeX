@@ -68,7 +68,7 @@ internal static partial class VisualScheduleCompiler {
                 // A thin task needs an outside lane. Give it first use before a caption
                 // that fits across its own bar takes the only clear neighboring space.
                 item.Priority = builder.MeasureText(text!, style).Width + PackedGanttCaptionPadding * 2 > item.CaptionBounds.Width ? 1 : 0;
-                var request = GanttLaneLabelRequest(text!, style, item, context.Theme.Spacing / 2, shorten: false);
+                var request = GanttLaneLabelRequest(text!, style, item, context, shorten: false);
                 item.Request = request; requests.Add(request); requested.Add(item);
             }
         }
@@ -83,7 +83,7 @@ internal static partial class VisualScheduleCompiler {
             if (!label.IsDropped) obstacles.Add(new LabelObstacle(item.Id + "-accepted-label", label.Bounds));
             else {
                 var request = item.Request!;
-                shortened.Add(GanttLaneLabelRequest(request.Text, request.Style, item, context.Theme.Spacing / 2, shorten: true));
+                shortened.Add(GanttLaneLabelRequest(request.Text, request.Style, item, context, shorten: true));
                 retry.Add(item);
             }
         }
@@ -94,8 +94,8 @@ internal static partial class VisualScheduleCompiler {
         return items;
     }
 
-    private static LabelPlacementRequest GanttLaneLabelRequest(string text, TextStyle style, PackedGanttItem item, double gap, bool shorten) {
-        var bounds = item.CaptionBounds; var anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
+    private static LabelPlacementRequest GanttLaneLabelRequest(string text, TextStyle style, PackedGanttItem item, VisualRenderContext context, bool shorten) {
+        var gap = context.Theme.Spacing / 2; var bounds = item.CaptionBounds; var anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
         var placement = item.Placement; var candidates = new List<LabelCandidate>();
         var inside = placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center;
         // A caption wider than its bar would spill across the neighbouring timeline; it tries the outside lanes first
@@ -114,7 +114,9 @@ internal static partial class VisualScheduleCompiler {
         }
         var request = new LabelPlacementRequest(text, anchor, style, candidates, item.Priority) {
             AssociatedMarkId = item.Id, Padding = PackedGanttCaptionPadding,
-            Fallback = shorten ? LabelFallbackRule.EllipsisThenDrop : LabelFallbackRule.Drop
+            Fallback = shorten ? LabelFallbackRule.EllipsisThenDrop : LabelFallbackRule.Drop,
+            // Dense lanes keep complete captions at a smaller readable size before shortening or omitting them.
+            MinimumFontSize = context.Theme.Typography.MinimumTextSize
         };
         if (inside && (shorten || placement != ChartDataLabelPlacement.Auto)) request.Bounds = bounds;
         return request;
@@ -131,7 +133,7 @@ internal static partial class VisualScheduleCompiler {
         var ink = ChartMarkText.OnStateMark(chart, colors, context.Frame, mark);
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index,
             contained ? ink.Color : ChartColorMath.AccessibleTextOnBackground(colors.Surface));
-        style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
+        style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left; style.FontSize = label.Style.FontSize;
         if (!contained && (label.Bounds.Right <= item.Bounds.Left || label.Bounds.Left >= item.Bounds.Right))
             VisualStateSceneTools.Connector(builder, chart.Options, label.LeaderStart, label.LeaderEnd, colors.MutedForeground);
         // Hatch lines run through a contained caption. A halo in the mark's own base colour keeps the glyphs legible.
