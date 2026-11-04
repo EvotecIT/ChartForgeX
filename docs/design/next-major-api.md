@@ -1,13 +1,15 @@
 # Next-major API design
 
-Design proposal, 2 November 2026. I want fluent settings, lambdas for repeated children and nested settings, and properties as the source of truth for the model. This document proposes the next major API; none of its new signatures are implemented by this change.
+Design proposal, 2 November 2026, revised 4 November 2026. I want fluent settings, lambdas for repeated children and nested settings, and properties as the source of truth for the model. This document proposes the next major API; none of its new signatures are implemented by this change.
+
+The [unified authoring convention](unified-authoring.md) now governs ChartForgeX, ConsoleMonster, CanopyX and CodeGlyphX together. Its main change to this design: fluent methods are generated on the models themselves, as ConsoleMonster already does, instead of on separate builder types. `Edit`, builder expiry and candidate-copy reconciliation are therefore gone.
 
 The [before/after examples](next-major-api-examples.md) are part of this design. They cover every API-bearing README example and ten gallery recipes. The [capability inventory](../v2/chart-capabilities.csv), [existing API contracts](../v2/api-conventions.md), and [diagram support matrix](../mermaid-support-matrix.md) remain the references for existing behavior.
 
 ## Decisions
 
 1. `Chart.Line("Title", chart => ...)` is the normal entry point. `ChartForgeX.Chart` becomes the factory facade; typed models replace the current all-family `Core.Chart` model. Every supported family has a discoverable factory; `Chart.Mixed` accepts compatible typed series. `ChartForgeX.Diagram` supplies `Topology`, `Flow` and `Sequence` for native diagrams.
-2. Model properties are the source of truth. Generated, separate builder types provide methods such as `Title`, `Size`, `X`, `Series`, `Legend` and `Labels`. There are no `With*`, `Configure*`, or `Add*` configuration aliases in the new authoring surface.
+2. Model properties are the source of truth. Generated extension methods on the models provide `Title`, `Size`, `X`, `Series`, `Legend` and `Labels`. There are no `With*`, `Configure*`, or `Add*` methods on mutable models; `With*` remains only on immutable values.
 3. Typed observations, IDs, detached preparation, and keyed updates survive. I am changing authoring, not replacing the prepared rendering architecture or flattening specialized data into X/Y points.
 4. Themes consume the shared visual-token contract. ChartForgeX stays free of runtime package dependencies and has no runtime dependency on another engine.
 5. Browser behavior stays in `ChartForgeX.Interactivity.Html`. Static HTML remains script-free unless an adapter is explicitly selected.
@@ -34,10 +36,10 @@ var chart = Chart.Line("Weekly orders", c => c
     .Series("Target", new double[] { 30, 35, 40, 45, 50 },
         s => s.Id("target-orders").Stroke(stroke => stroke.Dash(6, 3))));
 
-chart.SavePng("orders.png");
+chart.Save("orders.png");
 ```
 
-`Chart.Line` returns a `LineChart`, which implements `IVisualRenderable`. Its callback receives a generated `LineChartBuilder`. This distinction avoids the C# property/method name collision: `LineChart.Title` and `LineChartBuilder.Title(...)` can coexist because they are on different types. The builder holds only the model it edits; it has no parallel options or renderer.
+`Chart.Line` returns the model, which implements `IVisualRenderable`, and its callback receives that same model. `LineChart.Title` (property) and the generated `Title(...)` extension coexist because C# method invocation only considers invocable members; ConsoleMonster relies on the same rule today. There is no parallel builder, options object or renderer.
 
 The same definition uses ordinary initializers:
 
@@ -62,7 +64,7 @@ var chart = new LineChart {
 };
 ```
 
-The factory's `double[]` overload calls `Observation.Values`: X is 1 through N. Typed `IEnumerable<ChartPoint>` retains its actual coordinates, gaps and IDs. The initializer helper and generated builder use the same ingestion operation. PowerShell sets these same properties through generated parameter bindings; it does not maintain its own chart options.
+The factory's `double[]` overload calls `Observation.Values`: X is 1 through N. Typed `IEnumerable<ChartPoint>` retains its actual coordinates, gaps and IDs. The initializer helper and the generated methods use the same ingestion operation. PowerShell sets these same properties through generated parameter bindings; it does not maintain its own chart options.
 
 ### Editing and ownership
 
@@ -70,19 +72,19 @@ The factory's `double[]` overload calls `Observation.Values`: X is 1 through N. 
 | --- | --- |
 | `Title(value)`, `Minimum(value)` | Replace one property; the last assignment wins. Null clears only a nullable property. |
 | `Size(width, height)`, `Bounds(minimum, maximum)` | Small compound conveniences over existing properties, with atomic validation. Metadata names their backing properties. |
-| `X(title, axis => ...)`, `Legend(legend => ...)` | Configure a copy of the existing group and install an independent snapshot after success. Repeated settings lambdas merge edits, rather than resetting other fields. |
-| `Series(name, data, series => ...)`, `Node(id, label, node => ...)` | Append one child after its callback succeeds. Child callbacks never partially append. Duplicate explicit IDs reject. |
-| `chart.Edit(c => ...)` | Edit a transactional copy and install after success; returns the same model. Used when a named model needs further fluent editing. |
+| `X(title, axis => ...)`, `Legend(legend => ...)` | Configure the existing settings object in place. Repeated settings lambdas merge edits, rather than resetting other fields. |
+| `Series(name, data, series => ...)`, `Node(id, label, node => ...)` | Create the child, run its callback, validate it, then append it. A throwing callback never leaves a partial child. Duplicate explicit IDs reject. |
+| `chart.Title("x").Legend(...)` | Further fluent edits on a named model call the same generated methods; there is no `Edit` wrapper. |
 | `chart.Series.Get(new SeriesId("completed-orders"))` | Return the retained typed child model. `Name` changes display text without changing identity. |
 | `series.Data.Replace(observations)` | Validate and snapshot a complete replacement; clears observation overrides as today's replacement does. |
 | `series.Data.Update(id, observation)` / `ApplyChanges(changes)` | Replace complete typed observations or apply a bounded keyed transaction while retaining surviving identity and presentation. |
 | `Prepare(context)` | Validate, resolve theme and callbacks, then return a detached prepared visual. A later model edit has no effect on it. |
 
-Collections expose typed, validated mutation rather than unrestricted `List<object>`. Initializer `Add` and fluent child methods call that same collection operation. Whole-model invariants, such as matching category counts or graph endpoints, are checked before preparation; local setters validate their own finite values immediately. Stored builders expire when their callback returns. Retaining a builder cannot edit an installed snapshot later. Models are mutable and require caller synchronization; prepared results are detached and reusable.
+Collections expose typed, validated mutation rather than unrestricted `List<object>`. Initializer `Add` and fluent child methods call that same collection operation. Whole-model invariants, such as matching category counts or graph endpoints, are checked before preparation; local setters validate their own finite values immediately. Models are mutable and require caller synchronization; prepared results are detached and reusable. A caller that needs an all-or-nothing change to a live model builds a new model and swaps the reference.
 
-A successful root `Edit` reconciles surviving child IDs into the existing child objects, preserving retained series handles. Removing a child detaches its handle; replacing a child explicitly returns a new handle. Candidate copies never leak through builder callbacks. Copy/apply generation must preserve these rules, including when a callback throws after adding another child. Render-request overrides take precedence over model frame/theme settings for that preparation only and never write back into the model.
+Retained child handles are the real children, so renaming or restyling a handle edits the chart. Removing a child detaches its handle. Render-request overrides take precedence over model frame/theme settings for that preparation only and never write back into the model.
 
-`AxisSettings` holds the existing shared axis contract, with explicit scale/category/time settings. The builder validates supported combinations rather than switching to an unrelated axis CLR type when labels or time coordinates are supplied. Getter-owned collection initializers remain valid; setters snapshot supplied nested settings and data.
+`AxisSettings` holds the existing shared axis contract, with explicit scale/category/time settings. Preparation validates supported combinations rather than switching to an unrelated axis CLR type when labels or time coordinates are supplied. Getter-owned collection initializers remain valid; setters snapshot supplied nested settings and data.
 
 Explicit IDs are required for live replacement, linking and cross-view state. Static one-shot recipes can omit them; generated positional IDs are stable only while insertion order stays unchanged. Display labels, sort order and colour rank never become identity. `SeriesId` and `ObservationId` are intentional next-major names for the current prefixed IDs, not stringly typed replacements.
 
@@ -91,14 +93,14 @@ Explicit IDs are required for live replacement, linking and cross-view state. St
 | Concern | Proposed shape | Behavior retained or added |
 | --- | --- | --- |
 | Frame | `Title`, `Subtitle`, `Size`, `Padding`, `Surface` | One measured frame; explicit logical dimensions remain available for images. |
-| Theme | `Theme(VisualTheme)`, `Mode(ThemeMode.Light/Dark)` | Paired immutable theme; no process-wide theme mutation. |
+| Theme | `Theme(Theme)`, `Mode(ThemeMode.Auto/Light/Dark)` | Paired immutable theme; no process-wide theme mutation. `Auto` follows `prefers-color-scheme` in HTML and resolves to `Light` for static images. |
 | Accessibility | `Accessibility(a => a.Title(...).Description(...).Language(...))` | Plain text, complete data facts and stable semantic regions. |
 | Values | `Values(v => v.Format(format).Unit("ms"))` | Shared format fallback; invariant defaults, explicit culture for local presentation. |
 | Labels | `Labels(l => l.Visible(true).Placement(...).Formatter(...))` | Layout visibility is separate from formatter output. |
 | Legend | `Legend(l => l.Visible(...).Position(...).MaximumRows(...))` | Existing eight positions, density budget and per-series entry visibility. |
 | Typed series | `Series(name, observations, s => ...)` | Family-specific settings and observation type; no irrelevant family option bag. |
 | Annotations | `ReferenceLine(id, value, r => ...)`, `Annotation(id, a => ...)` | Source coordinates, IDs, clipping and semantic facts retained. |
-| Export | `Prepare`, `ToSvg`, `ToPng`, `ToHtmlFragment`, `ToHtmlPage`, `Save*`, `Write*` | Keep the existing meaningful operation vocabulary. No ambiguous parameterless `Save`. |
+| Export | `Prepare`, `Save(path)`, `Save(path, format)`, `Save(stream, format)`, `ToSvg`, `ToPng`, `ToHtml`, `ToHtmlFragment`, `Render(format)` | The shared output vocabulary from the unified convention. `Save(path)` infers the format from the extension and rejects unknown ones; `SavePng`, `SaveSvg`, `SaveHtml`, `RenderSvg` and `WriteGif` go away. |
 
 `X` and `Y` always mean physical axes. `Orientation(Horizontal)` transposes category/value projection without silently rebinding a named physical axis. Mixed charts declare compatible coordinates once. Semantic series bindings use axis IDs (`ValueAxis("latency")`); adding extra axes never changes which existing series uses which scale.
 
@@ -136,13 +138,13 @@ var sales = Chart.Bar("Monthly orders", c => {
 });
 ```
 
-`LineSeries`/`BarSeries` builders infer `ChartPoint` for `ItemStyle`; bubble builders infer `ChartBubble`, range builders `ChartRangeBand`, and so on. Relationship series have separately typed `Nodes(n => n.ItemStyle(...))` and `Links(l => l.ItemStyle(...))` settings, so installing link styling cannot erase node styling. Categorical missing heatmap cells retain nullable datum contexts.
+`LineSeries`/`BarSeries` infer `ChartPoint` for `ItemStyle`; bubble series infer `ChartBubble`, range series `ChartRangeBand`, and so on. Relationship series have separately typed `Nodes(n => n.ItemStyle(...))` and `Links(l => l.ItemStyle(...))` settings, so installing link styling cannot erase node styling. Categorical missing heatmap cells retain nullable datum contexts.
 
 I preserve the configurability branch's preparation contract: callbacks run once per authored display observation per preparation, never during SVG/PNG export. Context includes authored ordinal, series identity, semantic state, current/selected/highlighted state, and the complete datum. Derived bins/fitted endpoints are display observations; aggregates never borrow an arbitrary contributor's style. Bubble radius remains controlled by its quantitative scale. Callback exceptions leave the authored model unchanged and publish no prepared result.
 
 Paint resolution is theme/family defaults → series properties → keyed observation overrides → non-null callback fields → transient adapter state overlay. Authored colour/fill overrides beat semantic tone for that channel; tone still remains available as metadata. Per-item fill beats series fill; marker outline is independent of line stroke. A null callback result inherits; formatter null retains the authored/default caption, while an empty string suppresses text. Formatting never enables a hidden label. Tooltips stay plain text. The scalar `Value` remains nullable for compound observations and `Percent` uses 1 = 100%; typed datum access retains the other fields.
 
-Fills keep the existing shared gradient, image, pattern and detached-pixel contracts. They gain builder names `Fill`, `Stroke`, `Marker` and `ItemStyle`; this redesign does not create a second paint engine.
+Fills keep the existing shared gradient, image, pattern and detached-pixel contracts. They gain generated methods `Fill`, `Stroke`, `Marker` and `ItemStyle`; this redesign does not create a second paint engine.
 
 Per-segment dash belongs on typed segment presentation (`Segments(segment => segment.Stroke(...))`), with stable adjacent observation IDs for live data. It reuses the same stroke model as a series and its legend sample; breaks remain actual data-path breaks. Per-series-kind theme defaults belong in `VisualTheme`'s typed `SeriesDefaults` collection, applied before explicit series properties. A theme-edit callback returns a new paired theme. Shared token roles supply its colours and typography; any new exported geometry/default role must first enter the canonical token contract, rather than becoming a private palette file in a product.
 
@@ -156,7 +158,7 @@ Highlight paint resolves from shared theme roles, tones and the existing fill/st
 
 ## Every chart family
 
-The factory takes `(string title, Action<FamilyBuilder> configure)` and returns the corresponding property model. Unless stated otherwise, repeated datasets use `Series(name, typedData, settingsLambda)`. Existing observation types keep their fields and validation; names below beginning with `Chart` refer to those current types unless explicitly marked proposed.
+The factory takes `(string title, Action<FamilyModel> configure)` and returns the corresponding property model. Unless stated otherwise, repeated datasets use `Series(name, typedData, settingsLambda)`. Existing observation types keep their fields and validation; names below beginning with `Chart` refer to those current types unless explicitly marked proposed.
 
 | Existing kind / capability | Proposed factory | Data and nested family settings |
 | --- | --- | --- |
@@ -251,7 +253,7 @@ Group nesting assigns group membership through typed IDs, not a second node list
 
 Native `Diagram.Flow` has `Lane`, `Step` and `Connector` children, plus typed layout/direction settings. Native `Diagram.Sequence` has `Participant`, `Message`, `Activation`, `Note`, `Block` and nested `Branch` children. Sequence spans use stable message IDs, replacing fragile numeric indexes in ordinary authoring; the model stores resolved ordered spans without changing message identity. Creation/destruction, self routes, parallel-over, exception blocks, number badges, participant views, presets and role typography remain expressible.
 
-For other diagram notations, I keep the existing typed language documents rather than inventing a second native class/ER/Git model. `MermaidRenderer.Render(source, m => ...)` and `MermaidRenderer.Render(typedDocument, m => ...)` are proposed builder overloads in the optional Mermaid package. Both return a result with diagnostics and optional artifact. The second uses the same typed semantic model and converter as source parsing. Existing parsing preserves spans and unsupported statements. A family setting is a nested lambda; it is not an implicit fidelity promise. The meaningful `MermaidRenderer` entry point keeps its name.
+For other diagram notations, I keep the existing typed language documents rather than inventing a second native class/ER/Git model. `MermaidRenderer.Render(source, m => ...)` and `MermaidRenderer.Render(typedDocument, m => ...)` are proposed lambda overloads in the optional Mermaid package. Both return a result with diagnostics and optional artifact. The second uses the same typed semantic model and converter as source parsing. Existing parsing preserves spans and unsupported statements. A family setting is a nested lambda; it is not an implicit fidelity promise. The meaningful `MermaidRenderer` entry point keeps its name.
 
 | `MermaidDiagramKind` | API shape and responsible renderer |
 | --- | --- |
@@ -289,11 +291,11 @@ For other diagram notations, I keep the existing typed language documents rather
 | Agentflow | Typed workflow document + `m.Agentflow(a => ...)`; current static workflow nodes and edges. |
 | Railroad | Typed grammar document + `m.Railroad(r => ...)`; railroad geometry for the supported grammar frontends. |
 
-`Unknown` is an error result, not another family factory. Typed names in the table describe the current language model where available; short names for new builder settings are proposed. Unsupported grammar remains source-preserving with located diagnostics. No silent conversion to a generic X/Y chart, no browser Mermaid runtime, and no promise of upstream pixel equality.
+`Unknown` is an error result, not another family factory. Typed names in the table describe the current language model where available; short names for new settings methods are proposed. Unsupported grammar remains source-preserving with located diagnostics. No silent conversion to a generic X/Y chart, no browser Mermaid runtime, and no promise of upstream pixel equality.
 
 Host theme supplies defaults; supported explicit source styles override them unless an explicit host presentation override is supplied. Invalid/unsafe source paint, assets, links or raw markup retain the existing rejection and diagnostics. Natural content sizing and `FixedViewport` stay explicit choices. Requested aspect guides automatic layout; fixed export bounds remain available.
 
-`ChartForgeX.Visuals` continues to own non-chart facts, lists, metric cards, mixed grids and canvases. Its builders follow the same generated property rule. Stories retain scene/playback/terminal APIs and consume core visuals. Existing pixel animation encoders remain in core unchanged: their constructors and `Encode`/`WriteTo` operations already express their purpose.
+`ChartForgeX.Visuals` continues to own non-chart facts, lists, metric cards, mixed grids and canvases. Its models follow the same generated property rule. Stories retain scene/playback/terminal APIs and consume core visuals. Existing pixel animation encoders remain in core unchanged: their constructors and `Encode`/`WriteTo` operations already express their purpose.
 
 ## Shared visual-token contract
 
@@ -329,18 +331,18 @@ I keep `Tone`, `Icon` and `ThemeMode` local to each independent engine's namespa
 
 ## Generation and AOT
 
-I use one shared build-time generator in PowerForge/PSPublishModule for independent engines, including ChartForgeX and CanopyX. Each engine supplies its model metadata and a small handwritten domain layer; the generator implements the property-driven builder rules.
+I use one shared build-time generator in PowerForge/PSPublishModule for ChartForgeX, ConsoleMonster, CanopyX and CodeGlyphX, starting from ConsoleMonster's existing generator. Each engine supplies its model metadata and a small handwritten domain layer; the generator implements the property-driven method rules in the [unified convention](unified-authoring.md#generated-method-rules).
 
-1. Annotate the property model with generation metadata: exported scalar, nested settings, repeated child, typed data, nullable reset, public name, and XML documentation. Inheritance carries common frame/axis settings. Attributes contain no executable rendering policy.
-2. Use an incremental Roslyn generator to emit separate builder types, typed collection child methods, factory wiring, copy/apply plumbing and direct typed mapping code. Emit one file per semantic type. Build-time Roslyn references never enter core runtime dependencies or consumer output.
+1. Annotate the property model with generation metadata: `[Fluent]` on the type, `[Child]` for repeated children, `[Fluent("Verb")]` for delegate properties, `[NoFluent]` to skip. Inheritance carries common frame/axis settings. Attributes contain no executable rendering policy.
+2. Use an incremental Roslyn generator to emit extension methods on the models, typed collection child methods and direct typed mapping code. Emit one file per semantic type. Build-time Roslyn references never enter core runtime dependencies or consumer output.
 3. Generate scalar setters from setters; nested callbacks from nested-property types; child methods from collection element types. Only real compound conveniences (`Size`, `Bounds`, value-series ingestion) use explicit metadata/handwritten code. Preserve those backing-property relationships in the generated API manifest.
 4. Generate the PowerShell parameter/child schema and documentation input from the same property metadata in a build-time export. PowerForge's existing module/build/documentation mechanisms consume it. Do not ask a source generator to write into the repository or execute PowerShell during C# compilation.
-5. Diagnose public-name/signature collisions, unsupported property shapes, ambiguous child names, unsafe shallow copies and invalid mappings at build time. Generated code uses the model's validation/ingestion operations. It must not duplicate defaults, formatters, colour math, layout, or family validation.
-6. Publish compiled builders in the core assembly. Users of ordinary factories/initializers need no generator. An optional consumer mapping analyzer is needed only for requested source-generated application-record mappings.
+5. Diagnose public-name/signature collisions, unsupported property shapes, ambiguous child names, delegate properties without a verb and invalid mappings at build time. Generated code uses the model's validation/ingestion operations. It must not duplicate defaults, formatters, colour math, layout, or family validation.
+6. Publish the generated extensions in the core assembly. Users of ordinary factories/initializers need no generator. An optional consumer mapping analyzer is needed only for requested source-generated application-record mappings.
 
 ```csharp
 // Proposed model metadata; illustrative, not added to the engine by this design.
-[GenerateBuilder]
+[Fluent]
 public sealed partial class LineChart {
     public string Title { get; set; } = "";
     public AxisSettings X { get; set; } = new AxisSettings();
@@ -348,21 +350,21 @@ public sealed partial class LineChart {
     public SeriesCollection<LineSeries> Series { get; } = new SeriesCollection<LineSeries>();
 }
 
-// Representative generated signatures; edits use the same properties/collections.
-public partial class LineChartBuilder {
-    public LineChartBuilder Title(string value);
-    public LineChartBuilder X(Action<AxisSettingsBuilder> configure);
-    public LineChartBuilder X(string title, Action<AxisSettingsBuilder>? configure = null);
-    public LineChartBuilder Series(string name, IEnumerable<double> values,
-        Action<LineSeriesBuilder>? configure = null);
-    public LineChartBuilder Series(string name, IEnumerable<ChartPoint> data,
-        Action<LineSeriesBuilder>? configure = null);
-    public LineChartBuilder Series<T>(string name, IEnumerable<T> data,
-        Func<T, ChartPoint> selector, Action<LineSeriesBuilder>? configure = null);
+// Representative generated and handwritten signatures; all edit the same model.
+public static partial class LineChartFluent {
+    public static LineChart Title(this LineChart chart, string value);
+    public static LineChart X(this LineChart chart, Action<AxisSettings> configure);
+    public static LineChart X(this LineChart chart, string title, Action<AxisSettings>? configure = null);
+    public static LineChart Series(this LineChart chart, string name, IEnumerable<double> values,
+        Action<LineSeries>? configure = null);
+    public static LineChart Series(this LineChart chart, string name, IEnumerable<ChartPoint> data,
+        Action<LineSeries>? configure = null);
+    public static LineChart Series<T>(this LineChart chart, string name, IEnumerable<T> data,
+        Func<T, ChartPoint> selector, Action<LineSeries>? configure = null);
 }
 ```
 
-The declarations above omit bodies to show the contract. No generator is proposed for data transformation or rendering algorithms. Abstract/base builders preserve the concrete return type; interface-only optional packages use extensions in their own assembly. Output ordering and public signatures are deterministic across all target frameworks.
+The declarations above omit bodies to show the contract. No generator is proposed for data transformation or rendering algorithms. Methods for non-sealed base models are generic over the derived type so chains keep it; interface-only optional packages use extensions in their own assembly. Output ordering and public signatures are deterministic across all target frameworks.
 
 ### Typed mappings
 
@@ -394,7 +396,7 @@ $chart = New-CfxChart -Kind Line -Title 'Weekly orders' -Width 800 -Height 440 `
         New-CfxSeries -Id target-orders -Name Target -Values 30,35,40,45,50 `
             -Stroke @{ Dash = @(6,3) }
     }
-$chart.SavePng((Join-Path $PWD 'orders.png'))
+$chart.Save((Join-Path $PWD 'orders.png'))
 ```
 
 Settings are parameters or typed nested settings/hashtables. Repeated children are commands with their own settings; there is no `New-CfxTitle`, axis-settings command, or command per enum value. Proposed command families:
@@ -424,7 +426,7 @@ chart.SaveInteractiveHtml("orders.html", html => html
     .Navigation(n => n.X(true).Pan(true).Brush(true)));
 ```
 
-This builder is generated in the HTML adapter from its own options. It composes the core model; it never puts DOM/runtime settings into chart properties. Full controller/native connection options remain distinct from a saved standalone report. Feature unions select shared bundles once per page. Existing JS controller commands, linking payloads and stable keys remain contracts; no browser API rename is needed merely because C# authoring changes.
+These methods are generated in the HTML adapter from its own options. It composes the core model; it never puts DOM/runtime settings into chart properties. Full controller/native connection options remain distinct from a saved standalone report. Feature unions select shared bundles once per page. Existing JS controller commands, linking payloads and stable keys remain contracts; no browser API rename is needed merely because C# authoring changes.
 
 The incoming standalone projection supports its declared numeric, vertical Cartesian Line/Bar/Area/Scatter/Candlestick scope. New C# names do not extend that scope to time, log, secondary axes, diagrams or unsupported mixes. Connected native preparation remains the route for native layout and broader supported viewports. Annotations needing a native commit remain unavailable without that connection.
 
@@ -453,14 +455,14 @@ Implementation sequence:
 
 1. Reconcile the landed APIs and token exporter against these snapshots; update this proposal for actual differences. Freeze the exact input for migration, including all supported chart/diagram families and consumers.
 2. Use the shared PowerForge/PSPublishModule generator, engine-local vocabulary and ImagePlayground command decisions above. Build the generator and one vertical path: Line/Bar, axes/legend, initializer/fluent equivalence, typed mapping and one PowerShell recipe. The build and package machinery stays in PowerForge.
-3. Extend the same metadata/builders across every family in the inventory, diagrams, grids and optional package settings. Migrate internal examples/tests as each family moves. Keep temporary translation private to the development branch and delete it before the candidate; ship no compatibility assembly or aliases.
+3. Extend the same metadata across every family in the inventory, diagrams, grids and optional package settings. Migrate internal examples/tests as each family moves. Keep temporary translation private to the development branch and delete it before the candidate; ship no compatibility assembly or aliases.
 4. Migrate the README and ten recipes in the companion document. Regenerate gallery/API docs from maintained example/model sources, including ordinary C#, fluent C# and PowerShell. Remove stale prefix-based guidance and superseded API-ledger entries that no longer describe the product.
 5. Migrate a thin HTML chart bridge and a real report; a monitoring report with typed data and status colours; ConsoleMonster artifact/pixel handoff; and CanopyX linked-view examples. Retain their own layout, datasets and browser contracts. Also inspect ImagePlayground because it supplies today's PowerShell examples. Stage cross-repository consumers locally against the known candidate, then use published packages for normal consumption.
 6. Run the stable-candidate quality loop and consumer qualification; remove the old public surface as one deliberate breaking candidate. Publish/re-pin only through a separately requested release workflow, with the consumer order coordinated against actual package availability.
 
 Future acceptance checks belong to implementation, not this documentation change:
 
-- Initializer, fluent and PowerShell recipes reach the same normalized property/observation model and decisive prepared facts. Exercise nested setting exceptions and retained builders, typed replacement/IDs, missing values and callback execution counts at their responsible boundary.
+- Initializer, fluent and PowerShell recipes reach the same normalized property/observation model and decisive prepared facts. Exercise nested setting exceptions and retained child handles, typed replacement/IDs, missing values and callback execution counts at their responsible boundary.
 - Export one prepared chart as native PNG at 1x, 2x and 3x; verify the expected pixel dimensions with unchanged logical geometry, ticks, wrapping and legend placement, without additional layout or callback execution. Qualify the package-consumption path before a dependent email host ships.
 - Exercise last-point, incident-range and noncontiguous observation-set highlights through item and segment styles in SVG and native PNG. Verify the selected subset, shared theme paint, preserved source IDs/values and unconnected gaps, including 2x and 3x PNG output.
 - Build `net472`, `netstandard2.0`, `net8.0` and `net10.0`; run trim/AOT consumers for normal factories and generated mappings. Verify packed core has no runtime dependency, Roslyn payload or PowerShell host requirement.
@@ -470,7 +472,7 @@ Future acceptance checks belong to implementation, not this documentation change
 
 ### Short migration note to ship
 
-> I replaced prefix-based chart configuration with typed property models and generated builders. Start with `Chart.Line("Title", c => ...)` instead of `Chart.Create().WithTitle(...).AddLine(...)`; use `X`/`Y`, nested `Legend`/`Labels` settings, and `Series` children. Keep explicit IDs for updates and linked views. Build diagrams with `Diagram.Topology`, `Flow` or `Sequence`, and pass a shared `VisualTheme` with an explicit `ThemeMode`. Existing prepared-output and file-export operations keep their purpose. Update the ChartForgeX packages and consumers together; the old authoring methods have been removed.
+> I replaced prefix-based chart configuration with typed property models and generated fluent methods on those models. Start with `Chart.Line("Title", c => ...)` instead of `Chart.Create().WithTitle(...).AddLine(...)`; use `X`/`Y`, nested `Legend`/`Labels` settings, and `Series` children. Keep explicit IDs for updates and linked views. Build diagrams with `Diagram.Topology`, `Flow` or `Sequence`, and pass a shared `VisualTheme` with an explicit `ThemeMode`. Existing prepared-output and file-export operations keep their purpose. Update the ChartForgeX packages and consumers together; the old authoring methods have been removed.
 
 A one-off migration script may rename mechanical settings, but it must leave mixed-chart binding, sequence indexes, per-item IDs, callbacks and theme intake for explicit review. It is a development aid, not a runtime bridge.
 
@@ -478,5 +480,6 @@ A one-off migration script may rename mechanical settings, but it must leave mix
 
 | Choice | My recommendation | Consequence / alternative |
 | --- | --- | --- |
-| Shared CSS-token prefix | Replace the existing `--hfx-*` prefix with `--evx-*` (Evotec visual) for shared tokens consumed by ChartForgeX and CanopyX output. For example, `--hfx-color-chart-series-1` becomes `--evx-color-chart-series-1`, and `--hfx-font-sans` becomes `--evx-font-sans`. | Open proposal: one neutral namespace keeps a single product theme usable across engines. Coordinate the canonical exporter, HTML host CSS, ChartForgeX bindings and CanopyX bindings in the same breaking migration; separate `--cfx-*` and `--cx-*` token families would duplicate the shared contract. Confirm the neutral prefix before changing output. |
+| Shared CSS-token prefix | Keep HtmlForgeX's `--hfx-*` names, as the [unified convention](unified-authoring.md#shared-semantic-vocabulary) records. HtmlForgeX owns the token export; engine roles stay `--cfx-*` and `--cx-*` and resolve through `--hfx-*` first. | Renaming to a neutral `--evx-*` would touch every host stylesheet in the same breaking release for no visible gain. Revisit only if a non-HtmlForgeX host needs the tokens. |
+| Model granularity | Typed models per family group (`CartesianChart`, `RadialChart`, `HierarchyChart`, `RelationshipChart`, `ScheduleChart`, `MapChart`, `GaugeChart`, `ProportionChart`), with per-kind factories returning them. | About eight root models instead of one per series kind; `Mixed` becomes a `CartesianChart` with several series types. The family table above still lists every factory. |
 | Ten gallery examples | Use the repository-reference ranking explained in the companion document. | No traffic ranking is available in the inspected files. Replace the selection if actual usage data identifies a different top ten. |
