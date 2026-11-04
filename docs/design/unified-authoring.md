@@ -126,6 +126,17 @@ The next major removes that choice:
 
 Typography, spacing, radius and elevation come only from tokens. A product with its own brand supplies its own token export through `Theme.FromTokens(json)`; it does not pick a built-in look. Per-chart font overrides stay for explicit host needs such as wallpapers with a required face, but examples and recipes do not use them. A repository test fails when an example uses a non-default theme or hand-set typography outside the theme and font-feature demonstrations.
 
+### Size and fit
+
+Typography is in logical pixels, so the canvas size decides how large text looks wherever charts sit side by side. The current gallery uses more than 40 different sizes, from 390 to 1,600 pixels wide, which is why identical 17 px titles look tiny on one card and loud on the next. Fixed-geometry content (calendars, tile maps, progress rows, gauges) also leaves bands of empty frame when its canvas has the wrong proportions.
+
+| Rule | Contract |
+| --- | --- |
+| Width is the authored dimension | `Size(width)` is the normal call. Height follows from the content: the family's preferred aspect for plots (Cartesian 16:9 at wide widths, 4:3 below the compact breakpoint; radial and gauge square), and the measured content height for fixed-geometry families such as calendars, tile maps, progress rows and topology. `Size(width, height)` remains for a host that must fill an exact box; content is then centred as one block, never pinned to opposite edges. |
+| Standard widths | Recipes, gallery and documentation use 800 (wide), 600 (standard) and 390 (compact). Reports and dashboards pick from the same set, so cards placed together share a text scale. |
+| Typography by size class | The token theme's wide and compact roles switch at the compact breakpoint. There is no third ad hoc scale and no per-chart font size in recipes. |
+| Captions never cross marks | Data captions are placed outside the mark ink they describe, beside stems and wicks rather than on them, and are omitted with their fact retained when no clear position exists. |
+
 The same rule applies to ConsoleMonster's built-in themes (`Theme.Dark`, `Theme.Light`, `Theme.HighContrast`), CanopyX and CodeGlyphX output. They resolve one token theme in a mode, and high contrast is an accessibility palette rather than a separate look.
 
 CSS custom properties keep the HtmlForgeX `--hfx-*` names. HtmlForgeX owns the token export, so a neutral `--evx-*` prefix would rename every host stylesheet for no visible gain. Engine-specific roles stay `--cfx-*` and `--cx-*` and resolve through `--hfx-*` first.
