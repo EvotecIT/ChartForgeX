@@ -6,7 +6,7 @@ internal static partial class MermaidExamples {
                 var result = SequenceSurfaceShadowSourceRecipe.Parse(source, variant, mode, ExampleTypography.FontFamily);
                 var artifact = result.Artifact!;
                 var stem = Path.Combine(output, "mermaid-sequence-surface-shadows-" + variant + "-" + mode.ToString().ToLowerInvariant());
-                File.WriteAllText(stem + ".svg", artifact.ToSvg());
+                artifact.SaveSvg(stem + ".svg");
                 File.WriteAllBytes(stem + ".png", artifact.ToPng());
                 File.WriteAllText(stem + ".html", ExampleTypography.EmbedInHtml(artifact.ToHtmlPage()));
                 File.WriteAllText(stem + ".json", artifact.ToInterchangeJson());

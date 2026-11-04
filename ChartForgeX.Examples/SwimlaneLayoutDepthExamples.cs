@@ -16,7 +16,7 @@ internal static class SwimlaneLayoutDepthExamples {
             var fence=new MermaidVisualMarkupParser(options).Parse("```mermaid\n"+source+"\n```");if(fence.HasErrors||fence.Artifacts.Count!=1)throw new InvalidOperationException("Swimlane fence failed.");
             foreach(var pair in new[]{("direct",direct.Artifact!),("fenced",fence.Artifacts[0])}){
                 var path=Path.Combine(output,"swimlane-"+width+(dark?"-dark-":"-light-")+pair.Item1);var artifact=pair.Item2;
-                File.WriteAllText(path+".svg",artifact.ToSvg());File.WriteAllBytes(path+".png",artifact.ToPng());
+                artifact.SaveSvg(path+".svg");File.WriteAllBytes(path+".png",artifact.ToPng());
                 File.WriteAllText(path+".html",artifact.ToHtmlPage(new VisualArtifactRenderOptions {HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}));File.WriteAllText(path+".json",artifact.ToInterchangeJson());
             }
         }

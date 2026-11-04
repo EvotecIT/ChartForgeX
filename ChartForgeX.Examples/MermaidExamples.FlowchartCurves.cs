@@ -7,7 +7,7 @@ internal static partial class MermaidExamples {
             foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
                 var artifact = FlowchartCurveRecipe.Create(family, variant, mode, ExampleTypography.FontFamily);
                 var name = "mermaid-curves-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
-                File.WriteAllText(Path.Combine(output, name + ".svg"), artifact.ToSvg());
+                artifact.SaveSvg(Path.Combine(output, name + ".svg"));
                 File.WriteAllBytes(Path.Combine(output, name + ".png"), artifact.ToPng());
                 File.WriteAllText(Path.Combine(output, name + ".html"), ExampleTypography.EmbedInHtml(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize })));
                 File.WriteAllText(Path.Combine(output, name + ".json"), artifact.ToInterchangeJson());

@@ -31,7 +31,7 @@ public static partial class ExampleRecipeSource {
                 ? "if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {\n" +
                     "    var natural = topology.WithTitle(" + JsonSerializer.Serialize(title) + ").WithSubtitle(" + JsonSerializer.Serialize(subtitle) + ")" +
                     ".WithTheme(theme" + (galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : "") + ", mode).ToVisualArtifact();\n" +
-                    "    File.WriteAllText(\"visual.svg\", natural.ToSvg());\n" +
+                    "    natural.SaveSvg(\"visual.svg\");\n" +
                     "    File.WriteAllBytes(\"visual.png\", natural.ToPng());\n" +
                     "    File.WriteAllText(\"visual.html\", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));\n" +
                     "    return;\n}\n" : ""

@@ -28,10 +28,10 @@ public static class ConsumerRenderingExamples {
         foreach (var pair in sources) {
             var result = MermaidRenderer.Render(pair.Value);
             if (result.HasErrors) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(d => d.Message)));
-            SaveExample( pair.Key, result.Artifact!.ToSvg(), result.Artifact!.ToPng());
+            SaveExample( pair.Key, result.Artifact!.ToSvg(StandaloneSvg), result.Artifact!.ToPng());
             var dark = MermaidRenderer.Render("%%{init: {'theme':'dark'}}%%\n" + pair.Value);
             if (dark.HasErrors) throw new InvalidOperationException("Cannot render dark " + pair.Key);
-            SaveExample( pair.Key + "-dark", dark.Artifact!.ToSvg(), dark.Artifact!.ToPng());
+            SaveExample( pair.Key + "-dark", dark.Artifact!.ToSvg(StandaloneSvg), dark.Artifact!.ToPng());
             if (result.Artifact!.Model is TopologyChart fit) {
                 fit.WithViewport(520, 260, 12);
                 var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
@@ -50,7 +50,7 @@ public static class ConsumerRenderingExamples {
             Flowchart = new MermaidFlowchartRenderOptions { Width = 3440, Height = 1440 }
         });
         if (wideFlow.HasErrors) throw new InvalidOperationException("Cannot render the wide Mermaid flowchart example.");
-        SaveExample("flow-wide-panel-dark", wideFlow.Artifact!.ToSvg(), wideFlow.Artifact!.ToPng());
+        SaveExample("flow-wide-panel-dark", wideFlow.Artifact!.ToSvg(StandaloneSvg), wideFlow.Artifact!.ToPng());
         var actorColor = MermaidRenderer.Render("flowchart LR\n A[Escalation] --> B[Response]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
         if (actorColor.HasErrors) throw new InvalidOperationException("Cannot render the Mermaid actor label-color example.");
         if (actorColor.Artifact!.Model is not TopologyChart actorChart)
@@ -278,6 +278,9 @@ public static class ConsumerRenderingExamples {
         File.WriteAllText(Path.Combine(output, "index.html"), ExampleTypography.EmbedInHost("<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><link rel=icon href=\"data:,\"><title>Consumer rendering cases</title><style>body{font-size:16px;background:#ccc}article{margin:30px}img{max-width:48%;vertical-align:top}</style></head><body>" +
             string.Join("", generatedNames.OrderBy(name => name, StringComparer.Ordinal).Select(name => "<article><h2>" + name + "</h2><img src='" + name + ".svg'><img src='" + name + ".png'></article>")) + "</body></html>"));
     }
+    // Saved example files are standalone, so they carry the product fonts that artifact hand-off SVG omits.
+    private static readonly VisualArtifactRenderOptions StandaloneSvg = new() { EmbedProductFonts = true };
+
     private static void Save(string output, string name, string svg, byte[] png) {
         File.WriteAllText(Path.Combine(output, name + ".svg"), svg);
         File.WriteAllBytes(Path.Combine(output, name + ".png"), png);

@@ -8,7 +8,7 @@ public static partial class ExampleRecipeSource {
         var split = recipe.IndexOf("/// <summary>", StringComparison.Ordinal);
         return "using System;\nusing System.IO;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.VisualArtifacts;\n"
             + "var artifact=TopologyCrossingPaintRecipe.Create(\"" + variant + "\",VisualThemeMode." + mode + ").ToVisualArtifact();\n"
-            + "Directory.CreateDirectory(\"output\");File.WriteAllText(\"output/topology.svg\",artifact.ToSvg());File.WriteAllBytes(\"output/topology.png\",artifact.ToPng());File.WriteAllText(\"output/topology.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/topology.json\",artifact.ToInterchangeJson());\n"
+            + "Directory.CreateDirectory(\"output\");artifact.SaveSvg(\"output/topology.svg\");File.WriteAllBytes(\"output/topology.png\",artifact.ToPng());File.WriteAllText(\"output/topology.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/topology.json\",artifact.ToInterchangeJson());\n"
             + recipe.Substring(split);
     }
 
@@ -20,7 +20,7 @@ public static partial class ExampleRecipeSource {
         var split = recipe.IndexOf("/// <summary>", StringComparison.Ordinal);
         return "using System;\nusing System.IO;\nusing ChartForgeX.Mermaid;\nusing ChartForgeX.Themes;\nusing ChartForgeX.VisualArtifacts;\n"
             + "var artifact=SwimlaneCrossingPaintRecipe.Create(\"" + form + "\",\"" + variant + "\",VisualThemeMode." + mode + ");\n"
-            + "Directory.CreateDirectory(\"output\");File.WriteAllText(\"output/swimlane.svg\",artifact.ToSvg());File.WriteAllBytes(\"output/swimlane.png\",artifact.ToPng());File.WriteAllText(\"output/swimlane.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/swimlane.json\",artifact.ToInterchangeJson());\n"
+            + "Directory.CreateDirectory(\"output\");artifact.SaveSvg(\"output/swimlane.svg\");File.WriteAllBytes(\"output/swimlane.png\",artifact.ToPng());File.WriteAllText(\"output/swimlane.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/swimlane.json\",artifact.ToInterchangeJson());\n"
             + recipe.Substring(split);
     }
 }

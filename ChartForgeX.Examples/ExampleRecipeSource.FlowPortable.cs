@@ -7,7 +7,7 @@ public static partial class ExampleRecipeSource {
         var recipe=ReadResource("ChartForgeX.Examples.Recipes.FlowPortablePresentationRecipe.cs");var split=recipe.IndexOf("/// <summary>",StringComparison.Ordinal);
         return "using System;\nusing System.IO;\nusing System.Linq;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\nusing ChartForgeX.VisualBlocks;\n"
             +"var artifact=FlowPortablePresentationRecipe.Create(\""+variant+"\",VisualThemeMode."+mode+");\nvar json=artifact.ToInterchangeJson();\nvar restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToFlowArtifact();\n"
-            +"if(!artifact.ToPng().SequenceEqual(restored.ToPng()))throw new InvalidOperationException(\"The native portable flow pixels must match.\");\nDirectory.CreateDirectory(\"output\");File.WriteAllText(\"output/flow.svg\",artifact.ToSvg());File.WriteAllBytes(\"output/flow.png\",artifact.ToPng());File.WriteAllText(\"output/flow.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/flow.json\",json);\n"
+            +"if(!artifact.ToPng().SequenceEqual(restored.ToPng()))throw new InvalidOperationException(\"The native portable flow pixels must match.\");\nDirectory.CreateDirectory(\"output\");artifact.SaveSvg(\"output/flow.svg\");File.WriteAllBytes(\"output/flow.png\",artifact.ToPng());File.WriteAllText(\"output/flow.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/flow.json\",json);\n"
             +recipe.Substring(split);
     }
 }

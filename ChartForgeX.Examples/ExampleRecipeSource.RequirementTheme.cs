@@ -8,7 +8,7 @@ public static partial class ExampleRecipeSource {
         var split = recipe.IndexOf("/// <summary>", StringComparison.Ordinal);
         return "using System;\nusing System.IO;\nusing ChartForgeX.Mermaid;\nusing ChartForgeX.Themes;\nusing ChartForgeX.VisualArtifacts;\n"
             + "var artifact=RequirementThemeRecipe.Create(\"" + variant + "\",VisualThemeMode." + mode + ");\n"
-            + "Directory.CreateDirectory(\"output\");File.WriteAllText(\"output/requirement.svg\",artifact.ToSvg());File.WriteAllBytes(\"output/requirement.png\",artifact.ToPng());File.WriteAllText(\"output/requirement.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/requirement.json\",artifact.ToInterchangeJson());\n"
+            + "Directory.CreateDirectory(\"output\");artifact.SaveSvg(\"output/requirement.svg\");File.WriteAllBytes(\"output/requirement.png\",artifact.ToPng());File.WriteAllText(\"output/requirement.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/requirement.json\",artifact.ToInterchangeJson());\n"
             + recipe.Substring(split);
     }
 }

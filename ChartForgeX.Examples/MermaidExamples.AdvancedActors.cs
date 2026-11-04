@@ -12,7 +12,7 @@ internal static partial class MermaidExamples {
                     Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = ExampleTypography.FontFamily, TopologySizing = MermaidTopologySizing.Natural } } });
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
             var id = "mermaid-usecase-advanced-actors-" + variant + "-" + mode.ToString().ToLowerInvariant();
-            File.WriteAllText(Path.Combine(output, id + ".mmd"), source); File.WriteAllText(Path.Combine(output, id + ".svg"), result.Artifact.ToSvg());
+            File.WriteAllText(Path.Combine(output, id + ".mmd"), source); result.Artifact.SaveSvg(Path.Combine(output, id + ".svg"));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), result.Artifact.ToPng());
             File.WriteAllText(Path.Combine(output, id + ".html"), result.Artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }).Replace("</head>", ExampleTypography.EmbeddedStyle + "</head>", StringComparison.Ordinal));
             File.WriteAllText(Path.Combine(output, id + ".csharp.txt"), ExampleRecipeSource.EmitAdvancedActorSource(variant, mode, galleryTypography: true));

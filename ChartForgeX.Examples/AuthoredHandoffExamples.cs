@@ -9,7 +9,7 @@ internal static class AuthoredHandoffExamples {
             var chart = TopologyAuthoredPathBadgeRecipe.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
             var artifact = chart.ToVisualArtifact();
             var path = Path.Combine(output, "authored-handoff-" + mode.ToString().ToLowerInvariant());
-            File.WriteAllText(path + ".svg", artifact.ToSvg());
+            artifact.SaveSvg(path + ".svg");
             File.WriteAllBytes(path + ".png", artifact.ToPng());
             File.WriteAllText(path + ".html", artifact.ToHtmlPage());
             File.WriteAllText(path + ".json", artifact.ToInterchangeJson());
