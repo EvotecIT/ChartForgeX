@@ -22,25 +22,18 @@ Workstreams can run in parallel where they don't share owners. One coherent PR p
 AG Charts lets a caller style any datum, format any label and theme every series type. I want the same reach through our typed API.
 
 - [ ] **Per-datum style callback.** A series accepts a callback that receives the datum, its index and series context and returns fill, stroke, marker and label overrides, replacing index-based `WithPoint*` for conditional styling. Done when it works on every Cartesian and radial family, SVG and PNG agree, and an example colours bars by threshold.
-- [ ] **Label and tooltip formatters.** Every series accepts typed formatters for data labels and tooltip text, generalising the existing Pie, BoxPlot, RangeBar and Sunburst contexts. Done when a caller can format any series without touching renderer internals and the browser readout uses the same text.
-- [ ] **Gradient and image fills.** Callers can author linear/radial gradients and image or pattern fills for marks and plot areas, using the renderer's existing gradient owners; `ChartFillPattern` grows beyond three hatches. Done when both outputs paint them identically and an example shows a gradient area chart.
-- [ ] **Per-series line dash.** Line, Area and range boundaries accept a dash pattern per series and per segment, so a forecast can be dashed after the last actual. Done when legend keys show the dash and a forecast example ships.
+- [ ] **Per-segment line dash.** Series dash (`WithStrokeStyle`) has landed; a forecast still needs a dash per segment after the last actual. Done when legend keys show the dash and a forecast example ships.
 - [ ] **Axis control.** Numeric axes accept a step/interval and explicit tick values, minor ticks, per-axis grid style and alternating bands; more than one secondary axis per side where the layout allows. Done when examples show each option and existing tick selection is unchanged when none is set.
 - [ ] **Theme defaults per series type.** `VisualDesignTokens` can carry defaults per series kind (line width, marker, bar radius, label style), like AG `theme.overrides`. Done when a theme file restyles every line chart without per-chart code.
 - [ ] **Legend control.** Custom legend items, marker shape/size config and an item formatter, alongside the existing eight positions. Done when a chart can show a legend entry for a reference line and format entries with values.
 
 ## 2. Standalone browser interactivity
 
-Static HTML from reports and email has to feel interactive without a .NET host. The runtime (`ChartForgeX.Interactivity.Html`) is about 77 KB gzipped against an 82 KiB budget, so the bundle split comes first.
+Static HTML from reports and email has to feel interactive without a .NET host. Feature bundles (context menu, data export, hierarchy drill, isolate, motion), re-projected standalone zoom with fresh ticks, brush zoom, legend rescale, entry and update motion, tooltip templates and renderers, CSV/JSON/clipboard export, custom context-menu items, pinch zoom and double-tap isolate have landed.
 
-- [ ] **Bundle split.** Core hover/tooltip stays in the base bundle; zoom, brush, export, annotation and navigator load as separate feature modules. Done when the base bundle has clear headroom and each feature module has its own budget test.
-- [ ] **Real zoom and pan.** Standalone zoom re-projects data and redraws ticks in the browser instead of scaling the whole SVG. Done when zooming a static HTML line chart shows fresh, readable ticks with no host round-trip.
-- [ ] **Drag to zoom.** The brush can zoom to the selected range, with reset. Done when it works by mouse and keyboard on Cartesian charts.
-- [ ] **Legend rescale.** Hiding a series rescales the value axis instead of dimming the series to 30%. Done when hidden series leave the domain and reappear cleanly.
-- [ ] **Default animation.** Charts animate on load and on data update by default, respecting reduced motion and staying off in static exports. Done when a gallery chart animates in the browser and its SVG/PNG remain byte-stable.
-- [ ] **Custom tooltip renderer.** Callers supply a tooltip template or renderer function. Done when an example shows a multi-line tooltip with a sparkline or image.
-- [ ] **Data export.** Export menu adds CSV, JSON and clipboard next to SVG/PNG, and the context menu accepts custom items. Done when the exported CSV matches the source observations.
-- [ ] **Touch and crosshair.** Pinch zoom, double-tap to isolate, and crosshair value labels at the axis edges, including polar charts. Done when they work on a touch device.
+- [ ] **Standalone zoom beyond vertical linear charts.** Re-projection covers vertical Line, StepLine, Area, StepArea, Bar, Scatter, Candlestick and OHLC with linear X and Y. Horizontal bars, logarithmic scales, secondary axes, Bubble, BoxPlot, range families, Heatmap and Polar still fall back to scaling the whole drawing. Done when each of those re-projects or deliberately declines zoom.
+- [ ] **Keyboard navigation in the core reader.** The hover-only core bundle has no arrow-key traversal between data points, legend toggles or selection, so saved and emailed reports are not keyboard navigable. Done when a saved core-bundle report supports arrow keys, Enter and Escape with announced values.
+- [ ] **Crosshair value labels.** Crosshair values at the axis edges, including polar charts. Done when they work by mouse, touch and keyboard.
 - [ ] **Large graph navigation.** Large topology/graph scenes get zoom, filtering or hierarchy navigation rather than shrinking to fit. Done when a dense example stays readable.
 - [ ] **Use case playback.** Response steps reverse the active edge arrow in interactive HTML, and the request/message/response/failed-call labels are translated in the topology UI catalogs.
 
@@ -58,10 +51,10 @@ Charts already look professional; topology-laid-out diagrams don't yet. The defe
 
 HtmlForgeX's `evotec.tokens.json` is the source of truth, but our embedded copy is older (1.1.0 vs 1.1.2), fonts differ in every product, and tokens carry colours only.
 
-- [ ] **Token contract v2.** The shared export adds typography, radius, elevation and chrome next to colours. Done when ChartForgeX reads its font stack, tooltip radius and surfaces from tokens rather than `VisualTheme` constants.
-  When `feature/visual-token-contract` lands, reapply `9bb6b6036`: `ChartFontAssets.Face` normalizes the embedded OFL notice to LF, so the product font stylesheet keeps one identity on CRLF checkouts and the Windows story-media check accepts it.
+Token contract v2 has landed: ChartForgeX reads its font stack, typography roles, radius, elevation and interactive chrome from the shared export, and interactive CSS resolves `--hfx-*` roles before its literal fallbacks.
+
 - [ ] **Drift check.** CI fails when ChartForgeX's embedded token file differs from HtmlForgeX's generated one. Done when the check runs and the current copy matches.
-- [ ] **Host CSS fallbacks.** Interactive CSS reads `--hfx-*` variables first and drops the Tailwind slate fallbacks. Done when a ChartForgeX chart in an HtmlForgeX page matches the page's surface, font and tooltip style.
+- [ ] **Host CSS check in HtmlForgeX.** Interactive CSS now reads `--hfx-*` first and no longer carries Tailwind slate fallbacks. Done when a ChartForgeX chart in a real HtmlForgeX page is observed matching the page's surface, font and tooltip style.
 - [ ] Coordinate with HtmlForgeX to theme its legacy ApexCharts/Chart.js output from the same tokens, and with CanopyX to point its role tokens at the merged HtmlForgeX roles.
 
 ## 5. Website showcase
@@ -75,6 +68,8 @@ HtmlForgeX's `evotec.tokens.json` is the source of truth, but our embedded copy 
 
 ## 6. Chart readability
 
+- [ ] Stable captured glyph IDs under load. `MermaidClassErCaptionTests` (ER, dark, 390) once produced `png-glyph-12` where `png-glyph-2` was expected during a full parallel run and passed alone. Glyph de-duplication keys on the `TrueTypeFont` instance; a second instance of the same face, for example after the 128-file/64 MB font cache evicts it mid-render, renumbers the captured glyphs. Done when the de-duplication key uses the face's captured identity and a concurrent-render test pins the output.
+- [ ] Decide whether Funnel and Pyramid show stage captions by default. Data labels are opt-in for every family, but a funnel has no legend or axis, so a default funnel identifies none of its stages.
 - [ ] Dense point captions keep the distinguishing part of similar names instead of ending in an ellipsis that removes it; closely spaced Bubble marks stay distinguishable.
 - [ ] Charts narrower than 400 pixels, including compact Gantt, keep complete captions anchored to their ticks.
 - [ ] Narrow date windows stop picking 6-, 8- or 10-day strides and keep the final day's caption when it fits, preserving authored intervals.
