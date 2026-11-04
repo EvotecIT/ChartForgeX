@@ -618,13 +618,13 @@ internal static class DashboardPortfolioExamples {
 
     private static string CurrencyK(double value) => "$" + (value / 1000d).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "K";
 
-    private static VisualTheme DashboardTheme() => VisualTheme.Dashboard();
+    private static VisualTheme DashboardTheme() => VisualTheme.Graphite();
 
-    private static VisualTheme SaasTheme() => VisualTheme.SaasDashboard();
+    private static VisualTheme SaasTheme() => VisualTheme.Graphite();
 
-    private static VisualTheme RestaurantTheme() => VisualTheme.RestaurantDashboard();
+    private static VisualTheme RestaurantTheme() => VisualTheme.Graphite();
 
-    private static VisualTheme TicketingTheme() => VisualTheme.Dashboard().Configure(builder => {
+    private static VisualTheme TicketingTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F7F8F8");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;

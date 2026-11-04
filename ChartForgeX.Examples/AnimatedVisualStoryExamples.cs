@@ -7,7 +7,7 @@ using ChartForgeX.VisualBlocks;
 
 internal static class AnimatedVisualStoryExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         var activity = Chart.Create()
             .WithTitle("Release activity")
             .WithSubtitle("A native chart can participate in the same story")
@@ -62,6 +62,6 @@ internal static class AnimatedVisualStoryExamples {
     private static MetricCard Metric(string label, string value, string caption) => MetricCard.Create()
         .WithMetric(label, value)
         .WithCaption(caption)
-        .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
+        .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
         .WithSize(250, 150);
 }

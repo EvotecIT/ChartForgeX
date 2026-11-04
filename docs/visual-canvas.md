@@ -378,7 +378,7 @@ FontRegistry.RegisterDirectory(Path.Combine(fonts, "brand")); // each file under
 FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); // fallback for stacks ending in sans-serif, and for hosts with no fonts
 
 var chart = Chart.Create().WithTheme(
-    VisualTheme.Report().WithFontFamily("Inter, sans-serif"), VisualThemeMode.Dark);
+    VisualTheme.Graphite().WithFontFamily("Inter, sans-serif"), VisualThemeMode.Dark);
 ```
 
 Hosts without filesystem font assets can register the same faces from bytes or embedded resource streams:

@@ -8,7 +8,7 @@ public static class LicenseCostRecipe {
             .WithSubtitle("Long formatted y-axis labels keep their own space")
             .WithXAxis("Quarter")
             .WithYAxis("Spend")
-            .WithTheme(VisualTheme.Report(), mode)
+            .WithTheme(VisualTheme.Graphite(), mode)
             .WithSize(760, 460)
             .WithValueFormatter(value => "$" + value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture))
             .WithXLabels("Q1", "Q2", "Q3", "Q4")

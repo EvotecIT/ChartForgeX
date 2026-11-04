@@ -95,10 +95,10 @@ Chart grids share their own theme, mode and font across all panels by default. U
 
 ```csharp
 var grid = ChartGrid.Create()
-    .WithTheme(VisualTheme.Report())
+    .WithTheme(VisualTheme.Graphite())
     .WithPanelThemes()
-    .Add(sales.WithTheme(VisualTheme.Executive()))
-    .Add(readership.WithTheme(VisualTheme.Editorial(), VisualThemeMode.Dark));
+    .Add(sales.WithTheme(VisualTheme.Graphite()))
+    .Add(readership.WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark));
 ```
 
 With panel themes enabled, every child uses its chart's `Theme`, `ThemeMode`, typography and native font-file request. The grid context controls the outer frame, layout, visibility permissions and legend limits. An explicit context theme or font therefore applies to the outer frame; call `WithPanelThemes(false)` to impose that presentation on every panel. A context `LegendStyle` remains an explicit common legend override, and chart text-style overrides remain authoritative. Pagination copies this choice. The grid never infers its presentation from the first child.

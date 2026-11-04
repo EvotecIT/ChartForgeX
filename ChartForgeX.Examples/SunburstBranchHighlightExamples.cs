@@ -13,7 +13,7 @@ public static class SunburstBranchHighlightExamples {
     public static Chart CreateChart(int width = 800, bool dark = false, bool graphite = true) {
         var chart = Chart.Create().WithSize(width, width < 500 ? 360 : 460).WithDataLabels()
             .WithTitle("Work allocation").WithSubtitle("Hover or focus a team to follow its branch; click to pin a reading")
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation"), "Allocated work", new[] {
                 new ChartHierarchyItem("all", "All teams"),
                 new ChartHierarchyItem("engineering", "Engineering", "all", colorValue: 12),

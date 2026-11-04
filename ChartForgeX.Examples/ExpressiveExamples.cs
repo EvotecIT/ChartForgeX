@@ -7,7 +7,6 @@ internal static partial class ExpressiveExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         StyledMultilingualTextExample.Write(output);
         SaveGrid(CreateThemeShowcaseGrid(), output, "theme-font-showcase-grid", pngOutputScale);
-        SaveGrid(CreateThemePresetShowcaseGrid(), output, "brand-kit-showcase-grid", pngOutputScale);
         SaveGrid(CreatePaletteSwatchGrid(), output, "palette-swatch-showcase-grid", pngOutputScale);
         SaveGrid(CreatePictorialSymbolShowcaseGrid(), output, "pictorial-symbol-showcase-grid", pngOutputScale);
         SaveGrid(CreatePictorialIsotypeShowcaseGrid(), output, "pictorial-isotype-showcase-grid", pngOutputScale);

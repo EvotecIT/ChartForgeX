@@ -23,7 +23,7 @@ var chart = Chart.Create()
     .WithTitle("AOT smoke")
     .WithSubtitle("Static report output")
     .WithSize(420, 240)
-    .WithTheme(VisualTheme.Report())
+    .WithTheme(VisualTheme.Graphite())
     .WithXAxis("Run")
     .WithYAxis("Value")
     .AddSmoothLine("Values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 4) })
@@ -75,7 +75,7 @@ var metric = MetricCard.Create()
     .WithIcon(VisualIcon.Lightning)
     .WithTrend("+2.4 pp")
     .WithStatus(VisualStatus.Positive)
-    .WithTheme(VisualTheme.Report())
+    .WithTheme(VisualTheme.Graphite())
     .WithSize(320, 170);
 AssertContains(metric.ToSvg("aot-metric"), "data-cfx-role=\"metric-label\"", "Metric card SVG render failed.");
 AssertPng(metric.ToPng(), "Metric card PNG render failed.");

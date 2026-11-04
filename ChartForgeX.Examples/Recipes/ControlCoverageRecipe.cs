@@ -8,7 +8,7 @@ public static class ControlCoverageRecipe {
             .WithSubtitle("Heatmap rows for comparing domain groups across security controls")
             .WithXAxis("Control")
             .WithYAxis("Domain group")
-            .WithTheme(VisualTheme.Report(), mode)
+            .WithTheme(VisualTheme.Graphite(), mode)
             .WithSize(980, 560)
             .WithLegend(false)
             .WithDataLabels()

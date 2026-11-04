@@ -200,7 +200,6 @@ internal static partial class SmokeTests {
         Assert(names.Contains("revenue-region-map-us-states-light", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover catalog-backed region map charts.");
         Assert(names.Contains("revenue-tile-map-us-states-light", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover catalog-backed tile map charts.");
         Assert(names.Contains("theme-font-showcase-grid", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover theme and font gallery output.");
-        Assert(names.Contains("brand-kit-showcase-grid", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover brand kit gallery output.");
         Assert(names.Contains("palette-swatch-showcase-grid", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover palette gallery output.");
         Assert(names.Contains("pictorial-symbol-showcase-grid", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover pictorial symbol gallery output.");
         Assert(names.Contains("pictorial-isotype-showcase-grid", StringComparer.OrdinalIgnoreCase), "Visual baseline should cover pictorial Isotype gallery output.");

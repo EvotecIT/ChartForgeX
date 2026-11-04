@@ -174,7 +174,7 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SavePowerBgInfoStatsSection(string output, int outputScale) {
-        var theme = VisualTheme.Report().Configure(builder => {
+        var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#101319");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#171B22");
             builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#171B22");
@@ -229,7 +229,7 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SaveReportMetricStrip(string output, int outputScale) {
-        var theme = VisualTheme.Report().Configure(builder => {
+        var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F8FAFC");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF");
             builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF");
@@ -435,7 +435,7 @@ internal static class WellnessDashboardExamples {
         grid.SavePng(Path.Combine(output, "wellness-weekly-progress-dashboard.png"));
     }
 
-    private static VisualTheme WellnessTheme() => VisualTheme.Minimal().Configure(builder => {
+    private static VisualTheme WellnessTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = Background;
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = Card;
             builder.Light.Surface = builder.Dark.Surface = Card;

@@ -297,7 +297,6 @@ public static partial class GalleryWriter {
             "colour-emoji-showcase",
             "font-palette-showcase",
             "theme-font-showcase-grid",
-            "brand-kit-showcase-grid",
             "palette-swatch-showcase-grid",
             "pictorial-symbol-showcase-grid",
             "pictorial-isotype-showcase-grid",

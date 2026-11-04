@@ -478,7 +478,7 @@ internal static class DashboardPatternExamples {
         for (var i = 0; i < y.Length; i++) yield return new ChartPoint(i + 1, y[i]);
     }
 
-    private static VisualTheme OperationsTheme() => VisualTheme.Dashboard().Configure(builder => {
+    private static VisualTheme OperationsTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F8F7");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
@@ -492,7 +492,7 @@ internal static class DashboardPatternExamples {
             builder.CardShadowOpacity = 0.04;
         });
 
-    private static VisualTheme ProjectTheme() => VisualTheme.Dashboard().Configure(builder => {
+    private static VisualTheme ProjectTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F2F2F3");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
@@ -511,7 +511,7 @@ internal static class DashboardPatternExamples {
             builder.Light.Palette = builder.Dark.Palette = new[] { Blue, Green, SoftGray, Purple };
         });
 
-    private static VisualTheme HrTheme() => VisualTheme.Dashboard().Configure(builder => {
+    private static VisualTheme HrTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F4F7FB");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
@@ -526,7 +526,7 @@ internal static class DashboardPatternExamples {
             builder.MarkerRadius = 4.2;
         });
 
-    private static VisualTheme PaymentTheme() => VisualTheme.SaasDashboard().Configure(builder => {
+    private static VisualTheme PaymentTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F6F5");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;

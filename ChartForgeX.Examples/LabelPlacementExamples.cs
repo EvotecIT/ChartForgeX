@@ -8,7 +8,7 @@ using ChartForgeX.Topology;
 public static class LabelPlacementExamples {
     /// <summary>Creates bullet, funnel, gauge, route-map and Sankey panels in the requested theme.</summary>
     public static IReadOnlyList<(string Name, Chart Chart)> Charts(bool dark) {
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         var bullet = Chart.Create().WithTitle("Control targets").WithSize(640, 360).WithTheme(theme, mode)
             .WithValueFormatter(v => v.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
