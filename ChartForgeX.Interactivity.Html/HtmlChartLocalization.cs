@@ -31,6 +31,7 @@ public sealed partial class HtmlChartLocalization {
         [HtmlChartText.DownloadPng] = "Download PNG",
         [HtmlChartText.ResetView] = "Reset view",
         [HtmlChartText.ResetZoom] = "Reset zoom",
+        [HtmlChartText.ZoomUnavailable] = "Zoom is not available for this chart type",
         [HtmlChartText.XNavigation] = "Data range",
         [HtmlChartText.XFullRange] = "Full range",
         [HtmlChartText.XRangeStart] = "Start",
