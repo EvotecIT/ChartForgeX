@@ -49,7 +49,8 @@ internal sealed partial class NativeTablePaintPlan {
         internal bool Group { get; }
     }
     private static KeyValuePair<string, string?> A(string name, object? value) => new(name, value switch {
-        null => null, double number => SvgMarkupWriter.FormatNumber(number), int count => count.ToString(CultureInfo.InvariantCulture), _ => value.ToString()
+        null => null, double number => SvgMarkupWriter.FormatNumber(number), int count => count.ToString(CultureInfo.InvariantCulture),
+        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture), _ => value.ToString()
     });
     private void Rect(string role, ChartRect box, double radius, ChartColor fill, ChartColor? stroke = null, string? cssClass = null) {
         fill = Paint(fill); if (stroke.HasValue) stroke = Paint(stroke.Value);
