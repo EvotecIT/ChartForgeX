@@ -30,7 +30,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             }
             """, new { html = Readings().ToInteractiveHtmlFragmentWithoutAssets(Configure), hostAccent });
         async Task AssertAccent(bool dark, string state) {
-            var expected = hostAccent ? "rgb(255, 0, 170)" : Css(VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).Palette[0]);
+            // Without a host accent, focus uses the chrome focus ring and the host-highlight cue the default accent.
+            var colors = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            var expected = hostAccent ? "rgb(255, 0, 170)" : Css(colors.Chrome.FocusRing);
+            var expectedHighlight = hostAccent ? expected : Css(colors.Palette[0]);
             await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-reset]"));
             Assert.Equal(expected, await page.Locator("[data-cfx-reset]").EvaluateAsync<string>("node=>getComputedStyle(node).outlineColor"));
             await FocusWithKeyboardAsync(page, page.Locator(North));
@@ -50,7 +53,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             var selectionStroke = await selectedCue.EvaluateAsync<string>("node=>getComputedStyle(node).stroke");
             var highlightStroke = await highlightedCue.EvaluateAsync<string>("node=>getComputedStyle(node).stroke");
             Assert.Equal("rgb(56, 189, 248)", selectionStroke);
-            Assert.Equal(expected, highlightStroke);
+            Assert.Equal(expectedHighlight, highlightStroke);
             Assert.Equal("none", await selectedCue.EvaluateAsync<string>("node=>getComputedStyle(node).fill"));
             Assert.Equal("none", await highlightedCue.EvaluateAsync<string>("node=>getComputedStyle(node).fill"));
             await CaptureAsync(page, "host-accent-" + hostAccent + "-" + state, new {
