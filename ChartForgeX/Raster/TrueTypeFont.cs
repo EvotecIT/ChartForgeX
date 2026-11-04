@@ -57,8 +57,9 @@ internal sealed partial class TrueTypeFont {
     private readonly TrueTypeFont _root;
     private readonly object _viewLock = new();
     private Dictionary<string, TrueTypeFont>? _views;
-    private double? _xHeight;
-    private double? _capHeight;
+    // Concurrent renders share faces. A boxed value is published whole; a nullable double can be read half written.
+    private System.Runtime.CompilerServices.StrongBox<double>? _xHeight;
+    private System.Runtime.CompilerServices.StrongBox<double>? _capHeight;
 
     private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null, string? languageTag = null, FontVariationSettings? variations = null, int colorPaletteIndex = 0, FontPaletteContext? paletteContext = null, string? selectedFamily = null, bool tabularNumerals = false) {
         _data = data;
@@ -251,10 +252,10 @@ internal sealed partial class TrueTypeFont {
     internal OpenTypeLayout Layout => _layout;
 
     /// <summary>The x-height in font units: the OS/2 value, or the top of <c>x</c>.</summary>
-    internal double XHeight => _xHeight ??= Os2Height(86) is double height ? height + MetricVariation("xhgt") : GlyphTop('x') ?? _unitsPerEm * 0.5;
+    internal double XHeight => (_xHeight ??= new(Os2Height(86) is double height ? height + MetricVariation("xhgt") : GlyphTop('x') ?? _unitsPerEm * 0.5)).Value;
 
     /// <summary>The cap height in font units: the OS/2 value, or the top of <c>H</c>.</summary>
-    internal double CapHeight => _capHeight ??= Os2Height(88) is double height ? height + MetricVariation("cpht") : GlyphTop('H') ?? _unitsPerEm * 0.7;
+    internal double CapHeight => (_capHeight ??= new(Os2Height(88) is double height ? height + MetricVariation("cpht") : GlyphTop('H') ?? _unitsPerEm * 0.7)).Value;
 
     private double? Os2Height(int offset) {
         if (_os2 < 0 || ReadUInt16(_data, _os2) < 2 || !InBounds(_os2 + offset, 2)) return null;
