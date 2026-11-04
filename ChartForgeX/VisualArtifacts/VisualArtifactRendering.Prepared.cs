@@ -102,12 +102,12 @@ public static partial class VisualArtifactRendering {
         return prepared;
     }
 
-    private static string RenderPreparedSvg(VisualArtifact artifact, PreparedVisual prepared, string? idScope = null) {
+    private static string RenderPreparedSvg(VisualArtifact artifact, PreparedVisual prepared, string? idScope = null, bool productFonts = false) {
         var accessibility = artifact.Accessibility.Clone();
         accessibility.Name ??= artifact.Title.Length == 0 ? artifact.Id : artifact.Title;
         return PreparedModel(artifact, prepared).ToSvg(accessibility,
             idScope == null ? SvgRenderedIdentity.CreateProvisionalId("artifact", artifact.Id) : VisualSvgOptions.NamespaceFromExternalId(idScope), SvgCharacterCeiling(artifact),
-            productFonts: false);
+            productFonts: productFonts);
     }
 
     private static string RenderPreparedHtml(VisualArtifact artifact, PreparedVisual prepared, VisualArtifactRenderOptions? options) {
