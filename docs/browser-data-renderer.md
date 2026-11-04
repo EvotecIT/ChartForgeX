@@ -9,19 +9,31 @@ var asset = HtmlDataChartAssets.ScriptFile;
 File.WriteAllText(asset.FileName, asset.Content);
 ```
 
+```html
+<button id="update-chart">Show next period</button>
+<button id="close-chart">Close chart</button>
+<div id="chart"></div>
+```
+
 ```javascript
 const lifetime = new AbortController();
-const chart = ChartForgeXRenderer.create(document.getElementById("chart"), {
+const data = {
   type: "column",
   label: "Orders by region",
   categories: [{ id: "north", label: "North" }, { id: "south", label: "South" }],
   series: [{ id: "orders", name: "Orders", values: [12, 8] }]
-}, {
+};
+const chart = ChartForgeXRenderer.create(document.getElementById("chart"), data, {
   signal: lifetime.signal,
   onSelect(mark) { console.log(mark.categoryId, mark.seriesId, mark.value); }
 });
-chart.update(nextDescriptor);
-lifetime.abort(); // Equivalent to chart.destroy().
+document.getElementById("update-chart").addEventListener("click", () => {
+  data.series[0].values = [13, 9];
+  chart.update(data);
+}, { signal: lifetime.signal });
+document.getElementById("close-chart").addEventListener("click", () => {
+  lifetime.abort(); // Equivalent to chart.destroy().
+}, { once: true });
 ```
 
 ## Data contract

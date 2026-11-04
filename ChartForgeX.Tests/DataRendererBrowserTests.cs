@@ -49,7 +49,7 @@ public sealed class DataRendererBrowserTests {
     public async Task KeyboardSelectionAndFocusSurviveDataUpdatesAndResponsiveLayout() {
         await using var session = await OpenAsync(Page);
         var page = session.Page;
-        await page.EvaluateAsync("()=>{window.data=" + Data + ";window.selected=[];window.chart=ChartForgeXRenderer.create("
+        await page.EvaluateAsync("()=>{document.documentElement.lang='en_US';window.data=" + Data + ";window.selected=[];window.chart=ChartForgeXRenderer.create("
             + "document.getElementById('chart'),data,{onSelect:value=>selected.push(value)});}");
         var target = page.Locator("[data-cfx-series='open'][data-cfx-category='south']");
         await target.FocusAsync();
@@ -61,6 +61,10 @@ public sealed class DataRendererBrowserTests {
         await target.PressAsync("Enter");
         Assert.Equal(7, await page.EvaluateAsync<int>("()=>selected[1].value"));
         Assert.Equal("true", await target.GetAttributeAsync("aria-pressed"));
+        Assert.True(await target.EvaluateAsync<bool>("node=>{const event=new KeyboardEvent('keydown',{key:'End',ctrlKey:true,bubbles:true,cancelable:true});"
+            + "node.dispatchEvent(event);return !event.defaultPrevented&&document.activeElement===node;}"));
+        await target.PressAsync("Control+Enter");
+        Assert.Equal(7, await page.EvaluateAsync<int>("()=>selected[2].value"));
         await target.PressAsync("End");
         Assert.Equal("west", await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxCategory"));
         AssertNoConsoleErrors(session);

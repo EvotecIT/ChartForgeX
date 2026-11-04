@@ -23,8 +23,9 @@ internal static class BrowserDataExamples {
             const chart=ChartForgeXRenderer.create(document.getElementById('chart'),data,{onSelect:mark=>{
               document.getElementById('selected').textContent=mark.categoryId+' · '+mark.seriesId+' · '+mark.value;
             }});
-            document.getElementById('kind').onchange=event=>{data.type=event.target.value;chart.update(data);};
-            document.getElementById('update').onclick=()=>{data.series[0].values=data.series[0].values.map(value=>value+1);chart.update(data);};
+            const refresh=()=>{chart.update(data);document.getElementById('selected').textContent='Select a mark to inspect its raw value.';};
+            document.getElementById('kind').onchange=event=>{data.type=event.target.value;refresh();};
+            document.getElementById('update').onclick=()=>{data.series[0].values=data.series[0].values.map(value=>value+1);refresh();};
             </script></body></html>
             """;
         File.WriteAllText(Path.Combine(output, "browser-data-charts.html"), page.Replace("__RENDERER__", script));

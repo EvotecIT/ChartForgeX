@@ -85,7 +85,9 @@
     const plot = { x: inset.left, y: inset.top, width: Math.max(1, width - inset.left - inset.right),
       height: height - inset.top - inset.bottom };
     const [low, high] = domain(data), count = data.categories.length, seriesCount = data.series.length;
-    const number = new Intl.NumberFormat(document.documentElement.lang || undefined, { maximumSignificantDigits: 6 });
+    let number;
+    try { number = new Intl.NumberFormat(document.documentElement.lang || undefined, { maximumSignificantDigits: 6 }); }
+    catch { number = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 6 }); }
     const svg = element(document, "svg", { xmlns: namespace, viewBox: "0 0 " + width + " " + height,
       width: "100%", height, role: "group", "aria-label": data.label, "data-cfx-renderer": data.type });
     svg.style.display = "block"; svg.style.fontFamily = "inherit";
@@ -272,6 +274,7 @@
       const index = marks.findIndex(mark => mark.node === event.target);
       if (index < 0) return;
       if (event.key === "Enter" || event.key === " ") { event.preventDefault(); select(event); return; }
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
       let next = index;
       if (event.key === "Home") next = 0;
       else if (event.key === "End") next = marks.length - 1;
