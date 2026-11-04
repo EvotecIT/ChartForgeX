@@ -7,6 +7,11 @@ internal static class ExampleTypography {
 
     internal static string EmbeddedStyle => "<style data-cfx-product-fonts=\"true\">" + ChartFontAssets.StyleSheet + "</style>";
 
+    /// <summary>The gallery's one shared copy of the product faces, linked from every catalog page.</summary>
+    internal const string StyleSheetFile = "fonts/product-fonts.css";
+
+    internal static string LinkedStyle => "<link rel=\"stylesheet\" href=\"" + StyleSheetFile + "\" data-cfx-product-fonts=\"true\">";
+
     internal static string EmbedInHtml(string html) => html.Contains(ChartFontAssets.StyleSheet, StringComparison.Ordinal)
         ? html : html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
 
@@ -28,6 +33,7 @@ internal static class ExampleTypography {
         Directory.CreateDirectory(destination);
         foreach (var file in new[] { "Carlito-Regular.ttf", "Carlito-Bold.ttf", "OFL.txt" })
             File.Copy(Path.Combine(FontDirectory, file), Path.Combine(destination, file), true);
+        File.WriteAllText(Path.Combine(output, StyleSheetFile), ChartFontAssets.StyleSheet);
     }
 
     private static string FontDirectory => Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");

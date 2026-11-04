@@ -72,7 +72,7 @@ public static partial class V2Examples {
     private static string ExampleKey(ProofArtifact artifact) => artifact.Id.Substring(0, artifact.Id.Length - artifact.Theme.Length - 1);
 
     private static string[] CatalogAssets(IReadOnlyList<ProofArtifact> artifacts) =>
-        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt", "cfx-native-text.js" }
+        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt", ExampleTypography.StyleSheetFile, "cfx-native-text.js" }
             .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".gallery.csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
             .Concat(artifacts.Where(artifact => artifact.HtmlAdapter).Select(artifact => artifact.Id + ".interactive.html"))
             .Concat(EmbeddingAssets)
