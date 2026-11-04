@@ -35,7 +35,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         await using var session = await OpenAsync(html, width + 48, height * 2 + 48);
         await session.Page.EvaluateAsync("async () => { await document.fonts.ready; await document.querySelector('img').decode(); }");
         var defects = await session.Page.EvaluateAsync<string[]>("""
-            () => {
+            minimum => {
                 const svg = document.querySelector('svg'), defects = [];
                 const needle = svg.querySelector('[data-cfx-role="gauge-needle"]');
                 const pivotBottom = needle.getBBox().y + needle.getBBox().height + Number(needle.getAttribute('stroke-width')) / 2;
@@ -52,7 +52,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
                     if (scale.some(label => overlaps(label.getBBox(), box))) defects.push(role + ': overlaps the scale');
                     for (const text of row.querySelectorAll('text')) {
                         const style = getComputedStyle(text);
-                        if (parseFloat(style.fontSize) < 12) defects.push(role + ': unreadable font size');
+                        if (parseFloat(style.fontSize) < minimum) defects.push(role + ': unreadable font size');
                         if (!style.fontFamily.includes('CFX Gauge Carlito')) defects.push(role + ': lost the resolved face');
                     }
                     previous = box;
@@ -60,7 +60,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
                 if (!document.fonts.check('12px "CFX Gauge Carlito"')) defects.push('Fixture font was not loaded');
                 return defects;
             }
-            """);
+            """, VisualTheme.Graphite().Typography.MinimumTextSize);
         Assert.Empty(defects);
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {
