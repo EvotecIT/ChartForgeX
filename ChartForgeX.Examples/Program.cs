@@ -95,6 +95,8 @@ var grouped = Chart.Create()
     .AddHorizontalLine(40, "review threshold", ChartColor.FromRgb(245, 158, 11));
 
 SaveChart(grouped, "security-findings-grouped-light");
+// The dashboard shares one page, so its charts share the dark mode of the first chart.
+foreach (var light in new[] { bars, grouped }) light.WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
 new[] { dnssec, bars, grouped }.SaveInteractiveHtmlDashboard(Path.Combine(output, "executive-interactive-dashboard.html"), options => {
     options.PageTitle = "Executive Interactive Dashboard";
     options.IdScope = "executive-interactive-dashboard";

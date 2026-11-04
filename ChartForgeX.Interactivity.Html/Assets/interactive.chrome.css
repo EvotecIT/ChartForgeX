@@ -428,25 +428,29 @@
 .cfx-frame[data-cfx-heading-crop] > .cfx-stage > svg {
   margin-top: calc(1px - var(--cfx-heading-crop)); clip-path: inset(max(0px, calc(var(--cfx-heading-crop) - 1px)) 0 0 0);
 }
-/* The HTML heading and flowing legend continue the drawing's own card above its clipped plot. */
+/* The frame paints the drawing's own card behind its HTML heading, legend, plot, toolbar and reset control,
+   so no chrome sits on the page; the drawing's card edges above and below the plot are clipped away. */
+.cfx-frame[data-cfx-card-head] { isolation: isolate; }
+.cfx-frame[data-cfx-card-head] > .cfx-reset { margin-block-end: 8px; }
+.cfx-frame[data-cfx-card-head]::before {
+  content: ""; position: absolute; z-index: -1; top: var(--cfx-card-top); bottom: var(--cfx-card-bottom); left: var(--cfx-card-inset);
+  box-sizing: border-box; width: var(--cfx-card-width); border: var(--cfx-card-stroke-width) solid var(--cfx-card-stroke);
+  border-radius: var(--cfx-card-radius); background: var(--cfx-card-fill);
+}
+.cfx-frame[data-cfx-card-head] > .cfx-stage > svg {
+  margin-block: calc(1px - var(--cfx-heading-crop, 1px)) calc(0px - var(--cfx-card-foot));
+  clip-path: inset(max(0px, calc(var(--cfx-heading-crop, 0px) - 1px)) 0 var(--cfx-card-foot) 0);
+}
 .cfx-frame[data-cfx-card-head] > :is(.cfx-responsive-heading, .cfx-responsive-legend) {
-  box-sizing: border-box; width: var(--cfx-card-width); margin-inline-start: var(--cfx-card-inset);
-  border: 0 solid var(--cfx-card-stroke); border-inline-width: var(--cfx-card-stroke-width); background: var(--cfx-card-fill);
+  box-sizing: border-box; width: var(--cfx-card-width); margin-left: var(--cfx-card-inset);
 }
-.cfx-frame[data-cfx-card-head] > .cfx-responsive-heading {
-  border-block-start-width: var(--cfx-card-stroke-width);
-  border-start-start-radius: var(--cfx-card-radius); border-start-end-radius: var(--cfx-card-radius);
-  padding: var(--cfx-card-pad-top) var(--cfx-card-pad-x) 6px;
-}
+.cfx-frame[data-cfx-card-head] > .cfx-responsive-heading { padding: var(--cfx-card-pad-top) var(--cfx-card-pad-x) 6px; }
 .cfx-frame[data-cfx-card-head] > .cfx-responsive-legend {
   margin-block: 0; padding: 0 calc(var(--cfx-card-pad-x) - 6px) 4px; box-shadow: none;
 }
-/* The stage continues the same card: no top corners of its own, the card's radius below. */
-.cfx-frame[data-cfx-card-head] > .cfx-stage {
-  border-radius: 0 0 var(--cfx-card-radius) var(--cfx-card-radius); box-shadow: none;
-}
-.cfx-frame[data-cfx-card-head] > .cfx-responsive-heading:not(:has(+ .cfx-responsive-legend[style*="display: flex"])),
-.cfx-frame[data-cfx-card-head] > .cfx-responsive-legend[style*="display: flex"] { margin-block-end: -1px; }
+.cfx-frame[data-cfx-card-head] > .cfx-stage { border-radius: 0; box-shadow: none; }
+/* Inside the card the toolbar is a plain control row, not a second rounded surface. */
+.cfx-frame[data-cfx-card-head] > .cfx-toolbar { border-color: transparent; background: var(--cfx-card-fill); box-shadow: none; }
 .cfx-responsive-heading__subtitle { display: block; margin-block-start: 2px; color: var(--cfx-tooltip-muted); font: 400 12px/18px var(--cfx-tooltip-font); }
 
 /* Shared chrome layout, responsive controls and motion. */
