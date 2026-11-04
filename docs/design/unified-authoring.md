@@ -33,6 +33,7 @@ ConsoleMonster's generator already proves the shape I want: methods named after 
 7. **One semantic vocabulary.** `ThemeMode` (Auto, Light, Dark), `Tone`, `Icon` and the colour contract have the same names, members and wire spellings in every engine, generated from one definition into each engine's own namespace. No engine gains a runtime package dependency.
 8. **One generator.** The shared generator lives in PowerForge/PSPublishModule, starts from ConsoleMonster's implementation, and also emits the metadata that PowerShell cmdlets and documentation consume.
 9. **One PowerShell shape.** `New-<Prefix><Noun>` commands, flat parameters for settings, hashtables for nested settings, and `-Content {}` for children in every module.
+10. **One look.** Every chart, diagram, card and image comes from the shared token theme in light or dark. Theme presets that change typography, card geometry or surfaces are removed; only palette variants remain. See [one visual standard](#one-visual-standard).
 
 ## Why the model carries the fluent methods
 
@@ -108,6 +109,25 @@ Formats are one engine-local `OutputFormat` enum per library containing only wha
 
 The generator emits `ThemeMode`, `Tone` and `Icon` into each engine from one definition file in PowerForge, so the four copies cannot drift. Bridges such as `HtmlForgeX.CanopyX` and ImagePlayground convert them by name.
 
+## One visual standard
+
+Today ChartForgeX ships 16 complete theme presets besides Graphite: Report (the classic pre-Graphite look), Executive, Editorial, Dashboard, Product, Minimal, Aurora, Candy, PeopleInfographic, SaasDashboard, RestaurantDashboard, Accessible, Colorblind, Terminal and TransparentOverlay. Each carries its own typography scale, title weight, card radius, shadows and surfaces. In the current gallery about 170 example charts use one of them (118 use Report), and about 144 places set fonts or sizes by hand. ImagePlayground exposes 14 preset names on top. The result is charts that look like they come from different products, and a user can still produce them.
+
+The next major removes that choice:
+
+| Today | Next major |
+| --- | --- |
+| Graphite | `Theme.Default`, built from the shared token export, light and dark |
+| Accessible, Colorblind | Palette variants of `Theme.Default`: `Theme.Default.Palette(Palette.Accessible)`; typography and geometry unchanged |
+| TransparentOverlay | A frame setting, `Surface(SurfaceStyle.None)`, for wallpapers and overlays such as PowerBGInfo |
+| Terminal | Not a chart theme. Terminal output belongs to ConsoleMonster and Stories, which consume the same tokens |
+| Report, Executive, Editorial, Dashboard, Product, Minimal, Aurora, Candy, PeopleInfographic, SaasDashboard, RestaurantDashboard | Removed. Gallery examples use `Theme.Default` |
+| ImagePlayground `ChartTheme` (14 values) | `-Mode Light/Dark/Auto` and `-Palette Default/Accessible/Colorblind` |
+
+Typography, spacing, radius and elevation come only from tokens. A product with its own brand supplies its own token export through `Theme.FromTokens(json)`; it does not pick a built-in look. Per-chart font overrides stay for explicit host needs such as wallpapers with a required face, but examples and recipes do not use them. A repository test fails when an example uses a non-default theme or hand-set typography outside the theme and font-feature demonstrations.
+
+The same rule applies to ConsoleMonster's built-in themes (`Theme.Dark`, `Theme.Light`, `Theme.HighContrast`), CanopyX and CodeGlyphX output. They resolve one token theme in a mode, and high contrast is an accessibility palette rather than a separate look.
+
 CSS custom properties keep the HtmlForgeX `--hfx-*` names. HtmlForgeX owns the token export, so a neutral `--evx-*` prefix would rename every host stylesheet for no visible gain. Engine-specific roles stay `--cfx-*` and `--cx-*` and resolve through `--hfx-*` first.
 
 ## PowerShell
@@ -132,7 +152,7 @@ Rules for every module:
 | Library | Change | Size |
 | --- | --- | --- |
 | ConsoleMonster | Move its generator to PowerForge with explicit `[Fluent]`; `AddX`/`AddXs` become `X`/`Xs`; `Configure(...)` becomes declared delegate verbs; `Export` becomes `Save`; `ThemePreference` becomes `ThemeMode`; adopt `Tone` and `Icon` | Smallest. It already has the model-first shape. It is the pilot. |
-| ChartForgeX | Everything in [next-major-api.md](next-major-api.md), with the generated methods on the models instead of on builders | Largest |
+| ChartForgeX | Everything in [next-major-api.md](next-major-api.md), with the generated methods on the models instead of on builders; remove the theme presets except palette variants | Largest |
 | CanopyX | Add `[Fluent]` to its models and a `Canopy` facade; `CanopyTone` becomes `Tone`, `CanopyTheme` becomes `ThemeMode`, `string` colours become a colour type; `SaveHtmlPage`/`SaveHtmlBundle` become `Save` with options | Small. It is still 0.x. |
 | CodeGlyphX | Builders become models; `With*` become property methods; adopt `ThemeMode` only if it gains themed output | Medium |
 | ImagePlayground | `New-Cfx*` commands; migrate chart, QR and console commands to the new libraries; keep its own image commands | Large |
