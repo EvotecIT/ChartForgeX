@@ -168,6 +168,64 @@ public sealed class StandaloneInteractionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    // Wide, intermediate and narrow readers keep the heading, legend, toolbar and Reset view on the chart's
+    // own card; a page-width reader with a narrow drawing once left the legend and toolbar above it.
+    [BrowserTheory]
+    [InlineData(false, 1024)]
+    [InlineData(true, 1024)]
+    [InlineData(false, 640)]
+    [InlineData(true, 640)]
+    [InlineData(false, 375)]
+    [InlineData(true, 375)]
+    public async Task ReaderChromeSitsInsideTheChartCardAtEveryWidth(bool dark, int width) {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(HtmlInteractionShowcaseExamples.CreatePage(ChartSeriesKind.Bar, dark), width, 900);
+        var page = session.Page;
+        await SettleAsync(page);
+        // Muting a series shows Reset view while the rescaled bars ease beyond the plot.
+        await page.Locator("[data-cfx-role=legend-item]").First.ClickAsync();
+        await SettleAsync(page);
+        var layout = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const frame=document.querySelector('.cfx-frame'),f=frame.getBoundingClientRect(),card=getComputedStyle(frame,'::before');
+              const left=f.left+parseFloat(card.left),top=f.top+parseFloat(card.top),right=left+parseFloat(card.width),bottom=f.bottom-parseFloat(card.bottom);
+              const parts=[...frame.querySelectorAll(':scope > :is(.cfx-responsive-heading,.cfx-responsive-legend,.cfx-toolbar,.cfx-reset)')]
+                .filter(node=>getComputedStyle(node).display!=='none'&&!node.hidden);
+              const toolbar=getComputedStyle(frame.querySelector('.cfx-toolbar'));
+              return {card:frame.dataset.cfxCardHead==='true',parts:parts.map(node=>node.className.split(' ')[0]),
+                outside:parts.filter(node=>{const r=node.getBoundingClientRect();return r.left<left-.5||r.right>right+.5||r.top<top-.5||r.bottom>bottom+.5;}).map(node=>node.className),
+                toolbarShadow:toolbar.boxShadow,toolbarBorder:toolbar.borderTopColor};}
+            """);
+        Assert.True(layout.GetProperty("card").GetBoolean(), "The frame paints the chart card.");
+        Assert.Contains("cfx-reset", layout.GetProperty("parts").EnumerateArray().Select(part => part.GetString()));
+        Assert.Empty(layout.GetProperty("outside").EnumerateArray());
+        // Inside the card the toolbar is a control row, not a second rounded surface.
+        Assert.Equal("none", layout.GetProperty("toolbarShadow").GetString());
+        Assert.Equal("rgba(0, 0, 0, 0)", layout.GetProperty("toolbarBorder").GetString());
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task ReadoutClearsInTheDrawingMarginOutsideItsCard() {
+        if (!Enabled) return;
+        // A host that letterboxes the drawing leaves part of the stage outside the drawing's card.
+        var html = HtmlInteractionShowcaseExamples.CreatePage(ChartSeriesKind.Line)
+            .Replace("</head>", "<style>.cfx-stage svg{height:560px!important}</style></head>", StringComparison.Ordinal);
+        await using var session = await OpenAsync(html, 1024, 900);
+        var page = session.Page;
+        await SettleAsync(page);
+        var point = await CenterAsync(page, "[data-cfx-role=series][data-cfx-series=\"0\"] [data-cfx-point=\"3\"]");
+        await page.Mouse.MoveAsync(point.X, point.Y, new() { Steps = 3 });
+        await page.WaitForFunctionAsync("()=>!document.querySelector('.cfx-tooltip').hidden");
+        var margin = await page.EvaluateAsync<double[]>("""
+            ()=>{const r=document.querySelector('.cfx-stage svg [data-cfx-role=frame-card]').getBoundingClientRect(),x=r.left+r.width/2,y=r.top-12;
+              return [x,y,document.elementFromPoint(x,y).localName==='svg'?1:0];}
+            """);
+        Assert.Equal(1, margin[2]);
+        await page.Mouse.MoveAsync((float)margin[0], (float)margin[1], new() { Steps = 3 });
+        await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-tooltip').hidden&&document.querySelector('.cfx-crosshair').hidden&&!document.querySelector('.cfx-hovered')");
+        AssertNoConsoleErrors(session);
+    }
+
     // Whole-number axes keep 1/2/5 steps; fractional axes may use 2.5. Either way new captions use the
     // native invariant notation rather than the browser's locale.
     [BrowserTheory]

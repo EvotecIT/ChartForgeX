@@ -268,6 +268,11 @@
     }
     if (stage) {
       const updateStageReadout = (event, nativeTarget = event.target) => {
+        // The drawing's margin outside its card is page, not chart: the readout clears there as it does off the stage.
+        const card = (nativeTarget.closest?.('svg') || stage).querySelector('[data-cfx-role="frame-card"]')?.getBoundingClientRect();
+        if (card && (event.clientX < card.left || event.clientX > card.right || event.clientY < card.top || event.clientY > card.bottom)) {
+          hideCrosshair(root, crosshair); clearHover(root, true, true); hideTip(root, tip, false); return;
+        }
         const legend = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-role="legend-item"]');
         if (legend && !legendEntryShown(root, legend)) { clearLegendReadout(root); return; }
         updateNearestPoint(root, crosshair, tip, event, nativeTarget);
