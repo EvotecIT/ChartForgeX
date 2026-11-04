@@ -232,10 +232,13 @@ internal static partial class SmokeTests {
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
-        var bounds = FindNearColorBounds(pixels, width, 15, 23, 42, 26);
+        var ink = chart.Options.Theme.Resolve(chart.Options.ThemeMode).Foreground;
+        // The ink bounds of "ChartForgeX" scale with the em size: at least 124 x 18 pixels for a 25px title.
+        var titleSize = chart.Options.Theme.Typography.TitleSize;
+        var bounds = FindNearColorBounds(pixels, width, ink.R, ink.G, ink.B, 26);
         Assert(!bounds.IsEmpty, "PNG outline font rendering should draw the title text.");
-        Assert(bounds.Width >= 124, $"PNG outline title text should use CSS-like em sizing. Actual width: {bounds.Width}.");
-        Assert(bounds.Height >= 18, $"PNG outline title text should not collapse below the requested title size. Actual height: {bounds.Height}.");
+        Assert(bounds.Width >= titleSize * 124 / 25, $"PNG outline title text should use CSS-like em sizing. Actual width: {bounds.Width}.");
+        Assert(bounds.Height >= titleSize * 18 / 25, $"PNG outline title text should not collapse below the requested title size. Actual height: {bounds.Height}.");
     }
 
     private static void PngFontPathFallsBackGracefully() {

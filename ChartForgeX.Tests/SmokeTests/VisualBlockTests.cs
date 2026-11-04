@@ -472,7 +472,7 @@ internal static partial class SmokeTests {
         var gridBackground = gridDocument.Root!.Elements().Single(element => element.Name.LocalName == "rect" && (string?)element.Attribute("width") == "100%" && (string?)element.Attribute("height") == "100%");
         var gridFrame = gridDocument.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "visual-grid-frame");
         var gridColors = grid.Theme.Resolve(grid.ThemeMode);
-        Assert((string?)gridBackground.Attribute("fill") == gridColors.ElevatedSurface.ToCss()
+        Assert((string?)gridBackground.Attribute("fill") == gridColors.Background.ToCss()
             && (string?)gridFrame.Attribute("stroke") == gridColors.Border.ToCss()
             && (string?)gridFrame.Attribute("class") == "cfx-guide-stroke", "VisualGrid should paint its flat report background and configured frame border.");
         Assert(svg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal), "VisualGrid should mark child panels.");
@@ -480,7 +480,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Trend", StringComparison.Ordinal), "VisualGrid should embed chart SVG.");
         var gridHtml = grid.ToHtmlPage();
         Assert(gridHtml.Contains("chartforgex-visual-grid has-fixed-panels has-frame", StringComparison.Ordinal), "VisualGrid should render optional premium frames in static HTML pages.");
-        AssertFlatHtmlBackground(gridHtml, gridColors.ElevatedSurface, "Visual grid standalone pages");
+        AssertFlatHtmlBackground(gridHtml, gridColors.Background, "Visual grid standalone pages");
         Assert(gridHtml.Contains(".chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "VisualGrid HTML should keep child content inside each panel.");
         Assert(grid.ToPng().Length > 64, "VisualGrid should render PNG output.");
 

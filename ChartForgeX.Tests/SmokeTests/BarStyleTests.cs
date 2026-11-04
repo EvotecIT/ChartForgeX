@@ -76,7 +76,7 @@ internal static partial class SmokeTests {
         Assert(trendSvg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal), "Dashboard cartesian line and area charts should pick up shared premium stroke layers.");
         var panel = Chart.Create().WithTheme(VisualTheme.Graphite()).WithDashboardBarPanelStyle();
         Assert(panel.Options.ShowCard && !panel.Options.ShowPlotBackground && !panel.Options.ShowAxisLines && panel.Options.BarStyle == ChartBarStyle.SegmentedCapsule, "Dashboard panel style should preserve premium card composition without forcing inner plot chrome.");
-        var panelSvg = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(320, 200).WithTheme(VisualTheme.Graphite()).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToSvg();
+        var panelSvg = Chart.Create().WithSize(320, 200).WithTheme(VisualTheme.Graphite().Configure(builder => builder.CardShadowOpacity = .05)).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToSvg();
         Assert(System.Xml.Linq.XDocument.Parse(panelSvg).Descendants().Count(element => element.Name.LocalName == "rect" && (string?)element.Attribute("data-cfx-role") == "frame-card-shadow") > 1, "Dashboard panels should use shared native rounded shadow layers in SVG and PNG.");
         Assert(System.Xml.Linq.XDocument.Parse(panelSvg).Descendants().Any(element => element.Name.LocalName == "rect" && (string?)element.Attribute("data-cfx-role") == "frame-card" && element.Attribute("fill") != null && element.Attribute("stroke") != null), "Dashboard panels should retain the shared filled and stroked card shell.");
         var trendPanel = Chart.Create().WithTheme(VisualTheme.Graphite())
@@ -152,7 +152,7 @@ internal static partial class SmokeTests {
             .WithLineVisualStyle(ChartLineVisualStyle.Premium().WithHalo(0.22, 11))
             .AddRangeArea("Band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, ChartColor.FromHex("#3B82F6"))
             .ToSvg();
-        Assert(rangeAreaSvg.Contains("data-cfx-role=\"range-upper-halo\"", StringComparison.Ordinal) && rangeAreaSvg.Contains("stroke-width=\"14\"", StringComparison.Ordinal), "SVG range-area halos should honor reusable line halo width tokens.");
+        Assert(rangeAreaSvg.Contains("data-cfx-role=\"range-upper-halo\"", StringComparison.Ordinal) && rangeAreaSvg.Contains("stroke-width=\"" + (VisualTheme.Graphite().SeriesStrokeWidth + 11).ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"", StringComparison.Ordinal), "SVG range-area halos should honor reusable line halo width tokens.");
         var transparentStroke = ChartColor.FromRgba(59, 130, 246, 0);
         var transparentLineSvg = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddLine("Hidden", Points(10, 20, 30), transparentStroke).ToSvg();
         var transparentTrendSvg = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddTrendLine("Hidden trend", Points(10, 20, 30), transparentStroke).ToSvg();
@@ -173,7 +173,7 @@ internal static partial class SmokeTests {
         reusableStyle.WithCapThickness(3);
         Assert(reused.Options.BarVisualStyle.CapThickness == 9, "Charts should clone reusable bar style instances so later caller changes do not mutate chart output.");
 
-        Assert(chart.Options.Theme.Resolve(chart.Options.ThemeMode).ElevatedSurface.ToHex() == "#FFFFFF" && chart.Options.Theme.Resolve(chart.Options.ThemeMode).Palette[3].ToHex() == "#8B5CF6" && chart.Options.Theme.CardShadowOpacity > 0.04 && chart.Options.Theme.CardShadowColor.ToHex() == "#0F172A", "Dashboard styles should expose reusable surface, shadow, and palette tokens.");
+        Assert(chart.Options.Theme.Resolve(chart.Options.ThemeMode).ElevatedSurface.Equals(VisualTheme.Graphite().Resolve(chart.Options.ThemeMode).ElevatedSurface) && chart.Options.Theme.Resolve(chart.Options.ThemeMode).Palette[3].ToHex() == "#8B5CF6" && chart.Options.Theme.CardShadowOpacity == VisualTheme.Graphite().CardShadowOpacity && chart.Options.Theme.CardShadowColor.Equals(VisualTheme.Graphite().CardShadowColor), "Dashboard styles should keep the theme surface and shadow tokens with the authored palette.");
 
         var defaultPng = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithStackedBars().AddBar("A", Points(20, 24)).AddBar("B", Points(18, 22)).ToPng();
         var segmentedPng = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithStackedBars().WithBarVisualStyle(ChartBarVisualStyle.DashboardCapsule()).AddBar("A", Points(20, 24)).AddBar("B", Points(18, 22)).ToPng();

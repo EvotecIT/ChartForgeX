@@ -52,7 +52,7 @@ public sealed class GraphiteGalleryTests {
         Directory.CreateDirectory(output);
         try {
             var chart=Chart.Create().WithSize(320,220).WithTitle("Graphite frame").WithPngOutputScale(scale)
-                .WithTheme(VisualTheme.Graphite())
+                .WithTheme(translucent ? TranslucentBorderTheme() : VisualTheme.Graphite())
                 .AddBar("Counts",new[]{new ChartPoint(1,20),new ChartPoint(2,50)});
             if(framed) chart.ConfigureTheme(builder => builder.CardRadius = 8);
             var names=new List<string>{"normal","edge-mark"};
@@ -86,6 +86,11 @@ public sealed class GraphiteGalleryTests {
             Directory.Delete(output,recursive:true);
         }
     }
+    // An opaque mark in the RGB of a translucent border is still an edge mark, so this variant needs a translucent border.
+    private static VisualTheme TranslucentBorderTheme() => VisualTheme.Graphite().Configure(builder => {
+        builder.Light.Border = builder.Light.Border.WithAlpha(92);
+        builder.Dark.Border = builder.Dark.Border.WithAlpha(92);
+    });
     private static RgbaCanvas RenderCanvas(Chart chart) {
         var image = RasterRenderer.RenderImage(chart);
         var canvas = new RgbaCanvas(image.Width, image.Height, 1);

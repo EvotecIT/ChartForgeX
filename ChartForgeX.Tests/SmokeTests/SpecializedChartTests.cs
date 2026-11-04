@@ -375,9 +375,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Semantic heatmaps should expose positive cell status.");
         Assert(svg.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Semantic heatmaps should expose warning cell status.");
         Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Semantic heatmaps should expose negative cell status.");
-        Assert(svg.Contains("fill=\"#10B981\"", StringComparison.Ordinal), "Semantic heatmap high values should use the positive theme color.");
-        Assert(svg.Contains("fill=\"#F59E0B\"", StringComparison.Ordinal), "Semantic heatmap warning values should use the warning theme color.");
-        Assert(svg.Contains("fill=\"#EF4444\"", StringComparison.Ordinal), "Semantic heatmap low values should use the negative theme color.");
+        var heatmapColors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        Assert(svg.Contains("fill=\"" + heatmapColors.Positive.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap high values should use the positive theme color.");
+        Assert(svg.Contains("fill=\"" + heatmapColors.Warning.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap warning values should use the warning theme color.");
+        Assert(svg.Contains("fill=\"" + heatmapColors.Negative.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap low values should use the negative theme color.");
         var primary = FamilyMetadata(svg, "heatmap-cell", ("series", "0"), ("point", "0"), ("value", "100"), ("status", "positive"));
         Assert((string?)primary.Attribute("aria-label") == "Primary, SPF: 100%" && primary.Tooltip() == "Primary, SPF: 100%",
             "Semantic heatmap cells should expose consistent accessible and hover summaries alongside their status metadata.");

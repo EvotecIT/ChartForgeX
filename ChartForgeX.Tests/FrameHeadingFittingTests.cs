@@ -52,8 +52,9 @@ public sealed class FrameHeadingFittingTests {
             .AddBar("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var headings = XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(element => element.Name.LocalName == "text").ToArray();
-        Assert.Equal(theme.Typography.TitleSize, (double)Assert.Single(headings, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
-        Assert.Equal(theme.Typography.SubtitleSize, (double)Assert.Single(headings, element => element.Value == "Company standard").Attribute("font-size")!, 7);
+        var roles = theme.Typography.ForWidth(width);
+        Assert.Equal(roles.TitleSize, (double)Assert.Single(headings, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
+        Assert.Equal(roles.SubtitleSize, (double)Assert.Single(headings, element => element.Value == "Company standard").Attribute("font-size")!, 7);
         await Capture(chart, "dashboard-ordinary-" + width, width, height);
     }
 
@@ -68,8 +69,9 @@ public sealed class FrameHeadingFittingTests {
         var headings = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "frame-heading")
             .SelectMany(element => element.Descendants().Where(child => child.Name.LocalName == "text")).ToArray();
         var subtitle = Assert.Single(headings, element => element.Value == "Short subtitle");
-        Assert.Equal(theme.Typography.SubtitleSize, (double)subtitle.Attribute("font-size")!, 7);
-        Assert.All(headings.Where(element => element != subtitle), element => Assert.Equal(theme.Typography.TitleSize, (double)element.Attribute("font-size")!, 7));
+        var roles = theme.Typography.ForWidth(320);
+        Assert.Equal(roles.SubtitleSize, (double)subtitle.Attribute("font-size")!, 7);
+        Assert.All(headings.Where(element => element != subtitle), element => Assert.Equal(roles.TitleSize, (double)element.Attribute("font-size")!, 7));
         Assert.Contains(headings, element => element != subtitle);
     }
 

@@ -7,11 +7,12 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void LineVisualStyleDefaultsStayCrispAndGlowIsOptIn() {
+        var glowWidth = "stroke-width=\"" + (VisualTheme.Graphite().SeriesStrokeWidth + ChartLineVisualStyle.Luminous().AmbientHaloStrokeExtra).ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
         var premiumSvg = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 260)
             .AddLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
             .ToSvg();
-        Assert(!premiumSvg.Contains("stroke-width=\"13\"", StringComparison.Ordinal), "Default premium line styling should stay crisp instead of adding glow-heavy halo widths.");
+        Assert(!premiumSvg.Contains(glowWidth, StringComparison.Ordinal), "Default premium line styling should stay crisp instead of adding glow-heavy halo widths.");
 
         var plainSvg = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 260)
@@ -25,6 +26,6 @@ internal static partial class SmokeTests {
             .WithLuminousLineStyle()
             .AddLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
             .ToSvg();
-        Assert(luminousSvg.Contains("stroke-width=\"13\"", StringComparison.Ordinal), "Luminous line style should keep glow-heavy line polish as an explicit opt-in.");
+        Assert(luminousSvg.Contains(glowWidth, StringComparison.Ordinal), "Luminous line style should keep glow-heavy line polish as an explicit opt-in.");
     }
 }
