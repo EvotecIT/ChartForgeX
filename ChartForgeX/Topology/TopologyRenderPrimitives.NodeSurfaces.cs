@@ -11,10 +11,7 @@ internal static partial class TopologyRenderPrimitives {
         return EffectiveNodeSurfaceStyle(options) == TopologyNodeSurfaceStyle.AccentBand;
     }
 
-    public static string NodeFill(TopologyNode node, TopologyPaint theme, string accent, TopologyRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) return node.BackgroundColor!.Trim();
-        return EffectiveNodeSurfaceStyle(options) == TopologyNodeSurfaceStyle.Card
-            ? theme.Card
-            : StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.065 : 0.10);
-    }
+    /// <summary>The authored node background, or the theme card; tinted surfaces are resolved from parsed colours by the scene compiler.</summary>
+    public static string NodeFill(TopologyNode node, TopologyPaint theme) =>
+        string.IsNullOrWhiteSpace(node.BackgroundColor) ? theme.Card : node.BackgroundColor!.Trim();
 }

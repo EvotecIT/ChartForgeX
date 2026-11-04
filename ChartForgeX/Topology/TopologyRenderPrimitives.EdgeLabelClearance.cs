@@ -31,13 +31,6 @@ internal static partial class TopologyRenderPrimitives {
         return null;
     }
 
-    public static string EdgeLabelClearanceFill(TopologyGroup? group, TopologyPaint theme, TopologyRenderOptions options) {
-        if (group == null || !options.IncludeGroups) return theme.Background;
-        if (!string.IsNullOrWhiteSpace(group.BackgroundColor)) return group.BackgroundColor!;
-        var accent = string.IsNullOrWhiteSpace(group.Color) ? theme.StatusColor(group.Status) : group.Color!.Trim();
-        return GroupFill(accent, theme, options);
-    }
-
     public static double EdgeLabelClearanceX(TopologyEdgeLabelLayout layout, double centerX) =>
         centerX - layout.Width / 2 + EdgeLabelClearanceHorizontalInset * TopologyPreparedEdgePlan.Units(layout.Edge);
 

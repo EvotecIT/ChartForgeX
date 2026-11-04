@@ -31,7 +31,7 @@ internal sealed partial class VisualTopologyCompiler {
         var accent = Highlight(baseAccent, active);
         var baseFill = string.IsNullOrWhiteSpace(node.BackgroundColor) && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
             ? ChartColorMath.BlendPremultiplied(_colors.Background, baseAccent, IsMonitoringDashboardStyle(_options) ? .065 : .10)
-            : Color(NodeFill(node, Theme(), baseAccent.ToHexRgba(), _options), _colors.Surface);
+            : Color(NodeFill(node, Theme()), _colors.Surface);
         var fill = Highlight(baseFill, active);
         var accentPaint = NodeAccentPaint(node, accent, active);
         var surfacePaint = new VisualScenePaintBinding(NodeFillPaint(node, baseFill, baseAccent, accentRole, active), accentPaint);
