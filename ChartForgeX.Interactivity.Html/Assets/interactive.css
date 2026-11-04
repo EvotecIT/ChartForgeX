@@ -432,7 +432,7 @@ body {
 
 .cfx-tooltip__meta {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: fit-content(50%) minmax(0, 1fr);
   align-items: center;
   gap: 2px 16px;
   margin: 0;
@@ -441,6 +441,8 @@ body {
 
 .cfx-tooltip__meta dt,
 .cfx-tooltip__meta dd {
+  min-width: 0;
+  margin: 0;
   text-align: end;
   font-weight: 600;
   font-variant-numeric: tabular-nums;

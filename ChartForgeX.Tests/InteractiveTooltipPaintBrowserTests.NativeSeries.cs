@@ -154,11 +154,6 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         };
     }
 
-    private static async Task<double[]> NativeSeriesPositionsAsync(IPage page, string role) {
-        var positions = await page.Locator("[data-cfx-role='" + role + "']").First.EvaluateAsync<double[]>("path => { const length=path.getTotalLength(), owner=path.closest('[data-cfx-role=series]'); for (const f of [.13,.23,.37,.61,.77]) { const a=path.getPointAtLength(length*f), b=path.getPointAtLength(length*f+2), p=new DOMPoint(a.x,a.y).matrixTransform(path.getScreenCTM()), q=new DOMPoint(b.x,b.y).matrixTransform(path.getScreenCTM()); const valid=t => { const hit=document.elementFromPoint(t.x,t.y); return !!hit && owner.contains(hit) && hit.closest('[data-cfx-target-kind]')===owner; }; if (valid(p)&&valid(q)) return [p.x,p.y,q.x,q.y]; } throw new Error('No native series path position outside observation hit areas'); }");
-        return positions;
-    }
-
     private static async Task AssertHoverIdentityAsync(IPage page, string kind, string id) =>
         Assert.Equal(new[] { kind, id }, await page.Locator(Root).EvaluateAsync<string[]>("n => (n.dataset.cfxHoverKey || '').split('|').slice(0,2)"));
 }
