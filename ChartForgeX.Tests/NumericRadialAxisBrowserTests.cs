@@ -35,6 +35,11 @@ public sealed class NumericRadialAxisBrowserTests {
             Assert.Equal(10, await session.Page.Locator("[data-cfx-role='radial-value-label-source']").CountAsync());
             Assert.Equal("Resolved (%)", await BrowserProofCaptions.TextAsync(session.Page.Locator("[data-cfx-role='radial-value-axis-title']")));
             if (displayed < 10) Assert.Contains(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Diagnostics, diagnostic => diagnostic.Code == "numeric-radial.label-overflow");
+        } else if (!dual && width == 360) {
+            var native = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
+            Assert.Equal(native.Nodes.OfType<VisualSceneText>().Count(text => text.Role == "radial-category-label"), displayed);
+            Assert.Equal(new[] { "North", "South", "East" }, await session.Page.Locator("[data-cfx-role='radial-category-label-source']")
+                .EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('data-cfx-full-label'))"));
         } else Assert.Equal(dual ? 10 : 3, displayed);
         if (dual) Assert.True(await session.Page.EvaluateAsync<bool>("() => {const boxes=Array.from(document.querySelectorAll('[data-cfx-role=\"radial-value-label\"]')).map(text=>window.cfxCaptionBox(text));return boxes.every((a,i)=>boxes.slice(i+1).every(b=>a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top));}"));
         if (!dual && width == 800) Assert.Equal(new[] { "North", "South", "East" }, await BrowserProofCaptions.TextsAsync(session.Page.Locator("[data-cfx-role='radial-category-label']")));

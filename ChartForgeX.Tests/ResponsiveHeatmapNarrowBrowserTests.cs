@@ -22,13 +22,19 @@ public sealed class ResponsiveHeatmapNarrowBrowserTests {
             return box.x<x-.5||box.x+box.width>x+w+.5;}).map(text=>text.textContent);
           const columns=[...svg.querySelectorAll('[data-cfx-role="heatmap-column-label"]')].filter(group=>!hidden(group)).map(group=>Number(group.dataset.cfxSourceId?.match(/(\d+)$/)?.[1]));
           const steps=[...svg.querySelectorAll('[data-cfx-role="heatmap-scale-step"]')].map(step=>step.getBoundingClientRect().width);
-          return {overlaps,clipped,columns,smallestStep:Math.min(...steps)};
+          const frame=svg.getBoundingClientRect();
+          const gutter=Number(svg.querySelector('[data-cfx-role="matrix-sticky-labels"] > rect')?.getAttribute('width'))||0;
+          const outsideScale=[...svg.querySelectorAll('[data-cfx-role="heatmap-scale-label"] text')].filter(text=>{
+            const box=text.getBoundingClientRect();return box.left<frame.left+gutter-.5||box.right>frame.right+.5;
+          }).map(text=>text.textContent);
+          return {overlaps,clipped,columns,outsideScale,smallestStep:Math.min(...steps)};
         }
         """;
 
     private sealed class Result {
         public string[] Overlaps { get; set; } = Array.Empty<string>();
         public string[] Clipped { get; set; } = Array.Empty<string>();
+        public string[] OutsideScale { get; set; } = Array.Empty<string>();
         public double[] Columns { get; set; } = Array.Empty<double>();
         public double SmallestStep { get; set; }
     }
@@ -46,6 +52,7 @@ public sealed class ResponsiveHeatmapNarrowBrowserTests {
 
         Assert.Empty(result.Overlaps);
         Assert.Empty(result.Clipped);
+        Assert.Empty(result.OutsideScale);
         Assert.True(result.Columns.Length >= 3, "At least three column captions should remain.");
         Assert.Equal(0, result.Columns[0]); Assert.Equal(29, result.Columns[^1]);
         var strides = result.Columns.Zip(result.Columns.Skip(1), (left, right) => right - left).ToArray();

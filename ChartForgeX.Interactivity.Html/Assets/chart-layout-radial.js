@@ -208,7 +208,7 @@
           const x=px+Math.cos(mid)*distance,y=py+Math.sin(mid)*distance,targetX=cx+(x-sourceX)*scale;
           const maximum=Math.min(outer*.9*scale,Math.max(0,Math.min(targetX-left,left+width-targetX)*2));
           caption(label,maximum);label.text.setAttribute('x',x);label.text.setAttribute('y',baseline(label,y));
-          if(label.text.getComputedTextLength()>2*distance*Math.sin(Math.min(Math.PI/2,sweep/2))+.5){hide(label);continue;}
+          if(label.text.getComputedTextLength()>2*distance*Math.sin(Math.min(Math.PI/2,sweep/2))){hide(label);continue;}
           const bounded=frame[8]||frame[7]!=null||outer<frame[3]*frame[5]-.01;
           if(bounded){const b=label.text.getBBox();if([[b.x,b.y],[b.x+b.width,b.y],[b.x,b.y+b.height],[b.x+b.width,b.y+b.height]].some(([x,y])=>{
             const distance=Math.hypot(x-px,y-py),angle=(Math.atan2(y-py,x-px)-start+Math.PI*4)%(Math.PI*2);
