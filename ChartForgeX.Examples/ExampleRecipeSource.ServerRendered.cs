@@ -7,9 +7,8 @@ public static partial class ExampleRecipeSource {
         return Package(nameof(ServerRenderedRecipe), "ServerRenderedStripProgram", new Dictionary<string, string> {
             ["{{MODE}}"] = mode.ToString(), ["{{VARIANT}}"] = System.Text.Json.JsonSerializer.Serialize(variant),
             ["{{WIDTH}}"] = width.ToString(CultureInfo.InvariantCulture), ["{{HEIGHT}}"] = height.ToString(CultureInfo.InvariantCulture),
-            ["{{FONT_SETUP}}"] = galleryTypography
-                ? "FontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT}}"] = galleryTypography ? "CFX Proof Carlito" : "system-ui, sans-serif"
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT}}"] = ChartFontStacks.ProductSans.Replace("\"", "\\\"")
         });
     }
 }

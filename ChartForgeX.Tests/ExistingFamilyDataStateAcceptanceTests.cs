@@ -83,7 +83,7 @@ public sealed class ExistingFamilyDataStateAcceptanceTests {
         Assert.NotEmpty(captions);
         Assert.All(captions, caption => {
             Assert.DoesNotContain("…", string.Join(" ", caption.Text.Lines.Select(line => line.Text)), StringComparison.Ordinal);
-            Assert.Equal(12, caption.Text.Size);
+            Assert.Equal(prepared.Size.Width < 480 ? 11 : 12, caption.Text.Size);
         });
     }
 }

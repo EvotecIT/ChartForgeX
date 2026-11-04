@@ -29,8 +29,10 @@ internal static class TypographyFontResolver {
     internal static ResolvedTypeface WithLanguage(ResolvedTypeface face, string? tag) =>
         tag == null ? face : new ResolvedTypeface(face.Font?.WithLanguage(tag == "normal" ? null : tag), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
     internal static ResolvedTypeface WithVariations(ResolvedTypeface face, FontVariationSettings? settings) {
-        if (settings == null || face.Font == null) return face;
-        var font = face.Font.WithVariations(settings);
+        if (settings == null || settings.Count == 0 || face.Font == null) return face;
+        var axes = face.Font.Variations;
+        foreach (var axis in settings) axes = axes.WithAxis(axis.Key, axis.Value);
+        var font = face.Font.WithVariations(axes);
         return new ResolvedTypeface(font, face.SynthesizeBold && !font.HasSelectedAxis("wght"), face.SynthesizeItalic && !font.HasSelectedAxis("ital") && !font.HasSelectedAxis("slnt"), face.Path);
     }
     internal static ResolvedTypeface WithColorPalette(ResolvedTypeface face, int? index) =>
@@ -47,7 +49,7 @@ internal static class TypographyFontResolver {
 
     /// <summary>
     /// Resolves the face for text drawn from a <see cref="FontSpec"/>: an explicit file first, then
-    /// the first installed family of the stack at the closest weight and slant, then the generic
+    /// the first available registered, bundled or installed family at the closest weight and slant, then the generic
     /// fallback for the stack (with its bold or italic sibling when one is installed).
     /// </summary>
     internal static ResolvedTypeface ResolveFace(FontSpec font) {
@@ -84,10 +86,14 @@ internal static class TypographyFontResolver {
         return resolved;
     }
 
-    private static ResolvedTypeface WithRequestedFallbackStyle(ResolvedTypeface resolved, int weight, bool italic) =>
-        resolved.Font == null ? resolved : new ResolvedTypeface(
-            resolved.Font.WithFallbackFamilies(resolved.Font.FallbackFamilies, weight, italic),
-            resolved.SynthesizeBold, resolved.SynthesizeItalic, resolved.Path);
+    internal static TrueTypeFont WithRequestedWeight(TrueTypeFont font, int weight) => font.HasAxis("wght")
+        ? font.WithVariations(font.Variations.WithAxis("wght", weight)) : font;
+
+    private static ResolvedTypeface WithRequestedFallbackStyle(ResolvedTypeface resolved, int weight, bool italic) {
+        if (resolved.Font == null) return resolved;
+        var font = WithRequestedWeight(resolved.Font.WithFallbackFamilies(resolved.Font.FallbackFamilies, weight, italic), weight).WithTabularNumerals();
+        return new ResolvedTypeface(font, resolved.SynthesizeBold && !font.HasSelectedAxis("wght"), resolved.SynthesizeItalic, resolved.Path);
+    }
 
     /// <summary>
     /// Reads a CSS <c>font-weight</c> value: a number from 1 through 1000, <c>normal</c>, <c>bold</c>,
@@ -125,7 +131,7 @@ internal static class TypographyFontResolver {
             }
 
             // Registered faces take precedence over installed faces of the same family.
-            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved, name)) {
+            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? ChartFontAssets.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved, name)) {
                 return WithStackFallback(resolved, parts, index + 1, weight, italic);
             }
         }
@@ -156,7 +162,7 @@ internal static class TypographyFontResolver {
         for (var index = start; index < parts.Length; index++) {
             var name = FamilyName(parts[index]);
             if (name.Length == 0 || IsPlatformAlias(name) || IsGenericFamily(name)) continue;
-            var face = FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic);
+            var face = FontRegistry.Find(name, weight, italic) ?? ChartFontAssets.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic);
             if (face != null && (face.MemoryFont != null
                 ? !ReferenceEquals(face.MemoryFont.Root, resolved.Font?.Root)
                 : !string.Equals(face.Path, resolved.Path, StringComparison.OrdinalIgnoreCase) || face.CollectionIndex != resolved.Font?.CollectionIndex)

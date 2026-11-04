@@ -29,7 +29,7 @@ internal static partial class SmokeTests {
             .AddNode("wrapped", "Authentication Relationship Service", 84, 96, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 180, height: 64, symbol: "S");
         var wrappedSvg = wrapped.ToSvg(new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, MaxNodeLabelLines = 2 });
         var wrappedLabels = TopologyRoleTexts(wrappedSvg, "topology-node-label");
-        Assert(wrappedLabels.Length == 2 && wrappedLabels.All(label => (double?)label.Attribute("font-size") == ChartForgeX.Themes.VisualTheme.Graphite().Typography.DataLabelSize),
+        Assert(wrappedLabels.Length == 2 && wrappedLabels.All(label => (double?)label.Attribute("font-size") == 11),
             "Wrapped node labels should use the common typography size and fit across two measured lines.");
     }
 

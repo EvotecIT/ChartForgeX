@@ -24,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
         if (chart.SecondaryXAxisTitle.Length > 0) {
             var categoryTitle = chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0
                 ? builder.MeasureText(chart.YAxisTitle, chart.Options.AxisTitleStyle.Resolve(new TextStyle {
-                    Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing : 0;
+                    Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground })).Height + spacing : 0;
             DrawAxisTitle(chart, context, builder, ChartTimeScale.DecorateTitle(axis, chart.SecondaryXAxisTitle),
                 new ChartRect(plot.Left, viewport.Top + categoryTitle, plot.Width,
                     Math.Max(0, bounds.Top - spacing - viewport.Top - categoryTitle)), colors, TextAlignment.Center, "axis-secondary-x-title");

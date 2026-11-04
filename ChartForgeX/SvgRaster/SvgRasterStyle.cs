@@ -26,6 +26,7 @@ internal sealed class SvgRasterStyle {
         FontFamily = null,
         FontWeight = 400,
         FontStyle = "normal",
+        TabularNumerals = false,
         TextDecoration = "none",
         TextDecorationStyle = "solid",
         UnderlineDecorationStyle = "solid",
@@ -74,6 +75,8 @@ internal sealed class SvgRasterStyle {
     /// <summary>The computed CSS weight from 1 through 1000; <c>bolder</c> and <c>lighter</c> are resolved against the parent.</summary>
     public int FontWeight { get; set; } = 400;
     public string FontStyle { get; set; } = "normal";
+    /// <summary>Inherited SVG numeral spacing; raw SVG keeps the face's normal spacing unless explicitly enabled.</summary>
+    public bool TabularNumerals { get; set; }
     public string TextDecoration { get; set; } = "none";
     public string TextDecorationStyle { get; set; } = "solid";
     public string UnderlineDecorationStyle { get; set; } = "solid";
@@ -122,6 +125,7 @@ internal sealed class SvgRasterStyle {
             PaletteContext = PaletteContext,
             FontWeight = FontWeight,
             FontStyle = FontStyle,
+            TabularNumerals = TabularNumerals,
             TextDecoration = TextDecoration,
             TextDecorationStyle = TextDecorationStyle,
             UnderlineDecorationStyle = UnderlineDecorationStyle,
@@ -162,7 +166,7 @@ internal sealed class SvgRasterStyle {
         var ordered = SvgStyleDeclarationList.InCascadeOrder(declarations);
         foreach (var declaration in ordered) {
             if (SvgRasterCssVariables.IsCustomProperty(declaration.Name) || declaration.Name == "letter-spacing") continue;
-            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight, parent.Color);
+            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight, parent.Color, parent.TabularNumerals);
         }
         // Computed lengths use the final same-element font size, independent of declaration order.
         foreach (var declaration in ordered) if (declaration.Name == "letter-spacing") {
@@ -219,7 +223,7 @@ internal sealed class SvgRasterStyle {
     private static readonly string[] PresentationNames = {
         "color", "fill", "fill-rule", "clip-rule", "clip-path", "filter", "stroke", "stroke-width", "paint-order", "stroke-linecap",
         "stroke-linejoin", "stroke-miterlimit", "stroke-dasharray", "stroke-dashoffset", "opacity", "fill-opacity", "stroke-opacity",
-        "font-size", "letter-spacing", "font-family", "font-language-override", "font-variation-settings", "font-palette", "font-weight", "font-style",
+        "font-size", "letter-spacing", "font-family", "font-language-override", "font-variation-settings", "font-palette", "font-weight", "font-style", "font-variant-numeric",
         "text-decoration", "text-decoration-style", "baseline-shift", "text-transform", "text-anchor", "dominant-baseline",
         "alignment-baseline", "xml:space", "white-space", "display", "visibility", "mask-type", "overflow", "color-interpolation-filters", "color-interpolation"
     };
@@ -294,6 +298,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "font-palette");
         AddAttribute(declarations, element, "font-weight");
         AddAttribute(declarations, element, "font-style");
+        AddAttribute(declarations, element, "font-variant-numeric");
         AddAttribute(declarations, element, "text-decoration");
         AddAttribute(declarations, element, "text-decoration-style");
         AddAttribute(declarations, element, "baseline-shift");
@@ -335,7 +340,7 @@ internal sealed class SvgRasterStyle {
         if (compute) SvgRasterCssVariables.Compute(properties);
     }
 
-    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight, ChartColor inheritedColor) {
+    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight, ChartColor inheritedColor, bool inheritedTabularNumerals) {
         if (string.IsNullOrWhiteSpace(value)) return;
         switch (name) {
             case "color":
@@ -417,6 +422,12 @@ internal sealed class SvgRasterStyle {
                 break;
             case "font-style":
                 style.FontStyle = value.Trim();
+                break;
+            case "font-variant-numeric":
+                var numeric = value.Trim().ToLowerInvariant();
+                if (numeric == "tabular-nums") style.TabularNumerals = true;
+                else if (numeric == "normal" || numeric == "proportional-nums" || numeric == "initial") style.TabularNumerals = false;
+                else if (numeric == "inherit" || numeric == "unset") style.TabularNumerals = inheritedTabularNumerals;
                 break;
             case "font-language-override":
                 if (OpenTypeLanguage.TryCss(value, out var languageTag)) style.OpenTypeLanguageTag = languageTag;

@@ -37,8 +37,8 @@ internal readonly struct ChartColorBlend {
     }
 
     /// <summary>Retains explicit source identities while sharing the native blend and contrast calculation.</summary>
-    internal ChartColorBlend(ChartColor from, SvgPaint fromPaint, ChartColor to, SvgPaint toPaint, double amount)
-        : this(from, null, to, null, amount) => _sourcePaint = SvgPaint.Mix(Color, fromPaint, toPaint, amount);
+    internal ChartColorBlend(ChartColor from, SvgPaint fromPaint, ChartColor to, SvgPaint toPaint, double amount, ChartColor? result = null)
+        : this(from, null, to, null, amount, result) => _sourcePaint = SvgPaint.Mix(Color, fromPaint, toPaint, amount);
 
     public ChartColor From { get; }
 

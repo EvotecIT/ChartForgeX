@@ -11,12 +11,12 @@ namespace ChartForgeX.Rendering;
 /// <summary>Native state marks and measured text shared by matrix and lane producers.</summary>
 internal static class VisualStateSceneTools {
     internal static TextStyle TickStyle(Chart chart, VisualRenderContext context) => chart.Options.TickLabelStyle.Resolve(new TextStyle {
-        Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground
+        Font = context.FontWithWeight(context.Theme.Typography.TickWeight), FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground
     });
 
     internal static TextStyle DataStyle(Chart chart, VisualRenderContext context, ChartSeries series, int index, ChartColor color) {
         var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = color
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = color
         }));
         return index >= 0 && index < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[index] != null
             ? series.PointDataLabelStyles[index]!.Resolve(style) : style;

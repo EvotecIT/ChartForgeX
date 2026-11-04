@@ -35,13 +35,13 @@ public sealed class AxisReadabilityTests {
     }
 
     [Fact]
-    public void ExplicitlyAuthoredSmallAxisTypeRemainsAuthoritative() {
+    public void ExplicitlyAuthoredSubminimumAxisTypeRetainsSourceWithoutTinyPaint() {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Scatter, "color-scale", VisualThemeMode.Light);
         chart.Options.TickLabelStyle.FontSize = 6;
         var prepared = chart.Prepare(Context(800, VisualThemeMode.Light));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "axis-y-label").ToArray();
-        Assert.NotEmpty(labels);
-        Assert.All(labels, label => Assert.Equal(6, label.Text.Size));
+        Assert.Empty(labels);
+        Assert.Contains(prepared.Regions, region => region.Role == "axis-y-label" && !string.IsNullOrEmpty(region.Label));
         Assert.Equal(6, chart.Options.TickLabelStyle.FontSize);
     }
 

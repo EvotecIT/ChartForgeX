@@ -18,14 +18,14 @@ public static partial class VisualArtifactRendering {
         var svgOverflow = clipSvgViewport ? "hidden" : "visible";
         var body = plainScene
             ? "body{margin:0;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}"
-            : "html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}";
+            : "html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:var(--hfx-font-sans," + ChartForgeX.Themes.ChartFontStacks.ProductSans + ");-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}";
         var host = preserve
             ? ".chartforgex-visual-artifact{max-width:100%;min-width:0;height:auto;overflow-x:auto}.chartforgex-visual-artifact:focus-visible{outline:2px solid currentColor;outline-offset:-2px}"
             : ".chartforgex-visual-artifact{max-width:100%;height:auto}";
         var attributes = preserve
             ? " data-cfx-html-sizing=\"preserve-size\" tabindex=\"0\" role=\"region\" aria-label=\"" + EscapeHtml(safeTitle) + "\""
             : string.Empty;
-        return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>" + body + host +
+        return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>" + (plainScene ? string.Empty : ChartForgeX.Typography.ChartFontAssets.StyleSheet) + body + host +
             ".chartforgex-visual-artifact>svg{display:block;max-width:" + (preserve ? "none!important" : "100%") + ";height:auto;overflow:" + svgOverflow + "}" +
             "@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none" + (preserve ? ";overflow:visible" : string.Empty) + "}.chartforgex-visual-artifact>svg{max-width:100%" + (preserve ? "!important" : string.Empty) + "}}</style></head><body><div class=\"chartforgex-visual-artifact\"" + attributes + ">" + svg + "</div></body></html>";
     }

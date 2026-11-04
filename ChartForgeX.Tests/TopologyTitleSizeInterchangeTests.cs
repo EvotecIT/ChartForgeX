@@ -17,7 +17,7 @@ public sealed class TopologyTitleSizeInterchangeTests {
         Assert.Equal(1, baseline.ToInterchangeEnvelope().Version); Assert.DoesNotContain("\"titleSize\"", json);
         chart.Theme = VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 29));
         Assert.Equal(2, chart.Prepare().ToInterchangeEnvelope().Version);
-        chart.Theme = VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: VisualTheme.Graphite().Typography.TitleSize));
+        chart.Theme = VisualTheme.Graphite();
         Assert.Equal(json, chart.Prepare().ToInterchangeEnvelope().ToJson()); Assert.Equal(svg, chart.ToSvg()); Assert.Equal(png, chart.ToPng());
     }
     [Fact]

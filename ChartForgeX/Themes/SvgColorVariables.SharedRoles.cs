@@ -20,6 +20,7 @@ public sealed partial class SvgColorVariables {
     /// <exception cref="ArgumentException">The path is empty or holds characters other than ASCII letters, digits and dots.</exception>
     public static string SharedRoleName(string tokenPath) {
         if (string.IsNullOrEmpty(tokenPath)) throw new ArgumentException("A token path is required.", nameof(tokenPath));
+        if (tokenPath.StartsWith("series.", StringComparison.Ordinal)) tokenPath = "chart." + tokenPath;
         var ramp = tokenPath.StartsWith("ramps.", StringComparison.Ordinal);
         var rest = ramp ? tokenPath.Substring("ramps.".Length) : tokenPath;
         var name = new StringBuilder(ramp ? "--hfx-ramp-" : "--hfx-color-", rest.Length + 16);

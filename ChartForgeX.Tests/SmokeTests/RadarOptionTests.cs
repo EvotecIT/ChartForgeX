@@ -76,7 +76,8 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
 
         Assert(svg.Contains("data-cfx-role=\"radar-area\"", System.StringComparison.Ordinal), "Radar charts with negative explicit maximums should still render polygons.");
-        Assert(!svg.Contains("NaN", System.StringComparison.Ordinal) && !svg.Contains("Infinity", System.StringComparison.Ordinal), "Radar charts with negative explicit maximums should avoid invalid SVG coordinates.");
+        var numericMarkup = NumericMarkup(svg);
+        Assert(!numericMarkup.Contains("NaN", System.StringComparison.Ordinal) && !numericMarkup.Contains("Infinity", System.StringComparison.Ordinal), "Radar charts with negative explicit maximums should avoid invalid SVG coordinates.");
         Assert(chart.ToPng().Length > 64, "Radar charts with negative explicit maximums should render valid PNG output.");
     }
 

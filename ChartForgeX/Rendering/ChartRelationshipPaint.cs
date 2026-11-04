@@ -35,7 +35,7 @@ internal static partial class ChartRelationshipPaint {
     internal static TextStyle LabelStyle(Chart chart, VisualRenderContext context, int node, ChartColor color) {
         var series = chart.Series[0];
         var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = color
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = color
         }));
         return node >= 0 && node < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[node] != null
             ? series.PointDataLabelStyles[node]!.Resolve(style) : style;

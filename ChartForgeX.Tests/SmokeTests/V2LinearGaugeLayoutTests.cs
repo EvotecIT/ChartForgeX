@@ -62,7 +62,8 @@ public sealed class V2LinearGaugeLayoutTests {
             new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "A controlled face distinguishes a missing summary row from an entirely insufficient viewport.");
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, height), 0), font: FontSpec.FromFile(font));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, height), 0),
+            theme: VisualTheme.Graphite().WithTypography(new VisualTypography()), font: FontSpec.FromFile(font));
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         VisualGaugeCompiler.Build(chart, context, builder, new ChartRect(0, 0, 180, height));
         var scene = builder.Build();
@@ -93,10 +94,10 @@ public sealed class V2LinearGaugeLayoutTests {
         var chart = Chart.Create().WithSize(596, 230).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
             new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
         chart.Series[0].WithPointLabel(0, "Observed 87");
-        chart.Series[0].DataLabelStyle.FontSize = 9;
+        chart.Series[0].DataLabelStyle.FontSize = 10;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "gauge-label");
-        Assert.Equal(9, value.Text.Size);
+        Assert.Equal(10, value.Text.Size);
         Assert.Equal("Observed 87", Assert.Single(value.Text.Lines).Text);
         Assert.Contains(prepared.Regions, region => region.Role == "gauge-label" && region.Label == "Observed 87");
         var source = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "gauge");

@@ -9,7 +9,7 @@ using System.Text;
 /// <summary>Reproducible examples of the approved look in both output formats and themes.</summary>
 internal static class GraphiteExamples {
     internal static void Write(string output, ChartPngOutputScale scale) {
-        var gallery = new StringBuilder("<!doctype html><html><meta charset='utf-8'><title>Graphite gallery</title><style>body{margin:24px;background:#f2f3f4;font:14px Calibri,system-ui}section{margin-bottom:24px}h2{font-size:17px} .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}img{width:100%;height:auto} .dark{background:#0c0d10;color:#f2f3f5;padding:16px}</style><h1>ChartForgeX Graphite</h1>");
+        var gallery = new StringBuilder("<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Graphite gallery</title><style>body{margin:24px;background:#f2f3f4;font-size:14px}section{margin-bottom:24px}h2{font-size:17px} .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}img{width:100%;height:auto} .dark{background:#0c0d10;color:#f2f3f5;padding:16px}</style></head><body><h1>ChartForgeX Graphite</h1>");
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             gallery.Append("<section class='").Append(suffix).Append("'><h2>").Append(suffix).Append("</h2>");
@@ -60,8 +60,8 @@ internal static class GraphiteExamples {
             gallery.Append("<h2>Dashboard and KPI</h2><div class='pair'><img alt='SVG dashboard' src='").Append(dashboardName).Append(".svg'><img alt='PNG dashboard' src='").Append(dashboardName).Append(".png'></div>");
             gallery.Append("</section>");
         }
-        gallery.Append("</html>");
-        File.WriteAllText(Path.Combine(output,"graphite-gallery.html"),gallery.ToString());
+        gallery.Append("</body></html>");
+        File.WriteAllText(Path.Combine(output,"graphite-gallery.html"),ExampleTypography.EmbedInHost(gallery.ToString()));
         Console.WriteLine("Graphite gallery: " + output);
     }
 

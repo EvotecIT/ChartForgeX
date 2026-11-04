@@ -22,6 +22,7 @@ public sealed partial class PreparedVisual {
     /// <summary>Emits once and retains the actual resolved native namespace and requested interactive export mode.</summary>
     internal VisualSvgEmission ExportSvgEmission(VisualSvgOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
+        options = options.WithoutProductFonts();
         var svg = VisualSceneSvgRenderer.RenderForHtml(_scene, _accessibility.Name, _accessibility.Description,
             _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options, _capturePngText, out var prefix, out var fonts);
         return new VisualSvgEmission(svg, prefix, _capturePngText, options, fonts);

@@ -8,6 +8,7 @@ using ChartForgeX.Raster;
 using ChartForgeX.Svg;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Stories;
 
@@ -131,7 +132,8 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
                 } else if (styleText != null &&
                            reader.NodeType == XmlNodeType.EndElement &&
                            string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
-                    if (ContainsActiveCss(styleText.ToString())) {
+                    var css = styleText.ToString();
+                    if (!ChartFontAssets.IsProductStyleSheet(css) && ContainsActiveCss(css)) {
                         throw new ArgumentException("The vector representation must not contain active or external CSS.", nameof(svg));
                     }
                     styleText = null;

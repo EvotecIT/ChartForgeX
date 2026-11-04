@@ -79,7 +79,7 @@ Charts, chart grids, topology, sequence diagrams, visual blocks, canvases and st
 var theme = VisualTheme.Graphite().Configure(builder => {
     builder.Light.Accent = ChartColor.FromHex("#2463eb");
     builder.Dark.Accent = ChartColor.FromHex("#78aaff");
-    builder.Typography = builder.Typography.WithFamily("Calibri, Carlito, sans-serif");
+    builder.Typography = builder.Typography.WithFamily(ChartFontStacks.ProductSans);
     builder.CardRadius = 8;
 });
 chart.WithTheme(theme, VisualThemeMode.Dark);
@@ -402,7 +402,7 @@ Set `legendTitle` in the `VisualFrame` constructor to give categorical legend en
 
 `VisualFrame.ShowCard` and `ShowSurface` independently enable the outer elevated card and content surface. Configure `VisualTheme.CardRadius` through the `cardRadius` constructor argument without changing `BarRadius`. The `cardShadowOpacity` argument accepts 0–1; `cardShadowColor` retains authored alpha, which multiplies that opacity. Shadows use bounded native layers inside available outer padding. Zero opacity disables the shadow, and insufficient padding produces a diagnostic instead of expanding the viewport or shifting the content.
 
-`VisualTheme.Graphite()` reads the checked-in generated HtmlForgeX chart palette. `VisualTheme.FromPaletteJson` accepts that generated chart-token shape, not the full HtmlForgeX owner schema. HtmlForgeX governs color values; the chart look specification governs layout and typography defaults. Typography, spacing and geometry settings absent from the color export have explicit ChartForgeX defaults. Register or supply suitable fonts when portable appearance matters; equal geometry does not guarantee identical browser/native glyph painting.
+`VisualTheme.Graphite()` reads the checked-in generated HtmlForgeX visual token contract. `VisualTheme.FromPaletteJson` accepts that generated chart-token shape, rather than the full HtmlForgeX token schema. The contract carries the shared palettes, ramps, typography, radii and interactive chrome. Product typography uses bundled Archivo and JetBrains Mono; [font delivery and coverage](typography.md) describes the exact stacks, variable weights and script fallbacks. An explicit custom typography request retains precedence. Equal metrics do not guarantee identical browser/native antialiasing.
 
 `VisualTheme.ToJson()` exports the complete paired theme, including typography, geometry and effects, using `schemaVersion: 1`. The independent card radius is `geometry.cardRadius`; shadow opacity and color are `effects.cardShadowOpacity` and `effects.cardShadowColor`. `VisualTheme.FromJson(json)` imports that versioned format. Version-1 inputs may omit these card fields and use their defaults. Keep these round-trip methods distinct from the generated color-token importer; unsupported versions, duplicate keys and missing required fields fail explicitly.
 

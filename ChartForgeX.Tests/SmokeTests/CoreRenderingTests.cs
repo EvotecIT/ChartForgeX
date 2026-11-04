@@ -377,7 +377,7 @@ internal static partial class SmokeTests {
             "Explicit premium styling should retain its shared highlight and halo layers.");
         Assert(FamilyLabels(prepared, "annotation-label").Any(label => label.Text.Lines.Any(line => line.Text == "target")),
             "Annotations should retain their readable visible captions.");
-        Assert(FamilyLabels(prepared, "frame-heading").Single().Text.Style.Font.Weight == 700,
+        Assert(FamilyLabels(prepared, "frame-heading").Single().Text.Style.Font.Weight == 600,
             "Report titles should use the shared heading weight.");
         Assert(chart.ToSvg().Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && chart.ToPng().Length > 64,
             "The same explicit styling scene should render SVG and native PNG.");
@@ -389,7 +389,7 @@ internal static partial class SmokeTests {
         var svg = Chart.Create().WithTheme(VisualTheme.Report()).WithLegend(true).WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;, sans-serif\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
         var editorial = Chart.Create().WithTheme(VisualTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
-        Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
+        Assert(editorial.Contains("font-family=\"Archivo,", StringComparison.Ordinal), "Editorial themes should use the shared product font stack.");
         var dashboard = Chart.Create().WithTheme(VisualTheme.Dashboard()).AddBar("KPI", Points(8, 9, 7)).ToSvg();
         Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && VisualTheme.Dashboard().BarRadius == 14 && VisualTheme.Dashboard().PlotRadius == 14, "Dashboard themes should preserve their palette and shared frame corner geometry.");
         var saasChart = Chart.Create().WithTheme(VisualTheme.SaasDashboard()).WithLineMarkers(ChartLineMarkerMode.All).AddSmoothLine("MRR", Points(104, 112, 126));
@@ -655,7 +655,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SvgHasNoInvalidNumbers() {
-        var svg = SampleChart().ToSvg();
+        var svg = NumericMarkup(SampleChart().ToSvg());
         Assert(!svg.Contains("NaN", StringComparison.Ordinal), "SVG should not contain NaN values.");
         Assert(!svg.Contains("Infinity", StringComparison.Ordinal), "SVG should not contain infinity values.");
     }

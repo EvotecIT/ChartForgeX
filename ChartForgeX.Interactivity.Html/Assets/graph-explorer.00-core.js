@@ -264,11 +264,11 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
       context.fillStyle = '#102334';
       context.fillRect(12, 12, Math.max(1, size.width - 24), 48);
       context.fillStyle = '#ffffff';
-      context.font = '600 13px Segoe UI, Arial, sans-serif';
+      context.font = `600 13px ${graphNodeFontFamily(root)}`;
       context.textAlign = 'left';
       context.textBaseline = 'middle';
       context.fillText(disclosure, 22, 29, Math.max(1, size.width - 44));
-      context.font = '11px Segoe UI, Arial, sans-serif';
+      context.font = `11px ${graphNodeFontFamily(root)}`;
       context.fillText(size.width < 480 ? 'Reduced view; expand or filter.' : 'Other relationships are hidden. Expand a site or filter to inspect all.', 22, 47, Math.max(1, size.width - 44));
     }
   };

@@ -645,6 +645,7 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $root 'Build/Invoke-RequiredTestContract.ps1')
 Push-Location $root
 try {
+    & (Join-Path $root 'Build/Test-DesignTokenDrift.ps1')
     if ([string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
         $TestDiagnosticsDirectory = $null
     } else {
@@ -703,7 +704,11 @@ try {
         $nativeAotRid = Get-NativeAotRuntimeIdentifier
         Invoke-DotNetCommand -Arguments @('publish', $aotSmoke, '-c', $Configuration, '-r', $nativeAotRid, '--self-contained', 'true') -Description 'Native AOT smoke publish' -TimeoutSeconds $DotNetCommandTimeoutSeconds
         $nativeAotExecutableName = if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) { 'ChartForgeX.AotSmoke.exe' } else { 'ChartForgeX.AotSmoke' }
-        $nativeAotExecutable = Join-Path $root "ChartForgeX.AotSmoke/bin/$Configuration/net8.0/$nativeAotRid/publish/$nativeAotExecutableName"
+        $nativeAotPublishDirectory = Invoke-DotNetCommand -Arguments @('msbuild', $aotSmoke, '-nologo', '-getProperty:PublishDir', "-p:Configuration=$Configuration", "-p:RuntimeIdentifier=$nativeAotRid", '-p:SelfContained=true') -Description 'Native AOT publish-directory evaluation' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
+        if (-not [IO.Path]::IsPathRooted($nativeAotPublishDirectory)) {
+            $nativeAotPublishDirectory = Join-Path (Split-Path -Parent $aotSmoke) $nativeAotPublishDirectory
+        }
+        $nativeAotExecutable = Join-Path $nativeAotPublishDirectory $nativeAotExecutableName
         Invoke-NativeSmokeExecutable -ExecutablePath $nativeAotExecutable -TimeoutSeconds $PackageConsumerTimeoutSeconds
     }
 
