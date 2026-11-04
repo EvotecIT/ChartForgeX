@@ -317,9 +317,11 @@ internal static partial class VisualCartesianCompiler {
             && placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) {
             // Callouts commonly mark a first/last extremum. Preserve the requested side
             // first, then keep the full caption beside its point when that side is outside.
+            // Vertical lanes start at the marker's edges: a larger marker must not consume the spacing.
+            var below = mark.Bottom - anchor.Y + spacing; var above = mark.Top - anchor.Y - spacing;
             foreach (var alignment in new[] { .5, 0, 1 }) {
-                candidates.Add(new LabelCandidate(0, spacing, alignment, 0));
-                candidates.Add(new LabelCandidate(0, -spacing, alignment, 1));
+                candidates.Add(new LabelCandidate(0, below, alignment, 0));
+                candidates.Add(new LabelCandidate(0, above, alignment, 1));
             }
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
@@ -329,13 +331,14 @@ internal static partial class VisualCartesianCompiler {
                 // straight to a full height can skip the clear band between two lines.
                 // Placement still rejects every collision and out-of-bounds candidate.
                 foreach (var fraction in new[] { .5, 1d }) {
-                    var lane = spacing + calloutMetrics.Value.Height * fraction;
+                    var lane = calloutMetrics.Value.Height * fraction;
                     foreach (var direction in new[] { 1d, -1d }) {
                         var alignment = direction > 0 ? 0 : 1;
-                        candidates.Add(new LabelCandidate(leftOffset, lane * direction, 1, alignment));
-                        candidates.Add(new LabelCandidate(rightOffset, lane * direction, 0, alignment));
-                        candidates.Add(new LabelCandidate(0, lane * direction, 1, alignment));
-                        candidates.Add(new LabelCandidate(0, lane * direction, 0, alignment));
+                        var offset = direction > 0 ? below + lane : above - lane;
+                        candidates.Add(new LabelCandidate(leftOffset, offset, 1, alignment));
+                        candidates.Add(new LabelCandidate(rightOffset, offset, 0, alignment));
+                        candidates.Add(new LabelCandidate(0, offset, 1, alignment));
+                        candidates.Add(new LabelCandidate(0, offset, 0, alignment));
                     }
                 }
             }
