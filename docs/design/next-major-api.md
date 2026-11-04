@@ -348,12 +348,17 @@ public sealed partial class LineChart {
     public SeriesCollection<LineSeries> Series { get; } = new SeriesCollection<LineSeries>();
 }
 
-// Generated on a different type, all edits go to those properties/collections.
+// Representative generated signatures; edits use the same properties/collections.
 public partial class LineChartBuilder {
     public LineChartBuilder Title(string value);
     public LineChartBuilder X(Action<AxisSettingsBuilder> configure);
+    public LineChartBuilder X(string title, Action<AxisSettingsBuilder>? configure = null);
+    public LineChartBuilder Series(string name, IEnumerable<double> values,
+        Action<LineSeriesBuilder>? configure = null);
     public LineChartBuilder Series(string name, IEnumerable<ChartPoint> data,
         Action<LineSeriesBuilder>? configure = null);
+    public LineChartBuilder Series<T>(string name, IEnumerable<T> data,
+        Func<T, ChartPoint> selector, Action<LineSeriesBuilder>? configure = null);
 }
 ```
 
