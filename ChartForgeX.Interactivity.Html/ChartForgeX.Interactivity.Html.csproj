@@ -41,6 +41,7 @@
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Assets\cfx-renderer.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.cfx-renderer.js" />
     <EmbeddedResource Include="Assets\chart-layout-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-geometry.js" />
     <EmbeddedResource Include="Assets\chart-layout-radial.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-radial.js" />
     <EmbeddedResource Include="Assets\chart-layout-legend.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-legend.js" />
