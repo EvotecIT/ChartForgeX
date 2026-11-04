@@ -19,7 +19,7 @@ internal static class RendererGeometryFixture {
 
     internal static object Create(string family, byte alpha = 128, int density = 1) {
         var ink = ChartColor.FromRgba(30, 80, 170, alpha);
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; builder.Light.Muted = builder.Dark.Muted = builder.Light.Axis = builder.Dark.Axis = builder.Light.Grid = builder.Dark.Grid = builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ink, ink, ink, ink }; });
@@ -43,7 +43,7 @@ internal static class RendererGeometryFixture {
             return map;
         }
         if (family.StartsWith("wardley", StringComparison.Ordinal)) {
-            if (family != "wardley") theme = VisualTheme.Report();
+            if (family != "wardley") theme = VisualTheme.Graphite();
             var mode = family == "wardley-dark" ? VisualThemeMode.Dark : VisualThemeMode.Light;
             var map = WardleyMapBlock.Create().WithSize(400, 280).WithTheme(theme, mode).WithCard(false).WithTransparentBackground().WithPngOutputScale(density);
             map.AddNode("origin", "Origin", 0.5, 0.1);

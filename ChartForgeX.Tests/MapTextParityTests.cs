@@ -19,7 +19,7 @@ public sealed class MapTextParityTests {
     }
 
     private static Chart Map(string family) => Chart.Create().WithSize(540, 340)
-        .WithTheme(VisualTheme.Report().WithFontFamily(family)).WithLegend(false).WithDataLabels()
+        .WithTheme(VisualTheme.Graphite().WithFontFamily(family)).WithLegend(false).WithDataLabels()
         .WithMapViewport(ChartMapViewport.Europe())
         .AddDottedMap("Places", new[] { new ChartMapPoint("Madrid", -3.7, 40.4), new ChartMapPoint("Warsaw", 21, 52.2) })
         .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");

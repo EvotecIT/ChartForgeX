@@ -49,29 +49,18 @@ internal static partial class SmokeTests {
         var grid = ChartGrid.Create().WithTitle("Themed grid").WithTheme(theme)
             .Add(Chart.Create().AddLine("Values", Points(1, 2, 3)));
         Assert(grid.ToSvg().Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "The grid theme should supply shared panel typography.");
-        foreach (var preset in new[] {
-            VisualTheme.Report(), VisualTheme.Executive(), VisualTheme.Product(), VisualTheme.PeopleInfographic(),
-            VisualTheme.Editorial(), VisualTheme.Accessible(), VisualTheme.Colorblind(), VisualTheme.Aurora(),
-            VisualTheme.Candy(), VisualTheme.TransparentOverlay(), VisualTheme.Minimal(), VisualTheme.Dashboard(),
-            VisualTheme.SaasDashboard(), VisualTheme.RestaurantDashboard()
-        }) Assert(preset.Typography.Family.StartsWith("Archivo,", StringComparison.Ordinal),
-            "Named sans themes should use the shared Archivo font stack.");
+        var graphite = VisualTheme.Graphite();
+        foreach (var preset in new[] { VisualTheme.Accessible(), VisualTheme.TransparentOverlay() })
+            Assert(preset.Typography.Family == graphite.Typography.Family && preset.CardRadius == graphite.CardRadius
+                && preset.PlotRadius == graphite.PlotRadius && preset.BarRadius == graphite.BarRadius,
+                "Every named theme should keep Graphite's typography and geometry.");
 
-        foreach (var preset in new[] { VisualTheme.Executive(), VisualTheme.Product(), VisualTheme.PeopleInfographic(), VisualTheme.Editorial(), VisualTheme.Accessible() }) {
-            var colors = preset.Resolve(VisualThemeMode.Light);
-            Assert(colors.Palette.Count >= 8 && preset.Typography.Family.Length > 0, "Named themes should include useful palettes and font stacks.");
-            Assert(colors.Foreground.A > 0 && colors.MutedForeground.A > 0 && colors.Grid.A > 0, "Named themes should include visible text and guide colors.");
-            Assert(preset.CardRadius <= 24, "Named themes should retain deliberately authored surface geometry.");
-        }
-
-        Assert(VisualTheme.Terminal().Typography.Family.StartsWith("\"JetBrains Mono\",", StringComparison.Ordinal),
-            "The Terminal preset should use the shared JetBrains Mono font stack.");
-        var productSvg = Chart.Create().WithTheme(VisualTheme.Product()).AddBar("Adoption", Points(42, 58, 71)).ToSvg();
-        Assert(productSvg.Contains("font-family=\"Archivo,", StringComparison.Ordinal) && productSvg.Contains("#0EA5E9", StringComparison.Ordinal),
-            "The Product theme should render the shared font and its authored palette.");
-        var peopleSvg = Chart.Create().WithTheme(VisualTheme.PeopleInfographic()).AddDonut("Audience", Points(60, 40)).ToSvg();
-        Assert(peopleSvg.Contains("#06B6D4", StringComparison.Ordinal) && peopleSvg.Contains("#DB2777", StringComparison.Ordinal),
-            "The PeopleInfographic theme should render its cyan and magenta palette.");
+        var accessible = VisualTheme.Accessible().Resolve(VisualThemeMode.Light);
+        Assert(accessible.Palette.SequenceEqual(ChartPalettes.Colorblind) && !accessible.Palette.SequenceEqual(graphite.Resolve(VisualThemeMode.Light).Palette),
+            "The Accessible theme should differ from Graphite only by its colorblind-safe palette.");
+        var accessibleSvg = Chart.Create().WithTheme(VisualTheme.Accessible()).AddBar("Adoption", Points(42, 58, 71)).ToSvg();
+        Assert(accessibleSvg.Contains(ChartPalettes.Colorblind[0].ToHex(), StringComparison.OrdinalIgnoreCase),
+            "The Accessible theme should render its colorblind-safe palette.");
 
         AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(null!), "Charts should reject null themes.");
         AssertThrows<ArgumentNullException>(() => ChartGrid.Create().WithTheme(null!), "Grids should reject null themes.");

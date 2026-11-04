@@ -111,7 +111,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedSeriesDataLabelStylesOverrideChartDefaults() {
-        var pie = Chart.Create().WithTheme(VisualTheme.Report())
+        var pie = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithDataLabels()
             .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
@@ -123,7 +123,7 @@ internal static partial class SmokeTests {
         Assert(pieLabels.Length == 2 && pieLabels.All(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F766E")) && label.Text.Style.Font.Weight == 900 && label.Text.Style.Underline), "Pie labels should honor per-series color, weight and underline in the shared text snapshot.");
         Assert(pie.ToPng().Length > 64, "Pie series data-label styles should render PNG output.");
 
-        var heatmap = Chart.Create().WithTheme(VisualTheme.Report())
+        var heatmap = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(460, 300)
             .WithDataLabels()
             .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
@@ -133,7 +133,7 @@ internal static partial class SmokeTests {
         Assert(heatmapSvg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal) && heatmapSvg.Contains("font-weight=\"900\"", StringComparison.Ordinal), "Heatmap cell labels should honor per-series data-label style overrides.");
         Assert(heatmap.ToPng().Length > 64, "Heatmap series data-label styles should render PNG output.");
 
-        var radar = Chart.Create().WithTheme(VisualTheme.Report())
+        var radar = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(460, 320)
             .WithXLabels("Reach", "Depth", "Trust")
             .WithDataLabels()
@@ -143,13 +143,13 @@ internal static partial class SmokeTests {
         Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#7C3AED"))), "Radar data labels should honor per-series data-label color overrides.");
         Assert(radar.ToPng().Length > 64, "Radar series data-label styles should render PNG output.");
 
-        var regularPolarArea = Chart.Create().WithTheme(VisualTheme.Report())
+        var regularPolarArea = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(460, 320)
             .WithLegend(false)
             .WithDataLabels()
             .AddPolarArea("Polar", Points(92, 74, 88))
             .ToPng();
-        var polarArea = Chart.Create().WithTheme(VisualTheme.Report())
+        var polarArea = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(460, 320)
             .WithLegend(false)
             .WithDataLabels()
@@ -160,7 +160,7 @@ internal static partial class SmokeTests {
         Assert(polarAreaSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && polarAreaSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Polar-area labels should honor per-series data-label style overrides.");
         Assert(!regularPolarArea.SequenceEqual(polarAreaPng), "Polar-area PNG labels should render and position with resolved series text styling.");
 
-        var waterfall = Chart.Create().WithTheme(VisualTheme.Report())
+        var waterfall = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
@@ -171,7 +171,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PointDataLabelStylesOverrideSeriesDefaults() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .WithDataLabels()
             .AddBar("Styled labels", Points(12, 44, 26));
@@ -190,7 +190,7 @@ internal static partial class SmokeTests {
         chart.Series[0].UseSeriesDataLabelStyle(1);
         Assert(!chart.ToSvg().Contains("fill=\"#123456\"", StringComparison.Ordinal), "Clearing a point label style should restore series-level label styling.");
 
-        var pie = Chart.Create().WithTheme(VisualTheme.Report())
+        var pie = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithDataLabels()
             .AddPie("Slices", Points(70, 30));
@@ -205,7 +205,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PointColorsOverrideSeriesColorForBars() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         chart.Series[0].WithPointColor(1, "#F97316");
@@ -218,7 +218,7 @@ internal static partial class SmokeTests {
             "The orange point override should determine that native flat bar rather than the teal series color.");
         Assert(chart.ToPng().Length > 64, "Bar point colors should render PNG output.");
 
-        var horizontal = Chart.Create().WithTheme(VisualTheme.Report())
+        var horizontal = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .WithXLabels("A", "B", "C")
             .AddHorizontalBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
@@ -231,7 +231,7 @@ internal static partial class SmokeTests {
             "The purple horizontal point override should determine that native flat observation.");
         Assert(horizontal.ToPng().Length > 64, "Horizontal bar point colors should render PNG output.");
 
-        var funnel = Chart.Create().WithTheme(VisualTheme.Report())
+        var funnel = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .WithXLabels("Visit", "Qualify", "Close")
             .AddFunnel("Pipeline", Points(120, 74, 32));
@@ -245,7 +245,7 @@ internal static partial class SmokeTests {
             "The same funnel stage should retain its point-specific color for native raster rendering.");
         Assert(funnel.ToPng().Length > 64, "Funnel point colors should render PNG output.");
 
-        var treemap = Chart.Create().WithTheme(VisualTheme.Report())
+        var treemap = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddTreemap("Spend", new[] {
                 new ChartHierarchyItem("Core", "Core", value: 48),
@@ -261,14 +261,14 @@ internal static partial class SmokeTests {
             "Native treemap geometry should retain the authored purple point color.");
         Assert(treemap.ToPng().Length > 64, "Treemap point colors should render PNG output.");
 
-        var scatter = Chart.Create().WithTheme(VisualTheme.Report())
+        var scatter = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddScatter("Observed", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         scatter.Series[0].WithPointColor(1, "#0EA5E9");
         Assert(scatter.ToSvg().Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Scatter markers should honor point-specific colors in SVG.");
         Assert(scatter.ToPng().Length > 64, "Scatter point colors should render PNG output.");
 
-        var line = Chart.Create().WithTheme(VisualTheme.Report())
+        var line = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddLine("Trend", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         line.Series[0].WithPointColor(2, "#DB2777");
@@ -278,7 +278,7 @@ internal static partial class SmokeTests {
             "The same line observation should retain its point-specific color for native raster rendering.");
         Assert(line.ToPng().Length > 64, "Line marker point colors should render PNG output.");
 
-        var lollipop = Chart.Create().WithTheme(VisualTheme.Report())
+        var lollipop = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddLollipop("Coverage", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         lollipop.Series[0].WithPointColor(1, "#F59E0B");
@@ -286,7 +286,7 @@ internal static partial class SmokeTests {
         Assert(lollipopSvg.Contains("data-cfx-role=\"lollipop-marker\"", StringComparison.Ordinal) && lollipopSvg.Contains("fill=\"#F59E0B\"", StringComparison.Ordinal), "Lollipop markers should honor point-specific colors in SVG.");
         Assert(lollipop.ToPng().Length > 64, "Lollipop point colors should render PNG output.");
 
-        var bubble = Chart.Create().WithTheme(VisualTheme.Report())
+        var bubble = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddBubble("Risk", new[] {
                 new ChartBubble(1, 18, 8),
@@ -304,7 +304,7 @@ internal static partial class SmokeTests {
             "Native bubble paint should use the authored point color for both translucent fill and stroke.");
         Assert(bubble.ToPng().Length > 64, "Bubble point colors should render PNG output.");
 
-        var errorBar = Chart.Create().WithTheme(VisualTheme.Report())
+        var errorBar = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddErrorBar("Confidence", new[] {
                 new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
@@ -314,7 +314,7 @@ internal static partial class SmokeTests {
         Assert(errorBar.ToSvg().Contains("stroke=\"#DC2626\"", StringComparison.Ordinal) && errorBar.ToSvg().Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Error-bar marks should honor point-specific colors in SVG.");
         Assert(errorBar.ToPng().Length > 64, "Error-bar point colors should render PNG output.");
 
-        var rangeBar = Chart.Create().WithTheme(VisualTheme.Report())
+        var rangeBar = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddRangeBar("Observed", new[] {
                 new ChartInterval(1, 20, 42),
@@ -324,7 +324,7 @@ internal static partial class SmokeTests {
         Assert(rangeBar.ToSvg().Contains("data-cfx-role=\"range-bar\"", StringComparison.Ordinal) && rangeBar.ToSvg().Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Range-bar intervals should honor point-specific colors in SVG.");
         Assert(rangeBar.ToPng().Length > 64, "Range-bar point colors should render PNG output.");
 
-        var dumbbell = Chart.Create().WithTheme(VisualTheme.Report())
+        var dumbbell = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddDumbbell("Before/after", new[] {
                 new ChartDumbbell(1, 32, 44),
@@ -334,7 +334,7 @@ internal static partial class SmokeTests {
         Assert(dumbbell.ToSvg().Contains("data-cfx-role=\"dumbbell-end\"", StringComparison.Ordinal) && dumbbell.ToSvg().Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Dumbbell comparison marks should honor point-specific colors in SVG.");
         Assert(dumbbell.ToPng().Length > 64, "Dumbbell point colors should render PNG output.");
 
-        var boxPlot = Chart.Create().WithTheme(VisualTheme.Report())
+        var boxPlot = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddBoxPlot("Latency", new[] {
                 new ChartBoxPlot(1, 18, 24, 31, 38, 48),
@@ -351,21 +351,21 @@ internal static partial class SmokeTests {
             new ChartCandlestick(1, 42, 51, 35, 48),
             new ChartCandlestick(2, 58, 66, 49, 54)
         };
-        var candlestick = Chart.Create().WithTheme(VisualTheme.Report())
+        var candlestick = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddCandlestick("Windows", candles);
         candlestick.Series[0].WithPointColor(1, "#DB2777");
         Assert(candlestick.ToSvg().Contains("data-cfx-role=\"candlestick-body\"", StringComparison.Ordinal) && candlestick.ToSvg().Contains("stroke=\"#DB2777\"", StringComparison.Ordinal), "Candlestick windows should allow point colors to override semantic rising/falling colors in SVG.");
         Assert(candlestick.ToPng().Length > 64, "Candlestick point colors should render PNG output.");
 
-        var ohlc = Chart.Create().WithTheme(VisualTheme.Report())
+        var ohlc = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddOhlc("Windows", candles);
         ohlc.Series[0].WithPointColor(1, "#9333EA");
         Assert(ohlc.ToSvg().Contains("data-cfx-role=\"ohlc-stem\"", StringComparison.Ordinal) && ohlc.ToSvg().Contains("stroke=\"#9333EA\"", StringComparison.Ordinal), "OHLC windows should allow point colors to override semantic rising/falling colors in SVG.");
         Assert(ohlc.ToPng().Length > 64, "OHLC point colors should render PNG output.");
 
-        var slope = Chart.Create().WithTheme(VisualTheme.Report())
+        var slope = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(540, 320)
             .AddSlope("Before/after", 24, 52, ChartColor.FromHex("#14B8A6"));
         slope.Series[0].WithPointColor(1, "#E11D48");
@@ -373,7 +373,7 @@ internal static partial class SmokeTests {
             && (string?)element.Attribute("fill") == "#E11D48"), "Slope endpoint markers should honor point-specific colors in SVG.");
         Assert(slope.ToPng().Length > 64, "Slope endpoint point colors should render PNG output.");
 
-        var pointLegend = Chart.Create().WithTheme(VisualTheme.Report())
+        var pointLegend = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(520, 320)
             .WithPointLegend()
             .WithLegendPosition(ChartLegendPosition.Right)
@@ -387,7 +387,7 @@ internal static partial class SmokeTests {
         Assert(pointLegendSvg.Contains(">High</text>", StringComparison.Ordinal) && pointLegendSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Point legends should use x-axis labels and point colors.");
         Assert(pointLegend.ToPng().Length > 64, "Point legends should render PNG output.");
 
-        var aggregateLineLegend = Chart.Create().WithTheme(VisualTheme.Report())
+        var aggregateLineLegend = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithLegend(true)
             .WithSize(520, 320)
             .WithPointLegend()
@@ -477,7 +477,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedDataLabelPlacementCanBeConfigured() {
-        var pie = Chart.Create().WithTheme(VisualTheme.Report())
+        var pie = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Outside)
@@ -487,7 +487,7 @@ internal static partial class SmokeTests {
         Assert(pieSvg.Contains("data-cfx-role=\"data-label-connector\"", StringComparison.Ordinal), "Pie outside labels should render connector lines.");
         Assert(pie.ToPng().Length > 64, "Pie outside label placement should render PNG output.");
 
-        var heatmap = Chart.Create().WithTheme(VisualTheme.Report())
+        var heatmap = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(460, 300)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -498,7 +498,7 @@ internal static partial class SmokeTests {
         Assert(heatmapSvg.Contains(">Styled</text>", StringComparison.Ordinal), "Heatmap side label lanes should not steal space from row labels.");
         Assert(heatmap.ToPng().Length > 64, "Heatmap side label placement should render PNG output.");
 
-        var radar = Chart.Create().WithTheme(VisualTheme.Report())
+        var radar = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(460, 320)
             .WithXLabels("Reach", "Depth", "Trust")
             .WithDataLabels()
@@ -507,7 +507,7 @@ internal static partial class SmokeTests {
         Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Length == 3, "Radar labels should render for each point when below placement is configured.");
         Assert(radar.ToPng().Length > 64, "Radar below label placement should render PNG output.");
 
-        var bubble = Chart.Create().WithTheme(VisualTheme.Report())
+        var bubble = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Center)
@@ -518,7 +518,7 @@ internal static partial class SmokeTests {
         Assert(bubble.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Bubble labels should render when center placement is configured.");
         Assert(bubble.ToPng().Length > 64, "Bubble center label placement should render PNG output.");
 
-        var errorBar = Chart.Create().WithTheme(VisualTheme.Report())
+        var errorBar = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -529,7 +529,7 @@ internal static partial class SmokeTests {
         Assert(errorBar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Error-bar labels should render when side placement is configured.");
         Assert(errorBar.ToPng().Length > 64, "Error-bar side label placement should render PNG output.");
 
-        var rangeBand = Chart.Create().WithTheme(VisualTheme.Report())
+        var rangeBand = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Below)
@@ -540,7 +540,7 @@ internal static partial class SmokeTests {
         Assert(rangeBand.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Range-band labels should render when below placement is configured.");
         Assert(rangeBand.ToPng().Length > 64, "Range-band below label placement should render PNG output.");
 
-        var rangeArea = Chart.Create().WithTheme(VisualTheme.Report())
+        var rangeArea = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Left)
@@ -551,7 +551,7 @@ internal static partial class SmokeTests {
         Assert(rangeArea.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Range-area labels should render when side placement is configured.");
         Assert(rangeArea.ToPng().Length > 64, "Range-area side label placement should render PNG output.");
 
-        var waterfall = Chart.Create().WithTheme(VisualTheme.Report())
+        var waterfall = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
@@ -559,7 +559,7 @@ internal static partial class SmokeTests {
         Assert(waterfall.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Waterfall labels should render when inside placement is configured.");
         Assert(waterfall.ToPng().Length > 64, "Waterfall inside label placement should render PNG output.");
 
-        var rangeBar = Chart.Create().WithTheme(VisualTheme.Report())
+        var rangeBar = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Center)
@@ -582,7 +582,7 @@ internal static partial class SmokeTests {
         ScatterBubbleColorRenderingTests.Capture(centered, "smoke-rangebar-centered-authored-captions");
         Assert(rangeBar.ToPng().Length > 64, "Range-bar center label placement should render PNG output.");
 
-        var dumbbell = Chart.Create().WithTheme(VisualTheme.Report())
+        var dumbbell = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -593,7 +593,7 @@ internal static partial class SmokeTests {
         Assert(dumbbell.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Dumbbell labels should render when side placement is configured.");
         Assert(dumbbell.ToPng().Length > 64, "Dumbbell side label placement should render PNG output.");
 
-        var boxPlot = Chart.Create().WithTheme(VisualTheme.Report())
+        var boxPlot = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Left)
@@ -608,7 +608,7 @@ internal static partial class SmokeTests {
             new ChartCandlestick(1, 42, 51, 35, 48),
             new ChartCandlestick(2, 58, 66, 49, 54)
         };
-        var candlestick = Chart.Create().WithTheme(VisualTheme.Report())
+        var candlestick = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -616,7 +616,7 @@ internal static partial class SmokeTests {
         Assert(candlestick.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Candlestick labels should render when side placement is configured.");
         Assert(candlestick.ToPng().Length > 64, "Candlestick side label placement should render PNG output.");
 
-        var ohlc = Chart.Create().WithTheme(VisualTheme.Report())
+        var ohlc = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Above)

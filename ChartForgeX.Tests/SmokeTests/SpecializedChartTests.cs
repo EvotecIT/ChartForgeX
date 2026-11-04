@@ -62,7 +62,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BubbleSeriesRenderScaledMarkers() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(640, 360)
             .WithDataLabels()
             .AddBubble("Risk clusters", new[] {
@@ -86,7 +86,7 @@ internal static partial class SmokeTests {
             new ChartPoint(4, 33),
             new ChartPoint(5, 41)
         };
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(640, 360)
             .AddScatter("Observed", points, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", points, ChartColor.FromRgb(245, 158, 11));
@@ -191,7 +191,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedAreaSeriesRenderCumulativeFilledBands() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("Mon", "Tue", "Wed")
@@ -208,7 +208,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SlopeSeriesRenderEndpointComparisons() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(640, 360)
             .WithDataLabels()
             .AddSlope("DMARC", 58, 88, "Before", "After", ChartColor.FromRgb(37, 99, 235))
@@ -268,7 +268,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BarLineComboRendersBarsAndLine() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(640, 360).WithLineMarkers(ChartLineMarkerMode.All)
             .WithYAxis("Volume")
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
@@ -299,7 +299,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Pass rate</text>", StringComparison.Ordinal), "Bar-line combos should render the line legend label.");
         Assert(chart.ToPng().Length > 64, "Bar-line combos should render PNG output.");
 
-        var secondaryOnly = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
+        var secondaryOnly = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
         secondaryOnly.Series[0].UseSecondaryValueAxis();
         Assert(!secondaryOnly.ToSvg().Contains("Infinity", StringComparison.Ordinal), "Secondary-axis-only charts should still render finite SVG geometry.");
     }
@@ -313,7 +313,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HorizontalBarSeriesRenderCategoryBars() {
-        var svg = Chart.Create().WithTheme(VisualTheme.Report())
+        var svg = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("SPF alignment", "DMARC policy", "DNSSEC coverage")
@@ -326,7 +326,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedHorizontalBarsRenderSegmentsAndTotals() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(700, 380)
             .WithStackedHorizontalBars()
             .WithStackTotals()
@@ -349,7 +349,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HeatmapRowsRenderMatrixCells() {
-        var svg = Chart.Create().WithTheme(VisualTheme.Report())
+        var svg = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(720, 420)
             .WithDataLabels()
             .WithXAxis("Control")
@@ -375,16 +375,17 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Semantic heatmaps should expose positive cell status.");
         Assert(svg.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Semantic heatmaps should expose warning cell status.");
         Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Semantic heatmaps should expose negative cell status.");
-        Assert(svg.Contains("fill=\"#10B981\"", StringComparison.Ordinal), "Semantic heatmap high values should use the positive theme color.");
-        Assert(svg.Contains("fill=\"#F59E0B\"", StringComparison.Ordinal), "Semantic heatmap warning values should use the warning theme color.");
-        Assert(svg.Contains("fill=\"#EF4444\"", StringComparison.Ordinal), "Semantic heatmap low values should use the negative theme color.");
+        var heatmapColors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        Assert(svg.Contains("fill=\"" + heatmapColors.Positive.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap high values should use the positive theme color.");
+        Assert(svg.Contains("fill=\"" + heatmapColors.Warning.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap warning values should use the warning theme color.");
+        Assert(svg.Contains("fill=\"" + heatmapColors.Negative.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap low values should use the negative theme color.");
         var primary = FamilyMetadata(svg, "heatmap-cell", ("series", "0"), ("point", "0"), ("value", "100"), ("status", "positive"));
         Assert((string?)primary.Attribute("aria-label") == "Primary, SPF: 100%" && primary.Tooltip() == "Primary, SPF: 100%",
             "Semantic heatmap cells should expose consistent accessible and hover summaries alongside their status metadata.");
         Assert(svg.Contains(">Primary</text>", StringComparison.Ordinal), "Heatmaps should render row labels.");
         Assert(svg.Contains(">DMARC</text>", StringComparison.Ordinal), "Heatmaps should render column labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Heatmaps should render optional data labels.");
-        var edgeSvg = Chart.Create().WithTheme(VisualTheme.Report())
+        var edgeSvg = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(520, 320)
             .WithXLabels("Very long first control", "Middle", "Very long final control")
             .AddHeatmapRow("Domains", Points(100, 60, 0))
@@ -499,7 +500,7 @@ internal static partial class SmokeTests {
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {
-        var svg = Chart.Create().WithTheme(VisualTheme.Report())
+        var svg = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(760, 420)
             .WithDataLabels()
             .WithXAxis("Change")
@@ -518,7 +519,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Opened</text>", StringComparison.Ordinal), "Waterfall charts should render category labels.");
         Assert(svg.Contains(">Total</text>", StringComparison.Ordinal), "Waterfall charts should render a total category.");
         Assert(svg.Contains(">+18</text>", StringComparison.Ordinal), "Waterfall charts should render positive delta labels.");
-        Assert(Chart.Create().WithTheme(VisualTheme.Report()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
+        Assert(Chart.Create().WithTheme(VisualTheme.Graphite()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
     }
 
 

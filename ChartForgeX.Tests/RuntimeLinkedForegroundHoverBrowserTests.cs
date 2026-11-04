@@ -73,7 +73,7 @@ public sealed class RuntimeLinkedForegroundHoverBrowserTests {
             .WithPointColor(1, ChartColor.FromRgb(40, 120, 200).WithOpacity(.65))
             .WithObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") });
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Linked foreground")
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("A", "B", "C").WithPointLegend().AddSeries(series);
         return kind == ChartSeriesKind.Bar ? chart.WithBarStyle(ChartBarStyle.Flat) : chart;
     }

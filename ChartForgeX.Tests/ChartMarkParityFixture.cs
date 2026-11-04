@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 internal static class ChartMarkParityFixture {
     internal static Chart Create(string family, byte alpha = 255, int density = 1) {
         var ink = ChartColor.FromRgba(30, 80, 170, alpha);
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Positive = builder.Dark.Positive = builder.Light.Negative = builder.Dark.Negative = builder.Light.Warning = builder.Dark.Warning = builder.Light.Foreground = builder.Dark.Foreground = ink; builder.Light.Muted = builder.Dark.Muted = ink; });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ink, ChartColor.FromRgba(170, 70, 30, alpha) }; });

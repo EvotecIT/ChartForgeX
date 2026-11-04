@@ -15,7 +15,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
     [InlineData(true, 2)]
     [InlineData(true, 3)]
     public async Task NativeVennLongSetAndRegionCaptionsShareMeasuredSpace(bool dark, int count) {
-        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var block = VennDiagramBlock.Create().WithSize(320, 460).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddSet("A", "A collection", 60).AddSet("B", "B collection", 55)
             .AddIntersection(new[] { "A", "B" }, "Both", 18).AddText(new[] { "A" }, "note", "Data");

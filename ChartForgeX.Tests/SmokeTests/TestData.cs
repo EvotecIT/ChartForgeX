@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
             .WithSubtitle("No JS, no CDN")
             .WithXAxis("Run")
             .WithYAxis("Checks")
-            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
             .WithSize(640, 360)
             .WithXLabels("Mon", "Tue", "Wed")
             .AddSmoothArea("Passed", Points(100, 180, 260))

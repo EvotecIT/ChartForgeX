@@ -19,7 +19,7 @@ public sealed class FactBlockBadgeTypographyTests {
     [InlineData("schedule", true, false)]
     public void BadgesReserveTheDrawnBoldCaptionWidthBeforeFitting(string family, bool dark, bool dense) {
         var caption = family == "schedule" ? "WWWW" : "WWWWWW";
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         IVisualBlock block;
         string role;

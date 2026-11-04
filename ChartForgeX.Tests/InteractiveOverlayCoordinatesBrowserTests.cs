@@ -194,7 +194,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
 
     private static Chart CoordinateChart(bool graphite) {
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Native overlay coordinates")
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) }));
         return chart;

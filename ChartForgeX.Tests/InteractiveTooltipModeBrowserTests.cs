@@ -16,9 +16,9 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(false, HtmlChartTooltipMode.SharedX)]
     [InlineData(true, HtmlChartTooltipMode.Single)]
     [InlineData(true, HtmlChartTooltipMode.SharedX)]
-    public async Task ExplicitModeIsIndependentOfPaletteAndGraphiteLayout(bool graphite, HtmlChartTooltipMode mode) {
+    public async Task ExplicitModeIsIndependentOfPaletteAndGraphiteLayout(bool accessible, HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Lines(graphite ? VisualTheme.Graphite() : VisualTheme.Report());
+        var chart = Lines(accessible ? VisualTheme.Accessible() : VisualTheme.Graphite());
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = mode;
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
@@ -158,7 +158,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(null)]
     public async Task SharedRowsIgnoreMissingOrNonFiniteHostValues(string? value) {
         if (!Enabled) return;
-        await using var session = await OpenAsync(Lines(VisualTheme.Report()).ToInteractiveHtmlPage());
+        await using var session = await OpenAsync(Lines(VisualTheme.Graphite()).ToInteractiveHtmlPage());
         var page = session.Page;
         await page.Locator(Point(1, 1)).EvaluateAsync("(node, value) => { if (value === null) node.removeAttribute('data-cfx-y'); else node.dataset.cfxY = value; }", value);
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -178,7 +178,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         Assert.DoesNotContain("Role", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         Assert.Equal("7", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         foreach (var mode in new[] { HtmlChartTooltipMode.Single, HtmlChartTooltipMode.SharedX }) {
-            await page.SetContentAsync(Lines(VisualTheme.Report()).ToInteractiveHtmlPage(options => {
+            await page.SetContentAsync(Lines(VisualTheme.Graphite()).ToInteractiveHtmlPage(options => {
                 options.Tooltip.Mode = mode;
                 options.Interaction.Disable(ChartInteractionFeatures.Tooltips);
             }));
@@ -211,7 +211,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task DashboardChildTooltipsUseTheConfiguredMode(HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Lines(VisualTheme.Report());
+        var chart = Lines(VisualTheme.Graphite());
         await using var session = await OpenAsync(new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.Tooltip.Mode = mode;
         }), 700, 1000);

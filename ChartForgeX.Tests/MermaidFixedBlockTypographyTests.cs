@@ -14,7 +14,7 @@ public sealed class MermaidFixedBlockTypographyTests {
     [Fact]
     public void GitSourceSizeRemainsEffectiveAtBitmapScaleBoundaries() {
         static GitGraphBlock Create(double size) {
-            var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+            var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
             return GitGraphBlock.Create().WithSize(900, 500).WithTheme(theme).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "v1");
         }
         var small = Create(10.5); var large = Create(21);
@@ -31,7 +31,7 @@ public sealed class MermaidFixedBlockTypographyTests {
     [Fact]
     public void PacketBitSizeRemainsReadableAtBitmapScaleBoundaries() {
         static PacketLayoutBlock Create(double size) {
-            var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+            var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
             return PacketLayoutBlock.Create().WithSize(900, 500).WithTheme(theme).WithCard(false).WithBitsPerRow(32)
                 .AddField(0, 0, "Flag").AddField(1, 31, "Payload");
         }
@@ -46,7 +46,7 @@ public sealed class MermaidFixedBlockTypographyTests {
 
     [Fact]
     public void DensePacketKeepsFieldRangesWithoutOverlappingAtBitmapScaleBoundaries() {
-        var theme = VisualTheme.Report().WithFontFamily("Arial");
+        var theme = VisualTheme.Graphite().WithFontFamily("Arial");
         var block = PacketLayoutBlock.Create().WithSize(320, 240).WithTheme(theme).WithCard(false).WithBitsPerRow(512)
             .AddField(0, 0, "Flag").AddField(1, 511, "Payload");
         var svg = XDocument.Parse(block.ToSvg());
@@ -132,7 +132,7 @@ public sealed class MermaidFixedBlockTypographyTests {
 
     [Fact]
     public void SingleLineHeadingNormalizationDoesNotConsumeExtraBodySpace() {
-        var theme = VisualTheme.Report(); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: 42, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); }); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: 27, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var theme = VisualTheme.Graphite(); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: 42, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); }); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: 27, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var first = BlockLayoutBlock.Create().WithTitle("First Second").WithSubtitle("Third Fourth").WithTheme(theme).AddItem("a", "API");
         var second = BlockLayoutBlock.Create().WithTitle("First\nSecond").WithSubtitle("Third\r\nFourth").WithTheme(theme).AddItem("a", "API");
         static string Positions(string svg) => string.Join("|", XDocument.Parse(svg).Descendants()

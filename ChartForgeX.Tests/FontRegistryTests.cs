@@ -196,7 +196,7 @@ public sealed class FontRegistryTests : IDisposable {
 
     private static Chart BarChart(string family) => Chart.Create()
         .WithTitle("Readership")
-        .WithTheme(VisualTheme.Report().WithFontFamily(family), VisualThemeMode.Dark)
+        .WithTheme(VisualTheme.Graphite().WithFontFamily(family), VisualThemeMode.Dark)
         .WithSize(360, 220)
         .WithXLabels("A", "B", "C")
         .AddBar("Issues", ChartPoints.FromValues(12, 18, 9));

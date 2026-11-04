@@ -13,7 +13,7 @@ public sealed class StateTimelineLabelPolicyTests {
     private static readonly DateTime Day = new(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
 
     internal static Chart DenseLanes(int width = 1100, int height = 450, int lanes = 12) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(width, height)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(width, height)
             .WithTitle("Domain controllers, last 24 hours").WithSubtitle("LDAP, Kerberos and DNS checks every 5 minutes, grouped by site")
             .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("down", "Down", ChartColor.FromHex("#d4302f")))
             .WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true);

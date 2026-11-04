@@ -11,7 +11,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
     [InlineData(false)] [InlineData(true)]
     public void HostThemeKeepsExplicitSourceLabelSurfacePaint(bool dark) {
         var options = Options(800, dark);
-        options.Presentation!.Theme = VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family);
+        options.Presentation!.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         var plain = MermaidRenderer.Render(Body, options);
         var configured = MermaidRenderer.Render(LabelBackgroundSource, options);
         Capture("requirement-label-background-host-" + dark, configured);

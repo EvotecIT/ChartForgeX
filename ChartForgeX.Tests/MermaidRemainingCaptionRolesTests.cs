@@ -143,6 +143,6 @@ public sealed class MermaidRemainingCaptionRolesTests {
         .Concat(chart.Edges.Where(edge => edge.LabelContent != null).Select(edge => edge.LabelContent!));
     private static string[] Signatures(TopologyChart chart) => Contents(chart).Where(content => content.IsStructured)
         .Select(content => content.PlainText + ":" + string.Join(";", content.Runs.Select(run => run.Text + "=" + run.Emphasis))).OrderBy(value => value, StringComparer.Ordinal).ToArray();
-    internal static TopologyChart Model() => TopologyChart.Create().WithViewport(800, 500).WithTheme(VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family))
+    internal static TopologyChart Model() => TopologyChart.Create().WithViewport(800, 500).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
         .AddAutoGroup("scope", "Scope").AddAutoNode("a", "First", groupId: "scope").AddAutoNode("b", "Second", groupId: "scope").AddEdge("link", "a", "b", "Relationship");
 }

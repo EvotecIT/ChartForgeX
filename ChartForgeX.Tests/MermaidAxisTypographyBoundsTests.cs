@@ -22,7 +22,7 @@ public sealed class MermaidAxisTypographyBoundsTests {
     [InlineData(true, true, 900)]
     [InlineData(true, true, 320)]
     public async Task MaximumFontsRetainAuthoredCategoriesAndNumericScale(bool horizontal, bool dark, int width) {
-        var chart = horizontal ? Chart.Create().WithTheme(VisualTheme.Report().Configure(builder => builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 480, subtitleSize: 320, axisTitleSize: 256, axisSize: 256, legendSize: 256, dataLabelSize: 256)), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = horizontal ? Chart.Create().WithTheme(VisualTheme.Graphite().Configure(builder => builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 480, subtitleSize: 320, axisTitleSize: 256, axisSize: 256, legendSize: 256, dataLabelSize: 256)), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Horizontal bars").WithSize(width, 520).WithXLabels("Jan", "Feb", "Mar")
             .WithXAxis("Count").WithYAxis("Month").WithXAxisBounds(0, 100)
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 80) })

@@ -15,7 +15,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [InlineData(1100, VisualThemeMode.Dark)]
     public async Task StructuredCaptionVectorAndPngRetainPermanentInkResources(int width, VisualThemeMode mode) {
         if (!Enabled) return;
-        var chart = TopologyChart.Create().WithViewport(width, 420).WithTheme(VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family), mode);
+        var chart = TopologyChart.Create().WithViewport(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
         chart.Nodes.Add(new TopologyNode { Id = "caption", X = 30, Y = 50, Width = width - 70, Height = 260, ShowStatusBadge = false,
             LabelContent = TextContent.FromRuns(new[] { new TextContentRun("Regular "), new TextContentRun("bold", TextInlineEmphasis.Bold), new TextContentRun(" italic", TextInlineEmphasis.Italic), new TextContentRun("\nComplete native caption") }) });
         var options = new TopologyRenderOptions { EnableHtmlExportControls = true, WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6 };

@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
         var coverage = Chart.Create().WithTitle("Coverage").WithSize(320, 220).AddBar("Values", Points(80, 72, 91));
         var readiness = Chart.Create().WithTitle("Readiness").WithSize(320, 220).AddLine("Values", Points(62, 70, 84));
         var grid = ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report")
-            .WithTheme(VisualTheme.Report()).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200)
+            .WithTheme(VisualTheme.Graphite()).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200)
             .Add(coverage).Add(readiness).WithSharedYAxis();
         var html = grid.ToHtmlPage();
         Assert(html.Contains("<section class=\"chartforgex-grid\"", StringComparison.Ordinal), "Chart grids should render a stable report container.");
@@ -33,7 +33,7 @@ internal static partial class SmokeTests {
         var png = grid.ToPng();
         Assert(ReadBigEndianInt32(png, 16) == 680 && ReadBigEndianInt32(png, 20) == (int)Math.Ceiling(prepared.Size.Height), "PNG should use the same logical grid viewport.");
         AssertRgbaParity(grid.ToRgbaImage(), png, "Prepared ChartGrid");
-        var tintedTheme = VisualTheme.Report(); tintedTheme = tintedTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F4F7FB"); });
+        var tintedTheme = VisualTheme.Graphite(); tintedTheme = tintedTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F4F7FB"); });
         var tinted = ChartGrid.Create().WithTitle(grid.Title).WithSubtitle(grid.Subtitle).WithTheme(tintedTheme)
             .WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness);
         Assert(!png.SequenceEqual(tinted.ToPng()), "The shared grid export should honor explicit background colors.");

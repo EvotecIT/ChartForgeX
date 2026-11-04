@@ -20,7 +20,7 @@ public sealed class RemainingCaptionOrdinaryControls {
         PreparedVisual visual;
         double? sourcePadding = null;
         if (family == "native") {
-            var chart = TopologyChart.Create().WithViewport(width, 620).WithTheme(VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family), mode)
+            var chart = TopologyChart.Create().WithViewport(width, 620).WithTheme(NativeTheme(), mode)
                 .AddAutoGroup("scope", "Review scope").AddAutoNode("a", "Review", groupId: "scope")
                 .AddAutoNode("b", "Ready", groupId: "scope").AddEdge("link", "a", "b", "Accept work");
             visual = chart.Prepare().Visual;
@@ -54,8 +54,11 @@ public sealed class RemainingCaptionOrdinaryControls {
             Assert.NotEqual(24, sourcePadding!.Value);
             TopologyViewportPaddingFixtureContract.RequireCapturedInsets(visual.SemanticInterchange, sourcePadding.Value);
         }
-        if (family == "native") Assert.Equal((double?)VisualTheme.Report().Typography.TitleSize,
+        if (family == "native") Assert.Equal((double?)NativeTheme().Typography.TitleSize,
             visual.SemanticInterchange.Presentation!.Theme!.TitleSize);
         Assert.DoesNotContain("labelRuns", json, StringComparison.Ordinal);
     }
+
+    // A fixed, non-default title size keeps the native control on the version-two presentation path at every width.
+    private static VisualTheme NativeTheme() => VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 25)).WithFontFamily(BrowserProofFonts.Family);
 }

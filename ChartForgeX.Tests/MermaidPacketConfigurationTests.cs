@@ -158,7 +158,7 @@ public sealed class MermaidPacketConfigurationTests {
     [InlineData(PacketBitOrder.Ascending)]
     [InlineData(PacketBitOrder.Descending)]
     public void SingleBitNumbersShareTheirSvgAndPngHorizontalPosition(PacketBitOrder order) {
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         theme = theme.WithFontFamily("Arial");
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF0000"); });

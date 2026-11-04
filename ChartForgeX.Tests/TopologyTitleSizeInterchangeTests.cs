@@ -22,7 +22,7 @@ public sealed class TopologyTitleSizeInterchangeTests {
     }
     [Fact]
     public void NondefaultTopologyAndPresetTitleSizeUsesTheExistingFrameOwnerAndRestoresThroughVersionTwo() {
-        foreach (var theme in new[] { VisualTheme.Report(), VisualTheme.Product(), VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 29)) }) {
+        foreach (var theme in new[] { VisualTheme.Graphite(), VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 29)) }) {
             var chart = Source(theme);
             // Test the preset/title contract with an explicitly bounded caller face; host Avenir collections
             // may exceed the separate 2 MiB portable-root admission while remaining valid native output.
