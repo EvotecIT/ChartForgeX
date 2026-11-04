@@ -28,10 +28,10 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
         var document = XDocument.Parse(svg);
         AssertRawStatistics(document, equalQuartilesAtMaximum);
         var paint = PaintBounds(document);
-        Assert.Equal(10, paint.Length);
+        Assert.Equal(12, paint.Length);
         Assert.Equal(2, paint.Count(item => item.Role == "boxplot-body"));
         Assert.Equal(4, paint.Count(item => item.Role == "boxplot-cap"));
-        Assert.Equal(2, paint.Count(item => item.Role == "boxplot-whisker"));
+        Assert.Equal(4, paint.Count(item => item.Role == "boxplot-whisker"));
         Assert.Equal(2, paint.Count(item => item.Role == "boxplot-median"));
 
         // Keep two native failures available even when the containment assertion below fails.

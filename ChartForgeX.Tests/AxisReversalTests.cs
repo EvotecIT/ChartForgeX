@@ -81,11 +81,13 @@ public sealed class AxisReversalTests {
         var forward = kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc
             ? Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role) : null;
         chart.Options.YAxis.WithReversal();
-        var prepared = Prepare(chart); var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role);
+        var prepared = Prepare(chart); var lines = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == role).ToArray();
+        // A box plot paints its two stems separately, ending at the body; financial marks paint one line.
+        Assert.Equal(kind == ChartSeriesKind.BoxPlot ? 2 : 1, lines.Length); var line = lines[0];
         var region = Assert.Single(prepared.Regions, item => item.Id == "series-0-point-0");
         var strokePadding = kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? line.StrokeWidth / 2 : 0;
-        Assert.Equal(Math.Min(line.Start.Y, line.End.Y) - strokePadding, region.Bounds.Top, 9);
-        Assert.Equal(Math.Max(line.Start.Y, line.End.Y) + strokePadding, region.Bounds.Bottom, 9);
+        Assert.Equal(lines.Min(item => Math.Min(item.Start.Y, item.End.Y)) - strokePadding, region.Bounds.Top, 9);
+        Assert.Equal(lines.Max(item => Math.Max(item.Start.Y, item.End.Y)) + strokePadding, region.Bounds.Bottom, 9);
         if (forward != null) {
             Assert.True(forward.Start.Y < forward.End.Y);
             Assert.True(line.Start.Y > line.End.Y);

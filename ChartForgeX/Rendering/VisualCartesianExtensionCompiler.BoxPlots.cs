@@ -63,8 +63,10 @@ internal static partial class VisualCartesianCompiler {
                 ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
                 var stroke = VisualSeriesStroke.Width(series, ChartVisualPrimitives.BoxPlotStrokeWidth);
                 var whisker = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity);
-                VisualSeriesStroke.DrawLine(builder, series, min.X, min.Y, max.X, max.Y, whisker, stroke, role: "boxplot-whisker",
-                    paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(whisker, ChartVisualPrimitives.BoxPlotWhiskerOpacity)));
+                // The stems end at the body; one line through a translucent body crosses the median and its caption.
+                var whiskerPaint = VisualChartPaint.Stroke(sourcePaint.WithOpacity(whisker, ChartVisualPrimitives.BoxPlotWhiskerOpacity));
+                VisualSeriesStroke.DrawLine(builder, series, min.X, min.Y, first.X, first.Y, whisker, stroke, role: "boxplot-whisker", paint: whiskerPaint);
+                VisualSeriesStroke.DrawLine(builder, series, third.X, third.Y, max.X, max.Y, whisker, stroke, role: "boxplot-whisker", paint: whiskerPaint);
                 CrossLine(minimum, thickness * .74, stroke, "boxplot-cap");
                 CrossLine(maximum, thickness * .74, stroke, "boxplot-cap");
                 var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotBodyFillOpacity);

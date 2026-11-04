@@ -279,6 +279,12 @@ internal static partial class VisualCartesianCompiler {
         }
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
+            // A box plot median and a candlestick or OHLC value sit on a body crossed by a stem or wick; a caption
+            // above that anchor lands on the stem or the body edge. Try the sides of the mark first.
+            if (series.Kind is ChartSeriesKind.BoxPlot or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) {
+                candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+                candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+            }
             candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, .5, positive ? 1 : 0));
             if (bar && placement == ChartDataLabelPlacement.Auto) {
                 // Keep a bar caption centered on its own mark before trying sideways fallbacks.
