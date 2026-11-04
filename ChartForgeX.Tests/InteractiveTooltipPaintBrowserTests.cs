@@ -188,7 +188,10 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Equal("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         Assert.Equal(0, await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft"));
         await CaptureContractAsync(page, "paint-caption-only-annotation-" + layout + "-compact-dark", new { BandOpacity = 0, Caption = true, Layout = layout.ToString(), ScrollLeft = 0, PointerAndKeyboardPins = true });
-        await page.Locator("[data-cfx-reset]").ClickAsync();
+        // Escape dismisses the keyboard-pinned readout together with its selection.
+        await page.Keyboard.PressAsync("Escape");
+        Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
+        Assert.Null(await page.Locator(annotation).GetAttributeAsync("aria-selected"));
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = Legend(0) + " :is(rect,circle,ellipse,line,polyline,path,polygon):not([data-cfx-native-text-ink] *) { opacity:0!important; }" });
         await MoveToNativeTextAsync(page, Legend(0));
         try {

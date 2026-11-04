@@ -32,6 +32,8 @@
     syncSelectionAppearance(root);
     listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
+      // Escape dismisses a pinned readout as well as the selection it came from.
+      if (root.dataset.cfxTooltipPinned === 'true') unpinTooltip(root);
       clearBrushCommand(root, { emit: true, sync: true });
       if (!hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
       clearSelections(root);
