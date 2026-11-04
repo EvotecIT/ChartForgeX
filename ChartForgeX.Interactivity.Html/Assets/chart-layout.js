@@ -116,7 +116,7 @@
         label.group.style.display=shown.has(index)?'':'none';
         const labelX=Math.max(spec.matrix?gutterLeft:0,Math.min(width-label.width,label.center-label.width/2));
         label.text.setAttribute('x',labelX);
-        if(spec.matrix){const clip=clipRect(label.text);if(clip){clip.setAttribute('x',labelX-1);clip.setAttribute('width',label.width+2);}}
+        if(spec.matrix)fitClip(label.text);
       });
       let height=spec.matrix && !printing ? spec.height+verticalShift : spec.height;
       function size(){svg.setAttribute('width',width);svg.setAttribute('height',height);svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
@@ -155,6 +155,8 @@
     // Truncate captions without shrinking text; retain full titles.
     let captions;
     function fitText(width){
+      // Scale values stay whole when the browser's font is wider than the native measurement.
+      for(const text of svg.querySelectorAll('[data-cfx-role="heatmap-scale-label"] text'))fitClip(text);
       captions ||= [...svg.querySelectorAll('[data-cfx-role^="frame-heading"] text,[data-cfx-role="schedule-row-label"] text,[data-cfx-role="lane-summary"] text,[data-cfx-role="state-timeline-group"] text,[data-cfx-role="gantt-lane-group"] text,[data-cfx-role="heatmap-row-label"] text')]
         .map(text=>({text,full:nativeTitle(text) ?? text.textContent,clip:clipRect(text),right:!!text.closest('[data-cfx-role="schedule-row-label"],[data-cfx-role="lane-summary"],[data-cfx-role="heatmap-row-label"]')}));
       for(const caption of captions){
@@ -180,6 +182,11 @@
         const title=node.querySelector(':scope > title');if(title)return title.textContent;
       }
       return null;
+    }
+    // Glyph bearings can extend beyond the advance width, particularly in Firefox.
+    function fitClip(text){
+      const clip=clipRect(text);if(!clip)return;
+      const box=text.getBBox();clip.setAttribute('x',box.x-1);clip.setAttribute('width',box.width+2);
     }
     function clipRect(node){
       for(let current=node;current && current!==svg;current=current.parentElement){

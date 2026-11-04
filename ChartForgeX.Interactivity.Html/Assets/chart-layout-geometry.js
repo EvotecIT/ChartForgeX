@@ -3,7 +3,8 @@
   if (window.ChartForgeXLayoutGeometry) return;
   const numeric = /[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
   const tokens = /[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
-  const finite = value => Number.isFinite(value) ? Math.round(value * 1000000) / 1000000 : 0;
+  // Match native SVG precision so resizing does not inflate every serialized coordinate.
+  const finite = value => Number.isFinite(value) ? Math.round(value * 1000) / 1000 : 0;
   function path(value, x, y) {
     const list = value.match(tokens) || [], out = []; let at = 0, command, px = 0, py = 0, sx = 0, sy = 0;
     const counts = { M:2,L:2,H:1,V:1,C:6,S:4,Q:4,T:2,A:7 };
@@ -52,10 +53,10 @@
       const id=heading.closest('[clip-path]')?.getAttribute('clip-path').match(/url\(#([^)]*)\)/)?.[1],clip=id&&svg.getElementById(id);
       if(clip)for(const child of clip.querySelectorAll('*'))headings.add(child);
     }
-    // Legends and caption boxes inside a plot band move with it but keep their own width: scaling them squashes the
-    // colour steps and shrinks each caption's clip until one character remains.
+    // Caption boxes move with the plot but keep their measured width. Colour swatches
+    // still project into the resized plot instead of extending beyond the drawing.
     const rigid=new Map();
-    for(const group of svg.querySelectorAll('[data-cfx-role="heatmap-scale"],[data-cfx-role="heatmap-column-label"]')){
+    for(const group of svg.querySelectorAll('[data-cfx-role="heatmap-scale"] text,[data-cfx-role="heatmap-column-label"]')){
       const box=group.getBBox(),anchor={center:box.x+box.width/2,width:box.width};
       for(const node of [group,...group.querySelectorAll('*')])rigid.set(node,anchor);
       // A caption's own clip may sit on the wrapper around it; take it only when that wrapper holds this caption alone.
@@ -114,7 +115,7 @@
       const thickness=bar?Math.max(Math.min(.1,maximumBarWidth),Math.min(maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
       const center=bar?x(bar.categoryCenter)+(bar.position-(bar.count-1)/2)*(thickness+gap):0;
       // Drawings without a plot band stay centred, but their heading keeps its left inset and is fitted afterwards.
-      const rigid=recipe.rigid, shift=rigid ? Math.max(rigid.width/2,Math.min(width-rigid.width/2,x(rigid.center)))-rigid.center : 0;
+      const rigid=recipe.rigid, shift=rigid ? Math.max(nl+rigid.width/2,Math.min(nl+nw-rigid.width/2,x(rigid.center)))-rigid.center : 0;
       const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):rigid ? v=>v+shift : !spec.cartesian && recipe.heading ? v=>v : x;
       const baseX=Number(a.x||0),baseY=Number(a.y||0);
       for(const [name,value] of Object.entries(a)){
