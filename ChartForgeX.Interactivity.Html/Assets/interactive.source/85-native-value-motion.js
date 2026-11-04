@@ -70,14 +70,23 @@
     const lifetime = chartLifetimes.get(root), frames = lifetime.adaptive?.current === 'narrow' ? captured.narrow : captured.wide;
     if (!frames) return;
     const parent = svg.parentElement; if (!parent) return;
-    const bounds = svg.getBoundingClientRect(), origin = stagePoint(parent, { x: bounds.left, y: bounds.top });
-    const { scaleX, scaleY } = stageProjection(parent), width = bounds.width / scaleX, height = bounds.height / scaleY;
-    if (![origin.x, origin.y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return;
+    const viewport = () => {
+      const bounds = svg.getBoundingClientRect(), origin = stagePoint(parent, { x: bounds.left, y: bounds.top });
+      const { scaleX, scaleY } = stageProjection(parent), width = bounds.width / scaleX, height = bounds.height / scaleY;
+      return [origin.x, origin.y, width, height].every(Number.isFinite) && width > 0 && height > 0 ? { ...origin, width, height } : null;
+    };
+    if (!viewport()) return;
     const layer = document.createElement('div');
     layer.className = 'cfx-native-motion-frame'; layer.setAttribute('aria-hidden', 'true'); layer.setAttribute('inert', '');
     layer.style.cssText = 'position:absolute;pointer-events:none';
-    layer.style.left = origin.x + 'px'; layer.style.top = origin.y + 'px';
-    layer.style.width = width + 'px'; layer.style.height = height + 'px';
+    // Text above the drawing can still settle (for example when owned fonts finish loading),
+    // so each displayed frame follows the accepted SVG's current viewport.
+    const align = () => {
+      const box = viewport(); if (!box) return;
+      layer.style.left = box.x + 'px'; layer.style.top = box.y + 'px';
+      layer.style.width = box.width + 'px'; layer.style.height = box.height + 'px';
+    };
+    align();
     for (const attribute of [...root.attributes]) if (attribute.name.startsWith('data-cfx-')) layer.setAttribute(attribute.name, attribute.value);
     const opacity = svg.style.getPropertyValue('opacity'), priority = svg.style.getPropertyPriority('opacity');
     const state = chartUpdateState(root, true); const cleanups = [];
@@ -115,7 +124,7 @@
       firstTime ??= timestamp;
       const ratio = Math.min(1, (timestamp - firstTime) / motion.duration);
       if (ratio >= 1) { release(); return; }
-      const index = Math.floor(ratio * (frames.length - 1)); if (index !== shown) show(index);
+      const index = Math.floor(ratio * (frames.length - 1)); align(); if (index !== shown) show(index);
       frame = requestAnimationFrame(tick);
     };
     const reduced = event => { if (event.matches) release(); }, hidden = () => { if (document.hidden) release(); };
