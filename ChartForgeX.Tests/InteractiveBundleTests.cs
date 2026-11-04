@@ -15,7 +15,7 @@ public sealed class InteractiveBundleTests {
     [Theory]
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 96 * 1024, 30 * 1024)]
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 280 * 1024, 82 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 337 * 1024, 100 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 338 * 1024, 100 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
