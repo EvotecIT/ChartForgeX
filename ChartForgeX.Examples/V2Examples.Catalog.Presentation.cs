@@ -100,7 +100,9 @@ public static partial class V2Examples {
     private static void StartPage(StringBuilder page, string title, string theme, string kind) {
         page.Append("<!doctype html><html lang=\"en\" data-output-view=\"svg\" data-theme=\"").Append(theme).Append("\" data-catalog-page=\"").Append(kind)
             .Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>")
-            .Append(Escape(title)).Append("</title><style>");
+            .Append(Escape(title)).Append("</title>")
+            // Inline artifacts leave product fonts to their host; the gallery registers them once per page.
+            .Append(ExampleTypography.LinkedStyle).Append("<style>");
         AppendThemeCss(page, ":root", VisualThemeMode.Light);
         AppendThemeCss(page, "html[data-theme=dark]", VisualThemeMode.Dark);
         page.Append("</style><style data-gallery-style>").Append(ReadCatalogAsset("gallery.css"))

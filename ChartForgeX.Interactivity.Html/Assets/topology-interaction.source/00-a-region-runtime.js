@@ -63,6 +63,8 @@
     };
     wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"]').forEach(element => {
       element.setAttribute('tabindex','-1');
+      // Keyboard focus reaches nodes and edges, so promote the static description to their accessible name.
+      if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label',element.getAttribute('data-cfx-description'));
       listen(element,'pointerenter', event => show(element,event.clientX,event.clientY));
       listen(element,'pointerleave',clear);
       listen(element,'click', () => select(element));

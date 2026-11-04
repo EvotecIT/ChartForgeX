@@ -68,10 +68,7 @@ internal static class VisualAxisText {
     /// <summary>Keeps a bounded named-category gutter useful when even a balanced line is too wide.</summary>
     internal static string FitWrappedCategory(VisualSceneBuilder builder, string text, TextStyle style, double width, out bool shortened) {
         var measured = builder.MeasureText(text, style);
-        // Subtracting the measured gutter's padding can lose a few ulps. Use the
-        // placement owner's containment rule before changing a fitting caption.
-        if (LabelPlacementService.Contains(new ChartRect(0, 0, width, measured.Height),
-            new ChartRect(0, 0, measured.Width, measured.Height))) {
+        if (Fits(measured, width)) {
             shortened = false;
             return text;
         }
@@ -86,6 +83,16 @@ internal static class VisualAxisText {
         // A line too narrow for the shortened-text minimum hides the whole caption rather than half of it.
         return displayed.Any(line => line.Length == 0) ? string.Empty : string.Join("\n", displayed);
     }
+
+    /// <summary>Wraps an authored value-axis caption only when it does not fit its gutter whole.</summary>
+    internal static string WrapAuthoredValue(VisualSceneBuilder builder, string text, TextStyle style, double width) =>
+        Fits(builder.MeasureText(text, style), width) ? text
+            : string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width, (value, _) => builder.MeasureText(value, style).Width));
+
+    // A gutter sized from its widest caption, minus padding, can come back a few ulps short.
+    // Use the placement owner's containment rule before changing a fitting caption.
+    private static bool Fits(TextMetrics measured, double width) =>
+        LabelPlacementService.Contains(new ChartRect(0, 0, width, measured.Height), new ChartRect(0, 0, measured.Width, measured.Height));
 
     /// <summary>Paints the displayed text within the same footprint used for full and shortened placement.</summary>
     internal static void Draw(VisualSceneBuilder builder, PlacedLabel label, string role, string? id = null, SvgPaint? paint = null) {
