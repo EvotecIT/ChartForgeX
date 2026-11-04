@@ -76,6 +76,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     };
     wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"]').forEach(element => {
       element.setAttribute('tabindex','-1');
+      // Keyboard focus reaches nodes and edges, so promote the static description to their accessible name.
+      if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label',element.getAttribute('data-cfx-description'));
       listen(element,'pointerenter', event => show(element,event.clientX,event.clientY));
       listen(element,'pointerleave',clear);
       listen(element,'click', () => select(element));
@@ -1596,6 +1598,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
       if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+      // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
+      if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
       listen(element, 'pointerleave', () => {
         clearHover();

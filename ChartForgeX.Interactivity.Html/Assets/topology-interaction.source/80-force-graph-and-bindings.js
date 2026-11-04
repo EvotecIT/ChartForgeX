@@ -116,6 +116,8 @@
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
       if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+      // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
+      if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
       listen(element, 'pointerleave', () => {
         clearHover();
